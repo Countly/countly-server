@@ -77,7 +77,7 @@ fi
 bash $DIR/scripts/detect.init.sh
 
 #configure and start nginx
-countly save /etc/nginx/sites-enabled/default $DIR/config/nginx
+countly save /etc/nginx/sites-available/default $DIR/config/nginx
 countly save /etc/nginx/nginx.conf $DIR/config/nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf

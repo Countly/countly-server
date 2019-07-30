@@ -522,9 +522,24 @@ taskmanager.rerunTask = function(options, callback) {
                 reqData.strictSSL = false;
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
-                        if (member) {
+                        if (member && member.api_key) {
                             reqData.json.api_key = member.api_key;
                             runTask(options, reqData, callback);
+                        }
+                        else if (res.global) {
+                            //AD and other outer login users might not have their user documents
+                            options.db.collection("members").findOne({global_admin: true}, function(err2, admin) {
+                                if (admin && admin.api_key) {
+                                    reqData.json.api_key = admin.api_key;
+                                    runTask(options, reqData, callback);
+                                }
+                                else {
+                                    callback(null, "No permission to run this task");
+                                }
+                            });
+                        }
+                        else {
+                            callback(null, "No permission to run this task");
                         }
                     });
 

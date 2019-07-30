@@ -5,16 +5,24 @@
 		
 		var headerCells = base.table.find('thead th');
 		
-		base.stickyHeader = $('<div></div>').addClass('sticky-header hide');
-		base.headerCellHeight = $(headerCells[0]).height();
+        
+        var wrapper = $(el).parents('.dataTables_wrapper').first();
+        if ($(wrapper).find('.sticky-header').length > 0) { //check if we have sticky header
+            base.stickyHeader = $(wrapper).find('.sticky-header').first();
+            base.stickyHeader.html("");
+        }
+        else {
+            base.stickyHeader = $('<div></div>').addClass('sticky-header hide');
+            base.headerCellHeight = $(headerCells[0]).height();
+        }
 		
 		base.init = function () {
 			base.table = $(el);
 			var theadClone = base.table.find('thead').clone(true);
-		
 			base.stickyHeader.append($('<table class="d-table dataTable" cellpadding="0" cellspacing="0"></table>')).find('table').append(theadClone);
 			base.table.after(base.stickyHeader);
 		
+            
 			base.setWidths();
             
             //match sorting style for sticky header

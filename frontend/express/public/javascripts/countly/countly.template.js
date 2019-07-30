@@ -175,11 +175,11 @@ var countlyView = Backbone.View.extend({
             $('.member_image').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
         }
         else {
-            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 30;
             var name = countlyGlobal.member.full_name.split(" ");
-            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
             $('.member_image').html("");
-            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: relative; top: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
         }
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
         $("#top-bar").find(".dropdown").fadeIn(2000);
@@ -908,6 +908,10 @@ var AppRouter = Backbone.Router.extend({
                 }
             }
         }
+        else if (Backbone.history.fragment.indexOf("/0/") === 0 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
+            this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment.replace("/0", ""), true);
+            return;
+        }
         else if (Backbone.history.fragment !== "/" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
             $("#" + countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function() {
                 if (this.hash !== "#/" && this.hash !== "") {
@@ -1229,6 +1233,15 @@ var AppRouter = Backbone.Router.extend({
         * {{> date-selector }}
         */
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
+
+        /**
+        * Display common date time selecting UI elements
+        * @name date-time-selector
+        * @memberof Handlebars
+        * @example
+        * {{> date-time-selector }}
+        */
+        Handlebars.registerPartial("date-time-selector", $("#template-date-time-selector").html());
         /**
         * Display common timezone selecting UI element
         * @name timezones
@@ -2038,7 +2051,7 @@ var AppRouter = Backbone.Router.extend({
                 $('.note-popup:visible .note-content').textcounter({
                     max: 50,
                     countDown: true,
-                    countDownText: "remaining "
+                    countDownText: jQuery.i18n.map["dashboard.note-title-remaining"] + ": ",
                 });
 
                 $(".note-popup:visible .note .delete-note").on("click", function() {
@@ -2207,7 +2220,7 @@ var AppRouter = Backbone.Router.extend({
 
             // Prevent body scroll after list inside dropdown is scrolled till the end
             // Applies to any element that has prevent-body-scroll class as well
-            $("body").on('DOMMouseScroll mousewheel', ".dropdown .list, .prevent-body-scroll", function(ev) {
+            $("document").on('DOMMouseScroll mousewheel', ".dropdown .list, .prevent-body-scroll", function(ev) {
                 var $this = $(this),
                     scrollTop = this.scrollTop,
                     scrollHeight = this.scrollHeight,
@@ -2236,7 +2249,7 @@ var AppRouter = Backbone.Router.extend({
                     $this.scrollTop(0);
                     return prevent();
                 }
-            });
+            }, {passive: false});
 
             $appNavigation.on("click", ".item", function() {
                 var appKey = $(this).data("key"),
@@ -2431,6 +2444,12 @@ var AppRouter = Backbone.Router.extend({
         * @returns {number} number representating date
         */
         function getCustomDateInt(s) {
+            if (s.indexOf("W") === 0) {
+                s = s.replace(",", "");
+                s = s.replace("W", "");
+                dateParts = s.split(" ");
+                return (parseInt(dateParts[0])) + parseInt(dateParts.pop() * 10000);
+            }
             s = moment(s, countlyCommon.getDateFormat(countlyCommon.periodObj.dateString)).format(countlyCommon.periodObj.dateString);
             var dateParts = "";
             if (s.indexOf(":") !== -1) {
@@ -3408,10 +3427,15 @@ var AppRouter = Backbone.Router.extend({
 
             $(window).click(function() {
                 $("#date-picker").hide();
+                $(".date-time-picker").hide();
                 $(".cly-select").removeClass("active");
             });
 
             $("#date-picker").click(function(e) {
+                e.stopPropagation();
+            });
+
+            $(".date-time-picker").click(function(e) {
                 e.stopPropagation();
             });
 

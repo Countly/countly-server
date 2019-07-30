@@ -1,0 +1,102 @@
+.setup-2fa-dialog .indicator {
+    display: none;
+}
+
+.setup-2fa-dialog {
+	min-width: 640px;
+	min-height: 650px;
+	padding: 0;
+	box-sizing: border-box;
+	box-shadow: 0 2px 14px 0 rgba(0,0,0,.25);
+	border: none !important;
+	border-radius: 2px;
+}
+
+#resetup-2fa-link {
+    color: #2EB52B;
+    cursor: pointer;
+}
+
+#two-factor-auth-setup {
+	font-size: 12px;
+	color: #6B6B6B;
+	line-height: 1.5;
+	display: flex;
+	flex-direction: column;
+}
+
+#two-factor-auth-setup .icon-button {
+    border: none;
+}
+
+#two-factor-auth-setup .row {
+    display: flex;
+    flex-direction: row;
+    margin: 10px 20px;
+    font-size: 15px;
+}
+
+#two-factor-auth-setup .row.title {
+    font-size: 20px;
+    margin: 15px 20px;
+}
+
+#two-factor-auth-setup .step-number {
+    background-color: #ececec;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    margin: auto;
+    margin-right: 20px;
+    flex-shrink: 0;
+    text-align: center;
+    line-height: 30px;
+    font-size: 16px;
+}
+
+#two-factor-auth-setup .row.secrets {
+    flex-direction: column;
+    align-items: center;
+    background-color: #f9f9f9;
+    padding: 10px 0;
+    margin: 10px 0;
+}
+
+.two-factor-auth-qr-code {
+    width: 216px;
+    margin: -15px;
+}
+
+#two-factor-auth-setup .secret-2fa-label {
+    margin-top: 6px;
+    color: #a8a8a8;
+}
+
+#two-factor-auth-setup .row.one-time-password input {
+    margin-top: 8px;
+    border: 1px solid #d8d8d8;
+    width: 280px;
+    height: 26px;
+    padding: 0 4px;
+    border-radius: 2px;
+}
+
+#two-factor-auth-setup .row.one-time-password input::placeholder {
+    color: #adadad;
+}
+
+#two-factor-auth-setup .row.one-time-password .step-number {
+    margin-top: 5px;
+}
+
+#two-factor-auth-setup .row.buttons {
+    flex-direction: row-reverse;
+}
+
+#two-factor-auth-setup .row.buttons .cancel-2fa-button {
+    text-decoration: underline;
+    cursor: pointer;
+    margin: auto 6px auto 0;
+    color: #a8a8a8;
+    font-size: 12px;
+}

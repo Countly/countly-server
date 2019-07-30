@@ -7,6 +7,7 @@
 var authorizer = {};
 var common = require("./common.js");
 var crypto = require("crypto");
+const log = require('./log.js')('core:authorizer');
 
 
 /**
@@ -169,6 +170,7 @@ authorizer.extend_token = function(options) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.token - token to validate
+* @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
 * @param {function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
 * @param {boolean} return_owner states if in callback owner shold be returned. If return_owner==false, returns true or false.
 */
@@ -184,6 +186,7 @@ var verify_token = function(options, return_owner) {
         options.token = options.token + "";
         options.db.collection("auth_tokens").findOne({_id: options.token}, function(err, res) {
             var valid = false;
+            var expires_after = 0;
             if (res) {
                 var valid_endpoint = true;
                 if (res.endpoint && res.endpoint !== "") {
@@ -193,10 +196,44 @@ var verify_token = function(options, return_owner) {
                     }
                     valid_endpoint = false;
                     if (options.req_path !== "") {
+                        var my_regexp = "";
                         for (var p = 0; p < res.endpoint.length; p++) {
-                            var my_regexp = new RegExp(res.endpoint[p]);
-                            if (my_regexp.test(options.req_path)) {
-                                valid_endpoint = true;
+                            if (res.endpoint[p] && res.endpoint[p].endpoint) {
+                                var missing_param = false;
+                                if (res.endpoint[p].params) {
+                                    for (var k in res.endpoint[p].params) {
+                                        try {
+                                            var my_regexp2 = new RegExp(res.endpoint[p].params[k]);
+                                            if (!options.qstring || !options.qstring[k] || !my_regexp2.test(options.qstring[k])) {
+                                                missing_param = true;
+                                            }
+                                        }
+                                        catch (e) {
+                                            log.e("Invalid regex: '" + res.endpoint[p].params[k] + "'");
+                                            missing_param = true;
+                                        }
+                                    }
+                                }
+                                try {
+                                    my_regexp = new RegExp(res.endpoint[p].endpoint);
+                                    if (!missing_param && my_regexp.test(options.req_path)) {
+                                        valid_endpoint = true;
+                                    }
+                                }
+                                catch (e) {
+                                    log.e("Invalid regex: '" + res.endpoint[p].endpoint + "'");
+                                }
+                            }
+                            else {
+                                try {
+                                    my_regexp = new RegExp(res.endpoint[p]);
+                                    if (my_regexp.test(options.req_path)) {
+                                        valid_endpoint = true;
+                                    }
+                                }
+                                catch (e) {
+                                    log.e("Invalid regex: '" + res.endpoint[p] + "'");
+                                }
                             }
                         }
                     }
@@ -217,12 +254,14 @@ var verify_token = function(options, return_owner) {
                 if (valid_endpoint && valid_app) {
                     if (res.ttl === 0) {
                         valid = true;
+                        expires_after = -1;
                         if (return_owner) {
                             valid = res.owner;
                         }
                     }
                     else if (res.ends >= Math.round(Date.now() / 1000)) {
                         valid = true;
+                        expires_after = Math.max(0, res.ends - Math.round(Date.now() / 1000));
                         if (return_owner) {
                             valid = res.owner;
                         }
@@ -235,7 +274,7 @@ var verify_token = function(options, return_owner) {
                 }
             }
             if (typeof options.callback === "function") {
-                options.callback(valid);
+                options.callback(valid, expires_after);
             }
         });
     }
@@ -245,6 +284,7 @@ var verify_token = function(options, return_owner) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.token - token to verify
+* @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
 * @param {string} options.req_path - current request path
 * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
 */
@@ -257,6 +297,7 @@ authorizer.verify = function(options) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.token - token to verify
+* @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
 * @param {string} options.req_path - current request path
 * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
 */

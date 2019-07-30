@@ -66,7 +66,7 @@ function whatsNewPopup() {
 
             if (!displayParams.disabled && !(countlyGlobal && countlyGlobal.ssr)) {
 
-                if (localStorageData && localStorageData.version && localStorageData.seen && localStorageData.version === currentVersion) {
+                if (localStorageData && localStorageData.version && localStorageData.seen && localStorageData.version.indexOf(currentVersion) === 0) {
                     // Since LS object is present for this version
                     // user has seen the popup before so we won't show it on load
                     displayParams.isFirstTime = false;

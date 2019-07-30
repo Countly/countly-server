@@ -65,7 +65,7 @@ gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc" > /etc/yum.repos.d/mongodb-org-3.4.repo
     fi
-    yum install -y nodejs mongodb-org
+    yum install -y mongodb-org
     
     #disable transparent-hugepages (requires reboot)
     cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages

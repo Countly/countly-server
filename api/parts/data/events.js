@@ -50,7 +50,7 @@ countlyEvents.processEvents = function(params) {
                 var currEvent = params.qstring.events[i],
                     shortEventName = "",
                     eventCollectionName = "";
-                if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+                if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key && currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
                     continue;
                 }
 

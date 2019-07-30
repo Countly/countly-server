@@ -154,10 +154,30 @@ var pluginManager = function pluginManager() {
     this.getConfig = function(namespace, userSettings, override) {
         var ob = {};
         if (configs[namespace]) {
-            ob = configs[namespace];
+            for (let i in configs[namespace]) {
+                if (i === "_user") {
+                    ob[i] = {};
+                    for (let j in configs[namespace][i]) {
+                        ob[i][j] = configs[namespace][i][j];
+                    }
+                }
+                else {
+                    ob[i] = configs[namespace][i];
+                }
+            }
         }
         else if (defaultConfigs[namespace]) {
-            ob = defaultConfigs[namespace];
+            for (let i in defaultConfigs[namespace]) {
+                if (i === "_user") {
+                    ob[i] = {};
+                    for (let j in defaultConfigs[namespace][i]) {
+                        ob[i][j] = defaultConfigs[namespace][i][j];
+                    }
+                }
+                else {
+                    ob[i] = defaultConfigs[namespace][i];
+                }
+            }
         }
 
         //overwrite server settings by other level settings
@@ -167,7 +187,7 @@ var pluginManager = function pluginManager() {
                 ob[i] = userSettings[namespace][i];
             }
         }
-        else {
+        else if (!override) {
             //use db logic to check if overwrite
             if (userSettings && userSettings[namespace] && ob._user) {
                 for (let i in ob._user) {
@@ -179,7 +199,7 @@ var pluginManager = function pluginManager() {
                 }
             }
         }
-        return JSON.parse(JSON.stringify(ob));
+        return ob;
     };
 
     /**
@@ -242,7 +262,14 @@ var pluginManager = function pluginManager() {
     this.checkConfigs = function(db, current, provided, callback) {
         var diff = getObjectDiff(current, provided);
         if (Object.keys(diff).length > 0) {
-            db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(diff)}, {upsert: true}, function() {
+            db.collection("plugins").findAndModify({_id: "plugins"}, {}, {$set: flattenObject(diff)}, {upsert: true, new: true}, function(err, res) {
+                if (!err && res && res.value) {
+                    for (var i in diff) {
+                        if (res.value[i]) {
+                            current[i] = res.value[i];
+                        }
+                    }
+                }
                 if (callback) {
                     callback();
                 }
@@ -336,6 +363,9 @@ var pluginManager = function pluginManager() {
             }
             catch (ex) {
                 //silent error, not extending or no module
+                if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+                    console.log(ex);
+                }
             }
         }
 
@@ -345,6 +375,9 @@ var pluginManager = function pluginManager() {
         }
         catch (ex) {
             //silent error, not extending or no module
+            if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+                console.log(ex);
+            }
         }
     };
 
@@ -717,7 +750,7 @@ var pluginManager = function pluginManager() {
             return callback(errors);
         }
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('npm install --unsafe-perm', {cwd: cwd}, function(error) {
+        exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error) {
             if (error) {
                 errors = true;
                 console.log('error: %j', error);
@@ -752,7 +785,7 @@ var pluginManager = function pluginManager() {
             return callback(errors);
         }
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('npm update --unsafe-perm', {cwd: cwd}, function(error) {
+        exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error) {
             if (error) {
                 errors = true;
                 console.log('error: %j', error);
@@ -810,7 +843,7 @@ var pluginManager = function pluginManager() {
     **/
     this.restartCountly = function() {
         console.log('Restarting Countly ...');
-        exec((process.env.INSIDE_DOCKER ? "sudo " : "") + "countly restart", function(error, stdout, stderr) {
+        exec("sudo countly restart", function(error, stdout, stderr) {
             console.log('Done restarting countly with %j / %j / %j', error, stderr, stdout);
             if (error) {
                 console.log('error: %j', error);
@@ -1076,7 +1109,7 @@ var pluginManager = function pluginManager() {
                     return mongo.ObjectID(id);
                 }
                 catch (ex) {
-                    console.log("Incorrect Object ID", ex);
+                    logDbRead.i("Incorrect Object ID %j", ex);
                     return id;
                 }
             };
@@ -1155,6 +1188,9 @@ var pluginManager = function pluginManager() {
                                 if (callback) {
                                     callback(err, res);
                                 }
+                                else {
+                                    logDbWrite.d("Without Callback");
+                                }
                             }
                         }
                         else {
@@ -1168,10 +1204,16 @@ var pluginManager = function pluginManager() {
                             if (callback) {
                                 callback(err, res);
                             }
+                            else {
+                                logDbWrite.d("Without Callback");
+                            }
                         }
                     }
                     else if (callback) {
                         callback(err, res);
+                    }
+                    else {
+                        logDbWrite.d("Without Callback");
                     }
                 };
             };
@@ -1280,6 +1322,12 @@ var pluginManager = function pluginManager() {
                     if (callback) {
                         callback(err, res);
                     }
+                    else {
+                        logDbWrite.d("Without Callback");
+                        /*if (e) {
+                            logDbWrite.e(e.stack);
+                        }*/
+                    }
                 };
             };
 
@@ -1337,6 +1385,9 @@ var pluginManager = function pluginManager() {
                         else {
                             callback(err, res);
                         }
+                    }
+                    else {
+                        logDbRead.d("Without Callback");
                     }
                 };
             };

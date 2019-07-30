@@ -206,7 +206,7 @@ window.PluginsView = countlyView.extend({
                 data: { t: tryCount },
                 success: function(state) {
                     if (state.result === "completed") {
-                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'success', true, true);
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true, true);
                     }
                     else if (state.result === "failed") {
                         self.showPluginProcessMessage(jQuery.i18n.map["plugins.errors"], jQuery.i18n.map["plugins.errors-msg"], '', 3000, false, 'warning', true, true);
@@ -391,6 +391,10 @@ window.ConfigurationsView = countlyView.extend({
             return null;
         });
 
+        this.registerInput("push.proxypass", function(value) {
+            return '<input type="password" id="push.proxypass" value="' + (value || '') + '"/>';
+        });
+
         this.registerLabel("frontend.google_maps_api_key", "configs.frontend-google_maps_api_key");
     },
     beforeRender: function() {
@@ -468,12 +472,13 @@ window.ConfigurationsView = countlyView.extend({
          * @returns {void} void
          */
         function setDefaultAvatar() {
+            var defaultAvatarSelectorSmall = countlyGlobal.member.created_at % 16 * 30;
             var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
             var name = countlyGlobal.member.full_name.split(" ");
             $('.member_image').html("");
             $('.pp-circle').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
-            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
-            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute;top: 5px;left: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelectorSmall + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
+            $('.member_image').prepend('<span style="color: white;position: relative;top: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
             $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
             $('.pp-circle').prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
         }
@@ -529,6 +534,14 @@ window.ConfigurationsView = countlyView.extend({
                     attrID = $(this).attr("id");
 
                 self.updateConfig(attrID, isChecked);
+            });
+
+            //numeric input on arrow click
+            $('.configs input[type="number"]').on("change", function() {
+                var id = $(this).attr("id");
+                var value = $(this).val();
+                value = parseFloat(value);
+                self.updateConfig(id, value);
             });
 
             $(".configs input").keyup(function() {
@@ -843,6 +856,39 @@ window.ConfigurationsView = countlyView.extend({
                         }
                     });
                 }
+            });
+
+            $("#delete_account_password").keyup(function() {
+                $('#password-input-mandatory-warning').css('visibility', 'hidden');
+            });
+            $("#delete-user-account-button").click(function() {
+                var pv = $("#delete_account_password").val();
+                pv = pv.trim();
+                if (pv === "") {
+                    $('#password-input-mandatory-warning').css('visibility', 'visible');
+                }
+                else {
+                    var text = jQuery.i18n.map["user-settings.delete-account-confirm"];
+                    CountlyHelpers.confirm(text, "popStyleGreen", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyPlugins.deleteAccount({password: pv}, function(err, msg) {
+                            if (msg === true || msg === 'true') {
+                                window.location = "/login"; //deleted. go to login
+                            }
+                            else if (msg === 'password not valid' || msg === 'password mandatory' || msg === 'global admin limit') {
+                                var msg1 = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"};
+                                CountlyHelpers.notify(msg1);
+                            }
+                            else if (err === true) {
+                                var msg2 = {title: jQuery.i18n.map["common.error"], message: msg, sticky: true, clearAll: true, type: "error"};
+                                CountlyHelpers.notify(msg2);
+                            }
+                        });
+                    }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["common.yes"]], { title: jQuery.i18n.map["user-settings.delete-account-title"], image: "delete-user" });
+                }
+
             });
 
 

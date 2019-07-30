@@ -26,6 +26,7 @@ ip.getHost = function(callback) {
     else {
         getIP(function(err, ipres) {
             if (err) {
+                console.log(err);
                 getNetworkIP(function(err2, ipaddress) {
                     callback(err2, "http://" + ipaddress);
                 });
@@ -61,6 +62,7 @@ var getIP = extIP({
  */
 function getNetworkIP(callback) {
     var socket = net.createConnection(80, 'www.google.com');
+    socket.setTimeout(1000);
     socket.on('connect', function() {
         callback(undefined, socket.address().address);
         socket.end();

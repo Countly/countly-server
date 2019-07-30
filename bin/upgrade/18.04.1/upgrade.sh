@@ -1,21 +1,10 @@
 #!/bin/bash
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-
-#enable command line
-bash $DIR/scripts/detect.init.sh
-
-#upgrade existing plugins
-countly plugin upgrade push
-
-#enable new plugins
-if [ ! -f $DIR/../plugins/plugins.ee.json ]; then
-    countly plugin enable video-intelligence-monetization
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DATE=`date +%Y-%m-%d:%H:%M:%S`
+VERSION="$(basename "${DIR}")" 
+if [ -f $DIR/upgrade_fs.sh ]; then
+    bash $DIR/upgrade_fs.sh combined 2>&1 | tee -a $DIR/../../../log/countly-upgrade-$VERSION-$DATE.log
 fi
-countly plugin enable alerts
-
-#add indexes
-nodejs $DIR/scripts/add_indexes.js
-
-#install dependencies, process files and restart countly
-countly upgrade
+if [ -f $DIR/upgrade_db.sh ]; then
+    bash $DIR/upgrade_db.sh combined 2>&1 | tee -a $DIR/../../../log/countly-upgrade-$VERSION-$DATE.log
+fi

@@ -73,7 +73,10 @@ class ReportsJob extends job.Job {
                     else {
                         done(null, null);
                     }
-                }, function(/*err, results*/) {
+                }, function(asyncErr, /*results*/) {
+                    if (asyncErr) {
+                        log.d('report job err: %j', asyncErr, asyncErr.stack);
+                    }
                     log.d("all reports sent");
                     clearTimeout(timeout);
                     timeout = 0;

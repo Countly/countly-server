@@ -1,4 +1,5 @@
 /*global countlyCommon, _, jQuery*/
+// eslint-disable-next-line no-shadow-restricted-names
 (function(countlyEvent, $, undefined) {
 
     //Private Properties
@@ -162,6 +163,47 @@
         });
 
     };
+
+    countlyEvent.getTopEventData30Day = function(callback) {
+        return $.when($.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "top_events",
+                "period": "30days",
+                "limit": 5,
+            },
+            dataType: "json",
+            success: function(json) {
+                callback(json);
+            },
+            error: function(err) {
+                callback(err);
+            }
+        }));
+    };
+
+    countlyEvent.getTopEventDataDaily = function(callback) {
+        return $.when($.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "top_events",
+                "period": "today",
+                "limit": 5
+            },
+            dataType: "json",
+            success: function(json) {
+                callback(json);
+            },
+            error: function(err) {
+                callback(err);
+            }
+        }));
+    };
+
     //updates event map for current app
     countlyEvent.update_map = function(event_map, event_order, event_overview, omitted_segments, callback) {
         _activeLoadedEvent = "";
@@ -211,7 +253,7 @@
             url: countlyCommon.API_PARTS.data.w + "/events/delete_events",
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                "events": JSON.stringify(my_events)
+                "events": countlyCommon.decodeHtml(JSON.stringify(my_events))
             },
             success: function() {
                 callback(true);

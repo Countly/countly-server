@@ -121,7 +121,7 @@ const _ = require('underscore');
 
         db.collection('apps').findOne({_id: db.ObjectID(app_id)}, {type: 1}, function(err, document) {
             //todo handle null case
-            const isMobile = document.type === "mobile";//check if app type is mobile or web
+            const isMobile = document && document.type === "mobile";//check if app type is mobile or web
 
             //get global unsaved notifications for this app
             db.collection(db_name_notifs).find({app_id: app_id}, {}).toArray(function(err1, notifs) {

@@ -680,7 +680,7 @@ common.getISOWeeksInYear = function(year) {
 * @param {object} args - arguments to validate
 * @param {object} argProperties - rules for validating each argument
 * @param {boolean} argProperties.required - should property be present in args
-* @param {string} argProperties.type - what type should property be, possible values: String, Array, Number, URL, Boolean, Object
+* @param {string} argProperties.type - what type should property be, possible values: String, Array, Number, URL, Boolean, Object, Email
 * @param {string} argProperties.max-length - property should not be longer than provided value
 * @param {string} argProperties.min-length - property should not be shorter than provided value
 * @param {string} argProperties.exclude-from-ret-obj - should property be present in returned validated args object
@@ -763,6 +763,28 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                     else if (args[arg] && !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!$&'()*+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid url string " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'Email') {
+                    if (toString.call(args[arg]) !== '[object String]') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else if (args[arg] && !/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/i.test(args[arg])) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid url string " + arg);
                             returnObj.result = false;
@@ -2020,6 +2042,52 @@ common.reviver = (key, value) => {
     else {
         return value;
     }
+};
+
+/**
+    * Generate random password
+    * @param {number} length - length of the password
+    * @param {boolean} no_special - do not include special characters
+    * @returns {string} password
+    * @example
+    * //outputs 4UBHvRBG1v
+    * common.generatePassword(10, true);
+    */
+common.generatePassword = function(length, no_special) {
+    var text = [];
+    var chars = "abcdefghijklmnopqrstuvwxyz";
+    var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var numbers = "0123456789";
+    var specials = '!@#$%^&*()_+{}:"<>?|[];\',./`~';
+    var all = chars + upchars + numbers;
+    if (!no_special) {
+        all += specials;
+    }
+
+    //1 char
+    text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
+    //1 number
+    text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+    //1 special char
+    if (!no_special) {
+        text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+        length--;
+    }
+
+    var j, x, i;
+    //5 any chars
+    for (i = 0; i < Math.max(length - 2, 5); i++) {
+        text.push(all.charAt(Math.floor(Math.random() * all.length)));
+    }
+
+    //randomize order
+    for (i = text.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = text[i - 1];
+        text[i - 1] = text[j];
+        text[j] = x;
+    }
+    return text.join("");
 };
 
 /**

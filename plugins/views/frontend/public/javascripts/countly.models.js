@@ -16,7 +16,8 @@
         _period = null,
         _tableData = [],
         _selectedViews = [],
-        _graphDataObj = {};
+        _graphDataObj = {},
+        _viewsCount = 0;
 
     //graphData['appID'][]
     //Public Methods
@@ -56,6 +57,21 @@
                             _domains = json.domains;
                         }
                     }
+                }),
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "method": "views",
+                        "action": "get_view_count"
+                    },
+                    dataType: "json",
+                    success: function(json) {
+                        if (json && json.result) {
+                            _viewsCount = json.result;
+                        }
+                    }
                 })
             ).then(//on initialize load only after getting list of selected
                 function() {
@@ -86,7 +102,24 @@
             return true;
         }
     };
-
+    countlyViews.loadViewCount = function() {
+        return $.when($.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "views",
+                "action": "get_view_count"
+            },
+            dataType: "json",
+            success: function(json) {
+                if (json && json.result) {
+                    _viewsCount = json.result;
+                }
+            }
+        })
+        );
+    };
     countlyViews.refresh = function() {
         if (!countlyCommon.DEBUG) {
 
@@ -206,6 +239,10 @@
 
     countlyViews.getSegments = function() {
         return _segments;
+    };
+
+    countlyViews.getViewsCount = function() {
+        return _viewsCount;
     };
 
     countlyViews.getSegmentKeys = function() {
