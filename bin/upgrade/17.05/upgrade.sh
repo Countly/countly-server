@@ -1,26 +1,10 @@
 #!/bin/bash
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-
-#enable command line
-bash $DIR/scripts/detect.init.sh
-
-#add indexes
-nodejs $DIR/upgrade/17.05/removeOld.js
-
-#upgrade all plugins
-bash $DIR/scripts/countly.install.plugins.sh
-
-#enable new plugins
-countly plugin enable dashboards
-countly plugin enable assistant
-countly plugin enable flows
-
-#update web-sdk
-countly update sdk-web
-
-#add indexes
-nodejs $DIR/scripts/add_indexes.js
-
-#install dependencies, process files and restart countly
-countly upgrade
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DATE=`date +%Y-%m-%d:%H:%M:%S`
+VERSION="$(basename "${DIR}")" 
+if [ -f $DIR/upgrade_fs.sh ]; then
+    bash $DIR/upgrade_fs.sh combined 2>&1 | tee -a $DIR/../../../log/countly-upgrade-$VERSION-$DATE.log
+fi
+if [ -f $DIR/upgrade_db.sh ]; then
+    bash $DIR/upgrade_db.sh combined 2>&1 | tee -a $DIR/../../../log/countly-upgrade-$VERSION-$DATE.log
+fi
