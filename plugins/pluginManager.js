@@ -1188,6 +1188,9 @@ var pluginManager = function pluginManager() {
                                 if (callback) {
                                     callback(err, res);
                                 }
+                                else {
+                                    logDbWrite.d("Without Callback");
+                                }
                             }
                         }
                         else {
@@ -1201,10 +1204,16 @@ var pluginManager = function pluginManager() {
                             if (callback) {
                                 callback(err, res);
                             }
+                            else {
+                                logDbWrite.d("Without Callback");
+                            }
                         }
                     }
                     else if (callback) {
                         callback(err, res);
+                    }
+                    else {
+                        logDbWrite.d("Without Callback");
                     }
                 };
             };
@@ -1313,6 +1322,12 @@ var pluginManager = function pluginManager() {
                     if (callback) {
                         callback(err, res);
                     }
+                    else {
+                        logDbWrite.d("Without Callback");
+                        /*if (e) {
+                            logDbWrite.e(e.stack);
+                        }*/
+                    }
                 };
             };
 
@@ -1370,6 +1385,9 @@ var pluginManager = function pluginManager() {
                         else {
                             callback(err, res);
                         }
+                    }
+                    else {
+                        logDbRead.d("Without Callback");
                     }
                 };
             };
