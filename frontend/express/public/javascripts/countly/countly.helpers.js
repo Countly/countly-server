@@ -232,6 +232,9 @@
                 $("#overlay").hide();
             }
         });
+
+        self.continue = [cnFn];
+        self.cancel = [clFn];
     };
 
     /**
