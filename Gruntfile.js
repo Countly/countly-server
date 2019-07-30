@@ -61,7 +61,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/jsoneditor/json2.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/jsonlint.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js'
+                    'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
                     'frontend/express/public/javascripts/utils/vuedraggable.umd.min.js'
                 ],
