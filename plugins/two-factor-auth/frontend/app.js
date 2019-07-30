@@ -117,6 +117,9 @@ function generateQRCode(username, secret, callback) {
                                             if (enableErr) {
                                                 console.log(`Error enabling 2FA for ${member.username}: ${enableErr.message}`);
                                             }
+                                            else {
+                                                plugins.callMethod("logAction", {req: req, res: res, user: member, action: "two_factor_auth_enabled", data: {}});
+                                            }
                                         }
                                     );
                                 }

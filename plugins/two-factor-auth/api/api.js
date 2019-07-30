@@ -41,6 +41,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
                             function(err) {
                                 if (!err) {
                                     common.returnMessage(ob.params, 200, "Enabled 2FA for user");
+                                    plugins.dispatch("/systemlogs", {params: ob.params, action: "two_factor_auth_enabled", data: {}});
                                 }
                                 else {
                                     log.e(`Database error while enabling 2FA: ${err.message}`);
@@ -74,6 +75,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
                     function(err) {
                         if (!err) {
                             common.returnMessage(ob.params, 200, "Disabled 2FA for user");
+                            plugins.dispatch("/systemlogs", {params: ob.params, action: "two_factor_auth_disabled", data: {}});
                         }
                         else {
                             log.e(`Database error while disabling 2FA: ${err.message}`);
@@ -135,6 +137,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
                         }
                         else {
                             common.returnMessage(ob.params, 200, "Disabled 2FA for user");
+                            plugins.dispatch("/systemlogs", {params: ob.params, action: "two_factor_auth_disabled", data: {user_id: ob.params.qstring.uid}});
                         }
                     }
                 );
