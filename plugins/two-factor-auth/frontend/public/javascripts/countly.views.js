@@ -99,7 +99,7 @@ app.addPageScript("/manage/user-settings", function() {
             "qrcode_html": countlyCommon.decodeHtml(countlyGlobal["2fa_qrcode_html"])
         };
 
-    $('.account-settings').find('.d-table').append(
+    $('.account-settings').find('.d-table').first().append(
         '<tr><td><div class="title" data-localize="two-factor-auth.two-factor-authentication"></div><span id="global-2fa-notice" class="config-help" data-localize="two-factor-auth.disable_global_first"></span></td>' +
             '<td id="setup-2fa-cell"><div class="on-off-switch" id="setup-2fa-switch">' +
             '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox">' +
