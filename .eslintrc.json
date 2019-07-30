@@ -1,3 +1,4 @@
+
 {
     "extends": "eslint:recommended",
     "rules": {
@@ -127,7 +128,7 @@
             "files": [
                 "frontend/express/public/javascripts/countly/*.js",
                 "plugins/*/frontend/public/javascripts/countly.models.js",
-                "plugins/*/frontend/public/javascripts/countly.views.js" 
+                "plugins/*/frontend/public/javascripts/countly.views.js"
             ],
             "env": {
                 "browser": true
@@ -204,7 +205,7 @@
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 2017
+                "ecmaVersion": 9
             },
             "rules": {
                 "no-console": "off",
