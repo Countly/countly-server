@@ -12,6 +12,13 @@ if [ $1 != "combined" ]; then
     countly plugin enable concurrent_users
     countly plugin enable formulas
     countly plugin enable ab-testing
+    #replace totp with two-factor-aut
+    STATE=$(countly plugin status  totp);
+    if [ "$STATE" == "enabled" ] 
+    then
+        countly plugin disable  totp ;
+        countly plugin enable two-factor-auth ;
+    fi
 fi
 
 #run upgrade scripts
