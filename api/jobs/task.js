@@ -23,6 +23,9 @@ class MonitorJob extends job.Job {
          * @return {boolean} return true if can run now
          */
         function tasksFilter(task) {
+            if (task.status !== 0) {
+                return false;
+            }
             const lastStart = task.start || 0;
             const lastEnd = task.end || 0;
             const now = Date.now();
