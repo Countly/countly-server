@@ -146,19 +146,19 @@ table { border-collapse: collapse; }
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e6e6e6', endColorstr='#adacac',GradientType=0 ); /* IE6-9 */
     border-bottom: 1px solid #888;
 }
-#sidebar-menu { position: relative; margin-top:64px; }
+#sidebar-menu { position: relative; margin-top:59px; }
     .scroll-active .sidebar-menu { height:auto; position:relative; }
     .sidebar-menu{padding-bottom:120px;}
-    #sidebar-menu .sidebar-menu .menu-category-title{padding-left:15px; padding-right:15px; padding-top:12px; font:12px Ubuntu,Helvetica,sans-serif; color:#9F9F9F; width: 195px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display:block; text-transform: uppercase; padding-bottom: 4px;}
+    #sidebar-menu .sidebar-menu .menu-category-title{padding-left:16px; padding-right:15px; padding-top:16px; font:12px Ubuntu,Helvetica,sans-serif; color:#9F9F9F; width: 195px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display:block; text-transform: uppercase; padding-bottom: 5px;}
     #sidebar-menu .sidebar-menu .menu-category-title.active, #sidebar-menu .sidebar-menu .menu-category:hover .menu-category-title{color: #FFF;}
     #sidebar-menu .sidebar-menu .menu-category .menu-category-title:hover {color:#9F9F9F; }
     #sidebar-menu .sidebar-menu .menu-category .menu-category-title.active:hover {color: #FFF; }
-	#sidebar-menu .sidebar-menu .menu-category>.item { width:225px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:27px; padding-top:3px; display:block; cursor:pointer; }
+	#sidebar-menu .sidebar-menu .menu-category>.item { width:225px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:26px; padding-top:3px; display:block; cursor:pointer; }
         #sidebar-menu .sidebar-menu .menu-category>.item.hide { display: none; }
         #sidebar-menu .sidebar-menu .item:hover { background-position:446px; }
 		#sidebar-menu .sidebar-menu .menu-category>.item.active { background-color: #2FA732; border-color: #2FA732; }
         #sidebar-menu .sidebar-menu .item.menu-active { background-color: #02060B; border-color: #02060B }
-		#sidebar-menu .sidebar-menu .item .logo { color:#9F9F9F; width:25px; height:22px; float:left; margin-left:12px; margin-top:2px; font-size: 18px; text-align: center; }
+		#sidebar-menu .sidebar-menu .item .logo { color:#9F9F9F; width:25px; height:22px; float:left; margin-left:16px; margin-top:2px; font-size: 18px; text-align: center; }
         #sidebar-menu .sidebar-menu .item .logo .material-icons { font-size:19px; margin-top:1px; }
             /* Fix for old .fa icons, this can be removed once all enterprise plugins have updated icons */
             #sidebar-menu .sidebar-menu .item .logo.fa {
@@ -202,6 +202,26 @@ table { border-collapse: collapse; }
 				#management-submenu.sidebar-submenu .disabled-item  { opacity:0.3; }
 				#management-submenu.sidebar-submenu .disabled-item .logo { width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
 				#management-submenu.sidebar-submenu .disabled-item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#666; }
+
+@media only screen and (max-height: 800px) {
+    #sidebar-menu .sidebar-menu .item .logo { width:25px; height:22px; float:left; margin-left:16px; margin-top:3px; font-size: 16px; }
+    #sidebar-menu .sidebar-menu .item .logo .material-icons { font-size:17px; margin-top:1px; }
+    #sidebar-menu .sidebar-menu .item .logo.fa {
+        width: 24px !important;
+        height: 25px !important;
+        line-height: 24px !important;
+        font-size: 16px !important;
+        margin-left: 17px !important;
+    }
+    #sidebar-menu .sidebar-menu .menu-category>.item>.logo-icon { background-image:none; font-size:22px; text-align:center; padding-top:5px; width: 35px; margin-left: 14px; line-height: 34px; }
+}
+@media only screen and (min-height: 801px) {
+    #sidebar-menu .sidebar-menu .menu-category>.item {
+        padding-top: 5px;
+        padding-bottom: 2px;
+    }
+    #sidebar-menu .sidebar-menu .menu-category-title{padding-bottom: 10px;}
+}
 
 #sidebar-event-count { float:right; border-radius:15px; font-family:Oswald; font-size:13px; color:#DDD; background-color:#333; border:1px solid #0C0C0C; box-shadow:0 1px 1px 0 #4A4A4A, inset 0 1px 1px 0 #1f1f1f; padding:2px 6px; margin:7px 10px 0 0; }
 .item.active #sidebar-event-count { border-color:#6BB96E; box-shadow:0 0 1px 0 #ACE7B1, inset 0 1px 1px 0 #1f1f1f; }
@@ -1205,8 +1225,11 @@ margin: 50px 0;}
 .events-empty-block p.events-empty-title {margin-bottom:25px; font-size:18px; font-weight:400; color:#636363;}
 /* EVENTS END */
 
-#help-toggle { float:right; background-image:url('../images/dashboard/on-off.png'); width:34px; height:18px; background-position:-51px; margin-top:7px; margin-right:16px; cursor:pointer; }
-#help-toggle.active { background-position:0; }
+#help-toggle { float:right; width:34px; height:18px; margin-top:4px; margin-right:16px; cursor:pointer; }
+#help-toggle.active .on-off-switch-label { background-color: #2EB52B;}
+#help-toggle.active .on-off-switch-label:before { background: #fff;}
+#help-toggle .on-off-switch-label {background-color: #88858a; height: 18px;}
+#help-toggle .on-off-switch-label::before {background: #e9e9e9;}
 .percent-bar { height:11px; float:left; background-color:#AEE8B0; margin-right:4px; margin-top:2px; }
 
 /* EXPORT */
@@ -1632,6 +1655,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown .empty-state { display: block; }
 #top-bar .dropdown .selected i,
 #top-bar .dropdown .empty-state i { font-size: 18px; line-height: 18px; vertical-align: top; margin-top: -1px; display: inline-block; }
+#top-bar .dropdown .empty-state i.fa { font-size: 16px; line-height: 18px; vertical-align: top; margin-top: -1px; display: inline-block; }
 #top-bar .dropdown.large .selected:after,
 #top-bar .dropdown.large .empty-state:after { font-family: 'Ionicons';  content: "\f3d0"; margin-left: 10px; font-size: 10px; line-height: 16px; vertical-align: top; }
 #top-bar .dropdown.large.clicked .selected:after,
@@ -1680,36 +1704,38 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #manage-menu {background-color:#0B131A; color: #FFF;}
 #top-bar .dropdown .menu #manage-menu.list .item{border: none; background-image: none; padding-top: 5px; padding-bottom: 5px; width: 180px;}
 #top-bar .dropdown .menu #manage-menu.list .item:hover {background-color:#0B131A;}
+#top-bar .dropdown .menu #manage-menu.list .item:hover .logo-icon { color: #FFF; }
+#top-bar .dropdown .menu #manage-menu.list .item:hover .text { color: #FFF; }
 #top-bar .dropdown .menu #manage-menu.list {
     max-height: none;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
     border-radius: 2px;
     border: none;
-    padding-bottom: 10px;
+    padding-bottom: 16px;
     width: auto;
     -moz-column-count: 2;
-    -moz-column-gap: 20px;
+    -moz-column-gap: 12px;
     -webkit-column-count: 2;
-    -webkit-column-gap: 20px;
+    -webkit-column-gap: 12px;
     column-count: 2;
-    column-gap: 20px;
+    column-gap: 12px;
 } 
 #top-bar .dropdown .menu.manage-menu {border: none; width: auto; background-color:#0B131A}
-#top-bar .dropdown .menu.manage-menu:before {border-bottom-color:#0B131A;}
-#top-bar .dropdown .menu #manage-menu.list .item .logo { color:#9F9F9F; width:25px; height:22px; float:left; margin-left:16px; margin-top:2px; font-size: 18px; text-align: center; }
-#top-bar .dropdown .menu #manage-menu.list .item .logo .material-icons { font-size:19px; margin-top:1px; }
+#top-bar .dropdown .menu.manage-menu:before {border: 6px solid rgba(194, 225, 245, 0); border-bottom-color:#0B131A; }
+#top-bar .dropdown .menu.manage-menu:after {border: 6px solid rgba(194, 225, 245, 0); border-bottom-color:transparent; }
+#top-bar .dropdown .menu #manage-menu.list .item .logo-icon { color:#9F9F9F; width:25px; height:22px; float:left; margin-left:16px; margin-top:2px; font-size: 18px; text-align: center; }
+#top-bar .dropdown .menu #manage-menu.list .item .logo-icon .material-icons { font-size:17px; margin-top:1px; }
 /* Fix for old .fa icons, this can be removed once all enterprise plugins have updated icons */
-#top-bar .dropdown .menu #manage-menu.list .item .logo.fa {
+#top-bar .dropdown .menu #manage-menu.list .item .logo-icon.fa {
     width: 24px !important;
     height: 25px !important;
     line-height: 24px !important;
-    font-size: 18px !important;
+    font-size: 16px !important;
     margin-left: 17px !important;
 }
-#top-bar .dropdown .menu #manage-menu.list .item .text { margin-left:15px; float:left; padding-top:3px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#9F9F9F; max-width: 140px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-#top-bar .dropdown .menu #manage-menu.list .item>.logo-icon { background-image:none; font-size:20px; text-align:center; padding-top:4px; width: 25px; margin-left: 14px; line-height: 22px; float:left;}
-#top-bar .dropdown .menu.manage-menu .menu-category-title{padding-left:25px; padding-right:15px; padding-top:12px; font:12px Ubuntu,Helvetica,sans-serif; color:#9F9F9F; width: 100%; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display:block; text-transform: uppercase; padding-bottom: 4px; text-align:left;}
+#top-bar .dropdown .menu #manage-menu.list .item .text { margin-left:12px; float:left; padding-top:6px; font:14px Ubuntu,Helvetica,sans-serif; line-height:100%; color:#9F9F9F; max-width: 125px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+#top-bar .dropdown .menu.manage-menu .menu-category-title{padding-left:25px; padding-right:15px; padding-top:16px; font:13px Ubuntu,Helvetica,sans-serif; color:#9F9F9F; width: 100%; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display:block; text-transform: uppercase; padding-bottom: 4px; text-align:left;}
 
 #app-navigation.dropdown.large { padding:21px 25px 19px 25px; box-sizing:border-box; height:59px; width:230px; white-space: nowrap; }
 #app-navigation #active-app-name { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; display: inline-block; max-width: 125px; }
@@ -1718,7 +1744,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #app-navigation .list .item .name { display: inline-block; vertical-align: top; margin-top:4px; white-space:nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
 #app-navigation .empty-state { padding:1px 0; }
 
-#version-info { position: absolute; bottom: 0; font-size: 10px; color: #747474; width: 100%; padding: 16px 0; box-sizing: border-box; text-align: center; background-color: #151E2C; z-index: 1; height: 42px;}
+#version-info { position: absolute; bottom: 0; font-size: 10px; color: #747474; width: 100%; padding: 12px 0; box-sizing: border-box; text-align: center; background-color: #0B131A; z-index: 1; height: 36px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis; border-top: 1px solid #2A2F33;}
+#version-info span {}
 
 #notification-icon { position: relative; }
 #notification-icon.unread:after { content: " "; width: 4px; height: 4px; position: absolute; top: 0; right: 0; border-radius: 4px; background-color: #FF8700; }

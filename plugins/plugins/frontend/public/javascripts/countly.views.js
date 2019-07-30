@@ -1489,6 +1489,6 @@ app.addPageScript("/manage/plugins", function() {
 $(document).ready(function() {
     if (countlyGlobal.member && countlyGlobal.member.global_admin) {
         app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
-        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon fa fa-wrench"></div>', priority: 40});
+        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
     }
 });

@@ -522,7 +522,7 @@ if (countlyGlobal.member.global_admin) {
 
 $(document).ready(function() {
     if (countlyGlobal.member.global_admin) {
-        app.addMenu("management", {code: "systemlogs", url: "#/manage/systemlogs", text: "systemlogs.title", icon: '<div class="logo-icon fa fa-user-secret"></div>', priority: 50});
+        app.addMenu("management", {code: "systemlogs", url: "#/manage/systemlogs", text: "systemlogs.title", icon: '<div class="logo-icon fa fa-book"></div>', priority: 50});
     }
 
     app.addPageScript("/manage/users", function() {

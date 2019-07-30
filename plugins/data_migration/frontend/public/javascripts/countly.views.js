@@ -954,7 +954,7 @@ if (countlyGlobal.member.global_admin) {
     $(document).ready(function() {
         //Adding as menu item : Managment>Data migration. Before help toggle button.
         if (countlyGlobal.member.global_admin) {
-            app.addMenu("management", {code: "data-migration", url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon ion-bowtie"></div>', priority: 90});
+            app.addMenu("management", {code: "data-migration", url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon fa fa-arrows-alt-h"></div>', priority: 90});
         }
         var curapp = countlyCommon.ACTIVE_APP_ID;
         if (curapp && countlyGlobal.apps[curapp] && countlyGlobal.apps[curapp].redirect_url && countlyGlobal.apps[curapp].redirect_url !== "") {

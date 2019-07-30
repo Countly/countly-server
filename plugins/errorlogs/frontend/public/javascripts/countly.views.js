@@ -62,6 +62,6 @@ if (countlyGlobal.member.global_admin) {
 
 $(document).ready(function() {
     if (countlyGlobal.member.global_admin) {
-        app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-exclamation-triangle"></div>', priority: 60});
+        app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-server"></div>', priority: 60});
     }
 });

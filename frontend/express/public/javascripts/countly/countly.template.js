@@ -1190,7 +1190,7 @@ var AppRouter = Backbone.Router.extend({
         this.addMenu("utilities", {
             code: "management",
             text: "sidebar.utilities",
-            icon: '<div class="logo management ion-gear-a"></div>',
+            icon: '<div class="logo management ion-wrench"></div>',
             priority: 10000000,
             callback: function(type, category, node, menu) {
             //for backwards compatability of old plugins adding menu to management
@@ -1200,14 +1200,14 @@ var AppRouter = Backbone.Router.extend({
 
         this.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
 
-        if (countlyGlobal.member.global_admin || countlyGlobal.adminOfApps.length) {
-            this.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo applications"></div>', priority: 10});
+        if (countlyGlobal.member.global_admin || (countlyGlobal.adminOfApps && countlyGlobal.adminOfApps.length)) {
+            this.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
         }
         if (countlyGlobal.member.global_admin) {
-            this.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo mgmt-users"></div>', priority: 20});
+            this.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
         }
 
-        this.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo help"></div>', classes: "help-toggle", html: '<div id="help-toggle"></div>', priority: 10000000});
+        this.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
 
         this.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
         this.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
@@ -1886,14 +1886,14 @@ var AppRouter = Backbone.Router.extend({
                 CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "popStyleGreen popStyleGreenWide", {button_title: jQuery.i18n.map["common.okay"] + "!", title: jQuery.i18n.map["help.help-mode-welcome-title"], image: "welcome-to-help-mode"});
             });
 
-            $(".help-toggle, #help-toggle").click(function(e) {
-
+            $("#help-menu").click(function(e) {
                 e.stopPropagation();
-                $(".help-toggle #help-toggle").toggleClass("active");
+                $("#help-toggle-cbox").prop("checked", !$("#help-toggle-cbox").prop("checked"));
+                $("#help-toggle").toggleClass("active");
 
-                app.tipsify($(".help-toggle #help-toggle").hasClass("active"));
+                app.tipsify($("#help-toggle").hasClass("active"));
 
-                if ($(".help-toggle #help-toggle").hasClass("active")) {
+                if ($("#help-toggle").hasClass("active")) {
                     help();
                     $.idleTimer('destroy');
                     clearInterval(self.refreshActiveView);
@@ -1903,6 +1903,27 @@ var AppRouter = Backbone.Router.extend({
                         self.performRefresh(self);
                     }, countlyCommon.DASHBOARD_REFRESH_MS);
                     $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
+                }
+            });
+
+            $("#help-toggle").click(function(e) {
+                e.stopPropagation();
+                if ($(e.target).attr("id") === "help-toggle-cbox") {
+                    $("#help-toggle").toggleClass("active");
+
+                    app.tipsify($("#help-toggle").hasClass("active"));
+
+                    if ($("#help-toggle").hasClass("active")) {
+                        help();
+                        $.idleTimer('destroy');
+                        clearInterval(self.refreshActiveView);
+                    }
+                    else {
+                        self.refreshActiveView = setInterval(function() {
+                            self.performRefresh(self);
+                        }, countlyCommon.DASHBOARD_REFRESH_MS);
+                        $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
+                    }
                 }
             });
 
