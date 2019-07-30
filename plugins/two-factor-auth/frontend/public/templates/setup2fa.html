@@ -74,7 +74,7 @@
                 <div data-localize="two-factor-auth.enter_otp"></div>
                 <form id="login-2fa-form" method="POST">
                     <div>
-                        <input type="text" name="auth_code"  autocomplete="off" data-localize="two-factor-auth.enter_otp_short"/>
+                        <input type="text" name="auth_code"  autocomplete="off" data-localize="two-factor-auth.enter_otp_short" autofocus/>
                     </div>
                     <% if (typeof inject_template.form != "undefined") { %>
                         <%- inject_template.form %>
