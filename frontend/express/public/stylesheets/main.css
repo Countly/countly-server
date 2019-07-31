@@ -603,7 +603,7 @@ div.datatablesubrow {display: none;}
 .icon-button:hover { opacity:0.8; }
 .icon-button.light { color:#717171; background-color:#FDFDFD; box-shadow:inset 0 0 0 1px #DCDCDC; }
 .icon-button.disabled { opacity:0.5; }
-.icon-button.dark { background-color:#292929; color:#BFBFBF; box-shadow:inset 0 0 0 1px #292929; }
+.icon-button.dark { background-color:#02060b; color:#BFBFBF; box-shadow:inset 0 0 0 1px #02060b; }
 	.icon-button .icon { float:left; margin-right:7px; background-repeat:no-repeat; }
 	.icon-button .text { float:right; padding-top:2px; }
 .icon-button.create-report,
@@ -636,14 +636,14 @@ div.datatablesubrow {display: none;}
     #date-selector>.calendar:hover { background-color:#F9F9F9; }
     #date-selector>.calendar i { margin-top:4px; font-size: 18px; }
 
-#date-picker, .date-picker { white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#292929; border-radius:2px; right: 5px; top: 43px; }
+#date-picker, .date-picker { white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 5px; top: 43px; }
 	#date-picker .calendar-container, .date-picker .calendar-container { overflow:auto; padding:0 5px; }
 	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar { display:inline-block; vertical-align: top; }
     	#date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
 	#date-picker .button-container { overflow:auto; margin-top:6px; padding: 0 15px 8px; }
         #date-picker .button-container .icon-button { float: right; padding: 7px 20px; }
 
-#date-picker:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #292929; right: 9px; top: -12px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; }
+#date-picker:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #0b131a; right: 9px; top: -12px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; }
 
 .threes-column .big-numbers { width:33%; }
 .threes-column .big-numbers:last-child { width:34%; }
@@ -679,13 +679,13 @@ div.datatablesubrow {display: none;}
 .ui-datepicker-inline a { text-decoration: none !important; }
 .ui-widget-content .ui-state-hover { background-color:#CCC; color:#424242; text-shadow:none; background-image:none; margin: 1px; padding: 4px; border-radius: 2px; }
 .ui-widget-content .ui-state-active { background-color:#2FA732; color:#FFF; text-shadow:none; background-image:none; margin: 1px; padding: 4px; border-radius: 2px; }
-.ui-datepicker.ui-widget { padding:10px; background-color: #292929; }
-.ui-datepicker td { padding:0; border:1px solid #3a3a3a; border-left:none; background-color: transparent; }
+.ui-datepicker.ui-widget { padding:10px; background-color: #0b131a; }
+.ui-datepicker td { padding:0; border:1px solid #192733; border-left:none; background-color: transparent; }
 .ui-datepicker th { font-weight:normal; font-size:8px; }
 .ui-datepicker-inline { border-radius:0; }
 .ui-datepicker-inline table { margin:0 auto; font-weight:normal; width:99%; }
 .ui-datepicker-calendar tbody,
-.ui-datepicker-inline table tbody { border:1px solid #3a3a3a; }
+.ui-datepicker-inline table tbody { border:1px solid #192733; }
 .ui-datepicker-group-last .ui-datepicker-calendar {}
 .ui-datepicker { width:190px ! important; border:none; }
 .ui-widget-header { border-radius:0; border:none; background-color:transparent; background-image:none; color:#FFF; font-weight:normal; font-size:12px; height:23px; }
@@ -3010,6 +3010,9 @@ color:#E95C6C; transition:color 1s;
     font-family: 'Ionicons';
     content: "\f396";
 }
+#notes-button-group .cly-button-menu {
+    right:2px;
+}
 .graph-note-create {
     width : 473px;
     border: none !important;
@@ -3223,7 +3226,7 @@ color:#E95C6C; transition:color 1s;
     border-radius: 2px;
 }
 .graph-note-create .date-time-selector-container .time-field {
-    padding: 10px;
+    padding: 3px 10px 15px 10px;
     font-size: 13px;
     display: flex;
     align-items: center;
@@ -3238,7 +3241,7 @@ color:#E95C6C; transition:color 1s;
 .graph-note-create .date-time-selector-container .time-input {
     width: 40px;
     height: 24px;
-    background-color: #3d3d3d;
+    background-color: #192733;
     border: none;
     outline: 0;
     font-size: 13px;
@@ -3250,13 +3253,12 @@ color:#E95C6C; transition:color 1s;
 .graph-note-create .date-time-selector-container .date-time-picker {
     display: none;
     white-space: nowrap;
-    display: none;
     position: absolute;
     z-index: 1000;
-    padding: 2px 3px 6px 3px;
-    background-color: #292929;
+    padding: 2px 3px 14px 3px;
+    background-color: #0b131a;
     border-radius: 2px;
-    top: -50px;
+    top: -54px;
     left: 20px;
     flex-direction: column-reverse;
 }
