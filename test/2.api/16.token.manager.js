@@ -329,4 +329,56 @@ describe('Testing token manager', function() {
                 done();
             });
     });
+
+    describe('Testing token with querystring', function() {
+        it('creating token for multiple endpoints', function(done) {
+            var endpointquery = [{"endpoint": '/o', "params": {method: "get_events"}}];
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&ttl=300&purpose=My test token2&endpointquery=' + JSON.stringify(endpointquery) + '&apps=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    if (ob && ob.result && ob.result != "") {
+                        token2 = ob.result;
+                        console.log(token2);
+                    }
+                    else {
+                        done("token value not returned");
+                    }
+                    done();
+                });
+        });
+
+        it('validate token' + token1, function(done) {
+            validate_token(token2, {"app": [APP_ID], "multi": true, "ttl": 300, "endpoint": [{"endpoint": '/o', "params": {method: "get_events"}}], "purpose": "My test token2"}, 1, done);
+        });
+
+        it('Using token ' + token2 + ' to reach valid endpoint with valid params', function(done) {
+            console.log('/o?app_id=' + APP_ID + '&method=get_events&auth_token=' + token2);
+            request
+                .get('/o?app_id=' + APP_ID + '&method=get_events&auth_token=' + token2)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
+        it('Using token ' + token2 + ' to reach valid endpoint with different method', function(done) {
+            request
+                .get('/o?app_id=' + APP_ID + '&method=all_apps&auth_token=' + token2)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+    });
 });

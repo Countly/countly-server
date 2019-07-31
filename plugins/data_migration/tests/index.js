@@ -26,7 +26,7 @@ var TIMES_FOR_DATA_MIGRATION_TEST = 10;
 var counter = 0;
 
 function validate_files(exportid, apps) {
-    var prefix = ["apps-", 'app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_viewdata', 'app_views', 'campaign_users', 'campaigndata-', 'campaigns-', 'graph_notes-', 'messages-', "browser-", "carriers-", "cities-", "crashdata-", "density-", "device_details-", "devices-", "langs-", "sources-", "users-", "retention_daily-", "retention_weekly-", "retention_monthly-"];
+    var prefix = ["apps-", 'app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_viewdata', 'app_views', 'campaign_users', 'campaigndata-', 'campaigns-', 'notes-', 'messages-', "browser-", "carriers-", "cities-", "crashdata-", "density-", "device_details-", "devices-", "langs-", "sources-", "users-", "retention_daily-", "retention_weekly-", "retention_monthly-"];
 
     for (var i = 0; i < apps.length; i++) {
         for (var j = 0; j < prefix.length; j++) {

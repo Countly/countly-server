@@ -315,6 +315,20 @@ var metrics = {
                         monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
                         report.date += " - " + endDate.getDate() + " " + monthName;
                     }
+                    else if (report.frequency === "monthly") {
+                        endDate = new Date();
+                        endDate.setHours(23, 59);
+                        report.end = endDate.getTime();
+                        report.start = report.end - parseInt(moment(endDate).subtract(1, 'months').daysInMonth()) * 24 * 60 * 60 * 1000;
+                        report.period = [report.start, report.end];
+
+                        startDate = new Date(report.start);
+                        monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                        report.date = startDate.getDate() + " " + monthName;
+
+                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                        report.date += " - " + endDate.getDate() + " " + monthName;
+                    }
                     async.map(report.apps, appIterator, function(err2, results) {
                         if (err2) {
                             return callback(err2);
@@ -440,7 +454,11 @@ var metrics = {
                                             }
                                         }
                                         var message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics});
-                                        report.subject = versionInfo.title + ': ' + localize.format(((report.frequency === "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"]), report.total_new);
+                                        report.subject = versionInfo.title + ': ' + localize.format(
+                                            (
+                                                (report.frequency === "weekly") ? report.properties["reports.subject-week"] :
+                                                    ((report.frequency === "monthly") ? report.properties["reports.subject-month"] : report.properties["reports.subject-day"])
+                                            ), report.total_new);
                                         if (callback) {
                                             return callback(err2, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, message: message});
                                         }

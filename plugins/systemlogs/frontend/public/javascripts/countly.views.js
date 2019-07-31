@@ -522,13 +522,7 @@ if (countlyGlobal.member.global_admin) {
 
 $(document).ready(function() {
     if (countlyGlobal.member.global_admin) {
-        var menu = '<a href="#/manage/systemlogs" class="item">' +
-            '<div class="logo-icon fa fa-user-secret"></div>' +
-            '<div class="text" data-localize="systemlogs.title"></div>' +
-        '</a>';
-        if ($('#management-submenu .help-toggle').length) {
-            $('#management-submenu .help-toggle').before(menu);
-        }
+        app.addMenu("management", {code: "systemlogs", url: "#/manage/systemlogs", text: "systemlogs.title", icon: '<div class="logo-icon fa fa-book"></div>', priority: 50});
     }
 
     app.addPageScript("/manage/users", function() {

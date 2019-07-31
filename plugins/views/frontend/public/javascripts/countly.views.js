@@ -824,7 +824,11 @@ app.route("/analytics/views/action-map/*view", 'views', function(view) {
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
-    if (countlyGlobal.record_views) {
+    var record_views = countlyGlobal.record_views;
+    if (countlyGlobal.apps && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill && typeof countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views !== "undefined") {
+        record_views = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views;
+    }
+    if (record_views) {
 
         $("#drill-types").append('<div id="drill-type-views" class="item"><div class="inner"><span class="icon views"></span><span class="text">' + jQuery.i18n.map["views.title"] + '</span></div></div>');
         $("#drill-type-views").on("click", function() {
@@ -924,19 +928,9 @@ $(document).ready(function() {
 
         return ((x < y) ? 1 : ((x > y) ? -1 : 0));
     };
-    var menu = '<a href="#/analytics/views" class="item">' +
-		'<div class="logo-icon fa fa-eye"></div>' +
-		'<div class="text" data-localize="views.title"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').append(menu);
-    $('#mobile-type #analytics-submenu').append(menu);
 
-    menu = '<a href="#/analytics/view-frequency" class="item">' +
-		'<div class="logo-icon fa fa-eye"></div>' +
-		'<div class="text" data-localize="views.view-frequency"></div>' +
-	'</a>';
-    $('#web-type #engagement-submenu').append(menu);
-    $('#mobile-type #engagement-submenu').append(menu);
+    app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
+    app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
 
     //check if configuration view exists
     if (app.configurationsView) {

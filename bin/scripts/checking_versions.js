@@ -38,7 +38,7 @@ else {
 }
 
 //reading version numbers from upgrade folder
-var pattern = new RegExp(/^(([0-9])*\.)*[0-9]*$/);
+var pattern = new RegExp(/^\d{1,2}(\.\d{1,2}){0,3}$/);
 try {
     var dir_items = fs.readdirSync(__dirname + "/../upgrade");
     for (var i = 0; i < dir_items.length; i++) {
@@ -59,7 +59,26 @@ try {
 catch (error) {
     process.stdout.write(error);
 }
-versions = versions.sort();
+
+function compareVersions(a, b) {
+    var aParts = a.split('.');
+    var bParts = b.split('.');
+
+    for (var i = 0; i < aParts.length && i < bParts.length; i++) {
+        var aPartNum = parseInt(aParts[i], 10);
+        var bPartNum = parseInt(bParts[i], 10);
+
+        const cmp = Math.sign(aPartNum - bPartNum);
+
+        if (cmp !== 0) {
+            return cmp;
+        }
+    }
+
+    return Math.sign(a.length - b.length);
+}
+
+versions = versions.sort(compareVersions);
 
 var from = 0;
 var til = versions.length - 1;

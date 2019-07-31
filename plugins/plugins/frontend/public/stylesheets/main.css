@@ -132,6 +132,77 @@
     background-color: #F9F9F9 !important;
 }
 
+.pp-circle {
+    width: 60px;
+    height: 60px;
+    background: white;
+    border:1px solid #dbdbdb;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px;
+    border-radius: 50px;
+    font-size: 10px;
+    text-align: center;
+    color: #2FA732;
+    float:left;
+}
+
+.pp-menu-trigger {
+    float: left;
+    margin-left: 15px;
+    margin-top: 30px;
+    cursor: pointer;
+}
+
+.pp-menu-list {
+    border:1px solid #dbdbdb;
+    width: 120px;
+    margin-top:10px;
+    border-radius: 2px;
+    position: absolute;
+    background-color: white;
+    display: none;
+}
+
+.pp-menu-list > div {
+    padding: 5px 5px 5px 10px;
+    font-size: 13px;
+    position: relative;
+    cursor: pointer;
+}
+
+.pp-menu-list > div:hover {
+    background-color: #f9f9f9;
+}
+
+.pp-menu-trigger::before {
+    font-family: 'Ionicons';
+    content: "\f396";
+    cursor: pointer;
+}
+
+.clearfix {
+    clear:both;
+}
+
+.pp-menu-label {
+    display: block;
+}
+
+.pp-circle > label > span, .pp-circle > span {
+    position: relative;
+    top: 23px;
+    cursor: pointer;
+    color: white;
+    font-size: 35px;
+}
+
+.pp-circle > input {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+}
+
 #empty-search-result{
     border: 1px solid #D0D0D0;
     padding: 50px;
@@ -172,9 +243,13 @@
 #delete-user-account-button {
     padding-top:6px;
     padding-bottom: 6px;
+    margin-bottom:10px;
+    margin-left:0px;
 }
 #delete_account_password {
     float:left;
+    margin-bottom: 10px;
+    margin-right:8px;
 }
 #password-input-mandatory-warning {
     visibility:hidden;

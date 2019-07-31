@@ -1,0 +1,29 @@
+<div id="two-factor-auth-setup">
+    <div class="row title" data-localize="two-factor-auth.setup_auth"></div>
+    <div class="row">
+        <div class="step-number">1</div>
+        <div class="step-content" data-localize="two-factor-auth.install_app"></div>
+    </div>
+    <div class="row">
+        <div class="step-number">2</div>
+        <div class="step-content" data-localize="two-factor-auth.scan_qr"></div>
+    </div>
+    <div class="row secrets">
+        <div class="two-factor-auth-qr-code">
+            {{{ qrcode_html }}}
+        </div>
+        <div class="secret-2fa-label" data-localize="two-factor-auth.secret_token"></div>
+        <div>{{ secret_token }}</div>
+    </div>
+    <div class="row one-time-password">
+        <div class="step-number">3</div>
+        <div class="step-content">
+            <div data-localize="two-factor-auth.enter_otp"></div>
+            <input type="text" name="2fa_code" autocomplete="off" data-localize="two-factor-auth.enter_otp_short"/>
+        </div>
+    </div>
+    <div class="row buttons">
+        <a class="icon-button green confirm-2fa-button" data-localize="events.general.confirm"></a>
+        <a class="cancel-2fa-button" data-localize="common.cancel"></a>
+    </div>
+</div>

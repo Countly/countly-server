@@ -2,16 +2,33 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 usage (){
     echo "";
-    echo "countly add_user <username> <password>";
-} 
+    echo "countly add_user <username>";
+}
 
-if [ -z "$1" ] && [ -z "$2" ]
+if [ -z "$1" ]
 then
     usage ;
 else
     if [[ $EUID -ne 0 ]]; then
-        echo "This command must be run as root" 
+        echo "This command must be run as root"
         exit 1
     fi
-    nodejs $DIR/user_mgmt.js register $1 $2 ;
+
+    if [ -z "$2" ]
+    then
+        read -sp "Enter password: " password
+        echo ""
+        read -sp "Enter password again: " password_confirmation
+        echo ""
+
+        if [ "$password" != "$password_confirmation" ]
+        then
+            echo "Passwords doesn't match!"
+            exit 1
+        fi
+    else
+        password=$2
+    fi
+
+    nodejs $DIR/user_mgmt.js register $1 $password ;
 fi

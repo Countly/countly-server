@@ -9,7 +9,9 @@ const J = require('../../../../api/parts/jobs/job.js'),
 
 const FORK_WHEN_MORE_THAN = 100000,
     FORK_MAX = 5,
-    SEND_AHEAD = 5 * 60000,
+    SEND_AHEAD = 1 * 60000,
+    DROP_BEFORE = 3600000,
+    DROP_BEFORE_EVENTS = 120000,
     BATCH = 50000;
 /** proces jo class */
 // for tests-api-multi-pers.js
@@ -99,6 +101,8 @@ class ProcessJob extends J.IPCJob {
 
                         this.proxyhost = plugins.push && plugins.push.proxyhost || '';
                         this.proxyport = plugins.push && plugins.push.proxyport || '';
+                        this.proxyuser = plugins.push && plugins.push.proxyuser || '';
+                        this.proxypass = plugins.push && plugins.push.proxypass || '';
 
                         resolve();
                     });
@@ -133,7 +137,7 @@ class ProcessJob extends J.IPCJob {
      * @returns {object} Resource
      */
     createResource(_id, name, db) {
-        return new Resource(_id, name, {cid: this.cid, field: this.field, proxyhost: this.proxyhost, proxyport: this.proxyport}, db);
+        return new Resource(_id, name, {cid: this.cid, field: this.field, proxyhost: this.proxyhost, proxyport: this.proxyport, proxyuser: this.proxyuser, proxypass: this.proxypass}, db);
     }
 
     /** gets new retry policy
@@ -240,7 +244,7 @@ class ProcessJob extends J.IPCJob {
 
             do {
                 let date = this.now() + SEND_AHEAD,
-                    discarded = await this.loader.discard(date - 3600000);
+                    discarded = await this.loader.discard(date - SEND_AHEAD - DROP_BEFORE, date - SEND_AHEAD - DROP_BEFORE_EVENTS);
 
                 // some notifications are too late to send
                 if (discarded.total) {

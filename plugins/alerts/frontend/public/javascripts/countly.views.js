@@ -302,7 +302,9 @@ window.AlertsView = countlyView.extend({
 
             // clear alertName
             $("#alert-name-input").val('');
-
+            $("#alert-name-input").off('input').on('input', function() {
+                self.checkDisabled();
+            });
             // select alert data type : metric , event crash
             var metricClickListner = function() {
                 $("#single-target-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
@@ -340,7 +342,15 @@ window.AlertsView = countlyView.extend({
                             $("#single-target-dropdown").clySelectSetSelection(item.value, item.name);
                         }
                     }
+
+                    $("#single-target-condition-dropdown").off("cly-select-change").on("cly-select-change", function() {
+                        self.checkDisabled();
+                    });
+                    $("#alert-compare-value-input").off("input").on("input", function() {
+                        self.checkDisabled();
+                    });
                     metricClickListner();
+                    self.checkDisabled();
                     app.localize();
                 });
             };
@@ -349,12 +359,13 @@ window.AlertsView = countlyView.extend({
                 $(".alert-data-type").removeClass('selected');
                 $(this).addClass('selected');
 
-
                 $("#widget-section-single-app").show();
                 $("#single-app-dropdown").clySelectSetSelection("", "Select App");
 
                 var source = $("#" + dataType + "-condition-template").html();
                 $('.alert-condition-block').html(source);
+
+
                 $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
                 $("#single-target-condition-dropdown").clySelectSetItems(alertDefine[dataType].condition);
 
@@ -367,6 +378,8 @@ window.AlertsView = countlyView.extend({
                 case 'event':
                     break;
                 }
+                self.checkDisabled();
+
 
             });
             // init content
@@ -378,20 +391,33 @@ window.AlertsView = countlyView.extend({
             }
             // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
             $("#single-app-dropdown").clySelectSetItems(apps);
+
             $("#single-app-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                 var dataType = $(($('#alert-data-types').find(".selected")[0])).data("dataType");
                 var dataSubType = $("#single-target-dropdown").clySelectGetSelection();
+
                 if (selected && dataType === 'event') {
                     alertsPlugin.getEventsForApps(selected, function(eventData) {
                         $("#single-target-dropdown").clySelectSetItems(eventData);
                         $("#single-target-dropdown").clySelectSetSelection("", "Select event");
+                        $("#single-target-dropdown").off("cly-select-change").on("cly-select-change", function() {
+                            self.checkDisabled();
+                            $("#single-target-condition-dropdown").off("cly-select-change").on("cly-select-change", function() {
+                                self.checkDisabled();
+                            });
+                            $("#alert-compare-value-input").off("input").on("input", function() {
+                                self.checkDisabled();
+                            });
+                        });
                     });
                 }
 
                 if (selected && (dataSubType === 'Number of page views' || dataSubType === 'Bounce rate')) {
                     self.loadAppViewData();
                 }
+                self.checkDisabled();
             });
+
 
             // clear app  selected value
             // $("#multi-app-dropdown").clyMultiSelectClearSelection();
@@ -409,15 +435,15 @@ window.AlertsView = countlyView.extend({
                 $(this).parents(".cly-drawer").removeClass("open");
             });
 
+
             $("#create-widget").off().on("click", function() {
                 var alertConfig = self.getWidgetSettings(true);
                 for (var key in alertConfig) {
                     if (!alertConfig[key]) {
-                        return CountlyHelpers.alert("Please complete all required fields",
-                            "green",
-                            function() { });
+                        return;
                     }
                 }
+
                 $("#alert-widget-drawer").removeClass("open");
                 alertsPlugin.saveAlert(alertConfig, function callback() {
                     alertsPlugin.requestAlertsList(function() {
@@ -430,8 +456,7 @@ window.AlertsView = countlyView.extend({
                 var alertConfig = self.getWidgetSettings();
                 for (var key in alertConfig) {
                     if (!alertConfig[key]) {
-                        return CountlyHelpers.confirm("Please input all the fields", "green", function() {
-                        });
+                        return;
                     }
                 }
                 $("#alert-widget-drawer").removeClass("open");
@@ -509,7 +534,7 @@ window.AlertsView = countlyView.extend({
                 }
             });
             self.emailInput.on("change", function() {
-                // $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+                self.checkDisabled();
             });
         },
 
@@ -535,7 +560,6 @@ window.AlertsView = countlyView.extend({
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
 
                 }
-                // $("#multi-app-dropdown").clyMultiSelectSetSelection(appSelected);
                 var target = _.find(alertDefine[data.alertDataType].target, function(m) {
                     return m.value === data.alertDataSubType;
                 });
@@ -629,6 +653,30 @@ window.AlertsView = countlyView.extend({
             currentId && (settings._id = currentId);
             return settings;
         },
+        checkDisabled: function() {
+            var alertConfig = this.getWidgetSettings();
+            if (!alertConfig.selectedApps) {
+                $("#single-target-dropdown").addClass("disabled");
+                $("#single-target-condition-dropdown").addClass("disabled");
+                $("#alert-compare-value").addClass("disabled");
+                $("#alert-compare-value-input").attr("disabled", "true");
+            }
+            else {
+                $("#single-target-dropdown").removeClass("disabled");
+                $("#single-target-condition-dropdown").removeClass("disabled");
+                $("#alert-compare-value").removeClass("disabled");
+                $("#alert-compare-value-input").removeAttr("disabled");
+            }
+
+            $("#create-widget").removeClass("disabled");
+            $("#save-widget").removeClass("disabled");
+            for (var key in alertConfig) {
+                if (!alertConfig[key]) {
+                    $("#create-widget").addClass("disabled");
+                    $("#save-widget").addClass("disabled");
+                }
+            }
+        }
     }
 });
 
@@ -642,14 +690,7 @@ if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
 
 $(document).ready(function() {
     if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
-        var menu = '<a href="#/manage/alerts" class="item">' +
-			'<div class="logo-icon fa fa-envelope"></div>' +
-			'<div class="text" data-localize="alert.plugin-title"></div>' +
-			'</a>';
-        if ($('#management-submenu .help-toggle').length) {
-            $('#management-submenu .help-toggle').before(menu);
-        }
-
+        app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
     }
 
 });

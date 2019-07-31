@@ -12,7 +12,17 @@ window.component('radio', function(radio) {
         }
 
         this.opts = opts;
-        this.value = typeof opts.value === 'function' ? opts.value : m.prop(opts.value);
+
+        var val = typeof opts.value === 'function' ? opts.value : m.prop(opts.value);
+        this.value = function(){
+            if (arguments.length) {
+                if (opts.onchange) {
+                    opts.onchange(arguments[0]);
+                }
+                val(arguments[0]);
+            }
+            return val();
+        };
         this.options = m.prop(opts.options.map(window.components.selector.Option));
         this.id = 'comp-radio-' + count++;
     };

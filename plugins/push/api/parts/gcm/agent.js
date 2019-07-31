@@ -14,11 +14,13 @@ function HttpsProxyAgent(options) {
 
     this.proxyHost = options.proxyHost;
     this.proxyPort = options.proxyPort;
+    this.proxyUser = options.proxyUser;
+    this.proxyPass = options.proxyPass;
 
     this.createConnection = function(opts, callback) {
-        console.log('>>>>>>>>>>>>>>>>>>>>>>>> creating connection');
+        // console.log('>>>>>>>>>>>>>>>>>>>>>>>> creating connection');
         // do a CONNECT request
-        var req = Http.request({
+        let reqopts = {
             host: options.proxyHost,
             port: options.proxyPort,
             method: 'CONNECT',
@@ -26,15 +28,26 @@ function HttpsProxyAgent(options) {
             headers: {
                 host: opts.host
             }
-        });
+        };
+
+        if (this.proxyUser && this.proxyPass) {
+            reqopts.headers['Proxy-Authorization'] = 'Basic ' + Buffer.from(this.proxyUser + ':' + this.proxyPass).toString('base64');
+        }
+
+        var req = Http.request(reqopts);
 
         req.on('connect', function(res, socket/*, head*/) {
-            console.log('>>>>>>>>>>>>>>>>>>>>>>>> connected');
+            // console.log('>>>>>>>>>>>>>>>>>>>>>>>> connected');
             var cts = Tls.connect({
                 host: opts.host,
                 socket: socket
             }, function() {
+                // console.log('>>>>>>>>>>>>>>>>>>>>>>>> TLS callback', arguments);
                 callback(false, cts);
+            });
+            cts.on('error', function(err) {
+                console.log('>>>>>>>>>>>>>>>>>>>>>>>> TLS error', err);
+                callback(err.message || 'TLS error', null);
             });
         });
 
@@ -91,9 +104,9 @@ HttpsProxyAgent.prototype.createSocket = function(name, host, port, localAddress
         }
     }
 
-    console.log('>>>>>>>>>>>>>>>>>>>>>>>> creating socket', options);
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>> creating socket', options);
     self.createConnection(options, function(err, s) {
-        console.log('>>>>>>>>>>>>>>>>>>>>>>>> socket created', options);
+        // console.log('>>>>>>>>>>>>>>>>>>>>>>>> socket created', options);
         if (err) {
             err.message += ' while connecting to HTTP(S) proxy server ' + self.proxyHost + ':' + self.proxyPort;
 
@@ -114,12 +127,12 @@ HttpsProxyAgent.prototype.createSocket = function(name, host, port, localAddress
         self.sockets[name].push(s);
 
         var onFree = function() {
-            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onFree');
+            // console.log('>>>>>>>>>>>>>>>>>>>>>>>> onFree');
             self.emit('free', s, host, port, localAddress);
         };
 
         var onClose = function(/*err*/) {
-            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onClose');
+            // console.log('>>>>>>>>>>>>>>>>>>>>>>>> onClose');
             // this is the only place where sockets get removed from the Agent.
             // if you want to remove a socket from the pool, just close it.
             // all socket errors end in a close event anyway.
@@ -127,7 +140,7 @@ HttpsProxyAgent.prototype.createSocket = function(name, host, port, localAddress
         };
 
         var onRemove = function() {
-            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onRemove');
+            // console.log('>>>>>>>>>>>>>>>>>>>>>>>> onRemove');
             // we need this function for cases like HTTP 'upgrade'
             // (defined by WebSockets) where we need to remove a socket from the pool
             // because it'll be locked up indefinitely

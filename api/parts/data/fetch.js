@@ -583,7 +583,7 @@ function getTopThree(params, collection, callback) {
         pipeline.push({$unwind: "$d"});
         pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
     }
-    pipeline.push({$sort: {"t": -1}}); //sort values    
+    pipeline.push({$sort: {"t": -1}}); //sort values
     pipeline.push({$limit: 3}); //limit count
 
     common.db.collection(collection).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
@@ -1090,6 +1090,36 @@ fetch.fetchDataEventsOverview = function(params) {
 };
 
 /**
+* Get top events data
+* @param {params} params - params object
+**/
+
+fetch.fetchDataTopEvents = function(params) {
+    const {
+        qstring: { app_id, period, limit }
+    } = params;
+    const collectionName = "top_events";
+    const _app_id = common.db.ObjectID(app_id);
+    common.db.collection(collectionName).findOne({period, app_id: _app_id}, function(error, result) {
+        if (error || !result) {
+            common.returnOutput(params, false);
+        }
+        else {
+            // eslint-disable-next-line no-shadow
+            const { app_id, data, _id, ts, period } = result;
+            let _data = Object.keys(data).map(function(key) {
+                const { sparkline, total, change } = data[key].data.count;
+                return { name: key, data: sparkline, count: total, trend: change };
+            });
+            const sortByCount = _data.sort((a, b) => b.count - a.count).slice(0, limit);
+            common.returnOutput(params, { _id, app_id, ts, period, data: sortByCount });
+        }
+    }
+    );
+};
+
+
+/**
 * Get events data for events pi output to browser
 * @param {params} params - params object
 * @returns {void} void
@@ -1239,7 +1269,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
     if (!plugins.getConfig("api", params.app && params.app.plugins, true).total_users) {
         return callback([]);
     }
-    var periodObj = getPeriodObj(params);
+    var periodObj = countlyCommon.getPeriodObj(params, "30days");
 
     /*
             List of shortcodes in app_users document for different metrics
@@ -1330,7 +1360,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                         /*
                             We track changes to metrics such as app version in metric_changesAPPID collection;
                             { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
-        
+
                             While returning a total user result for any metric, we check metric_changes to see
                             if any metric change happened in the selected period and include this in the result
                         */
@@ -1527,7 +1557,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         });
     }
     else {
-        var periodObj = getPeriodObj(params),
+        var periodObj = countlyCommon.getPeriodObj(params, "30days"),
             documents = [];
 
         if (isCustomEvent) {
@@ -1759,7 +1789,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 * @param {params} params - params object
 **/
 fetch.getPeriodObj = function(coll, params) {
-    common.returnOutput(params, getPeriodObj(params));
+    common.returnOutput(params, countlyCommon.getPeriodObj(params, "30days"));
 };
 
 /**
@@ -1785,29 +1815,6 @@ function union(x, y) {
     }
 
     return res;
-}
-
-/**
-* Gets period object based on value in params
-* @param {params} params - params object
-* @returns {period} period object
-**/
-function getPeriodObj(params) {
-    params.qstring.period = params.qstring.period || "month";
-    if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
-        try {
-            params.qstring.period = JSON.parse(params.qstring.period);
-        }
-        catch (SyntaxError) {
-            console.log('Parse period JSON failed');
-            params.qstring.period = "30days";
-        }
-    }
-
-    countlyCommon.setTimezone(params.appTimezone);
-    countlyCommon.setPeriod(params.qstring.period);
-
-    return countlyCommon.periodObj;
 }
 
 module.exports = fetch;

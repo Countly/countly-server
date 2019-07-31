@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -105,6 +105,10 @@
     CountlyHelpers.notify = function(msg) {
         var iconToUse;
 
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
         switch (msg.type) {
         case "error":
             iconToUse = "ion-close-circled";
@@ -144,6 +148,167 @@
             closeOnClick: (msg.closeOnClick === false) ? false : true,
             onClick: msg.onClick || null
         });
+    };
+
+    /**
+    * Create new model
+    */
+    CountlyHelpers.model = function() {
+        var self = this;
+        $("#overlay").click(function() {
+            var model = $(".model:visible");
+            if (model.length) {
+                model.fadeOut().remove();
+                $(this).hide();
+            }
+        });
+
+        var cnFn = function() {
+            $(this).trigger("model-continue");
+            $(this).parents(".model:visible").fadeOut().remove();
+        };
+
+        var clFn = function() {
+            $(this).trigger("model-cancel");
+            $(this).parents(".model:visible").fadeOut().remove();
+        };
+
+        this.resetModel = function() {
+            self.continue = [cnFn];
+            self.cancel = [clFn];
+        };
+
+        $("#model-continue").live('click', function() {
+            var breakStatus = false;
+            for (var i = 0; i < self.continue.length; i++) {
+                var call = self.continue[i].bind(this);
+                if (!call()) {
+                    breakStatus = true;
+                    break;
+                }
+            }
+
+            if (breakStatus) {
+                $(this).trigger("model-continue");
+            }
+
+            if (!$('.model:visible').length) {
+                $("#overlay").hide();
+            }
+        });
+
+        $("#model-cancel").live('click', function() {
+            var breakStatus = false;
+            for (var i = 0; i < self.cancel.length; i++) {
+                var call = self.cancel[i].bind(this);
+                if (!call()) {
+                    breakStatus = true;
+                    break;
+                }
+            }
+
+            if (breakStatus) {
+                $(this).trigger("model-cancel");
+            }
+
+            if (!$('.model:visible').length) {
+                $("#overlay").hide();
+            }
+        });
+
+        $(document).keyup(function(e) {
+            if (e.keyCode === 27) {
+                $(".model:visible").animate({
+                    top: 0,
+                    opacity: 0
+                }, {
+                    duration: 1000,
+                    easing: 'easeOutQuart',
+                    complete: function() {
+                        $(this).remove();
+                    }
+                });
+
+                $("#overlay").hide();
+            }
+        });
+
+        self.continue = [cnFn];
+        self.cancel = [clFn];
+    };
+
+    /**
+    * Create new model
+    * @param {object} json - json object
+    * @param {string=} type - classname
+    * @param {function=} callback - callback function
+    */
+    CountlyHelpers.newJSONEditor = function(json, type, callback) {
+        var self = this;
+
+        var dialog = $("#cly-json-editor").clone();
+        dialog.removeAttr("id");
+
+        dialog.addClass(type);
+        CountlyHelpers.revealDialog(dialog);
+
+        var element = dialog.find(".body")[0];
+        var statusElements = {
+            validElement: dialog.find(".valid-json"),
+            invalidElement: dialog.find(".invalid-json"),
+        };
+
+        this.JSONEditor = new _JSONEditor(element, json, statusElements);
+
+        this.JSONEditor.editor.on("change", function() {
+            dialog.find("#dialog-continue").removeClass("disabled");
+            if (!self.JSONEditor.jsonStatus) {
+                dialog.find("#dialog-continue").addClass("disabled");
+            }
+        });
+
+        dialog.find("#dialog-cancel").on('click', function() {
+            callback(true);
+        });
+
+        dialog.find("#dialog-continue").on('click', function() {
+            if (self.JSONEditor.jsonStatus) {
+                return callback(false, self.JSONEditor.returnJSON());
+            }
+
+            return callback(true);
+        });
+
+        dialog.find("#dialog-format").on("click", function() {
+            self.JSONEditor.format();
+        });
+    };
+
+    CountlyHelpers.applyColors = function() {
+        // big numbers
+        $('.big-numbers:nth-child(1) .color').css({'background-color': countlyCommon.GRAPH_COLORS[0]});
+        $('.big-numbers:nth-child(2) .color').css({'background-color': countlyCommon.GRAPH_COLORS[1]});
+        $('.big-numbers:nth-child(3) .color').css({'background-color': countlyCommon.GRAPH_COLORS[2]});
+        // overview bars
+        var barStyles = '<style>';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[0] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[1] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[2] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new::before{background-color:' + countlyCommon.GRAPH_COLORS[0] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2)::before{background-color:' + countlyCommon.GRAPH_COLORS[1] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3)::before{background-color:' + countlyCommon.GRAPH_COLORS[2] + '}</style>';
+        $(barStyles).appendTo('head');
+        // bignumbers-v2
+        $('.big-numbers-v2 .big-numbers.check .color').css({'border': '1px solid ' + countlyCommon.GRAPH_COLORS[0]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(2) .color, .big-numbers-v2 .big-numbers.check:nth-child(2) .color, .big-numbers-v2 .big-numbers.check.event-sum .color').css({'border-color': countlyCommon.GRAPH_COLORS[1]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(3) .color, .big-numbers-v2 .big-numbers.check:nth-child(3) .color, .big-numbers-v2 .big-numbers.check.event-dur .color').css({'border-color': countlyCommon.GRAPH_COLORS[2]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(4) .color, .big-numbers-v2 .big-numbers.check:nth-child(4) .color').css({'border-color': countlyCommon.GRAPH_COLORS[3]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(5) .color, .big-numbers-v2 .big-numbers.check:nth-child(5) .color').css({'border-color': countlyCommon.GRAPH_COLORS[4]});
+        $('.big-numbers-v2 .big-numbers.radio.selected .color, .big-numbers-v2 .big-numbers.check.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[0]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(2).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(2).selected .color, .big-numbers-v2 .big-numbers.check.event-sum.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[1]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(3).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(3).selected .color, .big-numbers-v2 .big-numbers.check.event-dur.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[2]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(4).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(4).selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[3]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(5).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(5).selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[4]});
     };
 
     /**
@@ -196,6 +361,10 @@
     * CountlyHelpers.alert("Some error happened", "red");
     */
     CountlyHelpers.alert = function(msg, type, moreData) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
         var dialog = $("#cly-alert").clone();
         dialog.removeAttr("id");
 
@@ -541,6 +710,7 @@
 
         $("#overlay").fadeIn();
         dialog.fadeIn(app.tipsify.bind(app, $("#help-toggle").hasClass("active"), dialog));
+        CountlyHelpers.makeSelectNative();
     };
 
     /**
@@ -642,15 +812,14 @@
     */
     CountlyHelpers.initializeSelect = function(element) {
         element = element || $("body");
-
-        element.off("click", ".cly-select").on("click", ".cly-select", function(e) {
-            if ($(this).hasClass("disabled")) {
+        var showOptions = function(context) {
+            if ($(context).hasClass("disabled")) {
                 return true;
             }
 
-            $(this).removeClass("req");
+            $(context).removeClass("req");
 
-            var selectItems = $(this).find(".select-items"),
+            var selectItems = $(context).find(".select-items"),
                 itemCount = selectItems.find(".item").length;
 
             if (!selectItems.length) {
@@ -660,52 +829,51 @@
             $(".cly-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
-                $(this).removeClass("active");
+                $(context).removeClass("active");
             }
             else {
                 $(".cly-select").removeClass("active");
                 $(".select-items").hide();
-                $(this).addClass("active");
+                $(context).addClass("active");
 
-                if (itemCount > 10 || $(this).hasClass("big-list")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                if (itemCount > 10 || $(context).hasClass("big-list")) {
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
                 }
             }
 
-            if ($(this).hasClass("centered")) {
-                if ((itemCount > 5 && $(this).offset().top > 400) || $(this).hasClass("force")) {
-                    var height = $(this).find(".select-items").height(),
-                        searchItem = $(this).find(".search");
+            if ($(context).hasClass("centered")) {
+                if ((itemCount > 5 && $(context).offset().top > 400) || $(context).hasClass("force")) {
+                    var height = $(context).find(".select-items").height(),
+                        searchItem = $(context).find(".search");
 
                     var addThis = 0;
 
                     if (searchItem.length) {
                         addThis = (searchItem.height() / 2).toFixed(0) - 1;
-                        $(this).find(".select-items").css({"min-height": height});
+                        $(context).find(".select-items").css({"min-height": height});
                     }
                     else {
-                        $(this).find(".select-items").css({"min-height": "auto"});
-                        height = $(this).find(".select-items").height();
+                        $(context).find(".select-items").css({"min-height": "auto"});
+                        height = $(context).find(".select-items").height();
                     }
 
-                    $(this).find(".select-items").css("margin-top", (-(height / 2).toFixed(0) - ($(this).height() / 2).toFixed(0) + parseInt(addThis)) + "px");
-                    $(this).find(".search").css("margin-top", (-(height / 2).toFixed(0) - searchItem.height()) + "px");
+                    $(context).find(".select-items").css("margin-top", (-(height / 2).toFixed(0) - ($(context).height() / 2).toFixed(0) + parseInt(addThis)) + "px");
+                    $(context).find(".search").css("margin-top", (-(height / 2).toFixed(0) - searchItem.height()) + "px");
                 }
                 else {
-                    $(this).find(".select-items").css({"min-height": "auto"});
-                    $(this).find(".select-items").css("margin-top", '');
-                    $(this).find(".search").css("margin-top", '');
+                    $(context).find(".select-items").css({"min-height": "auto"});
+                    $(context).find(".select-items").css("margin-top", '');
+                    $(context).find(".search").css("margin-top", '');
                 }
             }
-
-            if ($(this).find(".select-items").is(":visible")) {
-                $(this).find(".select-items").hide();
+            if ($(context).find(".select-items").is(":visible")) {
+                $(context).find(".select-items").hide();
             }
             else {
-                $(this).find(".select-items").show();
-                if ($(this).find(".select-items").find(".scroll-list").length === 0) {
-                    $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
-                    $(this).find(".scroll-list").slimScroll({
+                $(context).find(".select-items").show();
+                if ($(context).find(".select-items").find(".scroll-list").length === 0) {
+                    $(context).find(".select-items").wrapInner("<div class='scroll-list'></div>");
+                    $(context).find(".scroll-list").slimScroll({
                         height: '100%',
                         start: 'top',
                         wheelStep: 10,
@@ -714,20 +882,105 @@
                     });
                 }
             }
-
-            $(this).find(".select-items").find(".item").removeClass("hidden");
-            $(this).find(".select-items").find(".group").show();
-            $(this).find(".select-items").find(".item").removeClass("last");
-            $(this).find(".select-items").find(".item:visible:last").addClass("last");
-
-            $(this).find(".search input").focus();
-
+            $(context).find(".select-items").find(".item").removeClass("hidden");
+            $(context).find(".select-items").find(".group").show();
+            $(context).find(".select-items").find(".item").removeClass("last");
+            $(context).find(".select-items").find(".item:visible:last").addClass("last");
+            $(context).find(".search input").focus();
             $("#date-picker").hide();
-
-            $(this).find(".search").off("click").on("click", function(e1) {
+            $(context).find(".search").off("click").on("click", function(e1) {
                 e1.stopPropagation();
             });
+        };
+        var activeOption = 0;
 
+        var hideOptions = function() {
+            var $clySelect = $(".cly-select");
+
+            $clySelect.find(".select-items").hide();
+            $clySelect.find(".search").remove();
+            $clySelect.removeClass("active");
+        };
+
+        element.off("click", ".cly-select").on("click", ".cly-select", function(e) {
+            showOptions(this);
+            activeOption = 0;
+            e.stopPropagation();
+        });
+
+        element.off("keyup", ".cly-select").on("keyup", ".cly-select", function(e) {
+            if (e.keyCode === 32) {
+                showOptions(this);
+            }
+            if (e.keyCode === 27) {
+                hideOptions();
+            }
+
+            // UP ARROW
+            if (e.keyCode === 38) {
+                if (typeof $(this).find('.scroll-list > div').first() !== "undefined" && !($(this).find('.scroll-list').first().children().length > 1)) {
+                    $($(this).find('.scroll-list > div').first().children[activeOption]).css({"background-color": "white"});
+                    if (activeOption === 0) {
+                        activeOption = $(this).find('.scroll-list > div').first().children().length - 1;
+                    }
+                    else {
+                        activeOption--;
+                    }
+                    $(this).find('.scroll-list > div').first().children().eq(activeOption).css({'background-color': '#f3f3f3'});
+                }
+                else if ($(this).find('.scroll-list').first().children().length > 1) {
+                    $(this).find('.scroll-list').first().children().eq(activeOption).css({"background-color": "white"});
+                    if (activeOption === 0) {
+                        activeOption = $(this).find('.scroll-list').children().length - 1;
+                    }
+                    else {
+                        activeOption--;
+                    }
+
+                    $(this).find('.scroll-list').first().children().eq(activeOption).css({'background-color': '#f3f3f3'});
+                }
+            }
+            // DOWN ARROW
+            if (e.keyCode === 40) {
+                if (typeof $(this).find('.scroll-list > div').first() !== "undefined" && !($(this).find('.scroll-list').first().children().length > 1)) {
+                    $(this).find('.scroll-list > div').first().children().eq(activeOption).css({"background-color": "white"});
+                    if ($(this).find('.scroll-list > div').first().children().length === activeOption + 1) {
+                        activeOption = 0;
+                    }
+                    else {
+                        activeOption++;
+                    }
+                    $(this).find('.scroll-list > div').first().children().eq(activeOption).css({'background-color': '#f3f3f3'});
+                }
+                else if ($(this).find('.scroll-list').first().children().length > 1) {
+                    $(this).find('.scroll-list').first().children().eq(activeOption).css({"background-color": "white"});
+                    if ($(this).find('.scroll-list').first().children().length === activeOption + 1) {
+                        activeOption = 0;
+                    }
+                    else {
+                        activeOption++;
+                    }
+                    $(this).find('.scroll-list').first().children().eq(activeOption).css({'background-color': '#f3f3f3'});
+                }
+            }
+            //ENTER
+            if (e.keyCode === 13) {
+                var selectedItem = $(this).find(".text");
+                if ($(this).find('.scroll-list').first().children().length > 1) {
+                    if ($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').length > 0) {
+                        selectedItem.text($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').text());
+                    }
+                    else {
+                        selectedItem.text($(this).find('.scroll-list').first().children().eq(activeOption).first().text());
+                    }
+                    selectedItem.data("value", $(this).find('.scroll-list').first().children().eq(activeOption).find('div').data('value'));
+                }
+                else {
+                    selectedItem.text($(this).find('.scroll-list > div').first().children().eq(activeOption).text());
+                    selectedItem.data("value", $(this).find('.scroll-list > div').first().children().eq(activeOption).data('value'));
+                }
+                hideOptions();
+            }
             e.stopPropagation();
         });
 
@@ -775,11 +1028,7 @@
         });
 
         $(window).click(function() {
-            var $clySelect = $(".cly-select");
-
-            $clySelect.find(".select-items").hide();
-            $clySelect.find(".search").remove();
-            $clySelect.removeClass("active");
+            hideOptions();
         });
 
         $.fn.clySelectSetItems = function(items) {
@@ -803,6 +1052,13 @@
             $(this).find(".select-inner .text").text(name);
             $(this).trigger("cly-select-change", [value]);
         };
+    };
+
+    CountlyHelpers.makeSelectNative = function() {
+        var rows = $('body').find('.cly-select');
+        for (var i = 0; i < rows.length; i++) {
+            $(rows[i]).attr('tabindex', '0');
+        }
     };
 
     /**
@@ -1132,12 +1388,12 @@
      * @param {string} tableName - table name. Used to create name for storage. need to be unique for every table.
      * 
      *  Example:
-     *   CountlyHelpers.addColumnSelector(dtable,{"disabled:"{"1":true,"2":true},"selected":{},maxCol:6},"myTableName");
+     *   CountlyHelpers.addColumnSelector(dtable,{"disabled:"{"1":true,"2":true},"hidden":{},maxCol:6},"myTableName");
      *  Safe way would be adding in "fnInitComplete" function:
      *
      *  "fnInitComplete": function(oSettings, json) {
      *      $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
-     *      CountlyHelpers.addColumnSelector(this, {"disabled":{"0":true,"8":true}, "maxCount":5 }, "viewsTable");
+     *      CountlyHelpers.addColumnSelector(this, {"disabled":{"0":true,"8":true}, "maxCol":5 }, "viewsTable");
      * },
      */
     CountlyHelpers.addColumnSelector = function(dtable, config, tableName) {
@@ -1150,69 +1406,58 @@
 
         var limits = config.disabled || {};
         var tableCols = dtable.fnSettings().aoColumns;
-
         var maxCol = config.maxCol || tableCols.length;
         dtable.CoultyColumnSel = {};
-
-        dtable.CoultyColumnSel.tableCol = tableCols.length;
+        dtable.CoultyColumnSel.tableCol = 0;
 
         var str = "";
         var myClass = "";
         var myClass2 = "";
         var disabled = "";
-        var selectedC = maxCol;
+        var selectedC = 0;
+        var startLine = true;
+        var checked = false;
         for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
-            myClass = 'fa-check-square';
-            disabled = "";
-            if (settings && settings[colIndex + ""] && settings[colIndex + ""] === true) {
-                myClass = 'fa-square-o';
-                selectedC--;
-                myClass2 = ' not-checked';
-                dtable.fnSetColumnVis(parseInt(colIndex), false, false);
-            }
-            if (limits && limits[colIndex + ""] && limits[colIndex + ""] === true) {
-                disabled = " disabled";
-            }
-
             if (tableCols[colIndex].sTitle) {
-                str += "<tr><td data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
-            }
-            else {
-                maxCol = maxCol - 1;
-                selectedC--;
-                dtable.CoultyColumnSel.tableCol--;
-            }
-            colIndex++;
-
-            if (colIndex < tableCols.length && !tableCols[colIndex].sTitle) {
-                maxCol = maxCol - 1;
-                selectedC--;
-                dtable.CoultyColumnSel.tableCol--;
-            }
-            if (colIndex < tableCols.length && tableCols[colIndex].sTitle) {
                 myClass = 'fa-check-square';
-                disabled = "";
                 myClass2 = "";
+                disabled = "";
+                checked = false;
                 if (settings && settings[colIndex + ""] && settings[colIndex + ""] === true) {
                     myClass = 'fa-square-o';
-                    selectedC--;
-                    myClass2 = 'not-checked';
+                    myClass2 = ' not-checked';
                     dtable.fnSetColumnVis(parseInt(colIndex), false, false);
                 }
+                else {
+                    checked = true;
+                }
+
+
                 if (limits && limits[colIndex + ""] && limits[colIndex + ""] === true) {
                     disabled = " disabled";
                 }
-                str += "<td data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                else {
+                    if (checked) {
+                        selectedC++;
+                    }
+                    dtable.CoultyColumnSel.tableCol++;
+                }
+                if (startLine === true) {
+                    str += "<tr><td data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                    startLine = false;
+                }
+                else {
+                    str += "<td data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
+                    startLine = true;
+                }
             }
-            else {
-
-                str += "<td></td>";
-            }
-            str += "</tr>";
         }
-        dtable.CoultyColumnSel.maxCol = maxCol;
-        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">Select columns to display</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
-        if (maxCol > 8) {
+        if (!startLine) {
+            str += "<td></td></tr>";
+        }
+        dtable.CoultyColumnSel.maxCol = Math.min(maxCol, dtable.CoultyColumnSel.tableCol);
+        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
+        if (tableCols.length > 8) {
             $(dtable[0]).parent().find('.scrollable').slimScroll({
                 height: '100%',
                 start: 'top',
@@ -1222,7 +1467,7 @@
             });
         }
 
-        if (selectedC >= maxCol) {
+        if (selectedC >= dtable.CoultyColumnSel.maxCol) {
             $(dtable[0]).parent().find(".columncounter").first().addClass('red');
             $(dtable[0]).parent().find(".data-table-column-selector").first().addClass('full-select');
         }
@@ -1266,6 +1511,10 @@
         });
 
         $(dtable[0]).parent().find(".select-column-table-data").css("display", "table-cell");
+
+
+        var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
+        $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
     };
 
     /** function hides column in data table and stores config in local storage
@@ -1281,7 +1530,7 @@
         var selC = dtable.CoultyColumnSel.tableCol;
 
         for (var k in settings) {
-            if (settings.hasOwnProperty(k) && settings[k] === true && parseInt(k) < dtable.CoultyColumnSel.tableCol) {
+            if (settings.hasOwnProperty(k) && settings[k] === true) {
                 selC--;
             }
         }
@@ -1306,6 +1555,13 @@
         if (applyChanges) {
             store.set(tableName + "HiddenDataTableColumns", settings);
             dtable.fnSetColumnVis(parseInt(col), !hidden, true);
+            var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
+            $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
+
+            var wrapper = dtable.parents('.dataTables_wrapper').first();
+            if ($(wrapper).find('.sticky-header').length > 0) { //check if we have sticky header
+                dtable.stickyTableHeaders(); //fix sticky header
+            }
         }
         return applyChanges;
 
@@ -1423,6 +1679,7 @@
             $.each(dTable.aOpen, function(i, id) {
                 nTr = $("#" + id)[0];
                 $(nTr).addClass("selected");
+                $(nTr).find('i.expand-row-icon').text('keyboard_arrow_up');
                 var nDetailsRow = dTable.fnOpen(nTr, getData(dTable.fnGetData(nTr), context), 'details');
                 $('div.datatablesubrow', nDetailsRow).show();
                 dTable.trigger("row.reopen", id);
@@ -1441,6 +1698,7 @@
             $.each(dTable.aOpen, function(i, id) {
                 var nTr = $("#" + id)[0];
                 $(nTr).removeClass("selected");
+                $(nTr).find('i.expand-row-icon').text('keyboard_arrow_down');
                 $('div.datatablesubrow', $(nTr).next()[0]).slideUp(function() {
                     dTable.fnClose(nTr);
                     dTable.aOpen.splice(i, 1);
@@ -2395,6 +2653,25 @@
             return jQuery.i18n.map["management-users.password.has-special"];
         }
         return false;
+    };
+
+    /**
+    * Upload file by the passed optional parameters
+    * @param {object} el - dom element
+    * @param {string} url - upload url
+    * @param {object} data - data object that will send with upload request
+    * @param {function} callback - callback for upload result
+    */
+    CountlyHelpers.upload = function(el, url, data, callback) {
+        $(el).simpleUpload(url, {
+            data: data,
+            success: function(response) {
+                callback(null, response);
+            },
+            error: function(e) {
+                callback(e, null);
+            }
+        });
     };
 
     $(document).ready(function() {
