@@ -243,9 +243,13 @@
 #delete-user-account-button {
     padding-top:6px;
     padding-bottom: 6px;
+    margin-bottom:10px;
+    margin-left:0px;
 }
 #delete_account_password {
     float:left;
+    margin-bottom: 10px;
+    margin-right:8px;
 }
 #password-input-mandatory-warning {
     visibility:hidden;
