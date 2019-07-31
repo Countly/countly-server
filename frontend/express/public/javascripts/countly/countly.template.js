@@ -730,6 +730,10 @@ var AppRouter = Backbone.Router.extend({
             }
         });
 
+        if (category === "management" && $(selector + " > a").length > 5) {
+            $(selector).addClass("columns");
+        }
+
         //if not added, maybe we are first or last, so just add it
         if (!added) {
             $(selector).append(menu);
