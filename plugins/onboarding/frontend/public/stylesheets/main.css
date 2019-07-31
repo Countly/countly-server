@@ -22,7 +22,7 @@
     margin-left: -350px;
     margin-top: -300px;
     z-index: 1000000000001;
-    border-radius: 2px;
+    border-radius: 3px;
     box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.35);
     opacity:0;
     transition: top 500ms, opacity 500ms;
@@ -30,7 +30,9 @@
 #whatsnew #whatsnew-popup.show { top:50%; opacity:1 !important; transition: top 500ms, opacity 500ms; }
 
 #whatsnew #whatsnew-popup .inner { position: relative; width:700px; height:600px; overflow:hidden; border-radius: 2px; }
-#whatsnew #whatsnew-popup-close { position: absolute; top: -16px; right: 0; color: #FFF; font-size: 12px; z-index: 10; user-select: none; }
+#whatsnew #whatsnew-popup-close { cursor:pointer; position:absolute; right:-37px; top:0; width:30px; height:30px; background-color: #FFF; z-index: 1; text-align: center; border-radius: 30px; user-select: none; }
+#whatsnew #whatsnew-popup-close:hover { background-color: #f5f5f5; }
+#whatsnew #whatsnew-popup-close i { color: #000; font-size: 29px; line-height: 30px; }
 
 #whatsnew #whatsnew-slider { width:700px; height:600px; overflow: hidden; position:relative; }
 #whatsnew #whatsnew-slider #slider_inner { width:700px; height:500px; display:none; cursor: default; padding: 0 !important; -webkit-filter: blur(0px); overflow: hidden; }
