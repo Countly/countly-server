@@ -64,7 +64,7 @@
 * [events] display top events for event overview
 * [frontend] option to delete your own account
 * [plugins] asynchronously check plugin enabling/disabling procedure
-* [push] Adding push events to user’s timeline, viewing recipients, personalization changes
+* [push] Adding push events to user’s timeline
 * [push] allow building target audience just before scheduled date
 * [push] option to view recipients of a push
 * [push] proxy authentication support
