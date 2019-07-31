@@ -44,7 +44,7 @@ html.theme-5 .cly-widget .views table { color:rgba(0, 0, 0, 0.6); }
 
 
 #ViewsDataTableOne_wrapper .dataTable-top .select-column-table-data {
-    height: 34px;
+    height: 32px;
 }
 @media(min-width: 1240px) {
     #ViewsDataTableOne tr th {
