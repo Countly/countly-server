@@ -3254,8 +3254,8 @@ color:#E95C6C; transition:color 1s;
     padding: 2px 3px 6px 3px;
     background-color: #292929;
     border-radius: 2px;
-    top: -25px;
-    left: 102px;
+    top: -50px;
+    left: 20px;
     flex-direction: column-reverse;
 }
 .tipsy-for-note .tipsy-inner {max-width: 400px !important; }
