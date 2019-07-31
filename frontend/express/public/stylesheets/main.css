@@ -1666,7 +1666,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown .menu .search input { width: 100%; box-sizing: border-box; position: relative; padding-right: 32px; margin: 0; }
 #top-bar .dropdown .menu .list { max-height: 310px; overflow: auto; }
 #top-bar .dropdown .menu .list .item { display: block; cursor: pointer; border-bottom: 1px solid #d0d0d0; text-align: left; padding:10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#top-bar .dropdown .menu .list .item div{ display:inline; }
+#top-bar .dropdown .menu .list #user-menu .item div{ display:inline; }
 #top-bar .dropdown .menu .list .item:last-child { border-bottom: none; }
 #top-bar .dropdown .menu .list .item:hover { background-color: #f3f3f3; }
 #top-bar .dropdown .menu .list .item .icon { margin-right: 5px; color: #8e8e8e; width: 15px; display: inline-block; text-align: center; font-size: 15px; line-height: 15px; vertical-align: top; }
