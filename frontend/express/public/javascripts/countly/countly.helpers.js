@@ -1511,6 +1511,10 @@
         });
 
         $(dtable[0]).parent().find(".select-column-table-data").css("display", "table-cell");
+
+
+        var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
+        $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
     };
 
     /** function hides column in data table and stores config in local storage
@@ -1551,6 +1555,8 @@
         if (applyChanges) {
             store.set(tableName + "HiddenDataTableColumns", settings);
             dtable.fnSetColumnVis(parseInt(col), !hidden, true);
+            var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
+            $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
 
             var wrapper = dtable.parents('.dataTables_wrapper').first();
             if ($(wrapper).find('.sticky-header').length > 0) { //check if we have sticky header
