@@ -69,6 +69,7 @@
 * [push] option to view recipients of a push
 * [push] proxy authentication support
 * [push] real-time event triggered push notifications
+* [report-manager] smarter more often regenerating automatic reports
 * [security] added password secret salt support in configuration file
 * [slipping-away-users] add flexible periods setting support
 * [two-factor-auth] enable two factor authentication through Microsoft or Google authenticator apps
