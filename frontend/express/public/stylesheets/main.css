@@ -1063,7 +1063,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 	.user-details .button-container { padding-bottom:5px; }
 	.user-details .button-container .icon-button { float:right; }
 	.user-details .app-selection { margin-left:10px; border-radius:10px; background-color:#CCC; cursor:pointer; float:left; width:15px; height:15px; }
-	.user-details .select-apps { margin-left:10px; cursor:pointer; float:left; font-size:17px; margin-top: -3px; color:#2EB52B; }
+	.user-details .select-apps { margin-left:10px; cursor:pointer; float:left; font-size:17px; margin-top: -1px; color:#2EB52B; line-height: 15px; }
 	.user-details .user-admin-list span, .user-details .no-apps { color:#CCC; font-size:12px; font-style:italic; }
 .user-details .no-apps { margin-left:165px; display:none; }
 .small-link { margin-top:10px; font-size:11px; cursor:pointer; color:#999; vertical-align:text-top; display:inline-block; }
