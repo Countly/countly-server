@@ -306,7 +306,7 @@ var pluginManager = function pluginManager() {
 
     var preventKillingNumberType = function(configsPointer, changes) {
         for (var k in changes) {
-            if (!Object.prototype.hasOwnProperty.call(configsPointer, k) || !Object.prototype.hasOwnProperty.call(configsPointer, k)) {
+            if (!Object.prototype.hasOwnProperty.call(configsPointer, k) || !Object.prototype.hasOwnProperty.call(changes, k)) {
                 continue;
             }
             if (changes[k] !== null && configsPointer[k] !== null) {
