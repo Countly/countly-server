@@ -2835,9 +2835,6 @@ readers do not read off random characters that represent icons */
 .fa-pen-square:before {
   content: "\f14b"; }
   
-.fa-pencil:before {
-  content: "\f303"; }
-  
 .fa-pencil-alt:before {
   content: "\f303"; }
 
@@ -4397,3 +4394,36 @@ readers do not read off random characters that represent icons */
 .fas {
   font-family: 'Font Awesome 5 Free';
   font-weight: 900; }
+  
+/****
+* Patches must be copied to fontawesome.min.css
+****/
+.fa-square-o,.fa-bookmark-o,.fa-calendar,.fa-sticky-note,.fa-smile-o,.fa-futbol-o,.fa-lightbulb-o,.fa-cutlery,.fa-paper-plane {
+    font-weight: 400;
+}
+.fa-pencil:before {
+  content: "\f303"; }
+.fa-square-o:before {
+  content: "\f0c8"; }
+.fa-bookmark-o:before {
+  content: "\f02e"; }
+.fa-reorder:before {
+  content: "\f0c9"; }
+.fa-money:before {
+  content: "\f0d6"; }
+.fa-refresh:before {
+  content: "\f01e"; }
+.fa-bar-chart:before {
+  content: "\f080"; }
+.fa-circle-o-notch:before {
+  content: "\f1ce"; }
+.fa-smile-o:before {
+  content: "\f118"; }
+.fa-futbol-o:before {
+  content: "\f1e3"; }
+.fa-lightbulb-o:before {
+  content: "\f0eb"; }
+.fa-cutlery:before {
+  content: "\f2e7"; }
+..fa-sign-out:before {
+  content: "\f2f5"; }
