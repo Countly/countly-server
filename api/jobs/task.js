@@ -23,7 +23,7 @@ class MonitorJob extends job.Job {
          * @return {boolean} return true if can run now
          */
         function tasksFilter(task) {
-            if (task.status === 1) {
+            if (task.status === 'running' || task.status === 'rerunning') {
                 return false;
             }
             const lastStart = task.start || 0;
