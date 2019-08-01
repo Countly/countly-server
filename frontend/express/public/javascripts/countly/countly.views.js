@@ -4256,11 +4256,13 @@ window.EventsBlueprintView = countlyView.extend({
 
         var segments = [];
         var i = 0;
-        for (i = 0; i < self.activeEvent.segments.length; i++) {
-            segments.push({"key": self.activeEvent.segments[i], "value": self.activeEvent.segments[i]});
-        }
-        for (i = 0; i < self.activeEvent.omittedSegments.length; i++) {
-            segments.push({"key": self.activeEvent.omittedSegments[i], "value": self.activeEvent.omittedSegments[i]});
+        if (self.activeEvent && self.activeEvent.segments && self.activeEvent.omittedSegments) {
+            for (i = 0; i < self.activeEvent.segments.length; i++) {
+                segments.push({"key": self.activeEvent.segments[i], "value": self.activeEvent.segments[i]});
+            }
+            for (i = 0; i < self.activeEvent.omittedSegments.length; i++) {
+                segments.push({"key": self.activeEvent.omittedSegments[i], "value": self.activeEvent.omittedSegments[i]});
+            }
         }
 
         $('#event-management-projection').selectize({
