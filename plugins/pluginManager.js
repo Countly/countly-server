@@ -304,6 +304,32 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    var preventKillingNumberType = function(configsPointer, changes) {
+        for (var k in changes) {
+            if (!Object.prototype.hasOwnProperty.call(configsPointer, k) || !Object.prototype.hasOwnProperty.call(changes, k)) {
+                continue;
+            }
+            if (changes[k] !== null && configsPointer[k] !== null) {
+                if (typeof changes[k] === 'object' && typeof configsPointer[k] === 'object') {
+                    preventKillingNumberType(configsPointer[k], changes[k]);
+                }
+                else if (typeof configsPointer[k] === 'number' && typeof changes[k] !== 'number') {
+                    try {
+                        changes[k] = parseInt(changes[k], 10);
+                        changes[k] = changes[k] || 0;
+                    }
+                    catch (e) {
+                        changes[k] = 2147483647;
+                    }
+                }
+                else if (typeof configsPointer[k] === 'string' && typeof changes[k] === 'number') {
+                    changes[k] = changes[k] + "";
+                }
+            }
+
+        }
+    };
+
     /**
     * Update all configs with provided changes
     * @param {object} db - database connection for countly db
@@ -311,7 +337,9 @@ var pluginManager = function pluginManager() {
     * @param {function} callback - function to call when updating finished
     **/
     this.updateAllConfigs = function(db, changes, callback) {
+
         for (let k in changes) {
+            preventKillingNumberType(configs[k], changes[k]);
             _.extend(configs[k], changes[k]);
             if (k in configsOnchanges) {
                 configsOnchanges[k](configs[k]);
@@ -1545,14 +1573,14 @@ var pluginManager = function pluginManager() {
         var toReturn = {};
 
         for (let i in ob) {
-            if (!ob.hasOwnProperty(i)) {
+            if (!Object.prototype.hasOwnProperty.call(ob, i)) {
                 continue;
             }
 
             if ((typeof ob[i]) === 'object' && ob[i] !== null) {
                 var flatObject = flattenObject(ob[i]);
                 for (let x in flatObject) {
-                    if (!flatObject.hasOwnProperty(x)) {
+                    if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
                         continue;
                     }
 
@@ -1560,7 +1588,9 @@ var pluginManager = function pluginManager() {
                 }
             }
             else {
-                ob[i] = (!isNaN(ob[i]) && ob[i] > 2147483647) ? 2147483647 : ob[i];
+                if (!isNaN(ob[i]) && typeof (ob[i]) === "number" && ob[i] > 2147483647) {
+                    ob[i] = 2147483647;
+                }
                 toReturn[prefix + i] = ob[i];
             }
         }
