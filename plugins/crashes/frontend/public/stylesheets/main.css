@@ -17,7 +17,6 @@
 
 .crashoveral .widget-content .big-numbers .inner{height: 105px; padding-top: 7px;}
 .crashoveral .widget-content .big-numbers.top .trend { display: block; }
-.crashoveral .widget-content .big-numbers .fa{vertical-align: text-top; font-size: 9px; margin-left: -7px;}
 .crashoveral #big-numbers-container.dashboard{margin-bottom:-10px;border: none;}
 .widget.crashoveral .widget-footer { overflow: visible; }
 
