@@ -669,6 +669,7 @@
 
     countlyEvent.getEventLongName = function(eventKey) {
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
+        eventKey = "" + eventKey;
         var mapKey = eventKey.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
         if (eventMap[mapKey] && eventMap[mapKey].name) {
             return eventMap[mapKey].name;
