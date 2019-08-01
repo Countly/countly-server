@@ -13720,7 +13720,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        icon: '<i class="fa fa-leaf" aria-hidden="true"></i>'
 	    }, {
 	        title: "Foods",
-	        icon: '<i class="fa fa-cutlery" aria-hidden="true"></i>'
+	        icon: '<i class="fa fa-utensils" aria-hidden="true"></i>'
 	    }, {
 	        title: "Activity",
 	        icon: '<i class="fa fa-futbol-o" aria-hidden="true"></i>'
