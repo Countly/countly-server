@@ -19,6 +19,7 @@ bash $CUR/scripts/remove_flash_corssorigin.sh
 #upgrade plugins
 countly upgrade
 countly plugin upgrade crashes
+countly plugin upgrade push
 countly plugin disable live
 countly plugin enable concurrent_users
 countly plugin enable formulas

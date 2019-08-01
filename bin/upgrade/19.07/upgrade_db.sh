@@ -8,6 +8,7 @@ CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ $1 != "combined" ]; then
     #upgrade plugins
     countly plugin upgrade crashes
+    countly plugin upgrade push
     countly plugin disable live
     countly plugin enable concurrent_users
     countly plugin enable formulas
