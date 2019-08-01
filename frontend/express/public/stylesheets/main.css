@@ -1211,7 +1211,7 @@ margin: 50px 0;}
 #add_to_overview{display:inline-block; text-align:center; float:none; margin-left: 0px; width: 75px;}
 #event-overview-drawer .buttons{background-color:#ffffff;}
 #events-overview-table table.events-table td:nth-child(2) { word-break: break-word; }
-#events-overview-show-configure{float:right; margin-top:5px;}
+#events-overview-show-configure{float:right; margin-top:6px;}
 .show-event-description:hover + .event-overview-description-wrapper .event-overview-description {border: 1px solid black; display:block}
 #event-blueprint-nav-title {padding-top:4px;}
 .events-empty-block{ max-width: 586px; margin: 75px auto 0 auto;}
