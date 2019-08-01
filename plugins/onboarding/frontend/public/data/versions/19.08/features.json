@@ -18,10 +18,22 @@
     "showIn": "EE"
   },
   {
+    "image": "online-users.png",
+    "title": "A new take on online users",
+    "text": "A dedicated view that displays online users for the last 24-hours. Top metrics from your currently online users such as countries and devices, 30-day highs and lows, comparison of online users across apps and threshold based alerts.",
+    "showIn": "EE"
+  },
+  {
     "image": "2fa.png",
     "title": "Two factor authentication for increased security",
     "text": "Add an extra layer of protection to your dashboard login by enabling the 2FA plugin. You can enforce two factor authentication to all users or you can leave it to your users to configure two factor authentication on demand.",
     "showIn": "All"
+  },
+  {
+    "image": "event-triggered.png",
+    "title": "Custom event triggered push notifications",
+    "text": "Automatically trigger push notifications to your users on Android and iOS when they perform certain custom events. Control campaign properties like capping, delivery time and maximum messages per user just like you can in cohort based automated notifications.",
+    "showIn": "EE"
   },
   {
     "image": "jira-plugin.png",
@@ -34,18 +46,6 @@
     "title": "Visualise your top custom events in events overview",
     "text": "Visualise your 24-hour and 30-day top events in events overview section. Top five events by their occurrence counts will give you a quick overview of which actions your customers are performing the most.",
     "showIn": "All"
-  },
-  {
-    "image": "online-users.png",
-    "title": "A new take on online users",
-    "text": "A dedicated view that displays online users for the last 24-hours. Top metrics from your currently online users such as countries and devices, 30-day highs and lows, comparison of online users across apps and threshold based alerts.",
-    "showIn": "EE"
-  },
-  {
-    "image": "event-triggered.png",
-    "title": "Custom event triggered push notifications",
-    "text": "Automatically trigger push notifications to your users on Android and iOS when they perform certain custom events. Control campaign properties like capping, delivery time and maximum messages per user just like you can in cohort based automated notifications.",
-    "showIn": "EE"
   },
   {
     "image": "notes.png",
