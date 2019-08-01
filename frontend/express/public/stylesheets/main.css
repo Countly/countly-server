@@ -1381,7 +1381,7 @@ margin: 50px 0;}
 .item.active .beta-button { opacity:0.8; transition:opacity 0.2s; background-color:#D63E40; background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); background-image:linear-gradient(to bottom, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; }
 .item.active .beta-button:hover { opacity:0.9; }
 
-#total-user-estimate-ind { vertical-align:text-top; font-size:13px; margin-left:-5px; }
+#total-user-estimate-ind { vertical-align:text-top; font-size:9px; margin-left:-7px; }
 #total-user-estimate-ind:hover { color:#6BB96E; }
 
 .rotated-tick { margin-top:-16px; font:normal 17px Oswald; }
