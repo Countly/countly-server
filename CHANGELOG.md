@@ -1,4 +1,4 @@
-## Version 19.07
+## Version 19.08
 
 **Fixes**
 * [api] fixed error on deleting user with exported data
