@@ -519,7 +519,7 @@ module.exports = function(my_db) {
                     scripts.push('mongodump ' + dbstr + ' --collection cohorts -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection server_stats_data_points -q \'{ a: "' + appid + '"}\' --out ' + my_folder);
                     //concurrent_users
-                    scripts.push('mongodump ' + dbstr + ' --collection concurrent_users_max -q \'{ _id: {$in :[ObjectId("' + appid + '_overall"), ObjectId("' + appid + '_overall_new")]}}\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection concurrent_users_max -q \'{ _id: {$in :["' + appid + '_overall", "' + appid + '_overall_new"]}}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection concurrent_users_alerts -q \'{ app: "' + appid + '"}\' --out ' + my_folder);
 
 
