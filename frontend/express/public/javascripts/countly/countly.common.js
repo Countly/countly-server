@@ -16,17 +16,20 @@
             "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
             onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
                 if (tag === "a") {
-                    if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
+                    var re = new RegExp(/{[0-9]*}/);
+                    var tested = re.test(value);
+                    if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent" || tested)) {
                         return "target='_blank'"; //set _blank if incorrect value
                     }
 
-                    if (name === "href" && !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http")) {
+                    if (name === "href" && !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http" || tested)) {
                         return "href='#'"; //set # if incorrect value
                     }
                 }
 
             }
         };
+
         /**
         * Get Browser language
         * @returns {string} browser locale in iso format en-US
