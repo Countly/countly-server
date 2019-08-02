@@ -174,13 +174,18 @@
     border:1px solid #dbdbdb;
     width: 120px;
     margin-top:10px;
-    left: 90px;
+    left: 92px;
     top: 50px;
     border-radius: 2px;
     position: absolute;
     outline: none !important;
     background-color: white;
     display: none;
+}
+
+.detail .pp-menu-list {
+    left: 247px !important;
+    top: 55px !important;
 }
 
 .pp-menu-list::before {
@@ -217,6 +222,7 @@
     font-family: 'Ionicons';
     content: "\f396";
     cursor: pointer;
+    font-size: 20px;
 }
 
 .clearfix {
