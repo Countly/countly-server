@@ -731,14 +731,30 @@ window.LoyaltyView = countlyView.extend({
             var sDaysPercentage = countlyCommon.formatNumber((100 * sDays) / totals[2], 2);
             sDaysPercentage = isNaN(sDaysPercentage) ? 0 : sDaysPercentage;
 
+            var allMultiplier = 0.8;
+            var tDaysMultiplier = 0.8;
+            var sDaysMultiplier = 0.8;
+
+            if (allPercentage > 80) {
+                allMultiplier = 0.65;
+            }
+
+            if (tDaysPercentage > 80) {
+                tDaysMultiplier = 0.65;
+            }
+
+            if (sDaysPercentage > 80) {
+                sDaysMultiplier = 0.65;
+            }
+
             chartData.push({
                 l: ticks[iTick][1],
                 a_count: all,
                 td_count: tDays,
                 sd_count: sDays,
-                a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>" + allPercentage + "%",
-                td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * 0.8) + "%'></div>" + tDaysPercentage + "%",
-                sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * 0.8) + "%'></div>" + sDaysPercentage + "%"
+                a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * allMultiplier) + "%'></div>" + allPercentage + "%",
+                td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * tDaysMultiplier) + "%'></div>" + tDaysPercentage + "%",
+                sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * sDaysMultiplier) + "%'></div>" + sDaysPercentage + "%"
             });
         }
 
