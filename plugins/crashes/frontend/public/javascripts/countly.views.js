@@ -1249,6 +1249,15 @@ window.CrashgroupView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
 
             changeResolveStateText(crashData);
+
+            $('#crash-notes').click(function() {
+                $('#tabs').addClass('hide-message');
+            });
+ 
+            $('#crash-errors').click(function() {
+                $('#tabs').removeClass('hide-message');
+            });
+
             if (typeof addDrill !== "undefined") {
                 $("#content .widget:first-child .widget-header>.right").append(addDrill("sg.crash", this.id, "[CLY]_crash"));
             }
