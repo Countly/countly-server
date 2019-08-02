@@ -1253,7 +1253,7 @@ window.CrashgroupView = countlyView.extend({
             $('#crash-notes').click(function() {
                 $('#tabs').addClass('hide-message');
             });
- 
+
             $('#crash-errors').click(function() {
                 $('#tabs').removeClass('hide-message');
             });
