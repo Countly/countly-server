@@ -513,7 +513,6 @@ module.exports = function(my_db) {
                     scripts.push('mongodump ' + dbstr + ' --collection crash_share -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection feedback_widgets -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection notes -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection top_events -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + '  --collection messages -q \'{ apps: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohortdata -q \'{ a: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohorts -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
@@ -535,6 +534,7 @@ module.exports = function(my_db) {
                     }
 
                     scripts.push('mongodump ' + dbstr + ' --collection max_online_counts -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection top_events -q \'{ app_id: ObjectId("' + appid + '")}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection events -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection views -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection funnels -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
@@ -958,6 +958,9 @@ module.exports = function(my_db) {
                         }
                         else if (constr.dbstr_drill.indexOf('--db ' + subdirectory[j]) > -1) {
                             myscripts.push('mongorestore ' + constr.dbstr_drill + ' --dir ' + folder + '/' + myfiles[i] + '/' + subdirectory[j]);
+                        }
+                        else if (constr.dbstr_out.indexOf('--db ' + subdirectory[j]) > -1) {
+                            myscripts.push('mongorestore ' + constr.dbstr_out + ' --dir ' + folder + '/' + myfiles[i] + '/' + subdirectory[j]);
                         }
                     }
                 }
