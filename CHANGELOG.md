@@ -32,6 +32,7 @@
 **Enterprise fixes**
 * [attribution] encode link if it is not a custom scheme
 * [attribution] fixed using last campaign urls when creating new campaign
+* [block] fixed creating empty users for new blocked users
 * [cohorts] fixed editing cohorts with big lists
 * [cohorts] handle empy user sets correctly and more efficiently
 * [dashboards] block all popups for dashboard image rendering in emails
