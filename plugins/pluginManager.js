@@ -762,29 +762,36 @@ var pluginManager = function pluginManager() {
     this.installPlugin = function(plugin, callback) {
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
-        try {
-            var errors;
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
-            delete require.cache[require.resolve(scriptPath)];
-            require(scriptPath);
-        }
-        catch (ex) {
-            console.log(ex.stack);
-            errors = true;
-            return callback(errors);
-        }
-        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
-        if (eplugin && eplugin.prepackaged) {
-            return callback(errors);
-        }
-        var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error) {
+        var scriptPath = path.join(__dirname, plugin, 'install.js');
+        var errors = false;
+        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
+            console.log('Done running install.js with %j', error);
             if (error) {
                 errors = true;
-                console.log('error: %j', error);
+                return callback(errors);
             }
-            console.log('Done installing plugin %j', plugin);
-            callback(errors);
+
+            var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+            if (eplugin && eplugin.prepackaged) {
+                return callback(errors);
+            }
+            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+            exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
+                if (error2) {
+                    errors = true;
+                    console.log('error: %j', error2);
+                }
+                console.log('Done installing plugin %j', plugin);
+                callback(errors);
+            });
+        });
+
+        process.stdout.on("data", function(data) {
+            console.log(data.toString());
+        });
+
+        process.stderr.on("data", function(data) {
+            console.log(data.toString());
         });
     };
 
@@ -797,29 +804,36 @@ var pluginManager = function pluginManager() {
     this.upgradePlugin = function(plugin, callback) {
         console.log('Upgrading plugin %j...', plugin);
         callback = callback || function() {};
-        try {
-            var errors;
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
-            delete require.cache[require.resolve(scriptPath)];
-            require(scriptPath);
-        }
-        catch (ex) {
-            console.log(ex.stack);
-            errors = true;
-            return callback(errors);
-        }
-        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
-        if (eplugin && eplugin.prepackaged) {
-            return callback(errors);
-        }
-        var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error) {
+        var scriptPath = path.join(__dirname, plugin, 'install.js');
+        var errors = false;
+        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
+            console.log('Done running install.js with %j', error);
             if (error) {
                 errors = true;
-                console.log('error: %j', error);
+                return callback(errors);
             }
-            console.log('Done upgrading plugin %j', plugin);
-            callback(errors);
+
+            var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+            if (eplugin && eplugin.prepackaged) {
+                return callback(errors);
+            }
+            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+            exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
+                if (error2) {
+                    errors = true;
+                    console.log('error: %j', error2);
+                }
+                console.log('Done upgrading plugin %j', plugin);
+                callback(errors);
+            });
+        });
+
+        process.stdout.on("data", function(data) {
+            console.log(data.toString());
+        });
+
+        process.stderr.on("data", function(data) {
+            console.log(data.toString());
         });
     };
 
@@ -832,19 +846,23 @@ var pluginManager = function pluginManager() {
     this.uninstallPlugin = function(plugin, callback) {
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
-        try {
-            var errors;
-            var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
-            delete require.cache[require.resolve(scriptPath)];
-            require(scriptPath);
-        }
-        catch (ex) {
-            console.log(ex.stack);
-            errors = true;
-            return callback(errors);
-        }
-        console.log('Done uninstalling plugin %j', plugin);
-        callback(errors);
+        var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
+        var errors = false;
+        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
+            console.log('Done running uninstall.js with %j', error);
+            if (error) {
+                errors = true;
+            }
+            callback(errors);
+        });
+
+        process.stdout.on("data", function(data) {
+            console.log(data.toString());
+        });
+
+        process.stderr.on("data", function(data) {
+            console.log(data.toString());
+        });
     };
 
     /**
