@@ -18,15 +18,23 @@
                 if (tag === "a") {
                     var re = new RegExp(/{[0-9]*}/);
                     var tested = re.test(value);
-                    if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent" || tested)) {
-                        return "target='_blank'"; //set _blank if incorrect value
+                    if (name === "target") {
+                        if (!(value === "_blank" || value === "_self" || value === "_top" || value === "_parent" || tested)) {
+                            return 'target="_blank"'; //set _blank if incorrect value
+                        }
+                        else {
+                            return 'target="' + value + '"';
+                        }
                     }
-
-                    if (name === "href" && !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http" || tested)) {
-                        return "href='#'"; //set # if incorrect value
+                    if (name === "href") {
+                        if (!(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http" || tested)) {
+                            return 'href="#"'; //set # if incorrect value
+                        }
+                        else {
+                            return 'href="' + value + '"';
+                        }
                     }
                 }
-
             }
         };
 
