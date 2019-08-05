@@ -673,18 +673,29 @@ window.LoyaltyView = countlyView.extend({
 
         // Chart data
         var totals = [0, 0, 0]; //[allTotal, thirtDaysTotal, sevendaysTotal]
+        var i, dp0, dp1, dp2;
 
         for (var iRange = 0; iRange < ranges.length; iRange++) {
             var index = ticks.length - 1;
-            var dp0 = allData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
-            var dp1 = thirtyDaysData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
-            var dp2 = sevenDaysData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
+            dp0 = null, dp1 = null, dp2 = null;
+            for (i = 0; i < allData.length; i++) {
+                if (allData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp0 = allData[i];
+                    break;
+                }
+            }
+            for (i = 0; i < thirtyDaysData.length; i++) {
+                if (thirtyDaysData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp1 = thirtyDaysData[i];
+                    break;
+                }
+            }
+            for (i = 0; i < sevenDaysData.length; i++) {
+                if (sevenDaysData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp2 = sevenDaysData[i];
+                    break;
+                }
+            }
 
             if (dp0) {
                 dp[0].data.push([index, dp0.count]);
