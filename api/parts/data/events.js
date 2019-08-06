@@ -477,7 +477,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
 function mergeEvents(firstObj, secondObj) {
     for (let firstLevel in secondObj) {
 
-        if (!secondObj.hasOwnProperty(firstLevel)) {
+        if (!Object.prototype.hasOwnProperty.call(secondObj, firstLevel)) {
             continue;
         }
 
@@ -488,7 +488,7 @@ function mergeEvents(firstObj, secondObj) {
 
         for (var secondLevel in secondObj[firstLevel]) {
 
-            if (!secondObj[firstLevel].hasOwnProperty(secondLevel)) {
+            if (!Object.prototype.hasOwnProperty.call(secondObj[firstLevel], secondLevel)) {
                 continue;
             }
 

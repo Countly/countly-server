@@ -2183,7 +2183,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
              *  }
              * }
              */
-            if (apiConfig.hasOwnProperty('host') && frontendConfig.hasOwnProperty('host')) {
+            if (Object.prototype.hasOwnProperty.call(apiConfig, 'host') && Object.prototype.hasOwnProperty.call(frontendConfig, 'host')) {
                 if (apiConfig.host === frontendConfig.host && apiConfig.db === frontendConfig.db) {
                     return true;
                 }
@@ -2201,7 +2201,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
              *  }
              * }
              */ 
-            else if (apiConfig.hasOwnProperty('replSetServers') && frontendConfig.hasOwnProperty('replSetServers')) {
+            else if (Object.prototype.hasOwnProperty.call(apiConfig, 'replSetServers') && Object.prototype.hasOwnProperty.call(frontendConfig, 'replSetServers')) {
                 if (apiConfig.replSetServers.length === frontendConfig.replSetServers.length && apiConfig.db === frontendConfig.db) {
                     let isCorrect = true;
                     for (let i = 0; i < apiConfig.replSetServers.length; i++) {

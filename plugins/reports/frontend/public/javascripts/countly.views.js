@@ -523,7 +523,7 @@ window.ReportingView = countlyView.extend({
                 regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[0]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
                 }
 
                 // name <email@address.com>
@@ -532,7 +532,7 @@ window.ReportingView = countlyView.extend({
                 /*eslint-enable */
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[2]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
                 }
 
                 return false;

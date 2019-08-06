@@ -5,7 +5,7 @@
  * @global
  * @namespace countlyCommon
  */
-(function(window, $, undefined) {
+(function(window, $) {
 
     var CommonConstructor = function() {
         // Private Properties
@@ -2049,7 +2049,7 @@
             }
 
             for (var level1 in tmpUpdateObj) {
-                if (!tmpUpdateObj.hasOwnProperty(level1)) {
+                if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj, level1)) {
                     continue;
                 }
 
@@ -2110,7 +2110,7 @@
 
                 if (tmpUpdateObj[level1]) {
                     for (var level2 in tmpUpdateObj[level1]) {
-                        if (!tmpUpdateObj[level1].hasOwnProperty(level2)) {
+                        if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj[level1], level2)) {
                             continue;
                         }
 
@@ -3571,7 +3571,7 @@
             if (obj instanceof Object) {
                 copy = {};
                 for (var attr in obj) {
-                    if (obj.hasOwnProperty(attr)) {
+                    if (Object.prototype.hasOwnProperty.call(obj, attr)) {
                         copy[attr] = clone(obj[attr]);
                     }
                 }

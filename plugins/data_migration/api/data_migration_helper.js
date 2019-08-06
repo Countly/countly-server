@@ -166,7 +166,7 @@ module.exports = function(my_db) {
         var set_data = {step: step, status: status, progress: progress, ts: Date.now(), reason: reason};
         if (more_fields) {
             for (var k in more_fields) {
-                if (more_fields.hasOwnProperty(k)) {
+                if (Object.prototype.hasOwnProperty.call(more_fields, k)) {
                     set_data[k] = more_fields[k];
                 }
             }

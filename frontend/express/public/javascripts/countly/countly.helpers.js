@@ -1530,7 +1530,7 @@
         var selC = dtable.CoultyColumnSel.tableCol;
 
         for (var k in settings) {
-            if (settings.hasOwnProperty(k) && settings[k] === true) {
+            if (Object.prototype.hasOwnProperty.call(settings, k) && settings[k] === true) {
                 selC--;
             }
         }
