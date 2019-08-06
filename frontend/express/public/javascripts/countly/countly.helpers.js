@@ -129,7 +129,13 @@
         drawer.removeAttr("id");
 
         if (options.template) { //from template or string
-            var newPage = $("<div>" + options.template(options.templateData) + "</div>");
+            var newPage = "";
+            if (typeof options.template === 'function') {
+                newPage = $("<div>" + options.template(options.templateData || {}) + "</div>");
+            }
+            else {
+                newPage = $("<div>" + options.template + "</div>");
+            }
             $(drawer).find('.details').first().replaceWith($(newPage).find('.details').first()); //copy details
             $(drawer).find('.buttons').first().replaceWith($(newPage).find('.buttons').first()); //copy buttons
         }
