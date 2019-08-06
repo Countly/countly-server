@@ -538,6 +538,7 @@ module.exports = function(my_db) {
                     scripts.push('mongodump ' + dbstr + ' --collection events -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection views -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection funnels -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection calculated_metrics -q \'{ app: "' + appid + '" }\' --out ' + my_folder);
 
                     //internal events
                     for (let j = 0; j < plugins.internalEvents.length; j++) {
