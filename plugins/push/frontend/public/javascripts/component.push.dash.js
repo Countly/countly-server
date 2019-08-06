@@ -590,11 +590,13 @@ window.MessagingDashboardView = countlyView.extend({
         }
     },
 
-    appChanged: function() {
+    appChanged: function(callback) {
         m.startComputation();
         components.slider.instance.close();
         m.endComputation();
-        this.renderCommon();
+        if (callback) {
+            callback();
+        }
     }
 
 });
