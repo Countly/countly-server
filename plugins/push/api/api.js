@@ -503,7 +503,7 @@ const PUSH_CACHE_GROUP = 'P';
         }
     });
 
-    /** collects messaging token keys
+    /**collects messaging token keys
      * @param {object} dbAppUser - data
      * @returns {array} list of tokens
      */
