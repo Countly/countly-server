@@ -151,11 +151,6 @@ const PUSH_CACHE_GROUP = 'P';
                     ids = (ids || []).map(id => id._id);
                     log.d(`filtered by message: now ${ids.length} uids out of ${uids.length}`);
                     uids.splice(0, uids.length, ...ids);
-                    // for(let i = 0; i < uids.length; i++) {
-                    //     if (ids.indexOf(uids[i]) === -1) {
-                    //         uids.splice(i--, 1);
-                    //     }
-                    // }
                     res();
                 }
             });
@@ -482,12 +477,32 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/apps/delete', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
-        common.db.collection(`push_${appId}`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}`).drop({}, function() {});
+        common.db.collection(`push_${appId}_id`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ia`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ip`).drop({}, function() {});
+        common.db.collection(`push_${appId}_at`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ap`).drop({}, function() {});
     });
 
     plugins.register('/consent/change', ({params, changes}) => {
         push.onConsentChange(params, changes);
     });
+
+    plugins.register('/i/app_users/delete', ({app_id, uids}) => {
+        if (uids && uids.length) {
+            common.db.collection(`push_${app_id}`).deleteMany({_id: {$in: uids}}, function() {});
+        }
+    });
+
+    plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbstr, export_folder}) => {
+        if (uids && uids.length) {
+            if (!export_commands.push) {
+                export_commands.push = [`mongoexport ${dbstr} --collection push_${app_id} -q '{uid: {$in: ${JSON.stringify(uids)}}}' --out ${export_folder}/push_${app_id}.json`];
+            }
+        }
+    });
+
     /** collects messaging token keys
      * @param {object} dbAppUser - data
      * @returns {array} list of tokens
