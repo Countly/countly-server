@@ -41,10 +41,10 @@ countly_root (){
 #real commands, can also be overwritten
 
 run_upgrade (){
-    if [ $2 == "fs" ]
+    if [[ $2 == "fs" ]]
     then
         echo "Upgrading filesystem versions: $1";
-    elif [ $2 == "db" ]
+    elif [[ $2 == "db" ]]
     then
         echo "Upgrading database versions: $1";
     else
@@ -53,7 +53,7 @@ run_upgrade (){
     arr=$@;
     for i in ${1//;/ }
     do
-        if [ $2 == "fs" ]
+        if [[ $2 == "fs" ]]
         then
             if [ -f $DIR/../upgrade/$i/upgrade_fs.sh ]; then
                 if [[ " ${arr[*]} " != *" -y "* ]]; then
@@ -67,7 +67,7 @@ run_upgrade (){
             else
                 echo "No filesystem upgrade script provided for $i";
             fi
-        elif [ $2 == "db" ]
+        elif [[ $2 == "db" ]]
         then
             if [ -f $DIR/../upgrade/$i/upgrade_db.sh ]; then
                 if [[ " ${arr[*]} " != *" -y "* ]]; then
