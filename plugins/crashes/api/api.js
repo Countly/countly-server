@@ -796,6 +796,9 @@ plugins.setConfigs("crashes", {
                     if (typeof filter._id === "undefined") {
                         filter._id = {$ne: "meta"};
                     }
+                    plugins.dispatch("/drill/preprocess_query", {
+                        query: filter
+                    });
                     common.db.collection('app_crashgroups' + params.app_id).estimatedDocumentCount(function(crashGroupsErr, total) {
                         total--;
                         var cursor = common.db.collection('app_crashgroups' + params.app_id).find(filter, {uid: 1, is_new: 1, is_renewed: 1, is_hidden: 1, os: 1, not_os_specific: 1, name: 1, error: 1, users: 1, lastTs: 1, reports: 1, latest_version: 1, is_resolved: 1, resolved_version: 1, nonfatal: 1, session: 1, is_resolving: 1});
