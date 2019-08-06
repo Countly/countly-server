@@ -97,6 +97,9 @@ window.AlertsView = countlyView.extend({
                 $("#alert-widget-drawer").find("#widget-types .opt").removeClass("disabled");
                 $("#create-widget").removeClass("disabled");
                 $(($('#alert-data-types').find("[data-data-type='metric']"))).trigger("click");
+                if (self.widgetDrawer.emailInput && self.widgetDrawer.emailInput.length > 0) {
+                    (self.widgetDrawer.emailInput[0]).selectize.setValue("");
+                }
             },
             onClosed: function() {
                 $(".grid-stack-item").removeClass("marked-for-editing");

@@ -26,12 +26,18 @@ if (!production) {
 */
 function check_ext(file) {
     var ee = file.split('.');
-    if (ee.length === 2) {
-        if (ee[1] === 'tar' || ee[1] === 'zip' || ee[1] === 'tgz') {
-            return true;
-        }
+    var last = "";
+    var plast = "";
+    if(ee.length>0 ) {
+        last = ee[ee.length-1]
     }
-    else if (ee.length === 3 && ee[1] === 'tar' && ee[2] === 'gz') {
+     if(ee.length>1 ) {
+        plast = ee[ee.length-2]
+    }
+    if (last === 'tar' || last === 'zip' || last === 'tgz') {
+            return true;
+    }
+    else if (plast === 'tar' && plast === 'gz') {
         return true;
     }
     CountlyHelpers.alert(jQuery.i18n.map["plugin-upload.badformat"], "popStyleGreen", {title: jQuery.i18n.map["common.error"], image: "token-warning"});

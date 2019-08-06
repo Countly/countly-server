@@ -5022,7 +5022,13 @@ window.EventsOverviewView = countlyView.extend({
                 },
                 resetForm: function() {
                     self.resetOverviewList();
+                    self.templateData["overview-table-length"] = self.overviewList.length;
                     $("#events-overview-table").css("max-height", $(window).height() - 280);
+                    $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
+                    $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
+                    $("#add_to_overview").addClass('disabled');
+                    $("#update_overview_button").addClass('disabled');
+                            
 
                     var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                     $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
@@ -5073,6 +5079,9 @@ window.EventsOverviewView = countlyView.extend({
 
             //save changes made in overview drawer
             $("#update_overview_button").on("click", function() {
+                if($(this).hasClass("disabled")) {
+                    return;
+                }
                 countlyEvent.update_map("", "", JSON.stringify(self.overviewList), "", function(result) {
                     if (result === true) {
                         var widgetCount = self.overviewList ? self.overviewList.length : 0;
