@@ -28,14 +28,14 @@ function check_ext(file) {
     var ee = file.split('.');
     var last = "";
     var plast = "";
-    if(ee.length>0 ) {
-        last = ee[ee.length-1]
+    if (ee.length > 0) {
+        last = ee[ee.length - 1];
     }
-     if(ee.length>1 ) {
-        plast = ee[ee.length-2]
+    if (ee.length > 1) {
+        plast = ee[ee.length - 2];
     }
     if (last === 'tar' || last === 'zip' || last === 'tgz') {
-            return true;
+        return true;
     }
     else if (plast === 'tar' && plast === 'gz') {
         return true;

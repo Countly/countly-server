@@ -5028,7 +5028,7 @@ window.EventsOverviewView = countlyView.extend({
                     $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
                     $("#add_to_overview").addClass('disabled');
                     $("#update_overview_button").addClass('disabled');
-                            
+
 
                     var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                     $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
@@ -5079,7 +5079,7 @@ window.EventsOverviewView = countlyView.extend({
 
             //save changes made in overview drawer
             $("#update_overview_button").on("click", function() {
-                if($(this).hasClass("disabled")) {
+                if ($(this).hasClass("disabled")) {
                     return;
                 }
                 countlyEvent.update_map("", "", JSON.stringify(self.overviewList), "", function(result) {
