@@ -200,7 +200,7 @@ var exported = {},
             }
         }
         var update = {};
-        update["a." + countlyDb.encode(action)] = true;
+        update["action." + countlyDb.encode(action)] = true;
         countlyDb.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function() {});
     }
 

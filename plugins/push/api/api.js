@@ -245,11 +245,14 @@ const PUSH_CACHE_GROUP = 'P';
                         }
                     }
                 }
-                else if (ou && !nu) {
+                else if (ou && Object.keys(ou).length > 1 && !nu) {
                     log.i('No new uid, setting old');
                     update.$set = ou;
                     opts.upsert = true;
                     delete update.$set._id;
+                }
+                else if (ou && Object.keys(ou).length === 1 && !nu) {
+                    log.i('Empty old uid, nothing to merge');
                 }
                 else if (!ou && nu) {
                     log.i('No old uid, nothing to merge');

@@ -372,7 +372,7 @@ var pluginOb = {},
             }
         }
         var update = {};
-        update["a." + common.db.encode(action)] = true;
+        update["action." + common.db.encode(action)] = true;
         common.db.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function() {});
     }
 }(pluginOb));
