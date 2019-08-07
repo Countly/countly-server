@@ -21,6 +21,7 @@ bash $CUR/scripts/remove_flash_corssorigin.sh
 countly plugin upgrade crashes
 countly plugin upgrade push
 (cd $DIR/../plugins/push/api/parts/apn && npm install --unsafe-perm)
+countly plugin upgrade systemlogs
 countly plugin disable live
 countly plugin enable concurrent_users
 countly plugin enable formulas

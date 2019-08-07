@@ -9,6 +9,7 @@ if [ $1 != "combined" ]; then
     #upgrade plugins
     countly plugin upgrade crashes
     countly plugin upgrade push
+    countly plugin upgrade systemlogs
     countly plugin disable live
     countly plugin enable concurrent_users
     countly plugin enable formulas
