@@ -791,7 +791,7 @@ membersUtility.settings = function(req, callback) {
 
                             if (member.password === password_SHA1 || member.password === password_SHA5) {
                                 argon2Hash(req.body.old_pwd).then(password_ARGON2 => {
-                                    updateUserPasswordToArgon2(member._id, password_ARGON2);
+                                    updateUserPasswordToArgon2(member._id, password_ARGON2, membersUtility.db);
                                 }).catch(function() {
                                     console.log("Problem updating password");
                                 });

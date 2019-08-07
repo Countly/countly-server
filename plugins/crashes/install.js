@@ -19,7 +19,7 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
                 done();
             }
         }
-        countlyDb.collection('app_crashgroups' + app._id).insert({_id: "meta"}, cb);
+        countlyDb.collection('app_crashgroups' + app._id).insert({_id: "meta"}, {ignore_errors: [11000]}, cb);
         countlyDb.collection('app_crashgroups' + app._id).ensureIndex({"name": 1}, {background: true}, cb);
         countlyDb.collection('app_crashgroups' + app._id).ensureIndex({"os": 1}, {background: true}, cb);
         countlyDb.collection('app_crashgroups' + app._id).ensureIndex({"reports": 1}, {background: true}, cb);

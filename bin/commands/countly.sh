@@ -41,10 +41,10 @@ countly_root (){
 #real commands, can also be overwritten
 
 run_upgrade (){
-    if [ $2 == "fs" ]
+    if [[ $2 == "fs" ]]
     then
         echo "Upgrading filesystem versions: $1";
-    elif [ $2 == "db" ]
+    elif [[ $2 == "db" ]]
     then
         echo "Upgrading database versions: $1";
     else
@@ -53,7 +53,7 @@ run_upgrade (){
     arr=$@;
     for i in ${1//;/ }
     do
-        if [ $2 == "fs" ]
+        if [[ $2 == "fs" ]]
         then
             if [ -f $DIR/../upgrade/$i/upgrade_fs.sh ]; then
                 if [[ " ${arr[*]} " != *" -y "* ]]; then
@@ -67,7 +67,7 @@ run_upgrade (){
             else
                 echo "No filesystem upgrade script provided for $i";
             fi
-        elif [ $2 == "db" ]
+        elif [[ $2 == "db" ]]
         then
             if [ -f $DIR/../upgrade/$i/upgrade_db.sh ]; then
                 if [[ " ${arr[*]} " != *" -y "* ]]; then
@@ -151,7 +151,7 @@ countly_upgrade (){
         then
             echo $(nodejs $DIR/../scripts/checking_versions.js);
         elif [ $# -eq 3 ]
-        then        
+        then
             echo $(nodejs $DIR/../scripts/checking_versions.js $2 $3);
         else
             echo "Provide upgrade version in formats:";
@@ -172,6 +172,28 @@ countly_upgrade (){
             echo "    countly upgrade run fs <version>";
             echo "    countly upgrade run db <version>";
         fi
+    elif [ $1 == "ee" ]
+    then
+        if [ -f $DIR/../../countly-enterprise-edition*.tar.gz ]; then
+            cp -Rf $DIR/../../plugins/plugins.default.json $DIR/../../plugins/plugins.ce.json
+
+            echo "Extracting Countly Enterprise Edition..."
+            (cd $DIR/../..;
+            tar xaf countly-enterprise-edition*.tar.gz --strip=1 countly;)
+
+            EE_PLUGINS=$(cat $DIR/../../plugins/plugins.ee.json | sed 's/\"//g' | sed 's/\[//g' | sed 's/\]//g')
+            CE_PLUGINS=$(cat $DIR/../../plugins/plugins.ce.json | sed 's/\"//g' | sed 's/\[//g' | sed 's/\]//g')
+            PLUGINS_DIFF=$(echo " ${EE_PLUGINS}, ${CE_PLUGINS}" | tr ',' '\n' | sort | uniq -u)
+            echo "Enabling plugins..."
+            for plugin in $PLUGINS_DIFF; do
+                countly plugin enable $plugin
+            done
+
+            echo "Upgrading Countly..."
+            countly upgrade
+        else
+            echo "Error: Couldn't find any Enterprise Edition package, you should place archive file into '$(cd $DIR/../..; pwd;)'"
+        fi
     elif [ $1 == "help" ]
     then
         echo "countly upgrade usage:"
@@ -181,13 +203,13 @@ countly_upgrade (){
         echo "    countly upgrade auto db [-y]                     # automatically run all database upgrade scripts between marked and current versions";
         echo "    countly upgrade list auto                        # list all version upgrades that will be used in auto upgrade";
         echo "    countly upgrade list <from_version> <to_version> # list all version upgrades that will be used upgrading from and to provided version";
-        echo "    countly upgrade run <version> [-y]               # run specific version upgrade script"; 
+        echo "    countly upgrade run <version> [-y]               # run specific version upgrade script";
         echo "    countly upgrade run fs <version> [-y]            # run specific version file upgrade script";
         echo "    countly upgrade run db <version> [-y]            # run specific version database script";
         echo "    countly upgrade version <from> <to> [-y]         # run all upgrade scripts between provided versions";
         echo "    countly upgrade version fs <from> <to> [-y]      # run all filesystem upgrade scripts between provided versions";
         echo "    countly upgrade version db <from> <to> [-y]      # run all database upgrade scripts between provided versions";
-        echo "    countly upgrade help                             # this command";
+        echo "    countly upgrade ee                               # upgrade from Community Edition to Enterprise Edition within the same version";
         echo "    countly upgrade help                             # this command";
     fi
 }

@@ -151,11 +151,6 @@ const PUSH_CACHE_GROUP = 'P';
                     ids = (ids || []).map(id => id._id);
                     log.d(`filtered by message: now ${ids.length} uids out of ${uids.length}`);
                     uids.splice(0, uids.length, ...ids);
-                    // for(let i = 0; i < uids.length; i++) {
-                    //     if (ids.indexOf(uids[i]) === -1) {
-                    //         uids.splice(i--, 1);
-                    //     }
-                    // }
                     res();
                 }
             });
@@ -208,6 +203,71 @@ const PUSH_CACHE_GROUP = 'P';
                 // });
             })
         });
+    });
+
+    plugins.register('/i/device_id', ({app_id, oldUser, newUser}) => {
+        let ouid = oldUser.uid,
+            nuid = newUser.uid;
+
+        if (ouid && nuid) {
+            log.i(`Merging push data of ${ouid} into ${nuid}`);
+            common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
+                if (err || !users) {
+                    log.e('Couldn\'t load users to merge', err);
+                    return;
+                }
+
+                let ou = users.filter(u => u._id === ouid)[0],
+                    nu = users.filter(u => u._id === nuid)[0],
+                    update = {},
+                    opts = {};
+
+                if (ou && nu) {
+                    log.i('Merging %j into %j', ou, nu);
+                    if (ou.tk && Object.keys(ou.tk).length) {
+                        update.$set = {};
+                        for (let k in ou.tk) {
+                            update.$set['tk.' + k] = ou.tk[k];
+                        }
+                    }
+                    if (ou.msgs && ou.msgs.length) {
+                        let ids = nu.msgs && nu.msgs.map(m => m[0].toString()) || [],
+                            msgs = [];
+
+                        ou.msgs.forEach(m => {
+                            if (ids.indexOf(m[0].toString()) === -1) {
+                                msgs.push(m);
+                            }
+                        });
+
+                        if (msgs.length) {
+                            update.$push = {msgs: {$each: msgs}};
+                        }
+                    }
+                }
+                else if (ou && !nu) {
+                    log.i('No new uid, setting old');
+                    update.$set = ou;
+                    opts.upsert = true;
+                    delete update.$set._id;
+                }
+                else if (!ou && nu) {
+                    log.i('No old uid, nothing to merge');
+                }
+                else {
+                    log.i('Nothing to merge at all');
+                }
+
+                if (ou) {
+                    log.d('Removing old push data for %s', ou._id);
+                    common.db.collection(`push_${app_id}`).deleteOne({_id: ou._id}, e => e && log.e('Error while deleting old uid push data', e));
+                }
+                if (Object.keys(update).length) {
+                    log.d('Updating push data for %s: %j', nuid, update);
+                    common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, e => e && log.e('Error while updating new uid with push data', e));
+                }
+            });
+        }
     });
 
     //write api call
@@ -395,6 +455,7 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/apps/reset', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
+        common.db.collection(`push_${appId}`).deleteMany({}, function() {});
         common.db.collection('apps').findOne({_id: common.db.ObjectID(appId)}, function(err, app) {
             if (err || !app) {
                 return log.e('Cannot find app: %j', err || 'no app');
@@ -409,18 +470,40 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/apps/clear_all', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
+        common.db.collection(`push_${appId}`).deleteMany({}, function() {});
         // common.db.collection('credentials').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
 
     plugins.register('/i/apps/delete', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
+        common.db.collection(`push_${appId}`).drop({}, function() {});
+        common.db.collection(`push_${appId}_id`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ia`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ip`).drop({}, function() {});
+        common.db.collection(`push_${appId}_at`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ap`).drop({}, function() {});
     });
 
     plugins.register('/consent/change', ({params, changes}) => {
         push.onConsentChange(params, changes);
     });
-    /** collects messaging token keys
+
+    plugins.register('/i/app_users/delete', ({app_id, uids}) => {
+        if (uids && uids.length) {
+            common.db.collection(`push_${app_id}`).deleteMany({_id: {$in: uids}}, function() {});
+        }
+    });
+
+    plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbstr, export_folder}) => {
+        if (uids && uids.length) {
+            if (!export_commands.push) {
+                export_commands.push = [`mongoexport ${dbstr} --collection push_${app_id} -q '{uid: {$in: ${JSON.stringify(uids)}}}' --out ${export_folder}/push_${app_id}.json`];
+            }
+        }
+    });
+
+    /**collects messaging token keys
      * @param {object} dbAppUser - data
      * @returns {array} list of tokens
      */

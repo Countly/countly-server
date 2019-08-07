@@ -377,7 +377,8 @@ window.component('push', function(push) {
                 delayed: this.delayed(),
                 tz: this.tz(),
                 test: this.test(),
-                auto: this.auto()
+                auto: this.auto(),
+                date: this.date()
             };
             if (includeId) {
                 obj._id = this._id();
@@ -390,7 +391,6 @@ window.component('push', function(push) {
                 obj.badge = this.badge();
                 obj.url = this.url();
                 obj.source = 'dash';
-                obj.date = this.date();
                 obj.buttons = parseInt(this.buttons());
                 obj.media = this.media();
                 obj.autoOnEntry = this.autoOnEntry();

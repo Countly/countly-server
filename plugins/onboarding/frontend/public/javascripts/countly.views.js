@@ -155,6 +155,10 @@ function whatsNewPopup() {
                                 });
                             }
 
+                            $(document).on("click", "#whatsnew-popup-close", function() {
+                                closePopup();
+                            });
+
                             $(document).on("click", "#last-step-button", function() {
                                 closePopup();
                             });

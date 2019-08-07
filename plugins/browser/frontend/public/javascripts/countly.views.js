@@ -170,9 +170,5 @@ app.route("/analytics/browser", 'browser', function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/analytics/browser" class="item">' +
-		'<div class="logo-icon fa fa-globe"></div>' +
-		'<div class="text" data-localize="browser.title"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').append(menu);
+    app.addSubMenuForType("web", "analytics", {code: "analytics-browser", url: "#/analytics/browser", text: "browser.title", priority: 90});
 });

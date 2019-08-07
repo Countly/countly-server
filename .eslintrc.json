@@ -1,6 +1,7 @@
 {
     "extends": "eslint:recommended",
     "rules": {
+        "require-atomic-updates": "off",
         "block-spacing": [
             "error",
             "always"

@@ -140,13 +140,6 @@ $(document).ready(function() {
         }
     });
 
-    $('body').noisy({
-        intensity: 0.9,
-        size: 50,
-        opacity: 0.02,
-        monochrome: true
-    });
-
     $("#reset-password-form").submit(function() {
         if ($("input[name=password]").val() != $("input[name=again]").val()) {
             if ($("#message").length > 0) {

@@ -87,7 +87,15 @@ countlyEvents.processEvents = function(params) {
                             continue;
                         }
 
-                        var tmpSegVal = currEvent.segmentation[segKey] + "";
+                        var tmpSegVal;
+                        try {
+                            tmpSegVal = currEvent.segmentation[segKey] + "";
+                        }
+                        catch (ex) {
+                            console.log("Incorrect segment value", params.app_id, currEvent.key, "segment", segKey, ex);
+                            delete currEvent.segmentation[segKey];
+                            tmpSegVal = "";
+                        }
 
                         if (tmpSegVal === "") {
                             continue;
@@ -258,7 +266,14 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 }
 
                 tmpEventObj = {};
-                var tmpSegVal = currEvent.segmentation[segKey] + "";
+
+                var tmpSegVal;
+                try {
+                    tmpSegVal = currEvent.segmentation[segKey] + "";
+                }
+                catch (ex) {
+                    tmpSegVal = "";
+                }
 
                 if (tmpSegVal === "") {
                     continue;
@@ -462,7 +477,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
 function mergeEvents(firstObj, secondObj) {
     for (let firstLevel in secondObj) {
 
-        if (!secondObj.hasOwnProperty(firstLevel)) {
+        if (!Object.prototype.hasOwnProperty.call(secondObj, firstLevel)) {
             continue;
         }
 
@@ -473,7 +488,7 @@ function mergeEvents(firstObj, secondObj) {
 
         for (var secondLevel in secondObj[firstLevel]) {
 
-            if (!secondObj[firstLevel].hasOwnProperty(secondLevel)) {
+            if (!Object.prototype.hasOwnProperty.call(secondObj[firstLevel], secondLevel)) {
                 continue;
             }
 

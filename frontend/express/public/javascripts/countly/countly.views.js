@@ -204,7 +204,7 @@ window.GraphNotesView = countlyView.extend({
                 regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[0]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
                 }
 
                 // name <email@address.com>
@@ -213,7 +213,7 @@ window.GraphNotesView = countlyView.extend({
                 /*eslint-enable */
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[2]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
                 }
                 that.checkInput();
                 return false;
@@ -673,18 +673,29 @@ window.LoyaltyView = countlyView.extend({
 
         // Chart data
         var totals = [0, 0, 0]; //[allTotal, thirtDaysTotal, sevendaysTotal]
+        var i, dp0, dp1, dp2;
 
         for (var iRange = 0; iRange < ranges.length; iRange++) {
             var index = ticks.length - 1;
-            var dp0 = allData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
-            var dp1 = thirtyDaysData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
-            var dp2 = sevenDaysData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
+            dp0 = null, dp1 = null, dp2 = null;
+            for (i = 0; i < allData.length; i++) {
+                if (allData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp0 = allData[i];
+                    break;
+                }
+            }
+            for (i = 0; i < thirtyDaysData.length; i++) {
+                if (thirtyDaysData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp1 = thirtyDaysData[i];
+                    break;
+                }
+            }
+            for (i = 0; i < sevenDaysData.length; i++) {
+                if (sevenDaysData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp2 = sevenDaysData[i];
+                    break;
+                }
+            }
 
             if (dp0) {
                 dp[0].data.push([index, dp0.count]);
@@ -731,14 +742,30 @@ window.LoyaltyView = countlyView.extend({
             var sDaysPercentage = countlyCommon.formatNumber((100 * sDays) / totals[2], 2);
             sDaysPercentage = isNaN(sDaysPercentage) ? 0 : sDaysPercentage;
 
+            var allMultiplier = 0.8;
+            var tDaysMultiplier = 0.8;
+            var sDaysMultiplier = 0.8;
+
+            if (allPercentage > 80) {
+                allMultiplier = 0.65;
+            }
+
+            if (tDaysPercentage > 80) {
+                tDaysMultiplier = 0.65;
+            }
+
+            if (sDaysPercentage > 80) {
+                sDaysMultiplier = 0.65;
+            }
+
             chartData.push({
                 l: ticks[iTick][1],
                 a_count: all,
                 td_count: tDays,
                 sd_count: sDays,
-                a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>" + allPercentage + "%",
-                td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * 0.8) + "%'></div>" + tDaysPercentage + "%",
-                sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * 0.8) + "%'></div>" + sDaysPercentage + "%"
+                a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * allMultiplier) + "%'></div>" + allPercentage + "%",
+                td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * tDaysMultiplier) + "%'></div>" + tDaysPercentage + "%",
+                sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * sDaysMultiplier) + "%'></div>" + sDaysPercentage + "%"
             });
         }
 
@@ -3939,14 +3966,14 @@ window.ManageUsersView = countlyView.extend({
         $('.delete-member-image').on('click', function() {
             var member_id = $(this).data('member-id');
             $('.member-image-path').val("delete");
-            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 30;
             var name = countlyGlobal.member.full_name.split(" ");
-            $('#pp-circle-' + member_id).css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
             $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
             $('#pp-circle-' + member_id).prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
             if (member_id === countlyGlobal.member._id) {
                 $('.member_image').html("");
-                $('.member_image').css({'background-image': 'url("images/avatar-sprite.png?now=' + Date.now() + '")', 'background-size': 'auto', 'background-position': defaultAvatarSelector + 'px'});
+                $('.member_image').css({'background-image': 'url("images/avatar-sprite.png?now=' + Date.now() + '")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
                 $('.member_image').prepend('<span style="text-style: uppercase;color: white; position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
             }
         });
@@ -4256,11 +4283,13 @@ window.EventsBlueprintView = countlyView.extend({
 
         var segments = [];
         var i = 0;
-        for (i = 0; i < self.activeEvent.segments.length; i++) {
-            segments.push({"key": self.activeEvent.segments[i], "value": self.activeEvent.segments[i]});
-        }
-        for (i = 0; i < self.activeEvent.omittedSegments.length; i++) {
-            segments.push({"key": self.activeEvent.omittedSegments[i], "value": self.activeEvent.omittedSegments[i]});
+        if (self.activeEvent && self.activeEvent.segments && self.activeEvent.omittedSegments) {
+            for (i = 0; i < self.activeEvent.segments.length; i++) {
+                segments.push({"key": self.activeEvent.segments[i], "value": self.activeEvent.segments[i]});
+            }
+            for (i = 0; i < self.activeEvent.omittedSegments.length; i++) {
+                segments.push({"key": self.activeEvent.omittedSegments[i], "value": self.activeEvent.omittedSegments[i]});
+            }
         }
 
         $('#event-management-projection').selectize({

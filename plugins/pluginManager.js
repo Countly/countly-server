@@ -304,6 +304,32 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    var preventKillingNumberType = function(configsPointer, changes) {
+        for (var k in changes) {
+            if (!Object.prototype.hasOwnProperty.call(configsPointer, k) || !Object.prototype.hasOwnProperty.call(changes, k)) {
+                continue;
+            }
+            if (changes[k] !== null && configsPointer[k] !== null) {
+                if (typeof changes[k] === 'object' && typeof configsPointer[k] === 'object') {
+                    preventKillingNumberType(configsPointer[k], changes[k]);
+                }
+                else if (typeof configsPointer[k] === 'number' && typeof changes[k] !== 'number') {
+                    try {
+                        changes[k] = parseInt(changes[k], 10);
+                        changes[k] = changes[k] || 0;
+                    }
+                    catch (e) {
+                        changes[k] = 2147483647;
+                    }
+                }
+                else if (typeof configsPointer[k] === 'string' && typeof changes[k] === 'number') {
+                    changes[k] = changes[k] + "";
+                }
+            }
+
+        }
+    };
+
     /**
     * Update all configs with provided changes
     * @param {object} db - database connection for countly db
@@ -311,7 +337,9 @@ var pluginManager = function pluginManager() {
     * @param {function} callback - function to call when updating finished
     **/
     this.updateAllConfigs = function(db, changes, callback) {
+
         for (let k in changes) {
+            preventKillingNumberType(configs[k], changes[k]);
             _.extend(configs[k], changes[k]);
             if (k in configsOnchanges) {
                 configsOnchanges[k](configs[k]);
@@ -734,29 +762,36 @@ var pluginManager = function pluginManager() {
     this.installPlugin = function(plugin, callback) {
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
-        try {
-            var errors;
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
-            delete require.cache[require.resolve(scriptPath)];
-            require(scriptPath);
-        }
-        catch (ex) {
-            console.log(ex.stack);
-            errors = true;
-            return callback(errors);
-        }
-        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
-        if (eplugin && eplugin.prepackaged) {
-            return callback(errors);
-        }
-        var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error) {
+        var scriptPath = path.join(__dirname, plugin, 'install.js');
+        var errors = false;
+        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
+            console.log('Done running install.js with %j', error);
             if (error) {
                 errors = true;
-                console.log('error: %j', error);
+                return callback(errors);
             }
-            console.log('Done installing plugin %j', plugin);
-            callback(errors);
+
+            var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+            if (eplugin && eplugin.prepackaged) {
+                return callback(errors);
+            }
+            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+            exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
+                if (error2) {
+                    errors = true;
+                    console.log('error: %j', error2);
+                }
+                console.log('Done installing plugin %j', plugin);
+                callback(errors);
+            });
+        });
+
+        process.stdout.on("data", function(data) {
+            console.log(data.toString());
+        });
+
+        process.stderr.on("data", function(data) {
+            console.log(data.toString());
         });
     };
 
@@ -769,29 +804,36 @@ var pluginManager = function pluginManager() {
     this.upgradePlugin = function(plugin, callback) {
         console.log('Upgrading plugin %j...', plugin);
         callback = callback || function() {};
-        try {
-            var errors;
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
-            delete require.cache[require.resolve(scriptPath)];
-            require(scriptPath);
-        }
-        catch (ex) {
-            console.log(ex.stack);
-            errors = true;
-            return callback(errors);
-        }
-        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
-        if (eplugin && eplugin.prepackaged) {
-            return callback(errors);
-        }
-        var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error) {
+        var scriptPath = path.join(__dirname, plugin, 'install.js');
+        var errors = false;
+        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
+            console.log('Done running install.js with %j', error);
             if (error) {
                 errors = true;
-                console.log('error: %j', error);
+                return callback(errors);
             }
-            console.log('Done upgrading plugin %j', plugin);
-            callback(errors);
+
+            var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+            if (eplugin && eplugin.prepackaged) {
+                return callback(errors);
+            }
+            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+            exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
+                if (error2) {
+                    errors = true;
+                    console.log('error: %j', error2);
+                }
+                console.log('Done upgrading plugin %j', plugin);
+                callback(errors);
+            });
+        });
+
+        process.stdout.on("data", function(data) {
+            console.log(data.toString());
+        });
+
+        process.stderr.on("data", function(data) {
+            console.log(data.toString());
         });
     };
 
@@ -804,19 +846,23 @@ var pluginManager = function pluginManager() {
     this.uninstallPlugin = function(plugin, callback) {
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
-        try {
-            var errors;
-            var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
-            delete require.cache[require.resolve(scriptPath)];
-            require(scriptPath);
-        }
-        catch (ex) {
-            console.log(ex.stack);
-            errors = true;
-            return callback(errors);
-        }
-        console.log('Done uninstalling plugin %j', plugin);
-        callback(errors);
+        var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
+        var errors = false;
+        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
+            console.log('Done running uninstall.js with %j', error);
+            if (error) {
+                errors = true;
+            }
+            callback(errors);
+        });
+
+        process.stdout.on("data", function(data) {
+            console.log(data.toString());
+        });
+
+        process.stderr.on("data", function(data) {
+            console.log(data.toString());
+        });
     };
 
     /**
@@ -1188,6 +1234,9 @@ var pluginManager = function pluginManager() {
                                 if (callback) {
                                     callback(err, res);
                                 }
+                                else {
+                                    logDbWrite.d("Without Callback");
+                                }
                             }
                         }
                         else {
@@ -1201,10 +1250,16 @@ var pluginManager = function pluginManager() {
                             if (callback) {
                                 callback(err, res);
                             }
+                            else {
+                                logDbWrite.d("Without Callback");
+                            }
                         }
                     }
                     else if (callback) {
                         callback(err, res);
+                    }
+                    else {
+                        logDbWrite.d("Without Callback");
                     }
                 };
             };
@@ -1313,6 +1368,12 @@ var pluginManager = function pluginManager() {
                     if (callback) {
                         callback(err, res);
                     }
+                    else {
+                        logDbWrite.d("Without Callback");
+                        /*if (e) {
+                            logDbWrite.e(e.stack);
+                        }*/
+                    }
                 };
             };
 
@@ -1370,6 +1431,9 @@ var pluginManager = function pluginManager() {
                         else {
                             callback(err, res);
                         }
+                    }
+                    else {
+                        logDbRead.d("Without Callback");
                     }
                 };
             };
@@ -1527,14 +1591,14 @@ var pluginManager = function pluginManager() {
         var toReturn = {};
 
         for (let i in ob) {
-            if (!ob.hasOwnProperty(i)) {
+            if (!Object.prototype.hasOwnProperty.call(ob, i)) {
                 continue;
             }
 
             if ((typeof ob[i]) === 'object' && ob[i] !== null) {
                 var flatObject = flattenObject(ob[i]);
                 for (let x in flatObject) {
-                    if (!flatObject.hasOwnProperty(x)) {
+                    if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
                         continue;
                     }
 
@@ -1542,7 +1606,9 @@ var pluginManager = function pluginManager() {
                 }
             }
             else {
-                ob[i] = (!isNaN(ob[i]) && ob[i] > 2147483647) ? 2147483647 : ob[i];
+                if (!isNaN(ob[i]) && typeof (ob[i]) === "number" && ob[i] > 2147483647) {
+                    ob[i] = 2147483647;
+                }
                 toReturn[prefix + i] = ob[i];
             }
         }

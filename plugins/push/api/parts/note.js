@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -477,7 +478,14 @@ class Note {
             }
             if (data) {
                 for (let k in data) {
-                    compiled[k] = data[k];
+                    if (compiled[k] && typeof compiled[k] === 'object' && !Array.isArray(compiled[k]) && typeof data[k] === 'object') {
+                        for (let kk in data[k]) {
+                            compiled[k][kk] = data[k][kk];
+                        }
+                    }
+                    else {
+                        compiled[k] = data[k];
+                    }
                 }
             }
 
@@ -624,14 +632,14 @@ var flattenObject = function(ob) {
     var toReturn = {};
 
     for (var i in ob) {
-        if (!ob.hasOwnProperty(i)) {
+        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
             continue;
         }
 
         if ((typeof ob[i]) === 'object' && ob[i] !== null) {
             var flatObject = flattenObject(ob[i]);
             for (var x in flatObject) {
-                if (!flatObject.hasOwnProperty(x)) {
+                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
                     continue;
                 }
 

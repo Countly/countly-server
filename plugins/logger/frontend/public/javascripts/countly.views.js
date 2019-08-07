@@ -320,11 +320,5 @@ app.addPageScript("/manage/logger", function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/manage/logger" class="item">' +
-		'<div class="logo-icon fa fa-bars"></div>' +
-		'<div class="text" data-localize="logger.title"></div>' +
-	'</a>';
-    if ($('#management-submenu .help-toggle').length) {
-        $('#management-submenu .help-toggle').before(menu);
-    }
+    app.addSubMenu("management", {code: "logger", url: "#/manage/logger", text: "logger.title", priority: 60});
 });

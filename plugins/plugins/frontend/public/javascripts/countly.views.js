@@ -472,12 +472,13 @@ window.ConfigurationsView = countlyView.extend({
          * @returns {void} void
          */
         function setDefaultAvatar() {
+            var defaultAvatarSelectorSmall = countlyGlobal.member.created_at % 16 * 30;
             var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
             var name = countlyGlobal.member.full_name.split(" ");
             $('.member_image').html("");
             $('.pp-circle').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
-            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
-            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute;top: 5px;left: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelectorSmall + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
+            $('.member_image').prepend('<span style="color: white;position: relative;top: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
             $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
             $('.pp-circle').prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
         }
@@ -1533,20 +1534,7 @@ app.addPageScript("/manage/plugins", function() {
 
 $(document).ready(function() {
     if (countlyGlobal.member && countlyGlobal.member.global_admin) {
-        var menu = '<a href="#/manage/plugins" class="item">' +
-            '<div class="logo-icon fa fa-puzzle-piece"></div>' +
-            '<div class="text" data-localize="plugins.title"></div>' +
-            '</a>';
-        if ($('#management-submenu .help-toggle').length) {
-            $('#management-submenu .help-toggle').before(menu);
-        }
-
-        menu = '<a href="#/manage/configurations" class="item">' +
-            '<div class="logo-icon fa fa-wrench"></div>' +
-            '<div class="text" data-localize="plugins.configs"></div>' +
-            '</a>';
-        if ($('#management-submenu .help-toggle').length) {
-            $('#management-submenu .help-toggle').before(menu);
-        }
+        app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
+        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
     }
 });

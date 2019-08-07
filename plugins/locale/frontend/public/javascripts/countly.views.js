@@ -94,10 +94,5 @@ $(document).ready(function() {
     Handlebars.registerHelper('languageTitle', function(context) {
         return countlyGlobalLang.languages[context];
     });
-
-    var menu = '<a href="#/analytics/languages" class="item">' +
-		'<div class="logo languages"></div>' +
-		'<div class="text" data-localize="sidebar.analytics.languages"></div>' +
-	'</a>';
-    $('.sidebar-menu:not(#iot-type) #analytics-submenu').append(menu);
+    app.addSubMenu("analytics", {code: "analytics-languages", url: "#/analytics/languages", text: "sidebar.analytics.languages", priority: 80});
 });

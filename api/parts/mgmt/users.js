@@ -469,7 +469,7 @@ usersApi.deleteUser = function(params) {
             continue;
         }
         else {
-            common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
+            common.db.collection('auth_tokens').remove({ 'owner': userIds[i] }, function() {});
             common.db.collection('members').findAndModify({ '_id': common.db.ObjectID(userIds[i]) }, {}, {}, { remove: true }, function(err, user) {
                 if (!err && user && user.ok && user.value) {
                     plugins.dispatch("/i/users/delete", {
@@ -825,7 +825,7 @@ usersApi.fetchNotes = async function(params) {
     try {
         appIds = JSON.parse(params.qstring.notes_apps);
         filtedAppIds = appIds.filter((appId) => {
-            if (params.member.global_admin || params.member.user_of(appId) > -1 || params.member.admin_of(appId) > -1) {
+            if (params.member.global_admin || params.member.user_of.indexOf(appId) > -1 || params.member.admin_of.indexOf(appId) > -1) {
                 return true;
             }
             return false;

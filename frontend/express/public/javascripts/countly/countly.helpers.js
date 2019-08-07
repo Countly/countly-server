@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -147,6 +147,140 @@
             closeButton: true,
             closeOnClick: (msg.closeOnClick === false) ? false : true,
             onClick: msg.onClick || null
+        });
+    };
+
+    /**
+    * Create new model
+    */
+    CountlyHelpers.model = function() {
+        var self = this;
+        $("#overlay").click(function() {
+            var model = $(".model:visible");
+            if (model.length) {
+                model.fadeOut().remove();
+                $(this).hide();
+            }
+        });
+
+        var cnFn = function() {
+            $(this).trigger("model-continue");
+            $(this).parents(".model:visible").fadeOut().remove();
+        };
+
+        var clFn = function() {
+            $(this).trigger("model-cancel");
+            $(this).parents(".model:visible").fadeOut().remove();
+        };
+
+        this.resetModel = function() {
+            self.continue = [cnFn];
+            self.cancel = [clFn];
+        };
+
+        $("#model-continue").live('click', function() {
+            var breakStatus = false;
+            for (var i = 0; i < self.continue.length; i++) {
+                var call = self.continue[i].bind(this);
+                if (!call()) {
+                    breakStatus = true;
+                    break;
+                }
+            }
+
+            if (breakStatus) {
+                $(this).trigger("model-continue");
+            }
+
+            if (!$('.model:visible').length) {
+                $("#overlay").hide();
+            }
+        });
+
+        $("#model-cancel").live('click', function() {
+            var breakStatus = false;
+            for (var i = 0; i < self.cancel.length; i++) {
+                var call = self.cancel[i].bind(this);
+                if (!call()) {
+                    breakStatus = true;
+                    break;
+                }
+            }
+
+            if (breakStatus) {
+                $(this).trigger("model-cancel");
+            }
+
+            if (!$('.model:visible').length) {
+                $("#overlay").hide();
+            }
+        });
+
+        $(document).keyup(function(e) {
+            if (e.keyCode === 27) {
+                $(".model:visible").animate({
+                    top: 0,
+                    opacity: 0
+                }, {
+                    duration: 1000,
+                    easing: 'easeOutQuart',
+                    complete: function() {
+                        $(this).remove();
+                    }
+                });
+
+                $("#overlay").hide();
+            }
+        });
+
+        self.continue = [cnFn];
+        self.cancel = [clFn];
+    };
+
+    /**
+    * Create new model
+    * @param {object} json - json object
+    * @param {string=} type - classname
+    * @param {function=} callback - callback function
+    */
+    CountlyHelpers.newJSONEditor = function(json, type, callback) {
+        var self = this;
+
+        var dialog = $("#cly-json-editor").clone();
+        dialog.removeAttr("id");
+
+        dialog.addClass(type);
+        CountlyHelpers.revealDialog(dialog);
+
+        var element = dialog.find(".body")[0];
+        var statusElements = {
+            validElement: dialog.find(".valid-json"),
+            invalidElement: dialog.find(".invalid-json"),
+        };
+
+        this.JSONEditor = new _JSONEditor(element, json, statusElements);
+
+        this.JSONEditor.editor.on("change", function() {
+            dialog.find("#dialog-continue").removeClass("disabled");
+            if (!self.JSONEditor.jsonStatus) {
+                dialog.find("#dialog-continue").addClass("disabled");
+            }
+        });
+
+        dialog.find("#dialog-cancel").on('click', function() {
+            callback(true);
+        });
+
+        dialog.find("#dialog-continue").on('click', function() {
+            if (self.JSONEditor.jsonStatus) {
+                return callback(false, self.JSONEditor.returnJSON());
+            }
+
+            return callback(true);
+        });
+
+        dialog.find("#dialog-format").on("click", function() {
+            self.JSONEditor.format();
         });
     };
 
@@ -1377,6 +1511,10 @@
         });
 
         $(dtable[0]).parent().find(".select-column-table-data").css("display", "table-cell");
+
+
+        var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
+        $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
     };
 
     /** function hides column in data table and stores config in local storage
@@ -1392,7 +1530,7 @@
         var selC = dtable.CoultyColumnSel.tableCol;
 
         for (var k in settings) {
-            if (settings.hasOwnProperty(k) && settings[k] === true) {
+            if (Object.prototype.hasOwnProperty.call(settings, k) && settings[k] === true) {
                 selC--;
             }
         }
@@ -1417,6 +1555,8 @@
         if (applyChanges) {
             store.set(tableName + "HiddenDataTableColumns", settings);
             dtable.fnSetColumnVis(parseInt(col), !hidden, true);
+            var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
+            $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
 
             var wrapper = dtable.parents('.dataTables_wrapper').first();
             if ($(wrapper).find('.sticky-header').length > 0) { //check if we have sticky header
@@ -1558,6 +1698,7 @@
             $.each(dTable.aOpen, function(i, id) {
                 var nTr = $("#" + id)[0];
                 $(nTr).removeClass("selected");
+                $(nTr).find('i.expand-row-icon').text('keyboard_arrow_down');
                 $('div.datatablesubrow', $(nTr).next()[0]).slideUp(function() {
                     dTable.fnClose(nTr);
                     dTable.aOpen.splice(i, 1);

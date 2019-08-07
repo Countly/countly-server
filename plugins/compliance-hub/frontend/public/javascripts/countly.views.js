@@ -749,11 +749,5 @@ app.addPageScript("/users/#", function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/manage/compliance" class="item">' +
-        '<div class="logo applications"></div>' +
-        '<div class="text" data-localize="compliance_hub.title"></div>' +
-    '</a>';
-    if ($('#management-submenu .help-toggle').length) {
-        $('#management-submenu .help-toggle').before(menu);
-    }
+    app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
 });

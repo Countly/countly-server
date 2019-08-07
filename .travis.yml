@@ -1,4 +1,5 @@
 language: nodejs
+dist: trusty
 node_js: "8"
 env:
   global:

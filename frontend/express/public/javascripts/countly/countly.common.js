@@ -5,7 +5,7 @@
  * @global
  * @namespace countlyCommon
  */
-(function(window, $, undefined) {
+(function(window, $) {
 
     var CommonConstructor = function() {
         // Private Properties
@@ -16,17 +16,28 @@
             "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
             onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
                 if (tag === "a") {
-                    if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
-                        return "target='_blank'"; //set _blank if incorrect value
+                    var re = new RegExp(/{[0-9]*}/);
+                    var tested = re.test(value);
+                    if (name === "target") {
+                        if (!(value === "_blank" || value === "_self" || value === "_top" || value === "_parent" || tested)) {
+                            return 'target="_blank"'; //set _blank if incorrect value
+                        }
+                        else {
+                            return 'target="' + value + '"';
+                        }
                     }
-
-                    if (name === "href" && !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http")) {
-                        return "href='#'"; //set # if incorrect value
+                    if (name === "href") {
+                        if (!(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http" || tested)) {
+                            return 'href="#"'; //set # if incorrect value
+                        }
+                        else {
+                            return 'href="' + value + '"';
+                        }
                     }
                 }
-
             }
         };
+
         /**
         * Get Browser language
         * @returns {string} browser locale in iso format en-US
@@ -2038,7 +2049,7 @@
             }
 
             for (var level1 in tmpUpdateObj) {
-                if (!tmpUpdateObj.hasOwnProperty(level1)) {
+                if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj, level1)) {
                     continue;
                 }
 
@@ -2099,7 +2110,7 @@
 
                 if (tmpUpdateObj[level1]) {
                     for (var level2 in tmpUpdateObj[level1]) {
-                        if (!tmpUpdateObj[level1].hasOwnProperty(level2)) {
+                        if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj[level1], level2)) {
                             continue;
                         }
 
@@ -3560,7 +3571,7 @@
             if (obj instanceof Object) {
                 copy = {};
                 for (var attr in obj) {
-                    if (obj.hasOwnProperty(attr)) {
+                    if (Object.prototype.hasOwnProperty.call(obj, attr)) {
                         copy[attr] = clone(obj[attr]);
                     }
                 }

@@ -1,4 +1,4 @@
-#dbviewer { font-family: 'Ubuntu'; overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
+#dbviewer { font-family: 'Ubuntu'; overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; float:left; width: 100%; }
 #dbviewer .clear { clear: both;}
 #dbviewer .left-side { width: 300px; float: left; background-color: #fff; border-right: 1px solid #ddd; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden;}
 #dbviewer .left-side .ui-widget-content { border:none; }

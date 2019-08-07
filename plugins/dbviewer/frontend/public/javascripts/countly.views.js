@@ -1077,11 +1077,6 @@ $(document).ready(function() {
         CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
         CountlyHelpers.loadJS("dbviewer/javascripts/jquery.json-viewer.js");
     }
-    var menu = '<a href="#/manage/db" class="item">' +
-		'<div class="logo-icon fa fa-database"></div>' +
-		'<div class="text" data-localize="dbviewer.title"></div>' +
-		'</a>';
-    if ($('#management-submenu .help-toggle').length) {
-        $('#management-submenu .help-toggle').before(menu);
-    }
+
+    app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
 });
