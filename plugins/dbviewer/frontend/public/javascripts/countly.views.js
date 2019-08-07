@@ -134,6 +134,11 @@ window.DBViewerView = countlyView.extend({
         }
 
         $('body').off('click', '.collection-list-item').on('click', '.collection-list-item', function() {
+            if (store.get('countly_collection') !== $(this).data('collection')) {
+                store.set('countly_collectionfilter', '');
+                store.set('countly_collection', $(this).data('collection'));
+                self.filter = '{}';
+            }
             app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection'), false);
             self.db = $(this).data('db');
             self.collection = $(this).data('collection');
