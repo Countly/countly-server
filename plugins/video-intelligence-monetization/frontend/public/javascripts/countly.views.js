@@ -1,4 +1,4 @@
-/*global $, jQuery, app, production, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
+/*global $, jQuery, app, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
 
 window.MonetizationMetricsView = countlyView.extend({
     templateData: {},
@@ -265,9 +265,6 @@ $(document).ready(function() {
     ];
     var wrapper = '<div class="sidebar-submenu" id="monetization-submenu">' + items.join('') + '</div>';
 
-    if (!production) {
-        CountlyHelpers.loadJS("video-intelligence-monetization/javascripts/iframeResizer.js");
-    }
     if ($('.sidebar-menu #management-menu').length) {
         $('.sidebar-menu #management-menu').before(folder + wrapper);
     }

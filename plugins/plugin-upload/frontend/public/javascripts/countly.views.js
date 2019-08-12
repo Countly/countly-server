@@ -1,4 +1,4 @@
-/*global countlyView, production, CountlyHelpers,countlyGlobal, app, Handlebars, Dropzone, countlyCommon, jQuery, $ */
+/*global countlyView, CountlyHelpers,countlyGlobal, app, Handlebars, Dropzone, countlyCommon, jQuery, $ */
 window.PluginUploadView = countlyView.extend({
 
     //need to provide at least empty initialize function
@@ -17,9 +17,6 @@ window.PluginUploadView = countlyView.extend({
     refresh: function() {}
 });
 
-if (!production) {
-    CountlyHelpers.loadJS("plugin-upload/javascripts/dropzone.js");
-}
 /** Function checks file extension. Accept .zip, tar, .tgz, .tar.gz
 * @param {string} file - filename
 * @returns {boolean} true - if file vaild, false - if not.
@@ -58,9 +55,6 @@ function highlight_my_uploaded_plugin(myname) { //sometimes it gets called a lit
 }
 
 if (countlyGlobal.member.global_admin) {
-    if (!production) {
-        CountlyHelpers.loadJS("plugin-upload/javascripts/dropzone.js");
-    }
     var myDropzone;
 
     app.addPageScript("/manage/plugins", function() {
