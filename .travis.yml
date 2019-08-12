@@ -1,6 +1,6 @@
 language: nodejs
 dist: trusty
-node_js: "8"
+node_js: "10"
 env:
   global:
   - MONGODB=3.6.6
