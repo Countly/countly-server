@@ -11,5 +11,4 @@ bin/scripts/nghttp2/*
 plugins/push/api/parts/apn/*
 
 !plugins/*/frontend/public/javascripts
-!plugins/*/frontend/public/javascripts/countly.models.js
-!plugins/*/frontend/public/javascripts/countly.views.js
+!plugins/*/frontend/public/javascripts/countly.*.js
