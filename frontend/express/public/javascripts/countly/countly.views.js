@@ -5253,6 +5253,7 @@ window.EventsView = countlyView.extend({
 
                     self.drawTable(eventData);
                     app.localize();
+                    $('.nav-search').find("input").trigger("input");
                 }
             });
         });
@@ -5492,6 +5493,7 @@ window.EventsView = countlyView.extend({
             $(window).on('resize', function() {
                 self.resizeTitle();
             });
+            $('.nav-search').find("input").trigger("input");
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
