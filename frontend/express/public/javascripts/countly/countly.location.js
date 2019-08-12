@@ -28,11 +28,11 @@
 
     window.countlyLocation = window.countlyLocation || {};
     countlyLocation.getCountryName = function(cc) {
-        var countryName = _countryMap[cc.toUpperCase()];
+        var countryName = _countryMap[cc && cc.toUpperCase()];
         if (countryName) {
             return countryName;
         }
-        else if (cc.toUpperCase() === "EU") {
+        else if (cc && cc.toUpperCase() === "EU") {
             return jQuery.i18n.map["common.eu"] || "European Union";
         }
         else {
