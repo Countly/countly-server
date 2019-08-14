@@ -829,7 +829,7 @@ var AppRouter = Backbone.Router.extend({
             $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").removeAttr("href");
         }
 
-        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").show();
+        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").css('display', 'block');
 
         if (typeof node.callback === "function") {
             node.callback(app_type, parent_code, node, menu);

@@ -33,6 +33,7 @@ module.exports = function(grunt) {
             },
             utils: {
                 src: [
+                    'frontend/express/public/javascripts/utils/polyfills.js',
                     'frontend/express/public/javascripts/utils/underscore-min.js',
                     'frontend/express/public/javascripts/utils/prefixfree.min.js',
                     'frontend/express/public/javascripts/utils/moment/moment-with-locales.min.js',
