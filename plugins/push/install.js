@@ -162,12 +162,12 @@ async function migrateAppUsers(db, app) {
                 update.$addToSet = {msgs: {$each: ppush}};
             }
             if (Object.keys(update).length) {
-                console.log('[%s]: Updating push %s %j', app._id, push._id, push);
-                console.log('[%s]: Updating push %s update %j', app._id, push._id, update);
+                console.log('[%s]: Updating push %s %j', app._id, push && push._id, push);
+                console.log('[%s]: Updating push %s update %j', app._id, push && push._id, update);
                 await new Promise((res, rej) => db.collection(`push_${app._id}`).updateOne({_id: user.uid}, update, {upsert: true}, e => e ? rej(e) : res()));
             }
         }
-        else if (push) {
+        else if (push && (!push.msgs || !push.msgs.length)) {
             console.log('[%s]: Removing push %s %j', app._id, push._id, push);
             await new Promise((res, rej) => db.collection(`push_${app._id}`).removeOne({_id: user.uid}, e => e ? rej(e) : res()));
         }
