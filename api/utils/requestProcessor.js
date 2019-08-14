@@ -594,7 +594,7 @@ const processRequest = (params) => {
                     break;
                 case 'name':
                     validateUserForWrite(params, () => {
-                        taskmanager.deleteResult({
+                        taskmanager.nameResult({
                             db: common.db,
                             id: params.qstring.task_id,
                             name: params.qstring.name
