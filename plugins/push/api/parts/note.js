@@ -622,6 +622,34 @@ class Note {
     get queryUser() {
         return this.userConditions ? typeof this.userConditions === 'string' ? JSON.parse(this.userConditions) : JSON.parse(JSON.stringify(this.userConditions)) : undefined;
     }
+
+    /**
+     * Modify result with respect to a corresponding number of notifications being cancelled because of errorCode
+     * 
+     * @param  {Mongo} db           db instance
+     * @param  {int} count          number of notifications to cancel
+     * @param  {String} errorCode   error code
+     * @return {Promise}            db update result
+     */
+    cancelNotes(db, count, errorCode) {
+        let update = {$inc: {'result.processed': count, 'result.errors': count, ['result.errorCodes.' + errorCode]: count}};
+
+        if ((this.result.processed + count) === this.result.total) {
+            update.$bit = {'result.status': {}};
+            if (this.tx || this.auto) {
+                update.$bit['result.status'].and = ~Status.Sending;
+                update.$bit['result.status'].or = Status.Success;
+            }
+            else {
+                update.$bit['result.status'].and = ~(Status.Sending | Status.Scheduled);
+                update.$bit['result.status'].or = Status.Success | Status.Done;
+            }
+        }
+
+        return new Promise((res, rej) => {
+            db.collection('messages').updateOne({_id: this._id}, update, (err) => err ? rej(err) : res());
+        });
+    }
 }
 
 /** flattenObject

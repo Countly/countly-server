@@ -121,9 +121,9 @@ window.component('datepicker', function(datepicker) {
                 m('.comp-datepicker-ui-picker', {config: datepicker.config(ctrl)}),
                 m('.comp-datepicker-time', [
                     m('span.comp-datepicker-time-label', t('datepicker.pick-time') + ': '),
-                    m('input[type=number][min=0][max=23]', {value: ctrl.hours(), oninput: m.withAttr('value', ctrl.hours), onblur: ctrl.normalize}),
+                    m('input[type=number][min=0][max=23]', {value: ctrl.hours(), oninput: m.withAttr('value', ctrl.hours), onblur: ctrl.normalize.bind(ctrl)}),
                     m('span.comp-datepicker-time-spacer', ':'),
-                    m('input[type=number][min=0][max=59]', {value: ctrl.minutes(), oninput: m.withAttr('value', ctrl.minutes), onblur: ctrl.normalize})
+                    m('input[type=number][min=0][max=59]', {value: ctrl.minutes(), oninput: m.withAttr('value', ctrl.minutes), onblur: ctrl.normalize.bind(ctrl)})
                 ]),
                 m('.comp-datepicker-apply', [
                     m('div', [

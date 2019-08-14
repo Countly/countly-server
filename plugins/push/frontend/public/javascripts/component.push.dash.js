@@ -579,9 +579,9 @@ window.MessagingDashboardView = countlyView.extend({
     },
 
     destroy: function () {
-        m.startComputation();
+        // m.startComputation();
         components.slider.instance.close();
-        m.endComputation();
+        // m.endComputation();
 
         if (this.mounted) {
             delete components.push.dashboard;
