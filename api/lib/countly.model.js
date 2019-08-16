@@ -488,7 +488,16 @@ countlyModel.create = function(fetchValue) {
     */
     countlyMetric.getNumber = function(metric) {
         metric = metric || _metrics[0];
-        var data = countlyCommon.getDashboardData(this.getDb(), [metric], _uniques, {u: this.getTotalUsersObj().users}, {u: this.getTotalUsersObj(true).users});
+        var metrics = [metric];
+        //include other default metrics for data correction
+        if (metric === "u") {
+            metrics.push("n");
+            metrics.push("t");
+        }
+        if (metric === "n") {
+            metrics.push("u");
+        }
+        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, {u: this.getTotalUsersObj().users}, {u: this.getTotalUsersObj(true).users});
         var ob = {};
         ob[metric] = metric;
         var sparkLines = countlyCommon.getSparklineData(this.getDb(), ob, function(obj) {
@@ -505,9 +514,11 @@ countlyModel.create = function(fetchValue) {
             return obj;
         });
         for (let i in data) {
-            data[i].sparkline = sparkLines[i].split(",").map(function(item) {
-                return parseInt(item);
-            });
+            if (sparkLines[i]) {
+                data[i].sparkline = sparkLines[i].split(",").map(function(item) {
+                    return parseInt(item);
+                });
+            }
         }
         return data[metric];
     };

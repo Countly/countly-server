@@ -953,7 +953,13 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         dataProps.push({name: "n"});
         dataProps.push({name: "t"});
     }
+    if (metric === "n") {
+        dataProps.push({name: "u"});
+    }
     var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj);
+    rangeData.chartData = underscore.sortBy(rangeData.chartData, function(obj) {
+        return -obj[metric];
+    });
     var rangeNames = underscore.pluck(rangeData.chartData, 'range'),
         rangeTotal = underscore.pluck(rangeData.chartData, metric),
         barData = [],
