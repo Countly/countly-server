@@ -831,7 +831,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
             }
 
             if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                if (totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
+                if (totalUserOverrideObj && typeof totalUserOverrideObj[rangeArray[j]] !== "undefined") {
 
                     tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
@@ -1330,7 +1330,7 @@ countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProper
             }
 
             if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                if (totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
+                if (totalUserOverrideObj && typeof totalUserOverrideObj[rangeArray[j]] !== "undefined") {
 
                     tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
@@ -1607,7 +1607,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
 
     // Total users can't be less than new users
     if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-        if (totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined" && totalUserOverrideObj.u) {
+        if (totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined") {
             current.n = current.u;
         }
         else {
@@ -1636,7 +1636,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
     //check if we can correct data using total users correction
     if (totalUserOverrideObj) {
         for (let i = 0; i < unique.length; i++) {
-            if (dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
+            if (dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined") {
                 dataArr[unique[i]].is_estimate = false;
             }
         }

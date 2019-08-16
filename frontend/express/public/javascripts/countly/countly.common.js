@@ -1549,7 +1549,7 @@
                     }
 
                     if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                        if (countlyTotalUsers.isUsable() && estOverrideMetric && calculatedObj[rangeArray[j]]) {
+                        if (countlyTotalUsers.isUsable() && estOverrideMetric && typeof calculatedObj[rangeArray[j]] !== "undefined") {
 
                             tmpPropertyObj.u = calculatedObj[rangeArray[j]];
 
@@ -1597,7 +1597,7 @@
                         }
                         // Total users can't be less than new users
                         if (tmpPropertyObj.u < tmpPropertyObj.n) {
-                            if (countlyTotalUsers.isUsable() && estOverrideMetric && calculatedObj[rangeArray[j]]) {
+                            if (countlyTotalUsers.isUsable() && estOverrideMetric && typeof calculatedObj[rangeArray[j]] !== "undefined") {
                                 tmpPropertyObj.n = calculatedObj[rangeArray[j]];
                             }
                             else {
