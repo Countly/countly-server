@@ -99,6 +99,11 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
     plugins.register("/o/method/total_users", function(ob) {
         ob.shortcodesForMetrics.sources = "src";
     });
+    plugins.register("/metric/collection", function(ob) {
+        if (ob.metric === "sources") {
+            ob.data = ["sources", "sources", "sources"];
+        }
+    });
     plugins.register("/session/metrics", function(ob) {
         var predefinedMetrics = ob.predefinedMetrics;
         var params = ob.params;

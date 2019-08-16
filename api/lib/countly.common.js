@@ -98,6 +98,17 @@ function getPeriodObject() {
     };
 
     endTimestamp = _currMoment.clone().utc().endOf("day");
+
+    if (_period && _period.indexOf(",") !== -1) {
+        try {
+            _period = JSON.parse(_period);
+        }
+        catch (SyntaxError) {
+            console.log("period JSON parse failed");
+            _period = "month";
+        }
+    }
+
     if (Array.isArray(_period)) {
         var fromDate, toDate;
 
@@ -184,6 +195,17 @@ function getPeriodObject() {
     }
     else if (/([0-9]+)days/.test(_period)) {
         let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
+
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    //incorrect period, defaulting to 30 days
+    else {
+        let nDays = 30;
 
         startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
         cycleDuration = moment.duration(nDays, "days");
@@ -957,6 +979,7 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         dataProps.push({name: "u"});
     }
     var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj);
+    rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
     rangeData.chartData = underscore.sortBy(rangeData.chartData, function(obj) {
         return -obj[metric];
     });

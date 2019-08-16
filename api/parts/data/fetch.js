@@ -1277,7 +1277,9 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
     var shortcodesForMetrics = {
         "devices": "d",
         "app_versions": "av",
+        "os": "p",
         "platforms": "p",
+        "os_versions": "pv",
         "platform_versions": "pv",
         "resolutions": "r",
         "countries": "cc",
