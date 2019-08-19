@@ -393,9 +393,12 @@
 
     countlyEvent.getEventData = function() {
 
+        var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
+        if (!_activeEvent) {
+            _activeEvent = Object.keys(eventMap)[0] || "";
+        }
         var eventData = {},
-            mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
-            eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
+            mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
             countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
             sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
             durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
@@ -564,7 +567,7 @@
             eventsWithoutOrder = [];
         for (var i = 0; i < events.length; i++) {
             var arrayToUse = eventsWithoutOrder;
-            var mapKey = events[i].replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = events[i].replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             if (eventOrder.indexOf(events[i]) !== -1) {
                 arrayToUse = eventsWithOrder;
             }
@@ -623,7 +626,7 @@
             eventNames = [];
 
         for (var event in eventSegmentations) {
-            var mapKey = event.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = event.replace("\\", "\\\\").replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             if (eventMap[mapKey] && eventMap[mapKey].name) {
                 eventNames.push({
                     "key": event,
@@ -670,7 +673,7 @@
     countlyEvent.getEventLongName = function(eventKey) {
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
         eventKey = "" + eventKey;
-        var mapKey = eventKey.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
+        var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
         if (eventMap[mapKey] && eventMap[mapKey].name) {
             return eventMap[mapKey].name;
         }
@@ -841,7 +844,7 @@
         };
 
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
-            mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
+            mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
             countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
             sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
             durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
@@ -917,7 +920,7 @@
         function extractDataForGraphAndChart(dataFromDb) {
             var eventData = {},
                 eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
-                mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
+                mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
                 countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
                 sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
                 durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
