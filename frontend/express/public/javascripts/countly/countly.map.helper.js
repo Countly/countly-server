@@ -65,6 +65,9 @@
         ];
 
         chartData.rows = _.map(_mapData, function(value) {
+            if (value.value === 0) {
+                return;
+            }
             value.country = _countryMap[value.country] || jQuery.i18n.map["common.unknown"] || "Unknown";
 
             if (value.country === "European Union" || value.country === jQuery.i18n.map["common.unknown"]) {
@@ -81,6 +84,8 @@
                     {v: value.value}
                 ]
             };
+        }).filter(function(row) {
+            return row;
         });
 
         _dataTable = new google.visualization.DataTable(chartData);
