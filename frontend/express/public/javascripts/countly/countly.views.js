@@ -778,7 +778,6 @@ window.CountriesView = countlyView.extend({
             }
 
             app.localize();
-            CountlyHelpers.applyColors();
         });
     }
 });

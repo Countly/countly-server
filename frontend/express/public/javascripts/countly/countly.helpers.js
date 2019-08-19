@@ -151,30 +151,30 @@
     };
 
     CountlyHelpers.applyColors = function() {
-        // big numbers
-        $('.big-numbers:nth-child(1) .color').css({'background-color': countlyCommon.GRAPH_COLORS[0]});
-        $('.big-numbers:nth-child(2) .color').css({'background-color': countlyCommon.GRAPH_COLORS[1]});
-        $('.big-numbers:nth-child(3) .color').css({'background-color': countlyCommon.GRAPH_COLORS[2]});
+        $('#custom-color-styles').remove();
         // overview bars
-        var barStyles = '<style>';
-        barStyles += '.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[0] + '}';
-        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[1] + '}';
-        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[2] + '}';
-        barStyles += '.dashboard-summary .item .bar .bar-inner-new::before{background-color:' + countlyCommon.GRAPH_COLORS[0] + '}';
-        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2)::before{background-color:' + countlyCommon.GRAPH_COLORS[1] + '}';
-        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3)::before{background-color:' + countlyCommon.GRAPH_COLORS[2] + '}</style>';
+        var barStyles = '<style id="custom-color-styles">';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[0] + ';}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[1] + ';}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[2] + ';}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new::before{background-color:' + countlyCommon.GRAPH_COLORS[0] + ';}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2)::before{background-color:' + countlyCommon.GRAPH_COLORS[1] + ';}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3)::before{background-color:' + countlyCommon.GRAPH_COLORS[2] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(1) .color, .big-numbers-v2 .big-numbers.check:nth-child(1) .color {border: 1px solid ' + countlyCommon.GRAPH_COLORS[0] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(2) .color, .big-numbers-v2 .big-numbers.check:nth-child(2) .color, .big-numbers-v2 .big-numbers.check.event-sum .color {border: 1px solid ' + countlyCommon.GRAPH_COLORS[1] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(3) .color, .big-numbers-v2 .big-numbers.check:nth-child(3) .color, .big-numbers-v2 .big-numbers.check.event-dur .color {border: 1px solid ' + countlyCommon.GRAPH_COLORS[2] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(4) .color, .big-numbers-v2 .big-numbers.check:nth-child(4) .color {border: 1px solid ' + countlyCommon.GRAPH_COLORS[3] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(5) .color, .big-numbers-v2 .big-numbers.check:nth-child(5) .color {border: 1px solid ' + countlyCommon.GRAPH_COLORS[4] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(1).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(1).selected .color {background-color:' + countlyCommon.GRAPH_COLORS[0] + '; box-shadow: inset 0 0 0 1px #FFF; border: 1px solid ' + countlyCommon.GRAPH_COLORS[0] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(2).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(2).selected .color, .big-numbers-v2 .big-numbers.check.event-sum.selected .color {background-color:' + countlyCommon.GRAPH_COLORS[1] + '; box-shadow: inset 0 0 0 1px #FFF; border: 1px solid ' + countlyCommon.GRAPH_COLORS[1] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(3).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(3).selected .color, .big-numbers-v2 .big-numbers.check.event-dur.selected .color {background-color:' + countlyCommon.GRAPH_COLORS[2] + '; box-shadow: inset 0 0 0 1px #FFF; border: 1px solid ' + countlyCommon.GRAPH_COLORS[2] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(4).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(4).selected .color {background-color:' + countlyCommon.GRAPH_COLORS[3] + '; box-shadow: inset 0 0 0 1px #FFF; border: 1px solid ' + countlyCommon.GRAPH_COLORS[3] + ';}';
+        barStyles += '.big-numbers-v2 .big-numbers.radio:nth-child(5).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(5).selected .color {background-color:' + countlyCommon.GRAPH_COLORS[4] + '; box-shadow: inset 0 0 0 1px #FFF; border: 1px solid ' + countlyCommon.GRAPH_COLORS[4] + ';}';
+        barStyles += '.big-numbers:nth-child(1) .color {background-color: ' + countlyCommon.GRAPH_COLORS[0] + ';box-shadow: inset 0 0 0 1px #FFF; border: 1px solid ' + countlyCommon.GRAPH_COLORS[0] + ';}';
+        barStyles += '.big-numbers:nth-child(2) .color {background-color: ' + countlyCommon.GRAPH_COLORS[1] + ';box-shadow: inset 0 0 0 1px #FFF; border: 1px solid ' + countlyCommon.GRAPH_COLORS[1] + ';}';
+        barStyles += '.big-numbers:nth-child(3) .color {background-color: ' + countlyCommon.GRAPH_COLORS[2] + ';box-shadow: inset 0 0 0 1px #FFF; border: 1px solid ' + countlyCommon.GRAPH_COLORS[2] + ';}';
+        barStyles += '</style>';
         $(barStyles).appendTo('head');
-        // bignumbers-v2
-        $('.big-numbers-v2 .big-numbers.check .color').css({'border': '1px solid ' + countlyCommon.GRAPH_COLORS[0]});
-        $('.big-numbers-v2 .big-numbers.radio:nth-child(2) .color, .big-numbers-v2 .big-numbers.check:nth-child(2) .color, .big-numbers-v2 .big-numbers.check.event-sum .color').css({'border-color': countlyCommon.GRAPH_COLORS[1]});
-        $('.big-numbers-v2 .big-numbers.radio:nth-child(3) .color, .big-numbers-v2 .big-numbers.check:nth-child(3) .color, .big-numbers-v2 .big-numbers.check.event-dur .color').css({'border-color': countlyCommon.GRAPH_COLORS[2]});
-        $('.big-numbers-v2 .big-numbers.radio:nth-child(4) .color, .big-numbers-v2 .big-numbers.check:nth-child(4) .color').css({'border-color': countlyCommon.GRAPH_COLORS[3]});
-        $('.big-numbers-v2 .big-numbers.radio:nth-child(5) .color, .big-numbers-v2 .big-numbers.check:nth-child(5) .color').css({'border-color': countlyCommon.GRAPH_COLORS[4]});
-        $('.big-numbers-v2 .big-numbers.radio.selected .color, .big-numbers-v2 .big-numbers.check.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[0]});
-        $('.big-numbers-v2 .big-numbers.radio:nth-child(2).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(2).selected .color, .big-numbers-v2 .big-numbers.check.event-sum.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[1]});
-        $('.big-numbers-v2 .big-numbers.radio:nth-child(3).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(3).selected .color, .big-numbers-v2 .big-numbers.check.event-dur.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[2]});
-        $('.big-numbers-v2 .big-numbers.radio:nth-child(4).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(4).selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[3]});
-        $('.big-numbers-v2 .big-numbers.radio:nth-child(5).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(5).selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[4]});
     };
 
     /**
