@@ -742,6 +742,8 @@ window.CountriesView = countlyView.extend({
                 }
             });
         }
+
+        CountlyHelpers.applyColors();
     },
     refresh: function(isToggle) {
         var self = this;
@@ -776,6 +778,7 @@ window.CountriesView = countlyView.extend({
             }
 
             app.localize();
+            CountlyHelpers.applyColors();
         });
     }
 });
