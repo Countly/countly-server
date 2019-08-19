@@ -4392,7 +4392,7 @@ window.EventsBlueprintView = countlyView.extend({
                 }
                 else if (el.hasClass("event_toggle_visibility")) {
                     var toggleto = el.data("changeto");
-                    event = event.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");// eslint-disable-line
+                    event = event.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
                     countlyEvent.update_visibility([event], toggleto, function(result) {
                         if (result === true) {
                             var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
@@ -4581,7 +4581,7 @@ window.EventsBlueprintView = countlyView.extend({
                     else {
                         if (selected === "show" || selected === "hide") {
                             for (var k = 0; k < changeList.length; k++) {
-                                    changeList[k] = changeList[k].replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");// eslint-disable-line
+                                changeList[k] = changeList[k].replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
                             }
                             countlyEvent.update_visibility(changeList, selected, function(result) {
                                 if (result === true) {
@@ -4627,7 +4627,7 @@ window.EventsBlueprintView = countlyView.extend({
             //save chenges for one event
             $("#events-apply-changes").on("click", function() {
                 var eventMap = {};
-                var eventKey = $("#events-settings-table").find(".event_key").val().replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");// eslint-disable-line
+                var eventKey = $("#events-settings-table").find(".event_key").val().replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
                 eventMap[eventKey] = {};
                 var omitted_segments = {};
 

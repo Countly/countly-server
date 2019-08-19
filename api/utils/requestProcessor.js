@@ -1055,7 +1055,7 @@ const processRequest = (params) => {
 
                             for (let i = 0; i < idss.length; i++) {
 
-                                var baseID = idss[i].replace("\\u002e", ".");
+                                var baseID = idss[i].replace(/\\u002e/g, ".");
                                 if (!update_array.map[idss[i]]) {
                                     update_array.map[idss[i]] = {};
                                 }
