@@ -393,9 +393,12 @@
 
     countlyEvent.getEventData = function() {
 
+        var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
+        if (!_activeEvent) {
+            _activeEvent = Object.keys(eventMap)[0] || "";
+        }
         var eventData = {},
             mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
-            eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
             sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
             durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
