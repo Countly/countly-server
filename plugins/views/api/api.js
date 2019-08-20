@@ -41,57 +41,62 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     });
 
     plugins.register("/i/delete_view", function(ob) {
-        var params = ob.params;
-        var appId = params.qstring.app_id;
+        var appId = ob.params.qstring.app_id;
         var viewName = "";
         var viewUrl = "";
-        var viewid = params.qstring.view_id;
+        var viewid = ob.params.qstring.view_id;
+
+        var validateUserForDataWriteAPI = ob.validateUserForDataWriteAPI;
         //var encodedUrl = common.db.encode(url);
         return new Promise(function(resolve) {
-            const deleteDocs = [];
-            common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err1, viewInfo) {
-                if (viewInfo) {
-                    common.db.collection("app_viewsmeta" + appId).findOne({'_id': common.db.ObjectID(viewid)}, {}, function(err, viewrecord) {
-                        if (viewrecord && viewrecord.view) {
-                            viewName = viewrecord.view;
-                            viewUrl = viewrecord.view;
-                        }
+            validateUserForDataWriteAPI(ob.params, function(params) {
+                const deleteDocs = [];
+                common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err1, viewInfo) {
+                    if (viewInfo) {
+                        common.db.collection("app_viewsmeta" + appId).findOne({'_id': common.db.ObjectID(viewid)}, {}, function(err, viewrecord) {
+                            if (viewrecord && viewrecord.view) {
+                                viewName = viewrecord.view;
+                                viewUrl = viewrecord.view;
+                            }
 
-                        if (viewrecord && viewrecord.url && viewrecord.url !== "") {
-                            viewUrl = viewrecord.url;
-                        }
-                        //remove all data collections
-                        for (let segKey in viewInfo.segments) {
-                            var colName2 = "app_viewdata" + crypto.createHash('sha1').update(segKey + appId).digest('hex');
-                            common.db.collection(colName2).remove({"vw": common.db.ObjectID(viewid)});
-                        }
-                        var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
-                        common.db.collection(colName).remove({"vw": common.db.ObjectID(viewid)});
+                            if (viewrecord && viewrecord.url && viewrecord.url !== "") {
+                                viewUrl = viewrecord.url;
+                            }
+                            //remove all data collections
+                            for (let segKey in viewInfo.segments) {
+                                var colName2 = "app_viewdata" + crypto.createHash('sha1').update(segKey + appId).digest('hex');
+                                common.db.collection(colName2).remove({"vw": common.db.ObjectID(viewid)});
+                            }
+                            var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
+                            common.db.collection(colName).remove({"vw": common.db.ObjectID(viewid)});
 
-                        //remove from userviews
-                        common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
-                        //remove from meta
-                        common.db.collection("app_viewsmeta" + appId).remove({'_id': common.db.ObjectID(viewid)});
-                        if (common.drillDb) {
-                            deleteDocs.push(common.drillDb.collection(
-                                "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
-                            ).remove({"sg.name": viewName}));
-                            deleteDocs.push(common.drillDb.collection(
-                                "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
-                            ).remove({"sg.view": viewUrl}));
-                        }
-                        /** */
-                        Promise.all(deleteDocs).then(function() {
-                            resolve();
-                            common.returnOutput(params, {result: true});
+                            //remove from userviews
+                            common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
+                            //remove from meta
+                            common.db.collection("app_viewsmeta" + appId).remove({'_id': common.db.ObjectID(viewid)});
+                            if (common.drillDb) {
+                                deleteDocs.push(common.drillDb.collection(
+                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
+                                ).remove({"sg.name": viewName}));
+                                deleteDocs.push(common.drillDb.collection(
+                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
+                                ).remove({"sg.view": viewUrl}));
+                            }
+                            /** */
+                            Promise.all(deleteDocs).then(function() {
+                                resolve();
+                                common.returnOutput(params, {result: true});
+                                plugins.dispatch("/systemlogs", { params: ob.params, action: "view_deleted", data: viewrecord });
+                                console.log(ob.params);
+                            });
                         });
-                    });
-                }
-                else {
-                    resolve();
-                    common.returnOutput(params, {result: false});
-                }
-            });
+                    }
+                    else {
+                        resolve();
+                        common.returnOutput(params, {result: false});
+                    }
+                });
+            }, ob.params);
         });
     });
 
@@ -348,7 +353,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var fullMonths = {};
             for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
                 let kk = periodObj.currentPeriodArr[i].split(".");
-                var monthValue = [kk[0] + ":" + kk[1]];
+                var monthValue = kk[0] + ":" + kk[1];
                 if (monthValue === firstMonth || monthValue === lastMonth) {
                     if (!selectMap[kk[0] + ":" + kk[1]]) {
                         selectMap[kk[0] + ":" + kk[1]] = [];
