@@ -354,9 +354,7 @@ window.ChinaView = countlyView.extend({
         });
     },
     dateChanged: function() {
-        this.drawGeoChart();
-        this.drawTable();
-        app.localize();
+        this.refresh(true);
     },
     beforeRender: function() {
         this.maps = {
