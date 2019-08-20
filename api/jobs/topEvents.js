@@ -4,11 +4,12 @@ const crypto = require("crypto");
 const countlyApi = {
     data: {
         fetch: require("../parts/data/fetch.js"),
-        lib: require("../lib/countly.model.js")
+        lib: require("../lib/countly.model.js"),
+        common: require("../lib/countly.common.js")
     }
 };
 const countlyEvents = countlyApi.data.lib.load("event");
-
+const countlyCommon = countlyApi.data.common;
 /** Class for job of top events widget **/
 class TopEventsJob extends job.Job {
     /**
@@ -62,9 +63,14 @@ class TopEventsJob extends job.Job {
                                         doneEventMap();
                                     });
                                 }, () => {
+                                    const _data = {};
+                                    Object.keys(data).forEach(key => {
+                                        const encodeKey = countlyCommon.encode(key);
+                                        _data[encodeKey] = data[key];
+                                    });
                                     const ts = Math.round(new Date().getTime() / 1000);
                                     const period = givenPeriod === "hour" ? "today" : givenPeriod;
-                                    db.collection(collectionName).insert({app_id: _id, ts, period, data}, (error, records) => {
+                                    db.collection(collectionName).insert({app_id: _id, ts, period, data: _data}, (error, records) => {
                                         if (!error && records) {
                                             eachCallback();
                                         }

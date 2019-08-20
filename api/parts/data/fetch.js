@@ -1108,8 +1108,9 @@ fetch.fetchDataTopEvents = function(params) {
             // eslint-disable-next-line no-shadow
             const { app_id, data, _id, ts, period } = result;
             let _data = Object.keys(data).map(function(key) {
+                const decodeKey = countlyCommon.decode(key);
                 const { sparkline, total, change } = data[key].data.count;
-                return { name: key, data: sparkline, count: total, trend: change };
+                return { name: decodeKey, data: sparkline, count: total, trend: change };
             });
             const sortByCount = _data.sort((a, b) => b.count - a.count).slice(0, limit);
             common.returnOutput(params, { _id, app_id, ts, period, data: sortByCount });
