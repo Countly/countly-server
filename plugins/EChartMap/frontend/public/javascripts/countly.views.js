@@ -328,6 +328,7 @@
 	pinyinUtil.dict = dict;
 	window.pinyinUtil = pinyinUtil;
 })();
+/*eslint-enable*/
 
 window.ChinaView = countlyView.extend({
     cityView: (store.get("countly_location_city")) ? store.get("countly_active_app") : false,
@@ -352,7 +353,11 @@ window.ChinaView = countlyView.extend({
         ).then(function() {
         });
     },
-
+    dateChanged: function() {
+        this.drawGeoChart();
+        this.drawTable();
+        app.localize();
+    },
     beforeRender: function() {
         this.maps = {
             "map-list-sessions": {
@@ -697,7 +702,6 @@ window.ChinaView = countlyView.extend({
 
 
 });
-/*eslint-enable*/
 
 
 app.ChinaView = new window.ChinaView();
