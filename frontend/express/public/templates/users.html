@@ -69,7 +69,7 @@
 <div id="listof-apps">
     <div class="search">
         <i class="fa fa-search"></i>
-        <input type="text">
+        <input type="text" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
     </div>
 	<div class="scrollable">
 		{{#eachOfObjectValue apps}}

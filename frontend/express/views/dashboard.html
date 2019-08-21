@@ -144,7 +144,7 @@
 				<div class="empty-state">Apps</div>
 				<div class="menu">
 					<div class="search nav-search">
-						<input type="text" autofocus>
+						<input type="text" autofocus readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 					</div>
 					<div class="list"></div>
 				</div>
@@ -694,7 +694,7 @@
             <% } %>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text">
+                <input type="text" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
             </div>
 			<div id="management-app-container" class="scrollable">
 				{{#eachOfObjectValue admin_apps}}
@@ -1143,7 +1143,7 @@
             </div>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text" />
+                <input type="text" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/>
             </div>
 			<div class="scrollable" id="event-nav-eventitems" style="max-height:450px;">
 				{{#eachOfArray events}}
@@ -1584,7 +1584,7 @@
 			</div>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text" />
+                <input type="text" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/>
             </div>
 			<div class="scrollable" style="max-height:450px;">
 				{{#eachOfArray events}}
