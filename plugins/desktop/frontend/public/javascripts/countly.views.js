@@ -325,4 +325,10 @@ $(document).ready(function() {
     app.addSubMenuForType("desktop", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
     app.addSubMenuForType("desktop", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
     app.addSubMenuForType("desktop", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+
+    app.addAppSwitchCallback(function(appId) {
+        if (countlyGlobal.apps[appId].type === "desktop") {
+            jQuery.i18n.map["views.view"] = jQuery.i18n.map["desktop.views.view"];
+        }
+    });    
 });
