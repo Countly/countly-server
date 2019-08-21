@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'Ubuntu Regular';
+  src: url('Ubuntu-Regular.eot'); /* IE9 Compat Modes */
+  src: url('Ubuntu-Regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('Ubuntu-Regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('Ubuntu-Regular.woff') format('woff'), /* Pretty Modern Browsers */
+       url('Ubuntu-Regular.ttf')  format('truetype'), /* Safari, Android, iOS */
+       url('Ubuntu-Regular.svg#svgFontName') format('svg'); /* Legacy iOS */
+}

@@ -64,34 +64,42 @@ request(url_check, function(err, response, body) {
             }
         }
     }
+});
 
+var isEnabled = false;
+
+/**
+* Enable tracking for this server
+**/
+tracker.enable = function() {
+    Countly.init({
+        app_key: server,
+        url: url,
+        app_version: versionInfo.version,
+        storage_path: "../../../.sdk/",
+        interval: 60000,
+        fail_timeout: 600,
+        session_update: 120,
+        debug: (logger.getLevel("tracker:server") === "debug")
+    });
+    isEnabled = true;
     if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
-        if (cluster.isMaster) {
-            Countly.begin_session(true);
-            //collectServerStats();
-            common.db.onOpened(function() {
-                setTimeout(function() {
-                    collectServerData();
-                }, 20000);
-            });
-        }
+        Countly.track_errors();
     }
-});
-
-Countly.init({
-    app_key: server,
-    url: url,
-    app_version: versionInfo.version,
-    storage_path: "../../../.sdk/",
-    interval: 60000,
-    fail_timeout: 600,
-    session_update: 120,
-    debug: (logger.getLevel("tracker:server") === "debug")
-});
-
-if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
-    Countly.track_errors();
-}
+    if (cluster.isMaster) {
+        setTimeout(function() {
+            if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
+                Countly.begin_session(true);
+                common.db.onOpened(function() {
+                    setTimeout(function() {
+                        collectServerStats();
+                        collectServerData();
+                    }, 20000);
+                });
+            }
+        }, 1000);
+    }
+};
 
 
 /**
@@ -99,7 +107,7 @@ if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "no
 * @param {object} event - event object
 **/
 tracker.reportEvent = function(event) {
-    if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
+    if (isEnabled && countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
         Countly.add_event(event);
     }
 };
@@ -111,7 +119,7 @@ tracker.reportEvent = function(event) {
 * @param {string} level - tracking level
 **/
 tracker.reportUserEvent = function(id, event, level) {
-    if (countlyConfig.web.track !== "none" && (!level || countlyConfig.web.track === level) && countlyConfig.web.server_track !== "none") {
+    if (isEnabled && countlyConfig.web.track !== "none" && (!level || countlyConfig.web.track === level) && countlyConfig.web.server_track !== "none") {
         Countly.request({
             app_key: app,
             devide_id: id,
@@ -126,7 +134,7 @@ tracker.reportUserEvent = function(id, event, level) {
 * @returns {boolean} if enabled
 **/
 tracker.isEnabled = function(level) {
-    return (countlyConfig.web.track !== "none" && (!level || countlyConfig.web.track === level) && countlyConfig.web.server_track !== "none");
+    return (isEnabled && countlyConfig.web.track !== "none" && (!level || countlyConfig.web.track === level) && countlyConfig.web.server_track !== "none");
 };
 
 /**

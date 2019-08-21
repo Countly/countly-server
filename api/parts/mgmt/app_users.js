@@ -111,18 +111,19 @@ usersApi.update = function(app_id, query, update, params, callback) {
                 return;
             }
         }
-        common.db.collection('app_users' + app_id).findAndModify(query, {}, update, {upsert: true}, function(err, res) {
+        common.db.collection('app_users' + app_id).updateMany(query, update, function(err, res) {
             if (!err) {
+                var updated = {result: res.result || "", matchedCount: res.matchedCount || 0, modifiedCount: res.modifiedCount || 0, ops: res.ops || []};
                 plugins.dispatch("/i/app_users/update", {
                     app_id: app_id,
                     query: query,
                     update: update,
-                    user: res && res.value,
+                    user: updated,
                     params: params
                 });
             }
             if (callback) {
-                callback(err, res && res.value);
+                callback(err, res && res.result);
             }
         });
     }

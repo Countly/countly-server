@@ -83,6 +83,10 @@ var exported = {},
         recordAction(ob.req, ob.data, "token_login_successfull", {});
     };
 
+    plugin.accountDeleted = function(ob) {
+        recordAction(ob.req, ob.data, "user_account_deleted", {});
+    };
+
     plugin.userSettings = function(ob) {
         var data = {};
         data.before = {};
@@ -196,7 +200,7 @@ var exported = {},
             }
         }
         var update = {};
-        update["a." + countlyDb.encode(action)] = true;
+        update["action." + countlyDb.encode(action)] = true;
         countlyDb.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function() {});
     }
 

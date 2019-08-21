@@ -1,16 +1,11 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, Handlebars, production, path1*/
+/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, Handlebars, path1*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
      * @type {object}
      */
     initialize: function() {
-        if (!production) {
-            //For color picker, copy to clipboard feature and tooltip
-            CountlyHelpers.loadJS("star-rating/javascripts/jquery.colorpicker.js");
-            CountlyHelpers.loadJS("star-rating/javascripts/clipboard.min.js");
-            CountlyHelpers.loadJS("star-rating/javascripts/tippy.all.min.js");
-        }
+
     },
     templateData: {
         "page-title": jQuery.i18n.map["star.menu-title"],
@@ -2168,7 +2163,5 @@ app.route("/analytics/star-rating/:tab", 'star', function(tab) {
     this.renderWhenReady(this.starView);
 });
 $(document).ready(function() {
-    var menu = '<a href="#/analytics/star-rating" class="item">' + '<div class="logo-icon fa fa-globe"></div>' + '<div class="text" data-localize="star.menu-title"></div>' + '</a>';
-    $('#web-type #engagement-submenu').append(menu);
-    $('#mobile-type #engagement-submenu').append(menu);
+    app.addMenu("reach", {code: "star-rating", url: "#/analytics/star-rating", text: "star.menu-title", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
 });

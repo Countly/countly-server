@@ -1,38 +1,10 @@
 #!/bin/bash
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-
-#enable command line
-bash $DIR/scripts/detect.init.sh
-
-#rename config property
-WARN="$(countly config "logs.warning")"
-countly config "logs.warning" null
-countly config "logs.warn" $WARN
-
-#change nginx config
-echo "Changing nginx.conf file to increase upload limit"
-echo "You can find your old conf file at $DIR/config/nginx.conf.backup.pre.17.09"
-cp /etc/nginx/nginx.conf $DIR/config/nginx.conf.backup.pre.17.09
-cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
-sudo nginx -s reload
-
-#upgrade existing plugins
-countly plugin upgrade push
-
-#enable new plugins
-countly plugin enable alerts
-countly plugin enable cohorts
-countly plugin enable crash_symbolication
-countly plugin enable groups
-countly plugin enable plugin-upload
-countly plugin enable white-labeling
-
-#update web-sdk
-countly update sdk-web
-
-#add indexes
-nodejs $DIR/scripts/add_indexes.js
-
-#install dependencies, process files and restart countly
-countly upgrade
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DATE=`date +%Y-%m-%d:%H:%M:%S`
+VERSION="$(basename "${DIR}")" 
+if [ -f $DIR/upgrade_fs.sh ]; then
+    bash $DIR/upgrade_fs.sh combined 2>&1 | tee -a $DIR/../../../log/countly-upgrade-$VERSION-$DATE.log
+fi
+if [ -f $DIR/upgrade_db.sh ]; then
+    bash $DIR/upgrade_db.sh combined 2>&1 | tee -a $DIR/../../../log/countly-upgrade-$VERSION-$DATE.log
+fi

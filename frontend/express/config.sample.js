@@ -71,6 +71,7 @@ var countlyConfig = {
     * @property {boolean} secure_cookies - true, to use secure cookies, enable only if you have https enabled
     * @property {string} session_secret - secret used to sign the session ID cookie.
     * @property {string} [session_name=connect.sid] - name of the session cookie
+    * @property {string} [theme=] - the name/folder of the theme
     * @property {string} track - allow Countly to collect stats about amount of apps and datapoints as well as feature usage.  
     * Possible values are: 
     *    "all" - track all, 
@@ -84,6 +85,7 @@ var countlyConfig = {
         use_intercom: true,
         secure_cookies: false,
         track: "all",
+        theme: "",
         session_secret: "countlyss",
         session_name: "connect.sid"
     },
@@ -115,7 +117,12 @@ var countlyConfig = {
     * Legacy value, not supported
     * @type {string} 
     */
-    cdn: ""
+    cdn: "",
+    /**
+    * Additional password secret for safer autentification. This secret will be added on changing and creating password. Changing value in configs will result in invalid passwords for existing users. 
+    * Default value is "".
+    */
+    passwordSecret: ""
 };
 
 module.exports = require('../../api/configextender')('FRONTEND', countlyConfig, process.env);

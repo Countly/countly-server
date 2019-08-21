@@ -149,4 +149,46 @@
         return _themeList;
     };
 
+    countlyPlugins.deleteAccount = function(configs, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_URL + "/i/users/deleteOwnAccount",
+            data: {
+                password: configs.password,
+            },
+            success: function(json) {
+                if (callback) {
+                    if (json && json.result && json.result === 'Success') {
+                        callback(null, true);
+                    }
+                    else {
+                        callback(null, json);
+                    }
+                }
+            },
+            error: function(xhr, textStatus/*, errorThrown*/) {
+                if (callback) {
+                    if (xhr.responseText && xhr.responseText !== "") {
+                        try {
+                            var resp = JSON.parse(xhr.responseText);
+                            if (resp) {
+                                callback(true, resp.result);
+                            }
+                            else {
+                                callback(true, textStatus);
+                            }
+                        }
+                        catch (ex) {
+                            callback(true, textStatus);
+                        }
+                    }
+                    else {
+                        callback(true, textStatus);
+                    }
+
+                }
+            }
+        });
+    };
+
 }(window.countlyPlugins = window.countlyPlugins || {}, jQuery));

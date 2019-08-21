@@ -11,7 +11,7 @@ class ConnectionResource extends EventEmitter {
      */
     constructor(key) {
         super();
-        log.w('New FCM connection %j', arguments);
+        log.i('New FCM connection %j', arguments);
         this._key = key;
         this.requestCount = 0;
         this.inFlight = 0;
@@ -30,9 +30,11 @@ class ConnectionResource extends EventEmitter {
      * @param {function} e - logger function 
      * @param {string} proxyhost - proxy hostname or empty string
      * @param {string} proxyport - proxy port or empty string
+     * @param {string} proxyuser - proxy usernname or empty string
+     * @param {string} proxypass - proxy password or empty string
      * @returns {Promise} resolved(always);
     */
-    init(e, proxyhost, proxyport) {
+    init(e, proxyhost, proxyport, proxyuser, proxypass) {
         if (this._key.length > 100) {
             this.options = {
                 hostname: 'fcm.googleapis.com',
@@ -60,11 +62,11 @@ class ConnectionResource extends EventEmitter {
             };
         }
 
-        log.d('Options %j', this.options);
+        // log.d('Options %j', this.options);
 
         if (proxyhost && proxyport && proxyport !== "0") {
             var Agent = require('./agent.js');
-            this.agent = new Agent({proxyHost: proxyhost, proxyPort: proxyport});
+            this.agent = new Agent({proxyHost: proxyhost, proxyPort: proxyport, proxyUser: proxyuser, proxyPass: proxypass});
         }
         else {
             this.agent = new https.Agent(this.options);
@@ -193,8 +195,8 @@ class ConnectionResource extends EventEmitter {
             this.requestCount++;
             this.inFlight += tokens.length;
 
-            log.i('sending to %d tokens, %d requests / %d notes in flight', ids.length, this.requestCount, this.inFlight);
-            log.d('sending %s to %j', message, this.requestCount, this.inFlight);
+            // log.i('sending to %d tokens, %d requests / %d notes in flight', ids.length, this.requestCount, this.inFlight);
+            // log.d('sending %s to %j', message, this.requestCount, this.inFlight);
 
             let content = JSON.stringify(message);
 
@@ -280,7 +282,7 @@ class ConnectionResource extends EventEmitter {
                                 ids[i][1] = 200;
                             }
                         }
-                        else if (result.error === 'InvalidRegistration') {
+                        else if (result.error === 'InvalidRegistration' || result.error === 'MismatchSenderId') {
                             ids[i][1] = -200;
                             ids[i][2] = result.error;
                         }
@@ -302,7 +304,7 @@ class ConnectionResource extends EventEmitter {
                 }
 
                 this.statuses = this.statuses.concat(ids);
-                log.d('statuses %j', this.statuses);
+                // log.d('statuses %j', this.statuses);
 
                 this.serviceImmediate();
             }

@@ -30,6 +30,8 @@ class ValidateJob extends job.TransientJob {
 
                 this.proxyhost = plugins.push && plugins.push.proxyhost || '';
                 this.proxyport = plugins.push && plugins.push.proxyport || '';
+                this.proxyuser = plugins.push && plugins.push.proxyuser || '';
+                this.proxypass = plugins.push && plugins.push.proxypass || '';
 
                 resolve();
             });
@@ -49,7 +51,7 @@ class ValidateJob extends job.TransientJob {
      * @returns {object} ConnectionResource
      */
     createResource(_id, name) {
-        return new ConnectionResource(_id, name, {cid: this.data.cid, test: false, field: 'ip', proxyhost: this.proxyhost, proxyport: this.proxyport}, this.db());
+        return new ConnectionResource(_id, name, {cid: this.data.cid, test: false, field: 'ip', proxyhost: this.proxyhost, proxyport: this.proxyport, proxyuser: this.proxyuser, proxypass: this.proxypass}, this.db());
     }
 
     /** release Resource (call close() on it, returns result)

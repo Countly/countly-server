@@ -1,13 +1,11 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter*/
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter*/
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
     },
     renderCommon: function(isRefresh) {
-
         var sessionData = countlySession.getSessionData(),
             sessionDP = countlySession.getSessionDP();
-
         this.templateData = {
             "page-title": jQuery.i18n.map["sessions.title"],
             "logo-class": "sessions",
@@ -70,7 +68,6 @@ window.SessionView = countlyView.extend({
                     }
                 ]
             }));
-
             $(".d-table").stickyTableHeaders();
         }
     },
@@ -87,10 +84,442 @@ window.SessionView = countlyView.extend({
             var sessionDP = countlySession.getSessionDP();
             countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
             CountlyHelpers.refreshTable(self.dtable, sessionDP.chartData);
-
             app.localize();
         });
     }
+});
+
+window.GraphNotesView = countlyView.extend({
+    beforeRender: function() {
+        this.template = Handlebars.compile($("#template-graph-notes-view").html());
+    },
+    addNotesMenuLink: function(self) {
+        if ($('#notes-button-group').length > 0) {
+            return;
+        }
+        var menu = '<span  id="notes-button-group" class="cly-button-menu-group">' +
+        '<div class="cly-button-menu-trigger"></div>' +
+            '<div class="cly-button-menu">' +
+                '<div id="add-note" class="item" data-localize="notes.add-note"></div>' +
+                '<div id="manage-notes" class="item" data-localize="notes.manage-notes"></div>' +
+            '</div>' +
+        '</span>';
+        $(menu).insertBefore("#date-selector");
+
+        $("#notes-button-group .cly-button-menu-trigger").off("click").on("click", function(event) {
+            event.stopPropagation();
+            $(event.target).toggleClass("active");
+            if ($(event.target).hasClass("active")) {
+                $('#notes-button-group > .cly-button-menu').focus();
+            }
+            else {
+                $(event.target).removeClass("active");
+            }
+        });
+
+        $("#date-time-selector").appendTo($(".graph-note-create .date-time"));
+
+        $("#notes-button-group .cly-button-menu .item").off("click").on("click", function(event) {
+            var item = event.target.id;
+            if (item === 'add-note') {
+                app.graphNotesView.initNoteDialog(self);
+            }
+            if (item === 'manage-notes') {
+                location.href = "#/analytics/graph-notes";
+            }
+        });
+    },
+    checkInput: function() {
+        var note = $(".graph-note-textarea").val();
+        var datetimeText = $(".date-time-selector-container .date-time-value-show").text();
+        var dateTime = moment(datetimeText, "DD.MM.YYYY, HH:mm", true);
+        var noteType = $(".note-type.active").data("note-type");
+        var emailValid = true;
+        if (noteType === 'shared') {
+            emailValid = ($("#email-list-input").val() !== null);
+        }
+        if (!note || !dateTime._isValid || !emailValid) {
+            $(".add-note").addClass('disabled');
+        }
+        else {
+            $(".add-note").removeClass('disabled');
+        }
+    },
+    initNoteDialog: function(self, data) {
+        var that = this;
+        $("#notes-button-group > .cly-button-menu-trigger").removeClass("active");
+        var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-note-create');
+        dialog.removeClass('black');
+        var content = dialog.find(".content");
+        var noteHTML = Handlebars.compile($("#graph-note-create").html());
+        content.html(noteHTML(this));
+        CountlyHelpers.revealDialog(dialog);
+        app.localize();
+
+        //date time picker
+        var element = $('.date-time-picker');
+        $(element).datepicker({
+            defaultDate: new Date(),
+            minDate: new Date(2000, 1 - 1, 1),
+            maxDate: new Date(),
+            numberOfMonths: 1,
+            showOtherMonths: true,
+            onSelect: function() {}
+        });
+        /*eslint-disable */
+        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
+        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+        /*eslint-enable */
+        self.emailInput = $('#email-list-input').selectize({
+            plugins: ['remove_button'],
+            persist: false,
+            maxItems: null,
+            valueField: 'email',
+            labelField: 'name',
+            searchField: ['name', 'email'],
+            placeholder: jQuery.i18n.map["dashboards.select-users"],
+
+            options: [
+                {email: countlyGlobal.member.email, name: countlyGlobal.member.full_name},
+            ],
+            render: {
+                item: function(item, escape) {
+                    return '<div>' +
+                        (item.name ? '<span class="name">' + escape(item.name) + ' : </span>' : '') +
+                        (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
+                    '</div>';
+                },
+                option: function(item, escape) {
+                    var label = item.name || item.email;
+                    var caption = item.name ? item.email : null;
+                    return '<div>' +
+                        '<span class="label">' + escape(label) + '</span>' +
+                        (caption ? ' : <span class="caption">' + escape(caption) + '</span>' : '') +
+                    '</div>';
+                }
+            },
+            createFilter: function(input) {
+                var match, regex;
+                // email@address.com
+                regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+                match = input.match(regex);
+                if (match) {
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
+                }
+
+                // name <email@address.com>
+                /*eslint-disable */
+                regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
+                /*eslint-enable */
+                match = input.match(regex);
+                if (match) {
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
+                }
+                that.checkInput();
+                return false;
+            },
+            create: function(input) {
+                if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                    return {email: input};
+                }
+                /*eslint-disable */
+                var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                /*eslint-enable */
+                if (match) {
+                    return {
+                        email: match[2],
+                        name: $.trim(match[1])
+                    };
+                }
+                CountlyHelpers.alert('Invalid email address.', "red");
+                return false;
+            }
+        });
+
+        self.emailInput.off("change").on("change", function() {
+            that.checkInput();
+        });
+
+        $(".date-time-selector-container").off("click").on("click", function() {
+            setTimeout(function() {
+                $('.date-time-picker').toggle();
+                $('.date-time-picker').css("display", "flex");
+            }, 0);
+        });
+        $(".date-time-selector-container .date-clear").off("click").on("click", function() {
+            $('.date-time-picker').toggle();
+        });
+        $(".date-time-picker").off('click').click(function(e) {
+            e.stopPropagation();
+        });
+        $(".date-time-selector-container .date-submit").off("click").on("click", function() {
+            var currentDate = $(".date-time-picker").datepicker("getDate");
+            var hours = $(".date-time-selector-container .time-field .hour").val();
+            var minutes = $(".date-time-selector-container .time-field .minute").val();
+            currentDate.setHours(hours);
+            currentDate.setMinutes(minutes);
+            var result = moment(currentDate);
+            $(".date-time-selector-container .date-time-value-show").text(result.format("DD.MM.YYYY, HH:mm"));
+            $('.date-time-picker').toggle();
+            that.checkInput();
+            return result;
+        });
+        $(".graph-note-create .note-type").off("click").on("click", function(e) {
+            $(".graph-note-create .note-type").removeClass("active");
+            $(e.target).addClass("active");
+            var noteType = $(e.target).data("note-type");
+            $(".graph-note-create").css("height", "unset");
+            if (noteType === "shared") {
+                $(".email-select-block").css("display", "block");
+            }
+            else {
+                $(".email-select-block").css("display", "none");
+            }
+            that.checkInput();
+        });
+        $(".graph-note-create .color").off("click").on("click", function(e) {
+            $(".graph-note-create .color").removeClass("selected");
+            $(e.target).addClass("selected");
+        });
+
+        //load note data in edit mode
+        if (data) {
+            $(".note-form-hearder").text(jQuery.i18n.map['notes.edit-note-form-title']);
+            $(".graph-note-textarea").val(data.note);
+            $(".graph-note-create").find(".note-type").removeClass("active");
+            $(".graph-note-create").find(".note-type[data-note-type=" + data.noteType + "]").trigger("click");
+
+            $(".grah-note-create").find(".color").removeClass("selected");
+            $(".graph-note-create").find(".color[data-color=" + data.color + "]").trigger("click");
+            for (var i = 0; i < data.emails.length; i++) {
+                self.emailInput[0].selectize.createItem(data.emails[i], false);
+            }
+            self.emailInput[0].selectize.setValue(data.emails, false);
+
+            var ts = new Date(data.ts);
+
+            $(".date-time-picker").datepicker("setDate", ts);
+            $(".date-time-selector-container .date-time-value-show").text(moment(ts).format("DD.MM.YYYY, HH:mm"));
+
+            $(".date-time-selector-container .time-field .hour").val(ts.getHours());
+            $(".date-time-selector-container .time-field .minute").val(ts.getMinutes());
+        }
+
+        $(".cancel-add-note").off("click").on("click", function() {
+            CountlyHelpers.removeDialog(dialog);
+        });
+        that.checkInput();
+        $(".graph-note-textarea").off('input').on("input", function() {
+            that.checkInput();
+        });
+        $(".add-note").off("click").on("click", function() {
+            if ($(".add-note").hasClass('disabled')) {
+                return;
+            }
+            var note = $(".graph-note-textarea").val();
+            var datetimeText = $(".date-time-selector-container .date-time-value-show").text();
+            var dateTime = moment(datetimeText, "DD.MM.YYYY, HH:mm", true);
+            var noteType = $(".note-type.active").data("note-type") || "private";
+            var color = $(".graph-note-create .color.selected").data("color");
+            var args = {
+                note: note,
+                ts: dateTime.valueOf(),
+                noteType: noteType,
+                color: color,
+                category: 'session',
+            };
+            if (noteType === 'shared') {
+                args.emails = $("#email-list-input").val();
+            }
+            if (data && data._id) {
+                args._id = data._id;
+            }
+            $.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + '/notes/save',
+                data: {
+                    args: JSON.stringify(args),
+                    api_key: countlyGlobal.member.api_key,
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                },
+                dataType: "json",
+                success: function() {
+                    CountlyHelpers.removeDialog(dialog);
+                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], function() {
+                        self.refresh();
+                    });
+                },
+                error: function(xhr, status, error) {
+                    CountlyHelpers.alert(error, "red");
+                }
+            });
+        });
+
+        var noteTips = {
+            "private": jQuery.i18n.map["notes.private-remind"],
+            "shared": jQuery.i18n.map["notes.shared-remind"],
+            "public": jQuery.i18n.map["notes.public-remind"]
+        };
+
+        for (var key in noteTips) {
+            var node = $(".graph-note-create").find(".note-type[data-note-type=" + key + "]");
+            node.attr({
+                "title": "<div><div class='note-type-tip-title'>" + key + " Note</div>" + "<div class='note-type-tip-content'>" + noteTips[key] + "</div></div>"
+            });
+            node.tipsy({ gravity: $.fn.tipsy.autoNS, offset: 3, html: true, delayOut: 1, trigger: 'hover', hoverable: true });
+        }
+
+    },
+    renderCommon: function(isRefresh) {
+        if (isRefresh) {
+            return;
+        }
+        var self = this;
+        this.types = {
+            all: "All",
+            public: "Public",
+            shared: "Shared",
+            private: "Private",
+        };
+        this.templateData = {
+            "page-title": jQuery.i18n.map["notes.manage-notes"],
+            "filter1": this.types,
+            "active-filter1": jQuery.i18n.map["notes.note-all"],
+        };
+        $(this.el).html(this.template(this.templateData));
+        var tableData = [];
+        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "iDisplayLength": 10,
+            "aaData": tableData,
+            "bServerSide": true,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "/notes?api_key=" + countlyGlobal.member.api_key,
+            "fnServerData": function(sSource, aoData, fnCallback) {
+                self.request = $.ajax({
+                    "dataType": 'json',
+                    "type": "POST",
+                    "url": sSource + "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&period=' + countlyCommon.getPeriod() + "&notes_apps=" + encodeURIComponent(JSON.stringify([countlyCommon.ACTIVE_APP_ID])) + (self.filter_type ? "&note_type=" + self.filter_type : ""),
+                    "data": aoData,
+                    "success": function(dataResult) {
+                        self.tableData = dataResult;
+                        fnCallback(dataResult);
+                    }
+                });
+            },
+            "aoColumns": [
+                { "mData": "note", sType: "string", "sTitle": jQuery.i18n.map["notes.note"], "sWidth": "50%", "bSortable": false},
+                {
+                    "mData": "owner_name",
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["notes.note-owner"],
+                    "bSortable": false,
+                    "sDefaultContent": "",
+                },
+                {
+                    "mData": function(row) {
+                        return row.ts && moment(row.ts).format("D MMM, HH:mm, YYYY");
+                    },
+                    "sType": "string",
+                    "sWidth": "20%",
+                    "sTitle": jQuery.i18n.map["notes.note-date-and-time"],
+                },
+                {
+                    "mData": "noteType",
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["notes.note-type"],
+                },
+                {
+                    "mData": function(row) {
+                        return typeof row.emails === "object" && row.emails.join("<br/>") || '-';
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["notes.note-email"],
+                    "sDefaultContent": "-",
+                    "bSortable": false,
+                },
+                {
+                    "mData": function(row) {
+                        var adminApps = Object.keys(countlyGlobal.admin_apps);
+                        var isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
+                        if (row.owner === countlyGlobal.member._id || (isAdminofApp && row.noteType === 'public') || (countlyGlobal.member.global_admin && row.noteType === 'public')) {
+                            return "<div class='notes-manage-options-item'>" +
+                                "<div class='edit'></div>" +
+                                "<div class='edit-menu'>" +
+                                    "<div class='edit-note item' id='" + row._id + "'><i class='fa fa-pencil'></i><span id='" + row._id + "'data-localize='notes.note-edit'> </span></div>" +
+                                    "<div class='delete-note item' id='" + row._id + "'><i class='fa fa-trash' ></i><span id='" + row._id + "' data-localize='notes.note-delete'> </span></div>" +
+                                "</div>" +
+                            "</div>";
+                        }
+                        return "";
+                    },
+                    "bSortable": false,
+                },
+            ]
+        }));
+
+        $(".d-table").stickyTableHeaders();
+        $("body").off("click", ".notes-manage-options-item .edit").on("click", ".notes-manage-options-item .edit", function() {
+            $(this).next(".edit-menu").fadeToggle();
+            event.stopPropagation();
+            app.localize();
+        });
+
+        $("body").off("click", ".delete-note").on("click", ".delete-note", function(e) {
+            var noteId = e.currentTarget.id;
+            CountlyHelpers.confirm("", "popStyleGreen", function(result) {
+                if (!result) {
+                    return true;
+                }
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + '/notes/delete',
+                    dataType: "json",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        api_key: countlyGlobal.member.api_key,
+                        note_id: noteId,
+                    },
+                    success: function() {
+                        self.refresh();
+                    },
+                    error: function(xhr, status, error) {
+                        CountlyHelpers.alert(error, "red");
+                    }
+                });
+            },
+            [
+                jQuery.i18n.map["common.no-dont-delete"],
+                jQuery.i18n.map["notes.note-yes-delete"]
+            ],
+            {title: jQuery.i18n.map["notes.note-delete-title"], image: "delete-report"});
+        });
+
+        $("body").off("click", ".edit-note").on("click", ".edit-note", function(e) {
+            var noteId = e.currentTarget.id;
+            self.tableData.aaData.forEach(function(note) {
+                if (note._id === noteId) {
+                    app.graphNotesView.initNoteDialog(self, note);
+                }
+            });
+        });
+        $(window).click(function() {
+            $(".notes-manage-options-item").find(".edit").next(".edit-menu").fadeOut();
+        });
+        CountlyHelpers.initializeSelect();
+        $(".segmentation-option").off("click").on("click", function() {
+            var value = $(this).data("value");
+            self.filter_type = value;
+            if (value === "all") {
+                delete self.filter_type;
+            }
+            self.refresh();
+        });
+        app.localize();
+
+    },
+    refresh: function() {
+        this.dtable.fnDraw(false);
+        app.localize();
+    },
 });
 
 window.UserView = countlyView.extend({
@@ -133,36 +562,57 @@ window.UserView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
             CountlyHelpers.applyColors();
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": userDP.chartData,
-                "aoColumns": [
-                    { "mData": "date", "sType": "customDate", "sTitle": jQuery.i18n.map["common.date"] },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+            this.dtable = $(".d-table").dataTable(
+                $.extend({}, $.fn.dataTable.defaults, {
+                    aaData: userDP.chartData,
+                    aoColumns: [
+                        {
+                            mData: "date",
+                            sType: "customDate",
+                            sTitle: jQuery.i18n.map["common.date"]
                         },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        {
+                            mData: "u",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.total-users"
+                                ]
                         },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"]
-                    },
-                    {
-                        "mData": "returning",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        {
+                            mData: "n",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.new-users"
+                                ]
                         },
-                        "sTitle": jQuery.i18n.map["common.table.returning-users"]
-                    }
-                ]
-            }));
+                        {
+                            mData: "returning",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.returning-users"
+                                ]
+                        }
+                    ]
+                })
+            );
 
             $(".d-table").stickyTableHeaders();
         }
@@ -223,18 +673,29 @@ window.LoyaltyView = countlyView.extend({
 
         // Chart data
         var totals = [0, 0, 0]; //[allTotal, thirtDaysTotal, sevendaysTotal]
+        var i, dp0, dp1, dp2;
 
         for (var iRange = 0; iRange < ranges.length; iRange++) {
             var index = ticks.length - 1;
-            var dp0 = allData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
-            var dp1 = thirtyDaysData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
-            var dp2 = sevenDaysData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
+            dp0 = null, dp1 = null, dp2 = null;
+            for (i = 0; i < allData.length; i++) {
+                if (allData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp0 = allData[i];
+                    break;
+                }
+            }
+            for (i = 0; i < thirtyDaysData.length; i++) {
+                if (thirtyDaysData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp1 = thirtyDaysData[i];
+                    break;
+                }
+            }
+            for (i = 0; i < sevenDaysData.length; i++) {
+                if (sevenDaysData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp2 = sevenDaysData[i];
+                    break;
+                }
+            }
 
             if (dp0) {
                 dp[0].data.push([index, dp0.count]);
@@ -281,14 +742,30 @@ window.LoyaltyView = countlyView.extend({
             var sDaysPercentage = countlyCommon.formatNumber((100 * sDays) / totals[2], 2);
             sDaysPercentage = isNaN(sDaysPercentage) ? 0 : sDaysPercentage;
 
+            var allMultiplier = 0.8;
+            var tDaysMultiplier = 0.8;
+            var sDaysMultiplier = 0.8;
+
+            if (allPercentage > 80) {
+                allMultiplier = 0.65;
+            }
+
+            if (tDaysPercentage > 80) {
+                tDaysMultiplier = 0.65;
+            }
+
+            if (sDaysPercentage > 80) {
+                sDaysMultiplier = 0.65;
+            }
+
             chartData.push({
                 l: ticks[iTick][1],
                 a_count: all,
                 td_count: tDays,
                 sd_count: sDays,
-                a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>" + allPercentage + "%",
-                td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * 0.8) + "%'></div>" + tDaysPercentage + "%",
-                sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * 0.8) + "%'></div>" + sDaysPercentage + "%"
+                a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * allMultiplier) + "%'></div>" + allPercentage + "%",
+                td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * tDaysMultiplier) + "%'></div>" + tDaysPercentage + "%",
+                sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * sDaysMultiplier) + "%'></div>" + sDaysPercentage + "%"
             });
         }
 
@@ -1111,6 +1588,11 @@ window.AppVersionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("app_versions")).then(function() {});
     },
+    labelState: function() {
+        var appVersionData = countlyAppVersion.getData(false, true);
+        var isAppVersionDataEmpty = appVersionData.chartData && appVersionData.chartData.length !== 0 && !_.isEqual(appVersionData.chartDP.ticks, [[-1, ""], [0, ""]]);
+        !isAppVersionDataEmpty ? $("#label-container").hide() : $("#label-container").show();
+    },
     renderCommon: function(isRefresh) {
         var appVersionData = countlyAppVersion.getData(false, true);
         this.templateData = {
@@ -1141,6 +1623,8 @@ window.AppVersionView = countlyView.extend({
             $('.widget-content').css('height', '350px');
             $('#dashboard-graph').css("height", "85%");
             $('#dashboard-graph').after(labelsHtml);
+
+            this.labelState();
 
             countlyCommon.drawGraph(this.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
 
@@ -1189,6 +1673,7 @@ window.AppVersionView = countlyView.extend({
             var appVersionData = countlyAppVersion.getData(false, true);
             countlyCommon.drawGraph(self.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, appVersionData.chartData);
+            self.labelState();
         });
     },
     getActiveLabelData: function(data) {
@@ -2475,12 +2960,16 @@ window.ManageAppsView = countlyView.extend({
                 app_id: app_id,
                 name: appName,
                 type: $("#app-edit-type .cly-select .text").data("value") + '',
-                category: $("#app-edit-category .cly-select .text").data("value") + '',
                 key: app_key,
                 timezone: $("#app-edit-timezone #app-timezone").val(),
                 country: $("#app-edit-timezone #app-country").val(),
                 checksum_salt: $("#app-edit-salt .edit input").val()
             };
+
+            var categoryValue = $("#app-edit-category .cly-select .text").data("value");
+            if (categoryValue) {
+                args.category = categoryValue + "";
+            }
 
             $(".app-details .app-write-settings").each(function() {
                 var id = $(this).data('id');
@@ -3477,14 +3966,14 @@ window.ManageUsersView = countlyView.extend({
         $('.delete-member-image').on('click', function() {
             var member_id = $(this).data('member-id');
             $('.member-image-path').val("delete");
-            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 30;
             var name = countlyGlobal.member.full_name.split(" ");
-            $('#pp-circle-' + member_id).css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
             $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
             $('#pp-circle-' + member_id).prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
             if (member_id === countlyGlobal.member._id) {
                 $('.member_image').html("");
-                $('.member_image').css({'background-image': 'url("images/avatar-sprite.png?now=' + Date.now() + '")', 'background-size': 'auto', 'background-position': defaultAvatarSelector + 'px'});
+                $('.member_image').css({'background-image': 'url("images/avatar-sprite.png?now=' + Date.now() + '")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
                 $('.member_image').prepend('<span style="text-style: uppercase;color: white; position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
             }
         });
@@ -3794,11 +4283,13 @@ window.EventsBlueprintView = countlyView.extend({
 
         var segments = [];
         var i = 0;
-        for (i = 0; i < self.activeEvent.segments.length; i++) {
-            segments.push({"key": self.activeEvent.segments[i], "value": self.activeEvent.segments[i]});
-        }
-        for (i = 0; i < self.activeEvent.omittedSegments.length; i++) {
-            segments.push({"key": self.activeEvent.omittedSegments[i], "value": self.activeEvent.omittedSegments[i]});
+        if (self.activeEvent && self.activeEvent.segments && self.activeEvent.omittedSegments) {
+            for (i = 0; i < self.activeEvent.segments.length; i++) {
+                segments.push({"key": self.activeEvent.segments[i], "value": self.activeEvent.segments[i]});
+            }
+            for (i = 0; i < self.activeEvent.omittedSegments.length; i++) {
+                segments.push({"key": self.activeEvent.omittedSegments[i], "value": self.activeEvent.omittedSegments[i]});
+            }
         }
 
         $('#event-management-projection').selectize({
@@ -4412,6 +4903,44 @@ window.EventsOverviewView = countlyView.extend({
             self.refresh(true);
         });
     },
+    topEvents: function() {
+        var self = this;
+        countlyEvent.getTopEventData30Day(function(dd) {
+            if (dd) {
+                self.getTopEventData30Day = dd.data;
+                var fromDate = parseInt(dd.ts);
+                var toDate = parseInt(Math.round(new Date().getTime() / 1000));
+                var timeDiff = Math.round((toDate - fromDate) / 3600);
+                if (timeDiff === 0) {
+                    timeDiff = 1;
+                }
+                self.getTopEventDataLastUpdated = timeDiff;
+                for (var index = 0; index < dd.data.length; index++) {
+                    var element = self.fixTrend(dd.data[index].trend);
+                    dd.data[index].trendClass = element.class;
+                    dd.data[index].trendText = element.text;
+                    dd.data[index].classdiv = element.classdiv;
+                    dd.data[index].arrow_class = element.arrow_class;
+                    dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
+                }
+                self.refresh(true);
+            }
+        });
+        countlyEvent.getTopEventDataDaily(function(dd) {
+            if (dd) {
+                self.getTopEventDataDaily = dd.data;
+                for (var index = 0; index < dd.data.length; index++) {
+                    var element = self.fixTrend(dd.data[index].trend);
+                    dd.data[index].trendClass = element.class;
+                    dd.data[index].trendText = element.text;
+                    dd.data[index].classdiv = element.classdiv;
+                    dd.data[index].arrow_class = element.arrow_class;
+                    dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
+                }
+                self.refresh(true);
+            }
+        });
+    },
     dateChanged: function() {
         var self = this;
         self.reloadGraphs();
@@ -4430,28 +4959,21 @@ window.EventsOverviewView = countlyView.extend({
         });
         self.overviewList = NeweventOrder;
     },
-    reset_drawer: function() {
-        var self = this;
+    resetOverviewList: function() {
         var overviewList = countlyEvent.getOverviewList();
-        self.overviewList = [];
+        this.overviewList = [];
         for (var i = 0; i < overviewList.length; i++) {
             var evname = overviewList[i].eventKey;
             var propname = overviewList[i].eventProperty;
-            if (self.eventmap && self.eventmap[overviewList[i].eventKey] && self.eventmap[overviewList[i].eventKey].name) {
-                evname = self.eventmap[evname].name;
+            if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey].name) {
+                evname = this.eventmap[evname].name;
             }
-            if (self.eventmap && self.eventmap[overviewList[i].eventKey] && self.eventmap[overviewList[i].eventKey][propname]) {
-                propname = self.eventmap[overviewList[i].eventKey][propname];
+            if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname]) {
+                propname = this.eventmap[overviewList[i].eventKey][propname];
             }
-            self.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
+            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
         }
-
-        self.templateData["overview-list"] = self.overviewList;
-
-        var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-        $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
-        self.overviewTableScripts();
-        app.localize($("#events-overview-table-wrapper"));
+        this.templateData["overview-list"] = this.overviewList;
     },
     fixTrend: function(changePercent) {
         var value = {"class": "", "text": "", "classdiv": "u", "arrow_class": "trending_up"};
@@ -4489,7 +5011,12 @@ window.EventsOverviewView = countlyView.extend({
             "overview-graph": this.overviewGraph || [],
             "tabledGraph": [],
             "admin_rights": app_admin,
-            "event-count": Object.keys(this.eventmap).length
+            "event-count": Object.keys(this.eventmap).length,
+            "currentOverviewListCount": Object.keys(this.currentOverviewList).length,
+            "getTopEventData30Day": this.getTopEventData30Day || [],
+            "getTopEventDataDaily": this.getTopEventDataDaily || [],
+            "getTopEventDataLastUpdated": this.getTopEventDataLastUpdated,
+            "topEventDataIsVisible": (!!this.getTopEventData30Day && !!this.getTopEventDataDaily && !!this.getTopEventDataLastUpdated)
         };
         if (!this.overviewGraph) {
             this.overviewGraph = [];
@@ -4502,47 +5029,49 @@ window.EventsOverviewView = countlyView.extend({
         this.templateData["overview-table-length"] = this.templateData["overview-list"].length;
 
         if (!isRefresh) {
-            var overviewList = countlyEvent.getOverviewList();
-            this.overviewList = [];
-            for (var i = 0; i < overviewList.length; i++) {
-                var evname = overviewList[i].eventKey;
-                var propname = overviewList[i].eventProperty;
-                if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey].name) {
-                    evname = this.eventmap[evname].name;
-                }
-                if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname]) {
-                    propname = this.eventmap[overviewList[i].eventKey][propname];
-                }
-                this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
-            }
-
-            this.templateData["overview-list"] = this.overviewList;
+            this.resetOverviewList();
             this.templateData["overview-length"] = this.templateData["overview-graph"].length;
             this.templateData["overview-table-length"] = this.templateData["overview-list"].length;
             $(this.el).html(this.template(this.templateData));
 
-            self.pageScripts();
-
-            //selecting event or property in drawer
-            $(".cly-select").on("cly-select-change", function() {
-                var event = $("#events-overview-event").clySelectGetSelection();
-                var property = $("#events-overview-attr").clySelectGetSelection();
-                if (event && property) {
-                    $("#add_to_overview").removeClass('disabled');
-                }
-                else {
+            this.overviewDrawer = CountlyHelpers.createDrawer({
+                id: "event-overview-drawer",
+                form: $('#event-overview-drawer'),
+                title: jQuery.i18n.map["data-migration.import-title"],
+                applyChangeTriggers: true,
+                onUpdate: function() {
+                    var event = $("#events-overview-event").clySelectGetSelection();
+                    var property = $("#events-overview-attr").clySelectGetSelection();
+                    if (event && property) {
+                        $("#add_to_overview").removeClass('disabled');
+                    }
+                    else {
+                        $("#add_to_overview").addClass('disabled');
+                    }
+                },
+                resetForm: function() {
+                    self.resetOverviewList();
+                    self.templateData["overview-table-length"] = self.overviewList.length;
+                    $("#events-overview-table").css("max-height", $(window).height() - 280);
+                    $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
+                    $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
                     $("#add_to_overview").addClass('disabled');
+                    $("#update_overview_button").addClass('disabled');
+
+
+                    var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                    $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
+                    self.overviewTableScripts();
+                    app.localize($("#events-overview-table-wrapper"));
                 }
             });
+
+            self.pageScripts();
+
             //open editing drawer
             $("#events-overview-show-configure").on("click", function() {
-                $(".cly-drawer").removeClass("open editing");
-                $("#events-overview-table").css("max-height", $(window).height() - 280);
-                $("#event-overview-drawer").addClass("open");
-                $("#event-overview-drawer").find(".close").off("click").on("click", function() {
-                    $(this).parents(".cly-drawer").removeClass("open");
-                    self.reset_drawer();
-                });
+                self.overviewDrawer.resetForm();
+                self.overviewDrawer.open();
             });
 
             //Add new item to overview
@@ -4579,6 +5108,9 @@ window.EventsOverviewView = countlyView.extend({
 
             //save changes made in overview drawer
             $("#update_overview_button").on("click", function() {
+                if ($(this).hasClass("disabled")) {
+                    return;
+                }
                 countlyEvent.update_map("", "", JSON.stringify(self.overviewList), "", function(result) {
                     if (result === true) {
                         var widgetCount = self.overviewList ? self.overviewList.length : 0;
@@ -4607,7 +5139,7 @@ window.EventsOverviewView = countlyView.extend({
                 });
             });
             self.reloadGraphs();
-
+            self.topEvents();
             $(window).on('resize', function() {
                 self.refresh(true);
             });
@@ -4650,7 +5182,11 @@ window.EventsOverviewView = countlyView.extend({
             $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());//Event settings
             app.localize($("#events-overview-table-wrapper"));
             if (onlyTable !== true) {
+                $(self.el).find("#top-events-widget-container").html(newPage.find("#top-events-widget-container").html());
                 $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
+                app.localize($("#top-events-widget-container"));
+                var topEventsUpdatedTextElement = "#top-events-widget-container > .top-events-widget > .outer > .info_text";
+                $(self.el).find(topEventsUpdatedTextElement).text(jQuery.i18n.prop("events.top-events.info-text", this.getTopEventDataLastUpdated));
                 app.localize($("#eventOverviewWidgets"));
                 self.pageScripts();
                 self.overviewTableScripts();
@@ -5095,7 +5631,8 @@ window.LongTaskView = countlyView.extend({
             "all": jQuery.i18n.map["common.all"],
             "funnels": jQuery.i18n.map["sidebar.funnels"] || "Funnels",
             "drill": jQuery.i18n.map["drill.drill"] || "Drill",
-            "retention": jQuery.i18n.map["retention.retention"] || "Retention"
+            "retention": jQuery.i18n.map["retention.retention"] || "Retention",
+            "formulas": jQuery.i18n.map["calculated-metrics.formulas"] || "Formulas"
         };
 
         this.runTimeTypes = {
@@ -5720,8 +6257,31 @@ window.TokenManagerView = countlyView.extend({
         $('#limit_life').css('display', 'none');
         $('#select_limit_value').val("");
         $('#token_purpose').val("");
-        $("#token_endpoint").val("");
         $("#create_new_token").removeClass("disabled");
+
+        var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper");
+        var children = $(cc).find('.token_endpoint_block');
+        if ($(children).length > 1) {
+            for (var k = $(children).length - 1; k > 0; k--) {
+                $(children[k]).remove();
+            }
+        }
+        var my_block = $(cc).find(".token_endpoint_block").first();
+        this.clear_endpoint_block(my_block);
+    },
+    clear_endpoint_block: function(block) {
+        $(block).find(".endpoint-text").first().val("");
+        var cc = $(block).find(".param_blocks_wrapper").first();
+        var children = $(cc).find('.param_block');
+        if ($(children).length > 1) {
+            for (var k = $(children).length - 1; k > 0; k--) {
+                $(children[k]).remove();
+            }
+        }
+        var my_block = $(cc).find(".param_block").first();
+        $(my_block).find(".param-key-input").first().val("");
+        $(my_block).find(".param-value-input").first().val("");
+
     },
     add_scripts_to_table: function() {
         $('.tokenvalue').tooltipster({
@@ -5751,7 +6311,7 @@ window.TokenManagerView = countlyView.extend({
     },
     renderCommon: function(isRefresh) {
         //provide template data
-        this.templateData = {"page-title": jQuery.i18n.map["token_manager.page-title"], "purpose-desc": jQuery.i18n.map["token_manager.table.purpose-desc"], "enter-number": jQuery.i18n.map["token_manager.table.enter-number"]};
+        this.templateData = {"page-title": jQuery.i18n.map["token_manager.page-title"], "purpose-desc": jQuery.i18n.map["token_manager.table.purpose-desc"], "enter-number": jQuery.i18n.map["token_manager.table.enter-number"], "endpoint": jQuery.i18n.map["common.enter-value"], "query-param": jQuery.i18n.map["token_manager.parameter"], "query-param-value": jQuery.i18n.map["token_manager.query-param-value"] };
         //def values for all fields
         var tableData = countlyTokenManager.getData();
         //this.configsData = countlyWhiteLabeling.getData();
@@ -5837,7 +6397,43 @@ window.TokenManagerView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
-                            return row.endpoint || "-";
+                            row.endpoint = row.endpoint || "-";
+                            if (typeof row.endpoint === "string") {
+                                return row.endpoint;
+                            }
+                            else {
+                                if (Array.isArray(row.endpoint)) {
+                                    var lines = [];
+                                    for (var p = 0; p < row.endpoint.length; p++) {
+                                        if (typeof row.endpoint[p] === "string") {
+                                            lines.push(row.endpoint[p]);
+                                        }
+                                        else {
+                                            if (row.endpoint[p].endpoint) {
+                                                var params = [];
+                                                var have_params = false;
+                                                for (var k in row.endpoint[p].params) {
+                                                    params.push(k + ": " + row.endpoint[p].params[k]);
+                                                    have_params = true;
+                                                }
+                                                if (have_params) {
+                                                    lines.push(row.endpoint[p].endpoint + " (" + params.join(",") + ")");
+                                                }
+                                                else {
+                                                    lines.push(row.endpoint[p].endpoint);
+                                                }
+                                            }
+                                            else {
+                                                lines.push(row.endpoint[p]);
+                                            }
+                                        }
+                                    }
+                                    return lines.join("</br>");
+                                }
+                                else {
+                                    return row.endpoint; //shouldn't even get there
+                                }
+                            }
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["token_manager.table.endpoint"],
@@ -5961,23 +6557,128 @@ window.TokenManagerView = countlyView.extend({
                 $("#export-widget-drawer").trigger("data-updated");
             });
 
+            $("#create-token-drawer").on("click", ".delete-param", function() {
+                var cc = $(this).closest(".param_blocks_wrapper");
+                if ($(cc).find('.param_block').length > 1) {
+                    $(this).closest(".param_block").remove(); //if there are many - delete this brick
+                }
+                else {
+                    var my_block = $(cc).find(".param_block").first();
+                    $(my_block).find(".param-key-input").first().val("");
+                    $(my_block).find(".param-value-input").first().val("");
+                }
+            });
+
+            $("#create-token-drawer").on("click", ".add-query-block", function() {
+                var cc = $(this).siblings(".param_blocks_wrapper");
+                var dup = $(cc).find('.param_block').first().clone();
+                cc.append(dup);
+                $(dup).find(".param-key-input").first().val("");
+                $(dup).find(".param-value-input").first().val("");
+
+            });
+
+
+            $("#create-token-drawer").on("click", ".add-endpoint-block", function() {
+                var parentBlock = $(this).siblings(".endpoint_blocks_wrapper");
+                var dup = $(parentBlock).find('.token_endpoint_block');
+                dup = dup.first();
+                dup = dup.clone();
+                parentBlock.append(dup);
+                self.clear_endpoint_block(dup);
+            });
+
+            $("#create-token-drawer").off("click", ".delete-endpoint-block .cly-list-options").on("click", ".delete-endpoint-block .cly-list-options", function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                $(event.target).toggleClass("active");
+                if ($(event.target).hasClass("active")) {
+                    $("#create-token-drawer").find(".cly-list-options").removeClass("active");
+                    $(event.target).addClass("active");
+                    var pos = $(event.target).offset();
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').css({
+                        top: (pos.top + 20) + "px",
+                        right: 43 + "px"
+                    });
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').addClass("active");
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').focus();
+
+                    var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper").first();
+                    if ($(cc).find('.token_endpoint_block').length === 1) {
+                        $("#create-token-drawer").find('.delete-endpoint-block-item').first().css("display", "none");
+                    }
+                    else {
+                        $("#create-token-drawer").find('.delete-endpoint-block-item').first().css("display", "block");
+                    }
+                }
+                else {
+                    $(event.target).removeClass("active");
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                }
+                return false;
+            });
+
+            $("#create-token-drawer").on("click", function() {
+                $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                $("#create-token-drawer").find(".cly-list-options").removeClass("active");
+            });
+            $("#create-token-drawer").find('.delete-new-endpoint-block-menu .item').off("click").on("click", function() {
+                var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper").first();
+                if ($(this).hasClass("delete-endpoint-block-item")) {
+                    if ($(cc).find('.token_endpoint_block').length > 1) {
+                        var bb = $("#create-token-drawer").find('.cly-list-options.active').first();
+                        bb = $(bb).closest(".token_endpoint_block");
+                        $(bb).remove(); //if there are many - delete this brick
+                    }
+                    else {
+                        var my_block = $(cc).find(".token_endpoint_block").first();
+                        self.clear_endpoint_block(my_block);
+                    }
+                }
+                else {
+                    var zz = $("#create-token-drawer").find('.cly-list-options.active').first();
+                    zz = $(zz).closest(".token_endpoint_block");
+                    self.clear_endpoint_block(zz);
+                }
+
+                $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                $("#create-token-drawer").find(".cly-list-options").removeClass("active");
+            });
+
+
+
             var myarr = [{value: "h", name: jQuery.i18n.map["token_manager.limit.h"]}, {value: "d", name: jQuery.i18n.map["token_manager.limit.d"]}, {value: "m", name: jQuery.i18n.map["token_manager.limit.m"]}];
 
             $("#select_limit_span").clySelectSetItems(myarr);
             $("#select_limit_number").on("cly-select-change", function() {
-                $("#export-widget-drawer").trigger("data-updated");
+                $("#create-token-drawer").trigger("data-updated");
             });
 
             $("#create_new_token").on("click", function() {
                 var purpose = $("#token_purpose").val();
                 var endpoint = [];
-                var lines = $("#token_endpoint").val().split('\n');
-                for (var j = 0; j < lines.length; j++) {
-                    if (lines[j] !== "") {
-                        endpoint.push(lines[j]);
+
+                var endpointBlocks = $("#create-token-drawer").find(".token_endpoint_block");
+                for (var z = 0; z < endpointBlocks.length; z++) {
+                    var ePoint = {};
+                    var eValue = $(endpointBlocks[z]).find(".endpoint-text").first().val();
+                    if (eValue && eValue !== "") {
+                        ePoint.endpoint = eValue;
+                        ePoint.params = {};
+                        var params = $(endpointBlocks[z]).find(".param_block");
+                        for (var k = 0; k < params.length; k++) {
+                            var key = $(params[k]).find(".param-key-input").first().val();
+                            var value = $(params[k]).find(".param-value-input").first().val() || "";
+
+                            if (key && value && key !== "") {
+                                ePoint.params[key] = value;
+                            }
+                        }
+                        endpoint.push(ePoint);
                     }
                 }
-                endpoint = endpoint.join(",");
+
+                endpoint = JSON.stringify(endpoint);
                 var multi = $("#use_multi").hasClass("fa-check-square");
                 var apps_list = [];
                 var ttl = 0;
@@ -6004,9 +6705,9 @@ window.TokenManagerView = countlyView.extend({
                     }
 
                 }
-                countlyTokenManager.createToken(purpose, endpoint, multi, apps_list, ttl, function(err) {
+                countlyTokenManager.createTokenWithQuery(purpose, endpoint, multi, apps_list, ttl, function(err) {
                     if (err) {
-                        CountlyHelpers.alert(jQuery.i18n.map["token_manager.delete-error"], "red");
+                        CountlyHelpers.alert(err, "red");
                     }
                     $("#create-token-drawer").removeClass("open");
                     self.refresh(true);
@@ -6048,6 +6749,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 
 //register views
 app.sessionView = new SessionView();
+app.graphNotesView = new GraphNotesView();
 app.userView = new UserView();
 app.loyaltyView = new LoyaltyView();
 app.countriesView = new CountriesView();
@@ -6071,6 +6773,9 @@ app.VersionHistoryView = new VersionHistoryView();
 
 app.route("/analytics/sessions", "sessions", function() {
     this.renderWhenReady(this.sessionView);
+});
+app.route("/analytics/graph-notes", "graphNotes", function() {
+    this.renderWhenReady(this.graphNotesView);
 });
 app.route("/analytics/users", "users", function() {
     this.renderWhenReady(this.userView);
@@ -6165,7 +6870,7 @@ app.addAppSwitchCallback(function(appId) {
 });
 
 
-/**to check if there are changes in event view and ask for conformation befor moving forvard 
+/**to check if there are changes in event view and ask for conformation befor moving forvard
  * @returns {boolean} true - no changes, moving forward
  */
 function checkIfEventViewHaveNotUpdatedChanges() {

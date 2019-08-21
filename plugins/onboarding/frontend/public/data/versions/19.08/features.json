@@ -1,0 +1,62 @@
+[
+  {
+    "image": "navigation.png",
+    "title": "New & improved dashboard navigation",
+    "text": "Your new sidebar has feature grouping in order to make it easier to find what you are looking for. General management related menu items such as application, user and plugin management have a new home at the top bar.",
+    "showIn": "All"
+  },
+  {
+    "image": "ab-testing.png",
+    "title": "A/B testing for remote configuration",
+    "text": "Create experiments to test different variants of your remote config variables. Define goals based on cohort-like powerful custom user property and behaviour combinations and roll out the winning variant that had the most impact on your goal cohorts.",
+    "showIn": "EE"
+  },
+  {
+    "image": "formulas.png",
+    "title": "Formulas plugin to visualise your own metrics",
+    "text": "Construct complex formulas using the data you already track. Such as the sum of a custom event segment value divided by number of times that particular event occurred. You can visualise your formulas in their dedicated UI or in your dashboards.",
+    "showIn": "EE"
+  },
+  {
+    "image": "online-users.png",
+    "title": "A new take on online users",
+    "text": "A dedicated view that displays online users for the last 24-hours. Top metrics from your currently online users such as countries and devices, 30-day highs and lows, comparison of online users across apps and threshold based alerts.",
+    "showIn": "EE"
+  },
+  {
+    "image": "2fa.png",
+    "title": "Two factor authentication for increased security",
+    "text": "Add an extra layer of protection to your dashboard login by enabling the 2FA plugin. You can enforce two factor authentication to all users or you can leave it to your users to configure two factor authentication on demand.",
+    "showIn": "All"
+  },
+  {
+    "image": "event-triggered.png",
+    "title": "Custom event triggered push notifications",
+    "text": "Automatically trigger push notifications to your users on Android and iOS when they perform certain custom events. Control campaign properties like capping, delivery time and maximum messages per user just like you can in cohort based automated notifications.",
+    "showIn": "EE"
+  },
+  {
+    "image": "jira-plugin.png",
+    "title": "Two-way JIRA integration for crashes and errors",
+    "text": "Use the brand new JIRA for Crashes plugin to open up JIRA issues directly from the crash & error details view. Configure a different JIRA project for each of your applications together with issue types and status names. Status transitions will always be synced to/from JIRA.",
+    "showIn": "EE"
+  },
+  {
+    "image": "top-events.png",
+    "title": "Visualise your top custom events in events overview",
+    "text": "Visualise your 24-hour and 30-day top events in events overview section. Top five events by their occurrence counts will give you a quick overview of which actions your customers are performing the most.",
+    "showIn": "All"
+  },
+  {
+    "image": "notes.png",
+    "title": "Graph notes 2.0",
+    "text": "Add private, shared or public notes to your time series graphs. Multiple notes on the same date are stacked for you to easily view each one. Dashboard widgets show notes from all apps so that you'll never miss an important remark from your team.",
+    "showIn": "All"
+  },
+  {
+    "image": "user-profiles.png",
+    "title": "Customize how you view your user profiles",
+    "text": "Select the default or custom user properties that are the most important for you and customize how you view your user profiles list.",
+    "showIn": "EE"
+  }
+]

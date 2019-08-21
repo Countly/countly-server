@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -187,8 +187,10 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["views.bounces"]
-                },
-                {
+                }
+            ];
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type !== "mobile") {
+                columns.push({
                     "mData": function(row) {
                         if (row.t !== 0 && row.scr) {
                             return parseFloat(row.scr) / parseFloat(row.t);
@@ -202,8 +204,8 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d) + "%";
                     },
                     "sTitle": jQuery.i18n.map["views.scrolling-avg"]
-                }
-            ];
+                });
+            }
             self.haveActionColumn = false;
             if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
@@ -393,20 +395,17 @@ window.ViewsView = countlyView.extend({
                     }
 
                     var newWindow = "";
+                    self.useView = event.target.hash;
                     if (followLink) {
                         newWindow = window.open("");
+                        countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
+                            self.token = token && token.result;
+                            if (self.token) {
+                                newWindow.location.href = url;
+                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                            }
+                        });
                     }
-
-
-                    countlyTokenManager.createToken("View heatmap", "/o/actions", false, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
-                        self.useView = event.target.hash;
-                        self.token = token && token.result;
-
-                        if (followLink && self.token) {
-                            newWindow.location.href = url;
-                            newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
-                        }
-                    });
                 }
                 else {
                     $(event.target).removeClass("active");
@@ -428,10 +427,16 @@ window.ViewsView = countlyView.extend({
                     "count": 1,
                     "segmentation": {}
                 });
-                if (self.token !== false) {
-                    var path = self.useView.replace("#/analytics/views/action-map/", "");
-                    window.open(url + path, "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true}));
-                }
+                var newWindow = "";
+                newWindow = window.open("");
+                countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
+                    self.token = token && token.result;
+                    if (self.token) {
+                        var path = self.useView.replace("#/analytics/views/action-map/", "");
+                        newWindow.location.href = url + path;
+                        newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                    }
+                });
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
             });
 
@@ -909,9 +914,6 @@ app.addPageScript("/custom#", function() {
 });
 
 $(document).ready(function() {
-    if (!production) {
-        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
-    }
     jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
         x = countlyViews.getFrequencyIndex(x);
         y = countlyViews.getFrequencyIndex(y);
@@ -925,19 +927,9 @@ $(document).ready(function() {
 
         return ((x < y) ? 1 : ((x > y) ? -1 : 0));
     };
-    var menu = '<a href="#/analytics/views" class="item">' +
-		'<div class="logo-icon fa fa-eye"></div>' +
-		'<div class="text" data-localize="views.title"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').append(menu);
-    $('#mobile-type #analytics-submenu').append(menu);
 
-    menu = '<a href="#/analytics/view-frequency" class="item">' +
-		'<div class="logo-icon fa fa-eye"></div>' +
-		'<div class="text" data-localize="views.view-frequency"></div>' +
-	'</a>';
-    $('#web-type #engagement-submenu').append(menu);
-    $('#mobile-type #engagement-submenu').append(menu);
+    app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
+    app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
 
     //check if configuration view exists
     if (app.configurationsView) {

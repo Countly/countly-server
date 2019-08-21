@@ -1,6 +1,7 @@
 {
     "extends": "eslint:recommended",
     "rules": {
+        "require-atomic-updates": "off",
         "block-spacing": [
             "error",
             "always"
@@ -28,10 +29,7 @@
             "error",
             "all"
         ],
-        "eol-last": [
-            "error",
-            "never"
-        ],
+        "eol-last": "off",
         "func-call-spacing": [
             "error",
             "never"
@@ -126,8 +124,7 @@
         {
             "files": [
                 "frontend/express/public/javascripts/countly/*.js",
-                "plugins/*/frontend/public/javascripts/countly.models.js",
-                "plugins/*/frontend/public/javascripts/countly.views.js" 
+                "plugins/*/frontend/public/javascripts/countly.*.js"
             ],
             "env": {
                 "browser": true
@@ -197,14 +194,15 @@
                 "frontend/express/libs/*.js",
                 "plugins/pluginManager.js",
                 "plugins/*/api/**/*.js",
-                "plugins/*/frontend/*.js"
+                "plugins/*/frontend/*.js",
+                "plugins/*/extend/*.js"
             ],
             "env": {
                 "es6": true,
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 2017
+                "ecmaVersion": 9
             },
             "rules": {
                 "no-console": "off",
@@ -281,7 +279,7 @@
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 2017
+                "ecmaVersion": 9
             },
             "rules": {
                 "no-console": "off"
@@ -299,7 +297,7 @@
                 "mocha": true
             },
             "parserOptions": {
-                "ecmaVersion": 2017
+                "ecmaVersion": 9
             },
             "rules": {
                 "no-console": "off",

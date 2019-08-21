@@ -30,6 +30,17 @@
         "collapse": true,
         "typedefs": true,
         "removeQuotes": "all",
-        "disqus": ""
+        "disqus": "",
+        "menu":{
+            "App Server":{
+                "href":"/docs/app/index.html"
+            },
+            "API Server":{
+                "href":"/docs/api/index.html"
+            },
+            "Browser side":{
+                "href":"/docs/browser/index.html"
+            }
+        }
     }
 }

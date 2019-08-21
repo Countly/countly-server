@@ -523,7 +523,7 @@ window.ReportingView = countlyView.extend({
                 regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[0]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
                 }
 
                 // name <email@address.com>
@@ -532,7 +532,7 @@ window.ReportingView = countlyView.extend({
                 /*eslint-enable */
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[2]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
                 }
 
                 return false;
@@ -971,11 +971,5 @@ app.route('/manage/reports', 'reports', function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/manage/reports" class="item">' +
-        '<div class="logo-icon fa fa-envelope"></div>' +
-        '<div class="text" data-localize="reports.title"></div>' +
-    '</a>';
-    if ($('#management-submenu .help-toggle').length) {
-        $('#management-submenu .help-toggle').before(menu);
-    }
+    app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
 });

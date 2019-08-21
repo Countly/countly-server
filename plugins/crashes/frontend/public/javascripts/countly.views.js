@@ -1,4 +1,4 @@
-/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,production,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,Handlebars,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
+/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,Handlebars,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
 window.CrashesView = countlyView.extend({
     convertFilter: {
         "sg.crash": {prop: "_id", type: "string"},
@@ -1249,6 +1249,15 @@ window.CrashgroupView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
 
             changeResolveStateText(crashData);
+
+            $('#crash-notes').click(function() {
+                $('#tabs').addClass('hide-message');
+            });
+
+            $('#crash-errors').click(function() {
+                $('#tabs').removeClass('hide-message');
+            });
+
             if (typeof addDrill !== "undefined") {
                 $("#content .widget:first-child .widget-header>.right").append(addDrill("sg.crash", this.id, "[CLY]_crash"));
             }
@@ -2108,26 +2117,9 @@ $(document).ready(function() {
             countlyCrashes.loadList(appId);
         }
     });
-    if (!production) {
-        CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
-    }
 
-    var menu = '<a class="item" id="sidebar-crashes">' +
-        '<div class="logo ion-alert-circled"></div>' +
-        '<div class="text" data-localize="crashes.title"></div>' +
-    '</a>' +
-    '<div class="sidebar-submenu" id="crash-submenu">' +
-        '<a href="#/crashes" class="item">' +
-            '<div class="logo-icon fa fa-line-chart"></div>' +
-            '<div class="text" data-localize="sidebar.dashboard">Overview</div>' +
-        '</a>' +
-    '</div>';
-    if ($('.sidebar-menu #management-menu').length) {
-        $('.sidebar-menu #management-menu').before(menu);
-    }
-    else {
-        $('.sidebar-menu').append(menu);
-    }
+    app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+    app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
     //check if configuration view exists
     if (app.configurationsView) {

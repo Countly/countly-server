@@ -30,6 +30,9 @@
 	 <% if (message){ %>
 		<div id="message"></div>
 	 <% } %>
+    <div id="top-left-container">
+        <a class="top-button" href="./login" data-localize="login.button"></a>
+    </div>
 	<div id="top-container">
         <% if (countlyPage){ %>
 		<a class="top-button" href="<%- countlyPage %>"><%- countlyTitle %></a>
@@ -58,7 +61,7 @@
 		<div id="create-account">
 			<form method="POST" id="remember-password-form">
 				<div>
-					<input id="remember-password-email" style="width:300px; margin-left:5px;" autocapitalize="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email"/>
+					<input id="remember-password-email" style="width:250px; margin-left:5px;" autocapitalize="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email"/>
 				</div>
                 <% if (typeof inject_template.form != "undefined") { %>
                     <%- inject_template.form %>
@@ -76,7 +79,6 @@
 	</div>
 	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
-	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.noisy.min.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>

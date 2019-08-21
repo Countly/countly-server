@@ -55,7 +55,7 @@
                                 <td>
                                     <div class="title" data-localize="user-settings.profile-picture"></div>
                                 </td>
-                                <td>
+                                <td style="position:relative">
                                     <div class="pp-circle">
                                         <input type="file" id="pp-uploader" name="member_image">
                                         <input type="hidden" id="member-image-path" name="member-image-path">
@@ -125,6 +125,27 @@
                     </td>
                 </tr>
                 {{/if}} {{{configs}}}
+                
+                {{#if user}}
+                <tr>
+                    <td data-localize="user-settigs.delete-account"></td>
+                    <td>
+                        <table class="d-table help-zone-vb " cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td><div class="title" data-localize="management-users.password"></div>
+                                </td>
+                                <td style='padding-bottom: 19px;'>
+                                    <span  id='password-input-mandatory-warning' data-localize="user-settings.password-mandatory"></span>
+                                    <div class="input">
+                                        <input id="delete_account_password" type="password" placeholder="..." data-localize="management-users.password" />
+                                        <div class='icon-button red delete-app' id="delete-user-account-button" data-localize="user-settigs.delete-account"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                {{/if}}
             </table>
 
             <div id="empty-search-result" style="display: none" data-localize="configs.no-search-result">There aren’t any configurations matching your search.</div>

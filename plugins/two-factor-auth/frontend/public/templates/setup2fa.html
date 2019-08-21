@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+   ______                  __  __
+  / ____/___  __  ______  / /_/ /_  __
+ / /   / __ \/ / / / __ \/ __/ / / / /
+/ /___/ /_/ / /_/ / / / / /_/ / /_/ /
+\____/\____/\__,_/_/ /_/\__/_/\__, /
+              http://count.ly/____/
+-->
+<html>
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="referrer" content="no-referrer">
+	<link href="stylesheets/pre-login/main.css" rel="stylesheet" type="text/css">
+	<link href="stylesheets/main.css" rel="stylesheet" type="text/css">
+    <link href="two-factor-auth/stylesheets/main.css" rel="stylesheet" type="text/css">
+    <style>
+        body {
+            background-color: #FFF;
+        }
+        
+        #countly-logo {
+            margin: 15px 50px;
+        }
+
+        #countly-logo img {
+            width: 120px;
+        }
+
+        #two-factor-auth-setup {
+            width: 640px;
+            margin: 0 auto;
+        }
+
+        #login-button {
+            width: auto;
+        }
+    </style>
+	<link rel="icon" type="image/png" href="<%- countlyFavicon %>">
+    <% if (themeFiles && themeFiles.css) { %>
+        <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
+    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+        <% } %>
+    <% } %>
+	<title><%- countlyTitle %></title>
+	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>";</script>
+</head>
+<body>
+    <div id="countly-logo">
+        <img src="images/dashboard/countly_logo.svg"/>
+    </div>
+    <div id="two-factor-auth-setup">
+        <div class="row title" data-localize="two-factor-auth.setup_auth_to_continue"></div>
+        <div class="row">
+            <div class="step-number">1</div>
+            <div class="step-content" data-localize="two-factor-auth.install_app"></div>
+        </div>
+        <div class="row">
+            <div class="step-number">2</div>
+            <div class="step-content" data-localize="two-factor-auth.scan_qr"></div>
+        </div>
+        <div class="row secrets">
+            <div class="two-factor-auth-qr-code">
+                <%- qrcode_html %>
+            </div>
+            <div class="secret-2fa-label" data-localize="two-factor-auth.secret_token"></div>
+            <div><%= secret_token %></div>
+        </div>
+        <div class="row one-time-password">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <div data-localize="two-factor-auth.enter_otp"></div>
+                <form id="login-2fa-form" method="POST">
+                    <div>
+                        <input type="text" name="auth_code"  autocomplete="off" data-localize="two-factor-auth.enter_otp_short" autofocus/>
+                    </div>
+                    <% if (typeof inject_template.form != "undefined") { %>
+                        <%- inject_template.form %>
+                    <% } %>
+                    <div>
+                        <input type="hidden" value="<%= secret_token %>" name="secret_token"/>
+                        <input type="hidden" value="<%- username %>" name="username"/>
+                        <input type="hidden" value="<%- password %>" name="password"/>
+                        <input type="hidden" value="<%= csrf %>" name="_csrf" />
+                        <input type="hidden" value="en" name="lang" id="form-lang" />
+                    </div>
+                </form>
+                </div>
+        </div>
+        <div class="row buttons">
+            <input id="login-button" form="login-2fa-form" value="Confirm" type="submit" data-localize="two-factor-auth.confirm"/>
+        </div>
+    </div>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.noisy.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
+    <script>
+        addLocalization('two-factor-auth', countlyGlobal['cdn'] + 'two-factor-auth/localization/');
+    </script>
+    <% if (themeFiles && themeFiles.js) { %>
+        <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
+    <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+        <% } %>
+    <% } %>
+</body>
+</html>

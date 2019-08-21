@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -83,6 +83,189 @@
     };
 
     /**
+    * Create drawer
+    * @param {object} options - Options object
+    * @param {string} options.id - Optional. Id for drawer
+    * @param {object} options.template - Handelbars template object(optional). After creating element from template ".details" and ".buttons" are moved to drawer object. Other parts are not used.
+    * @param {object} options.templateData - Data for template (optional)
+    * @param {object} options.form  - (optional) Existing html element with form. ".details" and ".buttons" are moved to drawer object. Options.form element is removed.
+    * @param {string} options.title - (optional) Title for drawer
+    * @param {object} options.root - (optional) Element to which drawer should be appended. If not set drawer is appended to (".widget").
+    * @param {boolean} options.saveButtonText - (optional) If there is only single button and there is not set any button using form or template - then passing this string sets text for save button.
+    * @param {boolean} options.preventBaseReset - (optional) If true then when reseting form base reset function,which empties text fields won't be called.
+    * @param {object} options.applyChangeTriggers  -(optional)  If true - Ads event listeners on textaria and input[text],  cly-multi-select, cly-single select in form to trigger "cly-drawer-form-updated" on drawer. * This event callls options.onUpdate function. 
+    * @param {function} options.onUpdate - (optional) function called when "cly-drawer-form-updated" is triggered on drawer.
+    * @param {function} options.onClose(callback) - (optional) function called when calling drawer.close() or hitting [X] button. Has one parameter - callback function. Only if callback function returns true as first param - drawer is closed. 
+    * @param {function} options.onClosed(callback) - (optional) function called after drawer is successfully closed.
+    * @returns {object} Drawer object
+    * @example
+    * var drawer = CountlyHelpers.createDrawer({
+    *           id: "my-id",
+    *           form: $('#id-of-elem'), //if using form
+    *           title: 'My Drawer title',
+    *           applyChangeTriggers: true, //add triggers
+    *           onUpdate: function(){
+    *              //check all fields here
+    *            },
+    *            resetForm: function() {
+    *                //empty all fields. Text fields are emptied automatically because options.preventBaseReset is not set.
+    *            },
+    *            onClose: function(callback) {
+    *                callback(true); //allow closing form
+    *                callback(false); //don't close form
+    *            },
+    *            onClosed: function() {
+    *                //form is closed
+    *            }
+    *        });
+    * //After creation drawer object is returned. Object has multiple functions:
+    * drawer.open() //opens drawer
+    * drawer.close(force); //closes drawer. force - close anyway even if there is onClose function set. (Withot validating)
+    * drawer.resetForm(); //resets drawer (Normally called after closing or before opening drawer)
+    *    
+    */
+    CountlyHelpers.createDrawer = function(options) {
+        var drawer = $("#cly-drawer-template").clone();
+        drawer.removeAttr("id");
+
+        if (options.template) { //from template or string
+            var newPage = "";
+            if (typeof options.template === 'function') {
+                newPage = $("<div>" + options.template(options.templateData || {}) + "</div>");
+            }
+            else {
+                newPage = $("<div>" + options.template + "</div>");
+            }
+            $(drawer).find('.details').first().replaceWith($(newPage).find('.details').first()); //copy details
+            $(drawer).find('.buttons').first().replaceWith($(newPage).find('.buttons').first()); //copy buttons
+        }
+
+        if (options.form) { //from existing html element
+            $(drawer).find('.details').first().replaceWith($(options.form).find('.details').first()); //copy details
+            $(drawer).find('.buttons').first().replaceWith($(options.form).find('.buttons').first()); //copy buttons
+            options.form.remove();
+        }
+
+        if (options.id) { //sets id
+            $(drawer).attr("id", options.id);
+        }
+        if (options.title) { //sets title
+            $(drawer).find(".title span").first().html(options.title);
+        }
+        if (options.saveButtonText) {
+            $(drawer).find(".buttons .save-drawer-button").first().html(options.saveButtonText);
+        }
+
+        //appends drawer to 
+        if (options.root) {
+            options.root.append(drawer);
+        }
+        else {
+            $(".widget").first().append(drawer);
+        }
+
+        if (options.onClose && typeof options.onClose === 'function') {
+            drawer.onClose = options.onClose;
+        }
+
+        $(drawer).find(".close").off("click").on("click", function() {
+            drawer.close();
+        });
+
+        app.localize(drawer);
+
+        drawer._resetForm = function() {
+            $(this.drawerElement).find("input[type=text]").val("");
+            $(this.drawerElement).find("textarea").val("");
+        };
+        if (options.resetForm) {
+            drawer.resetForm = function() {
+                if (!options.preventBaseReset) {
+                    this._resetForm();
+                }
+                options.resetForm();
+            };
+        }
+        else {
+            drawer.resetForm = drawer._resetForm;
+        }
+        if (options.initForm) {
+            options.initForm();
+        }
+
+        drawer.open = function() {
+            $(".cly-drawer").removeClass("open editing"); //closes all drawers
+            $(this).addClass("open");
+        };
+
+        drawer.close = function(force) {
+            if (force) {
+                $(drawer).removeClass("open editing");
+                drawer.trigger('cly-drawer-closed');
+            }
+            else if (drawer.onClose && typeof drawer.onClose === 'function') {
+                drawer.onClose(function(closeMe) {
+                    if (closeMe) {
+                        $(drawer).removeClass("open editing");
+                        drawer.trigger('cly-drawer-closed');
+                    }
+                });
+            }
+            else {
+                $(drawer).removeClass("open editing");
+                drawer.trigger('cly-drawer-closed');
+            }
+        };
+
+        if (options.applyChangeTriggers) {
+            //on off switch
+            $(drawer).find('.on-off-switch input').on("change", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //input text field
+            $(drawer).find("input[type=text]").on("keyup", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //textarea
+            $(drawer).find("textarea").on("keyup", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //single select
+            $(drawer).find(".cly-select").on("cly-select-change", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+            //multi select
+            $(drawer).on('cly-multi-select-change', function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //green checkboxes
+            $(drawer).find(".check-green").on("click", function() {
+                var isChecked = $(this).hasClass("fa-check-square"); //now is checked
+                if (isChecked) {
+                    $(this).addClass("fa-square-o");
+                    $(this).removeClass("fa-check-square");
+                }
+                else {
+                    $(this).removeClass("fa-square-o");
+                    $(this).addClass("fa-check-square");
+                }
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+        }
+        if (options.onUpdate) {
+            $(drawer).on('cly-drawer-form-updated', options.onUpdate);
+        }
+        if (options.onClosed) {
+            $(drawer).on('cly-drawer-closed', options.onClosed);
+        }
+        return drawer;
+    };
+
+    /**
     * Display dashboard notification using Amaran JS library
     * @param {object} msg - notification message object
     * @param {string=} msg.title - title of the notification
@@ -147,6 +330,140 @@
             closeButton: true,
             closeOnClick: (msg.closeOnClick === false) ? false : true,
             onClick: msg.onClick || null
+        });
+    };
+
+    /**
+    * Create new model
+    */
+    CountlyHelpers.model = function() {
+        var self = this;
+        $("#overlay").click(function() {
+            var model = $(".model:visible");
+            if (model.length) {
+                model.fadeOut().remove();
+                $(this).hide();
+            }
+        });
+
+        var cnFn = function() {
+            $(this).trigger("model-continue");
+            $(this).parents(".model:visible").fadeOut().remove();
+        };
+
+        var clFn = function() {
+            $(this).trigger("model-cancel");
+            $(this).parents(".model:visible").fadeOut().remove();
+        };
+
+        this.resetModel = function() {
+            self.continue = [cnFn];
+            self.cancel = [clFn];
+        };
+
+        $("#model-continue").live('click', function() {
+            var breakStatus = false;
+            for (var i = 0; i < self.continue.length; i++) {
+                var call = self.continue[i].bind(this);
+                if (!call()) {
+                    breakStatus = true;
+                    break;
+                }
+            }
+
+            if (breakStatus) {
+                $(this).trigger("model-continue");
+            }
+
+            if (!$('.model:visible').length) {
+                $("#overlay").hide();
+            }
+        });
+
+        $("#model-cancel").live('click', function() {
+            var breakStatus = false;
+            for (var i = 0; i < self.cancel.length; i++) {
+                var call = self.cancel[i].bind(this);
+                if (!call()) {
+                    breakStatus = true;
+                    break;
+                }
+            }
+
+            if (breakStatus) {
+                $(this).trigger("model-cancel");
+            }
+
+            if (!$('.model:visible').length) {
+                $("#overlay").hide();
+            }
+        });
+
+        $(document).keyup(function(e) {
+            if (e.keyCode === 27) {
+                $(".model:visible").animate({
+                    top: 0,
+                    opacity: 0
+                }, {
+                    duration: 1000,
+                    easing: 'easeOutQuart',
+                    complete: function() {
+                        $(this).remove();
+                    }
+                });
+
+                $("#overlay").hide();
+            }
+        });
+
+        self.continue = [cnFn];
+        self.cancel = [clFn];
+    };
+
+    /**
+    * Create new model
+    * @param {object} json - json object
+    * @param {string=} type - classname
+    * @param {function=} callback - callback function
+    */
+    CountlyHelpers.newJSONEditor = function(json, type, callback) {
+        var self = this;
+
+        var dialog = $("#cly-json-editor").clone();
+        dialog.removeAttr("id");
+
+        dialog.addClass(type);
+        CountlyHelpers.revealDialog(dialog);
+
+        var element = dialog.find(".body")[0];
+        var statusElements = {
+            validElement: dialog.find(".valid-json"),
+            invalidElement: dialog.find(".invalid-json"),
+        };
+
+        this.JSONEditor = new _JSONEditor(element, json, statusElements);
+
+        this.JSONEditor.editor.on("change", function() {
+            dialog.find("#dialog-continue").removeClass("disabled");
+            if (!self.JSONEditor.jsonStatus) {
+                dialog.find("#dialog-continue").addClass("disabled");
+            }
+        });
+
+        dialog.find("#dialog-cancel").on('click', function() {
+            callback(true);
+        });
+
+        dialog.find("#dialog-continue").on('click', function() {
+            if (self.JSONEditor.jsonStatus) {
+                return callback(false, self.JSONEditor.returnJSON());
+            }
+
+            return callback(true);
+        });
+
+        dialog.find("#dialog-format").on("click", function() {
+            self.JSONEditor.format();
         });
     };
 
@@ -1377,6 +1694,10 @@
         });
 
         $(dtable[0]).parent().find(".select-column-table-data").css("display", "table-cell");
+
+
+        var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
+        $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
     };
 
     /** function hides column in data table and stores config in local storage
@@ -1392,7 +1713,7 @@
         var selC = dtable.CoultyColumnSel.tableCol;
 
         for (var k in settings) {
-            if (settings.hasOwnProperty(k) && settings[k] === true) {
+            if (Object.prototype.hasOwnProperty.call(settings, k) && settings[k] === true) {
                 selC--;
             }
         }
@@ -1417,6 +1738,13 @@
         if (applyChanges) {
             store.set(tableName + "HiddenDataTableColumns", settings);
             dtable.fnSetColumnVis(parseInt(col), !hidden, true);
+            var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
+            $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
+
+            var wrapper = dtable.parents('.dataTables_wrapper').first();
+            if ($(wrapper).find('.sticky-header').length > 0) { //check if we have sticky header
+                dtable.stickyTableHeaders(); //fix sticky header
+            }
         }
         return applyChanges;
 
@@ -1534,6 +1862,7 @@
             $.each(dTable.aOpen, function(i, id) {
                 nTr = $("#" + id)[0];
                 $(nTr).addClass("selected");
+                $(nTr).find('i.expand-row-icon').text('keyboard_arrow_up');
                 var nDetailsRow = dTable.fnOpen(nTr, getData(dTable.fnGetData(nTr), context), 'details');
                 $('div.datatablesubrow', nDetailsRow).show();
                 dTable.trigger("row.reopen", id);
@@ -1552,6 +1881,7 @@
             $.each(dTable.aOpen, function(i, id) {
                 var nTr = $("#" + id)[0];
                 $(nTr).removeClass("selected");
+                $(nTr).find('i.expand-row-icon').text('keyboard_arrow_down');
                 $('div.datatablesubrow', $(nTr).next()[0]).slideUp(function() {
                     dTable.fnClose(nTr);
                     dTable.aOpen.splice(i, 1);

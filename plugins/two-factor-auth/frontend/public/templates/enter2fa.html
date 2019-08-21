@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+   ______                  __  __
+  / ____/___  __  ______  / /_/ /_  __
+ / /   / __ \/ / / / __ \/ __/ / / / /
+/ /___/ /_/ / /_/ / / / / /_/ / /_/ /
+\____/\____/\__,_/_/ /_/\__/_/\__, /
+              http://count.ly/____/
+-->
+<html>
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="referrer" content="no-referrer">
+	<link href="stylesheets/pre-login/main.css" rel="stylesheet" type="text/css">
+	<link rel="icon" type="image/png" href="<%- countlyFavicon %>">
+    <% if (themeFiles && themeFiles.css) { %>
+        <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
+    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+        <% } %>
+    <% } %>
+	<title><%- countlyTitle %></title>
+	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>";</script>
+    <% if (typeof inject_template.css != 'undefined') { %>
+	<style><%- inject_template.css %></style>
+	<% } %>
+    <style>
+        #login-form form {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        #login-form form input[name="auth_code"] {
+            width: 175px;
+        }
+
+        #login-button {
+            margin-top: 0;
+            width: 123px;
+            margin-left: 7px;
+        }
+
+        #two-factor-auth-prompt {
+            color: #878787;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <% if (message){ %>
+        <div id="message"></div>
+    <% } %>
+	<div id="top-container">
+		<% if (countlyPage){ %>
+		<a class="top-button" href="<%- countlyPage %>"><%- countlyTitle %></a>
+        <% } %>
+		<div class="top-button" id="select-lang">
+			<div id="active-lang">EN</div>
+			<div id="langs">
+				<div class="group">
+					<% for(var i=0, l=(languages.length/2); i<l; i++) {%>
+    				<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
+        	<% } %>
+				</div>
+				<div class="group">
+					<% for(var i=(parseInt(languages.length/2) + 1), l=languages.length; i<l; i++) {%>
+    				<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
+        	<% } %>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="login-form">
+		<div style="overflow:auto;">
+			<!--
+			Community Edition license doesn't include the right to remove Countly branding.
+			If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
+			-->
+            <div id="login-logo" style="margin-bottom:30px;"></div>
+            <div id="two-factor-auth-prompt" data-localize="two-factor-auth.prompt"></div>
+            <form method="POST">
+                <div>
+                    <input type="text" name="auth_code" autocomplete="off" data-localize="two-factor-auth.login.placeholder" autofocus/>
+                </div>
+                <% if (typeof inject_template.form != "undefined") { %>
+                    <%- inject_template.form %>
+                <% } %>
+                <div>
+                    <input type="hidden" value="<%- username %>" name="username"/>
+                    <input type="hidden" value="<%- password %>" name="password"/>
+                    <input type="hidden" value="<%= csrf %>" name="_csrf" />
+                    <input type="hidden" value="en" name="lang" id="form-lang" />
+                    <input id="login-button" value="Continue" type="submit" data-localize="two-factor-auth.continue"/>
+                </div>
+            </form>
+		</div>
+        <% if (typeof inject_template.html != "undefined") { %>
+            <%- inject_template.html %>
+        <% } %>
+	</div>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.noisy.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
+	<script>
+        var countlyTitle = "<%- countlyTitle %>";
+		$(document).ready(function() {
+			<% if (message && message.length > 0){ %>
+				showMessage("<%= message %>");
+			<% } %>
+            if (jQuery.i18n.map["login.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
+            }
+		});
+		
+		$(document).bind('clyLangChange', function() {
+            if (jQuery.i18n.map["login.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
+            }
+		});
+	</script>
+	<% if (typeof inject_template.js != 'undefined') { %>
+	<script><%- inject_template.js %></script>
+	<% } %>
+    <script>
+        addLocalization('two-factor-auth', countlyGlobal['cdn'] + 'two-factor-auth/localization/');
+    </script>
+     <% if (themeFiles && themeFiles.js) { %>
+        <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
+    <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+        <% } %>
+    <% } %>
+</body>
+</html>
