@@ -204,7 +204,7 @@
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                     <tr>
-                                                        <td align="right" style="font-family: Arial, sans-serif; <% if (apps[i].results[j][key].change != "NA") { %> <% if (apps[i].results[j][key].trend == "d") { %> color: red; <% } else { %> color: green; <% } %> <% } else { %> color:#333333; <% } %> font-size: 16px;"><%= apps[i].results[j][key].change %></td>
+                                                        <td align="right" style="font-family: Arial, sans-serif; <% if (apps[i].results[j][key].change != "NA" && apps[i].results[j][key].change != "0%") { %> <% if (apps[i].results[j][key].trend == "d" && properties["reports."+j] != "Crash") { %> color: red; <% } else { %> color: green; <% } if (apps[i].results[j][key].trend == "d" && properties["reports."+j] == "Crash") { %> color: green; <% } else { %> color: red; <% } %> <% } else { %> color:#333333; <% } %> font-size: 16px;"><%= apps[i].results[j][key].change %></td>
                                                     </tr>
                                                 </table>
                                             </td>

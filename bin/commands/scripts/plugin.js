@@ -25,11 +25,17 @@ function save_changes(data) {
 //check if we have a command
 if (myArgs[0] == "enable" && myArgs[1]) {
     if (plugins.indexOf(myArgs[1]) == -1) {
-        manager.installPlugin(myArgs[1]);
-        plugins.push(myArgs[1]);
-        let data = {};
-        data[myArgs[1]] = true;
-        save_changes(data);
+        manager.installPlugin(myArgs[1], function(err) {
+            if (!err) {
+                plugins.push(myArgs[1]);
+                let data = {};
+                data[myArgs[1]] = true;
+                save_changes(data);
+            }
+            else {
+                console.log("Could not enable", myArgs[1]);
+            }
+        });
     }
     else {
         console.log("Plugin already installed");
@@ -46,11 +52,12 @@ else if (myArgs[0] == "upgrade" && myArgs[1]) {
 }
 else if (myArgs[0] == "disable" && myArgs[1]) {
     if (plugins.indexOf(myArgs[1]) > -1) {
-        manager.uninstallPlugin(myArgs[1]);
-        plugins.splice(plugins.indexOf(myArgs[1]), 1);
-        let data = {};
-        data[myArgs[1]] = false;
-        save_changes(data);
+        manager.uninstallPlugin(myArgs[1], function() {
+            plugins.splice(plugins.indexOf(myArgs[1]), 1);
+            let data = {};
+            data[myArgs[1]] = false;
+            save_changes(data);
+        });
     }
     else {
         console.log("Plugin already uninstalled");

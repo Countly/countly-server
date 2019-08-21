@@ -22,7 +22,20 @@ class ValidateJob extends job.TransientJob {
      * @returns {Promise} promise, resolved(always)
      */
     prepare(/*manager, db*/) {
-        return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            this.db().collection('plugins').findOne({}, (error, plugins) => {
+                if (error || !plugins) {
+                    return reject(error || 'no configs');
+                }
+
+                this.proxyhost = plugins.push && plugins.push.proxyhost || '';
+                this.proxyport = plugins.push && plugins.push.proxyport || '';
+                this.proxyuser = plugins.push && plugins.push.proxyuser || '';
+                this.proxypass = plugins.push && plugins.push.proxypass || '';
+
+                resolve();
+            });
+        });
     }
 
     /** resource name
@@ -38,7 +51,7 @@ class ValidateJob extends job.TransientJob {
      * @returns {object} ConnectionResource
      */
     createResource(_id, name) {
-        return new ConnectionResource(_id, name, {cid: this.data.cid, test: false, field: 'ip'}, this.db());
+        return new ConnectionResource(_id, name, {cid: this.data.cid, test: false, field: 'ip', proxyhost: this.proxyhost, proxyport: this.proxyport, proxyuser: this.proxyuser, proxypass: this.proxypass}, this.db());
     }
 
     /** release Resource (call close() on it, returns result)

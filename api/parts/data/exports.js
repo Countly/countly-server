@@ -209,6 +209,9 @@ exports.fromDatabase = function(options) {
     }
     alternateName += "_exported_on_" + moment().format("DD-MMM-YYYY");
     options.filename = options.filename || alternateName;
+    plugin.dispatch("/drill/preprocess_query", {
+        query: options.query
+    });
     var cursor = options.db.collection(options.collection).find(options.query, options.projection);
     if (options.sort) {
         cursor.sort(options.sort);

@@ -12,6 +12,7 @@ var reportsInstance = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     localize = require('../../../api/utils/localization.js'),
     common = require('../../../api/utils/common.js'),
+    log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info');
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
@@ -80,12 +81,20 @@ var metrics = {
          * @param {func} cb - callback function
          */
         function findMember(cb) {
-            db.collection('members').findOne({_id: db.ObjectID(report.user)}, function(err, member) {
-                if (err) {
-                    return cb(err);
+            db.collection('members').findOne({_id: db.ObjectID(report.user)}, function(err1, member) {
+                if (!err1 && member) {
+                    return cb(null, member);
                 }
 
-                return cb(null, member);
+                db.collection('members').findOne({global_admin: true}, function(err2, globalAdmin) {
+                    if (!err2 && globalAdmin) {
+                        log.d("Report user not found. Updating it to the global admin.");
+                        report.user = globalAdmin._id;
+                        return cb(null, globalAdmin);
+                    }
+
+                    return cb(err2);
+                });
             });
         }
         /**
@@ -96,7 +105,8 @@ var metrics = {
             if (versionInfo.title.indexOf("Countly") > -1) {
                 var options = {
                     uri: 'http://count.ly/email-news.txt',
-                    method: 'GET'
+                    method: 'GET',
+                    timeout: 1000
                 };
 
                 request(options, function(error, response, body) {
@@ -242,7 +252,7 @@ var metrics = {
                     }
                 }
                 if (err || !data[0]) {
-                    return callback("No data to report", {report: report});
+                    return callback("Report user not found.", {report: report});
                 }
 
                 var member = data[0];
@@ -297,6 +307,20 @@ var metrics = {
                         report.end = endDate.getTime();
                         report.start = report.end - 7 * 24 * 60 * 59 * 1000;
                         report.period = "7days";
+
+                        startDate = new Date(report.start);
+                        monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                        report.date = startDate.getDate() + " " + monthName;
+
+                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                        report.date += " - " + endDate.getDate() + " " + monthName;
+                    }
+                    else if (report.frequency === "monthly") {
+                        endDate = new Date();
+                        endDate.setHours(23, 59);
+                        report.end = endDate.getTime();
+                        report.start = report.end - parseInt(moment(endDate).subtract(1, 'months').daysInMonth()) * 24 * 60 * 60 * 1000;
+                        report.period = [report.start, report.end];
 
                         startDate = new Date(report.start);
                         monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
@@ -430,7 +454,11 @@ var metrics = {
                                             }
                                         }
                                         var message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics});
-                                        report.subject = versionInfo.title + ': ' + localize.format(((report.frequency === "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"]), report.total_new);
+                                        report.subject = versionInfo.title + ': ' + localize.format(
+                                            (
+                                                (report.frequency === "weekly") ? report.properties["reports.subject-week"] :
+                                                    ((report.frequency === "monthly") ? report.properties["reports.subject-month"] : report.properties["reports.subject-day"])
+                                            ), report.total_new);
                                         if (callback) {
                                             return callback(err2, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, message: message});
                                         }

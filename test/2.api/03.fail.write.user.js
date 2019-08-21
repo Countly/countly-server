@@ -29,7 +29,7 @@ describe('Fail writing user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Invalid path, must be one of /create, /update or /delete');
+                    ob.should.have.property('result', 'Invalid path, must be one of /create, /update, /deleteOwnAccount or /delete');
                     done();
                 });
         });

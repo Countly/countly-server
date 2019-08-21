@@ -1,4 +1,4 @@
-/* global google, _, jQuery*/
+/* global countlyGlobal, google, _, jQuery*/
 (function(countlyMapHelper, $) {
 
     // Private Properties
@@ -41,7 +41,13 @@
             draw();
         }
         else {
-            google.load('visualization', '1', {'packages': ['geochart'], callback: draw});
+            var googleChartsOptions = {packages: ['geochart'], callback: draw};
+
+            if (countlyGlobal.config.google_maps_api_key) {
+                googleChartsOptions.mapsApiKey = countlyGlobal.config.google_maps_api_key;
+            }
+
+            google.charts.load('current', googleChartsOptions);
         }
     };
 
@@ -59,6 +65,9 @@
         ];
 
         chartData.rows = _.map(_mapData, function(value) {
+            if (value.value === 0) {
+                return;
+            }
             value.country = _countryMap[value.country] || jQuery.i18n.map["common.unknown"] || "Unknown";
 
             if (value.country === "European Union" || value.country === jQuery.i18n.map["common.unknown"]) {
@@ -75,6 +84,8 @@
                     {v: value.value}
                 ]
             };
+        }).filter(function(row) {
+            return row;
         });
 
         _dataTable = new google.visualization.DataTable(chartData);

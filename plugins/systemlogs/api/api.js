@@ -189,7 +189,7 @@ var pluginOb = {},
 
     plugins.register("/i/app_users/update", function(ob) {
         ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, query: ob.query, update: JSON.stringify(ob.update), before: ob.user};
+        var data = {app_id: ob.app_id, query: ob.query, update: JSON.stringify(ob.update), result: ob.user};
         recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_updated", data);
     });
 
@@ -372,7 +372,7 @@ var pluginOb = {},
             }
         }
         var update = {};
-        update["a." + common.db.encode(action)] = true;
+        update["action." + common.db.encode(action)] = true;
         common.db.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function() {});
     }
 }(pluginOb));

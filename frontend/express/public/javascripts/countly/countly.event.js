@@ -1,4 +1,5 @@
 /*global countlyCommon, _, jQuery*/
+// eslint-disable-next-line no-shadow-restricted-names
 (function(countlyEvent, $, undefined) {
 
     //Private Properties
@@ -120,7 +121,7 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "events",
                 "events": JSON.stringify(my_events),
-                "period": countlyCommon.getPeriod(),
+                "period": countlyCommon.getPeriodForAjax(),
                 "timestamp": new Date().getTime(),
                 "overview": true
             },
@@ -162,6 +163,47 @@
         });
 
     };
+
+    countlyEvent.getTopEventData30Day = function(callback) {
+        return $.when($.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "top_events",
+                "period": "30days",
+                "limit": 5,
+            },
+            dataType: "json",
+            success: function(json) {
+                callback(json);
+            },
+            error: function(err) {
+                callback(err);
+            }
+        }));
+    };
+
+    countlyEvent.getTopEventDataDaily = function(callback) {
+        return $.when($.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "top_events",
+                "period": "today",
+                "limit": 5
+            },
+            dataType: "json",
+            success: function(json) {
+                callback(json);
+            },
+            error: function(err) {
+                callback(err);
+            }
+        }));
+    };
+
     //updates event map for current app
     countlyEvent.update_map = function(event_map, event_order, event_overview, omitted_segments, callback) {
         _activeLoadedEvent = "";
@@ -211,7 +253,7 @@
             url: countlyCommon.API_PARTS.data.w + "/events/delete_events",
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                "events": JSON.stringify(my_events)
+                "events": countlyCommon.decodeHtml(JSON.stringify(my_events))
             },
             success: function() {
                 callback(true);
@@ -351,9 +393,12 @@
 
     countlyEvent.getEventData = function() {
 
+        var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
+        if (!_activeEvent) {
+            _activeEvent = Object.keys(eventMap)[0] || "";
+        }
         var eventData = {},
-            mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
-            eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
+            mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
             countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
             sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
             durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
@@ -522,7 +567,7 @@
             eventsWithoutOrder = [];
         for (var i = 0; i < events.length; i++) {
             var arrayToUse = eventsWithoutOrder;
-            var mapKey = events[i].replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = events[i].replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             if (eventOrder.indexOf(events[i]) !== -1) {
                 arrayToUse = eventsWithOrder;
             }
@@ -581,7 +626,7 @@
             eventNames = [];
 
         for (var event in eventSegmentations) {
-            var mapKey = event.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = event.replace("\\", "\\\\").replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             if (eventMap[mapKey] && eventMap[mapKey].name) {
                 eventNames.push({
                     "key": event,
@@ -627,7 +672,8 @@
 
     countlyEvent.getEventLongName = function(eventKey) {
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
-        var mapKey = eventKey.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
+        eventKey = "" + eventKey;
+        var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
         if (eventMap[mapKey] && eventMap[mapKey].name) {
             return eventMap[mapKey].name;
         }
@@ -687,7 +733,12 @@
                 tmp_y = countlyEvent.clearEventsObject(tmp_y);
 
                 if (_activeSegmentation) {
-
+                    tmpCurrCount = 0,
+                    tmpCurrSum = 0,
+                    tmpCurrDur = 0,
+                    tmpPrevCount = 0,
+                    tmpPrevSum = 0,
+                    tmpPrevDur = 0;
                     for (segment in tmp_x) {
                         tmpCurrCount += tmp_x[segment].c || 0;
                         tmpCurrSum += tmp_x[segment].s || 0;
@@ -728,6 +779,12 @@
             tmp_y = countlyEvent.clearEventsObject(tmp_y);
 
             if (_activeSegmentation) {
+                tmpCurrCount = 0,
+                tmpCurrSum = 0,
+                tmpCurrDur = 0,
+                tmpPrevCount = 0,
+                tmpPrevSum = 0,
+                tmpPrevDur = 0;
                 for (segment in tmp_x) {
                     tmpCurrCount += tmp_x[segment].c || 0;
                     tmpCurrSum += tmp_x[segment].s || 0;
@@ -787,7 +844,7 @@
         };
 
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
-            mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
+            mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
             countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
             sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
             durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
@@ -863,7 +920,7 @@
         function extractDataForGraphAndChart(dataFromDb) {
             var eventData = {},
                 eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
-                mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
+                mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
                 countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
                 sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
                 durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];

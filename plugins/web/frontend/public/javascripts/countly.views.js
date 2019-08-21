@@ -13,7 +13,7 @@ window.WebDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        var defs = [countlyAnalyticsAPI.initialize(["platforms", "sources", "browser"]), countlySession.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
+        var defs = [countlyAnalyticsAPI.initialize(["platforms", "sources", "browser"]), countlySession.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID]), countlyTotalUsers.initialize("countries")];
 
         return $.when.apply($, defs).then(function() {});
     },
@@ -82,13 +82,12 @@ window.WebDashboardView = countlyView.extend({
         }
 
         _.defer(function() {
-            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
+            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph", null, null, null, [countlyCommon.ACTIVE_APP_ID]);
         });
     },
     renderCommon: function(isRefresh, isDateChange) {
         var sessionData = countlySession.getSessionData(),
             locationData = countlyLocation.getLocationData({maxCountries: 7});
-
         this.locationData = locationData;
         sessionData["page-title"] = countlyCommon.getDateRange();
         sessionData.usage = [
@@ -162,7 +161,7 @@ window.WebDashboardView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            CountlyHelpers.applyColors();
             $('.data-type-selector-group').find('div').removeClass('active');
             $(this.selectedMap).addClass('active');
 
@@ -293,6 +292,7 @@ window.WebDashboardView = countlyView.extend({
             if (!isDateChange) {
                 this.drawGraph();
             }
+            app.graphNotesView.addNotesMenuLink(this);
         }
         if (!countlyGlobal.config.use_google) {
             this.countryTable(isRefresh);
@@ -379,6 +379,10 @@ window.WebDashboardView = countlyView.extend({
         var self = this;
         $("#map-list-right").empty();
         var country;
+
+        var type = self.curMap === "map-list-sessions" ? "t" : self.curMap === "map-list-users" ? "u" : self.curMap === "map-list-new" ? "n" : "";
+        self.locationData = countlyLocation.orderByType(type, self.locationData);
+
         for (var i = 0; i < self.locationData.length; i++) {
             country = self.locationData[i];
             $("#map-list-right").append('<div class="map-list-item">' +
@@ -499,63 +503,16 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/analytics/platforms" class="item">' +
-		'<div class="logo platforms"></div>' +
-		'<div class="text" data-localize="sidebar.analytics.platforms"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').prepend(menu);
-
-    menu = '<a href="#/analytics/versions" class="item">' +
-		'<div class="logo app-versions"></div>' +
-		'<div class="text" data-localize="sidebar.analytics.versions"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').prepend(menu);
-
-    menu = '<a href="#/analytics/resolutions" class="item">' +
-		'<div class="logo resolutions"></div>' +
-		'<div class="text" data-localize="sidebar.analytics.resolutions"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').prepend(menu);
-
-    menu = '<a href="#/analytics/devices" class="item">' +
-		'<div class="logo devices"></div>' +
-		'<div class="text" data-localize="sidebar.analytics.devices"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').prepend(menu);
-
-    menu = '<a href="#/analytics/countries" class="item">' +
-		'<div class="logo country"></div>' +
-		'<div class="text" data-localize="sidebar.analytics.countries"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').prepend(menu);
-
-    menu = '<a href="#/analytics/sessions" class="item">' +
-		'<div class="logo sessions"></div>' +
-		'<div class="text" data-localize="sidebar.analytics.sessions"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').prepend(menu);
-
-    menu = '<a href="#/analytics/users" class="item">' +
-		'<div class="logo users"></div>' +
-		'<div class="text" data-localize="sidebar.analytics.users"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').prepend(menu);
-
-    $("#web-type #engagement-menu").show();
-
-    menu = '<a href="#/analytics/loyalty" class="item">' +
-                    '<div class="logo loyalty"></div>' +
-                    '<div class="text" data-localize="sidebar.analytics.user-loyalty"></div>' +
-                '</a>' +
-                '<a href="#/analytics/frequency" class="item">' +
-                    '<div class="logo frequency"></div>' +
-                    '<div class="text" data-localize="sidebar.analytics.session-frequency"></div>' +
-                '</a>' +
-                '<a href="#/analytics/durations" class="item">' +
-                    '<div class="logo durations"></div>' +
-                    '<div class="text" data-localize="sidebar.engagement.durations"></div>' +
-                '</a>';
-    $('#web-type #engagement-submenu').append(menu);
+    app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
+    app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
+    app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
+    app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
+    app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
+    app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
+    app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
+    app.addSubMenuForType("web", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
+    app.addSubMenuForType("web", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
+    app.addSubMenuForType("web", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
 
     app.addAppSwitchCallback(function(appId) {
         if (countlyGlobal.apps[appId].type === "web") {

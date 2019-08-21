@@ -188,43 +188,60 @@ window.PluginsView = countlyView.extend({
         }
     },
     togglePlugin: function(plugins) {
+        var self = this;
         var overlay = $("#overlay").clone();
         $("body").append(overlay);
         overlay.show();
         var loader = $(this.el).find("#loader");
         loader.show();
+        var tryCount = 0;
+        /**
+         * check plugin update process
+         */
+        function checkProcess() {
+            tryCount++;
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o/plugins-check?app_id=" + countlyCommon.ACTIVE_APP_ID,
+                data: { t: tryCount },
+                success: function(state) {
+                    if (state.result === "completed") {
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true, true);
+                    }
+                    else if (state.result === "failed") {
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.errors"], jQuery.i18n.map["plugins.errors-msg"], '', 3000, false, 'warning', true, true);
+                    }
+                    else {
+                        setTimeout(checkProcess, 5000);
+                    }
+                },
+                error: function() {
+                    setTimeout(checkProcess, 5000);
+                }
+            });
+        }
+
         countlyPlugins.toggle(plugins, function(res) {
-            var msg = { clearAll: true };
-            if (res === "Success" || res === "Errors") {
-                var seconds = 10;
-                if (res === "Success") {
-                    msg.title = jQuery.i18n.map["plugins.success"];
-                    msg.message = jQuery.i18n.map["plugins.restart"] + " " + seconds + " " + jQuery.i18n.map["plugins.seconds"];
-                    msg.info = jQuery.i18n.map["plugins.finish"];
-                    msg.delay = seconds * 1000;
-                }
-                else if (res === "Errors") {
-                    msg.title = jQuery.i18n.map["plugins.errors"];
-                    msg.message = jQuery.i18n.map["plugins.errors-msg"];
-                    msg.info = jQuery.i18n.map["plugins.restart"] + " " + seconds + " " + jQuery.i18n.map["plugins.seconds"];
-                    msg.sticky = true;
-                    msg.type = "error";
-                }
-                setTimeout(function() {
-                    window.location.reload(true);
-                }, seconds * 1000);
+            if (res.result === "started") {
+                self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false, false);
+                checkProcess();
             }
             else {
-                overlay.hide();
-                loader.hide();
-                msg.title = jQuery.i18n.map["plugins.error"];
-                msg.message = res;
-                msg.info = jQuery.i18n.map["plugins.retry"];
-                msg.sticky = true;
-                msg.type = "error";
+                self.showPluginProcessMessage(jQuery.i18n.map["plugins.error"], res, jQuery.i18n.map["plugins.retry"], 5000, false, 'error', true, true);
             }
-            CountlyHelpers.notify(msg);
         });
+    },
+    showPluginProcessMessage: function(title, message, info, delay, sticky, type, reload, hideLoader) {
+        if (hideLoader) {
+            $("#overlay").hide();
+            $('#loader').hide();
+        }
+        CountlyHelpers.notify({clearAll: true, type: type, title: title, message: message, info: info, delay: delay, sticky: sticky});
+        if (reload) {
+            setTimeout(function() {
+                window.location.reload(true);
+            }, 3000);
+        }
     },
     filterPlugins: function(filter) {
         this.filter = filter;
@@ -344,7 +361,7 @@ window.ConfigurationsView = countlyView.extend({
                 select += '<div class="text" data-localize="configs.logs.' + value + '">' + jQuery.i18n.map["configs.logs." + value] + '</div>';
             }
             else {
-                select += '<div class="text" data-localzie="configs.logs.warn">' + jQuery.i18n.map["configs.logs.warn"] + '</div>';
+                select += '<div class="text" data-localize="configs.logs.warn">' + jQuery.i18n.map["configs.logs.warn"] + '</div>';
             }
             select += '</div>' +
                 '<div class="right combo"></div>' +
@@ -373,6 +390,12 @@ window.ConfigurationsView = countlyView.extend({
         this.registerInput("apps.timezone", function() {
             return null;
         });
+
+        this.registerInput("push.proxypass", function(value) {
+            return '<input type="password" id="push.proxypass" value="' + (value || '') + '"/>';
+        });
+
+        this.registerLabel("frontend.google_maps_api_key", "configs.frontend-google_maps_api_key");
     },
     beforeRender: function() {
         if (this.template) {
@@ -407,7 +430,6 @@ window.ConfigurationsView = countlyView.extend({
         else {
             this.configsData = countlyPlugins.getConfigsData();
         }
-
 
         this.searchKeys = this.getSearchKeys(this.configsData);
         this.navTitles = this.setNavTitles(this.configsData);
@@ -445,6 +467,22 @@ window.ConfigurationsView = countlyView.extend({
             "selectedNav": this.selectedNav
         };
 
+        /**
+         * Set default member image for current member
+         * @returns {void} void
+         */
+        function setDefaultAvatar() {
+            var defaultAvatarSelectorSmall = countlyGlobal.member.created_at % 16 * 30;
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var name = countlyGlobal.member.full_name.split(" ");
+            $('.member_image').html("");
+            $('.pp-circle').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelectorSmall + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
+            $('.member_image').prepend('<span style="color: white;position: relative;top: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
+            $('.pp-circle').prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
+        }
+
         if (this.success) {
             CountlyHelpers.notify({
                 title: jQuery.i18n.map["configs.changed"],
@@ -464,7 +502,6 @@ window.ConfigurationsView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-
             if (this.userConfig) {
                 $('#configs-title-bar').hide();
                 $('#config-title').html(jQuery.i18n.map['plugins.user-configs']);
@@ -475,12 +512,18 @@ window.ConfigurationsView = countlyView.extend({
                 $('#nav-item-' + this.selectedNav.key).addClass('selected');
             }
 
-
             this.changes = {};
             this.cache = JSON.parse(JSON.stringify(this.configsData));
 
             $(".configs #username").val(countlyGlobal.member.username);
             $(".configs #api-key").val(countlyGlobal.member.api_key);
+
+            if (countlyGlobal.member.member_image) {
+                $('.pp-circle').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
+            }
+            else {
+                setDefaultAvatar();
+            }
 
             $("#configs-back").click(function() {
                 app.back('/manage/configurations');
@@ -491,6 +534,14 @@ window.ConfigurationsView = countlyView.extend({
                     attrID = $(this).attr("id");
 
                 self.updateConfig(attrID, isChecked);
+            });
+
+            //numeric input on arrow click
+            $('.configs input[type="number"]').on("change", function() {
+                var id = $(this).attr("id");
+                var value = $(this).val();
+                value = parseFloat(value);
+                self.updateConfig(id, value);
             });
 
             $(".configs input").keyup(function() {
@@ -659,7 +710,8 @@ window.ConfigurationsView = countlyView.extend({
                         old_pwd = $(".configs #old_pwd").val(),
                         new_pwd = $(".configs #new_pwd").val(),
                         re_new_pwd = $(".configs #re_new_pwd").val(),
-                        api_key = $(".configs #api-key").val();
+                        api_key = $(".configs #api-key").val(),
+                        member_image = $('#member-image-path').val();
 
                     var ignoreError = false;
 
@@ -703,16 +755,22 @@ window.ConfigurationsView = countlyView.extend({
                         return true;
                     }
 
+                    var data = {
+                        "username": username,
+                        "old_pwd": old_pwd,
+                        "new_pwd": new_pwd,
+                        "api_key": api_key,
+                        _csrf: countlyGlobal.csrf_token
+                    };
+
+                    if (member_image !== "") {
+                        data.member_image = member_image;
+                    }
+
                     $.ajax({
                         type: "POST",
                         url: countlyGlobal.path + "/user/settings",
-                        data: {
-                            "username": username,
-                            "old_pwd": old_pwd,
-                            "new_pwd": new_pwd,
-                            "api_key": api_key,
-                            _csrf: countlyGlobal.csrf_token
-                        },
+                        data: data,
                         success: function(result) {
                             if (result === "username-exists") {
                                 CountlyHelpers.notify({
@@ -774,6 +832,12 @@ window.ConfigurationsView = countlyView.extend({
                                 });
                                 $("#configs-apply-changes").hide();
                             }
+                            if (member_image !== "" && member_image !== "delete") {
+                                countlyGlobal.member.member_image = member_image;
+                            }
+                            if (member_image === "delete") {
+                                countlyGlobal.member.member_image = "";
+                            }
                         }
                     });
                 }
@@ -792,6 +856,39 @@ window.ConfigurationsView = countlyView.extend({
                         }
                     });
                 }
+            });
+
+            $("#delete_account_password").keyup(function() {
+                $('#password-input-mandatory-warning').css('visibility', 'hidden');
+            });
+            $("#delete-user-account-button").click(function() {
+                var pv = $("#delete_account_password").val();
+                pv = pv.trim();
+                if (pv === "") {
+                    $('#password-input-mandatory-warning').css('visibility', 'visible');
+                }
+                else {
+                    var text = jQuery.i18n.map["user-settings.delete-account-confirm"];
+                    CountlyHelpers.confirm(text, "popStyleGreen", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyPlugins.deleteAccount({password: pv}, function(err, msg) {
+                            if (msg === true || msg === 'true') {
+                                window.location = "/login"; //deleted. go to login
+                            }
+                            else if (msg === 'password not valid' || msg === 'password mandatory' || msg === 'global admin limit') {
+                                var msg1 = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"};
+                                CountlyHelpers.notify(msg1);
+                            }
+                            else if (err === true) {
+                                var msg2 = {title: jQuery.i18n.map["common.error"], message: msg, sticky: true, clearAll: true, type: "error"};
+                                CountlyHelpers.notify(msg2);
+                            }
+                        });
+                    }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["common.yes"]], { title: jQuery.i18n.map["user-settings.delete-account-title"], image: "delete-user" });
+                }
+
             });
 
 
@@ -832,6 +929,32 @@ window.ConfigurationsView = countlyView.extend({
                 }
             });
 
+            $('.pp-menu-trigger').off('click').on('click', function() {
+                $('.pp-menu-list').show();
+                $('.pp-menu-list').focus();
+            });
+
+            $('body').off('change', '#pp-uploader').on('change', '#pp-uploader', function() {
+                $('.pp-menu-list').hide();
+                CountlyHelpers.upload($(this), '/member/icon', {
+                    _csrf: countlyGlobal.csrf_token,
+                    member_image_id: countlyGlobal.member._id
+                },
+                function(err, data) {
+                    if (!err) {
+                        $('.member_image').html("");
+                        $('#member-image-path').val(data);
+                        $('.pp-circle').find('span').hide();
+                        $('.pp-circle').css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
+                        $('.member_image').css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
+                        $('#configs-apply-changes').show();
+                    }
+                    else {
+                        CountlyHelpers.notify(jQuery.i18n.map["plugins.errors"]);
+                    }
+                });
+            });
+
             if (countlyGlobal.member.global_admin) {
                 $(".user-row").show();
             }
@@ -851,6 +974,19 @@ window.ConfigurationsView = countlyView.extend({
                     $fixedHeader.css({ width: width });
                 }
             });
+
+            $('body').off('blur', '.pp-menu-list').on('blur', '.pp-menu-list', function() {
+                $('.pp-menu-list').hide();
+            });
+
+            $('body').off('click', '.delete-member-image').on('click', '.delete-member-image', function() {
+                $('#member-image-path').val("delete");
+                $('#configs-apply-changes').show();
+                setDefaultAvatar();
+                $('.pp-menu-list').hide();
+            });
+
+            $("#config-row-google_maps_api_key-frontend").parent().append($("#config-row-google_maps_api_key-frontend"));
         }
     },
     updateConfig: function(id, value) {
@@ -963,6 +1099,9 @@ window.ConfigurationsView = countlyView.extend({
                             relatedNav = this.navTitles.pluginTitles.find(function(x) { // eslint-disable-line no-loop-func
                                 return x.key === i;
                             });
+                        }
+                        if (this.userConfig) {
+                            configsHTML += "<tr id='config-table-row-" + i + "' class='config-table-row'><td style='border:none; border-right:1px solid #dbdbdb;'></td><td style='padding-left:20px;color:#868686;font-size:11px;'>" + jQuery.i18n.map["configs.table-description"] + "</td></tr>";
                         }
                         configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'>";
 
@@ -1189,12 +1328,20 @@ app.configurationsView = new ConfigurationsView();
 
 if (countlyGlobal.member.global_admin) {
     var showInAppManagment = {"api": {"safe": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true}};
+
+    if (countlyGlobal.plugins.indexOf("drill") !== -1) {
+        showInAppManagment.drill = {"big_list_limit": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_views": true};
+    }
+
     var configManagementPromise = null;
     for (var key in showInAppManagment) {
         app.addAppManagementView(key, jQuery.i18n.map['configs.' + key], countlyManagementView.extend({
             key: key,
             initialize: function() {
                 this.plugin = this.key;
+            },
+            resetTemplateData: function() {
+                this.template = Handlebars.compile(this.generateTemplate(this.key));
             },
             generateTemplate: function(id) {
                 var fields = '';
@@ -1210,7 +1357,7 @@ if (countlyGlobal.member.global_admin) {
                         if (appConfigData && typeof appConfigData[i] !== "undefined") {
                             myvalue = appConfigData[i];
                         }
-                        else if (typeof this.configsData[id][i] !== "undefined") {
+                        else if (this.configsData && this.configsData[id] && typeof this.configsData[id][i] !== "undefined") {
                             myvalue = this.configsData[id][i];
                         }
                         this.templateData[i] = myvalue;
@@ -1336,7 +1483,11 @@ app.addPageScript("/manage/plugins", function() {
         app.activeView.filterPlugins(filter);
     });
 
-    var plugins = _.clone(countlyGlobal.plugins);
+    var pluginsData = countlyPlugins.getData();
+    var plugins = [];
+    for (var i = 0; i < pluginsData.length; i++) {
+        plugins.push(pluginsData[i].code);
+    }
 
     $("#plugins-table").on("change", ".on-off-switch input", function() {
         var $checkBox = $(this),
@@ -1383,20 +1534,7 @@ app.addPageScript("/manage/plugins", function() {
 
 $(document).ready(function() {
     if (countlyGlobal.member && countlyGlobal.member.global_admin) {
-        var menu = '<a href="#/manage/plugins" class="item">' +
-            '<div class="logo-icon fa fa-puzzle-piece"></div>' +
-            '<div class="text" data-localize="plugins.title"></div>' +
-            '</a>';
-        if ($('#management-submenu .help-toggle').length) {
-            $('#management-submenu .help-toggle').before(menu);
-        }
-
-        menu = '<a href="#/manage/configurations" class="item">' +
-            '<div class="logo-icon fa fa-wrench"></div>' +
-            '<div class="text" data-localize="plugins.configs"></div>' +
-            '</a>';
-        if ($('#management-submenu .help-toggle').length) {
-            $('#management-submenu .help-toggle').before(menu);
-        }
+        app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
+        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
     }
 });

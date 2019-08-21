@@ -789,6 +789,11 @@ function processUserSession(dbAppUser, params, done) {
             return true;
         }
 
+        if (dbAppUser.cc !== params.user.country) {
+            monthObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+            zeroObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+        }
+
         // Calculate the frequency range of the user
 
         if ((params.time.timestamp - userLastSeenTimestamp) >= (sessionFrequencyMax * 60 * 60)) {
@@ -842,17 +847,23 @@ function processUserSession(dbAppUser, params, done) {
         for (let k = 0; k < uniqueLevelsZero.length; k++) {
             if (uniqueLevelsZero[k] === "Y") {
                 updateUsersZero['d.' + common.dbMap.unique] = 1;
-                updateUsersZero['d.' + params.user.country + '.' + common.dbMap.unique] = 1;
+                if (dbAppUser.cc === params.user.country) {
+                    updateUsersZero['d.' + params.user.country + '.' + common.dbMap.unique] = 1;
+                }
             }
             else {
                 updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.unique] = 1;
-                updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
+                if (dbAppUser.cc === params.user.country) {
+                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
+                }
             }
         }
 
         for (let l = 0; l < uniqueLevelsMonth.length; l++) {
             updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.unique] = 1;
-            updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
+            if (dbAppUser.cc === params.user.country) {
+                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
+            }
         }
 
         plugins.dispatch("/session/begin", {
@@ -1160,7 +1171,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
                 { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
             */
             if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && metricChanges.uid && !params.app_user.mt) {
-                common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
+                common.db.collection('metric_changes' + params.app_id).insert(metricChanges, function() {});
             }
         }
 

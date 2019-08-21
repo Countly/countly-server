@@ -35,10 +35,12 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                 }
             };
         }
+        var t = c.a && c.a && c.a.key ? jQuery.i18n.map['mgmt-plugins.push.detected'] + ' ' + (c.a.key.length > 50 ? 'FCM' : 'GCM') : '';
         this.templateData.a = {
             _id: c.a && c.a._id || '',
             key: c.a && c.a && c.a.key || '',
-            help: c.a && c.a && c.a.key ? jQuery.i18n.map['mgmt-plugins.push.detected'] + ' ' + (c.a.key.length > 50 ? 'FCM' : 'GCM') : ''
+            help: c.a && c.a && c.a.key && c.a.key.length > 50 ? t : '',
+            ehelp: c.a && c.a && c.a.key && c.a.key.length < 50 ? t : ''
         };
     },
 
@@ -77,24 +79,25 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
             //a = this.config().a || {},
             t = this.templateData;
 
-        if (t.i.file || (t.i.type && ((i.type && t.i.type !== i.type) || t.i.key !== (i.key || '') || t.i.team !== (i.team || '') || t.i.bundle !== (i.bundle || '')))) {
-            if (t.i.type === 'apn_token') {
-                if (!t.i.key) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
-                }
-                if (!t.i.team) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
-                }
-                if (!t.i.bundle) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
-                }
-                if (!t.i.file || !t.i.file.length) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+        if (t.i.type) {
+            if (t.i.file && t.i.file.length) {
+                if (t.i.type === 'apn_token') {
+                    if (!t.i.key) {
+                        return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
+                    }
+                    if (!t.i.team) {
+                        return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
+                    }
+                    if (!t.i.bundle) {
+                        return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
+                    }
                 }
             }
             else {
-                if (!t.i.file || !t.i.file.length) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+                if (t.i.type === 'apn_token') {
+                    if ((t.i.key || '') !== (i.key || '') || (t.i.team || '') !== (i.team || '') || (t.i.bundle || '') !== (i.bundle || '')) {
+                        return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+                    }
                 }
             }
         }
@@ -231,18 +234,21 @@ function modifyUserDetailsForPush() {
             var userDetails = countlyUserdata.getUserdetails();
 
             var tokens = [], platforms = [], test = false, prod = false;
-            if (userDetails.tk) {
-                tokens = Object.keys(userDetails.tk);
-                if (userDetails.tk.id || userDetails.tk.ia || userDetails.tk.ip) {
-                    platforms.push('i');
-                }
-                if (userDetails.tk.at || userDetails.tk.ap) {
-                    platforms.push('a');
-                }
-
-                test = !!userDetails.tk.id || !!userDetails.tk.ia || !!userDetails.tk.at;
-                prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
+            tokens = Object.keys(userDetails).filter(function(k) {
+                return k.indexOf('tk') === 0;
+            }).map(function(k) {
+                return k.substr(2);
+            });
+            if (userDetails.tkid || userDetails.tkia || userDetails.tkip) {
+                platforms.push('i');
             }
+            if (userDetails.tkat || userDetails.tkap) {
+                platforms.push('a');
+            }
+
+            test = !!userDetails.tkid || !!userDetails.tkia || !!userDetails.tkat;
+            prod = !!userDetails.tkip || !!userDetails.tkap;
+
             if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
                 if (!$('.btn-create-message').length) {
                     $('#user-profile-detail-buttons .cly-button-menu').append('<div class="item btn-create-message" >' + jQuery.i18n.map['push.create'] + '</div>');
@@ -309,27 +315,37 @@ app.addRefreshScript('/users#', modifyUserDetailsForPush);
 app.addPageScript('/users#', modifyUserDetailsForPush);
 
 $(document).ready(function() {
-
-    var menu = '<a class="item messaging" id="sidebar-messaging">' +
-        '<div class="logo ion-chatbox-working"></div>' +
-        '<div class="text" data-localize="push.sidebar.section">Messaging</div>' +
-    '</a>' +
-    '<div class="sidebar-submenu" id="messaging-submenu">' +
-        '<a href="#/messaging" class="item">' +
-            '<div class="logo-icon fa fa-line-chart"></div>' +
-            '<div class="text" data-localize="push.sidebar.overview">Overview</div>' +
-        '</a>' +
-    '</div>';
-    if ($('#mobile-type #management-menu').length) {
-        $('#mobile-type #management-menu').before(menu);
-    }
-    else {
-        $('#mobile-type').append(menu);
-    }
+    app.addMenuForType("mobile", "reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+    app.addSubMenuForType("mobile", "push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});
 
     if (app.configurationsView) {
         app.configurationsView.registerLabel("push", "push.plugin-title");
         app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
         app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
+    }
+
+    var notes = countlyGlobal.member.notes;
+    if (notes && notes.push && notes.push.gcm && notes.push.gcm !== true) {
+        CountlyHelpers.notify({
+            type: 'error',
+            title: jQuery.i18n.map['push.note.gcm.t'],
+            message: jQuery.i18n.prop('push.note.gcm.m', notes.push.gcm.apps.map(function(a) {
+                return a.name;
+            }).join(', ')),
+            sticky: true,
+            onClick: function() {
+                return $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/i/users/ack",
+                    data: {
+                        api_key: countlyGlobal.member.api_key,
+                        path: 'push.gcm'
+                    },
+                    success: function() {
+                        notes.push.gcm = true;
+                    }
+                });
+            }
+        });
     }
 });

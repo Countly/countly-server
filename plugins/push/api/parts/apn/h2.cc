@@ -195,8 +195,9 @@ namespace apns {
 
 		obj->proxyhost = std::string(*v8::String::Utf8Value(info[1]));
 		obj->proxyport = std::stoi(std::string(*v8::String::Utf8Value(info[2])));
+		obj->proxyauth = std::string(*v8::String::Utf8Value(info[3]));
 
-		LOG_DEBUG("proxy " << obj->proxyhost << ":" << obj->proxyport);
+		LOG_DEBUG("proxy " << obj->proxyauth << " @ " << obj->proxyport << ": " << obj->proxyport);
 
 		uv_work_t* handle = new uv_work_t;
 		handle->data = persistentHandle;

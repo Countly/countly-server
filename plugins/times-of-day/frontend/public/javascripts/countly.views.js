@@ -283,13 +283,7 @@ app.addPageScript("/custom#", function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/analytics/times-of-day" class="item" ">' +
-        '<div class="logo fa fa-plugin" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>' +
-        '<div class="text" data-localize="times-of-day.plugin-title"></div>' +
-        '</a>';
-
-    $('.sidebar-menu #engagement-submenu').append(menu);
-
+    app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
     initializeTimesOfDayWidget();
 });
 

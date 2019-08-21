@@ -224,9 +224,14 @@ window.ReportingView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
-                            var ret = jQuery.i18n.map["reports.at"] + " " + row.hour + ":" + row.minute + ", " + row.zoneName; if (row.frequency === "weekly") {
+                            var ret = jQuery.i18n.map["reports.at"] + " " + row.hour + ":" + row.minute + ", " + row.zoneName;
+                            if (row.frequency === "weekly") {
                                 ret += ", " + jQuery.i18n.map["reports.on"] + " " + row.dayname;
-                            } return ret;
+                            }
+                            if (row.frequency === "monthly") {
+                                ret += ", " + jQuery.i18n.map["reports.every-month"];
+                            }
+                            return ret;
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["reports.time"]
@@ -284,7 +289,8 @@ window.ReportingView = countlyView.extend({
 
         $("#frequency-dropdown").clySelectSetItems([
             {name: jQuery.i18n.map["reports.daily"], value: "daily"},
-            {name: jQuery.i18n.map["reports.weekly"], value: "weekly"}
+            {name: jQuery.i18n.map["reports.weekly"], value: "weekly"},
+            {name: jQuery.i18n.map["reports.monthly"], value: "monthly"}
         ]);
 
         var timeList = [];
@@ -345,13 +351,22 @@ window.ReportingView = countlyView.extend({
         $('#daily-option').on("click", function() {
             $("#reports-dow-section").css("display", "none");
             $('#weekly-option').removeClass("selected");
+            $('#monthly-option').removeClass("selected");
             $(this).addClass("selected");
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
         $('#weekly-option').on("click", function() {
             $("#reports-dow-section").css("display", "block");
             $('#daily-option').removeClass("selected");
+            $('#monthly-option').removeClass("selected");
             $("#reports-dow").clySelectSetSelection("", "");
+            $(this).addClass("selected");
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+        });
+        $('#monthly-option').on("click", function() {
+            $("#reports-dow-section").css("display", "none");
+            $('#weekly-option').removeClass("selected");
+            $('#daily-option').removeClass("selected");
             $(this).addClass("selected");
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
@@ -508,7 +523,7 @@ window.ReportingView = countlyView.extend({
                 regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[0]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
                 }
 
                 // name <email@address.com>
@@ -517,7 +532,7 @@ window.ReportingView = countlyView.extend({
                 /*eslint-enable */
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[2]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
                 }
 
                 return false;
@@ -605,12 +620,12 @@ window.ReportingView = countlyView.extend({
         loadData: function(data) {
             var reportType = data.report_type || "core";
             this.init(reportType);
-            var self = this;
-            if (self.emailInput && self.emailInput.length > 0) {
+            var emailInp = app.reportingView.emailInput;
+            if (emailInp && emailInp.length > 0) {
                 for (var i = 0; i < data.emails.length; i++) {
-                    (self.emailInput[0]).selectize.addOption({ "name": '', "email": data.emails[i] });
+                    (emailInp[0]).selectize.addOption({ "name": '', "email": data.emails[i] });
                 }
-                (self.emailInput[0]).selectize.setValue(data.emails, false);
+                (emailInp[0]).selectize.setValue(data.emails, false);
             }
 
             $("#report-types").find(".opt").removeClass("selected");
@@ -623,10 +638,18 @@ window.ReportingView = countlyView.extend({
             if (data.frequency === 'daily') {
                 $('#daily-option').addClass("selected");
                 $('#weekly-option').removeClass("selected");
+                $('#monthly-option').removeClass("selected");
+                $("#reports-dow-section").css("display", "none");
+            }
+            else if (data.frequency === 'monthly') {
+                $('#daily-option').removeClass("selected");
+                $('#weekly-option').removeClass("selected");
+                $('#monthly-option').addClass("selected");
                 $("#reports-dow-section").css("display", "none");
             }
             else {
                 $('#daily-option').removeClass("selected");
+                $('#monthly-option').removeClass("selected");
                 $('#weekly-option').addClass("selected");
                 $("#reports-dow-section").css("display", "block");
                 $("#reports-dow").clySelectSetSelection(data.day, app.reportingView.getDayName(data.day));
@@ -660,7 +683,6 @@ window.ReportingView = countlyView.extend({
         },
 
         resetCore: function() {
-            var self = this;
             $("#current_report_id").text("");
             $("#report-name-input").val("");
             $("#report-name-input").attr("placeholder", jQuery.i18n.prop("reports.report-name"));
@@ -676,9 +698,11 @@ window.ReportingView = countlyView.extend({
             $("#reports-dow-section").css("display", "none");
             $("#reports-frequency").find(".check").removeClass("selected");
             $('#daily-option').addClass("selected");
-            if (self.emailInput && self.emailInput.length > 0) {
-                (self.emailInput[0]).selectize.addOption({});
-                (self.emailInput[0]).selectize.setValue([], false);
+            var emailInp = app.reportingView.emailInput;
+
+            if (emailInp && emailInp.length > 0) {
+                (emailInp[0]).selectize.addOption({});
+                (emailInp[0]).selectize.setValue([], false);
             }
         },
 
@@ -698,9 +722,13 @@ window.ReportingView = countlyView.extend({
                 minute: null
             };
             var selectDaily = $("#daily-option").hasClass("selected");
-            if (!selectDaily) {
+            var selectMonthly = $("#monthly-option").hasClass("selected");
+            if (!selectDaily && !selectMonthly) {
                 settings.frequency = "weekly";
                 settings.day = parseInt($("#reports-dow").clySelectGetSelection());
+            }
+            if (selectMonthly) {
+                settings.frequency = "monthly";
             }
             var timeSelected = $("#reports-time-dropdown").clySelectGetSelection();
             if (timeSelected) {
@@ -837,6 +865,9 @@ window.ReportingView = countlyView.extend({
             case "weekly":
                 currUserDetails.find(".reports-dow").show();
                 break;
+            case "monthly":
+                currUserDetails.find(".reports-dow").hide();
+                break;
             }
         });
         CountlyHelpers.initializeSelect($(".user-details"));
@@ -940,11 +971,5 @@ app.route('/manage/reports', 'reports', function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/manage/reports" class="item">' +
-        '<div class="logo-icon fa fa-envelope"></div>' +
-        '<div class="text" data-localize="reports.title"></div>' +
-    '</a>';
-    if ($('#management-submenu .help-toggle').length) {
-        $('#management-submenu .help-toggle').before(menu);
-    }
+    app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
 });

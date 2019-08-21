@@ -39,7 +39,7 @@ window.slippingView = countlyView.extend({
 
         window.slippingDataOnClick = function(timeStamp) {
             var data = {
-                "lac": {"$lt": timeStamp * 1000}
+                "lac": {"$lt": timeStamp}
             };
             window.location.hash = '/users/query/' + JSON.stringify(data);
         };
@@ -116,11 +116,13 @@ app.route("/analytics/slipping-away", 'browser', function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/analytics/slipping-away" class="item">' +
-    '<div class="logo-icon fa fa-globe"></div>' +
-    '<div class="text" data-localize="slipping.title"></div>' +
-    '</a>';
-
-    $('#web-type #engagement-submenu').append(menu);
-    $('#mobile-type #engagement-submenu').append(menu);
+    app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
+        app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");
+        app.configurationsView.registerLabel("slipping-away-users.p2", "slipping.config-second");
+        app.configurationsView.registerLabel("slipping-away-users.p3", "slipping.config-third");
+        app.configurationsView.registerLabel("slipping-away-users.p4", "slipping.config-fourth");
+        app.configurationsView.registerLabel("slipping-away-users.p5", "slipping.config-fifth");
+    }
 });

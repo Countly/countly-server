@@ -13,6 +13,244 @@ var _period = "hour",
     _appTimezone = "UTC",
     _currMoment = moment();
 
+// Private Methods
+
+/**
+* Returns array with unique ticks for period
+* @param {moment} startTimestamp - start of period
+* @param {moment} endTimestamp - end of period
+* @returns {array} unique array ticks for period
+**/
+function getTicksBetween(startTimestamp, endTimestamp) {
+    var dayIt = startTimestamp.clone(),
+        ticks = [];
+
+    while (dayIt < endTimestamp) {
+        let daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+        if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
+            ticks.push(dayIt.format("YYYY.M"));
+            dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
+        }
+        else if (daysLeft >= (7 - dayIt.day()) && dayIt.day() === 1) {
+            ticks.push(dayIt.format("YYYY.[w]w"));
+            dayIt.add(8 - dayIt.day(), "days");
+        }
+        else {
+            ticks.push(dayIt.format("YYYY.M.D"));
+            dayIt.add(1, "day");
+        }
+    }
+
+    return ticks;
+}
+
+/**
+* Returns array with more generalized unique ticks for period
+* @param {moment} startTimestamp - start of period
+* @param {moment} endTimestamp - end of period
+* @returns {array} unique array ticks for period
+**/
+function getTicksCheckBetween(startTimestamp, endTimestamp) {
+    var dayIt = startTimestamp.clone(),
+        ticks = [];
+
+    while (dayIt < endTimestamp) {
+        let daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+        if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
+            ticks.push(dayIt.format("YYYY.M"));
+            dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
+        }
+        else {
+            ticks.push(dayIt.format("YYYY.[w]w"));
+            dayIt.add(8 - dayIt.day(), "days");
+        }
+    }
+
+    return ticks;
+}
+
+/**
+* Returns a period object used by all time related data calculation functions
+* @returns {timeObject} time object
+**/
+function getPeriodObject() {
+    var startTimestamp, endTimestamp, periodObject, cycleDuration;
+
+    periodObject = {
+        start: 0,
+        end: 0,
+        currentPeriodArr: [],
+        previousPeriodArr: [],
+        dateString: "NA",
+        isSpecialPeriod: false,
+        daysInPeriod: 0,
+        periodContainsToday: true,
+        uniquePeriodArr: [],
+        uniquePeriodCheckArr: [],
+        previousUniquePeriodArr: [],
+        previousUniquePeriodCheckArr: [],
+        activePeriod: "NA",
+        previousPeriod: "NA",
+        periodMax: "NA",
+        periodMin: "NA",
+        reqMonthDbDateIds: [],
+        reqZeroDbDateIds: []
+    };
+
+    endTimestamp = _currMoment.clone().utc().endOf("day");
+
+    if (_period && _period.indexOf(",") !== -1) {
+        try {
+            _period = JSON.parse(_period);
+        }
+        catch (SyntaxError) {
+            console.log("period JSON parse failed");
+            _period = "month";
+        }
+    }
+
+    if (Array.isArray(_period)) {
+        var fromDate, toDate;
+
+        if (Number.isInteger(_period[0]) && Number.isInteger(_period[1])) {
+            fromDate = new Date(_period[0]);
+            toDate = new Date(_period[1]);
+        }
+        else {
+            fromDate = moment(_period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
+            toDate = moment(_period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
+        }
+
+        startTimestamp = moment(fromDate).utc().startOf("day");
+        endTimestamp = moment(toDate).utc().endOf("day");
+        fromDate.setTimezone(_appTimezone);
+        toDate.setTimezone(_appTimezone);
+
+        if (fromDate.getTime() === toDate.getTime()) {
+            cycleDuration = moment.duration(1, "day");
+            Object.assign(periodObject, {
+                dateString: "D MMM, HH:mm",
+                periodMax: 23,
+                periodMin: 0,
+                activePeriod: moment(fromDate).tz(_appTimezone).format("YYYY.M.D"),
+                previousPeriod: moment(fromDate).tz(_appTimezone).subtract(1, "day").format("YYYY.M.D")
+            });
+        }
+        else {
+            cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays(), "days");
+            Object.assign(periodObject, {
+                dateString: "D MMM",
+                isSpecialPeriod: true
+            });
+        }
+    }
+    else if (_period === "month") {
+        startTimestamp = _currMoment.clone().utc().startOf("year");
+        cycleDuration = moment.duration(1, "year");
+        periodObject.dateString = "MMM";
+        Object.assign(periodObject, {
+            dateString: "MMM",
+            periodMax: 12,
+            periodMin: 1,
+            activePeriod: _currMoment.year(),
+            previousPeriod: _currMoment.year() - 1
+        });
+    }
+    else if (_period === "day") {
+        startTimestamp = _currMoment.clone().utc().startOf("month");
+        cycleDuration = moment.duration(1, "month");
+        periodObject.dateString = "D MMM";
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            periodMax: _currMoment.clone().endOf("month").date(),
+            periodMin: 1,
+            activePeriod: _currMoment.format("YYYY.M"),
+            previousPeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M")
+        });
+    }
+    else if (_period === "hour") {
+        startTimestamp = _currMoment.clone().utc().startOf("day");
+        cycleDuration = moment.duration(1, "day");
+        Object.assign(periodObject, {
+            dateString: "HH:mm",
+            periodMax: 23,
+            periodMin: 0,
+            activePeriod: _currMoment.format("YYYY.M.D"),
+            previousPeriod: _currMoment.clone().subtract(1, "day").format("YYYY.M.D")
+        });
+    }
+    else if (_period === "yesterday") {
+        let yesterday = _currMoment.clone().subtract(1, "day");
+
+        startTimestamp = yesterday.clone().utc().startOf("day");
+        endTimestamp = yesterday.clone().utc().endOf("day");
+        cycleDuration = moment.duration(1, "day");
+        Object.assign(periodObject, {
+            dateString: "D MMM, HH:mm",
+            periodMax: 23,
+            periodMin: 0,
+            activePeriod: yesterday.format("YYYY.M.D"),
+            previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
+        });
+    }
+    else if (/([0-9]+)days/.test(_period)) {
+        let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
+
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    //incorrect period, defaulting to 30 days
+    else {
+        let nDays = 30;
+
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+
+    Object.assign(periodObject, {
+        start: startTimestamp.valueOf(),
+        end: endTimestamp.valueOf(),
+        daysInPeriod: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
+        periodContainsToday: (startTimestamp <= _currMoment) && (_currMoment <= endTimestamp),
+    });
+
+    for (let dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
+        periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
+        periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
+    }
+
+    periodObject.uniquePeriodArr = getTicksBetween(startTimestamp, endTimestamp);
+    periodObject.uniquePeriodCheckArr = getTicksCheckBetween(startTimestamp, endTimestamp);
+    periodObject.previousUniquePeriodArr = getTicksBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
+    periodObject.previousUniquePeriodCheckArr = getTicksCheckBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
+
+    let zeroIDs = new Set(),
+        monthIDs = new Set();
+
+    for (let index in periodObject.currentPeriodArr) {
+        let [year, month] = periodObject.currentPeriodArr[index].split("."),
+            [prevYear, prevMonth] = periodObject.previousPeriodArr[index].split(".");
+
+        zeroIDs.add(year + ":0");
+        monthIDs.add(year + ":" + month);
+        zeroIDs.add(prevYear + ":0");
+        monthIDs.add(prevYear + ":" + prevMonth);
+    }
+
+    periodObject.reqZeroDbDateIds = Array.from(zeroIDs);
+    periodObject.reqMonthDbDateIds = Array.from(monthIDs);
+
+    return periodObject;
+}
+
 // Public Properties
 /**
 * Currently selected period
@@ -77,7 +315,7 @@ var _period = "hour",
 *    "periodContainsToday":true
 * }
 */
-countlyCommon.periodObj = getPeriodObj();
+countlyCommon.periodObj = getPeriodObject();
 
 // Public Methods
 
@@ -94,7 +332,7 @@ countlyCommon.setTimezone = function(appTimezone) {
 
         _currMoment = moment(currTime);
         _currMoment.tz(appTimezone);
-        countlyCommon.periodObj = getPeriodObj();
+        countlyCommon.periodObj = getPeriodObject();
     }
 };
 
@@ -104,7 +342,7 @@ countlyCommon.setTimezone = function(appTimezone) {
 */
 countlyCommon.setPeriod = function(period) {
     _period = period;
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject();
 };
 
 /**
@@ -183,7 +421,7 @@ countlyCommon.getDescendantProp = function(obj, desc) {
 */
 countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainRange) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject();
 
     var dataArr = [],
         dataArrCounter = 0,
@@ -314,7 +552,7 @@ countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainR
 */
 countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject();
 
     var periodMin = countlyCommon.periodObj.periodMin,
         periodMax = (countlyCommon.periodObj.periodMax + 1),
@@ -513,7 +751,7 @@ countlyCommon.getSparklineData = function(data, props, clearObject) {
 */
 countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject();
 
     if (!rangeArray) {
         return {"chartData": tableData};
@@ -615,7 +853,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
             }
 
             if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                if (totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
+                if (totalUserOverrideObj && typeof totalUserOverrideObj[rangeArray[j]] !== "undefined") {
 
                     tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
@@ -737,7 +975,14 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         dataProps.push({name: "n"});
         dataProps.push({name: "t"});
     }
+    if (metric === "n") {
+        dataProps.push({name: "u"});
+    }
     var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj);
+    rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
+    rangeData.chartData = underscore.sortBy(rangeData.chartData, function(obj) {
+        return -obj[metric];
+    });
     var rangeNames = underscore.pluck(rangeData.chartData, 'range'),
         rangeTotal = underscore.pluck(rangeData.chartData, metric),
         barData = [],
@@ -804,7 +1049,7 @@ countlyCommon.getShortNumber = function(number) {
 */
 countlyCommon.getDateRange = function() {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject();
     var formattedDateStart, formattedDateEnd;
     if (!countlyCommon.periodObj.isSpecialPeriod) {
         if (countlyCommon.periodObj.dateString === "HH:mm") {
@@ -882,7 +1127,7 @@ countlyCommon.getDateRange = function() {
 */
 countlyCommon.extractData = function(db, clearFunction, dataProperties) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject();
 
     var periodMin = countlyCommon.periodObj.periodMin,
         periodMax = (countlyCommon.periodObj.periodMax + 1),
@@ -1003,15 +1248,15 @@ countlyCommon.extractData = function(db, clearFunction, dataProperties) {
 */
 countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject();
 
+    var tableData = [];
     if (!rangeArray) {
         return tableData;
     }
     var periodMin = 0,
         periodMax = 0,
         dataObj = {},
-        tableData = [],
         propertyNames = underscore.pluck(dataProperties, "name"),
         propertyFunctions = underscore.pluck(dataProperties, "func"),
         propertyValue = 0;
@@ -1114,7 +1359,7 @@ countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProper
             }
 
             if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                if (totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
+                if (totalUserOverrideObj && typeof totalUserOverrideObj[rangeArray[j]] !== "undefined") {
 
                     tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
@@ -1391,7 +1636,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
 
     // Total users can't be less than new users
     if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-        if (totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined" && totalUserOverrideObj.u) {
+        if (totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined") {
             current.n = current.u;
         }
         else {
@@ -1420,7 +1665,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
     //check if we can correct data using total users correction
     if (totalUserOverrideObj) {
         for (let i = 0; i < unique.length; i++) {
-            if (dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
+            if (dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined") {
                 dataArr[unique[i]].is_estimate = false;
             }
         }
@@ -1598,564 +1843,56 @@ countlyCommon.decode = function(str) {
 };
 
 /**
-* Get period object in atomic way from params, 
+* Get period object in atomic way from params,
 * getting params.qstring.period for period
 * and params.appTimezone for timezone
-* @param {params} params - parans object with app timezone and period
+* @param {params} params - params object with app timezone and period
+* @param {(string|string[]|number[])} defaultPeriod - default period value in case it's not supplied in the params
 * @returns {module:api/lib/countly.common.periodObj} period object
 */
-countlyCommon.getPeriodObj = function(params) {
-    params.qstring.period = params.qstring.period || "month";
+countlyCommon.getPeriodObj = function(params, defaultPeriod = "month") {
+    let appTimezone = params.appTimezone || (params.app && params.app.timezone);
+
+    params.qstring.period = params.qstring.period || defaultPeriod;
     if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
         try {
             params.qstring.period = JSON.parse(params.qstring.period);
         }
         catch (SyntaxError) {
-            console.log('Parse period JSON failed');
-            return false;
+            console.log("period JSON parse failed");
+            params.qstring.period = defaultPeriod;
         }
     }
+    _period = params.qstring.period;
 
-    countlyCommon.setPeriod(params.qstring.period);
-    countlyCommon.setTimezone(params.appTimezone || (params.app && params.app.timezone));
+    if (appTimezone && appTimezone.length) {
+        _appTimezone = appTimezone;
 
+        let currTime = new Date();
+        currTime.setTimezone(appTimezone);
+
+        _currMoment = moment(currTime);
+        _currMoment.tz(appTimezone);
+    }
+
+    countlyCommon.periodObj = getPeriodObject();
     return countlyCommon.periodObj;
 };
 
-// Private Methods
-
-/** 
-* Returns a period object used by all time related data calculation functions 
-* @returns {timeObject} time object
-**/
-function getPeriodObj() {
-    var year = _currMoment.year(),
-        month = _currMoment.month() + 1,
-        day = _currMoment.date(),
-        endTimestamp = moment(_currMoment).utc().hours(23).minutes(59).seconds(59).unix(),
-        startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix(),
-        activePeriod = "NA",
-        previousPeriod = "NA",
-        periodMax = "NA",
-        periodMin = "NA",
-        isSpecialPeriod = false,
-        daysInPeriod = 0,
-        rangeEndDay = null,
-        dateString = "NA",
-        currWeeksArr = [],
-        currWeekCounts = {},
-        currMonthsArr = [],
-        currMonthCounts = {},
-        currPeriodArr = [],
-        prevWeeksArr = [],
-        prevWeekCounts = {},
-        prevMonthsArr = [],
-        prevMonthCounts = {},
-        prevPeriodArr = [],
-        periodContainsToday = true;
-
-    switch (_period) {
-    case "month": {
-        activePeriod = year;
-        previousPeriod = year - 1;
-        periodMax = 12;
-        periodMin = 1;
-        dateString = "MMM";
-        daysInPeriod = parseInt(_currMoment.format("DDD"), 10);
-        startTimestamp = moment(_currMoment).utc().month(1).date(1).hours(0).minutes(0).seconds(0).unix();
-
-        _currMoment.subtract(daysInPeriod, 'days');
-        for (let i = 0; i < daysInPeriod; i++) {
-            _currMoment.add(1, 'days');
-            currPeriodArr.push(_currMoment.format("YYYY.M.D"));
-        }
-
-        _currMoment.subtract(daysInPeriod + 365, 'days');
-        for (let i = 0; i < daysInPeriod; i++) {
-            prevPeriodArr.push(_currMoment.format("YYYY.M.D"));
-            _currMoment.add(1, 'days');
-        }
-        _currMoment.add(365, 'days');
-
-        break;
-    }
-    case "day": {
-        activePeriod = _currMoment.format("YYYY.M");
-        startTimestamp = moment(_currMoment).utc().date(1).hours(0).minutes(0).seconds(0).unix();
-        _currMoment.subtract(day, 'days');
-        previousPeriod = _currMoment.format("YYYY.M");
-        _currMoment.add(day, 'days');
-
-        periodMax = new Date(year, month, 0).getDate();
-        periodMin = 1;
-        dateString = "D MMM";
-        daysInPeriod = day;
-
-        for (let i = periodMin; i <= periodMax; i++) {
-            currPeriodArr.push(activePeriod + "." + i);
-        }
-
-        _currMoment.subtract(day + 1, 'days');
-        var daysInMonth = _currMoment.daysInMonth();
-        _currMoment.subtract(daysInMonth - 1, 'days');
-        for (let i = 0; i < day; i++) {
-            _currMoment.add(1, 'days');
-            prevPeriodArr.push(_currMoment.format("YYYY.M.D"));
-        }
-        _currMoment.add(daysInMonth, 'days');
-
-        break;
-    }
-    case "hour": {
-        activePeriod = _currMoment.format("YYYY.M.D");
-        _currMoment.subtract(1, 'days');
-        previousPeriod = _currMoment.format("YYYY.M.D");
-        _currMoment.add(1, 'days');
-
-        periodMax = 23;
-        periodMin = 0;
-        dateString = "HH:mm";
-        daysInPeriod = 1;
-
-        currPeriodArr.push(activePeriod);
-        prevPeriodArr.push(previousPeriod);
-        break;
-    }
-    case "yesterday": {
-        _currMoment.subtract(1, 'days');
-        endTimestamp = moment(_currMoment).utc().hours(23).minutes(59).seconds(59).unix();
-        startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix();
-        activePeriod = _currMoment.format("YYYY.M.D");
-        _currMoment.add(1, 'days');
-        _currMoment.subtract(2, 'days');
-        previousPeriod = _currMoment.format("YYYY.M.D");
-        _currMoment.add(2, 'days');
-
-        periodMax = 23;
-        periodMin = 0;
-        dateString = "D MMM, HH:mm";
-        daysInPeriod = 1;
-
-        currPeriodArr.push(activePeriod);
-        prevPeriodArr.push(previousPeriod);
-        periodContainsToday = false;
-        break;
-    }
-    default: {
-        if (/([0-9]+)days/.test(_period)) {
-            var match = /([0-9]+)days/.exec(_period);
-            if (match[1]) {
-                daysInPeriod = parseInt(match[1]);
-                isSpecialPeriod = true;
-            }
-        }
-        break;
-    }
-    }
-
-    if (isSpecialPeriod) {
-        _currMoment.subtract(daysInPeriod - 1, 'days');
-        startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix();
-        _currMoment.add(daysInPeriod - 1, 'days');
-    }
-
-    // Check whether period object is array
-    if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-        var fromDate = new Date(_period[0]),
-            toDate = new Date(_period[1]);
-
-        startTimestamp = moment(fromDate).utc().hours(0).minutes(0).seconds(0).unix();
-        endTimestamp = moment(toDate).utc().hours(23).minutes(59).seconds(59).unix();
-        fromDate.setTimezone(_appTimezone);
-        toDate.setTimezone(_appTimezone);
-
-        // One day is selected from the datepicker
-        if (_period[0] === _period[1]) {
-            var selectedDate = moment(fromDate);
-            selectedDate.tz(_appTimezone);
-
-            activePeriod = selectedDate.format("YYYY.M.D");
-            selectedDate.subtract(1, 'days');
-            previousPeriod = selectedDate.format("YYYY.M.D");
-            selectedDate.add(1, 'days');
-
-            periodMax = 23;
-            periodMin = 0;
-            dateString = "D MMM, HH:mm";
-            currPeriodArr.push(activePeriod);
-            prevPeriodArr.push(previousPeriod);
-            periodContainsToday = (moment(_period[0]).utc().format("YYYYMMDD") === _currMoment.utc().format("YYYYMMDD"));
-        }
-        else {
-            var a = moment(fromDate),
-                b = moment(toDate);
-            a.tz(_appTimezone);
-            b.tz(_appTimezone);
-
-            daysInPeriod = b.diff(a, 'days') + 1;
-            isSpecialPeriod = true;
-            rangeEndDay = _period[1];
-            periodContainsToday = (b.utc().format("YYYYMMDD") === _currMoment.utc().format("YYYYMMDD"));
-        }
-    }
-
-    if (isSpecialPeriod) {
-        var yearChanged = false,
-            currentYear = 0;
-
-        for (let i = (daysInPeriod - 1); i > -1; i--) {
-
-            var currTime = new Date();
-            currTime.setTimezone(_appTimezone);
-
-            var currTime2 = new Date();
-            currTime2.setTimezone(_appTimezone);
-
-            var momentOne = moment(currTime),
-                momentTwo = moment(currTime2);
-            momentOne.tz(_appTimezone);
-            momentTwo.tz(_appTimezone);
-
-            var currRangeEndDate = new Date(rangeEndDay);
-            currRangeEndDate.setTimezone(_appTimezone);
-
-            var prevRangeEndDate = new Date(rangeEndDay);
-            prevRangeEndDate.setTimezone(_appTimezone);
-
-            var currIndex = (!rangeEndDay) ? momentOne.subtract(i, 'days') : moment(currRangeEndDate).tz(_appTimezone).subtract(i, 'days'),
-                currIndexYear = currIndex.year(),
-                prevIndex = (!rangeEndDay) ? momentTwo.subtract((daysInPeriod + i), 'days') : moment(prevRangeEndDate).tz(_appTimezone).subtract((daysInPeriod + i), 'days'),
-                prevYear = prevIndex.year();
-
-            if (i !== (daysInPeriod - 1) && currentYear !== currIndexYear) {
-                yearChanged = true;
-            }
-            currentYear = currIndexYear;
-
-            // Current period variables
-
-            var currWeek = currentYear + "." + "w" + Math.ceil(currIndex.format("DDD") / 7);
-            currWeeksArr[currWeeksArr.length] = currWeek;
-            currWeekCounts[currWeek] = (currWeekCounts[currWeek]) ? (currWeekCounts[currWeek] + 1) : 1;
-
-            var currMonth = currIndex.format("YYYY.M");
-            currMonthsArr[currMonthsArr.length] = currMonth;
-            currMonthCounts[currMonth] = (currMonthCounts[currMonth]) ? (currMonthCounts[currMonth] + 1) : 1;
-
-            currPeriodArr[currPeriodArr.length] = currIndex.format("YYYY.M.D");
-
-            // Previous period variables
-
-            var prevWeek = prevYear + "." + "w" + Math.ceil(prevIndex.format("DDD") / 7);
-            prevWeeksArr[prevWeeksArr.length] = prevWeek;
-            prevWeekCounts[prevWeek] = (prevWeekCounts[prevWeek]) ? (prevWeekCounts[prevWeek] + 1) : 1;
-
-            var prevMonth = prevIndex.format("YYYY.M");
-            prevMonthsArr[prevMonthsArr.length] = prevMonth;
-            prevMonthCounts[prevMonth] = (prevMonthCounts[prevMonth]) ? (prevMonthCounts[prevMonth] + 1) : 1;
-
-            prevPeriodArr[prevPeriodArr.length] = prevIndex.format("YYYY.M.D");
-        }
-
-        dateString = (yearChanged) ? "D MMM, YYYY" : "D MMM";
-    }
-
-    var requiredDbDateIds = [],
-        requiredZeroDbDateIds = [],
-        dateIdSplits;
-
-    for (let i = 0; i < prevPeriodArr.length; i++) {
-        dateIdSplits = prevPeriodArr[i].split(".");
-        arrayAddUniq(requiredZeroDbDateIds, dateIdSplits[0] + ":0");
-        arrayAddUniq(requiredDbDateIds, dateIdSplits[0] + ":" + dateIdSplits[1]);
-    }
-
-    for (let i = 0; i < currPeriodArr.length; i++) {
-        dateIdSplits = currPeriodArr[i].split(".");
-        arrayAddUniq(requiredZeroDbDateIds, dateIdSplits[0] + ":0");
-        arrayAddUniq(requiredDbDateIds, dateIdSplits[0] + ":" + dateIdSplits[1]);
-    }
-
-    return {
-        "start": startTimestamp * 1000,
-        "end": endTimestamp * 1000,
-        "activePeriod": activePeriod,
-        "periodMax": periodMax,
-        "periodMin": periodMin,
-        "previousPeriod": previousPeriod,
-        "currentPeriodArr": currPeriodArr,
-        "previousPeriodArr": prevPeriodArr,
-        "uniquePeriodArr": getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr),
-        "uniquePeriodCheckArr": getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts),
-        "previousUniquePeriodArr": getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr),
-        "previousUniquePeriodCheckArr": getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts),
-        "dateString": dateString,
-        "daysInPeriod": daysInPeriod,
-        "isSpecialPeriod": isSpecialPeriod,
-        "reqMonthDbDateIds": requiredDbDateIds,
-        "reqZeroDbDateIds": requiredZeroDbDateIds,
-        "periodContainsToday": periodContainsToday
-    };
-}
-
-/** 
-* Returns array with unique ticks for period
-* @param {array} pweeksArray - array with weeks
-* @param {number} pweekCounts - count of weeks
-* @param {array} pmonthsArray - array with months
-* @param {number} pmonthCounts - count of months
-* @param {array} pperiodArr - array defining period
-* @returns {array} unique array ticks for period
-**/
-function getUniqArray(pweeksArray, pweekCounts, pmonthsArray, pmonthCounts, pperiodArr) {
-    if (_period === "month" || _period === "day" || _period === "hour" || _period === "yesterday") {
-        return [];
-    }
-
-    if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-        if (_period[0] === _period[1]) {
-            return [];
-        }
-    }
-
-    var weeksArray = clone(pweeksArray),
-        weekCounts = clone(pweekCounts),
-        monthsArray = clone(pmonthsArray),
-        monthCounts = clone(pmonthCounts),
-        periodArr = clone(pperiodArr);
-
-    var uniquePeriods = [],
-        tmpDaysInMonth = -1,
-        tmpPrevKey = -1,
-        rejectedWeeks = [],
-        rejectedWeekDayCounts = {};
-
-    for (let key in weekCounts) {
-
-        // If this is the current week we can use it
-        if (key === _currMoment.format("YYYY.\\w w").replace(" ", "")) {
-            continue;
-        }
-
-        if (weekCounts[key] < 7) {
-            for (let i = 0; i < weeksArray.length; i++) {
-                weeksArray[i] = weeksArray[i].replace(key, 0);
-            }
-        }
-    }
-
-    for (let key in monthCounts) {
-        if (tmpPrevKey !== key) {
-            if (_currMoment.format("YYYY.M") === key) {
-                tmpDaysInMonth = _currMoment.format("D");
-            }
-            else {
-                tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
-            }
-
-            tmpPrevKey = key;
-        }
-
-        if (monthCounts[key] < tmpDaysInMonth) {
-            for (let i = 0; i < monthsArray.length; i++) {
-                monthsArray[i] = monthsArray[i].replace(key, 0);
-            }
-        }
-    }
-
-    for (let i = 0; i < monthsArray.length; i++) {
-        if (parseInt(monthsArray[i]) === 0) {
-            if (parseInt(weeksArray[i]) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
-                uniquePeriods[i] = periodArr[i];
-            }
-            else {
-                uniquePeriods[i] = weeksArray[i];
-            }
-        }
-        else {
-            rejectedWeeks[rejectedWeeks.length] = weeksArray[i];
-            uniquePeriods[i] = monthsArray[i];
-
-            if (rejectedWeekDayCounts[weeksArray[i]]) {
-                rejectedWeekDayCounts[weeksArray[i]].count++;
-            }
-            else {
-                rejectedWeekDayCounts[weeksArray[i]] = {
-                    count: 1,
-                    index: i
-                };
-            }
-        }
-    }
-
-    var totalWeekCounts = underscore.countBy(weeksArray, function(per) {
-        return per;
-    });
-
-    for (var weekDayCount in rejectedWeekDayCounts) {
-
-        // If the whole week is rejected continue
-        if (rejectedWeekDayCounts[weekDayCount].count === 7) {
-            continue;
-        }
-
-        // If its the current week continue
-        if (_currMoment.format("YYYY.\\w w").replace(" ", "") === weekDayCount && totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
-            continue;
-        }
-
-        // If only some part of the week is rejected we should add back daily buckets
-
-        var startIndex = rejectedWeekDayCounts[weekDayCount].index - (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count),
-            limit = startIndex + (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count);
-
-        for (var i = startIndex; i < limit; i++) {
-            // If there isn't already a monthly bucket for that day
-            if (parseInt(monthsArray[i]) === 0) {
-                uniquePeriods[i] = periodArr[i];
-            }
-        }
-    }
-
-    rejectedWeeks = underscore.uniq(rejectedWeeks);
-    uniquePeriods = underscore.uniq(underscore.difference(uniquePeriods, rejectedWeeks));
-
-    return uniquePeriods;
-}
-
-/** 
-* Returns array with unique ticks for period to check data buckets for estimation
-* @param {array} pweeksArray - array with weeks
-* @param {number} pweekCounts - count of weeks
-* @param {array} pmonthsArray - array with months
-* @param {number} pmonthCounts - count of months
-* @returns {array} unique ticks for period to check data buckets for estimation
-**/
-function getUniqCheckArray(pweeksArray, pweekCounts, pmonthsArray, pmonthCounts) {
-
-    if (_period === "month" || _period === "day" || _period === "hour" || _period === "yesterday") {
-        return [];
-    }
-
-    if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-        if (_period[0] === _period[1]) {
-            return [];
-        }
-    }
-
-    var weeksArray = clone(pweeksArray),
-        weekCounts = clone(pweekCounts),
-        monthsArray = clone(pmonthsArray),
-        monthCounts = clone(pmonthCounts);
-
-    var uniquePeriods = [],
-        tmpDaysInMonth = -1,
-        tmpPrevKey = -1;
-
-    for (let key in weekCounts) {
-        if (key === _currMoment.format("YYYY.\\w w").replace(" ", "")) {
-            continue;
-        }
-
-        if (weekCounts[key] < 1) {
-            for (let i = 0; i < weeksArray.length; i++) {
-                weeksArray[i] = weeksArray[i].replace(key, 0);
-            }
-        }
-    }
-
-    for (let key in monthCounts) {
-        if (tmpPrevKey !== key) {
-            if (_currMoment.format("YYYY.M") === key) {
-                tmpDaysInMonth = _currMoment.format("D");
-            }
-            else {
-                tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
-            }
-
-            tmpPrevKey = key;
-        }
-
-        if (monthCounts[key] < (tmpDaysInMonth * 0.5)) {
-            for (let i = 0; i < monthsArray.length; i++) {
-                monthsArray[i] = monthsArray[i].replace(key, 0);
-            }
-        }
-    }
-
-    for (let i = 0; i < monthsArray.length; i++) {
-        if (parseInt(monthsArray[i]) === 0) {
-            if (parseInt(weeksArray[i]) !== 0) {
-                uniquePeriods[i] = weeksArray[i];
-            }
-        }
-        else {
-            uniquePeriods[i] = monthsArray[i];
-        }
-    }
-
-    uniquePeriods = underscore.uniq(uniquePeriods);
-
-    return uniquePeriods;
-}
-
-/** 
-* Cloning obect deep
-* @param {object} obj - object to clone
-* @returns {object} cloned object
-**/
-function clone(obj) {
-    if (null === obj || "object" !== typeof obj) {
-        return obj;
-    }
-
-    if (obj instanceof Date) {
-        let copy = new Date();
-        copy.setTime(obj.getTime());
-        return copy;
-    }
-
-    if (obj instanceof Array) {
-        let copy = [];
-        for (var i = 0, len = obj.length; i < len; ++i) {
-            copy[i] = clone(obj[i]);
-        }
-        return copy;
-    }
-
-    if (obj instanceof Object) {
-        var copy = {};
-        for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) {
-                copy[attr] = clone(obj[attr]);
-            }
-        }
-        return copy;
-    }
-}
-
-/** 
-* Adds only unique items to array
-* @param {array} arr - array where to add item
-* @param {number|string|array} item - item to add, if array provided, all items added if unique
-**/
-function arrayAddUniq(arr, item) {
-    if (!arr) {
-        arr = [];
-    }
-
-    if (toString.call(item) === "[object Array]") {
-        for (var i = 0; i < item.length; i++) {
-            if (arr.indexOf(item[i]) === -1) {
-                arr[arr.length] = item[i];
-            }
-        }
-    }
-    else {
-        if (arr.indexOf(item) === -1) {
-            arr[arr.length] = item;
-        }
-    }
-}
+/**
+* Validate email address
+* @param {string} email - email address to validate
+* @returns {boolean} true if valid and false if invalid
+* @example
+* //outputs true
+* countlyCommon.validateEmail("test@test.test");
+*
+* //outputs false
+* countlyCommon.validateEmail("test@test");
+*/
+countlyCommon.validateEmail = function(email) {
+    var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+    return re.test(email);
+};
 
 module.exports = countlyCommon;

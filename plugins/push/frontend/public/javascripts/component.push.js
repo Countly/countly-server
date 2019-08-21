@@ -80,10 +80,12 @@ window.component('push', function(push) {
         this.type = m.prop(data.type || push.C.TYPE.MESSAGE);
         this.apps = buildClearingProp(data.apps || []);
 
+        this.tx = m.prop(data.tx || false);
         // Automated push fields
         this.auto = m.prop(data.auto || false);
         this.autoOnEntry = m.prop(data.autoOnEntry || false);
         this.autoCohorts = m.prop(data.autoCohorts || []);
+        this.autoEvents = m.prop(data.autoEvents || []);
         this.autoEnd = m.prop(data.autoEnd || undefined);
         this.autoDelay = m.prop(data.autoDelay || undefined);
         this.autoTime = m.prop(data.autoTime || undefined);
@@ -109,9 +111,13 @@ window.component('push', function(push) {
 
         this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions);
         this.drillConditions = buildClearingProp(data.drillConditions === '{}' ? undefined : typeof data.drillConditions === 'string' ? JSON.parse(data.drillConditions) : data.drillConditions);
-        this.geo = buildClearingProp(data.geo || undefined);
+        this.geos = buildClearingProp(data.geo ? [data.geo] : data.geos ? data.geos : []);
+        this.cohorts = buildClearingProp(data.cohorts || []);
+        this.delayed = buildClearingProp(typeof data.delayed === 'undefined' ? true : data.delayed);
+        this.actualDates = m.prop(data.actualDates || false);
 
         this.count = m.prop();
+        this.isPrepared = function(){ return this.auto() || this.tx() || this.count() || this.delayed(); };
         this.locales = m.prop(data.locales || []);
         this.messagePerLocale = m.prop(data.messagePerLocale || {});
 
@@ -163,6 +169,38 @@ window.component('push', function(push) {
             } else {
                 return m || '';
             }
+        };
+        this.setPersTooltips = function(el) {
+            el.querySelectorAll('.pers').forEach(function(el){
+                el.textContent = el.getAttribute('data-fallback');
+
+                var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                if (name) {
+                    name = name.title();
+                }
+                if (!name) {
+                    name = el.getAttribute('data-key');
+                }
+                el.title = t.p('pu.po.tab2.tt', name, el.getAttribute('data-fallback'));
+                $(el).tooltipster({
+                    animation: 'fade',
+                    animationDuration: 100,
+                    delay: 100,
+                    maxWidth: 240,
+                    theme: 'tooltipster-borderless',
+                    trigger: 'custom',
+                    triggerOpen: {
+                        mouseenter: true,
+                        touchstart: true
+                    },
+                    triggerClose: {
+                        mouseleave: true,
+                        touchleave: true
+                    },
+                    interactive: true,
+                    contentAsHTML: true
+                });
+            });
         };
 
         this.result = new push.MessageResult(data.result || {});
@@ -322,7 +360,7 @@ window.component('push', function(push) {
                 this.setBuild(data);
                 if (data.build && data.build.count) {
                     if (onFullBuild) { onFullBuild(); }
-                } else if (this._id()) {
+                } else if (this._id() && !data.delayed) {
                     setTimeout(this.remotePrepare.bind(this, onFullBuild), 2000);
                 }
             }.bind(this));
@@ -334,10 +372,13 @@ window.component('push', function(push) {
                 platforms: this.platforms(),
                 userConditions: this.userConditions(),
                 drillConditions: this.drillConditions(),
-                geo: this.geo(),
+                geos: this.geos(),
+                cohorts: this.cohorts(),
+                delayed: this.delayed(),
                 tz: this.tz(),
                 test: this.test(),
-                auto: this.auto()
+                auto: this.auto(),
+                date: this.date()
             };
             if (includeId) {
                 obj._id = this._id();
@@ -350,16 +391,17 @@ window.component('push', function(push) {
                 obj.badge = this.badge();
                 obj.url = this.url();
                 obj.source = 'dash';
-                obj.date = this.date();
                 obj.buttons = parseInt(this.buttons());
                 obj.media = this.media();
                 obj.autoOnEntry = this.autoOnEntry();
                 obj.autoCohorts = this.autoCohorts();
+                obj.autoEvents = this.autoEvents();
                 obj.autoEnd = this.autoEnd();
                 obj.autoDelay = this.autoDelay();
                 obj.autoTime = this.autoTime();
                 obj.autoCapMessages = this.autoCapMessages();
                 obj.autoCapSleep = this.autoCapSleep();
+                obj.actualDates = this.actualDates();
 
                 if (this.data()) {
                     obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();
@@ -596,7 +638,7 @@ window.component('push', function(push) {
 
         this.statusString = function() {
             if (this.isSending()) {
-                if (this.error) {
+                if (this.error()) {
                     return t('push.message.status.sending-errors');
                 } else {
                     return t('push.message.status.sending');
@@ -638,9 +680,12 @@ window.component('push', function(push) {
                     app_id: appId
                 }
             }).then(function(data){
-                data.app_id = appId;
-                push.dashboard = data;
-                return data;
+                return countlyEvent.initialize().then(function(){
+                    data.app_id = appId;
+                    data.events = countlyEvent.getEvents();
+                    push.dashboard = data;
+                    return data;
+                });
             });
         } else {
             var deferred = m.deferred();

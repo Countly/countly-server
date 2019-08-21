@@ -16,6 +16,7 @@ var fetch = {},
     countlyCommon = require('../../lib/countly.common.js'),
     _ = require('underscore'),
     crypto = require('crypto'),
+    usage = require('./usage.js'),
     plugins = require('../../../plugins/pluginManager.js');
 
 /**
@@ -495,28 +496,166 @@ fetch.fetchAllApps = function(params) {
 };
 
 /**
+* Calls aggregation query to calculate top three values based on 't' in given collection
+* @param {params} params - params object
+* @param {string} collection - collection name
+* @param {function} callback - callback function
+**/
+function getTopThree(params, collection, callback) {
+    var periodObj = countlyCommon.getPeriodObj(params);
+    var pipeline = [];
+
+    var period = params.qstring.period || 'month'; //month is default
+    var matchStage = {};
+    var selectMap = {};
+    var curday = "";
+    var curmonth = "";
+    var first_month = "";
+    var last_month = "";
+    if (period === "day") {
+        matchStage = {'_id': {$regex: params.app_id + "_" + periodObj.activePeriod + ""}};
+    }
+    else if (period === "month") {
+        matchStage = {'_id': {$regex: params.app_id + "_" + periodObj.activePeriod + ""}};
+    }
+    else if (period === "hour" || period === "yesterday") {
+        var this_date = periodObj.activePeriod.split(".");
+        curmonth = this_date[0] + ":" + this_date[1];
+        curday = this_date[2];
+        matchStage = {'_id': {$regex: params.app_id + "_" + curmonth + ""}};
+    }
+    else { // days or timestamps
+        var last_pushed = "";
+        var month_array = [];
+        first_month = periodObj.currentPeriodArr[0].split(".");
+        first_month = first_month[0] + ":" + first_month[1];
+
+        last_month = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+        last_month = last_month[0] + ":" + last_month[1];
+        for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
+            let kk = periodObj.currentPeriodArr[i].split(".");
+            if (!selectMap[kk[0] + ":" + kk[1]]) {
+                selectMap[kk[0] + ":" + kk[1]] = [];
+            }
+            selectMap[kk[0] + ":" + kk[1]].push(kk[2]);
+            if (last_pushed === "" || last_pushed !== kk[0] + ":" + kk[1]) {
+                last_pushed = kk[0] + ":" + kk[1];
+                month_array.push({"_id": {$regex: params.app_id + "_" + kk[0] + ":" + kk[1]}});
+            }
+        }
+        matchStage = {$or: month_array};
+    }
+    pipeline.push({$match: matchStage});
+
+    if (period === "hour" || period === "yesterday") {
+        pipeline.push({$project: {d: {$objectToArray: "$d." + curday}}});
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
+    }
+    else if (period === "month" || period === "day") {
+        pipeline.push({$project: {d: {$objectToArray: "$d"}}});
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$project: {d: {$objectToArray: "$d.v"}}});
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
+    }
+    else {
+        var branches = [];
+        branches.push({ case: { $eq: [ "$m", first_month] }, then: { $in: [ "$$key.k", selectMap[first_month] ] } });
+        if (first_month !== last_month) {
+            branches.push({ case: { $eq: [ "$m", last_month] }, then: { $in: [ "$$key.k", selectMap[last_month] ] } });
+        }
+
+        var rules = {$switch: {branches: branches, default: true}};
+        pipeline.push({
+            $project: {
+                d: {
+                    $filter: {
+                        input: {$objectToArray: "$d"},
+                        as: "key",
+                        cond: rules
+                    }
+                }
+            }
+        });
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$project: {d: {$objectToArray: "$d.v"}}});
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
+    }
+    pipeline.push({$sort: {"t": -1}}); //sort values
+    pipeline.push({$limit: 3}); //limit count
+
+    common.db.collection(collection).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
+        var items = [];
+        if (res) {
+            items = res;
+            var total = 0;
+            for (let k = 0; k < items.length; k++) {
+                items[k].percent = items[k].t;
+                items[k].value = items[k].t;
+                items[k].name = items[k]._id;
+                total = total + items[k].value;
+            }
+            var totalPercent = 0;
+            for (let k = 0; k < items.length; k++) {
+                if (k !== (items.length - 1)) {
+                    items[k].percent = Math.floor(items[k].percent * 100 / total);
+                    totalPercent += items[k].percent;
+                }
+                else {
+                    items[k].percent = 100 - totalPercent;
+                }
+            }
+        }
+        callback(items);
+    });
+}
+
+/**
 * Get data for tops api and output to browser
 * @param {params} params - params object
 **/
 fetch.fetchTop = function(params) {
+    var obj = {};
+    var Allmetrics = usage.getPredefinedMetrics(params, obj);
+    var countInCol = 1;
     if (params.qstring.metric) {
+        let metric = params.qstring.metric;
         const metrics = fetch.metricToCollection(params.qstring.metric);
         if (metrics[0]) {
-            fetchTimeObj(metrics[0], params, false, function(data) {
-                var model;
-                if (metrics[2] && typeof metrics[2] === "object") {
-                    model = metrics[2];
+            for (let i = 0; i < Allmetrics.length; i++) {
+                if (Allmetrics[i].db === metrics[0]) {
+                    countInCol = Allmetrics[i].metrics.length;
+                    break;
                 }
-                else if (typeof metrics[2] === "string" && metrics[2].length) {
-                    model = countlyModel.load(metrics[2]);
-                }
-                else {
-                    model = countlyModel.load(metrics[0]);
-                }
-                countlyCommon.setTimezone(params.appTimezone);
-                model.setDb(data || {});
-                common.returnOutput(params, model.getBars(metrics[1] || metrics[0]));
-            });
+            }
+            var model;
+            if (metrics[2] && typeof metrics[2] === "object") {
+                model = metrics[2];
+            }
+            else if (typeof metrics[2] === "string" && metrics[2].length) {
+                model = countlyModel.load(metrics[2]);
+            }
+            else {
+                model = countlyModel.load(metrics[0]);
+            }
+            //collection metric model
+            if (metrics[0] === metric && countInCol === 1) {
+                getTopThree(params, metrics[0], function(items) {
+                    for (var k = 0; k < items.length; k++) {
+                        items[k].name = model.fetchValue(items[k].name);
+                    }
+                    common.returnOutput(params, items);
+                });
+            }
+            else {
+                fetchTimeObj(metrics[0], params, false, function(data) {
+                    countlyCommon.setTimezone(params.appTimezone);
+                    model.setDb(data || {});
+                    common.returnOutput(params, model.getBars(metrics[1] || metrics[0]));
+                });
+            }
         }
         else {
             common.returnOutput(params, []);
@@ -537,22 +676,41 @@ fetch.fetchTop = function(params) {
             async.each(params.qstring.metrics, function(metric, done) {
                 var metrics = fetch.metricToCollection(metric);
                 if (metrics[0]) {
-                    fetchTimeObj(metrics[0], params, false, function(db) {
-                        var model;
-                        if (metrics[2] && typeof metrics[2] === "object") {
-                            model = metrics[2];
+
+                    for (let i = 0; i < Allmetrics.length; i++) {
+                        if (Allmetrics[i].db === metrics[0]) {
+                            countInCol = Allmetrics[i].metrics.length;
+                            break;
                         }
-                        else if (typeof metrics[2] === "string" && metrics[2].length) {
-                            model = countlyModel.load(metrics[2]);
-                        }
-                        else {
-                            model = countlyModel.load(metrics[0]);
-                        }
-                        countlyCommon.setTimezone(params.appTimezone);
-                        model.setDb(db || {});
-                        data[metric] = model.getBars(metrics[1] || metrics[0]);
-                        done();
-                    });
+                    }
+
+                    var model2;
+                    if (metrics[2] && typeof metrics[2] === "object") {
+                        model2 = metrics[2];
+                    }
+                    else if (typeof metrics[2] === "string" && metrics[2].length) {
+                        model2 = countlyModel.load(metrics[2]);
+                    }
+                    else {
+                        model2 = countlyModel.load(metrics[0]);
+                    }
+                    if (metrics[0] === metric && countInCol === 1) {
+                        getTopThree(params, metrics[0], function(items) {
+                            for (var k = 0; k < items.length; k++) {
+                                items[k].name = model2.fetchValue(items[k].name);
+                            }
+                            data[metric] = items;
+                            done();
+                        });
+                    }
+                    else {
+                        fetchTimeObj(metrics[0], params, false, function(db) {
+                            countlyCommon.setTimezone(params.appTimezone);
+                            model2.setDb(db || {});
+                            data[metric] = model2.getBars(metrics[1] || metrics[0]);
+                            done();
+                        });
+                    }
                 }
                 else {
                     done();
@@ -932,6 +1090,37 @@ fetch.fetchDataEventsOverview = function(params) {
 };
 
 /**
+* Get top events data
+* @param {params} params - params object
+**/
+
+fetch.fetchDataTopEvents = function(params) {
+    const {
+        qstring: { app_id, period, limit }
+    } = params;
+    const collectionName = "top_events";
+    const _app_id = common.db.ObjectID(app_id);
+    common.db.collection(collectionName).findOne({period, app_id: _app_id}, function(error, result) {
+        if (error || !result) {
+            common.returnOutput(params, false);
+        }
+        else {
+            // eslint-disable-next-line no-shadow
+            const { app_id, data, _id, ts, period } = result;
+            let _data = Object.keys(data).map(function(key) {
+                const decodeKey = countlyCommon.decode(key);
+                const { sparkline, total, change } = data[key].data.count;
+                return { name: decodeKey, data: sparkline, count: total, trend: change };
+            });
+            const sortByCount = _data.sort((a, b) => b.count - a.count).slice(0, limit);
+            common.returnOutput(params, { _id, app_id, ts, period, data: sortByCount });
+        }
+    }
+    );
+};
+
+
+/**
 * Get events data for events pi output to browser
 * @param {params} params - params object
 * @returns {void} void
@@ -1081,7 +1270,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
     if (!plugins.getConfig("api", params.app && params.app.plugins, true).total_users) {
         return callback([]);
     }
-    var periodObj = getPeriodObj(params);
+    var periodObj = countlyCommon.getPeriodObj(params, "30days");
 
     /*
             List of shortcodes in app_users document for different metrics
@@ -1089,7 +1278,9 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
     var shortcodesForMetrics = {
         "devices": "d",
         "app_versions": "av",
+        "os": "p",
         "platforms": "p",
+        "os_versions": "pv",
         "platform_versions": "pv",
         "resolutions": "r",
         "countries": "cc",
@@ -1172,7 +1363,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                         /*
                             We track changes to metrics such as app version in metric_changesAPPID collection;
                             { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
-        
+
                             While returning a total user result for any metric, we check metric_changes to see
                             if any metric change happened in the selected period and include this in the result
                         */
@@ -1369,7 +1560,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         });
     }
     else {
-        var periodObj = getPeriodObj(params),
+        var periodObj = countlyCommon.getPeriodObj(params, "30days"),
             documents = [];
 
         if (isCustomEvent) {
@@ -1601,7 +1792,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 * @param {params} params - params object
 **/
 fetch.getPeriodObj = function(coll, params) {
-    common.returnOutput(params, getPeriodObj(params));
+    common.returnOutput(params, countlyCommon.getPeriodObj(params, "30days"));
 };
 
 /**
@@ -1627,29 +1818,6 @@ function union(x, y) {
     }
 
     return res;
-}
-
-/**
-* Gets period object based on value in params
-* @param {params} params - params object
-* @returns {period} period object
-**/
-function getPeriodObj(params) {
-    params.qstring.period = params.qstring.period || "month";
-    if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
-        try {
-            params.qstring.period = JSON.parse(params.qstring.period);
-        }
-        catch (SyntaxError) {
-            console.log('Parse period JSON failed');
-            params.qstring.period = "30days";
-        }
-    }
-
-    countlyCommon.setTimezone(params.appTimezone);
-    countlyCommon.setPeriod(params.qstring.period);
-
-    return countlyCommon.periodObj;
 }
 
 module.exports = fetch;

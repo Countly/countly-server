@@ -1,5 +1,8 @@
 FROM phusion/baseimage:0.9.16
 
+ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
+ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
+
 CMD ["/sbin/my_init"]
 
 ## Setup Countly

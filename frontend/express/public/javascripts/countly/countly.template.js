@@ -122,7 +122,9 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    afterRender: function() { },
+    afterRender: function() {
+        CountlyHelpers.makeSelectNative();
+    },
     /**
     * Main render method, better not to over write it, but use {@link countlyView.renderCommon} instead
     * @returns {object} this
@@ -168,6 +170,17 @@ var countlyView = Backbone.View.extend({
             }
         }
 
+        if (countlyGlobal.member.member_image) {
+            $('.member_image').html("");
+            $('.member_image').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
+        }
+        else {
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 30;
+            var name = countlyGlobal.member.full_name.split(" ");
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
+            $('.member_image').html("");
+            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: relative; top: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+        }
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
         $("#top-bar").find(".dropdown").fadeIn(2000);
 
@@ -623,6 +636,7 @@ var AppRouter = Backbone.Router.extend({
         countlyCommon.setActiveApp(app_id);
 
         $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+        $("#active-app-name").attr('title', countlyGlobal.apps[app_id].name);
         $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
 
         app.onAppSwitch(app_id, true);
@@ -633,6 +647,241 @@ var AppRouter = Backbone.Router.extend({
             app.activeView._removeMyRequests();//remove requests for view(if not finished)
             app.activeView.appChanged(callback);
         }
+    },
+    _menuForTypes: {},
+    _subMenuForTypes: {},
+    _menuForAllTypes: [],
+    _subMenuForAllTypes: [],
+    _subMenuForCodes: {},
+    _subMenus: {},
+    _internalMenuCategories: ["understand", "explore", "reach", "improve", "utilities", "management", "user"],
+    /**
+    * Add first level menu element for specific app type under specified category. You can only add app type specific menu to categories "understand", "explore", "reach", "improve", "utilities"
+    * @param {string} app_type - type of the app for which to add menu
+    * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities"
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
+    addMenuForType: function(app_type, category, node) {
+        if (this._internalMenuCategories.indexOf(category) === -1) {
+            throw "Wrong category for menu: " + category;
+        }
+        if (!node.text || !node.code || !node.icon || typeof node.priority === "undefined") {
+            throw "Provide code, text, icon and priority properties for menu element";
+        }
+        if (!this.appTypes[app_type] && category !== "management" && category !== "users") {
+            //app type not yet register, queue
+            if (!this._menuForTypes[app_type]) {
+                this._menuForTypes[app_type] = [];
+            }
+            this._menuForTypes[app_type].push({category: category, node: node});
+            return;
+        }
+        //create menu element
+        var menu = $("<a></a>");
+        menu.addClass("item");
+        menu.attr("data-priority", node.priority);
+        menu.attr("id", node.code + "-menu");
+        if (node.url) {
+            menu.attr("href", node.url);
+        }
+        if (node.classes) {
+            menu.addClass(node.classes);
+        }
+        if (node.style) {
+            menu.attr("style", node.style);
+        }
+        menu.append(node.icon);
+        menu.append('<div class="text" data-localize="' + node.text + '">' + (jQuery.i18n.map[node.text] || node.text) + '</div>');
+        if (node.html) {
+            menu.append(node.html);
+        }
+
+        if (!node.url && category !== "management" && category !== "users") {
+            this._subMenus[node.code] = true;
+            menu.hide();
+            menu.after('<div class="sidebar-submenu" id="' + node.code + '-submenu">');
+        }
+        var added = false;
+        var selector = "#sidebar-menu #" + app_type + "-type ." + category + "-category";
+        if (category === "management") {
+            //different selector for management menu
+            selector = ".right-menu #manage-menu";
+        }
+        else if (category === "users") {
+            //different selector for users menu
+            selector = ".right-menu #user-menu";
+        }
+        //try adding before first greater priority
+        $(selector + " > a").each(function() {
+            var cur = parseInt($(this).attr("data-priority"));
+            if (node.priority < cur) {
+                added = true;
+                $(this).before(menu);
+                return false;
+            }
+        });
+
+        if (category === "management" && $(selector + " > a").length > 5) {
+            $(selector).addClass("columns");
+        }
+
+        //if not added, maybe we are first or last, so just add it
+        if (!added) {
+            $(selector).append(menu);
+        }
+
+        if (typeof node.callback === "function") {
+            node.callback(app_type, category, node, menu);
+        }
+
+        //run all queued submenus for this parent
+        if (!node.url && category !== "management" && category !== "users" && this._subMenuForCodes[node.code]) {
+            for (i = 0; i < this._subMenuForCodes[node.code].length; i++) {
+                this.addSubMenuForType(this._subMenuForCodes[node.code][i].app_type, node.code, this._subMenuForCodes[node.code][i].node);
+            }
+            this._subMenuForCodes[node.code] = null;
+        }
+
+    },
+    /**
+    * Add second level menu element for specific app type under specified parent code.
+    * @param {string} app_type - type of the app for which to add menu
+    * @param {string} parent_code - code for parent element under which to add this submenu element
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
+    addSubMenuForType: function(app_type, parent_code, node) {
+        if (!parent_code) {
+            throw "Provide code name for parent category";
+        }
+        if (!node.text || !node.code || !node.url || !node.priority) {
+            throw "Provide text, code, url and priority for sub menu";
+        }
+        if (!this.appTypes[app_type]) {
+            //app type not yet register, queue
+            if (!this._subMenuForTypes[app_type]) {
+                this._subMenuForTypes[app_type] = [];
+            }
+            this._subMenuForTypes[app_type].push({parent_code: parent_code, node: node});
+            return;
+        }
+        if (!this._subMenus[parent_code]) {
+            //parent not yet registered, queue
+            if (!this._subMenuForCodes[parent_code]) {
+                this._subMenuForCodes[parent_code] = [];
+            }
+            this._subMenuForCodes[parent_code].push({app_type: app_type, node: node});
+            return;
+        }
+
+        //create menu element
+        var menu = $("<a></a>");
+        menu.addClass("item");
+        menu.attr("data-priority", node.priority);
+        menu.attr("id", node.code + "-menu");
+        menu.attr("href", node.url);
+        if (node.classes) {
+            menu.addClass(node.classes);
+        }
+        if (node.style) {
+            menu.attr("style", node.style);
+        }
+        menu.append('<div class="text" data-localize="' + node.text + '">' + (jQuery.i18n.map[node.text] || node.text) + '</div>');
+        if (node.html) {
+            menu.append(node.html);
+        }
+        var added = false;
+        //try adding before first greater priority
+        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-submenu > a").each(function() {
+            var cur = parseInt($(this).attr("data-priority"));
+            if (node.priority < cur) {
+                added = true;
+                $(this).before(menu);
+                return false;
+            }
+        });
+
+        //if not added, maybe we are first or last, so just add it
+        if (!added) {
+            $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-submenu").append(menu);
+        }
+
+        if ($("#sidebar-menu #" + app_type + "-type #" + parent_code + "-submenu > a").length === 1) {
+            $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").attr("href", node.url);
+        }
+        else {
+            $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").removeAttr("href");
+        }
+
+        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").css('display', 'block');
+
+        if (typeof node.callback === "function") {
+            node.callback(app_type, parent_code, node, menu);
+        }
+
+    },
+    /**
+    * Add first level menu element for all app types and special categories. 
+    * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities", "management", "user"
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
+    addMenu: function(category, node) {
+        if (category === "management" || category === "users") {
+            this.addMenuForType("default", category, node);
+        }
+        else {
+            for (var type in this.appTypes) {
+                this.addMenuForType(type, category, node);
+            }
+            //queue for future added app types
+            this._menuForAllTypes.push({category: category, node: node});
+        }
+    },
+    /**
+    * Add second level sub menu element for all app types (not available for special categories as "management" and "user")
+    * @param {string} parent_code - code for parent element under which to add this submenu element
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
+    addSubMenu: function(parent_code, node) {
+        for (var type in this.appTypes) {
+            this.addSubMenuForType(type, parent_code, node);
+        }
+        //queue for future added app types
+        this._subMenuForAllTypes.push({parent_code: parent_code, node: node});
     },
     main: function(/*forced*/) {
         var change = true,
@@ -652,6 +901,7 @@ var AppRouter = Backbone.Router.extend({
                     countlyCommon.setActiveApp(app_id);
 
                     $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+                    $("#active-app-name").attr('title', countlyGlobal.apps[app_id].name);
                     $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
 
                     app.onAppSwitch(app_id);
@@ -661,6 +911,10 @@ var AppRouter = Backbone.Router.extend({
                     return;
                 }
             }
+        }
+        else if (Backbone.history.fragment.indexOf("/0/") === 0 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
+            this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment.replace("/0", ""), true);
+            return;
         }
         else if (Backbone.history.fragment !== "/" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
             $("#" + countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function() {
@@ -775,7 +1029,9 @@ var AppRouter = Backbone.Router.extend({
             }
             return false;
         }
-        else if (countlyGlobal.security.password_expiration > 0 && countlyGlobal.member.password_changed + countlyGlobal.security.password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) {
+        else if ((countlyGlobal.security.password_expiration > 0) &&
+                (countlyGlobal.member.password_changed + countlyGlobal.security.password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) &&
+                (!countlyGlobal.ssr)) {
             if (Backbone.history.fragment !== "/manage/user-settings/reset") {
                 this.navigate("/manage/user-settings/reset", true);
             }
@@ -801,6 +1057,7 @@ var AppRouter = Backbone.Router.extend({
         init: function() {
             setTimeout(function() {
                 $("#sidebar-menu").find(".item").removeClass("active menu-active");
+                $("#sidebar-menu").find(".menu-category-title").removeClass("active");
                 var selectedMenu = $($("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']"));
 
                 if (!selectedMenu.length) {
@@ -822,6 +1079,12 @@ var AppRouter = Backbone.Router.extend({
                     selectedMenu.addClass("active");
                     app.sidebar.submenu.toggle();
                 }
+
+                var selectedCategory = selectedMenu.parents(".menu-category");
+                if (selectedCategory.length) {
+                    selectedCategory.find(".menu-category-title").addClass("active");
+                }
+
             }, 1000);
         },
         submenu: {
@@ -899,6 +1162,13 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     initialize: function() { //initialize the dashboard, register helpers etc.
+
+        this.bind("route", function(name/*, args*/) {
+            $('#content').removeClass(function(index, className) {
+                return (className.match(/(^|\s)routename-\S*/g) || []).join(' ');
+            }).addClass("routename-" + name);
+        });
+
         this.appTypes = {};
         this.pageScripts = {};
         this.dataExports = {};
@@ -911,6 +1181,44 @@ var AppRouter = Backbone.Router.extend({
         this.refreshScripts = {};
         this.appSettings = {};
         this.widgetCallbacks = {};
+
+        /**
+        * Add menus
+        **/
+
+        this.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.dashboard", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10});
+        this.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
+        this.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
+        this.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
+        this.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+        this.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
+        if (countlyGlobal.member.global_admin) {
+            this.addSubMenu("events", {code: "all-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
+        }
+        this.addMenu("utilities", {
+            code: "management",
+            text: "sidebar.utilities",
+            icon: '<div class="logo management ion-wrench"></div>',
+            priority: 10000000,
+            callback: function(type, category, node, menu) {
+            //for backwards compatability of old plugins adding menu to management
+                menu.filter("#management-submenu").append("<span class='help-toggle'></span>");
+            }
+        });
+
+        this.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+
+        if (countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) {
+            this.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
+        }
+        if (countlyGlobal.member.global_admin) {
+            this.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
+        }
+
+        this.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
+
+        this.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
+        this.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
 
         this.routesHit = 0; //keep count of number of routes handled by your application
         /**
@@ -929,6 +1237,15 @@ var AppRouter = Backbone.Router.extend({
         * {{> date-selector }}
         */
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
+
+        /**
+        * Display common date time selecting UI elements
+        * @name date-time-selector
+        * @memberof Handlebars
+        * @example
+        * {{> date-time-selector }}
+        */
+        Handlebars.registerPartial("date-time-selector", $("#template-date-time-selector").html());
         /**
         * Display common timezone selecting UI element
         * @name timezones
@@ -1202,6 +1519,7 @@ var AppRouter = Backbone.Router.extend({
         });
 
         var self = this;
+        $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
         jQuery.i18n.properties({
             name: 'locale',
             cache: true,
@@ -1210,6 +1528,12 @@ var AppRouter = Backbone.Router.extend({
             path: [countlyGlobal.cdn + 'localization/min/'],
             mode: 'map',
             callback: function() {
+                for (var key in jQuery.i18n.map) {
+                    if (countlyGlobal.company) {
+                        jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                    }
+                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
+                }
                 self.origLang = JSON.stringify(jQuery.i18n.map);
             }
         });
@@ -1219,6 +1543,10 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
+
+            $(document).on('DOMNodeInserted', '.cly-select', function() {
+                CountlyHelpers.makeSelectNative();
+            });
 
             $.ajaxPrefilter(function(options) {
                 var last5char = options.url.substring(options.url.length - 5, options.url.length);
@@ -1252,6 +1580,7 @@ var AppRouter = Backbone.Router.extend({
                 var minTimeout, tenSecondTimeout, logoutTimeout;
                 var shouldRecordAction = false;
                 var extendSession = function() {
+                    shouldRecordAction = false;
                     $.ajax({
                         url: countlyGlobal.path + "/session",
                         success: function(result) {
@@ -1273,6 +1602,9 @@ var AppRouter = Backbone.Router.extend({
                                 }, Math.round(myTimeoutValue / 2));
                                 resetSessionTimeouts(myTimeoutValue);
                             }
+                        },
+                        error: function() {
+                            shouldRecordAction = true;
                         }
                     });
                 };
@@ -1363,7 +1695,7 @@ var AppRouter = Backbone.Router.extend({
                     easing: 'easeInExpo',
                     complete: function() {
                         $(".sidebar-submenu").hide();
-                        $("#sidebar-menu>.sidebar-menu>.item").removeClass("menu-active");
+                        $("#sidebar-menu>.sidebar-menu>.menu-category>.item").removeClass("menu-active");
                     }
                 });
             });
@@ -1373,7 +1705,7 @@ var AppRouter = Backbone.Router.extend({
                     return true;
                 }
 
-                $("#sidebar-menu>.sidebar-menu>.item").removeClass("menu-active");
+                $("#sidebar-menu>.sidebar-menu>.menu-category>.item").removeClass("menu-active");
 
                 var elNext = $(this).next();
 
@@ -1406,7 +1738,7 @@ var AppRouter = Backbone.Router.extend({
                     }
                 },
                 out: function() { },
-                selector: ".sidebar-menu>.item"
+                selector: ".sidebar-menu>.menu-category>.item"
             });
 
             $("#sidebar-menu").hoverIntent({
@@ -1469,6 +1801,10 @@ var AppRouter = Backbone.Router.extend({
                 countlyCommon.BROWSER_LANG_SHORT = langCode;
                 countlyCommon.BROWSER_LANG = langCode;
 
+                $("body").removeClass(function(index, className) {
+                    return (className.match(/(^|\s)lang-\S*/g) || []).join(' ');
+                }).addClass("lang-" + langCode);
+
                 try {
                     moment.locale(countlyCommon.BROWSER_LANG_SHORT);
                 }
@@ -1500,6 +1836,13 @@ var AppRouter = Backbone.Router.extend({
                     path: [countlyGlobal.cdn + 'localization/min/'],
                     mode: 'map',
                     callback: function() {
+                        for (var key in jQuery.i18n.map) {
+                            if (countlyGlobal.company) {
+                                jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                            }
+                            jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
+                        }
+
                         self.origLang = JSON.stringify(jQuery.i18n.map);
                         $.when(countlyLocation.changeLanguage()).then(function() {
                             self.activeView.render();
@@ -1560,14 +1903,14 @@ var AppRouter = Backbone.Router.extend({
                 CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "popStyleGreen popStyleGreenWide", {button_title: jQuery.i18n.map["common.okay"] + "!", title: jQuery.i18n.map["help.help-mode-welcome-title"], image: "welcome-to-help-mode"});
             });
 
-            $(".help-toggle, #help-toggle").click(function(e) {
-
+            $("#help-menu").click(function(e) {
                 e.stopPropagation();
-                $(".help-toggle #help-toggle").toggleClass("active");
+                $("#help-toggle-cbox").prop("checked", !$("#help-toggle-cbox").prop("checked"));
+                $("#help-toggle").toggleClass("active");
 
-                app.tipsify($(".help-toggle #help-toggle").hasClass("active"));
+                app.tipsify($("#help-toggle").hasClass("active"));
 
-                if ($(".help-toggle #help-toggle").hasClass("active")) {
+                if ($("#help-toggle").hasClass("active")) {
                     help();
                     $.idleTimer('destroy');
                     clearInterval(self.refreshActiveView);
@@ -1577,6 +1920,27 @@ var AppRouter = Backbone.Router.extend({
                         self.performRefresh(self);
                     }, countlyCommon.DASHBOARD_REFRESH_MS);
                     $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
+                }
+            });
+
+            $("#help-toggle").click(function(e) {
+                e.stopPropagation();
+                if ($(e.target).attr("id") === "help-toggle-cbox") {
+                    $("#help-toggle").toggleClass("active");
+
+                    app.tipsify($("#help-toggle").hasClass("active"));
+
+                    if ($("#help-toggle").hasClass("active")) {
+                        help();
+                        $.idleTimer('destroy');
+                        clearInterval(self.refreshActiveView);
+                    }
+                    else {
+                        self.refreshActiveView = setInterval(function() {
+                            self.performRefresh(self);
+                        }, countlyCommon.DASHBOARD_REFRESH_MS);
+                        $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
+                    }
                 }
             });
 
@@ -1691,7 +2055,7 @@ var AppRouter = Backbone.Router.extend({
                 $('.note-popup:visible .note-content').textcounter({
                     max: 50,
                     countDown: true,
-                    countDownText: "remaining "
+                    countDownText: jQuery.i18n.map["dashboard.note-title-remaining"] + ": ",
                 });
 
                 $(".note-popup:visible .note .delete-note").on("click", function() {
@@ -1851,6 +2215,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             $topbar.on("click", "#hide-sidebar-button", function() {
+                $("#hide-sidebar-button").toggleClass("active");
                 var $analyticsMainView = $("#analytics-main-view");
 
                 $analyticsMainView.find("#sidebar").toggleClass("hidden");
@@ -1859,7 +2224,7 @@ var AppRouter = Backbone.Router.extend({
 
             // Prevent body scroll after list inside dropdown is scrolled till the end
             // Applies to any element that has prevent-body-scroll class as well
-            $("body").on('DOMMouseScroll mousewheel', ".dropdown .list, .prevent-body-scroll", function(ev) {
+            $("document").on('DOMMouseScroll mousewheel', ".dropdown .list, .prevent-body-scroll", function(ev) {
                 var $this = $(this),
                     scrollTop = this.scrollTop,
                     scrollHeight = this.scrollHeight,
@@ -1888,7 +2253,7 @@ var AppRouter = Backbone.Router.extend({
                     $this.scrollTop(0);
                     return prevent();
                 }
-            });
+            }, {passive: false});
 
             $appNavigation.on("click", ".item", function() {
                 var appKey = $(this).data("key"),
@@ -1898,6 +2263,7 @@ var AppRouter = Backbone.Router.extend({
 
                 $("#active-app-icon").css("background-image", appImage);
                 $("#active-app-name").text(appName);
+                $("#active-app-name").attr('title', appName);
 
                 if (self.activeAppKey !== appKey) {
                     self.activeAppName = appName;
@@ -1957,6 +2323,7 @@ var AppRouter = Backbone.Router.extend({
             else {
                 $("#active-app-icon").css("background-image", "url('" + countlyGlobal.cdn + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
                 $("#active-app-name").text(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name);
+                $('#active-app-name').attr('title', countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name);
                 self.activeAppName = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name;
             }
         }
@@ -2081,6 +2448,12 @@ var AppRouter = Backbone.Router.extend({
         * @returns {number} number representating date
         */
         function getCustomDateInt(s) {
+            if (s.indexOf("W") === 0) {
+                s = s.replace(",", "");
+                s = s.replace("W", "");
+                dateParts = s.split(" ");
+                return (parseInt(dateParts[0])) + parseInt(dateParts.pop() * 10000);
+            }
             s = moment(s, countlyCommon.getDateFormat(countlyCommon.periodObj.dateString)).format(countlyCommon.periodObj.dateString);
             var dateParts = "";
             if (s.indexOf(":") !== -1) {
@@ -2293,7 +2666,7 @@ var AppRouter = Backbone.Router.extend({
             countlyCommon.dtSettings = countlyCommon.dtSettings || [];
 
             var previosTableStatus = countlyCommon.dtSettings.filter(function(item) {
-                return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
+                return (item.viewId === app.activeView.cid && item.selector === settings.sTableId);
             })[0];
 
             if (previosTableStatus) {
@@ -2315,7 +2688,7 @@ var AppRouter = Backbone.Router.extend({
         */
         function setCurrentPage(dtable, settings) {
             var tablePersistSettings = countlyCommon.dtSettings.filter(function(item) {
-                return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
+                return (item.viewId === app.activeView.cid && item.selector === settings.sTableId);
             })[0];
 
             if (tablePersistSettings && tablePersistSettings.dataLength === dtable.fnGetData().length) {
@@ -2334,7 +2707,7 @@ var AppRouter = Backbone.Router.extend({
             }
 
             var tablePersistSettings = pageSizeSettings.filter(function(item) {
-                return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
+                return (item.viewId === app.activeView.cid && item.selector === settings.sTableId);
             })[0];
 
             var pageSize;
@@ -2480,6 +2853,29 @@ var AppRouter = Backbone.Router.extend({
                     else {
                         tableWrapper.find(".dataTables_length").hide();
                         //create export dialog
+                        var item = tableWrapper.find('.save-table-data')[0];
+                        if (item) {
+                            exportDrop = new CountlyDrop({
+                                target: tableWrapper.find('.save-table-data')[0],
+                                content: "",
+                                position: 'right middle',
+                                classes: "server-export",
+                                constrainToScrollParent: false,
+                                remove: true,
+                                openOn: "click"
+                            });
+                            exportDrop.on("open", function() {
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }, null, oSettings).removeClass("dialog"));
+                                exportDrop.position();
+                            });
+                        }
+                    }
+                }
+                else {
+                    tableWrapper.find(".dataTables_length").hide();
+                    //create export dialog
+                    var item2 = tableWrapper.find('.save-table-data')[0];
+                    if (item2) {
                         exportDrop = new CountlyDrop({
                             target: tableWrapper.find('.save-table-data')[0],
                             content: "",
@@ -2489,29 +2885,12 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
+
                         exportDrop.on("open", function() {
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }, null, oSettings).removeClass("dialog"));
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }).removeClass("dialog"));
                             exportDrop.position();
                         });
                     }
-                }
-                else {
-                    tableWrapper.find(".dataTables_length").hide();
-                    //create export dialog
-                    exportDrop = new CountlyDrop({
-                        target: tableWrapper.find('.save-table-data')[0],
-                        content: "",
-                        position: 'right middle',
-                        classes: "server-export",
-                        constrainToScrollParent: false,
-                        remove: true,
-                        openOn: "click"
-                    });
-
-                    exportDrop.on("open", function() {
-                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }).removeClass("dialog"));
-                        exportDrop.position();
-                    });
                 }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
@@ -2670,6 +3049,32 @@ var AppRouter = Backbone.Router.extend({
         var menu = $("#default-type").clone();
         menu.attr("id", name + "-type");
         $("#sidebar-menu").append(menu);
+
+        //run all queued type menus
+        if (this._menuForTypes[name]) {
+            for (var i = 0; i < this._menuForTypes[name].length; i++) {
+                this.addMenuForType(name, this._menuForTypes[name][i].category, this._menuForTypes[name][i].node);
+            }
+            this._menuForTypes[name] = null;
+        }
+
+        //run all queued type submenus
+        if (this._subMenuForTypes[name]) {
+            for (i = 0; i < this._subMenuForTypes[name].length; i++) {
+                this.addSubMenuForType(name, this._subMenuForTypes[name][i].parent_code, this._subMenuForTypes[name][i].node);
+            }
+            this._subMenuForTypes[name] = null;
+        }
+
+        //run all queued all type menus
+        for (i = 0; i < this._menuForAllTypes.length; i++) {
+            this.addMenuForType(name, this._menuForAllTypes[i].category, this._menuForAllTypes[i].node);
+        }
+
+        //run all queued all type submenus
+        for (i = 0; i < this._subMenuForAllTypes.length; i++) {
+            this.addSubMenuForType(name, this._subMenuForAllTypes[i].parent_code, this._subMenuForAllTypes[i].node);
+        }
     },
     /**
     * Add callback to be called when user changes app in dashboard, which can be used globally, outside of the view
@@ -3026,10 +3431,15 @@ var AppRouter = Backbone.Router.extend({
 
             $(window).click(function() {
                 $("#date-picker").hide();
+                $(".date-time-picker").hide();
                 $(".cly-select").removeClass("active");
             });
 
             $("#date-picker").click(function(e) {
+                e.stopPropagation();
+            });
+
+            $(".date-time-picker").click(function(e) {
                 e.stopPropagation();
             });
 
@@ -3314,6 +3724,7 @@ Backbone.history.checkUrl = function() {
             // but it is not currently selected app, so let' switch
             countlyCommon.setActiveApp(app_id);
             $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+            $('#active-app-name').attr('title', countlyGlobal.apps[app_id].name);
             $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
         }
     }

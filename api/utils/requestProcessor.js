@@ -81,7 +81,7 @@ const reloadConfig = function() {
  *          }
  *     }
  * };
- * 
+ *
  * //processing request
  * processRequest(params);
  */
@@ -233,6 +233,12 @@ const processRequest = (params) => {
                 case 'delete':
                     validateUserForWriteAPI(countlyApi.mgmt.users.deleteUser, params);
                     break;
+                case 'deleteOwnAccount':
+                    validateUserForWriteAPI(countlyApi.mgmt.users.deleteOwnAccount, params);
+                    break;
+                case 'ack':
+                    validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
@@ -242,11 +248,34 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update or /delete');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /deleteOwnAccount or /delete');
                     }
                     break;
                 }
 
+                break;
+            }
+            case '/i/notes': {
+                if (params.qstring.args) {
+                    try {
+                        params.qstring.args = JSON.parse(params.qstring.args);
+                    }
+                    catch (SyntaxError) {
+                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                    }
+                }
+                switch (paths[3]) {
+                case 'save':
+                    validateUserForWriteAPI(params, () => {
+                        countlyApi.mgmt.users.saveNote(params);
+                    });
+                    break;
+                case 'delete':
+                    validateUserForWriteAPI(params, () => {
+                        countlyApi.mgmt.users.deleteNote(params);
+                    });
+                    break;
+                }
                 break;
             }
             case '/i/app_users': {
@@ -329,7 +358,7 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'No users matching criteria');
                                 return false;
                             }
-                            if (count > 1) {
+                            if (count > 1 && !params.qstring.force) {
                                 common.returnMessage(params, 400, 'This query would update more than one user');
                                 return false;
                             }
@@ -568,7 +597,7 @@ const processRequest = (params) => {
                     break;
                 case 'name':
                     validateUserForWrite(params, () => {
-                        taskmanager.deleteResult({
+                        taskmanager.nameResult({
                             db: common.db,
                             id: params.qstring.task_id,
                             name: params.qstring.name
@@ -732,7 +761,7 @@ const processRequest = (params) => {
 
 
                                 for (let k in params.qstring.event_map) {
-                                    if (params.qstring.event_map.hasOwnProperty(k)) {
+                                    if (Object.prototype.hasOwnProperty.call(params.qstring.event_map, k)) {
                                         update_array.map[k] = params.qstring.event_map[k];
 
                                         if (update_array.map[k].is_visible && update_array.map[k].is_visible === true) {
@@ -804,7 +833,7 @@ const processRequest = (params) => {
                                                 if (obj.list.length > 0) {
                                                     for (let p = 0; p < obj.list.length; p++) {
                                                         my_query[p] = {};
-                                                        my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select 
+                                                        my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select
                                                         unsetUs["meta_v2.segments." + obj.list[p]] = ""; //remove from list
                                                         unsetUs["meta_v2." + obj.list[p]] = "";
                                                     }
@@ -899,12 +928,14 @@ const processRequest = (params) => {
                         for (let i = 0; i < idss.length; i++) {
 
                             if (idss[i].indexOf('.') !== -1) {
-                                updateThese.$unset["map." + idss[i].replace(/\./g, ':')] = 1;
-                                updateThese.$unset["segments." + idss[i].replace(/\./g, ':')] = 1;
+                                updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
+                                updateThese.$unset["segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
+                                updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
                             }
                             else {
                                 updateThese.$unset["map." + idss[i]] = 1;
                                 updateThese.$unset["segments." + idss[i]] = 1;
+                                updateThese.$unset["omitted_segments." + idss[i]] = 1;
                             }
                         }
 
@@ -969,7 +1000,7 @@ const processRequest = (params) => {
                                 else {
                                     for (let i = 0; i < idss.length; i++) {
                                         var collectionNameWoPrefix = common.crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
-                                        common.db.collection("events" + collectionNameWoPrefix).drop();
+                                        common.db.collection("events" + collectionNameWoPrefix).drop(function() {});
                                         plugins.dispatch("/i/event/delete", {
                                             event_key: idss[i],
                                             appId: app_id
@@ -1027,6 +1058,7 @@ const processRequest = (params) => {
 
                             for (let i = 0; i < idss.length; i++) {
 
+                                var baseID = idss[i].replace(/\\u002e/g, ".");
                                 if (!update_array.map[idss[i]]) {
                                     update_array.map[idss[i]] = {};
                                 }
@@ -1048,7 +1080,7 @@ const processRequest = (params) => {
 
                                 if (params.qstring.set_visibility === 'hide' && event && event.overview && Array.isArray(event.overview)) {
                                     for (let j = 0; j < event.overview.length; j++) {
-                                        if (event.overview[j].eventKey === idss[i]) {
+                                        if (event.overview[j].eventKey === baseID) {
                                             event.overview.splice(j, 1);
                                             j = j - 1;
                                         }
@@ -1188,7 +1220,6 @@ const processRequest = (params) => {
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
                             var myfile = '../../export/AppUser/' + filename[0] + '.tar.gz';
-
                             countlyFs.gridfs.getSize("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(error, size) {
                                 if (error) {
                                     common.returnMessage(params, 400, error);
@@ -1204,7 +1235,8 @@ const processRequest = (params) => {
                                         else {
                                             params.res.writeHead(200, {
                                                 'Content-Type': 'application/x-gzip',
-                                                'Content-Length': size
+                                                'Content-Length': size,
+                                                'Content-Disposition': 'inline; filename="' + filename[0] + '.tar.gz"'
                                             });
                                             stream.pipe(params.res);
                                         }
@@ -1292,6 +1324,53 @@ const processRequest = (params) => {
                             query: params.qstring.query
                         }, (err, res) => {
                             common.returnOutput(params, res || []);
+                        });
+                    }, params);
+                    break;
+                case 'list':
+                    validateUserForMgmtReadAPI(() => {
+                        if (typeof params.qstring.query === "string") {
+                            try {
+                                params.qstring.query = JSON.parse(params.qstring.query);
+                            }
+                            catch (ex) {
+                                params.qstring.query = {};
+                            }
+                        }
+                        if (params.qstring.query.$or) {
+                            params.qstring.query.$and = [
+                                {"$or": Object.assign([], params.qstring.query.$or) },
+                                {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]}
+                            ];
+                            delete params.qstring.query.$or;
+                        }
+                        else {
+                            params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
+                        }
+                        params.qstring.query.app_id = params.qstring.app_id;
+                        if (params.qstring.period) {
+                            countlyCommon.getPeriodObj(params);
+                            params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+                        const skip = params.qstring.iDisplayStart;
+                        const limit = params.qstring.iDisplayLength;
+                        const sEcho = params.qstring.sEcho;
+                        const keyword = params.qstring.sSearch || null;
+                        const sortBy = params.qstring.iSortCol_0 || null;
+                        const sortSeq = params.qstring.sSortDir_0 || null;
+                        taskmanager.getTableQueryResult({
+                            db: common.db,
+                            query: params.qstring.query,
+                            page: {skip, limit},
+                            sort: {sortBy, sortSeq},
+                            keyword: keyword,
+                        }, (err, res) => {
+                            if (!err) {
+                                common.returnOutput(params, {aaData: res.list, iTotalDisplayRecords: res.count, iTotalRecords: res.count, sEcho});
+                            }
+                            else {
+                                common.returnMessage(params, 500, '"Query failed"');
+                            }
                         });
                     }, params);
                     break;
@@ -1450,6 +1529,7 @@ const processRequest = (params) => {
                                 params.qstring.data = JSON.parse(params.qstring.data);
                             }
                             catch (ex) {
+                                console.log("Error parsing export request data", params.qstring.data, ex);
                                 params.qstring.data = {};
                             }
                         }
@@ -1553,9 +1633,23 @@ const processRequest = (params) => {
                             apps = params.qstring.apps.split(',');
                         }
 
-                        if (params.qstring.endpoint) {
+                        if (params.qstring.endpointquery && params.qstring.endpointquery !== "") {
+                            try {
+                                endpoint = JSON.parse(params.qstring.endpointquery); //structure with also info for qstring params.
+                            }
+                            catch (ex) {
+                                if (params.qstring.endpoint) {
+                                    endpoint = params.qstring.endpoint.split(',');
+                                }
+                                else {
+                                    endpoint = "";
+                                }
+                            }
+                        }
+                        else if (params.qstring.endpoint) {
                             endpoint = params.qstring.endpoint.split(',');
                         }
+
                         if (params.qstring.purpose) {
                             purpose = params.qstring.purpose;
                         }
@@ -1685,8 +1779,14 @@ const processRequest = (params) => {
                 case 'get_events':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
                     break;
+                case 'top_events':
+                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDataTopEvents);
+                    break;
                 case 'all_apps':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
+                    break;
+                case 'notes':
+                    validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1800,6 +1900,10 @@ const processRequest = (params) => {
 
                 break;
             }
+            case '/o/notes': {
+                validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
+                break;
+            }
             default:
                 if (!plugins.dispatch(apiPath, {
                     params: params,
@@ -1873,6 +1977,15 @@ const processRequestData = (params, app, done) => {
  * @param  {function} done - callback when processing done
  */
 const processFetchRequest = (params, app, done) => {
+    if (params.qstring.metrics) {
+        try {
+            countlyApi.data.usage.returnAllProcessedMetrics(params);
+        }
+        catch (ex) {
+            console.log("Could not process metrics");
+        }
+    }
+
     plugins.dispatch("/o/sdk", {
         params: params,
         app: app
@@ -1974,7 +2087,8 @@ const processBulkRequest = (i, requests, params) => {
         'res': params.res,
         'req': params.req,
         'promises': [],
-        'bulk': true
+        'bulk': true,
+        'populator': params.qstring.populator
     };
 
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
@@ -2027,6 +2141,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
+            params.cancelRequest = "App not found or no Database connection";
             return done ? done() : false;
         }
 
@@ -2035,6 +2150,13 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             params.cancelRequest = "App is currently not accepting data";
             plugins.dispatch("/sdk/cancel", {params: params});
             return done ? done() : false;
+        }
+
+        if ((params.populator || params.qstring.populator) && app.locked) {
+            common.returnMessage(params, 403, "App is locked");
+            params.cancelRequest = "App is locked";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return false;
         }
 
         params.app_id = app._id;
@@ -2163,9 +2285,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
  * Validate app for fetch API from sdk
  * @param  {object} params - params object
  * @param  {function} done - callback when processing done
+ * @param  {number} try_times - how many times request was retried
  * @returns {function} done - done callback
  */
-const validateAppForFetchAPI = (params, done) => {
+const validateAppForFetchAPI = (params, done, try_times) => {
     var sourceType = "FetchAPI";
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
@@ -2174,6 +2297,7 @@ const validateAppForFetchAPI = (params, done) => {
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
+            params.cancelRequest = "App not found or no Database connection";
             return done ? done() : false;
         }
 
@@ -2201,32 +2325,106 @@ const validateAppForFetchAPI = (params, done) => {
             }
         }
 
-        Promise.all([fetchAppUser(params), countlyApi.data.usage.setLocation(params)]).then(() => {
-            if (params.qstring.metrics) {
-                try {
-                    countlyApi.data.usage.returnAllProcessedMetrics(params);
-                }
-                catch (ex) {
-                    console.log("Could not process metrics");
-                }
-            }
+        var parallelTasks = [countlyApi.data.usage.setLocation.bind(null, params)];
 
+        var processThisUser = true;
+
+        if (app.paused) {
+            log.d("App is currently not accepting data");
+            processThisUser = false;
+        }
+
+        if ((params.populator || params.qstring.populator) && app.locked) {
+            log.d("App is locked");
+            processThisUser = false;
+        }
+
+        if (!processThisUser) {
+            parallelTasks.push(fetchAppUser.bind(null, params));
+        }
+        else {
+            parallelTasks.push(processUser.bind(null, params, done, try_times));
+        }
+
+        Promise.all(
+            parallelTasks.map((func) => func())).then(() => {
             processFetchRequest(params, app, done);
         }).catch(() => {
-            if (params.qstring.metrics) {
-                try {
-                    countlyApi.data.usage.returnAllProcessedMetrics(params);
-                }
-                catch (ex) {
-                    console.log("Could not process metrics");
-                }
-            }
-
             processFetchRequest(params, app, done);
         });
     });
 };
+/**
+ * @param  {object} params - params object
+ * @param  {function} done - callback when processing done
+ * @param  {number} try_times - how many times request was retried
+ * @returns {Promise} - resolved
+ */
+function processUser(params, done, try_times) {
+    return new Promise((resolve) => {
+        fetchAppUser(params).then(() => {
+            if (!params.app_user.uid) {
+                //first time we see this user, we need to id him with uid
+                countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
+                    if (uid) {
+                        params.app_user.uid = uid;
+                        if (!params.app_user._id) {
+                            //if document was not yet created
+                            //we try to insert one with uid
+                            //even if paralel request already inserted uid
+                            //this insert will fail
+                            //but we will retry again and fetch new inserted document
+                            common.db.collection('app_users' + params.app_id).insert({
+                                _id: params.app_user_id,
+                                uid: uid,
+                                did: params.qstring.device_id
+                            }, {ignore_errors: [11000]}, function() {
+                                restartFetchRequest(params, done, try_times, function() {
+                                    return resolve();
+                                });
+                            });
+                        }
+                        else {
+                            //document was created, but has no uid
+                            //here we add uid only if it does not exist in db
+                            //so if paralel request inserted it, we will not overwrite it
+                            //and retrieve that uid on retry
+                            common.db.collection('app_users' + params.app_id).update({
+                                _id: params.app_user_id,
+                                uid: {$exists: false}
+                            }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
+                                restartFetchRequest(params, done, try_times, function() {
+                                    return resolve();
+                                });
+                            });
+                        }
+                    }
+                    else {
+                        //cannot create uid
+                        return resolve();
+                    }
+                });
+            }
+            //check if device id was changed
+            else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+                const old_id = common.crypto.createHash('sha1')
+                    .update(params.qstring.app_key + params.qstring.old_device_id + "")
+                    .digest('hex');
 
+                countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
+                    //remove old device ID and retry request
+                    params.qstring.old_device_id = null;
+                    restartFetchRequest(params, done, try_times, function() {
+                        return resolve();
+                    });
+                });
+            }
+            else {
+                return resolve();
+            }
+        });
+    });
+}
 /**
  * @param  {object} params - params object
  * @param  {String} type - source type
@@ -2248,7 +2446,7 @@ const checksumSaltVerification = (params, type) => {
         }
         if (typeof params.qstring.checksum !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
@@ -2261,7 +2459,7 @@ const checksumSaltVerification = (params, type) => {
         }
         else if (typeof params.qstring.checksum256 !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
@@ -2339,6 +2537,29 @@ const restartRequest = (params, done, try_times) => {
     params.retry_request = true;
     //retry request
     validateAppForWriteAPI(params, done, try_times);
+};
+
+/**
+ * Restart Fetch Request
+ * @param {params} params - params object
+ * @param {function} done - callback when processing done
+ * @param {number} try_times - how many times request was retried
+ * @param {function} cb - callback when restart limit reached
+ * @returns {void} void
+ */
+const restartFetchRequest = (params, done, try_times, cb) => {
+    if (!try_times) {
+        try_times = 1;
+    }
+    else {
+        try_times++;
+    }
+    if (try_times > 5) {
+        return cb();
+    }
+    params.retry_request = true;
+    //retry request
+    validateAppForFetchAPI(params, done, try_times);
 };
 
 /** @lends module:api/utils/requestProcessor */

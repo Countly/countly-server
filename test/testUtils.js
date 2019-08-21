@@ -1,3 +1,15 @@
+var should = require('should');
+should.Assertion.add('haveSameItems', function(other) {
+    this.params = { operator: 'to be have same items' };
+
+    this.obj.forEach(item => {
+    //both arrays should at least contain the same items
+        other.should.containEql(item);
+    });
+    // both arrays need to have the same number of items
+    this.obj.length.should.be.equal(other.length);
+});
+
 if (typeof String.prototype.startsWith != 'function') {
     String.prototype.startsWith = function(str) {
         return this.slice(0, str.length) == str;
@@ -38,6 +50,10 @@ var testUtils = function testUtils() {
         //var rePattern = new RegExp(/countlyGlobal\["csrf_token"\] = "([^"]*)";/);
         var rePattern = new RegExp(/value="([^"]*)" name="_csrf"/);
         var arrMatches = body.match(rePattern);
+        if (!arrMatches || !arrMatches[1]) {
+            rePattern = new RegExp(/value=([^\s]*) name=_csrf/);
+            arrMatches = body.match(rePattern);
+        }
         csrf = arrMatches[1];
         return csrf;
     };

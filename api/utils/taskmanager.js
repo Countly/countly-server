@@ -119,6 +119,10 @@ taskmanager.longtask = function(options) {
                     options.outputData(err1, res1);
                 }
                 else {
+                    if (err1) {
+                        options.errored = true;
+                        options.errormsg = err1;
+                    }
                     taskmanager.saveResult(options, res1);
                 }
             });
@@ -128,6 +132,10 @@ taskmanager.longtask = function(options) {
                 options.outputData(err, res);
             }
             else {
+                if (err) {
+                    options.errored = true;
+                    options.errormsg = err;
+                }
                 taskmanager.saveResult(options, res);
             }
         }
@@ -193,19 +201,43 @@ taskmanager.createTask = function(options, callback) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.id - id to use for this task
+* @param {boolean} options.errored - if errored then true
+* @param {object} options.errormsg - data object for error msg  - can be also error msg (string)
+* @param {string} options.errormsg.message - Optional. if exists check for message here. If not uses options.errormsg. 
 * @param {object} data - result data of the task
 * @param {function=} callback - callback when data is stored
 */
 taskmanager.saveResult = function(options, data, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").update({_id: options.id}, {
-        $set: {
-            end: new Date().getTime(),
-            status: "completed",
-            hasData: true,
-            data: JSON.stringify(data || {})
+    if (options.errored) {
+        var message = "";
+        if (options.errormsg) {
+            message = options.errormsg;
         }
-    }, {'upsert': false}, callback);
+        if (message.message) {
+            message = message.message;
+        }
+
+        options.db.collection("long_tasks").update({_id: options.id}, {
+            $set: {
+                end: new Date().getTime(),
+                status: "errored",
+                hasData: true,
+                data: JSON.stringify(data || {}),
+                errormsg: message
+            }
+        }, {'upsert': false}, callback);
+    }
+    else {
+        options.db.collection("long_tasks").update({_id: options.id}, {
+            $set: {
+                end: new Date().getTime(),
+                status: "completed",
+                hasData: true,
+                data: JSON.stringify(data || {})
+            }
+        }, {'upsert': false}, callback);
+    }
 };
 
 /**
@@ -355,6 +387,59 @@ taskmanager.getResults = function(options, callback) {
 };
 
 /**
+* Get dataTable query results for tasks
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {object} options.query - mongodb query
+* @param {object} options.projection - mongodb projection
+* @param {object} options.page - mongodb offset & limit
+* @param {object} options.keyword - search task "report_name" or "report_desc"
+* @param {funciton} callback - callback for the result
+*/
+taskmanager.getTableQueryResult = async function(options, callback) {
+    options.db = options.db || common.db;
+    options.query = options.query || {};
+    options.projection = options.projection || {data: 0};
+
+    if (options.keyword) {
+        options.query.$and = options.query.$and ? options.query.$and : [];
+        const keywordRegx = new RegExp(options.keyword, 'i');
+        options.query.$and.push({
+            $or: [
+                {"report_name": {$regex: keywordRegx}},
+                {"report_desc": {$regex: keywordRegx}},
+            ]
+        });
+    }
+    let sortBy = {'end': -1};
+    if (options.sort.sortBy) {
+        const orderbyKey = { 0: 'report_name', 3: 'type', 7: 'end'};
+        const keyName = orderbyKey[options.sort.sortBy];
+        const seq = options.sort.sortSeq === 'desc' ? -1 : 1;
+        sortBy = {[keyName]: seq};
+    }
+
+    let skip = 0;
+    let limit = 10;
+    try {
+        skip = parseInt(options.page.skip, 10);
+        limit = parseInt(options.page.limit, 10);
+    }
+    catch (e) {
+        log.e(' got error while process task request parse', e);
+    }
+    const count = await options.db.collection("long_tasks").find(options.query, options.projection).count();
+    return options.db.collection("long_tasks").find(options.query, options.projection).sort(sortBy).skip(skip).limit(limit).toArray((err, list) => {
+        if (!err) {
+            callback(null, {list, count});
+        }
+        else {
+            callback(err, {});
+        }
+    });
+};
+
+/**
 * Delete specific task result
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
@@ -437,9 +522,24 @@ taskmanager.rerunTask = function(options, callback) {
                 reqData.strictSSL = false;
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
-                        if (member) {
+                        if (member && member.api_key) {
                             reqData.json.api_key = member.api_key;
                             runTask(options, reqData, callback);
+                        }
+                        else if (res.global) {
+                            //AD and other outer login users might not have their user documents
+                            options.db.collection("members").findOne({global_admin: true}, function(err2, admin) {
+                                if (admin && admin.api_key) {
+                                    reqData.json.api_key = admin.api_key;
+                                    runTask(options, reqData, callback);
+                                }
+                                else {
+                                    callback(null, "No permission to run this task");
+                                }
+                            });
+                        }
+                        else {
+                            callback(null, "No permission to run this task");
                         }
                     });
 
@@ -457,5 +557,4 @@ taskmanager.rerunTask = function(options, callback) {
         }
     });
 };
-
 module.exports = taskmanager;

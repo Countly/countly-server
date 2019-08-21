@@ -39,6 +39,7 @@
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/jsoneditor/codemirror.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css" />
@@ -58,6 +59,7 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/slimScroll.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.easing.1.3.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfills.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/prefixfree.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment-with-locales.min.js"></script>
@@ -83,6 +85,16 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/tether.min.js"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/drop.min.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/codemirror.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/javascript.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/json2.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/jsonlint.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/minify.json.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/jsoneditor.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/Sortable.min.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vuedraggable.umd.min.js"></script>
 
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
@@ -139,6 +151,15 @@
 			</div>
 		</div>
 		<div class="right-menu">
+            <div class="dropdown icon">
+				<div class="empty-state">
+                    <i class="fa fa-cog"></i>
+                </div>
+				<div class="menu right manage-menu">
+                    <div class="menu-category-title" data-localize="sidebar.management"></div>
+					<div id="manage-menu" class="list"></div>
+				</div>
+			</div>
 			<div class="dropdown icon">
 				<div class="empty-state">
 					<i class="ion-person"></i>
@@ -153,6 +174,8 @@
 								<div>
 									<%= member.email %>
 								</div>
+								<div class="member_image">
+								</div>
 							</div>
 							<div class="api_key">
 								<div data-localize="sidebar.api_key">
@@ -162,67 +185,69 @@
 								</div>
 							</div>
 						</span>
-						<a class="item" href='#/manage/user-settings'>
-							<i class="ion-gear-a icon"></i>
-							<span data-localize="sidebar.settings"></span>
-						</a>
-						<% if (!countlyType) { %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
-							<a target="_new" href="<%= feedbackLink %>" class="item">
-								<i class="ion-android-textsms icon"></i>
-								<span data-localize="common.feedback-and-support"></span>
-							</a>
-							<% } %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
-							<a class="item activate_intercom">
-								<i class="ion-android-textsms icon"></i>
-								<span data-localize="common.feedback-and-support"></span>
-							</a>
-							<% } %>
-							<% if (typeof documentationLink === "string") { %>
-								<a class="item" href="<%= documentationLink %>" target="_blank">
-									<i class="ion-android-document icon"></i>
-									<span data-localize="common.documentation"></span>
-								</a>
-							<% } %>
-							<% if (typeof documentationLink === "boolean" && documentationLink) { %>
-								<a class="item" href="http://resources.count.ly" target="_blank">
-									<i class="ion-android-document icon"></i>
-									<span data-localize="common.documentation"></span>
-								</a>
-							<% } %>
-						<% } else { %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
-							<a target="_new" href="<% feedbackLink %>" class="item">
-								<i class="ion-android-textsms icon"></i>
-								<span data-localize="common.provide-feedback"></span>
-							</a>
-							<% } %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
-							<a class="item activate_intercom">
-								<i class="ion-android-textsms icon"></i>
-								<span data-localize="common.provide-feedback"></span>
-							</a>
-							<% } %>
-							<a class="item" href="http://community.count.ly/" target="_blank">
-								<i class="ion-help-buoy icon"></i>
-								<span data-localize="common.support"></span>
-							</a>
-							<% if (documentationLink) { %>
-								<a class="item" href="http://resources.count.ly/" target="_blank">
-									<i class="ion-android-document icon"></i>
-									<span data-localize="common.documentation"></span>
-								</a>
-							<% } %>
-						<% } %>
-                        <a href="#/manage/token_manager" class="item">
-                            <i class="ion-key icon"></i>
-                            <span data-localize="token_manager.page-title"></span>
-                        </a>
-						<a id="user-logout" class="item" href="#">
-							<i class="ion-android-exit icon"></i>
-							<span data-localize="sidebar.logout"></span>
-						</a>
+                        <div id="user-menu">
+                            <a class="item" href='#/manage/user-settings' data-priority="10">
+                                <i class="ion-gear-a icon"></i>
+                                <div data-localize="sidebar.settings"></div>
+                            </a>
+                            <% if (!countlyType) { %>
+                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+                                <a target="_new" href="<%= feedbackLink %>" class="item" data-priority="20">
+                                    <i class="ion-android-textsms icon"></i>
+                                    <div data-localize="common.feedback-and-support"></div>
+                                </a>
+                                <% } %>
+                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
+                                <a class="item activate_intercom"  data-priority="20">
+                                    <i class="ion-android-textsms icon"></i>
+                                    <div data-localize="common.feedback-and-support"></div>
+                                </a>
+                                <% } %>
+                                <% if (typeof documentationLink === "string") { %>
+                                    <a class="item" href="<%= documentationLink %>" target="_blank" data-priority="30">
+                                        <i class="ion-android-document icon"></i>
+                                        <div data-localize="common.documentation"></div>
+                                    </a>
+                                <% } %>
+                                <% if (typeof documentationLink === "boolean" && documentationLink) { %>
+                                    <a class="item" href="http://resources.count.ly" target="_blank" data-priority="40">
+                                        <i class="ion-android-document icon"></i>
+                                        <div data-localize="common.documentation"></div>
+                                    </a>
+                                <% } %>
+                            <% } else { %>
+                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+                                <a target="_new" href="<% feedbackLink %>" class="item" data-priority="20">
+                                    <i class="ion-android-textsms icon"></i>
+                                    <div data-localize="common.provide-feedback"></div>
+                                </a>
+                                <% } %>
+                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
+                                <a class="item activate_intercom" data-priority="30">
+                                    <i class="ion-android-textsms icon"></i>
+                                    <div data-localize="common.provide-feedback"></div>
+                                </a>
+                                <% } %>
+                                <a class="item" href="http://community.count.ly/" target="_blank" data-priority="40">
+                                    <i class="ion-help-buoy icon"></i>
+                                    <div data-localize="common.support"></div>
+                                </a>
+                                <% if (documentationLink) { %>
+                                    <a class="item" href="http://resources.count.ly/" target="_blank" data-priority="50">
+                                        <i class="ion-android-document icon"></i>
+                                        <div data-localize="common.documentation"></div>
+                                    </a>
+                                <% } %>
+                            <% } %>
+                            <a href="#/manage/token_manager" class="item" data-priority="60">
+                                <i class="ion-key icon"></i>
+                                <div data-localize="token_manager.page-title"></div>
+                            </a>
+                            <a id="user-logout" class="item" href="#" data-priority="1000000000">
+                                <i class="ion-android-exit icon"></i>
+                                <div data-localize="sidebar.logout"></div>
+                            </a>
+                        </div>
 					</div>
 				</div>
 			</div>
@@ -248,72 +273,24 @@
 			<div id="sidebar">
 				<div id="new-install-overlay"></div>
 				<div id="sidebar-menu">
-				<div id="default-type" class="sidebar-menu" style="display: none;">
-					<a href="#/" class="item analytics">
-						<div class="logo dashboard ion-speedometer"></div>
-						<div class="text" data-localize="sidebar.dashboard"></div>
-					</a>
-					<a class="item analytics" id="analytics-menu">
-						<div class="logo analytics ion-ios-pulse-strong"></div>
-						<div class="text" data-localize="sidebar.analytics"></div>
-					</a>
-					<div class="sidebar-submenu" id="analytics-submenu">
-					</div>
-					<a class="item analytics" id="engagement-menu" style="display:none;">
-						<div class="logo ion-happy-outline"></div>
-						<div class="text" data-localize="sidebar.engagement"></div>
-					</a>
-					<div class="sidebar-submenu" id="engagement-submenu">
-					</div>
-					<a class="item analytics" id="events-menu">
-						<div class="logo events">
-							<i class="material-icons">bubble_chart</i>
-						</div>
-						<div class="text" data-localize="sidebar.events"></div>
-					</a>
-                    <div class="sidebar-submenu" id="events-submenu">
-                         <a href="#/analytics/events/overview" class="item">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.events.overview"></div>
-						</a>
-                        <a href="#/analytics/events" class="item">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.events.all-events"></div>
-						</a>
-                        <a href="#/analytics/events/blueprint" class="item events-blueprint-side-menu" style="<% if(!member['global_admin']) { %> display:none; <% } %>" >
-                            <div class="logo applications"></div>
-                            <div class="text" data-localize="sidebar.events.blueprint"></div>
-                        </a>
+                    <div id="default-type" class="sidebar-menu" style="display: none;">
+                        <div class="understand-category menu-category">
+                            <span data-localize="sidebar.category.understand" class="menu-category-title"></span>
+                        </div>
+                        <div class="explore-category menu-category">
+                            <span data-localize="sidebar.category.explore" class="menu-category-title"></span>
+                        </div>
+                        <div class="reach-category menu-category">
+                            <span data-localize="sidebar.category.reach" class="menu-category-title"></span>
+                        </div>
+                        <div class="improve-category menu-category">
+                            <span data-localize="sidebar.category.improve" class="menu-category-title"></span>
+                        </div>
+                        <div class="utilities-category menu-category">
+                            <span class="menu-category-title"></span>
+                        </div>
                     </div>
-					<a class="item" id="management-menu">
-						<div class="logo management ion-gear-a"></div>
-						<div class="text" data-localize="sidebar.management"></div>
-					</a>
-					<div class="sidebar-submenu" id="management-submenu">
-                        <% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
-						<a href="#/manage/apps" class="item active">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.management.applications"></div>
-						</a>
-                        <% } %>
-						<% if(member['global_admin']) { %>
-						<a href="#/manage/users" class="item">
-							<div class="logo mgmt-users"></div>
-							<div class="text" data-localize="sidebar.management.users"></div>
-						</a>
-						<% } %>
-						<a href="#/manage/tasks" class="item">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.management.longtasks"></div>
-						</a>
-						<a class="item help-toggle">
-							<div class="logo help"></div>
-							<div class="text" data-localize="sidebar.management.help"></div>
-							<div id="help-toggle"></div>
-						</a>
-					</div>
-				</div>
-			</div>
+                </div>
 				<div id="version-info"><%= countlyTypeName %></div>
 			</div>
 			<div id="content-container">
@@ -356,7 +333,29 @@
             <div><div id="dialog-continue" class="icon-button light" data-localize="common.continue"></div></div>
             <div><div id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></div></div>
 		</div>
-	</div>
+    </div>
+    <div id="cly-json-editor" class="dialog json-dialog">
+        <div class="header">
+            <div class="title" data-localize="common.json-editor"></div>
+            <div class="json-options">
+                <div class="valid-json json-status">
+                    <i class="material-icons">check_circle</i>
+                    <span class="text" data-localize="common.valid-json"></span>
+                </div>
+                <div class="invalid-json json-status" style="display:none">
+                    <i class="material-icons">warning</i>
+                    <span class="text" data-localize="common.invalid-json"></span>
+                </div>
+                <div id="dialog-format" class="icon-button light" data-localize="common.format"></div>
+            </div>
+        </div>
+        <div class="body">
+        </div>
+        <div class="buttons">
+            <div id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></div>
+            <div id="dialog-continue" class="icon-button light" data-localize="common.saveJSON"></div>
+        </div>
+    </div>
     <div id="cly-export" class="dialog export-dialog">
 		<p data-localize="export.export-as"></p>
         <div id="export-type-selector" class="button-selector light">
@@ -403,70 +402,6 @@
 			<a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
 		</div>
 	</div>
-    <div id="graph-note-popup">
-        <div class="note-popup">
-            <div class="message">
-                <div class="note-create">
-                    <div>
-                        <div class="title" data-localize="">Note</div>
-                        <div class="input" style="height:42px; text-align: center"><input class="note-content" style="width:260px;" type="text" value=""/></div>
-                    </div>
-                    <div style="margin-top:20px; overflow: auto; height:225px;">
-                        <div style="float:left; position: relative;">
-                            <div style="position: relative;">
-                                <div class="calendar-container">
-                                    <div class="note-date calendar-light" class="calendar" style="border: 1px solid #FFF; border-radius: 5px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="height: 155px; overflow:hidden; width:65px; border: 1px solid #CCC; border-radius: 2px; float:right; margin-top: 54px;">
-                            <div class="time-picker" class="calendar-container" style="overflow:hidden;">
-                                <span class="selected">00:00</span>
-                                <span>01:00</span>
-                                <span>02:00</span>
-                                <span>03:00</span>
-                                <span>04:00</span>
-                                <span>05:00</span>
-                                <span>06:00</span>
-                                <span>07:00</span>
-                                <span>08:00</span>
-                                <span>09:00</span>
-                                <span>10:00</span>
-                                <span>11:00</span>
-                                <span>12:00</span>
-                                <span>13:00</span>
-                                <span>14:00</span>
-                                <span>15:00</span>
-                                <span>16:00</span>
-                                <span>17:00</span>
-                                <span>18:00</span>
-                                <span>19:00</span>
-                                <span>20:00</span>
-                                <span>21:00</span>
-                                <span>22:00</span>
-                                <span>23:00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="selected-date" style="display:none; margin-top:5px; font-family:Ubuntu; font-size:15px; color:#999; font-style: italic; text-align: center; height:20px;">
-
-                    </div>
-                </div>
-                <div class="note-manage" style="display:none;">
-                    <div style="height:311px;">
-                        <div class="note-list" style="overflow:hidden;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="buttons">
-                <div class="manage-notes-button popup-link">Manage notes</div>
-                <div class="create-note-button popup-link" style="display:none;">Back</div>
-                <div id="" class="result-message"></div>
-                <a class="create-note icon-button light" data-localize="common.create"></a>
-                <a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
-            </div>
-        </div>
-    </div>
 
     <script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector" class="help-zone-vs">
@@ -488,9 +423,31 @@
 					<div id="date-from" class="calendar"></div>
 					<div id="date-to" class="calendar"></div>
 				</div>
+                <div class="button-container">
+                    <div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
+                    <div id="selected-date"></div>
+                </div>
+			</div>
+		</div>
+	</script>
+
+	<script id="template-date-time-selector" type="text/x-handlebars-template">
+		<div class="date-time-selector-container">
+			<div class="calendar" id="date-picker-button">
+				<i class="material-icons">date_range</i>
+				<span class="date-time-value-show">Set date & time </span>
+				<span class="ion-chevron-down" style="float:right;width: 15px; height: 100%; line-height: 27px;font-size: 12px; opacity: 0.8;margin-right: 5px;"></span>
+			</div>
+			<div class="date-time-picker">
 				<div class="button-container">
-					<div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
-					<div id="selected-date"></div>
+					<div  class="date-submit icon-button green" data-localize="common.apply" style="float:right; margin-right:11px;"></div>
+					<div  class="date-clear icon-button" data-localize="common.close" style="float:right;"></div>
+				</div>
+				<div class="time-field">
+					<span class="time-label">Pick Time:</span>
+					<input name="hour" type="number"  onchange="if( this.value.length == 1 ) this.value='0'+this.value;" class="time-input hour" min="0" max="23" value="00"/>
+					<span class="time-split"> : </span>
+					<input name="minute" type="number"  onchange="if( this.value.length == 1 ) this.value='0'+this.value;" class="time-input minute" min="0" max="59" value="00"/>
 				</div>
 			</div>
 		</div>
@@ -527,11 +484,11 @@
 				</div>
 				{{> date-selector }}
 			</div>
-			
+
             {{#if graph-description}}
             <div class="graph-description">{{graph-description}}</div>
             {{/if}}
-			
+
 			{{#if drill-filter}}
 			<div id="view-filter" style="background-color: #ededed !important; border-top: none !important">
 				<div class="separator in-retention"></div>
@@ -935,24 +892,62 @@
 				<div class="widget-header">
 					<div class="left">
 						<div class="title"></div>
+						<div class="lock-status"><i></i><span></span></div>
 					</div>
 					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
-                        <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="help.manage-apps.app-edit-button" id="edit-app" data-localize="common.edit"></div>
-						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-clear-button" id="clear-app-data">
-                            <span data-localize="management-applications.clear-data"></span>
-                            <span class="down ion-chevron-down"></span>
-                            <span class="up ion-chevron-up"></span>
-						</div>
-						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-delete-button" id="delete-app" data-localize="common.delete"></div>
-                        <ul id="clear-data" class="options">
-                            <li id="clear-reset"><span data-localize="management-applications.clear-reset-data"></span><span class="li-explanation" data-localize="management-applications.clear-reset-explanation"></span></li>
-                            <li id="clear-all"><span data-localize="management-applications.clear-all-data"></span><span class="li-explanation" data-localize="management-applications.clear-all-explanation"></span></li>
-                            <li id="clear-1month"><span data-localize="management-applications.clear-1month-data"></span></li>
-                            <li id="clear-3month"><span data-localize="management-applications.clear-3month-data"></span></li>
-                            <li id="clear-6month"><span data-localize="management-applications.clear-6month-data"></span></li>
-                            <li id="clear-1year"><span data-localize="management-applications.clear-1year-data"></span></li>
-                            <li id="clear-2year"><span data-localize="management-applications.clear-2year-data"></span></li>
-                        </ul>
+                        <a class="right icon-button light cly-button-menu-trigger ion-more"></a>
+                        <div class="cly-button-menu app-management-menu" tabindex="100">
+                            <div id="app-edit-button" class="item" data-help-localize="help.manage-apps.app-edit-button">
+                                <span data-localize="common.edit"></span>
+                            </div>
+                            <hr/>
+                            <div id="app-lock-button" class="item">
+                                <div>
+                                    <span class="lock-status" style="margin-right: 3px;"><i></i></span>
+                                    <span class="lock-action"></span>
+                                </div>
+                                <div class="hint" data-localize="management-applications.application-lock-tooltip"></div>
+                            </div>
+                            <div id="app-reset-button" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-reset-data"></span>
+                                <div class="hint" data-localize="management-applications.clear-reset-explanation"></div>
+                            </div>
+                            <div id="app-clear-button" class="item">
+                                <div class="container">
+                                    <span class="red" data-localize="management-applications.clear-data"></span>
+                                    <div class="hint" data-localize="help.manage-apps.app-clear-button-hint"></div>
+                                </div>
+                                <i class="ion-chevron-right"></i>
+                            </div>
+                            <div id="app-delete-button" class="item">
+                                <span class="red" data-localize="common.delete"></span>
+                                <div class="hint" data-localize="help.manage-apps.app-delete-button-hint"></div>
+                            </div>
+                        </div>
+                        <div class="cly-button-menu app-management-clear-menu" tabindex="100">
+                            <div class="item back">
+                                <i class="ion-chevron-left"></i>
+                                <span data-localize="common.back"></span>
+                            </div>
+                            <div id="clear-1month" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-1month-data"></span>
+                            </div>
+                            <div id="clear-3month" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-3month-data"></span>
+                            </div>
+                            <div id="clear-6month" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-6month-data"></span>
+                            </div>
+                            <div id="clear-1year" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-1year-data"></span>
+                            </div>
+                            <div id="clear-2year" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-2year-data"></span>
+                            </div>
+                            <div id="clear-all" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-all-data"></span>
+                            </div>
+                        </div>
 					</div>
 				</div>
 				<div class="app-details">
@@ -1222,7 +1217,7 @@
                                 <td class="events-edit-name-field">{{this.name}}</td>
                                 {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
                                 {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
-                                <td class="events-edit-description-field">{{#if this.description}}{{this.description}}{{else}}-{{/if}}</td>
+                                <td class="events-edit-description-field">{{#if this.description}}{{{this.description}}}{{else}}-{{/if}}</td>
                                 <td style="width: 30px;">
                                     <a class="cly-list-options"></a>
                                 </td>
@@ -1280,7 +1275,7 @@
                                             <span data-localize="events.edit.event-description-description" class="config-help"></span>
                                         </td>
                                         <td>
-                                            <textarea rows="5" style="width: 100%;" class="event_description" >{{active-event.description}}</textarea>
+                                            <textarea rows="5" style="width: 100%;" class="event_description" >{{{active-event.description}}}</textarea>
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
@@ -1348,6 +1343,40 @@
     <script id="template-events-overview"  type="text/x-handlebars-template">
 		<div id="event-main">
             <div class="widget">
+				<div id="top-events-widget-container">
+				{{#if topEventDataIsVisible}}
+					{{#ifCond currentOverviewListCount ">=" "5"}}
+					<div class="top-events-widget">
+					<div class="widget-header top-events-widget-header" data-localize="events.top-events.title"></div>
+ 				<div class="outer">
+				<div class="row border">
+					<div class="left title" data-localize="events.top-events.24hours"></div>
+					<div class="right">
+					{{#eachOfObjectValue getTopEventDataDaily}}
+					<div class="col">
+						<h4>{{this.name}}</h4>
+						<label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+					</div>
+					{{/eachOfObjectValue}}
+					</div>
+				</div>
+				<div class="row">
+					<div class="left title" data-localize="events.top-events.30days"></div>
+					<div class="right">
+					{{#eachOfObjectValue getTopEventData30Day}}
+					<div class="col">
+						<h4>{{this.name}}</h4>
+						<label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+					</div>
+					{{/eachOfObjectValue}}
+					</div>
+				</div>
+				<div class="info_text" data-localize="events.top-events.info-text"></div>
+				</div>
+				{{/ifCond}}
+					{{/if}}
+				</div>
+				</div>
                 <div class="widget-header">
                     <div class="left">
                         <div class="title dynamic-title" data-localize="events.overview.title"></div>
@@ -1400,7 +1429,7 @@
                             {{#eachOfArray overview-graph}}
                             <div id="event-description-box-{{this.value.ord}}" >
                                 <div style="width:200px;">
-                                    <div class="flow-config-popup-block">{{this.value.description}}</div>
+                                    <div class="flow-config-popup-block">{{{this.value.description}}}</div>
                                 </div>
                             </div>
                             {{/eachOfArray}}
@@ -1601,7 +1630,7 @@
                 {{> date-selector }}
 			</div>
 
-            <div class="events-general-description">{{event-description}}</div>
+            <div class="events-general-description">{{{event-description}}}</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
@@ -1726,12 +1755,6 @@
                 {{/if}}
 			</div>
 			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-                <div id="graph-note">
-                    <div class="main">
-                        Notes
-                        <div class="tail"></div>
-                    </div>
-                </div>
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 			</div>
 		</div>
@@ -1745,7 +1768,7 @@
 						{{#each this.data}}
 							{{#if this.type}}
 								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
+									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} {{this.unit}})" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
@@ -2064,9 +2087,34 @@
                     <input type="text" class="input" id="token_purpose" placeholder="{{purpose-desc}}" />
                 </div>
                 <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.endpoint"></div>
+                    <div class="label"><span data-localize="token_manager.table.endpoint"></span><span style="float:right; color:#A0A0A0;" data-localize="common.optional"></span></div>
                     <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
-                    <textarea id="token_endpoint"></textarea>
+                    <div class="endpoint_blocks_wrapper">
+                        <div class="token_endpoint_block" >
+                            <div class="delete-endpoint-block"><a class="cly-list-options"></a></div>
+                            <div class="label" data-localize="token_manager.table.endpoint-name"></div>
+                            <input type="text" class="input endpoint-text"  placeholder="{{endpoint}}" style="margin-bottom:10px;" />
+                            <div class="label" data-localize="token_manager.query-param"></div>
+                            <div class="param_blocks_wrapper">
+                                <div class="param_block">
+                                    <table>
+                                        <tr>
+                                            <td><input type="text" class="input param-key-input" placeholder="{{query-param}}" /></td>
+                                            <td ><input type="text" class="input param-value-input" placeholder="{{query-param-value}}" /></td>
+                                            <td style="padding-top:2px;"><i class="delete-param material-icons">highlight_off</i></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <a class="text-orange add-query-block">+ <span data-localize="token_manager.add-param"></span></a>
+                        </div>
+                        <div class="delete-new-endpoint-block-menu" tabindex="1">
+                            <a class="item clear-endpoint-block-item"><span data-localize="common.clear-values"></span></a>
+                            <a class="item delete-endpoint-block-item"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
+                        </div>
+                    </div>
+                    <div class="btn btn-orange add-endpoint-block" > + <span data-localize="token_manager.add-new-endpoint"></span></div>
+                    <div style="clear:both;"></div>
                 </div>
                 <div class="settings section">
                     <a class="fa check-green check-header fa-square-o" id="use_multi" style="float:left; margin-right: 5px;"></a>
@@ -2091,7 +2139,7 @@
                         <div class="select-inner">
                             <div class="text-container">
                                 <div class="text">
-                                    <div class="default-text"></div>
+                                    <div class="default-text" data-localize="token_manager.select-apps"></div>
                                 </div>
                             </div>
                             <div class="right combo"></div>
@@ -2114,14 +2162,14 @@
                 </div>
 
                 <div class="settings section" id="limit_life" style="display:none;">
-                    <div class="label" data-localize="token_manager.table.limit-title"></div>
+                    <div class="label" data-localize="token_manager.token-expiration-time"></div>
                     <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
                     <div>
                         <div id="select_limit_span" class="cly-select" style="width: 100%; box-sizing: border-box;">
                             <div class="select-inner">
                                 <div class="text-container">
                                     <div class="text">
-                                        <div class="default-text"></div>
+                                        <div class="default-text" data-localize="token_manager.select-time-unit"></div>
                                     </div>
                                 </div>
                                 <div class="right combo"></div>
@@ -2136,11 +2184,151 @@
             </div>
         </div>
     </script>
-    <% if (use_google) { %>
-	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <% } %>
 
-    <% if (production) { %>
+	<script id="graph-note-create" type="text/x-handlebars-template">
+		<div class="graph-note-create">
+			<div class="title"><span class="note-form-hearder" data-localize="notes.add-note-form-title"></span></div>
+			<div class="fields">
+				<div class="section">
+                    <div class="label" data-localize="notes.note"></div>
+                    <textarea maxlength="150" class="note graph-note-textarea"  rows="5" placeholder="Enter your note text here"></textarea>
+                    </div>
+				<div class="section" style="display: flex;">
+                    <div style="width:50%">
+                        <div class="label" data-localize="notes.note-date-time"></div>
+                        <div class="date-time"> {{> date-time-selector }} </div>
+                    </div>
+                    <div class="note-types-selector" style="width:50%">
+                        <div class="label">Note type</div>
+                        <div  data-note-type="private" class="button note-type active" data-localize="notes.note-private"></div>
+                        <div  data-note-type="shared" class="button note-type" data-localize="notes.note-shared"> </div>
+                        <div  data-note-type="public" class="button note-type" data-localize="notes.note-public"> </div>
+                    </div>
+				</div>
+				<div>
+                <div class="section email-select-block" style="display:none;">
+                    <div class="label" data-localize='notes.note-share-with'></div>
+                    <select id="email-list-input" placeholder="{{email-placeholder}}">
+                    </select>
+                </div>
+
+				<div>
+				<div class="label" data-localize="notes.note-indicator-color"></div>
+					<div id="online-widget-section-bar-color" class="settings section" style="margin-bottom: 30px;">
+					<div class="colors">
+						<div data-color="1" class="color alt1 selected"></div>
+						<div data-color="2" class="color alt2"></div>
+						<div data-color="3" class="color alt3"></div>
+						<div data-color="4" class="color alt4"></div>
+						<div data-color="5" class="color alt5"></div>
+						<div data-color="6" class="color alt6"></div>
+					</div>
+					</div>
+				</div>
+				</div>
+			</div>
+            <div class="footer">
+                <div class="cancel-add-note icon-button white" data-localize="common.cancel"></div>
+                <div class="add-note icon-button green" data-localize="notes.note-add-note"></div>
+            </div>
+		</div>
+	</script>
+    
+    <script id="template-graph-notes-view" type="text/x-handlebars-template">
+        <div class="note-table-view-navigator">
+            <a href="/dashboard" class="back-link" >
+                <span data-localize="notes.note-back-to-overview"></span>
+            </a>
+        </div>
+
+        <div class="widget">
+            <div class="widget-header">
+                <div class="left">
+                    <div style="overflow: auto">
+                        {{#if filter1}}
+                        <div class="title small">{{page-title}}</div>
+                        {{else}}
+                        <div class="title">{{page-title}}</div>
+                        {{/if}}
+                    </div>
+                    {{#if filter1}}
+                    <div style="width:300px; display: block;">
+                    <div class="cly-select float filter1-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter1}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter1}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+                    {{#if filter2}}
+                    <div class="cly-select float filter2-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter2}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter2}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+                    </div>
+                    {{/if}}
+                </div>
+                {{> date-selector }}
+            </div>
+        </div>
+        <div class="data-table table-template" data-help-localize="help.{{{chart-helper}}}">
+            <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+        </div>
+    </script>
+    
+    <script id="graph-notes-popup" type="text/x-handlebars-template"> 
+        <div class="graph-note-popup">
+            <div class="title">
+                <span> {{this.notePopupTitleTime}}</span>
+            </div>
+            <div class="popup-content">
+                {{#if this.notes}}
+                    {{#each this.notes}}
+                        <div class="note">
+														<div class="note-time"> {{this.ts_display}}</div>
+														<div class="note-app" style="display:flex; line-height: 15px;">
+															<div class='icon' style='display:inline-block; border-radius: 2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/{{this.app_id}}.png) center center / cover no-repeat;'>
+															</div>
+															{{this.app_name}}
+														</div>
+                            <div class="note-content">{{this.note}}</div>
+                            <div class="note-footer">
+                                <span class="note-owner"> {{this.owner_name }}</span> | <span class="note-type">{{this.noteType}}</span>
+                            </div>
+                        </div>
+                    {{/each}}
+                {{/if}}
+            </div>
+            <div class="popup-footer">
+                <div class="icon-button white close-note-popup-button">Close</div>
+            </div>
+        </div>
+	</script>
+
+    <% if (use_google) { %>
+	<script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <% } %>
+<% if (production) { %>
 	    <!-- PRODUCTION -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
@@ -2206,8 +2394,8 @@
 
 		//initializing countly with params
 		Countly.init({
-			app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
-			url: "https://stats.count.ly/",
+			app_key: "<%= frontend_app || "386012020c7bf7fcb2f1edf215f1801d6146913f" %>",
+			url: "<%= frontend_server || "https://stats.count.ly/" %>",
 			device_id: countlyGlobal["member"]["email"],
 			app_version: "<%= countlyVersion %>",
 			interval:1000
@@ -2215,7 +2403,7 @@
 
 		//track sessions automatically
 		Countly.track_sessions();
-        
+
         Countly.getViewName = function(){
             var view = "/dashboard#";
             var fragment = Backbone.history.getFragment();
@@ -2236,7 +2424,7 @@
             }
             return view + parts.join("/");
         };
-        
+
         Countly.getViewUrl = function(){
             var view = "/dashboard#";
             var fragment = Backbone.history.getFragment();
@@ -2296,7 +2484,7 @@
 	<% } %>
     <script type='text/javascript'>
     app.recordEvent = function (event) {
-        if (Countly && Countly.add_event) {
+        if (typeof Countly !== "undefined" && Countly.add_event) {
             Countly.add_event(event);
         }
     };

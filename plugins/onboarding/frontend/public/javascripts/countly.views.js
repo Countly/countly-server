@@ -11,14 +11,15 @@ function whatsNewPopup() {
         Document width check is a hack for certain cases like dashboard email
         screenshot process, in order not to show the popup
      */
-    if (countlyVersionHistoryManager && $("body").width() >= 900) {
+    if (countlyVersionHistoryManager) {
         $.when(countlyVersionHistoryManager.initialize()).then(function() {
 
             var versionData = _.sortBy(countlyVersionHistoryManager.getData(), "updated");
             var currentVersionData = versionData[versionData.length - 1];
 
             // Current version string, e.g. 18.08
-            var currentVersion = currentVersionData.version;
+            var currentVersion = currentVersionData.version.split(".");
+            currentVersion = currentVersion[0] + "." + currentVersion[1];
 
             // If Drill is present it should be a Countly Enterprise instance
             var isEE = (countlyGlobal.plugins.indexOf("drill") !== -1);
@@ -63,9 +64,9 @@ function whatsNewPopup() {
             //
             // LOGIC DISABLED FOR NOW BECAUSE VERSION DATA WILL INCLUDE 1 ITEM FOR ALL SERVERS
 
-            if (!displayParams.disabled) {
+            if (!displayParams.disabled && !(countlyGlobal && countlyGlobal.ssr)) {
 
-                if (localStorageData && localStorageData.version && localStorageData.seen && localStorageData.version === currentVersion) {
+                if (localStorageData && localStorageData.version && localStorageData.seen && localStorageData.version.indexOf(currentVersion) === 0) {
                     // Since LS object is present for this version
                     // user has seen the popup before so we won't show it on load
                     displayParams.isFirstTime = false;
@@ -153,6 +154,10 @@ function whatsNewPopup() {
                                     side: "bottom"
                                 });
                             }
+
+                            $(document).on("click", "#whatsnew-popup-close", function() {
+                                closePopup();
+                            });
 
                             $(document).on("click", "#last-step-button", function() {
                                 closePopup();

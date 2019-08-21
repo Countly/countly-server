@@ -239,16 +239,6 @@ app.route("/analytics/keywords", 'keywords', function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/analytics/sources" class="item">' +
-		'<div class="logo-icon fa fa-crosshairs"></div>' +
-		'<div class="text" data-localize="sources.title"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').append(menu);
-    $('#mobile-type #analytics-submenu').append(menu);
-
-    var menu2 = '<a href="#/analytics/keywords" class="item">' +
-		'<div class="logo-icon fa fa-crosshairs"></div>' +
-		'<div class="text" data-localize="keywords.title"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').append(menu2);
+    app.addSubMenu("analytics", {code: "analytics-sources", url: "#/analytics/sources", text: "sources.title", priority: 90});
+    app.addSubMenuForType("web", "analytics", {code: "analytics-keywords", url: "#/analytics/keywords", text: "keywords.title", priority: 95});
 });

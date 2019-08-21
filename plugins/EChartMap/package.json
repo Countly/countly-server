@@ -1,20 +1,24 @@
 {
   "name": "EChartMap",
-  "title": "EChart Map for China",
-  "version": "0.0.0",
-  "description": "To view China city view",
-  "author": "Count.ly",
+  "title": "EChart Maps for China",
+  "version": "1.0.0",
+  "description": "Replaces Google maps visualization with EChart maps",
+  "author": "Countly",
   "homepage": "https://count.ly/plugins/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "plugins",
-	"China"
+    "China"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

@@ -10,10 +10,17 @@ const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const versionInfo = require('../frontend/express/version.info');
+const frontendConfig = require('../frontend/express/config.js');
+const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 
 var t = ["countly:", "api"];
 
 if (cluster.isMaster) {
+    console.log("Starting master");
+    if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
+        log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
+    }
+    common.db = plugins.dbConnection();
     t.push("master");
     t.push("node");
     t.push(process.argv[1]);
@@ -201,8 +208,11 @@ const passToMaster = (worker) => {
 };
 
 if (cluster.isMaster) {
-    console.log("Starting master");
-    common.db = plugins.dbConnection();
+    common.cache = new CacheMaster(common.db);
+    common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e => {
+        console.log(e);
+        process.exit(1);
+    });
 
     const workerCount = (countlyConfig.api.workers)
         ? countlyConfig.api.workers
@@ -228,10 +238,11 @@ if (cluster.isMaster) {
 
     // Allow configs to load & scanner to find all jobs classes
     setTimeout(() => {
+        jobs.job('api:topEvents').replace().schedule('every 1 day');
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
-        jobs.job('api:task').replace().schedule('every 59 mins starting on the 59 min');
+        jobs.job('api:task').replace().schedule('every 1 hour on the first min');
         jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
     }, 10000);
 }
@@ -239,6 +250,10 @@ else {
     console.log("Starting worker", process.pid, "parent:", process.ppid);
     const taskManager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
+
+    common.cache = new CacheWorker(common.db);
+    common.cache.start();
+
     //since process restarted mark running tasks as errored
     taskManager.errorResults({db: common.db});
 
@@ -288,7 +303,7 @@ else {
             const headers = {};
             headers["Access-Control-Allow-Origin"] = "*";
             headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-            headers["Access-Control-Allow-Headers"] = "countly-token";
+            headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
             res.writeHead(200, headers);
             res.end();
         }

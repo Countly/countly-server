@@ -531,6 +531,46 @@
     };
 
     countlyCrashes.getGroupData = function() {
+        var i = 0, thread, stack;
+        if (_groupData && _groupData.threads) {
+            for (i = 0; i < _groupData.threads.length; i++) {
+                thread = _groupData.threads[i];
+                stack = thread.error.split("\n");
+                thread.short_error = [];
+                if (stack.length > 4) {
+                    thread.short_error = stack.slice(0, 3).join("\n") + "\n...";
+                    thread.expand = true;
+                }
+                else {
+                    thread.short_error = thread.error;
+                    thread.expand = false;
+                }
+            }
+        }
+        if (_groupData && _groupData.lrid && _groupData.data && _groupData.data.length) {
+            for (i = 0; i < _groupData.data.length; i++) {
+                if (_groupData.data[i]._id + "" === _groupData.lrid) {
+                    _groupData.olderror = _groupData.data[i].olderror || _groupData.error;
+                    _groupData.oldthreads = _groupData.data[i].oldthreads || _groupData.threads;
+                    break;
+                }
+            }
+        }
+        if (_groupData && _groupData.oldthreads) {
+            for (i = 0; i < _groupData.oldthreads.length; i++) {
+                thread = _groupData.oldthreads[i];
+                stack = thread.error.split("\n");
+                thread.short_error = [];
+                if (stack.length > 4) {
+                    thread.short_error = stack.slice(0, 3).join("\n") + "\n...";
+                    thread.expand = true;
+                }
+                else {
+                    thread.short_error = thread.error;
+                    thread.expand = false;
+                }
+            }
+        }
         return _groupData;
     };
 
@@ -734,8 +774,7 @@
                 data.crt.change = "-∞";
             }
         }
-
-        data.crt.total = parseFloat(data.crt.total.toFixed(2));
+        data.crt.total = parseFloat(data.crt.total.toFixed(3));
         data.crt["total-fatal"] = parseFloat(data.crt["total-fatal"].toFixed(2));
         data.crt["total-nonfatal"] = parseFloat(data.crt["total-nonfatal"].toFixed(2));
         return {usage: data};

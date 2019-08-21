@@ -1,5 +1,5 @@
 /*global countlyCommon, countlyGlobal, jQuery*/
-(function(countlyAssistant, $, undefined) {
+(function(countlyAssistant, $) {
 
     //Private Properties
     var _data = {};

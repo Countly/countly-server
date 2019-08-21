@@ -23,6 +23,8 @@ const DB_USER_MAP = {
     'messages': 'msgs' // messages sent
 };
 
+const FIELDS = ['ip', 'ia', 'id', 'ap', 'at'];
+
 const CRED_TYPE = {
     [Platform.IOS]: {
         UNIVERSAL: 'apn_universal',
@@ -195,5 +197,6 @@ module.exports = {
     CRED_TYPE: CRED_TYPE,
     DB_MAP: DB_MAP,
     DB_USER_MAP: DB_USER_MAP,
+    FIELDS: FIELDS,
     check_token: check_token
 };

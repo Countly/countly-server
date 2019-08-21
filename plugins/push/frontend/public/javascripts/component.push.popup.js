@@ -9,7 +9,6 @@ window.component('push.popup', function(popup) {
         CG = window.countlyGlobal,
         t = C.t,
         push = C.push,
-        PERS_PROPS,
         emojiPersOpen = false,
         localesController;
 
@@ -51,7 +50,7 @@ window.component('push.popup', function(popup) {
             }
         }
 
-        if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length)) {
+        if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length) && (!push.dashboard.events || !push.dashboard.events.length)) {
             m.endComputation();
             return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'popStyleGreen', {title: t('push.error.no.cohorts'), image: 'empty-icon', button_title: t('push.error.i.understand')});
         }
@@ -92,12 +91,22 @@ window.component('push.popup', function(popup) {
     };
 
     popup.controller = function (message) {
-        var popup = this, apps = [], cohorts = [];
+        var popup = this, apps = [], onetimeCohorts = [], cohorts = [], events = [], geos = [];
 
         if (message.auto()) {
             cohorts = push.dashboard.cohorts.map(function (cohort) {
                 return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: message.autoCohorts().indexOf(cohort._id) !== -1 });
             }); 
+            events = push.dashboard.events.map(function (event) {
+                return new C.selector.Option({ value: event.key, title: event.name, selected: message.autoEvents().indexOf(event.name) !== -1 });
+            });
+        } else {
+            onetimeCohorts = push.dashboard.cohorts.map(function (cohort) {
+                return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: message.cohorts().indexOf(cohort._id) !== -1 });
+            }); 
+            geos = push.dashboard.geos.map(function (geo) {
+                return new C.selector.Option({ value: geo._id, title: geo.title, selected: message.geos().indexOf(geo._id) !== -1 });
+            });
         }
 
         // t.set('pu.po.tab1.title', t('pu.po.tab1.title' + !!window.countlyGeo));
@@ -171,10 +180,19 @@ window.component('push.popup', function(popup) {
                 }
             }
             if (enabled && message.auto() && tab >= 2) {
-                if ((message.autoCohorts().length === 0) ||
-                    message.date() === null ||
-                    message.autoEnd() === null) {
-                    enabled = false;
+                if (message.autoOnEntry() === 'events'){
+                    if (message.autoEvents().length === 0 ||
+                        message.date() === null ||
+                        message.autoEnd() === null) {
+                        enabled = false;
+                    }
+
+                } else {
+                    if (message.autoCohorts().length === 0 ||
+                        message.date() === null ||
+                        message.autoEnd() === null) {
+                        enabled = false;
+                    }
                 }
             }
             if (enabled) {
@@ -380,17 +398,6 @@ window.component('push.popup', function(popup) {
                         l.buttonUrl0 = buttonTitle(0, 'l', l.value);
                         l.buttonUrl1 = buttonTitle(1, 'l', l.value);
 
-                        var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
-                            props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
-                            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(7), title: f.name}); }),
-                            opts = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
-                                .concat(props)
-                                .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
-                                .concat(custom);
-
-                        // opts = [];
-                        PERS_PROPS = opts;
-                        
                         l.titleCtrl = new C.emoji.controller({
                             key: 't' + l.value, 
                             value: l.messageTitle, 
@@ -398,7 +405,7 @@ window.component('push.popup', function(popup) {
                             valuePers: l.messageTitlePers, 
                             valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
-                            persOpts: opts.length ? opts : undefined,
+                            persOpts: push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
                         l.messageCtrl = new C.emoji.controller({
@@ -409,7 +416,7 @@ window.component('push.popup', function(popup) {
                             valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
-                            persOpts: opts.length ? opts : undefined,
+                            persOpts: push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
 
@@ -630,11 +637,33 @@ window.component('push.popup', function(popup) {
                         return true;
                     };
 
-                    this.selectGeos = new C.singleselect.controller({
-                        options: [{ value: undefined, title: t('pu.po.tab1.geos.no') }].concat(push.dashboard.geos.map(function (geo) {
-                            return { value: geo._id, title: geo.title };
-                        })),
-                        value: message.geo
+                    // this.selectGeos = new C.singleselect.controller({
+                    //     options: [{ value: undefined, title: t('pu.po.tab1.geos.no') }].concat(push.dashboard.geos.map(function (geo) {
+                    //         return { value: geo._id, title: geo.title };
+                    //     })),
+                    //     value: message.geo
+                    // });
+
+                    this.selectGeos = new C.multiselect.controller({
+                        placeholder: t('pu.po.tab1.geos.no'),
+                        options: geos,
+                        value: function () {
+                            if (arguments.length) {
+                                message.geos(geos.filter(function (o) { return o.selected(); }).map(function(o){ return o.value(); }));
+                            }
+                            return geos;
+                        }
+                    });
+
+                    this.selectOnetimeCohorts = new C.multiselect.controller({
+                        placeholder: t('pu.po.tab1.geos.no'),
+                        options: onetimeCohorts,
+                        value: function () {
+                            if (arguments.length) {
+                                message.cohorts(onetimeCohorts.filter(function (o) { return o.selected(); }).map(function(o){ return o.value(); }));
+                            }
+                            return onetimeCohorts;
+                        }
                     });
 
                     this.radioTest = new C.radio.controller({
@@ -672,8 +701,15 @@ window.component('push.popup', function(popup) {
                             !message.auto() && push.dashboard.geos && push.dashboard.geos.length ?
                                 m('.form-group', [
                                     m('h4', t('pu.po.tab1.geos')),
-                                    C.singleselect.view(ctrl.selectGeos),
+                                    C.multiselect.view(ctrl.selectGeos),
                                     m('.desc', t('pu.po.tab1.geos-desc')),
+                                ])
+                                : '',
+                            !message.auto() && push.dashboard.cohorts && push.dashboard.cohorts.length ?
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab1.chr')),
+                                    C.multiselect.view(ctrl.selectOnetimeCohorts),
+                                    m('.desc', t('pu.po.tab1.chr-desc')),
                                 ])
                                 : '',
                             m('.form-group', [
@@ -710,8 +746,22 @@ window.component('push.popup', function(popup) {
                     this.radioType = new C.radio.controller({
                         options: [
                             { value: true, title: t('pu.po.tab1.trigger-type.entry'), desc: t('pu.po.tab1.cohort-entry-desc') },
-                            { value: false, title: t('pu.po.tab1.trigger-type.exit'), desc: t('pu.po.tab1.cohort-exit-desc') }
-                        ], value: message.autoOnEntry
+                            { value: false, title: t('pu.po.tab1.trigger-type.exit'), desc: t('pu.po.tab1.cohort-exit-desc') },
+                            { value: 'events', title: t('pu.po.tab1.trigger-type.event'), desc: t('pu.po.tab1.cohort-event-desc') },
+                        ], value: message.autoOnEntry, onchange: function(){
+                            message.autoEvents([]);
+                            message.autoCohorts([]);
+                        }
+                    });
+                    this.selectEvents = new C.multiselect.controller({
+                        placeholder: t('pu.po.tab1.select-event-placeholder'),
+                        options: events,
+                        value: function () {
+                            if (arguments.length) {
+                                message.autoEvents(events.filter(function (o) { return o.selected(); }).map(function(o){ return o.value(); }));
+                            }
+                            return events;
+                        }
                     });
 
                     this.radioStartDate = new C.radio.controller({
@@ -762,6 +812,13 @@ window.component('push.popup', function(popup) {
                         },
                     });
 
+                    this.radioActualDates = new C.radio.controller({
+                        options: [
+                            { value: false, title: t('pu.po.tab2.ddc.arr') },
+                            { value: true, title: t('pu.po.tab2.ddc.evt') }
+                        ], value: message.actualDates
+                    });
+
                     this.checkAutoEnd = new C.checkbox.controller({
                         class: 'comp-grid-row',
                         group: 'comp-grid-cell',
@@ -784,11 +841,23 @@ window.component('push.popup', function(popup) {
                                 m('h4', t('pu.po.tab1.trigger-type')),
                                 C.radio.view(ctrl.radioType)
                             ]),
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab1.select-cohort')),
-                                C.multiselect.view(ctrl.selectCohorts),
-                                m('.desc', t('pu.po.tab1.select-cohort-desc')),
-                            ]),
+                            message.autoOnEntry() === 'events' ?
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab1.select-event')),
+                                    C.multiselect.view(ctrl.selectEvents),
+                                ]) :
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab1.select-cohort')),
+                                    C.multiselect.view(ctrl.selectCohorts),
+                                    m('.desc', t('pu.po.tab1.select-cohort-desc')),
+                                ]),
+
+                            message.autoOnEntry() === 'events' ? m('.form-group', [
+                                m('h4', t('pu.po.tab2.ddc')),
+                                C.radio.view(ctrl.radioActualDates),
+                                // m('.desc', t('pu.po.tab2.ddc.h'))
+                            ]) : '',
+
                             m('.form-group', [
                                 m('h4', t('pu.po.tab1.campaign-start-date')),
                                 C.radio.view(ctrl.radioStartDate)
@@ -849,7 +918,7 @@ window.component('push.popup', function(popup) {
 
                     this.radioDelay = new C.radio.controller({
                         options: [
-                            { value: undefined, title: t('pu.po.tab2.immediately'), desc: t('pu.po.tab2.immediately-desc') },
+                            { value: undefined, title: t('pu.po.tab2.immediately'), desc: t('pu.po.tab2.immediately-desc' + (message.autoOnEntry() === 'events' ? '-event' : '')) },
                             { value: null, title: t('pu.po.tab2.delayed'), view: function(){
                                 return this.messageDelayed() === undefined ? '' : C.delay.view(this.delay);
                             }.bind(this) }
@@ -877,7 +946,7 @@ window.component('push.popup', function(popup) {
 
                     this.radioCap = new C.radio.controller({
                         options: [
-                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc')  },
+                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc' + (message.autoOnEntry() === 'events' ? '-event' : ''))  },
                             { value: true,  title: t('pu.po.tab2.capping.yes'), desc: t('pu.po.tab2.capping.yes-desc') }
                         ], value: this.messageCapped
                     });
@@ -930,7 +999,7 @@ window.component('push.popup', function(popup) {
                                                 oninput: function(){
                                                     if (!('' + this.value).length) {
                                                         message.autoCapMessages(undefined);
-                                                    } else if (('' + this.value).length && !isNaN(parseInt(this.value)) && !parseInt(this.value) >= 0) {
+                                                    } else if (('' + this.value).length && !isNaN(parseInt(this.value)) && parseInt(this.value) >= 0) {
                                                         message.autoCapMessages(parseInt(this.value));
                                                     }
                                                 },
@@ -999,8 +1068,15 @@ window.component('push.popup', function(popup) {
                     this.radioTz = new C.radio.controller({
                         options: [
                             { value: false, title: t('pu.no'), desc: t('pu.po.tab1.tz-no-desc') },
-                            { value: -(new Date().getTimezoneOffset()), title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc') }
+                            { value: new Date().getTimezoneOffset(), title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc') }
                         ], value: message.tz
+                    });
+
+                    this.radioBuildLater = new C.radio.controller({
+                        options: [
+                            { value: true, title: t('pu.po.tab1.later.t'), desc: t('pu.po.tab1.later.d') },
+                            { value: false, title: t('pu.po.tab1.now.t'), desc: t('pu.po.tab1.now.d') }
+                        ], value: message.delayed
                     });
                 },
                 view: function (ctrl) {
@@ -1013,14 +1089,18 @@ window.component('push.popup', function(popup) {
                             ]),
                             message.date() ?
                                 m('.form-group', [
+                                    m('h4', t('pu.po.tab1.aud')),
+                                    C.radio.view(ctrl.radioBuildLater),
+                                ]) : '',
+                            message.date() ?
+                                m('.form-group', [
                                     m('h4', t('pu.po.tab1.tz')),
                                     m('.desc', [
                                         t('pu.po.tab1.tz-desc'),
                                         ' ',
                                         m('span.warn', C.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
                                     ]),
-                                    C.radio.view(ctrl.radioTz),
-                                    m('.desc', t('pu.po.tab1.scheduling-desc'))
+                                    C.radio.view(ctrl.radioTz)
                                 ]) : '',
                             m('.btns', {key: 'btns'}, [
                                 m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
@@ -1158,7 +1238,7 @@ window.component('push.popup', function(popup) {
                                                 el.querySelectorAll('.pers').forEach(function(el){
                                                     el.textContent = el.getAttribute('data-fallback');
 
-                                                    var name = PERS_PROPS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                    var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
                                                     if (name) {
                                                         name = name.title();
                                                     }
@@ -1195,7 +1275,7 @@ window.component('push.popup', function(popup) {
                                             el.querySelectorAll('.pers').forEach(function(el){
                                                 el.textContent = el.getAttribute('data-fallback');
 
-                                                var name = PERS_PROPS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
                                                 if (name) {
                                                     name = name.title();
                                                 }
@@ -1242,7 +1322,7 @@ window.component('push.popup', function(popup) {
                             ''
                     ]),
                     m('.btns', {key: 'btns'}, [
-                        !message.auto() && message.count() ? m('div', {
+                        !message.auto() && !message.tx() && !(message.delayed() && message.date()) && message.count() ? m('div', {
                             style: {
                                 fontSize: '14px',
                                 padding: '25px',
@@ -1275,13 +1355,13 @@ window.component('push.popup', function(popup) {
                         message.editingAuto ? '' : m('.form-group', [
                             m('h4', t('pu.po.confirm')),
                             m('input[type=checkbox]', { checked: message.ack() ? 'checked' : undefined, onchange: function () { message.ack(!message.ack()); } }),
-                            m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
+                            m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() || message.tx() || (message.delayed() && message.date()) ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
                         ]),
                         C.push.view.contents.view(ctrl.viewContents),
                         m('.btns.final', {key: 'btns'},
                             m('div.final-footer', [
                                 m('div', [
-                                    message.auto() ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
+                                    message.auto() || message.tx() || (message.delayed() && message.date()) ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
                                     message.auto() ? m('div', message.editingAuto ? t('pu.po.recipients.message.edit') : t('pu.po.recipients.message.details')) : '',
                                 ]),
                                 m('div', [

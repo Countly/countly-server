@@ -53,7 +53,7 @@
        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
 }
-body { padding:20px; background-color:#222; font-family:Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { padding:20px; background-color:#0B131A; font-family:Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 input { outline:none; }
 input[type=text], input[type=password] { font:15px Ubuntu,Helvetica,sans-serif; border-radius:3px; border:none; padding:10px; background-color:#FFF; color:#CCC; width:206px; margin:0 0 8px 0; }
 input[type=text]:active, input[type=text]:focus, input[type=password]:active, input[type=password]:focus { outline:none; color:#666; }
@@ -63,25 +63,27 @@ a:hover { color:inherit; }
 a:active { color:inherit; }
 #login-form { text-align:center; width:480px; height:270px; margin-left:-240px; left:50%; top:50%; margin-top:-135px; position:absolute; }
 #login-left { margin-right:30px; padding-right:30px; height:100%; float:left; }
-#forgot-form { width:570px; height:218px; margin-left:-285px; left:50%; top:50%; margin-top:-109px; position:absolute; }
+#forgot-form { width:420px; height:218px; margin-left:-210px; left:50%; top:50%; margin-top:-109px; position:absolute; }
 #forgot-left { margin-bottom:28px; }
 #reset-form { width:704px; height:174px; margin-left:-352px; left:50%; top:50%; margin-top:-87px; position:absolute; }
 #login-button { line-height:14px !important; font:14px Ubuntu,Helvetica,sans-serif; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:400; cursor:pointer; width:226px; margin-top:10px; }
 	#login-button:hover { background-color: #2f9732; }
 	#login-button:active { }
-    #forgot-form #login-button { margin-top:0; }
+    #forgot-form #login-button { margin-top:0; width: 123px;}
 #top-container { position:absolute; top:20px; right:20px; min-width: 200px; z-index: 1; }
-.top-button { border: 1px solid #272727; float:right; margin-left:5px; color:#6F6F6F; padding:9px 20px; display:block; background-color:#1A1A1A; border-radius:4px; cursor:pointer; font-size:14px; }
+#top-left-container { position:absolute; top:20px; left:20px; min-width: 200px; z-index: 1; }
+.top-button { float:right;  margin-left:5px; color:#6F6F6F; padding:9px 20px; display:block; background-color:#02060B; border-radius:4px; cursor:pointer; font-size:14px; }
 	.top-button:hover { background-color: #000; }
 	.top-button:active { background:#000; }
 	a.top-button:visited { color:#6F6F6F; }
 	a.top-button:hover { color:#6F6F6F; }
 	a.top-button:active { color:#6F6F6F; }
+    #top-left-container .top-button {float: left;}
 #select-lang { padding:9px 10px; }
 	#select-lang.active #langs { display:block; }
-	#select-lang.active { background:#1A1A1A; }
-	#select-lang.active:hover { background:#1A1A1A; }
-	#select-lang.active:active { background:#1A1A1A; }
+	#select-lang.active { background:#02060B; }
+	#select-lang.active:hover { background:#02060B; }
+	#select-lang.active:active { background:#02060B; }
 	#select-lang .item  { padding-bottom:3px; padding-top:3px; cursor:pointer; display:block; font-size:12px; }
 	#select-lang .item:hover { color:#A2A2A2; }
 #active-lang { text-align:right; }

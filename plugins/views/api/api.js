@@ -41,57 +41,62 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     });
 
     plugins.register("/i/delete_view", function(ob) {
-        var params = ob.params;
-        var appId = params.qstring.app_id;
+        var appId = ob.params.qstring.app_id;
         var viewName = "";
         var viewUrl = "";
-        var viewid = params.qstring.view_id;
+        var viewid = ob.params.qstring.view_id;
+
+        var validateUserForDataWriteAPI = ob.validateUserForDataWriteAPI;
         //var encodedUrl = common.db.encode(url);
         return new Promise(function(resolve) {
-            const deleteDocs = [];
-            common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err1, viewInfo) {
-                if (viewInfo) {
-                    common.db.collection("app_viewsmeta" + appId).findOne({'_id': common.db.ObjectID(viewid)}, {}, function(err, viewrecord) {
-                        if (viewrecord && viewrecord.view) {
-                            viewName = viewrecord.view;
-                            viewUrl = viewrecord.view;
-                        }
+            validateUserForDataWriteAPI(ob.params, function(params) {
+                const deleteDocs = [];
+                common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err1, viewInfo) {
+                    if (viewInfo) {
+                        common.db.collection("app_viewsmeta" + appId).findOne({'_id': common.db.ObjectID(viewid)}, {}, function(err, viewrecord) {
+                            if (viewrecord && viewrecord.view) {
+                                viewName = viewrecord.view;
+                                viewUrl = viewrecord.view;
+                            }
 
-                        if (viewrecord && viewrecord.url && viewrecord.url !== "") {
-                            viewUrl = viewrecord.url;
-                        }
-                        //remove all data collections
-                        for (let segKey in viewInfo.segments) {
-                            var colName2 = "app_viewdata" + crypto.createHash('sha1').update(segKey + appId).digest('hex');
-                            common.db.collection(colName2).remove({"vw": common.db.ObjectID(viewid)});
-                        }
-                        var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
-                        common.db.collection(colName).remove({"vw": common.db.ObjectID(viewid)});
+                            if (viewrecord && viewrecord.url && viewrecord.url !== "") {
+                                viewUrl = viewrecord.url;
+                            }
+                            //remove all data collections
+                            for (let segKey in viewInfo.segments) {
+                                var colName2 = "app_viewdata" + crypto.createHash('sha1').update(segKey + appId).digest('hex');
+                                common.db.collection(colName2).remove({"vw": common.db.ObjectID(viewid)});
+                            }
+                            var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
+                            common.db.collection(colName).remove({"vw": common.db.ObjectID(viewid)});
 
-                        //remove from userviews
-                        common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
-                        //remove from meta
-                        common.db.collection("app_viewsmeta" + appId).remove({'_id': common.db.ObjectID(viewid)});
-                        if (common.drillDb) {
-                            deleteDocs.push(common.drillDb.collection(
-                                "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
-                            ).remove({"sg.name": viewName}));
-                            deleteDocs.push(common.drillDb.collection(
-                                "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
-                            ).remove({"sg.view": viewUrl}));
-                        }
-                        /** */
-                        Promise.all(deleteDocs).then(function() {
-                            resolve();
-                            common.returnOutput(params, {result: true});
+                            //remove from userviews
+                            common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
+                            //remove from meta
+                            common.db.collection("app_viewsmeta" + appId).remove({'_id': common.db.ObjectID(viewid)});
+                            if (common.drillDb) {
+                                deleteDocs.push(common.drillDb.collection(
+                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
+                                ).remove({"sg.name": viewName}));
+                                deleteDocs.push(common.drillDb.collection(
+                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
+                                ).remove({"sg.view": viewUrl}));
+                            }
+                            /** */
+                            Promise.all(deleteDocs).then(function() {
+                                resolve();
+                                common.returnOutput(params, {result: true});
+                                plugins.dispatch("/systemlogs", { params: ob.params, action: "view_deleted", data: viewrecord });
+                                console.log(ob.params);
+                            });
                         });
-                    });
-                }
-                else {
-                    resolve();
-                    common.returnOutput(params, {result: false});
-                }
-            });
+                    }
+                    else {
+                        resolve();
+                        common.returnOutput(params, {result: false});
+                    }
+                });
+            }, ob.params);
         });
     });
 
@@ -348,7 +353,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var fullMonths = {};
             for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
                 let kk = periodObj.currentPeriodArr[i].split(".");
-                var monthValue = [kk[0] + ":" + kk[1]];
+                var monthValue = kk[0] + ":" + kk[1];
                 if (monthValue === firstMonth || monthValue === lastMonth) {
                     if (!selectMap[kk[0] + ":" + kk[1]]) {
                         selectMap[kk[0] + ":" + kk[1]] = [];
@@ -600,7 +605,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             data[z].view = data[z].view_meta[0].view;
                                         }
 
-
                                         if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].url) {
                                             data[z].url = data[z].view_meta[0].url;
                                         }
@@ -626,19 +630,28 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].view) {
                                     data[z].view = data[z].view_meta[0].view;
                                 }
-                                else {
-                                    data[z].view = data[z]._id;
-                                }
 
                                 if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].url) {
                                     data[z].url = data[z].view_meta[0].url;
                                 }
-                                else {
-                                    data[z].url = data[z]._id;
-                                }
                             }
                             common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total || data.length, iTotalDisplayRecords: total || data.length, aaData: data});
                         });
+                    }
+                }
+                else if (params.qstring.action === "get_view_count") {
+                    if (params.app_id && params.app_id !== "") {
+                        common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err, count) {
+                            if (err) {
+                                common.returnMessage(params, 200, 0);
+                            }
+                            else {
+                                common.returnMessage(params, 200, count || 0);
+                            }
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 400, "Missing request parameter: app_id");
                     }
                 }
                 else {
@@ -945,26 +958,34 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         db: common.db,
                         token: params.req.headers["countly-token"],
                         req_path: params.fullPath,
-                        callback: function(owner) {
+                        callback: function(owner, expires_after) {
                             if (owner) {
-                                authorize.save({
-                                    db: common.db,
-                                    purpose: "View heatmap",
-                                    endpoint: "/o/actions",
-                                    app: params.qstring.app_id,
-                                    owner: owner,
-                                    multi: false,
-                                    ttl: 1800,
-                                    callback: function(err2, token) {
-                                        params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
-                                        params.app_id = app._id;
-                                        params.app_cc = app.country;
-                                        params.appTimezone = app.timezone;
-                                        params.app = app;
-                                        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                                        getHeatmap(params);
-                                    }
-                                });
+                                var token = params.req.headers["countly-token"];
+                                if (expires_after < 600 && expires_after > -1) {
+                                    authorize.extend_token({
+                                        extendTill: Date.now() + 600000, //10 minutes
+                                        token: params.req.headers["countly-token"],
+                                        callback: function(/*err,res*/) {
+                                            params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
+                                            params.app_id = app._id;
+                                            params.app_cc = app.country;
+                                            params.appTimezone = app.timezone;
+                                            params.app = app;
+                                            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                                            getHeatmap(params);
+                                        }
+                                    });
+
+                                }
+                                else {
+                                    params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
+                                    params.app_id = app._id;
+                                    params.app_cc = app.country;
+                                    params.appTimezone = app.timezone;
+                                    params.app = app;
+                                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                                    getHeatmap(params);
+                                }
                             }
                             else {
                                 common.returnMessage(params, 401, 'User does not have view right for this application');

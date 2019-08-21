@@ -1,0 +1,27 @@
+{
+  "name": "two-factor-auth",
+  "title": "Two Factor Authentication",
+  "version": "1.0.0",
+  "description": "Time based second factor authentication for use with Microsoft and Google Authenticator apps",
+  "author": "Countly",
+  "homepage": "https://count.ly/plugins/two-factor-authentication",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "2fa",
+    "otp"
+  ],
+  "dependencies": {
+    "otplib": "^11.0.1",
+    "qrcode": "^1.4.1"
+  },
+  "private": true
+}

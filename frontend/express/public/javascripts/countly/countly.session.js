@@ -12,7 +12,6 @@
             countlyLocation.initialize();
         }
     };
-
     countlySession.getSessionData = function() {
         var map = {t: "total-sessions", n: "new-users", u: "total-users", d: "total-duration", e: "events", p: "paying-users", m: "messaging-users"};
         var ret = {};
@@ -88,7 +87,6 @@
         for (var z in sparkLines) {
             ret[z].sparkline = sparkLines[z];
         }
-
         return {usage: ret};
     };
 
@@ -435,7 +433,7 @@
 
         for (var i = 0; i < maxItems; i++) {
             var percent = Math.floor((topUsers[i].t / totalSum) * 100);
-            barData[i] = { "name": topUsers[i].date, "count": topUsers[i].t, "type": "user", "percent": percent };
+            barData[i] = { "name": topUsers[i].date, "count": topUsers[i].t, "type": "user", "percent": percent, "unit": jQuery.i18n.map["common.visits"] };
         }
 
         return barData;
