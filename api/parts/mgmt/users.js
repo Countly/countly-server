@@ -918,4 +918,16 @@ usersApi.fetchNotes = async function(params) {
     return true;
 };
 
+usersApi.ackNotification = function(params) {
+    common.db.collection('members').updateOne({"_id": common.db.ObjectID(params.member._id)}, {$set: {['notes.' + params.qstring.path]: true}}, err => {
+        if (err) {
+            log.e('Error while acking member notification', err);
+            return common.returnMessage(params, 500, 'Unknown error');
+        }
+        else {
+            common.returnOutput(params, {['notes.' + params.qstring.path]: true});
+        }
+    });
+};
+
 module.exports = usersApi;

@@ -236,6 +236,9 @@ const processRequest = (params) => {
                 case 'deleteOwnAccount':
                     validateUserForWriteAPI(countlyApi.mgmt.users.deleteOwnAccount, params);
                     break;
+                case 'ack':
+                    validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,

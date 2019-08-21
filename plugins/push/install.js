@@ -56,11 +56,14 @@ async function install() {
     ret = await db.collection('jobs').deleteMany({$or: [{name: 'push:send'}, {name: 'push:cleanup'}]});
     console.log('[push] Removing deleted jobs: %d', ret && ret.deletedCount || 0);
 
-
+    let aarr = [];
     while (await apps.hasNext()) {
         let app = await apps.next();
         await installApp(db, app);
+        aarr.push(app);
     }
+
+    await notifyGCM(db, aarr);
 
     console.log('[push] Migrating messages');
     await migrateMessages(db);
@@ -438,6 +441,43 @@ async function ensureScheduledConsistence(db, app) {
             await db.collection(`push_${app._id}_${field}`).deleteMany({$and: [{j: {$exists: true}}, {j: null}]});
         }
     }));
+}
+
+async function notifyGCM(db, apps) {
+    let members = await db.collection('members').find().toArray();
+
+    for (let i = 0; i < members.length; i++) {
+        let member = members[i];
+
+        if (member.notes && member.notes.push && member.notes.push.gcm) {
+            continue;
+        }
+
+        console.log('[push] Checking member %s for GCM notifications', member.full_name);
+
+        let aps = [];
+        if (member.global_admin) {
+            aps = apps;
+        }
+        else if (member.admin_of && member.admin_of.length) {
+            aps = apps.filter(a => member.admin_of.indexOf(a._id.toString()) !== -1);
+        }
+
+        aps = aps.filter(a => a.plugins && a.plugins.push && a.plugins.push.a && a.plugins.push.a.key && a.plugins.push.a.key.length < 50);
+
+        if (aps.length) {
+            console.log('[push] Notifying member %s for apps %j', member.full_name, aps.map(a => a.name));
+            await db.collection('members').updateOne({_id: member._id}, {
+                $set: {
+                    'notes.push.gcm': {
+                        apps: aps.map(a => {
+                            return {_id: a._id, name: a.name};
+                        })
+                    }
+                }
+            });
+        }
+    }
 }
 
 install().then(() => {
