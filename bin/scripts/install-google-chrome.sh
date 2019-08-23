@@ -64,6 +64,7 @@ yum --setopt=tsflags=noscripts -y remove google-chrome-stable
 
 
 # Get latest RPM.
+yum install -y wget
 echo "Downloading the Google Chrome RPM file."
 wget ${dl_google_chrome_stable_url}
 rpm_file=$(echo *.rpm)
