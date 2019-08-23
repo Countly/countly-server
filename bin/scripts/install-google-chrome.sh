@@ -38,7 +38,11 @@
 
 # Define some global variables.
 working_directory="/tmp/google-chrome-installation"
-repo_file="/etc/yum.repos.d/google-chrome.repo"
+if ping -c 1 google.com >> /dev/null 2>&1; then
+    dl_google_chrome_stable_url="https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+else
+    dl_google_chrome_stable_url="http://countly-1252600587.cos.ap-guangzhou.myqcloud.com/google-chrome-stable_current_x86_64.rpm"
+fi
 
 
 # Work in our working directory.
@@ -48,22 +52,6 @@ rm -rf ${working_directory}/*
 pushd ${working_directory}
 
 
-# Add the official Google Chrome Centos 7 repo.
-echo "Configuring the Google Chrome repo in ${repo_file}"
-echo "[google-chrome]" > $repo_file
-echo "name=google-chrome" >> $repo_file
-echo "baseurl=http://dl.google.com/linux/chrome/rpm/stable/\$basearch" >> $repo_file
-echo "enabled=1" >> $repo_file
-echo "gpgcheck=1" >> $repo_file
-echo "gpgkey=https://dl-ssl.google.com/linux/linux_signing_key.pub" >> $repo_file
-
-
-# Install the Google Chrome signing key.
-yum install -y wget
-wget https://dl.google.com/linux/linux_signing_key.pub
-rpm --import linux_signing_key.pub
-
-
 # A helper to make sure that Chrome is linked correctly
 function installation_status() {
     google-chrome-stable --version > /dev/null 2>&1
@@ -71,33 +59,14 @@ function installation_status() {
 }
 
 
-# Try it the old fashioned way, should work on RHEL 7.X.
-echo "Attempting a direction installation with yum."
-yum install -y google-chrome-stable
-if [ $? -eq 0 ]
-then
-    if installation_status; then
-        # Print out the success message.
-        echo "Successfully installed Google Chrome!"
-        rm -rf ${working_directory}
-        popd > /dev/null
-        exit 0
-    fi
-fi
-
-
 # Uninstall any existing/partially installed versions.
 yum --setopt=tsflags=noscripts -y remove google-chrome-stable
 
 
-# Install yumdownloader/repoquery and download the latest RPM.
+# Get latest RPM.
+yum install -y wget
 echo "Downloading the Google Chrome RPM file."
-yum install -y yum-utils
-# There have been issues in the past with the Chrome repository, so we fall back to downloading
-# the latest RPM directly if the package isn't available there. For further details:
-# https://productforums.google.com/forum/#!topic/chrome/xNtfk_wAUC4;context-place=forum/chrome
-yumdownloader google-chrome-stable || \
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+wget ${dl_google_chrome_stable_url}
 rpm_file=$(echo *.rpm)
 echo "Downloaded ${rpm_file}"
 
