@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
-if [ $1 != "combined" ]; then
+if [ "$1" != "combined" ]; then
     #upgrade existing plugins
     countly plugin upgrade crashes
     countly plugin upgrade views

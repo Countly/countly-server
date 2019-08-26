@@ -5,7 +5,7 @@ echo "Running database modifications"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ $1 != "combined" ]; then
+if [ "$1" != "combined" ]; then
     #upgrade plugins
     countly plugin upgrade crashes
     countly plugin upgrade push
