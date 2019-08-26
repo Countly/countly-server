@@ -383,7 +383,7 @@ window.starView = countlyView.extend({
         if (self.currentTab === 'time-series') {
             self.renderTimeSeriesTable(isRefresh);
             self.renderTimeSeriesChart();
-            countlyCommon.applyColors();
+            CountlyHelpers.applyColors();
             $('#tableOne_wrapper').css("display", "none");
             $('#tableTwo_wrapper').css("display", "block");
             $('#big-numbers-container').css("display", "block");

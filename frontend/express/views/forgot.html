@@ -27,9 +27,7 @@
 	<% } %>
 </head>
 <body>
-	 <% if (message){ %>
 		<div id="message"></div>
-	 <% } %>
     <div id="top-left-container">
         <a class="top-button" href="./login" data-localize="login.button"></a>
     </div>
@@ -107,7 +105,7 @@
 						},
 						success: function(res) {
 							if (res === 'invalid_email_format') {
-								$('#message').html($.i18n.map['forgot.invalid']);
+								$("#message").html($.i18n.map['forgot.invalid-email']);
 							}
 							else {
 								$('#message').html($.i18n.map['forgot.result']);
@@ -118,7 +116,7 @@
 						}
 					})
 				} else {
-					$('#message').html($.i18n.map['forgot.invalid']);
+					$("#message").html($.i18n.map['forgot.invalid-email']);
 				}
 			});
 		});

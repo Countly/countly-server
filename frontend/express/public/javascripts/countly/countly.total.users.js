@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, countlyDevice, _, jQuery */
+/* global countlyCommon, countlyGlobal, _, jQuery */
 (function(countlyTotalUsers, $) {
 
     //Private Properties
@@ -195,11 +195,12 @@
         var tmpObj = {},
             processingFunction;
 
-        switch (forMetric) {
+        // no need to format current metrics, as we are matching them in unformated way
+        /*switch (forMetric) {
         case "devices":
             processingFunction = countlyDevice.getDeviceFullName;
             break;
-        }
+        }*/
 
         for (var i = 0; i < obj.length; i++) {
             var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
@@ -231,7 +232,7 @@
                 newRefreshObj = formatCalculatedObj(todaysJson, forMetric);
 
             _.each(newRefreshObj, function(value, key) {
-                if (currRefreshObj[key]) {
+                if (typeof currRefreshObj[key] !== "undefined") {
                     // If existing refresh object contains the key we refresh the value
                     // in total user object to curr value + new refresh value - curr refresh value
                     currObj[key] += value - currRefreshObj[key];

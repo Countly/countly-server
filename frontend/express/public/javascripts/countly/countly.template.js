@@ -829,7 +829,7 @@ var AppRouter = Backbone.Router.extend({
             $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").removeAttr("href");
         }
 
-        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").show();
+        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").css('display', 'block');
 
         if (typeof node.callback === "function") {
             node.callback(app_type, parent_code, node, menu);
@@ -1208,7 +1208,7 @@ var AppRouter = Backbone.Router.extend({
 
         this.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
 
-        if (countlyGlobal.member.global_admin || (countlyGlobal.adminOfApps && countlyGlobal.adminOfApps.length)) {
+        if (countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) {
             this.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
         }
         if (countlyGlobal.member.global_admin) {

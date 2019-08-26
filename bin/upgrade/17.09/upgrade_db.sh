@@ -7,7 +7,7 @@ WARN="$(countly config "logs.warning")"
 countly config "logs.warning" null
 countly config "logs.warn" $WARN
 
-if [ $1 != "combined" ]; then
+if [ "$1" != "combined" ]; then
     #upgrade existing plugins
     countly plugin upgrade push
     

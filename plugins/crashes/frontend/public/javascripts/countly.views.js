@@ -1567,6 +1567,13 @@ window.CrashgroupView = countlyView.extend({
                     $("#crashgroup-manipulation-menu").css("opacity", 0);
                     $("#crashgroup-manipulation-menu").hide();
                 }
+
+                if ($("#crashgroup-manipulation-menu").is(":hidden")) {
+                    $("#crashgroup-manipulation-trigger i").removeClass("ion-chevron-up").addClass("ion-chevron-down");
+                }
+                else {
+                    $("#crashgroup-manipulation-trigger i").removeClass("ion-chevron-down").addClass("ion-chevron-up");
+                }
             });
 
             $("#crashgroup-manipulation-menu .item.crash-manipulation-button").off("click").on("click", function(event) {

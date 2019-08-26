@@ -98,6 +98,17 @@ function getPeriodObject() {
     };
 
     endTimestamp = _currMoment.clone().utc().endOf("day");
+
+    if (_period && _period.indexOf(",") !== -1) {
+        try {
+            _period = JSON.parse(_period);
+        }
+        catch (SyntaxError) {
+            console.log("period JSON parse failed");
+            _period = "month";
+        }
+    }
+
     if (Array.isArray(_period)) {
         var fromDate, toDate;
 
@@ -184,6 +195,17 @@ function getPeriodObject() {
     }
     else if (/([0-9]+)days/.test(_period)) {
         let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
+
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    //incorrect period, defaulting to 30 days
+    else {
+        let nDays = 30;
 
         startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
         cycleDuration = moment.duration(nDays, "days");
@@ -831,7 +853,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
             }
 
             if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                if (totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
+                if (totalUserOverrideObj && typeof totalUserOverrideObj[rangeArray[j]] !== "undefined") {
 
                     tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
@@ -953,7 +975,14 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         dataProps.push({name: "n"});
         dataProps.push({name: "t"});
     }
+    if (metric === "n") {
+        dataProps.push({name: "u"});
+    }
     var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj);
+    rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
+    rangeData.chartData = underscore.sortBy(rangeData.chartData, function(obj) {
+        return -obj[metric];
+    });
     var rangeNames = underscore.pluck(rangeData.chartData, 'range'),
         rangeTotal = underscore.pluck(rangeData.chartData, metric),
         barData = [],
@@ -1330,7 +1359,7 @@ countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProper
             }
 
             if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                if (totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
+                if (totalUserOverrideObj && typeof totalUserOverrideObj[rangeArray[j]] !== "undefined") {
 
                     tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
@@ -1607,7 +1636,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
 
     // Total users can't be less than new users
     if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-        if (totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined" && totalUserOverrideObj.u) {
+        if (totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined") {
             current.n = current.u;
         }
         else {
@@ -1636,7 +1665,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
     //check if we can correct data using total users correction
     if (totalUserOverrideObj) {
         for (let i = 0; i < unique.length; i++) {
-            if (dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
+            if (dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined") {
                 dataArr[unique[i]].is_estimate = false;
             }
         }

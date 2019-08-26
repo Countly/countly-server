@@ -905,7 +905,7 @@ function cachedData(note) {
             common.returnOutput(params, json);
         }
         else {
-            if (!prepared || !prepared.build.total) {
+            if (!prepared || (!note.delayed && !prepared.build.total)) {
                 return common.returnOutput(params, {error: 'No audience'});
             }
 
@@ -1507,7 +1507,7 @@ function cachedData(note) {
                         let sg = new S.StoreGroup(common.db),
                             note = new N.Note(msg);
 
-                        sg.pushUids(note, app, [uid], date || Date.now()).then(count => {
+                        sg.pushUids(note, app, [uid], date || new Date().toString()).then(count => {
                             if (count) {
                                 note.update(common.db, {$inc: {'result.total': count.total}});
                                 resolve(count.total || 0);
@@ -1545,25 +1545,36 @@ function cachedData(note) {
         });
     };
 
-    api.onConsentChange = (params, changes) => {
-        if (changes.push === false) {
-            let update = {$unset: {}};
-            Object.values(C.DB_USER_MAP).map(v => {
-                if (v === 'tk') {
-                    return undefined;
+    api.removeUser = (app_id, uid) => {
+        let update = {$unset: {}};
+        C.FIELDS.map(v => {
+            common.db.collection(`push_${app_id}_${v}`).aggregate([
+                {$match: {u: uid}},
+                {$project: {_id: '$n'}},
+                {$group: {_id: '$_id', count: {$sum: 1}}}
+            ], (err, counts) => {
+                if (counts && counts.length) {
+                    counts.forEach(count => {
+                        common.db.collection('messages').findOne(count._id, (e2, msg) => {
+                            if (e2 || !msg) {
+                                log.e('Error while looking for a message', e2);
+                                return;
+                            }
+
+                            msg = new N.Note(msg);
+                            msg.cancelNotes(common.db, count.count, 'consent').catch(e3 => log.e('Cannot cancel message notes for ' + uid, e3));
+                        });
+                    });
+
+                    common.db.collection(`push_${app_id}_${v}`).removeMany({u: uid}, () => {});
                 }
-                else if (v === 'msgs') {
-                    return undefined;
-                }
-                else {
-                    common.db.collection(`push_${params.app_id}_${v}`).removeMany({uid: params.app_user.uid}, function() {});
-                    delete params.app_user['tk' + v];
-                    return 'tk' + v;
-                }
-            }).filter(v => !!v).forEach(v => update.$unset[v] = 1);
-            common.db.collection('app_users' + params.app_id).updateOne({_id: params.app_user_id}, update, () => {});
-            common.db.collection('push_' + params.app_id).updateOne({'_id': params.app_user.uid}, {$unset: {tk: 1}}, function() {});
-        }
+            });
+
+            common.db.collection(`push_${app_id}_${v}`).removeMany({_id: uid}, function() {});
+            return 'tk' + v;
+        }).forEach(v => update.$unset[v] = 1);
+        common.db.collection('app_users' + app_id).updateOne({uid: uid}, update, () => {});
+        common.db.collection('push_' + app_id).updateOne({'_id': uid}, {$unset: {tk: 1}}, function() {});
     };
 
     /** mimeInfo

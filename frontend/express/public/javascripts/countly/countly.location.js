@@ -193,20 +193,25 @@
         ];
         chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function(value) {
+            if (value[ob.metric] === 0) {
+                return;
+            }
             if (value.country === "European Union" || value.country === jQuery.i18n.map["common.unknown"]) {
                 return {
                     c: [
                         {v: ""},
-                        {v: value[ob.metric]}
+                        {v: value[ob.metric] === 0 ? null : value[ob.metric]}
                     ]
                 };
             }
             return {
                 c: [
                     {v: value.country},
-                    {v: value[ob.metric]}
+                    {v: value[ob.metric] === 0 ? null : value[ob.metric]}
                 ]
             };
+        }).filter(function(row) {
+            return row;
         });
 
         _dataTable = new google.visualization.DataTable(chartData);
@@ -214,6 +219,8 @@
         _chartOptions.region = "world";
         _chartOptions.resolution = 'countries';
         _chartOptions.displayMode = "region";
+        _chartOptions.datalessRegionColor = "#F5F5F5";
+        _chartOptions.defaultColor = "#F5F5F5";
 
         if (ob.metric === "t") {
             _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];
@@ -265,6 +272,9 @@
         ];
         chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function(value) {
+            if (value[ob.metric] === 0) {
+                return;
+            }
             if (value.country === "European Union" || value.country === jQuery.i18n.map["common.unknown"]) {
                 return {
                     c: [
@@ -279,6 +289,8 @@
                     {v: value[ob.metric]}
                 ]
             };
+        }).filter(function(row) {
+            return row;
         });
 
         if (ob.metric === "t") {

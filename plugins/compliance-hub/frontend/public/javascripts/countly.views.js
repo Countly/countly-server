@@ -522,6 +522,7 @@ window.ConsentManagementView = countlyView.extend({
                 self.drawGraph();
             });
         }
+        CountlyHelpers.applyColors();
     },
     drawGraph: function(refresh) {
         if (!refresh) {
