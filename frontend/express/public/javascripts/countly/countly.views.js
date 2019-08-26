@@ -2647,7 +2647,6 @@ window.ManageAppsView = countlyView.extend({
                 },
                 dataType: "json",
                 success: function(data) {
-                    afterFirstApp();
                     var sidebarApp = $("#sidebar-new-app>div").clone();
 
                     countlyGlobal.apps[data._id] = data;
@@ -2662,6 +2661,7 @@ window.ManageAppsView = countlyView.extend({
                     newApp.removeAttr("id");
 
                     if (!ext) {
+                        afterFirstApp();
                         $("#save-first-app-add").removeClass("disabled");
                         sidebarApp.find(".name").text(data.name);
                         sidebarApp.data("id", data._id);
@@ -2674,9 +2674,15 @@ window.ManageAppsView = countlyView.extend({
                         initAppManagement(data._id);
                         return true;
                     }
-
-                    $('#add-app-image-form').find("#app_add_image_id").val(data._id);
-                    $('#add-app-image-form').ajaxSubmit({
+                    var app_image_form = $('#add-app-image-form');
+                    if (store.get('first_app')) {
+                        app_image_form = $('#add-first-app-image-form');
+                        app_image_form.find("#first-app_image_id").val(data._id);
+                    }
+                    else {
+                        app_image_form.find("#app_add_image_id").val(data._id);
+                    }
+                    app_image_form.ajaxSubmit({
                         resetForm: true,
                         beforeSubmit: function(formData) {
                             formData.push({ name: '_csrf', value: countlyGlobal.csrf_token });
@@ -2704,6 +2710,7 @@ window.ManageAppsView = countlyView.extend({
                             initAppManagement(data._id);
                         }
                     });
+                    afterFirstApp();
                 }
             });
         }
