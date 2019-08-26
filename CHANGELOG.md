@@ -19,6 +19,7 @@
 * [frontend] fixed localization for visits in top
 * [frontend] fixed total user correction in 0 cases
 * [frontend] fixed unknown country check
+* [frontend] fixed uploading app icon on first app screen
 * [frontend] fixes for 0 values having colors on the map
 * [frontend] improved Internet Explorer 11 support
 * [logger] let large texts scroll in table cell
@@ -26,16 +27,19 @@
 * [push] GCM Deprecation
 * [push] included in data migration
 * [push] show only for mobile type
+* [scripts] fixed db upgrade script running as separate script
 * [sdk] updated bundled Web SDK
 * [views] view deletion added in systemlogs
 
 **Enterprise fixes**
 * [attribution] prevent user from creating campaign ID with " or '
 * [cohorts] cohort drawer ui bugs fixed
+* [concurrent_users] fixed alerts table
 * [crash_symbols] order the symbols when fetching to always use last symbol if multiple same symbols provided
 * [crashes-jira] fixed check for correct crashes view
 * [dashboards] fixed user estimation correction in custom dashboards
 * [drill] fixed country map bugs
+* [drill] fixed punchcard value formatting
 * [funnels] fixed delete multiple rows bug
 * [funnels] fixed dragging steps only by drag handler
 * [restrict] css fix for hiding menus
