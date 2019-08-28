@@ -1328,6 +1328,13 @@ window.CrashgroupView = countlyView.extend({
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["crashes.app_version"]
+                    },
+                    {
+                        "mData": function(row) {
+                            return row.build_uuid;
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["crashes.build-id"]
                     }
                 ]
             }));
@@ -1850,6 +1857,7 @@ window.CrashgroupView = countlyView.extend({
                 '<table>' +
                         '<tr>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + '</td>' +
+                            '<td class="text-left">' + jQuery.i18n.map["crashes.build-id"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.device"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.state"] + '</td>';
             if (data.custom) {
@@ -1858,6 +1866,7 @@ window.CrashgroupView = countlyView.extend({
             str += '</tr>' +
                         '<tr>' +
                             '<td class="text-left">' + data.app_version.replace(/:/g, '.') + '</td>' +
+                            '<td class="text-left">' + data.build_uuid + '</td>' +
                             '<td class="text-left">' + data.os + ' ';
             if (data.os_version) {
                 str += data.os_version.replace(/:/g, '.') + '<br/>';
