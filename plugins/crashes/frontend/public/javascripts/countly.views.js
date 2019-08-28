@@ -1328,13 +1328,6 @@ window.CrashgroupView = countlyView.extend({
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["crashes.app_version"]
-                    },
-                    {
-                        "mData": function(row) {
-                            return row.build_uuid;
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["crashes.build_id"]
                     }
                 ]
             }));
@@ -1856,8 +1849,7 @@ window.CrashgroupView = countlyView.extend({
                 '</div>' +
                 '<table>' +
                         '<tr>' +
-                            '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + '</td>' +
-                            '<td class="text-left">' + jQuery.i18n.map["crashes.build_id"] + '</td>' +
+                            '<td class="text-left">' + jQuery.i18n.map["crashes.build_info"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.device"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.state"] + '</td>';
             if (data.custom) {
@@ -1865,9 +1857,12 @@ window.CrashgroupView = countlyView.extend({
             }
             str += '</tr>' +
                         '<tr>' +
-                            '<td class="text-left">' + data.app_version.replace(/:/g, '.') + '</td>' +
-                            '<td class="text-left">' + data.build_uuid + '</td>' +
-                            '<td class="text-left">' + data.os + ' ';
+                        '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + ": " + data.app_version.replace(/:/g, '.');
+            if (data.os === 'iOS') {
+                str += '<br>' + jQuery.i18n.map["crashes.build_id"] + ": " + data.app_build;
+            }
+            str += '</td>' +
+                '<td class="text-left">' + data.os + ' ';
             if (data.os_version) {
                 str += data.os_version.replace(/:/g, '.') + '<br/>';
             }
