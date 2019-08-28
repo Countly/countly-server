@@ -1334,7 +1334,7 @@ window.CrashgroupView = countlyView.extend({
                             return row.build_uuid;
                         },
                         "sType": "string",
-                        "sTitle": jQuery.i18n.map["crashes.build-id"]
+                        "sTitle": jQuery.i18n.map["crashes.build_id"]
                     }
                 ]
             }));
@@ -1857,7 +1857,7 @@ window.CrashgroupView = countlyView.extend({
                 '<table>' +
                         '<tr>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + '</td>' +
-                            '<td class="text-left">' + jQuery.i18n.map["crashes.build-id"] + '</td>' +
+                            '<td class="text-left">' + jQuery.i18n.map["crashes.build_id"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.device"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.state"] + '</td>';
             if (data.custom) {
