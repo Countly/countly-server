@@ -257,3 +257,7 @@ td.details table tr.header, td.details table tr.header:hover {
 #crashgroup-manipulation-menu .item {
     user-select: none;
 }
+
+.datatablesubrow table tbody tr td:last-child {
+	border-right: 1px solid #ebebeb;
+}
