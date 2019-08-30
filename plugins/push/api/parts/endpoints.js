@@ -367,12 +367,14 @@ function cachedData(note) {
                 'autoCapSleep': { 'required': false, 'type': 'Number' },
                 'actualDates': { 'required': false, 'type': 'Boolean' },
             },
-            data = {};
+            data = common.validateArgs(params.qstring.args, argProps, true);
 
-        if (!(data = common.validateArgs(params.qstring.args, argProps))) {
-            log.d('Not enough params to create message: %j', params.qstring.args);
-            return [{error: 'Not enough args'}];
+        if (!data.result) {
+            log.d('Not enough params to create message: %j / %j', params.qstring.args, data.errors);
+            return [{error: 'Not enough args', errors: data.errors}];
         }
+
+        data = data.obj;
 
         data.autoOnEntry = params.qstring.args.autoOnEntry;
 
