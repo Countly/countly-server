@@ -676,7 +676,7 @@ window.component('push', function(push) {
                 return push.loadingRemoteDashboard;
             }
 
-            let promise = m.request({
+            var promise = m.request({
                 method: 'GET',
                 url: window.countlyCommon.API_URL + '/i/pushes/dashboard',
                 data: {
