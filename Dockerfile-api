@@ -1,0 +1,30 @@
+FROM node:8.16
+
+ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
+ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
+
+# Core dependencies
+## Tini
+ENV TINI_VERSION v0.18.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+USER 1001
+
+ENTRYPOINT ["/tini", "-v", "--"]
+
+## Required by both images
+RUN apt update && apt -y install sendmail
+
+# Setup Countly
+ENV CLY_DOCKER 1
+
+## The files
+WORKDIR /opt/countly
+COPY --chown=1001 . .
+
+## API dependencies
+RUN bin/docker/install-api.sh
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+CMD ["/opt/countly/bin/docker/cmd.sh", "api"]
