@@ -1,28 +1,41 @@
 #!/bin/bash
 
-if [ -z "$CLY_PLUGINS" ]; then
-	if [ -f $DIR/../../plugins/plugins.json ]; then
-		echo "[docker] Using existing plugins.json"
-	else
-		echo "[docker] ERROR: neither CLY_PLUGINS env var, or plugins.json exists"
-		exit 1
-	fi
+CMD=$1
+
+if [ -f /opt/countly/plugins/plugins.json ]; then
+	echo "[docker] Plugins have been built, skipping rebuilding"
 else
-	echo "[docker] Using CLY_PLUGINS: $CLY_PLUGINS"
-	a=($(echo "$CLY_PLUGINS" | tr ',' '\n'))
-	echo "[docker] Written plugins:"
-	printf %s\\n "${a[@]}"|sed 's/["\]/\\&/g;s/.*/"&"/;1s/^/[/;$s/$/]/;$!s/$/,/'
-	printf %s\\n "${a[@]}"|sed 's/["\]/\\&/g;s/.*/"&"/;1s/^/[/;$s/$/]/;$!s/$/,/' > $DIR/../../plugins/plugins.json
+	if [ -z "$COUNTLY_PLUGINS" ]; then
+		COUNTLY_PLUGINS="$COUNTLY_DEFAULT_PLUGINS"
+		echo "[docker] Using default plguin list: $COUNTLY_PLUGINS"
+	else
+		echo "[docker] Using COUNTLY_PLUGINS: $COUNTLY_PLUGINS"
+	fi
+
+	a=$(echo "$COUNTLY_PLUGINS" | tr ',' '\n')
+	printf %s\\n "${a[@]}"|sed 's/["\]/\\&/g;s/.*/"&"/;1s/^/[/;$s/$/]/;$!s/$/,/' > /opt/countly/plugins/plugins.json
+
+	while read -r plugin; do
+	  echo "[docker] Installing ${plugin}:"
+	  (cd "/opt/countly/plugins/$plugin" && HOME=/tmp npm install)
+	  /usr/local/bin/node "/opt/countly/plugins/$plugin/install.js"
+	  echo "[docker] Done installing ${plugin}."
+	done <<< "$a"
 fi
 
-bash $DIR/../scripts/countly.install.plugins.sh
+case "$CMD" in
+  "api" )
+    exec /usr/local/bin/node /opt/countly/api/api.js
+    ;;
 
-if [ "$0" -eq "api" ]; then
-	node ../../api/api.js
-elif [ "$0" -eq "frontend" ]; then
-	grunt dist-all
-	node ../../frontend/express/app.js
-else
-	echo "[docker] First cmd.sh argument must equal 'api' or 'frontend', but was $0"
-	exit 1
-elif
+  "frontend" )
+   	npx grunt dist-all
+	exec /usr/local/bin/node /opt/countly/frontend/express/app.js
+    ;;
+
+   * )
+    # Run custom command. Thanks to this line we can still use 
+    # "docker run our_image /bin/bash" and it will work
+    exec $CMD ${@:2}
+    ;;
+esac
