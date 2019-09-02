@@ -13,7 +13,7 @@ USER 1001
 ENTRYPOINT ["/tini", "-v", "--"]
 
 ## Required by both images
-RUN apt update && apt -y install sendmail
+RUN apt-get update && apt-get -y install sendmail
 
 # Setup Countly
 ENV CLY_DOCKER 1
