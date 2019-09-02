@@ -1,5 +1,6 @@
 FROM node:8.16
 
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
 ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
 ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
 
@@ -8,23 +9,27 @@ ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
 ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
-USER 1001
 
 ENTRYPOINT ["/tini", "-v", "--"]
 
-## Required by both images
-RUN apt update && apt -y install sendmail
+RUN apt-get update && apt-get -y install sendmail && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Setup Countly
-ENV CLY_DOCKER 1
+ENV COUNTLY_DOCKER 1
+ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
 
 ## The files
+RUN mkdir /opt/countly && chown 1001:1001 /opt/countly
+USER 1001
 WORKDIR /opt/countly
 COPY --chown=1001 . .
+HEALTHCHECK --start-period=120s CMD curl --fail http://localhost:6001/ping || exit 1
 
-## API dependencies
-RUN bin/docker/install-frontend.sh
-
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN cp -n frontend/express/public/javascripts/countly/countly.config.sample.js frontend/express/public/javascripts/countly/countly.config.js && \
+	cp -n frontend/express/config.sample.js frontend/express/config.js && \
+	cp -n api/config.sample.js api/config.js && \
+	HOME=/tmp npm install && \
+	rm -rf /tmp/*
 
 CMD ["/opt/countly/bin/docker/cmd.sh", "frontend"]
