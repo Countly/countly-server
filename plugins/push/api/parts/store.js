@@ -251,7 +251,7 @@ class Store extends Base {
                 d = date;
             }
             else {
-                d = typeof date === 'string' ? new Date(date) : Date.now();
+                d = typeof Date === 'string' ? new Date(date).getTime() : Date.now();
 
                 if (note.autoTime !== null && note.autoTime !== undefined) {
                     let auto = new Date(d);
