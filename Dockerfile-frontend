@@ -30,7 +30,12 @@ RUN cp -n frontend/express/public/javascripts/countly/countly.config.sample.js f
 	cp -n frontend/express/config.sample.js frontend/express/config.js && \
 	cp -n api/config.sample.js api/config.js && \
 	HOME=/tmp npm install && \
-	./bin/docker/preinstall.sh && \
-	rm -rf /tmp/*
+	./bin/docker/preinstall.sh
 
+USER root
+RUN apt-get remove -y git g++ gcc make automake autoconf libtool pkg-config unzip python && \
+	apt-get autoremove -y && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+USER 1001
 CMD ["/opt/countly/bin/docker/cmd.sh"]

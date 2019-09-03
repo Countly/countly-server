@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x #echo on
 
 for plugin in `find /opt/countly/plugins -type d -mindepth 1 -maxdepth 1`
 do
