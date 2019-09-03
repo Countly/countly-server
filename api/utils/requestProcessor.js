@@ -1347,7 +1347,6 @@ const processRequest = (params) => {
                         else {
                             params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
                         }
-                        params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
