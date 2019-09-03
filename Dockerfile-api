@@ -1,4 +1,4 @@
-FROM node:8.16
+FROM node:8.16-jessie
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
 ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
@@ -12,17 +12,20 @@ RUN chmod +x /tini
 
 ENTRYPOINT ["/tini", "-v", "--"]
 
-RUN apt-get update && apt-get -y install sendmail sqlite3 && \
+RUN apt-get update && apt-get -y install sendmail sqlite3 gcc-4.8 g++-4.8 && \
+	export CXX="g++-4.8" && \
+	export CC="gcc-4.8" && \
+	update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Required by push plugin
 RUN git clone https://github.com/nghttp2/nghttp2.git $DIR/nghttp2 && \
 	cd $DIR/nghttp2 && \
 	git checkout tags/v1.30.0 && \
-	autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install
+	export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install
 
 # Setup Countly
-ENV COUNTLY_DOCKER 1
+ENV COUNTLY_CONTAINER="api"
 ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
 
 ## The files
@@ -30,12 +33,13 @@ RUN mkdir /opt/countly && chown 1001:1001 /opt/countly
 USER 1001
 WORKDIR /opt/countly
 COPY --chown=1001 . .
-HEALTHCHECK --start-period=120s CMD curl --fail http://localhost:3001/ping || exit 1
+HEALTHCHECK --start-period=120s CMD curl --fail http://localhost:3001/o/ping || exit 1
 
 ## API runtime dependencies
 RUN cp -n api/config.sample.js api/config.js && \
 	cp -n frontend/express/config.sample.js frontend/express/config.js && \
 	HOME=/tmp npm install && \
+	./bin/docker/preinstall.sh && \
 	rm -rf /tmp/*
 
-CMD ["/opt/countly/bin/docker/cmd.sh", "api"]
+CMD ["/opt/countly/bin/docker/cmd.sh"]

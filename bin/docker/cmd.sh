@@ -1,7 +1,5 @@
 #!/bin/bash
 
-CMD=$1
-
 if [ -f /opt/countly/plugins/plugins.json ]; then
 	echo "[docker] Plugins have been built, skipping rebuilding"
 else
@@ -17,13 +15,12 @@ else
 
 	while read -r plugin; do
 	  echo "[docker] Installing ${plugin}:"
-	  (cd "/opt/countly/plugins/$plugin" && HOME=/tmp npm install)
 	  /usr/local/bin/node "/opt/countly/plugins/$plugin/install.js"
 	  echo "[docker] Done installing ${plugin}."
 	done <<< "$a"
 fi
 
-case "$CMD" in
+case "$COUNTLY_CONTAINER" in
   "api" )
     exec /usr/local/bin/node /opt/countly/api/api.js
     ;;

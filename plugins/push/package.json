@@ -6,7 +6,7 @@
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/rich-push-notifications",
   "scripts": {
-    "postinstall": "cd ./api/parts/apn && npm install"
+    "postinstall": "[ \"${COUNTLY_CONTAINER}\" != \"frontend\" ] && cd ./api/parts/apn && npm install"
   },
   "repository": {
     "type": "git",

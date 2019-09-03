@@ -1,4 +1,4 @@
-FROM node:8.16
+FROM node:8.16-jessie
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
 ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
@@ -16,7 +16,7 @@ RUN apt-get update && apt-get -y install sendmail && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Setup Countly
-ENV COUNTLY_DOCKER 1
+ENV COUNTLY_CONTAINER="frontend"
 ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
 
 ## The files
@@ -30,6 +30,7 @@ RUN cp -n frontend/express/public/javascripts/countly/countly.config.sample.js f
 	cp -n frontend/express/config.sample.js frontend/express/config.js && \
 	cp -n api/config.sample.js api/config.js && \
 	HOME=/tmp npm install && \
+	./bin/docker/preinstall.sh && \
 	rm -rf /tmp/*
 
-CMD ["/opt/countly/bin/docker/cmd.sh", "frontend"]
+CMD ["/opt/countly/bin/docker/cmd.sh"]
