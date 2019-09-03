@@ -18,6 +18,7 @@ RUN apt-get update && apt-get -y install sendmail && \
 # Setup Countly
 ENV COUNTLY_CONTAINER="frontend"
 ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
+ENV COUNTLY_CONFIG_FRONTEND_WEB_HOST="0.0.0.0"
 
 ## The files
 RUN mkdir /opt/countly && chown 1001:1001 /opt/countly
