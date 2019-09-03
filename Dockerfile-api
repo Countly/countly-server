@@ -12,10 +12,7 @@ RUN chmod +x /tini
 
 ENTRYPOINT ["/tini", "-v", "--"]
 
-RUN apt-get update && apt-get -y install sendmail sqlite3 gcc-4.8 g++-4.8 && \
-	export CXX="g++-4.8" && \
-	export CC="gcc-4.8" && \
-	update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
+RUN apt-get update && apt-get -y install sendmail sqlite3
 
 # Required by push plugin
 RUN git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 && \
@@ -26,6 +23,7 @@ RUN git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 && \
 # Setup Countly
 ENV COUNTLY_CONTAINER="api"
 ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
+ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0"
 
 ## The files
 RUN mkdir /opt/countly && chown 1001:1001 /opt/countly
@@ -41,7 +39,7 @@ RUN cp -n api/config.sample.js api/config.js && \
 	./bin/docker/preinstall.sh
 
 USER root
-RUN apt-get remove -y git cpp-4.8 gcc-4.8 g++-4.8 gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
+RUN apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
