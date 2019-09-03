@@ -11,5 +11,5 @@ if [ -z "$1" ]
 then
     usage ;
 else
-    nodejs $DIR/api.js $1 $2 ;
+    nodejs "$DIR/api.js" "$1" "$2" ;
 fi

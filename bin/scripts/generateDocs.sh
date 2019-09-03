@@ -11,11 +11,11 @@ echo 'Setting up the script...'
 set -e
 
 # Create a clean working directory for this script.
-mkdir $DIR/../../code_docs
-cd $DIR/../../code_docs
+mkdir "$DIR/../../code_docs"
+cd "$DIR/../../code_docs"
 
 # Get the current gh-pages branch
-git clone -b gh-pages http://github.com/$TRAVIS_REPO_SLUG repo
+git clone -b gh-pages "http://github.com/$TRAVIS_REPO_SLUG" repo
 cd repo
 
 ##### Configure git.
@@ -40,7 +40,7 @@ echo "" > .nojekyll
 ##### Generate JSDOC documents.          #####
 echo 'Generating JSDoc code documentation...'
 countly docs generate ;
-mv $DIR/../../frontend/express/public/docs/* ./
+mv "$DIR/../../frontend/express/public/docs/*" ./
 
 ################################################################################
 ##### Upload the documentation to the gh-pages branch of the repository.   #####

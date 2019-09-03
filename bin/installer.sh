@@ -6,7 +6,17 @@
 #   use this to get latest development version from repo
 #       wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash -s dev
 
-apt-get -v &> /dev/null && apt-get install -y zip </dev/null || yum install -y unzip;
+YUM_CMD=$(which yum)
+APT_GET_CMD=$(which apt-get)
+if [[ ! -z "$APT_GET_CMD" ]]; then
+    apt-get install -y zip
+elif [[ ! -z "$YUM_CMD" ]]; then
+    yum install -y unzip
+else
+    echo "error can't install Countly"
+    exit 1;
+fi
+
 if [ "$1" = "dev" ]; then
     wget -nv https://github.com/Countly/countly-server/archive/master.zip -O ./countly.zip ;
     unzip countly.zip ;
@@ -18,10 +28,10 @@ else
         echo "Downloading from Github..."
         if [[ "$LATEST" == *zip ]]
         then
-            wget -nv $LATEST -O ./countly.zip ;
+            wget -nv "$LATEST" -O ./countly.zip ;
             unzip countly.zip
         else
-            wget -nv $LATEST -O ./countly.tar.gz ;
+            wget -nv "$LATEST" -O ./countly.tar.gz ;
             tar zxfv countly.tar.gz ;
         fi
     else
@@ -30,22 +40,20 @@ else
         CDN_HOST=http://countly-1252600587.cos.ap-guangzhou.myqcloud.com/
         if [[ "$LATEST" == *zip ]]
         then
-            wget -nv $CDN_HOST$PACKAGE_NAME -O ./countly.zip ;
+            wget -nv "$CDN_HOST$PACKAGE_NAME" -O ./countly.zip ;
             unzip countly.zip
         else
-            wget -nv $CDN_HOST$PACKAGE_NAME -O ./countly.tar.gz ;
+            wget -nv "$CDN_HOST$PACKAGE_NAME" -O ./countly.tar.gz ;
             tar zxfv countly.tar.gz ;
         fi
     fi
 fi
 
-YUM_CMD=$(which yum)
-APT_GET_CMD=$(which apt-get)
-DATE=`date +%Y-%m-%d:%H:%M:%S`
-if [[ ! -z $APT_GET_CMD ]]; then
-    bash countly/bin/countly.install.sh 2>&1 | tee countly/log/countly-install-$DATE.log
-elif [[ ! -z $YUM_CMD ]]; then
-    bash countly/bin/countly.install_rhel.sh 2>&1 | tee countly/log/countly-install-$DATE.log
+DATE=$(date +%Y-%m-%d:%H:%M:%S)
+if [[ ! -z "$APT_GET_CMD" ]]; then
+    bash countly/bin/countly.install.sh 2>&1 | tee "countly/log/countly-install-$DATE.log"
+elif [[ ! -z "$YUM_CMD" ]]; then
+    bash countly/bin/countly.install_rhel.sh 2>&1 | tee "countly/log/countly-install-$DATE.log"
 else
     echo "error can't install Countly"
     exit 1;

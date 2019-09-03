@@ -109,7 +109,7 @@ function install_package() {
 
     # Extract it.
     echo "Extracting $1..."
-    rpm2cpio $1.rpm | cpio -idmv > /dev/null 2>&1
+    rpm2cpio "$1.rpm" | cpio -idmv > /dev/null 2>&1
 }
 
 
@@ -119,9 +119,9 @@ install_package glibc
 
 # Make the library directory and copy over glibc/ld-linux.
 lib_directory=/opt/google/chrome/lib
-mkdir -p $lib_directory
-cp ./lib/* $lib_directory/ 2> /dev/null
-cp ./lib64/* $lib_directory/ 2> /dev/null
+mkdir -p "$lib_directory"
+cp ./lib/* "$lib_directory/" 2> /dev/null
+cp ./lib64/* "$lib_directory/" 2> /dev/null
 
 
 # Install `mount` and its mandatory dependencies from CentOS 7.
@@ -159,7 +159,7 @@ function install_missing_dependencies() {
         while read -r line
         do
             # Parse the various library listing formats.
-            if [[ $line == *"/"* ]]; then
+            if [[ "$line" == *"/"* ]]; then
                 # Extract the filename when a path is present (e.g. /lib64/).
                 file=`echo $line | sed 's>.*/\([^/:]*\):.*>\1>'`
             else
@@ -167,7 +167,7 @@ function install_missing_dependencies() {
                 file=`echo $line | awk '{print $1;}'`
             fi
 
-            if [ -z $file ]; then
+            if [ -z "$file" ]; then
                 continue
             fi
 
