@@ -5355,9 +5355,14 @@ window.EventsView = countlyView.extend({
             if (eventData.tableColumns[2] === jQuery.i18n.map["events.table.dur"]) {
                 aaColumns.push({
                     "mData": "dur",
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatSecond(d);
+                    sType: "numeric",
+                    "mRender": function(d, type) {
+                        if (type === "display") {
+                            return countlyCommon.formatSecond(d);
+                        }
+                        else {
+                            return d;
+                        }
                     },
                     "sTitle": eventData.tableColumns[2]
                 });
@@ -5371,9 +5376,14 @@ window.EventsView = countlyView.extend({
                             return (row.dur / row.c);
                         }
                     },
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatSecond(d);
+                    sType: "numeric",
+                    "mRender": function(d, type) {
+                        if (type === "display") {
+                            return countlyCommon.formatSecond(d);
+                        }
+                        else {
+                            return d;
+                        }
                     },
                     "sTitle": jQuery.i18n.map["events.table.avg-dur"]
                 });
@@ -5409,9 +5419,14 @@ window.EventsView = countlyView.extend({
         if (eventData.tableColumns[3]) {
             aaColumns.push({
                 "mData": "dur",
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatSecond(d);
+                sType: "numeric",
+                "mRender": function(d, type) {
+                    if (type === "display") {
+                        return countlyCommon.formatSecond(d);
+                    }
+                    else {
+                        return d;
+                    }
                 },
                 "sTitle": eventData.tableColumns[3]
             });
@@ -5425,9 +5440,14 @@ window.EventsView = countlyView.extend({
                         return (row.dur / row.c);
                     }
                 },
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatSecond(d);
+                sType: "numeric",
+                "mRender": function(d, type) {
+                    if (type === "display") {
+                        return countlyCommon.formatSecond(d);
+                    }
+                    else {
+                        return d;
+                    }
                 },
                 "sTitle": jQuery.i18n.map["events.table.avg-dur"]
             });
