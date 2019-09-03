@@ -1327,6 +1327,39 @@ const processRequest = (params) => {
                         });
                     }, params);
                     break;
+                case 'count':
+                    validateUserForMgmtReadAPI(() => {
+                        if (typeof params.qstring.query === "string") {
+                            try {
+                                params.qstring.query = JSON.parse(params.qstring.query);
+                            }
+                            catch (ex) {
+                                params.qstring.query = {};
+                            }
+                        }
+                        if (params.qstring.query.$or) {
+                            params.qstring.query.$and = [
+                                {"$or": Object.assign([], params.qstring.query.$or) },
+                                {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]}
+                            ];
+                            delete params.qstring.query.$or;
+                        }
+                        else {
+                            params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
+                        }
+                        params.qstring.query.app_id = params.qstring.app_id;
+                        if (params.qstring.period) {
+                            countlyCommon.getPeriodObj(params);
+                            params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+                        taskmanager.getCounts({
+                            db: common.db,
+                            query: params.qstring.query
+                        }, (err, res) => {
+                            common.returnOutput(params, res || []);
+                        });
+                    }, params);
+                    break;
                 case 'list':
                     validateUserForMgmtReadAPI(() => {
                         if (typeof params.qstring.query === "string") {

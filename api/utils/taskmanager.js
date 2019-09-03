@@ -387,6 +387,29 @@ taskmanager.getResults = function(options, callback) {
 };
 
 /**
+* Get task counts based on query and grouped by app_id
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {object} options.query - mongodb query
+* @param {funciton} callback - callback for the result
+*/
+taskmanager.getCounts = function(options, callback) {
+    options.db = options.db || common.db;
+    options.query = options.query || {};
+    options.db.collection("long_tasks").aggregate([
+        {$match: options.query},
+        {$group:
+            {
+                _id: '$app_id',
+                c: {$sum:1}
+            }
+        }
+    ], {allowDiskUse: true}, function(err, docs) {
+        callback(err, docs);
+    });
+};
+
+/**
 * Get dataTable query results for tasks
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
