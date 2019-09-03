@@ -917,6 +917,11 @@ class Loader extends Store {
                     $or: [{j: {$exists: false}}, {j: _id}]
                 };
                 log.d('Loading %d from %s', data.length, this.collectionName);
+                if (_id === null) {
+                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}})
+                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}})
+                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}})
+                }
                 this.collection.updateMany(q, {$set: {j: _id}}, (err2, res) => {
 
                     if (err2) {

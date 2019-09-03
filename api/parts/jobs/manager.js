@@ -259,13 +259,6 @@ class Manager {
                     continue;
                 }
 
-                if (job instanceof JOB.IPCJob) {
-                    if (!this.hasResources(job)) {
-                        log.i('All resources are busy for %j, skipping for now', json);
-                        continue;
-                    }
-                }
-
                 log.i('Trying to start job %j', json);
                 let update = {
                     $set: {
