@@ -1835,7 +1835,7 @@ window.CrashgroupView = countlyView.extend({
         // `d` is the original data object for the row
         var str = '';
         if (data) {
-            str += '<div id="crash-data-subrow" class="datatablesubrow">' +
+            str += '<div class="datatablesubrow crash-detail-subrow">' +
                    '<div class="error_menu">' +
                     '<div class="error-details-menu" data-id="' + data._id + '">' +
                         '<a class="right icon-button cly-button-menu-trigger"></a>' +
