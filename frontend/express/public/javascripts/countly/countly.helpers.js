@@ -1221,7 +1221,13 @@
                 $selectItems.html("");
 
                 for (var i = 0; i < items.length; i++) {
-                    $selectItems.append('<div data-value="' + items[i].value + '" class="item">' + items[i].name + '</div>');
+                    var current = items[i];
+                    if (current.type === 'group') {
+                        $selectItems.append('<div class="group">' + current.name + '</div>');
+                    }
+                    else {
+                        $selectItems.append('<div data-value="' + current.value + '" class="item">' + current.name + '</div>');
+                    }
                 }
             }
         };
