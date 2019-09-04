@@ -1149,6 +1149,11 @@
             //ENTER
             if (e.keyCode === 13) {
                 var selectedItem = $(this).find(".text");
+                var activeKeyItem = $(this).find('.scroll-list').first().children().eq(activeOption);
+                if ($(this).hasClass("disabling-on") && activeKeyItem.hasClass("disabled")) {
+                    e.stopPropagation();
+                    return;
+                }
                 if ($(this).find('.scroll-list').first().children().length > 1) {
                     if ($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').length > 0) {
                         selectedItem.text($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').text());
@@ -1230,6 +1235,7 @@
                         $selectItems.append('<div class="group">' + current.name + '</div>');
                     }
                     else if (current.disabled) {
+                        // effective when .cly-select element has disabling-on class
                         $selectItems.append('<div data-value="' + current.value + '" class="item disabled">' + current.name + '</div>');
                     }
                     else {
