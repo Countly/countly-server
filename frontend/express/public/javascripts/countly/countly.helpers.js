@@ -1167,12 +1167,16 @@
             e.stopPropagation();
         });
 
-        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function() {
-            var selectedItem = $(this).parents(".cly-select").find(".text");
+        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function(e) {
+            var clySelect = $(this).parents(".cly-select");
+            var selectedItem = clySelect.find(".text");
+            if (clySelect.hasClass("disabling-on") && $(this).hasClass("disabled")) {
+                e.stopPropagation();
+                return;
+            }
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
-
-            $(this).parents(".cly-select").trigger("cly-select-change", [$(this).data("value")]);
+            clySelect.trigger("cly-select-change", [$(this).data("value")]);
         });
 
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function() {
@@ -1224,6 +1228,9 @@
                     var current = items[i];
                     if (current.type === 'group') {
                         $selectItems.append('<div class="group">' + current.name + '</div>');
+                    }
+                    else if (current.disabled) {
+                        $selectItems.append('<div data-value="' + current.value + '" class="item disabled">' + current.name + '</div>');
                     }
                     else {
                         $selectItems.append('<div data-value="' + current.value + '" class="item">' + current.name + '</div>');
