@@ -1,8 +1,6 @@
 FROM node:8.16-jessie
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
-ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
-ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
 
 # Core dependencies
 ## Tini

@@ -1,8 +1,6 @@
 FROM node:8.16-jessie
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
-ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
-ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
 
 # Core dependencies
 ## Tini
@@ -34,9 +32,11 @@ RUN cp -n frontend/express/public/javascripts/countly/countly.config.sample.js f
 	./bin/docker/preinstall.sh
 
 USER root
-RUN apt-get remove -y git g++ gcc make automake autoconf libtool pkg-config unzip python && \
+RUN bash /opt/countly/bin/scripts/detect.init.sh && \
+	apt-get remove -y git g++ gcc make automake autoconf libtool pkg-config unzip python && \
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 USER 1001
+RUN countly update sdk-web
 CMD ["/opt/countly/bin/docker/cmd.sh"]
