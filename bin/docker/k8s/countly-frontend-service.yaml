@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countly-frontend
+spec:
+  ports:
+  - port: 6001
+    protocol: TCP
+    targetPort: 6001
+  selector:
+    app: countly-frontend
+  type: NodePort
