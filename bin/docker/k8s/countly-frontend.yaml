@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: countly-frontend
-        image: gcr.io/countly-playground/frontend:19.08.1
+        image: countly/frontend:19.08.1
         ports:
         - containerPort: 6001
         readinessProbe:
@@ -25,7 +25,7 @@ spec:
           periodSeconds: 5
         env:
           - name: COUNTLY_PLUGINS
-            value: "web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding"
+            value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding"
           - name: COUNTLY_CONFIG_API_MONGODB
             value: "mongodb://db-mongodb-replicaset-0.db-mongodb-replicaset:27017,db-mongodb-replicaset-1.db-mongodb-replicaset:27017,db-mongodb-replicaset-2.db-mongodb-replicaset:27017/countly?replicaSet=rs0"
           - name: COUNTLY_CONFIG_FRONTEND_MONGODB
