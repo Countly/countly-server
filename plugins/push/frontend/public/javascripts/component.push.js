@@ -360,7 +360,7 @@ window.component('push', function(push) {
                 this.setBuild(data);
                 if (data.build && data.build.count) {
                     if (onFullBuild) { onFullBuild(); }
-                } else if (this._id()) {
+                } else if (this._id() && !data.delayed) {
                     setTimeout(this.remotePrepare.bind(this, onFullBuild), 2000);
                 }
             }.bind(this));
@@ -638,7 +638,7 @@ window.component('push', function(push) {
 
         this.statusString = function() {
             if (this.isSending()) {
-                if (this.error) {
+                if (this.error()) {
                     return t('push.message.status.sending-errors');
                 } else {
                     return t('push.message.status.sending');

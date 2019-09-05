@@ -35,10 +35,12 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                 }
             };
         }
+        var t = c.a && c.a && c.a.key ? jQuery.i18n.map['mgmt-plugins.push.detected'] + ' ' + (c.a.key.length > 50 ? 'FCM' : 'GCM') : '';
         this.templateData.a = {
             _id: c.a && c.a._id || '',
             key: c.a && c.a && c.a.key || '',
-            help: c.a && c.a && c.a.key ? jQuery.i18n.map['mgmt-plugins.push.detected'] + ' ' + (c.a.key.length > 50 ? 'FCM' : 'GCM') : ''
+            help: c.a && c.a && c.a.key && c.a.key.length > 50 ? t : '',
+            ehelp: c.a && c.a && c.a.key && c.a.key.length < 50 ? t : ''
         };
     },
 
@@ -320,5 +322,30 @@ $(document).ready(function() {
         app.configurationsView.registerLabel("push", "push.plugin-title");
         app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
         app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
+    }
+
+    var notes = countlyGlobal.member.notes;
+    if (notes && notes.push && notes.push.gcm && notes.push.gcm !== true) {
+        CountlyHelpers.notify({
+            type: 'error',
+            title: jQuery.i18n.map['push.note.gcm.t'],
+            message: jQuery.i18n.prop('push.note.gcm.m', notes.push.gcm.apps.map(function(a) {
+                return a.name;
+            }).join(', ')),
+            sticky: true,
+            onClick: function() {
+                return $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/i/users/ack",
+                    data: {
+                        api_key: countlyGlobal.member.api_key,
+                        path: 'push.gcm'
+                    },
+                    success: function() {
+                        notes.push.gcm = true;
+                    }
+                });
+            }
+        });
     }
 });

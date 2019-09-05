@@ -1749,7 +1749,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #sidebar,
 #main-views-container #analytics-main-view.active #sidebar.hidden { transform:translate(-230px); opacity:0.8; transition: opacity 0.1s 0.2s, transform 0.55s; }
 #main-views-container #analytics-main-view.active #sidebar { transform:translate(0); opacity:1; transition: opacity 0.1s 0.2s, transform 0.55s; }
-#hide-sidebar-button { position: absolute; left: 16px; top: 22px; cursor: pointer; width: 21px; height: 18px; background-image: url("../images/dashboard/collapse-sprite.svg"); background-repeat: no-repeat;}
+#hide-sidebar-button { position: absolute; left: 16px; top: 21px; cursor: pointer; width: 21px; height: 18px; background-image: url("../images/dashboard/collapse-sprite.svg"); background-repeat: no-repeat;}
 #hide-sidebar-button:hover { background-position: -21px 0px; }
 #hide-sidebar-button.active { background-position: -42px 0px; }
 #hide-sidebar-button.active:hover { background-position: -63px 0px; }

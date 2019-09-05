@@ -288,7 +288,13 @@ const PUSH_CACHE_GROUP = 'P';
                         N.Note.load(common.db, k).then(note => {
                             let date = Date.now();
                             if (note.actualDates) {
-                                date = params.qstring.events.filter(e => e.key === evs[0])[0].timestamp;
+                                date = new Date(params.qstring.events.filter(e => e.key === evs[0])[0].timestamp).toString();
+                                if (date === 'Invalid Date') {
+                                    date = new Date().toString();
+                                }
+                            }
+                            else {
+                                date = new Date().toString();
                             }
                             push.onEvent(params.app_id, params.app_user.uid, evs[0], date, note).catch(log.e.bind(log));
                         }, e => {
@@ -459,6 +465,11 @@ const PUSH_CACHE_GROUP = 'P';
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
         common.db.collection(`push_${appId}`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}_id`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}_ia`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}_ip`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}_at`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}_ap`).deleteMany({}, function() {});
         common.db.collection('apps').findOne({_id: common.db.ObjectID(appId)}, function(err, app) {
             if (err || !app) {
                 return log.e('Cannot find app: %j', err || 'no app');
@@ -489,12 +500,16 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/consent/change', ({params, changes}) => {
-        push.onConsentChange(params, changes);
+        if (changes && changes.push === false && params.app_id && params.app_user && params.app_user.uid !== undefined) {
+            push.removeUser(params.app_id, params.app_user.uid);
+        }
     });
 
     plugins.register('/i/app_users/delete', ({app_id, uids}) => {
         if (uids && uids.length) {
-            common.db.collection(`push_${app_id}`).deleteMany({_id: {$in: uids}}, function() {});
+            uids.forEach(uid => {
+                push.removeUser(app_id, uid);
+            });
         }
     });
 

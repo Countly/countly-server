@@ -573,15 +573,16 @@ window.MessagingDashboardView = countlyView.extend({
                 );
             }
         }, 500);
+        CountlyHelpers.applyColors();
     },
     refresh: function () {
         if (this.mounted) { this.mounted.refresh(true); }
     },
 
     destroy: function () {
-        m.startComputation();
+        // m.startComputation();
         components.slider.instance.close();
-        m.endComputation();
+        // m.endComputation();
 
         if (this.mounted) {
             delete components.push.dashboard;

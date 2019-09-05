@@ -234,7 +234,7 @@ class Connection extends res.Resource {
             this.interval = setInterval(function() {
                 s = s + 1 - 1;
                 console.log(s++);
-            }, 1000);
+            }, 10000);
         }
     }
 
