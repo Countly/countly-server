@@ -26,6 +26,8 @@ spec:
         env:
           - name: COUNTLY_PLUGINS
             value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding"
+          - name: COUNTLY_CONFIG_API_FILESTORAGE
+            value: "gridfs"
           - name: COUNTLY_CONFIG_API_MONGODB
             value: "mongodb://db-mongodb-replicaset-0.db-mongodb-replicaset:27017,db-mongodb-replicaset-1.db-mongodb-replicaset:27017,db-mongodb-replicaset-2.db-mongodb-replicaset:27017/countly?replicaSet=rs0"
           - name: COUNTLY_CONFIG_FRONTEND_MONGODB
