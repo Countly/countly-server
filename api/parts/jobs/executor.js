@@ -12,8 +12,7 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 process.on('exit', () => {
-    console.log('Exiting due to master exited');
-    process.exit(1);
+    console.log('Executor exited');
 });
 
 /**
