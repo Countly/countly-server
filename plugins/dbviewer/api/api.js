@@ -11,6 +11,24 @@ var common = require('../../../api/utils/common.js'),
         var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
+
+        /**
+        * Check properties and manipulate values
+        * @param {object} doc - document
+        * @returns {object} - returns manipulated document object
+        **/
+        function objectIdCheck(doc) {
+            if (typeof doc === "string") {
+                doc = JSON.parse(doc);
+            }
+            for (var key in doc) {
+                if (doc[key] && typeof doc[key].toHexString !== "undefined") {
+                    doc[key] = "ObjectId("+doc[key]+")";
+                }
+            }
+            return doc;
+        }
+
         /**
         * Get document data from db
         **/
@@ -24,7 +42,7 @@ var common = require('../../../api/utils/common.js'),
                         if (err) {
                             console.error(err);
                         }
-                        common.returnOutput(params, results || {});
+                        common.returnOutput(params, objectIdCheck(results) || {});
                     });
                 }
             }
@@ -71,7 +89,7 @@ var common = require('../../../api/utils/common.js'),
                 cursor.count(function(err, total) {
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
-                            return JSON.stringify(doc);
+                            return JSON.stringify(objectIdCheck(doc));
                         }
                     });
                     var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
