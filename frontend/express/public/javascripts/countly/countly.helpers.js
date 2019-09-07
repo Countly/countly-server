@@ -976,6 +976,7 @@
             countlyCommon.setPeriod(selectedPeriod);
 
             self.dateChanged(selectedPeriod);
+            app.runRefreshScripts();
 
             $("#" + selectedPeriod).addClass("active");
         });
