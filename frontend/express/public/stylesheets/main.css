@@ -3508,3 +3508,6 @@ color:#E95C6C; transition:color 1s;
     cursor: pointer;
     top: 7px;
 }
+.highlighted-app-item {
+    background-color: #ebebeb;
+}
