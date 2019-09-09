@@ -23,7 +23,7 @@ var common = require('../../../api/utils/common.js'),
             }
             for (var key in doc) {
                 if (doc[key] && typeof doc[key].toHexString !== "undefined") {
-                    doc[key] = "ObjectId("+doc[key]+")";
+                    doc[key] = "ObjectId(" + doc[key] + ")";
                 }
             }
             return doc;

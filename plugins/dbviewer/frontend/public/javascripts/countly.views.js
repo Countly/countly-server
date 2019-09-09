@@ -618,8 +618,8 @@ window.DBViewerView = countlyView.extend({
 
             $('body').on('click', '.dbviewer-document-detail', function() {
                 var id = $(this).data('id');
-                if (id.substr(0,3) === "Obj") {
-                	id = id.split("(")[1].split(")")[0];
+                if (id.substr(0, 3) === "Obj") {
+                    id = id.split("(")[1].split(")")[0];
                 }
                 app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection') + '/' + id);
                 countlyDBviewer.loadDocument($(this).data('db'), $(this).data('collection'), id)
