@@ -42,6 +42,7 @@ var countlyConfig = require('./../config', 'dont-enclose');
  * @param  {number} options.dimensions.padding - the padding value to subtract from the height of the screenshot
  * @param  {number} options.dimensions.scale - the scale(ppi) value of the screenshot
  * @param  {function} cb - callback function called with the error value or the image data
+ * @return {void} void
  */
 exports.renderView = function(options, cb) {
     if (puppeteer === undefined) {
