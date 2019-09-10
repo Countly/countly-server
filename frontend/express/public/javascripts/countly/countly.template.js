@@ -2201,6 +2201,76 @@ var AppRouter = Backbone.Router.extend({
                 e.stopPropagation();
             });
 
+            /**
+             * Clear highlights class from app items
+             * @param {array} filteredItems - filtered app items list
+             */
+            function clearHighlights(filteredItems) {
+                var length = filteredItems.length;
+                for (var i = 0; i < length; i++) {
+                    $(filteredItems[i]).removeClass('highlighted-app-item');
+                }
+            }
+
+            var arrowed = false;
+            var currentIndex;
+            $topbar.on('keydown', '.nav-search input', function(e) {
+                var code = (e.keyCode || e.which);
+                var filteredItems = $('#app-navigation > div.menu > div.list > .filtered-app-item');
+                var indexLimit = filteredItems.length;
+                if (code === 38) {
+                    clearHighlights(filteredItems);
+                    if (!arrowed) {
+                        arrowed = true;
+                        currentIndex = indexLimit - 1;
+                    }
+                    else {
+                        currentIndex = currentIndex - 1;
+                        if (currentIndex === -1) {
+                            currentIndex = indexLimit - 1;
+                        }
+                    }
+                    $(filteredItems[currentIndex]).addClass('highlighted-app-item');
+                }
+                else if (code === 40) {
+                    clearHighlights(filteredItems);
+                    if (!arrowed) {
+                        arrowed = true;
+                        currentIndex = 0;
+                    }
+                    else {
+                        currentIndex = currentIndex + 1;
+                        if (currentIndex === indexLimit) {
+                            currentIndex = 0;
+                        }
+                    }
+                    $(filteredItems[currentIndex]).addClass('highlighted-app-item');
+                }
+                else if (code === 13) {
+                    $('#app-navigation').removeClass('clicked');
+                    var appKey = $(filteredItems[currentIndex]).data("key"),
+                        appId = $(filteredItems[currentIndex]).data("id"),
+                        appName = $(filteredItems[currentIndex]).find(".name").text(),
+                        appImage = $(filteredItems[currentIndex]).find(".app-icon").css("background-image");
+
+                    $("#active-app-icon").css("background-image", appImage);
+                    $("#active-app-name").text(appName);
+                    $("#active-app-name").attr('title', appName);
+
+                    if (self.activeAppKey !== appKey) {
+                        self.activeAppName = appName;
+                        self.activeAppKey = appKey;
+                        countlyCommon.setActiveApp(appId);
+                        self.activeView.appChanged(function() {
+                            app.onAppSwitch(appId);
+                        });
+                    }
+                }
+                else {
+                    return;
+                }
+            });
+
             $topbar.on("click", ".dropdown .item", function(e) {
                 $topbar.find(".dropdown").removeClass("clicked");
                 e.stopPropagation();
