@@ -156,7 +156,7 @@ exports.stream = function(params, stream, filename, type) {
     if (type && contents[type]) {
         headers["Content-Type"] = contents[type];
     }
-    headers["Content-Disposition"] = "attachment;filename=" + filename + "." + type;
+    headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
     if (params.res.writeHead) {
         params.res.writeHead(200, headers);
         params.res.write("[");

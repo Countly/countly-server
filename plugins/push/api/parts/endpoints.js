@@ -1425,7 +1425,7 @@ function cachedData(note) {
 
     //          params.res.writeHead(200, {
     //              'Content-Type': mime,
-    //              'Content-disposition': 'attachment;filename=' + name,
+    //              'Content-disposition': 'attachment;filename=' + encodeURIComponent(name),
     //              'Content-Length': buf.length
     //          });
     //          params.res.end(buf); 
