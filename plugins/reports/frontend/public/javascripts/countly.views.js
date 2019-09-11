@@ -485,11 +485,8 @@ window.ReportingView = countlyView.extend({
         $("#reports-multi-app-dropdown").on("cly-multi-select-change", function() {
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
-        /*eslint-disable */
-        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
-        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-        /*eslint-enable */
-
+        
+        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
         self.emailInput = $('#email-list-input').selectize({
             plugins: ['remove_button'],
             persist: false,
