@@ -47,7 +47,7 @@
 					</div>
 					<ul class="dbviewer-collection-list-{{value.name}}">
 					{{#eachOfArray value.list}}
-					<li data-db="{{../value.name}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" class="collection-list-item searchable"><a class="dbviewer-link-in-collection-list" href='javascript:void(0)'>{{value}}</a></li>
+					<li data-db="{{../value.name}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" class="collection-list-item searchable"><a class="dbviewer-link-in-collection-list" href=href="#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a></li>
 					{{/eachOfArray}}
 					</ul>
 				</div>
@@ -169,7 +169,7 @@
 					<table class="jh-type-object jh-root" id="dbviewer-collections">
 					{{#eachOfArray data.collections}}
 					<tr>
-						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} <span class="dbviewer-view-link" class="jh-type-string"><a data-db="{{../db}}" data-collection="{{../collection}}" data-id="{{value._id}}" href='javascript:void(0)' class="dbviewer-document-detail">View</a></span></p></th>
+						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} <span class="dbviewer-view-link" class="jh-type-string"><a data-db="{{../db}}" data-collection="{{../collection}}" data-id="{{value._id}}" href="#/manage/db/{{../db}}/{{../collection}}/{{#clearObjectId value._id}}{{/clearObjectId}}" class="dbviewer-document-detail">View</a></span></p></th>
 					</tr>
 					<tr>
 						<td class="jh-value jh-object-value">{{prettyJSON value}}</td>
@@ -220,7 +220,7 @@
 										<div class="dbviewer-collection-list">
 										{{#eachOfArray value.list}}
 											<div class="dbviewer-collection-list-item">
-												<a class="collection-list-item" data-db="{{../../../db}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" href="javascript:void(0)">{{value}}</a>
+												<a class="collection-list-item" data-db="{{../../../db}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" href="#/manage/db/{{../../../db}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a>
 											</div>
 										{{/eachOfArray}}
 										</div>
@@ -228,7 +228,7 @@
 						{{/eachOfArray}}
 						{{else}}
 							{{#eachOfArray dbs}}
-								<a href="javascript:void(0)">
+								<a href="#/manage/db/{{value.name}}">
 									<div class="dbviewer-db-square db-detail" id="{{value.name}}-box" data-db="{{value.name}}">
 										<img class="dbviewer-box-svg" src="./dbviewer/images/dbviewer/{{value.name}}.svg">
 										<h3 class="dbviewer-db-title" data-localize="dbviewer.{{value.name}}-database"></h3>

@@ -409,7 +409,7 @@ window.DBViewerView = countlyView.extend({
         }
         data.collections.forEach(function(item) {
             var template = '<tr>' +
-            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" class="jh-type-string"><a class="dbviewer-document-detail" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" href="javascript:void(0)">View</a></span></p></th>' +
+            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" class="jh-type-string"><a class="dbviewer-document-detail" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" href="#/manage/db/' + self.db + '/' + self.collection + '/' + item._id + '">View</a></span></p></th>' +
             '</tr>' +
             '<tr>' +
             '<td class="jh-value jh-object-value">' + self.syntaxHighlight(JSON.stringify(item, undefined, 4)) + '</td>' +
@@ -455,7 +455,7 @@ window.DBViewerView = countlyView.extend({
         $('.dbviewer-collections').append('<div class="dbviewer-db-area-title">' + this.db + '</div>');
         $('.dbviewer-collections').append('<div class="dbviewer-collection-list">');
         for (var collection in dbs[currentDbIndex].collections) {
-            $('.dbviewer-collection-list').append('<div class="dbviewer-collection-list-item"><a class="collection-list-item" data-db="' + this.db + '" data-collection="' + dbs[currentDbIndex].collections[collection] + '" href="javascript:void(0)">' + collection + '</a></div>');
+            $('.dbviewer-collection-list').append('<div class="dbviewer-collection-list-item"><a class="collection-list-item" data-db="' + this.db + '" data-collection="' + dbs[currentDbIndex].collections[collection] + '" href="#/manage/db/' + this.db + '/' + dbs[currentDbIndex].collections[collection] + '">' + collection + '</a></div>');
         }
         $('.dbviewer-collections').append('</div>');
         $('.dbviewer-aggregate').hide();
@@ -948,7 +948,7 @@ window.DBViewerView = countlyView.extend({
                         }
                         response.collections.forEach(function(item) {
                             var template = '<tr>' +
-                            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" class="jh-type-string"><a href="javascript:void(0)">View</a></span></p></th>' +
+                            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" class="jh-type-string"><a href="#/manage/db/' + self.db + '/' + self.collection + '/' + item._id + '">View</a></span></p></th>' +
                             '</tr>' +
                             '<tr>' +
                             '<td class="jh-value jh-object-value">' + self.syntaxHighlight(JSON.stringify(item, undefined, 4)) + '</td>' +
