@@ -3445,6 +3445,7 @@ var AppRouter = Backbone.Router.extend({
 
             $("#date-picker-button").click(function(e) {
                 $("#date-picker").toggle();
+                $("#date-picker-button").toggleClass("active");
 
                 if (self.dateToSelected) {
                     dateTo.datepicker("setDate", moment(self.dateToSelected).toDate());
@@ -3467,7 +3468,9 @@ var AppRouter = Backbone.Router.extend({
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 }
 
-                setSelectedDate();
+                $("#date-from-input").val(moment(dateFrom.datepicker("getDate")).format("MM/DD/YYYY"));
+                $("#date-to-input").val(moment(dateTo.datepicker("getDate")).format("MM/DD/YYYY"));
+                //setSelectedDate();
                 e.stopPropagation();
             });
 
@@ -3486,7 +3489,7 @@ var AppRouter = Backbone.Router.extend({
                     dateFrom.datepicker("option", "maxDate", date);
                     self.dateToSelected = date.getTime();
 
-                    setSelectedDate();
+                    $("#date-to-input").val(moment(date).format("MM/DD/YYYY"));
                 }
             });
 
@@ -3504,16 +3507,42 @@ var AppRouter = Backbone.Router.extend({
 
                     dateTo.datepicker("option", "minDate", date);
                     self.dateFromSelected = date.getTime();
+                    $("#date-from-input").val(moment(date).format("MM/DD/YYYY"));
+                }
+            });
 
-                    setSelectedDate();
+            $("#date-from-input").keyup(function(event) {
+                if (event.keyCode === 13) {
+                    var date = moment($("#date-from-input").val());
+                    dateTo.datepicker("option", "minDate", date.toDate());
+                    if (date.valueOf() > self.dateToSelected) {
+                        self.dateToSelected = date.valueOf();
+                        dateFrom.datepicker("option", "maxDate", date.toDate());
+                        dateTo.datepicker("setDate", date.toDate());
+                        $("#date-to-input").val(date.format("MM/DD/YYYY"));
+
+                    }
+                    dateFrom.datepicker("setDate", date.toDate());
+                }
+            });
+
+
+            $("#date-to-input").keyup(function(event) {
+                if (event.keyCode === 13) {
+                    var date = moment($("#date-to-input").val());
+                    dateFrom.datepicker("option", "maxDate", date.toDate());
+                    if (date.toDate() < self.dateFromSelected) {
+                        self.dateFromSelected = date.valueOf();
+                        dateTo.datepicker("option", "minDate", date.toDate());
+                        dateFrom.datepicker("setDate", date.toDate());
+                        $("#date-from-input").val(date.format("MM/DD/YYYY"));
+                    }
+                    dateTo.datepicker("setDate", date.toDate());
                 }
             });
             /** function sets selected date */
             function setSelectedDate() {
-                var from = moment(dateFrom.datepicker("getDate")).format("D MMM, YYYY"),
-                    to = moment(dateTo.datepicker("getDate")).format("D MMM, YYYY");
-
-                $("#selected-date").text(from + " - " + to);
+                $("#selected-date").text(countlyCommon.getDataRangeForCalendar());
             }
 
             $.datepicker.setDefaults($.datepicker.regional[""]);
@@ -3530,9 +3559,18 @@ var AppRouter = Backbone.Router.extend({
 
                 self.activeView.dateChanged();
                 app.runRefreshScripts();
-
+                setSelectedDate();
+                $("#date-selector .calendar").removeClass("active");
                 $(".date-selector").removeClass("selected").removeClass("active");
+                $("#date-picker").hide();
             });
+
+            $("#date-cancel").click(function() {
+                $("#date-selector .calendar").removeClass("selected").removeClass("active");
+                $("#date-picker").hide();
+            });
+
+            setSelectedDate();
 
             $('.scrollable').slimScroll({
                 height: '100%',
