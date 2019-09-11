@@ -3541,6 +3541,9 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
         });
+        $(".manage-users-table .detail .password-text").off("focus").on("focus", function() {
+            $(this).select();
+        });
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
@@ -3945,6 +3948,9 @@ window.ManageUsersView = countlyView.extend({
 
         $(".change-password").off("click").on('click', function() {
             $(this).parents(".row").next().toggle();
+            $(".manage-users-table .detail .password-text").off("focus").on("focus", function() {
+                $(this).select();
+            });
         });
 
         $('body').off('change', '.pp-uploader').on('change', '.pp-uploader', function() {
