@@ -166,10 +166,8 @@ window.GraphNotesView = countlyView.extend({
             showOtherMonths: true,
             onSelect: function() {}
         });
-        /*eslint-disable */
-        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
-        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-        /*eslint-enable */
+
+        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
         self.emailInput = $('#email-list-input').selectize({
             plugins: ['remove_button'],
             persist: false,
@@ -208,9 +206,9 @@ window.GraphNotesView = countlyView.extend({
                 }
 
                 // name <email@address.com>
-                /*eslint-disable */
+
                 regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
-                /*eslint-enable */
+
                 match = input.match(regex);
                 if (match) {
                     return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
