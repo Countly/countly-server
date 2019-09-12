@@ -564,6 +564,7 @@ window.DBViewerView = countlyView.extend({
                 $('#aggregate-header').show();
                 $('#dbviewer-header').hide();
                 $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
+                $('#back_to_dbviewer').attr('href', '#/manage/db/' + self.templateData.db + '/' + self.templateData.collection);
                 $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
                 $('#back_to_dbviewer').css('display', 'block');
             }
