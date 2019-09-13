@@ -1634,7 +1634,21 @@ window.AppVersionView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appVersionData.chartData,
                 "aoColumns": [
-                    { "mData": "app_versions", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
+                    {
+                        "mData": "app_versions",
+                        "sTitle": jQuery.i18n.map["app-versions.table.app-version"],
+                        "mRender": function(data, type) {
+                            if (type === "sort") {
+                                var numbers = data.split(".");
+                                data = "";
+                                for (var i in numbers) {
+                                    data += numbers[i];
+                                }
+                                parseInt(data);
+                            }
+                            return data;
+                        }
+                    },
                     {
                         "mData": "t",
                         "sType": "formatted-num",
