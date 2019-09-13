@@ -1237,7 +1237,20 @@ var AppRouter = Backbone.Router.extend({
         * {{> date-selector }}
         */
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
-
+        /**
+        * Get id value from ObjectID string
+        * @name getIdValue
+        * @memberof Handlebars
+        * @example
+        * <span>{{#clearObjectId value}}{{/clearObjectId}}</span>
+        */
+        Handlebars.registerHelper('clearObjectId', function(string) {
+            var id = string;
+            if (id.substr(0, 3) === "Obj") {
+                id = id.split("(")[1].split(")")[0];
+            }
+            return id;
+        });
         /**
         * Display common date time selecting UI elements
         * @name date-time-selector
