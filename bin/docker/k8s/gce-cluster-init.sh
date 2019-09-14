@@ -14,8 +14,8 @@ export GCE_USER=YOUR@EMAIL.ADDRESS
 gcloud config set project "${PROJECT_NAME}"
 gcloud config set compute/zone "${ZONE_NAME}"
 gcloud components update
-gcloud container clusters get-credentials ${CLUSTER_NAME}
-kubectl config set-cluster ${CLUSTER_NAME}
+gcloud container clusters get-credentials "${CLUSTER_NAME}"
+kubectl config set-cluster "${CLUSTER_NAME}"
 # ---------------------------------------------------------------------------------------------------
 
 
@@ -25,7 +25,7 @@ kubectl config set-cluster ${CLUSTER_NAME}
 # ---------------------------------------------------------------------------------------------------
 # Cluster & Helm setup
 # give user rights to give helm rights
-kubectl create clusterrolebinding user-cluster-admin-binding   --clusterrole=cluster-admin   --user=${GCE_USER}
+kubectl create clusterrolebinding user-cluster-admin-binding   --clusterrole=cluster-admin   --user="${GCE_USER}"
 kubectl create clusterrolebinding tiller-cluster-admin-binding --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 # give helm the rights
 kubectl create -f rbac-config.yaml
