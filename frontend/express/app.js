@@ -790,6 +790,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         var serverSideRendering = req.query.ssr;
         _.extend(req.config, configs);
         var countlyGlobal = {
+            COUNTLY_CONTAINER: process.env.COUNTLY_CONTAINER,
             countlyTitle: req.countly.title,
             company: req.countly.company,
             languages: languages,

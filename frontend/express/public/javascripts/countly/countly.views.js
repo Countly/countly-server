@@ -4971,28 +4971,21 @@ window.EventsOverviewView = countlyView.extend({
         });
         self.overviewList = NeweventOrder;
     },
-    reset_drawer: function() {
-        var self = this;
+    resetOverviewList: function() {
         var overviewList = countlyEvent.getOverviewList();
-        self.overviewList = [];
+        this.overviewList = [];
         for (var i = 0; i < overviewList.length; i++) {
             var evname = overviewList[i].eventKey;
             var propname = overviewList[i].eventProperty;
-            if (self.eventmap && self.eventmap[overviewList[i].eventKey] && self.eventmap[overviewList[i].eventKey].name) {
-                evname = self.eventmap[evname].name;
+            if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey].name) {
+                evname = this.eventmap[evname].name;
             }
-            if (self.eventmap && self.eventmap[overviewList[i].eventKey] && self.eventmap[overviewList[i].eventKey][propname]) {
-                propname = self.eventmap[overviewList[i].eventKey][propname];
+            if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname]) {
+                propname = this.eventmap[overviewList[i].eventKey][propname];
             }
-            self.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
+            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
         }
-
-        self.templateData["overview-list"] = self.overviewList;
-
-        var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-        $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
-        self.overviewTableScripts();
-        app.localize($("#events-overview-table-wrapper"));
+        this.templateData["overview-list"] = this.overviewList;
     },
     fixTrend: function(changePercent) {
         var value = {"class": "", "text": "", "classdiv": "u", "arrow_class": "trending_up"};
@@ -5046,48 +5039,51 @@ window.EventsOverviewView = countlyView.extend({
 
         this.templateData["overview-length"] = this.templateData["overview-graph"].length;
         this.templateData["overview-table-length"] = this.templateData["overview-list"].length;
-        if (!isRefresh) {
-            var overviewList = countlyEvent.getOverviewList();
-            this.overviewList = [];
-            for (var i = 0; i < overviewList.length; i++) {
-                var evname = overviewList[i].eventKey;
-                var propname = overviewList[i].eventProperty;
-                if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey].name) {
-                    evname = this.eventmap[evname].name;
-                }
-                if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname]) {
-                    propname = this.eventmap[overviewList[i].eventKey][propname];
-                }
-                this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
-            }
 
-            this.templateData["overview-list"] = this.overviewList;
+        if (!isRefresh) {
+            this.resetOverviewList();
             this.templateData["overview-length"] = this.templateData["overview-graph"].length;
             this.templateData["overview-table-length"] = this.templateData["overview-list"].length;
             $(this.el).html(this.template(this.templateData));
 
-            self.pageScripts();
-
-            //selecting event or property in drawer
-            $(".cly-select").on("cly-select-change", function() {
-                var event = $("#events-overview-event").clySelectGetSelection();
-                var property = $("#events-overview-attr").clySelectGetSelection();
-                if (event && property) {
-                    $("#add_to_overview").removeClass('disabled');
-                }
-                else {
+            this.overviewDrawer = CountlyHelpers.createDrawer({
+                id: "event-overview-drawer",
+                form: $('#event-overview-drawer'),
+                title: jQuery.i18n.map["data-migration.import-title"],
+                applyChangeTriggers: true,
+                onUpdate: function() {
+                    var event = $("#events-overview-event").clySelectGetSelection();
+                    var property = $("#events-overview-attr").clySelectGetSelection();
+                    if (event && property) {
+                        $("#add_to_overview").removeClass('disabled');
+                    }
+                    else {
+                        $("#add_to_overview").addClass('disabled');
+                    }
+                },
+                resetForm: function() {
+                    self.resetOverviewList();
+                    self.templateData["overview-table-length"] = self.overviewList.length;
+                    $("#events-overview-table").css("max-height", $(window).height() - 280);
+                    $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
+                    $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
                     $("#add_to_overview").addClass('disabled');
+                    $("#update_overview_button").addClass('disabled');
+
+
+                    var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                    $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
+                    self.overviewTableScripts();
+                    app.localize($("#events-overview-table-wrapper"));
                 }
             });
+
+            self.pageScripts();
+
             //open editing drawer
             $("#events-overview-show-configure").on("click", function() {
-                $(".cly-drawer").removeClass("open editing");
-                $("#events-overview-table").css("max-height", $(window).height() - 280);
-                $("#event-overview-drawer").addClass("open");
-                $("#event-overview-drawer").find(".close").off("click").on("click", function() {
-                    $(this).parents(".cly-drawer").removeClass("open");
-                    self.reset_drawer();
-                });
+                self.overviewDrawer.resetForm();
+                self.overviewDrawer.open();
             });
 
             //Add new item to overview
@@ -5125,6 +5121,9 @@ window.EventsOverviewView = countlyView.extend({
 
             //save changes made in overview drawer
             $("#update_overview_button").on("click", function() {
+                if ($(this).hasClass("disabled")) {
+                    return;
+                }
                 countlyEvent.update_map("", "", JSON.stringify(self.overviewList), "", function(result) {
                     if (result === true) {
                         var widgetCount = self.overviewList ? self.overviewList.length : 0;
