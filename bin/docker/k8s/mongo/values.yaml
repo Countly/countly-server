@@ -40,7 +40,7 @@ copyConfigImage:
 # Specs for the MongoDB image
 image:
   repository: mongo
-  tag: 3.6
+  tag: 3.6.12
   pullPolicy: IfNotPresent
 
 # Additional environment variables to be set in the container
@@ -107,7 +107,7 @@ persistentVolume:
   storageClass: "mongo-storageclass"
   accessModes:
     - ReadWriteOnce
-  size: 10Gi
+  size: 200G
   annotations: {}
 
 # Annotations to be added to the service
