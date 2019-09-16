@@ -221,21 +221,8 @@ function getTotalMsgSent(callback, apps) {
         }
         query.apps = {$in: inarray};
     }
-    countlyDb.collection("messages").find(query, {"result": 1}).toArray(function(err, messages) {
-        if (err || !messages) {
-            callback(0);
-        }
-        else {
-            var sentMsgCount = 0;
-
-            for (let i = 0; i < messages.length; i++) {
-                if (messages[i] && messages[i].result && messages[i].result.sent) {
-                    sentMsgCount += messages[i].result.sent;
-                }
-            }
-
-            callback(sentMsgCount);
-        }
+    countlyDb.collection("messages").aggregate([{$match: query}, {$group: {_id: 'count', sent: {$sum: '$result.sent'}}}], function(err, count) {
+        callback(count && count[0] && count[0].sent || 0);
     });
 }
 
