@@ -85,33 +85,20 @@ window.AlertsView = countlyView.extend({
         });
     },
     prepareDrawer: function() {
+        this.widgetDrawer.init();
         var self = this;
-        this.widgetDrawer.drawer = CountlyHelpers.createDrawer({
-            id: "alert-widget-drawer",
-            form: $('#alert-widget-drawer'),
-            title: jQuery.i18n.map["alert.Add_New_Alert"],
-            applyChangeTriggers: false,
-            resetForm: function() {
-                $("#current_alert_id").text('');
-                $(self.widgetDrawer.drawer).find('.title span').first().html(jQuery.i18n.map["alert.Add_New_Alert"]);
-                $("#alert-widget-drawer").find("#widget-types .opt").removeClass("disabled");
-                $("#create-widget").removeClass("disabled");
-                $(($('#alert-data-types').find("[data-data-type='metric']"))).trigger("click");
-                if (self.widgetDrawer.emailInput && self.widgetDrawer.emailInput.length > 0) {
-                    (self.widgetDrawer.emailInput[0]).selectize.setValue("");
-                }
-            },
-            onClosed: function() {
-                $(".grid-stack-item").removeClass("marked-for-editing");
-            }
+        $("#create-alert").off("click").on("click", function() {
+            self.widgetDrawer.init();
+            $("#current_alert_id").text('');
+            $("#alert-widget-drawer").removeClass("open editing");
+            $("#alert-widget-drawer").find("#widget-types .opt").removeClass("disabled");
+            $("#alert-widget-drawer").addClass("open");
+            $("#create-widget").removeClass("disabled");
+            $(($('#alert-data-types').find("[data-data-type='metric']"))).trigger("click");
         });
 
-        this.widgetDrawer.init();
-        var self1 = this;
-        $("#create-alert").off("click").on("click", function() {
-            self1.widgetDrawer.init();
-            self1.widgetDrawer.drawer.resetForm();
-            self1.widgetDrawer.drawer.open();
+        $('#alert-widge-close').off("click").on("click", function() {
+            $("#alert-widget-drawer").removeClass("open");
         });
     },
 
@@ -128,6 +115,7 @@ window.AlertsView = countlyView.extend({
                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                 });
             }
+
 
             pluginsData.push({
                 id: alertsList[i]._id,
@@ -270,11 +258,8 @@ window.AlertsView = countlyView.extend({
         $(".edit-alert").off("click").on("click", function(e) {
             var alertID = e.target.id;
             var formData = alertsPlugin.getAlert(alertID);
+            $("#alert-widget-drawer").addClass("open editing");
             self.widgetDrawer.loadData(formData);
-            $(self.widgetDrawer.drawer).find('.title span').first().html(jQuery.i18n.map["alert.Edit_Your_Alert"]);
-
-            self.widgetDrawer.drawer.open();
-            $(self.widgetDrawer.drawer).addClass("open editing");
         });
 
     },
@@ -445,7 +430,10 @@ window.AlertsView = countlyView.extend({
             $("#alert-widget-drawer").find(".section.settings").hide();
 
             // $("#alert-widget-drawer").trigger("cly-widget-section-complete");
-
+            $(".cly-drawer").find(".close").off("click").on("click", function() {
+                $(".grid-stack-item").removeClass("marked-for-editing");
+                $(this).parents(".cly-drawer").removeClass("open");
+            });
 
 
             $("#create-widget").off().on("click", function() {
@@ -455,8 +443,8 @@ window.AlertsView = countlyView.extend({
                         return;
                     }
                 }
-                self.drawer.close();
 
+                $("#alert-widget-drawer").removeClass("open");
                 alertsPlugin.saveAlert(alertConfig, function callback() {
                     alertsPlugin.requestAlertsList(function() {
                         app.alertsView.renderTable();
@@ -471,7 +459,7 @@ window.AlertsView = countlyView.extend({
                         return;
                     }
                 }
-                self.drawer.close();
+                $("#alert-widget-drawer").removeClass("open");
                 alertsPlugin.saveAlert(alertConfig, function callback() {
                     alertsPlugin.requestAlertsList(function() {
                         app.alertsView.renderTable();

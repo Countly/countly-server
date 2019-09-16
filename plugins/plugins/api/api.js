@@ -10,10 +10,6 @@ var plugin = {},
         var params = ob.params;
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function() {
-            if (process.env.COUNTLY_CONTAINER === 'api') {
-                common.returnMessage(params, 400, 'Not allowed in containerized environment');
-                return false;
-            }
             if (!params.member.global_admin) {
                 common.returnMessage(params, 401, 'User is not a global administrator');
                 return false;

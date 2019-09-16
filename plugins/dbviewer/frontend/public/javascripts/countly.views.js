@@ -1,4 +1,4 @@
-/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
+/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, production, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
 window.DBViewerView = countlyView.extend({
     initialize: function() {
         this.dbviewer_selected_app = "all";
@@ -1078,5 +1078,10 @@ app.route('/manage/db/aggregate/:dbs/:collection', 'dbs', function(db, collectio
 });
 
 $(document).ready(function() {
+    if (!production) {
+        CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
+        CountlyHelpers.loadJS("dbviewer/javascripts/jquery.json-viewer.js");
+    }
+
     app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
 });
