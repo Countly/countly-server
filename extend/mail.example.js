@@ -41,11 +41,6 @@ module.exports = function(mail) {
         }, callback);
     };
 
-    mail.escapedHTMLString = function(s) {
-        const newString = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        return newString;
-    };
-
     mail.sendToNewMember = function(member, memberPassword) {
         const password = mail.escapedHTMLString(memberPassword);
 
