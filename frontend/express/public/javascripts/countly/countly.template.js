@@ -3352,7 +3352,7 @@ var AppRouter = Backbone.Router.extend({
     },
     pageScript: function() { //scripts to be executed on each view change
         $("#month").text(moment().year());
-        $("#day").text(moment().format("MMM"));
+        $("#day").text(moment().format("MMMM, YYYY"));
         $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
         var self = this;
@@ -3470,6 +3470,9 @@ var AppRouter = Backbone.Router.extend({
 
                 $("#date-from-input").val(moment(dateFrom.datepicker("getDate")).format("MM/DD/YYYY"));
                 $("#date-to-input").val(moment(dateTo.datepicker("getDate")).format("MM/DD/YYYY"));
+
+                dateTo.datepicker("refresh");
+                dateFrom.datepicker("refresh");
                 //setSelectedDate();
                 e.stopPropagation();
             });
@@ -3490,6 +3493,16 @@ var AppRouter = Backbone.Router.extend({
                     self.dateToSelected = date.getTime();
 
                     $("#date-to-input").val(moment(date).format("MM/DD/YYYY"));
+
+                },
+                beforeShowDay: function(date) {
+                    var ts = date.getTime();
+                    if (ts < moment($("#date-to-input").val()) && ts > moment($("#date-from-input").val())) {
+                        return [true, "in-range", ""];
+                    }
+                    else {
+                        return [true, "", ""];
+                    }
                 }
             });
 
@@ -3508,21 +3521,38 @@ var AppRouter = Backbone.Router.extend({
                     dateTo.datepicker("option", "minDate", date);
                     self.dateFromSelected = date.getTime();
                     $("#date-from-input").val(moment(date).format("MM/DD/YYYY"));
+
+                },
+                beforeShowDay: function(date) {
+                    var ts = date.getTime();
+                    if (ts < moment($("#date-to-input").val()) && ts > moment($("#date-from-input").val())) {
+                        return [true, "in-range", ""];
+                    }
+                    else {
+                        return [true, "", ""];
+                    }
                 }
             });
 
             $("#date-from-input").keyup(function(event) {
                 if (event.keyCode === 13) {
                     var date = moment($("#date-from-input").val());
-                    dateTo.datepicker("option", "minDate", date.toDate());
-                    if (date.valueOf() > self.dateToSelected) {
-                        self.dateToSelected = date.valueOf();
-                        dateFrom.datepicker("option", "maxDate", date.toDate());
-                        dateTo.datepicker("setDate", date.toDate());
-                        $("#date-to-input").val(date.format("MM/DD/YYYY"));
 
+                    if (date.format("MM/DD/YYYY") !== $("#date-from-input").val()) {
+                        var jsDate = $('#date-from').datepicker('getDate');
+                        $("#date-from-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
                     }
-                    dateFrom.datepicker("setDate", date.toDate());
+                    else {
+                        dateTo.datepicker("option", "minDate", date.toDate());
+                        if (date.valueOf() > self.dateToSelected) {
+                            self.dateToSelected = date.valueOf();
+                            dateFrom.datepicker("option", "maxDate", date.toDate());
+                            dateTo.datepicker("setDate", date.toDate());
+                            $("#date-to-input").val(date.format("MM/DD/YYYY"));
+
+                        }
+                        dateFrom.datepicker("setDate", date.toDate());
+                    }
                 }
             });
 
@@ -3530,14 +3560,20 @@ var AppRouter = Backbone.Router.extend({
             $("#date-to-input").keyup(function(event) {
                 if (event.keyCode === 13) {
                     var date = moment($("#date-to-input").val());
-                    dateFrom.datepicker("option", "maxDate", date.toDate());
-                    if (date.toDate() < self.dateFromSelected) {
-                        self.dateFromSelected = date.valueOf();
-                        dateTo.datepicker("option", "minDate", date.toDate());
-                        dateFrom.datepicker("setDate", date.toDate());
-                        $("#date-from-input").val(date.format("MM/DD/YYYY"));
+                    if (date.format("MM/DD/YYYY") !== $("#date-to-input").val()) {
+                        var jsDate = $('#date-to').datepicker('getDate');
+                        $("#date-to-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
                     }
-                    dateTo.datepicker("setDate", date.toDate());
+                    else {
+                        dateFrom.datepicker("option", "maxDate", date.toDate());
+                        if (date.toDate() < self.dateFromSelected) {
+                            self.dateFromSelected = date.valueOf();
+                            dateTo.datepicker("option", "minDate", date.toDate());
+                            dateFrom.datepicker("setDate", date.toDate());
+                            $("#date-from-input").val(date.format("MM/DD/YYYY"));
+                        }
+                        dateTo.datepicker("setDate", date.toDate());
+                    }
                 }
             });
             /** function sets selected date */
@@ -3547,6 +3583,8 @@ var AppRouter = Backbone.Router.extend({
 
             $.datepicker.setDefaults($.datepicker.regional[""]);
             $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+
+
             $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
 
             $("#date-submit").click(function() {
