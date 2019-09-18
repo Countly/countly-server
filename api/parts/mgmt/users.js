@@ -259,7 +259,6 @@ usersApi.createUser = function(params) {
 
                 member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
                 common.db.collection('members').update({ '_id': member[0]._id }, { $set: { api_key: member[0].api_key } }, function() { });
-
                 mail.sendToNewMember(member[0], passwordNoHash);
                 plugins.dispatch("/i/users/create", {
                     params: params,
