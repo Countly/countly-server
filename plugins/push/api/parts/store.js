@@ -251,7 +251,7 @@ class Store extends Base {
                 d = date;
             }
             else {
-                d = typeof date === 'string' ? new Date(date) : Date.now();
+                d = typeof Date === 'string' ? new Date(date).getTime() : Date.now();
 
                 if (note.autoTime !== null && note.autoTime !== undefined) {
                     let auto = new Date(d);
@@ -917,6 +917,11 @@ class Loader extends Store {
                     $or: [{j: {$exists: false}}, {j: _id}]
                 };
                 log.d('Loading %d from %s', data.length, this.collectionName);
+                if (_id === null) {
+                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}});
+                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}});
+                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}});
+                }
                 this.collection.updateMany(q, {$set: {j: _id}}, (err2, res) => {
 
                     if (err2) {

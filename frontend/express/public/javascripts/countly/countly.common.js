@@ -13,7 +13,7 @@
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
         var htmlEncodeOptions = {
-            "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
+            "whiteList": {"a": ["href", "class", "target"], "ul": [], "li": [], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
             onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
                 if (tag === "a") {
                     var re = new RegExp(/{[0-9]*}/);

@@ -21,25 +21,6 @@ var contents = {
 var delimiter = "_";
 
 /**
-* Check type of value, if similar to timestamp, conver to Moment object
-* @param {any} value - value to checked
-* @returns {varies} Moment object or passed value
-**/
-function typeCheck(value) {
-    if (common.isNumber(value)) {
-        //this is a seconds timestamp
-        if ((Math.round(parseFloat(value, 10)) + "").length === 10) {
-            value = moment(new Date(parseInt(value, 10) * 1000)).format("ddd, D MMM YYYY HH:mm:ss");
-        }
-        //this is a miliseconds timestamp
-        else if ((Math.round(parseFloat(value, 10)) + "").length === 13) {
-            value = moment(new Date(parseInt(value, 10))).format("ddd, D MMM YYYY HH:mm:ss");
-        }
-    }
-    return value;
-}
-
-/**
 * Flattens array of objects
 * @param {array} arr - array with objects to flatten
 * @returns {object} with property data for array with flattened objects and fields property for fields array
@@ -95,7 +76,7 @@ function flattenObject(ob, fields) {
             if (fields) {
                 fields[i] = true;
             }
-            toReturn[i] = typeCheck(ob[i]);
+            toReturn[i] = ob[i];
         }
     }
     return toReturn;
@@ -156,7 +137,7 @@ exports.stream = function(params, stream, filename, type) {
     if (type && contents[type]) {
         headers["Content-Type"] = contents[type];
     }
-    headers["Content-Disposition"] = "attachment;filename=" + filename + "." + type;
+    headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
     if (params.res.writeHead) {
         params.res.writeHead(200, headers);
         params.res.write("[");

@@ -834,7 +834,7 @@ div.datatablesubrow {display: none;}
 .cly-multi-select .search .inner { position:relative; margin:5px 8px; padding:4px 1px; padding-right:20px; background-color:#FFF; font:13px Ubuntu; line-height:111%; }
 .cly-multi-select .search input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; }
 .cly-multi-select .search + .select-items { margin-top: 33px; border-top-left-radius: 0; border-top-right-radius: 0; }
-.cly-multi-select .select-items { top:100%; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; }
+.cly-multi-select .select-items { top:100%; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; max-height: 188px; overflow-y: auto; }
 .cly-multi-select .select-items .scroll-list {  max-height:188px; }
 .cly-multi-select .select-items .item { position:relative; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#666; font-weight:normal; border-bottom:1px solid #e6e6e6; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px 9px; padding-bottom:7px; }
 .cly-multi-select .select-items .item:last-child,
@@ -1359,7 +1359,6 @@ margin: 50px 0;}
 .cly-drawer .details .section input[type=text].input { width: 100%; box-sizing: border-box; border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; }
 .cly-drawer .buttons { position: relative; background-color: #fff; border-top: 1px solid #ECECED; width: 100%; padding: 20px 20px; margin: 0; left: 0; right: 0; box-sizing: border-box; bottom: 0; }
 .cly-drawer .buttons .icon-button { float:none; font-size: 15px; text-align: center; padding: 12px; margin:0; }
-.cly-drawer .buttons .icon-button.disabled, .cly-drawer  .icon-button.disabled { cursor: auto; }
 .cly-drawer .panel { background-color: #ffffff; border: 1px solid #D0D0D0; font-size: 13px; border-radius: 2px; }
 .cly-drawer .panel .panel-heading { padding: 8px 20px; background-color: #ECECEC; color: #636363; text-transform: uppercase; border-bottom: 1px solid #D0D0D0; font-weight: 500; }
 .cly-drawer .panel .panel-body { padding: 20px; position: relative; }
