@@ -1637,23 +1637,23 @@ window.AppVersionView = countlyView.extend({
                     {
                         "mData": "app_versions",
                         "sTitle": jQuery.i18n.map["app-versions.table.app-version"],
-                        "mRender": function(data, type) {
+                        "mRender": function(d, type) {
                             if (type === "sort") {
-                                var numbers = data.split(".");
+                                var numbers = d.split(".");
                                 var sortValue = 0;
                                 var multipler = 10000;
                                 for (var index in numbers) {
                                     var valueArr = numbers[index].split("");
                                     if (valueArr.length > 1) {
-                                        valueArr.splice(1, 0, '.')
+                                        valueArr.splice(1, 0, '.');
                                         numbers[index] = parseFloat(valueArr.join(""));
                                     }
                                     sortValue += multipler * parseFloat(numbers[index]);
-                                    multipler = multipler / 100;  
+                                    multipler = multipler / 100;
                                 }
-                                data = sortValue;
+                                d = sortValue;
                             }
-                            return data;
+                            return d;
                         }
                     },
                     {
