@@ -106,7 +106,8 @@ mail.sendLocalizedMessage = function(lang, to, subject, message, callback) {
 mail.escapedHTMLString = function(s) {
     const newString = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     return newString;
-}
+};
+
 /**
 * Email to send to new members
 * @param {object} member - member document
