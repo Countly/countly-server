@@ -437,7 +437,7 @@ window.ConfigurationsView = countlyView.extend({
         this.registerLabel("api.google_maps_api_key", "configs.frontend-google_maps_api_key");
 
         this.registerInput("api.send_test_email", function() {
-            return '<div id="send_test_email" style="margin-left: 0px;" class="icon-button green">Send</div> <span id="send_test_email_result" style="line-height: 29px;margin-left: 10px;"></span>';
+            return '<div id="send_test_email" style="margin-left: 0px;" class="icon-button green">Send</div>';
         });
     },
     beforeRender: function() {
@@ -1035,7 +1035,6 @@ window.ConfigurationsView = countlyView.extend({
                     return;
                 }
                 $("#send_test_email").addClass("disabled");
-                $("#send_test_email_result").text("");
 
                 return $.ajax({
                     type: "GET",
@@ -1043,11 +1042,12 @@ window.ConfigurationsView = countlyView.extend({
                     data: {},
                     success: function() {
                         $("#send_test_email").removeClass("disabled");
-                        $("#send_test_email_result").text(jQuery.i18n.map['configs.help.api-send_test_email_delivered']);
+                        CountlyHelpers.notify({ type: "ok", message: jQuery.i18n.map['configs.help.api-send_test_email_delivered']});
+
                     },
                     fail: function() {
-                        $("#send_test_email_result").text(jQuery.i18n.map['configs.help.api-send_test_email_failed']);
                         $("#send_test_email").removeClass("disabled");
+                        CountlyHelpers.notify({ type: "error", message: jQuery.i18n.map['configs.help.api-send_test_email_failed']});
                     }
                 });
             });
