@@ -913,7 +913,7 @@ var pluginManager = function pluginManager() {
                 query = querystring.parse(parts.pop());
                 conUrl = parts[0];
             }
-            query.maxPoolSize = 1;
+            query.maxPoolSize = 3;
             conUrl += "?" + querystring.stringify(query);
             return this.dbConnection({mongodb: conUrl});
         }
@@ -924,7 +924,7 @@ var pluginManager = function pluginManager() {
                     conf[k] = Object.assign({}, conf[k]);
                 }
             }
-            conf.max_pool_size = 1;
+            conf.max_pool_size = 3;
             return this.dbConnection({mongodb: conf});
         }
     };
@@ -1047,9 +1047,16 @@ var pluginManager = function pluginManager() {
     * @returns {object} db connection params
     **/
     this.dbConnection = function(config) {
-        if (process.argv[1].endsWith('executor.js') && (!config || !config.mongodb || config.mongodb.max_pool_size !== 1)) {
-            console.log('************************************ executor.js common.db ***********************************', process.argv);
-            return this.singleDefaultConnection();
+        if (process.argv[1].endsWith('executor.js')) {
+            if (!config || !config.mongodb) {
+                console.log('************************************ executor.js common.db *********************************** no config', process.argv);
+                return this.singleDefaultConnection();
+            }
+            else if ((typeof config.mongodb === 'string' && config.mongodb.indexOf('maxPoolSize=3') === -1) ||
+                (typeof config.mongodb === 'object' && config.mongodb.max_pool_size !== 3)) {
+                console.log('************************************ executor.js common.db *********************************** wrong pool size', process.argv);
+                return this.singleDefaultConnection();
+            }
         }
 
         var db, maxPoolSize = 10;
