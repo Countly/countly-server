@@ -12,6 +12,11 @@ spec:
       labels:
         app: countly-api
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+            topologyKey: "kubernetes.io/hostname"
       containers:
       - name: countly-api
         image: countly/api:19.08.1
@@ -22,7 +27,8 @@ spec:
             path: /o/ping
             port: 3001
           initialDelaySeconds: 30
-          periodSeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
         env:
           - name: COUNTLY_PLUGINS
             value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding"
