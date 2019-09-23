@@ -1018,10 +1018,7 @@
                 $(".cly-select").removeClass("active");
                 $(".select-items").hide();
                 $(context).addClass("active");
-
-                if (itemCount > 10 || $(context).hasClass("big-list")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
-                }
+                $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
             }
 
             if ($(context).hasClass("centered")) {
