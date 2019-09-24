@@ -7,7 +7,6 @@
 
     //Private Properties
     var _data = {};
-    var _emailList = [];
     //Public Methods
     countlyReporting.initialize = function() {
         return $.ajax({
@@ -28,27 +27,6 @@
                 _data = json;
             }
         });
-    };
-
-    countlyReporting.requestEmailAddressList = function() {
-        return $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + "/reports/email",
-            data: {
-                "app_id": countlyCommon.ACTIVE_APP_ID
-            },
-            success: function(json) {
-                _emailList = json;
-            }
-        });
-    };
-
-    countlyReporting.getEmailAddressList = function() {
-        var data = [];
-        _emailList.forEach(function(item) {
-            data.push({name: item.email, value: item.email});
-        });
-        return data;
     };
 
     countlyReporting.getData = function() {

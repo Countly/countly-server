@@ -60,17 +60,6 @@ var common = require('../../../api/utils/common.js'),
                 });
             });
             break;
-        case 'email':
-            validate(paramsInstance, function(params) {
-                common.db.collection('members').find({}).toArray(function(err, result) {
-                    const data = [];
-                    result.forEach((member) => {
-                        data.push({name: member.full_name, email: member.email});
-                    });
-                    common.returnOutput(params, data);
-                });
-            });
-            break;
         default:
             common.returnMessage(paramsInstance, 400, 'Invalid path');
             break;
