@@ -20,6 +20,7 @@ services:
 
   countly-api:
     image: 'countly/api:19.08.1'
+    # Enterprise Edition: image: 'gcr.io/countly-01/api:19.08.1'
     environment:
       - COUNTLY_CONFIG_API_MONGODB_HOST=mongodb
       - COUNTLY_CONFIG_API_MONGODB_USERNAME=${MONGODB_USERNAME}
@@ -42,6 +43,7 @@ services:
 
   countly-frontend:
     image: 'countly/frontend:19.08.1'
+    # Enterprise Edition: image: 'gcr.io/countly-01/api:19.08.1'
     environment:
       - COUNTLY_CONFIG_API_MONGODB_HOST=mongodb
       - COUNTLY_CONFIG_API_MONGODB_USERNAME=${MONGODB_USERNAME}
@@ -69,7 +71,7 @@ services:
   nginx:
     image: 'bitnami/nginx'
     ports:
-      - '8080:8080'
+      - '80:8080'
     volumes:
       - './bin/docker/nginx.server.conf:/opt/bitnami/nginx/conf/server_blocks/countly.conf:ro'
     networks:

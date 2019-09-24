@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # ---------------------------------------------------------------------------------------------------
 # -------------------------- IGNORE IF YOU HAVE ALREADY SET UP KUBECTL ------------------------------
 # ---------------------------------------------------------------------------------------------------
@@ -41,7 +40,7 @@ kubectl config set-context --current --namespace=countly
 
 # Install MongoDB
 kubectl apply -f mongo/storage-class.yaml
-helm install --name db -f mongo/values.yaml stable/mongodb-replicaset
+helm install --name mongo -f mongo/values.yaml stable/mongodb-replicaset
 
 ## Wait ~ 3 minutes until all 3 replica set pods spin up
 kubectl get po
@@ -49,9 +48,7 @@ kubectl get po
 
 # Install Countly deployments & services
 kubectl apply -f countly-frontend.yaml
-kubectl apply -f countly-frontend-service.yaml
 kubectl apply -f countly-api.yaml
-kubectl apply -f countly-api-service.yaml
 
 # Install Countly ingress
 gcloud compute addresses create countly-static-ip --global
