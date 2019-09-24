@@ -2650,6 +2650,55 @@ var AppRouter = Backbone.Router.extend({
             return ((x < y) ? 1 : ((x > y) ? -1 : 0));
         };
 
+        function compareVersions(a, b) {
+            var aParts = a.split('.');
+            var bParts = b.split('.');
+        
+            for (var i = 0; i < aParts.length && i < bParts.length; i++) {
+                var aPartNum = parseInt(aParts[i], 10);
+                var bPartNum = parseInt(bParts[i], 10);
+        
+                const cmp = Math.sign(aPartNum - bPartNum);
+        
+                if (cmp !== 0) {
+                    return cmp;
+                }
+            }
+        
+            if (aParts.length === bParts.length) {
+                return 0;
+            }
+        
+            let longestArray = aParts;
+            if (bParts.length > longestArray.length) {
+                longestArray = bParts;
+            }
+        
+            const continueIndex = Math.min(aParts.length, bParts.length);
+        
+            for (let i = continueIndex; i < longestArray.length; i += 1) {
+                if (parseInt(longestArray[i], 10) > 0) {
+                    return longestArray === bParts ? -1 : +1;
+                }
+            }
+        
+            return 0;
+        }
+
+        jQuery.fn.dataTableExt.oSort['app_versions-asc'] = function(x, y) {
+            var versions = [];
+            versions.push(x);
+            versions.push(y);
+            return versions.sort(compareVersions);
+        }
+
+        jQuery.fn.dataTableExt.oSort['app_versions-desc'] = function(x, y) {
+            var versions = [];
+            versions.push(x);
+            versions.push(y);
+            return versions.sort(compareVersions);
+        }
+
         jQuery.fn.dataTableExt.oSort['format-ago-asc'] = function(x, y) {
             return x - y;
         };
