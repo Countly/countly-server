@@ -23,4 +23,9 @@ else
 	  /usr/local/bin/node "/opt/countly/plugins/$plugin/install.js"
 	  echo "[docker] Done installing ${plugin}."
 	done <<< "$a"
+
+	if [ "$COUNTLY_CONTAINER" == "frontend" ]; then
+   		(cd /opt/countly && npx grunt dist-all)
+	fi
+
 fi

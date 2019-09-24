@@ -8,8 +8,7 @@ case "$COUNTLY_CONTAINER" in
     ;;
 
   "frontend" )
-   	npx grunt dist-all
-	exec /usr/local/bin/node /opt/countly/frontend/express/app.js
+  	exec /usr/local/bin/node /opt/countly/frontend/express/app.js
     ;;
 
    * )
