@@ -22,7 +22,7 @@ var common = require('../../../api/utils/common.js'),
                 doc = JSON.parse(doc);
             }
             for (var key in doc) {
-                if (doc[key] && typeof doc[key].toHexString !== "undefined") {
+                if (doc[key] && typeof doc[key].toHexString !== "undefined" && typeof doc[key].toHexString === "function") {
                     doc[key] = "ObjectId(" + doc[key] + ")";
                 }
             }
