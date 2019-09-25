@@ -21,7 +21,7 @@ spec:
     targetPort: 27017
   clusterIP: None
   selector:
-    role: mongo
+    app: mongo
 
 ---
 
@@ -35,7 +35,7 @@ spec:
   template:
     metadata:
       labels:
-        role: mongo
+        app: mongo
     spec:
       terminationGracePeriodSeconds: 10
       containers:

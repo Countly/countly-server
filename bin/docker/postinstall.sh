@@ -24,8 +24,6 @@ else
 	  echo "[docker] Done installing ${plugin}."
 	done <<< "$a"
 
-	if [ "$COUNTLY_CONTAINER" == "frontend" ]; then
-   		(cd /opt/countly && npx grunt dist-all)
-	fi
+	(cd /opt/countly && npx grunt dist-all)
 
 fi
