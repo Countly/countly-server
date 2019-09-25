@@ -1637,7 +1637,7 @@ window.AppVersionView = countlyView.extend({
                     {
                         "mData": "app_versions",
                         "sTitle": jQuery.i18n.map["app-versions.table.app-version"],
-                        "mRender": function(d, type) {
+                        "mRender": function(d) {
                             return d;
                         }
                     },
