@@ -2658,7 +2658,7 @@ var AppRouter = Backbone.Router.extend({
                 var aPartNum = parseInt(aParts[i], 10);
                 var bPartNum = parseInt(bParts[i], 10);
         
-                const cmp = Math.sign(aPartNum - bPartNum);
+                var cmp = Math.sign(aPartNum - bPartNum);
         
                 if (cmp !== 0) {
                     return cmp;
@@ -2674,7 +2674,7 @@ var AppRouter = Backbone.Router.extend({
                 longestArray = bParts;
             }
         
-            const continueIndex = Math.min(aParts.length, bParts.length);
+            var continueIndex = Math.min(aParts.length, bParts.length);
         
             for (let i = continueIndex; i < longestArray.length; i += 1) {
                 if (parseInt(longestArray[i], 10) > 0) {
@@ -2686,17 +2686,11 @@ var AppRouter = Backbone.Router.extend({
         }
 
         jQuery.fn.dataTableExt.oSort['app_versions-asc'] = function(x, y) {
-            var versions = [];
-            versions.push(x);
-            versions.push(y);
-            return versions.sort(compareVersions);
+            return compareVersions(x, y);
         }
 
         jQuery.fn.dataTableExt.oSort['app_versions-desc'] = function(x, y) {
-            var versions = [];
-            versions.push(x);
-            versions.push(y);
-            return versions.sort(compareVersions);
+            return compareVersions(x, y);
         }
 
         jQuery.fn.dataTableExt.oSort['format-ago-asc'] = function(x, y) {
