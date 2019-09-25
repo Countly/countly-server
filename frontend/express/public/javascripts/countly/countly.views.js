@@ -1632,7 +1632,13 @@ window.AppVersionView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appVersionData.chartData,
                 "aoColumns": [
-                    { "mData": "app_versions", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
+                    {
+                        "mData": "app_versions",
+                        "sTitle": jQuery.i18n.map["app-versions.table.app-version"],
+                        "mRender": function(d) {
+                            return d;
+                        }
+                    },
                     {
                         "mData": "t",
                         "sType": "formatted-num",
