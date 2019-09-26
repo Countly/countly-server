@@ -27,8 +27,7 @@ window.ReportingView = countlyView.extend({
         });
 
         allAjaxCalls.push(
-            countlyReporting.initialize(),
-            countlyReporting.requestEmailAddressList()
+            countlyReporting.initialize()
         );
 
         if (this.template) {
@@ -943,7 +942,6 @@ app.addReportsCallbacks("reports", {
             $.get(countlyGlobal.path + '/reports/templates/drawer.html', function(src) {
                 self.reportsDrawer = src;
             }),
-            countlyReporting.requestEmailAddressList(),
             countlyReporting.initialize()
         ).then(function() {
             $('#reports-widget-drawer').remove();
