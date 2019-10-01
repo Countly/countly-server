@@ -10,7 +10,7 @@ else
 		fi
 
 		COUNTLY_PLUGINS="$COUNTLY_DEFAULT_PLUGINS"
-		echo "[docker] Using default plguin list: $COUNTLY_PLUGINS"
+		echo "[docker] Using default plugin list: $COUNTLY_PLUGINS"
 	else
 		echo "[docker] Using COUNTLY_PLUGINS: $COUNTLY_PLUGINS"
 	fi
