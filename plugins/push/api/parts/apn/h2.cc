@@ -65,14 +65,16 @@ namespace apns {
 		headers[3] = MAKE_NV("host", hostname, NGHTTP2_NV_FLAG_NO_COPY_NAME | NGHTTP2_NV_FLAG_NO_COPY_VALUE);
 		headers[4] = MAKE_NV("apns-expiration", expiration, NGHTTP2_NV_FLAG_NO_COPY_NAME | NGHTTP2_NV_FLAG_NO_COPY_VALUE);
 
+		headers[5] = MAKE_NVC("apns-push-type", PUSH_TYPE_ALERT, PUSH_TYPE_ALERT_LEN, NGHTTP2_NV_FLAG_NO_COPY_NAME | NGHTTP2_NV_FLAG_NO_COPY_VALUE);
+
 		// a bit hacky here, but easier...  NGHTTP2_NV_FLAG_NO_INDEX for this header means "do not send me", see h2::transmit in conn
-		headers[5] = MAKE_NV("apns-topic", topic, NGHTTP2_NV_FLAG_NONE);
+		headers[6] = MAKE_NV("apns-topic", topic, NGHTTP2_NV_FLAG_NONE);
 
 		if (certificate.empty()) {
 			LOG_DEBUG("no certificate, using " << passphrase);
-			headers[6] = MAKE_NV("authorization", passphrase, NGHTTP2_NV_FLAG_NONE);
+			headers[7] = MAKE_NV("authorization", passphrase, NGHTTP2_NV_FLAG_NONE);
 		} else {
-			headers[6] = MAKE_NV("authorization", passphrase, NGHTTP2_NV_FLAG_NO_INDEX);
+			headers[7] = MAKE_NV("authorization", passphrase, NGHTTP2_NV_FLAG_NO_INDEX);
 		}
 
 		global_data.source.fd = 0;
@@ -593,6 +595,7 @@ namespace apns {
 					// LOG_DEBUG("for " << stream->id << " data is " << array->Get(2)->IntegerValue());
 					// auto data = obj->messages[(uint8_t)array->Get(2)->IntegerValue()];
 					stream->data = std::string(*v8::String::Utf8Value(array->Get(2)));;
+					stream->alert = array->Get(3)->ToBoolean()->Value();
 					// auto data = obj->messages[(uint8_t)array->Get(2)->IntegerValue()];
 					// stream->data = data;
 
@@ -610,7 +613,7 @@ namespace apns {
 				if (obj->certificate.empty()) {
 					LOG_DEBUG("feed token was " << obj->passphrase);
 					obj->passphrase = std::string(*v8::String::Utf8Value(info[1]));
-					obj->headers[6] = MAKE_NV("authorization", obj->passphrase, NGHTTP2_NV_FLAG_NONE);
+					obj->headers[7] = MAKE_NV("authorization", obj->passphrase, NGHTTP2_NV_FLAG_NONE);
 					LOG_DEBUG("feed token now " << obj->passphrase);
 				}
 				// LOG_DEBUG("feed unblock " << obj->stats.feed_last);

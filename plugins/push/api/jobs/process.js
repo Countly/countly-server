@@ -186,6 +186,7 @@ class ProcessJob extends J.IPCJob {
             let note = notes[m.n.toString()];
             if (note) {
                 m.m = note.compile(this.platform, m);
+                m.a = note.isAlert(this.platform, m);
                 // if (pn && pn === note && pp === m.p && po === m.o) {
                 //     m.m = pm;
                 // } else {
