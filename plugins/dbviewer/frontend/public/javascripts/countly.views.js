@@ -618,8 +618,12 @@ window.DBViewerView = countlyView.extend({
             }
 
             $('body').on('click', '.dbviewer-document-detail', function() {
-                app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection') + '/' + $(this).data('id'));
-                countlyDBviewer.loadDocument($(this).data('db'), $(this).data('collection'), $(this).data('id'))
+                var id = $(this).data('id');
+                if (id.substr(0, 3) === "Obj") {
+                    id = id.split("(")[1].split(")")[0];
+                }
+                app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection') + '/' + id);
+                countlyDBviewer.loadDocument($(this).data('db'), $(this).data('collection'), id)
                     .then(function(response) {
                         self.renderSingleDocument(response);
                     });
