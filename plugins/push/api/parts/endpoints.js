@@ -55,7 +55,9 @@ function cachedData(note) {
 (function(/*api*/) {
 
     api.dashboard = function(params) {
-        if (!params.qstring.app_id) {
+        let app_id = params.qstring.app_id;
+
+        if (!app_id || app_id.length !== 24) {
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
@@ -97,9 +99,9 @@ function cachedData(note) {
             // }, []),
             que = {_id: {$in: ids}},
 
-            sen = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + params.qstring.app_id).digest('hex'),
-            act = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + params.qstring.app_id).digest('hex'),
-            app = 'app_users' + params.qstring.app_id,
+            sen = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + app_id).digest('hex'),
+            act = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + app_id).digest('hex'),
+            app = 'app_users' + app_id,
             geo = 'geos',
 
             // query on app users to list users with any token
@@ -109,9 +111,9 @@ function cachedData(note) {
                 })
             },
             // query on geos for this app
-            qge = {deleted: {$exists: false}, $or: [{app: common.db.ObjectID(params.qstring.app_id)}, {app: {$exists: false}}]},
+            qge = {deleted: {$exists: false}, $or: [{app: common.db.ObjectID(app_id)}, {app: {$exists: false}}]},
             // query on cohorts
-            qqh = {app_id: params.qstring.app_id},
+            qqh = {app_id: app_id},
 
             rxp = /([0-9]{4}):([0-9]{1,2})/;
 
@@ -1050,7 +1052,9 @@ function cachedData(note) {
             'result.status': {$bitsAllSet: N.Status.Created, $bitsAllClear: N.Status.Deleted}
         };
 
-        if (!params.qstring.app_id) {
+        let app_id = params.qstring.app_id;
+
+        if (!app_id || app_id.length !== 24) {
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
@@ -1059,7 +1063,7 @@ function cachedData(note) {
             var found = false;
 
             (params.member.admin_of || []).concat(params.member.user_of || []).forEach(id => {
-                if (id === params.qstring.app_id) {
+                if (id === app_id) {
                     found = true;
                 }
             });
@@ -1070,7 +1074,7 @@ function cachedData(note) {
             }
         }
 
-        query.apps = common.db.ObjectID(params.qstring.app_id);
+        query.apps = common.db.ObjectID(app_id);
         query.created = {$ne: null};
 
         // if(params.qstring.sSearch && params.qstring.sSearch != '){
@@ -1157,9 +1161,9 @@ function cachedData(note) {
     };
 
     api.delete = catchy(async params => {
-        var _id = params.qstring._id;
+        let _id = params.qstring._id;
 
-        if (!params.qstring._id) {
+        if (!_id || _id.length !== 24) {
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
@@ -1186,9 +1190,9 @@ function cachedData(note) {
     });
 
     api.active = async(params) => {
-        var _id = params.qstring._id;
+        let _id = params.qstring._id;
 
-        if (!params.qstring._id) {
+        if (!_id || _id.length !== 24) {
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
