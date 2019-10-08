@@ -2227,7 +2227,7 @@ var AppRouter = Backbone.Router.extend({
 
             var arrowed = false;
             var currentIndex;
-            $topbar.on('keydown', '.nav-search input', function(e) {
+            $topbar.on('keyup', '.nav-search input', function(e) {
                 var code = (e.keyCode || e.which);
                 var filteredItems = $('#app-navigation > div.menu > div.list > .filtered-app-item');
                 var indexLimit = filteredItems.length;
@@ -3696,11 +3696,11 @@ var AppRouter = Backbone.Router.extend({
 
                 searchInside.filter(function() {
                     return !(searchText.test($(this).text().toLowerCase()));
-                }).css('display', 'none');
+                }).css('display', 'none').removeClass('filtered-app-item');
 
                 searchInside.filter(function() {
                     return searchText.test($(this).text().toLowerCase());
-                }).css('display', 'block');
+                }).css('display', 'block').addClass('filtered-app-item');
             });
 
             $(document).on('input', "#listof-apps .search input", function() {
