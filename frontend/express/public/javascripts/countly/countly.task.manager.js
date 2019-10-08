@@ -209,7 +209,7 @@
                             if (res1 && res1.view) {
                                 if (!assistantAvailable) {
                                     CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["assistant.taskmanager.completed.title"],
+                                        title: jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
                                         message: jQuery.i18n.map["assistant.taskmanager.completed.message"],
                                         info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
                                         sticky: true,
@@ -219,29 +219,33 @@
                                     });
                                 }
                                 else {
-                                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.completed.title"], jQuery.i18n.map["assistant.taskmanager.completed.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
+                                    countlyTaskManager.makeTaskNotification(jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""), jQuery.i18n.map["assistant.taskmanager.completed.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
                                 }
                             }
                         });
                     }
                     else if (res && res.result === "errored") {
-                        if (!assistantAvailable) {
-                            CountlyHelpers.notify({
-                                title: jQuery.i18n.map["assistant.taskmanager.errored.title"],
-                                message: jQuery.i18n.map["assistant.taskmanager.errored.message"],
-                                info: jQuery.i18n.map["assistant.taskmanager.errored.info"],
-                                type: "error",
-                                sticky: true,
-                                onClick: function() {
-                                    app.navigate("#/manage/tasks", true);
+                        countlyTaskManager.fetchResult(id, function(res1) {
+                            if (res1 && res1.view) {
+                                if (!assistantAvailable) {
+                                    CountlyHelpers.notify({
+                                        title: jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
+                                        message: jQuery.i18n.map["assistant.taskmanager.errored.message"],
+                                        info: jQuery.i18n.map["assistant.taskmanager.errored.info"],
+                                        type: "error",
+                                        sticky: true,
+                                        onClick: function() {
+                                            app.navigate("#/manage/tasks", true);
+                                        }
+                                    });
                                 }
-                            });
-                        }
-                        else {
-                            countlyTaskManager.fetchResult(id, function(res1) {
-                                countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.errored.title"], jQuery.i18n.map["assistant.taskmanager.errored.message"], jQuery.i18n.map["assistant.taskmanager.errored.info"], [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
-                            });
-                        }
+                                else {
+                                    countlyTaskManager.fetchResult(id, function(res1) {
+                                        countlyTaskManager.makeTaskNotification(jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""), jQuery.i18n.map["assistant.taskmanager.errored.message"], jQuery.i18n.map["assistant.taskmanager.errored.info"], [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
+                                    });
+                                }
+                            }
+                        });
                     }
                 }
                 else {
