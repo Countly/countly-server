@@ -3511,3 +3511,9 @@ color:#E95C6C; transition:color 1s;
 .highlighted-app-item {
     background-color: #ebebeb;
 }
+
+.routename-loyalty #label-container .labels { position: relative; margin-top:20px; width:100%; text-align:center; }
+.routename-loyalty #label-container .label { cursor:pointer; overflow:hidden; max-width:128px; margin:2px 10px; position: relative; display: inline-block; }
+.routename-loyalty #label-container .label.hidden { opacity:0.3; }
+.routename-loyalty #label-container .label .color { float:left; margin-right:8px; height:15px; width:15px; border-radius:1px; }
+.routename-loyalty #label-container .label .text { float:left; font: 13px Ubuntu; line-height:111%; color:#666; max-width:105px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
