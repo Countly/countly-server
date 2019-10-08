@@ -2215,8 +2215,13 @@ var AppRouter = Backbone.Router.extend({
             var arrowed = false;
             var currentIndex;
             $topbar.on('keyup', '.nav-search input', function(e) {
+                var switchType = 'app';
                 var code = (e.keyCode || e.which);
                 var filteredItems = $('#app-navigation > div.menu > div.list > .filtered-app-item');
+                if (filteredItems.length == 0) {
+                    switchType = 'dashboard';
+                    filteredItems = $('#dashboard-selection > div.menu > div.list > .filtered-app-item');
+                }
                 var indexLimit = filteredItems.length;
                 if (code === 38) {
                     clearHighlights(filteredItems);
@@ -2247,23 +2252,28 @@ var AppRouter = Backbone.Router.extend({
                     $(filteredItems[currentIndex]).addClass('highlighted-app-item');
                 }
                 else if (code === 13) {
-                    $('#app-navigation').removeClass('clicked');
-                    var appKey = $(filteredItems[currentIndex]).data("key"),
-                        appId = $(filteredItems[currentIndex]).data("id"),
-                        appName = $(filteredItems[currentIndex]).find(".name").text(),
-                        appImage = $(filteredItems[currentIndex]).find(".app-icon").css("background-image");
+                    if (switchType == 'app') {
+                        $('#app-navigation').removeClass('clicked');
+                        var appKey = $(filteredItems[currentIndex]).data("key"),
+                            appId = $(filteredItems[currentIndex]).data("id"),
+                            appName = $(filteredItems[currentIndex]).find(".name").text(),
+                            appImage = $(filteredItems[currentIndex]).find(".app-icon").css("background-image");
 
-                    $("#active-app-icon").css("background-image", appImage);
-                    $("#active-app-name").text(appName);
-                    $("#active-app-name").attr('title', appName);
+                        $("#active-app-icon").css("background-image", appImage);
+                        $("#active-app-name").text(appName);
+                        $("#active-app-name").attr('title', appName);
 
-                    if (self.activeAppKey !== appKey) {
-                        self.activeAppName = appName;
-                        self.activeAppKey = appKey;
-                        countlyCommon.setActiveApp(appId);
-                        self.activeView.appChanged(function() {
-                            app.onAppSwitch(appId);
-                        });
+                        if (self.activeAppKey !== appKey) {
+                            self.activeAppName = appName;
+                            self.activeAppKey = appKey;
+                            countlyCommon.setActiveApp(appId);
+                            self.activeView.appChanged(function() {
+                                app.onAppSwitch(appId);
+                            });
+                        }    
+                    } else if (switchType == 'dashboard') {
+                        $('#dashboard-selection').removeClass('clicked');
+                        window.location.href = $('.highlighted-app-item').attr('href');
                     }
                 }
                 else {
