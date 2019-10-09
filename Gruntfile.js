@@ -18,7 +18,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/dom/tipsy/jquery.tipsy.js',
                     'frontend/express/public/javascripts/dom/jquery.noisy.min.js',
                     'frontend/express/public/javascripts/dom/jquery.sticky.headers.js',
-                    'frontend/express/public/javascripts/dom/jqueryui/jquery-ui-1.8.22.custom.min.js',
+                    'frontend/express/public/javascripts/dom/jqueryui/jquery-ui.js',
                     'frontend/express/public/javascripts/dom/jqueryui/jquery-ui-i18n.js',
                     'frontend/express/public/javascripts/dom/slimScroll.min.js',
                     'frontend/express/public/javascripts/dom/jquery.easing.1.3.js',

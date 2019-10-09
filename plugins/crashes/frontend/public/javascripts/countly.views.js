@@ -1415,14 +1415,14 @@ window.CrashgroupView = countlyView.extend({
                     $(".flot-text").hide().show(0);
                 }
             });
-            this.tabs.on("tabsshow", function(event, ui) {
-                if (ui && ui.panel) {
-                    var id = $(ui.panel).attr("id") + "";
+            this.tabs.on("tabsactivate", function(event, ui) {
+                if (ui && ui.newPanel) {
+                    var id = $(ui.newPanel).attr("id") + "";
                     if (id === "notes") {
-                        $(ui.panel).closest("#tabs").find(".error_menu").hide();
+                        $(ui.newPanel).closest("#tabs").find(".error_menu").hide();
                     }
                     else {
-                        $(ui.panel).closest("#tabs").find(".error_menu").show();
+                        $(ui.newPanel).closest("#tabs").find(".error_menu").show();
                     }
                 }
             });
@@ -2062,7 +2062,9 @@ app.addPageScript("/drill#", function() {
 
 app.addPageScript("/users/#", function() {
     if (app.activeView && app.activeView.tabs) {
-        app.activeView.tabs.tabs('add', '#usertab-crashes', jQuery.i18n.map["crashes.title"]);
+        var ul = app.activeView.tabs.find("ul");
+        $("<li><a href='#usertab-crashes'>" + jQuery.i18n.map["crashes.title"] + "</a></li>").appendTo(ul);
+        $("<div id='usertab-crashes'></div>").appendTo(app.activeView.tabs);
         app.activeView.tabs.tabs("refresh");
         var userDetails = countlyUserdata.getUserdetails();
         $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>" + jQuery.i18n.map["userdata.crashes"] + "</div></div></div><table  data-view='crashesView' id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");

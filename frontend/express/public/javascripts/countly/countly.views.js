@@ -5858,8 +5858,8 @@ window.LongTaskView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.tabs = $("#reports-manager-tabs").tabs();
-            this.tabs.on("tabsselect", function(event, ui) {
-                self.taskCreatedBy = typeCodes[ui.index];
+            this.tabs.on("tabsactivate", function(event, ui) {
+                self.taskCreatedBy = typeCodes[ui.newTab.index()];
                 $("#report-manager-table-title").text(jQuery.i18n.map["report-maanger." + self.taskCreatedBy + "-created-title"]);
                 self.refresh();
             });
