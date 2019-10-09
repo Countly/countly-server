@@ -219,7 +219,11 @@
                                     });
                                 }
                                 else {
-                                    countlyTaskManager.makeTaskNotification(jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""), jQuery.i18n.map["assistant.taskmanager.completed.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
+                                    countlyTaskManager.makeTaskNotification(
+                                        jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
+                                        jQuery.i18n.map["assistant.taskmanager.completed.message"],
+                                        jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
+                                        [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
                                 }
                             }
                         });
@@ -240,9 +244,11 @@
                                     });
                                 }
                                 else {
-                                    countlyTaskManager.fetchResult(id, function(res1) {
-                                        countlyTaskManager.makeTaskNotification(jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""), jQuery.i18n.map["assistant.taskmanager.errored.message"], jQuery.i18n.map["assistant.taskmanager.errored.info"], [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
-                                    });
+                                    countlyTaskManager.makeTaskNotification(
+                                        jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
+                                        jQuery.i18n.map["assistant.taskmanager.errored.message"],
+                                        jQuery.i18n.map["assistant.taskmanager.errored.info"],
+                                        [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
                                 }
                             }
                         });
