@@ -13,7 +13,7 @@ module.exports = function(grunt) {
             },
             dom: {
                 src: [
-                    'frontend/express/public/javascripts/dom/jquery/jquery-1.8.3.min.js',
+                    'frontend/express/public/javascripts/dom/jquery/jquery.js',
                     'frontend/express/public/javascripts/dom/jquery.form.js',
                     'frontend/express/public/javascripts/dom/tipsy/jquery.tipsy.js',
                     'frontend/express/public/javascripts/dom/jquery.noisy.min.js',

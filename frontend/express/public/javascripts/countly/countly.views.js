@@ -2274,11 +2274,15 @@ window.ManageAppsView = countlyView.extend({
             self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false});
             self.el.find('.app-details-plugins > div').off('accordionactivate').on('accordionactivate', function(event, ui) {
                 var index = parseInt(ui.oldHeader.data('index'));
-                self.appManagementViews[index].afterCollapse();
+                if (self.appManagementViews[index]) {
+                    self.appManagementViews[index].afterCollapse();
+                }
             });
             self.el.find('.app-details-plugins > div').off('accordionbeforeactivate').on('accordionbeforeactivate', function(event, ui) {
                 var index = parseInt(ui.newHeader.data('index'));
-                self.appManagementViews[index].beforeExpand();
+                if (self.appManagementViews[index]) {
+                    self.appManagementViews[index].beforeExpand();
+                }
             });
 
             /*
@@ -3090,7 +3094,7 @@ window.ManageAppsView = countlyView.extend({
             initAppManagement(appId2);
         });
 
-        $("#management-app-container .app-container:not(#app-container-new)").live("click", function() {
+        $(document).on("click", "#management-app-container .app-container:not(#app-container-new)", function() {
             var appId2 = $(this).data("id");
             hideEdit();
             $(".app-container").removeClass("active");

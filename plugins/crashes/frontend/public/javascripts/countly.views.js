@@ -1358,18 +1358,18 @@ window.CrashgroupView = countlyView.extend({
             });
 
             if (crashData.is_public) {
-                $('#crash-share-public').attr('checked', true);
+                $('#crash-share-public').prop('checked', true);
                 $(".crash-share").show();
             }
             else {
-                $('#crash-share-public').attr('checked', false);
+                $('#crash-share-public').prop('checked', false);
                 $(".crash-share").hide();
             }
 
             if (crashData.share) {
                 for (var c in crashData.share) {
                     if (crashData.share[c]) {
-                        $('#crash-share-' + c).attr('checked', true);
+                        $('#crash-share-' + c).prop('checked', true);
                     }
                 }
             }
