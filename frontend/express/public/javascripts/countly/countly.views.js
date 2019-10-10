@@ -5858,6 +5858,7 @@ window.LongTaskView = countlyView.extend({
             this.tabs.on("tabsselect", function(event, ui) {
                 self.taskCreatedBy = typeCodes[ui.index];
                 $("#report-manager-table-title").text(jQuery.i18n.map["report-maanger." + self.taskCreatedBy + "-created-title"]);
+                self.showTableColumns(self);
                 self.refresh();
             });
             this.renderTable();
@@ -5871,9 +5872,11 @@ window.LongTaskView = countlyView.extend({
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind']);
             $(".report-manager-data-col").addClass("report-manager-automatically-created");
         }
+        this.showTableColumns(self);
+    },
+    showTableColumns: function(self) {
         var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
         var automaticallyColumns = [false, true, true, true, false, false, false, false, true, true];
-
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
@@ -5997,6 +6000,7 @@ window.LongTaskView = countlyView.extend({
                         return time;
                     }
                 },
+                "bSortable": false,
                 "sType": "numeric",
                 "sTitle": jQuery.i18n.map["events.table.dur"]
             },
