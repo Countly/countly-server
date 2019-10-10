@@ -308,7 +308,7 @@ class Job extends EventEmitter {
                     reject(err);
                 }
                 else if (!doc || !doc.ok || !doc.value) {
-                    reject('Not found');
+                    reject('Job not found');
                 }
                 else {
                     resolve(doc.value);

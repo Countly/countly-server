@@ -150,7 +150,10 @@ class Manager {
                                             name: j.name
                                         };
                                     }));
-                                    this.process(array.filter(j => this.types.indexOf(j.name) !== -1));
+                                    this.process(array.filter(j => this.types.indexOf(j.name) !== -1)).catch(e => {
+                                        log.e('Error during job resuming', e);
+                                        resume();
+                                    });
                                 }
                                 else {
                                     this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
@@ -224,7 +227,10 @@ class Manager {
                 this.checkAfterDelay();
             }
             else {
-                this.process(jobs);
+                this.process(jobs).catch(e => {
+                    log.e('Error during job processing', e);
+                    this.checkAfterDelay();
+                });
             }
         });
     }
