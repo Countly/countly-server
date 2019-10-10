@@ -413,7 +413,7 @@ taskmanager.getTableQueryResult = async function(options, callback) {
     }
     let sortBy = {'end': -1};
     if (options.sort.sortBy) {
-        const orderbyKey = { 0: 'report_name', 3: 'type', 7: 'end'};
+        const orderbyKey = { 0: 'report_name', 2: 'status', 3: 'type', 7: 'end', 8: 'start'};
         const keyName = orderbyKey[options.sort.sortBy];
         const seq = options.sort.sortSeq === 'desc' ? -1 : 1;
         sortBy = {[keyName]: seq};
