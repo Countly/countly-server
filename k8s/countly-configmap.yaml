@@ -1,0 +1,14 @@
+objects:
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    labels:
+      app: countly
+    name: countly-config
+  data:
+    COUNTLY_CONFIG_API_MONGODB_USERNAME: root
+    COUNTLY_CONFIG_FRONTEND_MONGODB_USERNAME: root
+    COUNTLY_CONFIG_API_MONGODB_DBOPTIONS: '{"authSource": "admin"}'
+    COUNTLY_CONFIG_FRONTEND_MONGODB_DBOPTIONS: '{"authSource": "admin"}'
+    COUNTLY_CONFIG_API_API_HOST: "0.0.0.0"
+    COUNTLY_CONFIG_FRONTEND_WEB_HOST: "0.0.0.0"

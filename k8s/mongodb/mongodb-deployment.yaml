@@ -1,0 +1,31 @@
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: countly
+    name: countly-mongodb
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          name: countly-mongodb
+      spec:
+        containers:
+        - name: mongodb
+          image: bitnami/mongodb
+          envFrom:
+          - secretRef:
+              name: countly-secret
+          ports:
+          - containerPort: 27017
+          volumeMounts:
+          - mountPath: "/bitnami"
+            name: countly-mongodb
+        volumes:
+        - name: countly-mongodb
+          persistentVolumeClaim:
+            claimName: countly-mongodb-volume
+    triggers:
+    - type: ConfigChange

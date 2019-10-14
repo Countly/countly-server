@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "countly.fullname" . }}
+  labels:
+{{ include "countly.labels" . | indent 4 }}
+data:
+  COUNTLY_CONFIG_API_MONGODB_USERNAME: {{ .Values.mongodbUsername }}
+  COUNTLY_CONFIG_FRONTEND_MONGODB_USERNAME: {{ .Values.mongodbUsername }}
+  COUNTLY_CONFIG_API_MONGODB_DBOPTIONS: '{{ .Values.dbOptions }}'
+  COUNTLY_CONFIG_FRONTEND_MONGODB_DBOPTIONS: '{{ .Values.dbOptions }}'

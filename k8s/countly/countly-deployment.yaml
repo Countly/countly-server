@@ -1,0 +1,78 @@
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: countly
+    name: countly-api
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          name: countly-api
+      spec:
+        containers:
+        - name: countly
+          image: styke/countly
+          imagePullPolicy: Always
+          envFrom:
+          - configMapRef:
+              name: countly-config
+          env:
+          - name: COUNTLY_SERVICE_NAME
+            value: api
+          - name: COUNTLY_CONFIG_FRONTEND_MONGODB_HOST
+            value: $(COUNTLY_MONGODB_SERVICE_HOST)
+          - name: COUNTLY_CONFIG_FRONTEND_MONGODB_PORT
+            value: $(COUNTLY_MONGODB_SERVICE_PORT)
+          - name: COUNTLY_CONFIG_API_MONGODB_HOST
+            value: $(COUNTLY_MONGODB_SERVICE_HOST)
+          - name: COUNTLY_CONFIG_API_MONGODB_PORT
+            value: $(COUNTLY_MONGODB_SERVICE_PORT)
+          - name: COUNTLY_CONFIG_FRONTEND_MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: countly-secret
+                key: MONGODB_ROOT_PASSWORD
+          ports:
+          - containerPort: 3001
+    triggers:
+    - type: ConfigChange
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: countly
+    name: countly-frontend
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          name: countly-frontend
+      spec:
+        containers:
+        - name: countly
+          image: styke/countly
+          imagePullPolicy: Always
+          envFrom:
+          - configMapRef:
+              name: countly-config
+          env:
+          - name: COUNTLY_SERVICE_NAME
+            value: frontend
+          - name: COUNTLY_CONFIG_FRONTEND_MONGODB_HOST
+            value: $(COUNTLY_MONGODB_SERVICE_HOST)
+          - name: COUNTLY_CONFIG_FRONTEND_MONGODB_PORT
+            value: $(COUNTLY_MONGODB_SERVICE_PORT)
+          - name: COUNTLY_CONFIG_FRONTEND_MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: countly-secret
+                key: MONGODB_ROOT_PASSWORD
+          ports:
+          - containerPort: 6001
+    triggers:
+    - type: ConfigChange
