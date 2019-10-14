@@ -2264,7 +2264,7 @@ var AppRouter = Backbone.Router.extend({
                         self.activeView.appChanged(function() {
                             app.onAppSwitch(appId);
                         });
-                    }    
+                    }
                 }
                 else {
                     return;
