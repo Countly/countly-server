@@ -2227,7 +2227,7 @@ var AppRouter = Backbone.Router.extend({
 
             var arrowed = false;
             var currentIndex;
-            $topbar.on('keyup', '.nav-search input', function(e) {
+            $('#app-navigation').on('keyup', '.nav-search input', function(e) {
                 var code = (e.keyCode || e.which);
                 var filteredItems = $('#app-navigation > div.menu > div.list > .filtered-app-item');
                 var indexLimit = filteredItems.length;
