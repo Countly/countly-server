@@ -3488,16 +3488,13 @@ var AppRouter = Backbone.Router.extend({
                     if (date.getTime() < self.dateFromSelected) {
                         self.dateFromSelected = date.getTime();
                     }
-
+                    $("#date-to-input").val(moment(date).format("MM/DD/YYYY"));
                     dateFrom.datepicker("option", "maxDate", date);
                     self.dateToSelected = date.getTime();
-
-                    $("#date-to-input").val(moment(date).format("MM/DD/YYYY"));
-
                 },
                 beforeShowDay: function(date) {
                     var ts = date.getTime();
-                    if (ts < moment($("#date-to-input").val()) && ts > moment($("#date-from-input").val())) {
+                    if (ts < moment($("#date-to-input").val()) && ts >= moment($("#date-from-input").val())) {
                         return [true, "in-range", ""];
                     }
                     else {
@@ -3517,15 +3514,13 @@ var AppRouter = Backbone.Router.extend({
                     if (date.getTime() > self.dateToSelected) {
                         self.dateToSelected = date.getTime();
                     }
-
+                    $("#date-from-input").val(moment(date).format("MM/DD/YYYY"));
                     dateTo.datepicker("option", "minDate", date);
                     self.dateFromSelected = date.getTime();
-                    $("#date-from-input").val(moment(date).format("MM/DD/YYYY"));
-
                 },
                 beforeShowDay: function(date) {
                     var ts = date.getTime();
-                    if (ts < moment($("#date-to-input").val()) && ts > moment($("#date-from-input").val())) {
+                    if (ts <= moment($("#date-to-input").val()) && ts > moment($("#date-from-input").val())) {
                         return [true, "in-range", ""];
                     }
                     else {

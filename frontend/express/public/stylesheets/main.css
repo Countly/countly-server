@@ -647,16 +647,25 @@ div.datatablesubrow {display: none;}
     #date-selector .calendar .up {display:none;}
     #date-selector .calendar.active .up { display:block;}
     #date-selector .calendar.active .down {display:none;}
-    #date-selector .calendar-block .calendar-input-field { float: right; display: inline-block; width: 100px; padding: 10px 10px 10px 10px; font-size: 13px; line-height:13px; text-align:center; border:none; background-color: #1b2732; color: #ffffff; margin: 0 10px; border-radius:2px; }
-    #date-selector .calendar-block span.date-input-label {float: right; display: inline-block; text-transform: uppercase; color: #d2d2d1; margin-top:11px;}
+    #date-selector .calendar-block .calendar-input-field { float: right; display: inline-block; width: 100px; padding: 9px 9px 9px 9px; font-size: 13px; line-height:13px; text-align:center; border:none; background-color: #1b2732; color: #ffffff; margin: 0 10px; border-radius:2px; border: 1px solid #1b2732; }
+    #date-selector .calendar-block .calendar-input-field:hover {
+        border: 1px solid #243544;
+    }
+    #date-selector .calendar-block span.date-input-label {float: right; display: inline-block; text-transform: uppercase; color: #d2d2d1; margin-top:11px; font: 12px Ubuntu,Helvetica,sans-serif;}
     #date-picker, .date-picker { white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
 	#date-picker .calendar-container, .date-picker .calendar-container { overflow:auto; padding:10px 5px; margin-right:200px; }
 	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar { vertical-align: top; margin-bottom:10px; }
     #date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
 	#date-picker .button-container { overflow:auto; position:absolute; right: 20px; bottom: 15px;}
     #date-picker .button-container .icon-button { display: inline-block; padding: 7px 10px; float: right }
-    #date-picker .in-range{
+    #date-picker .in-range a{
         background: rgba(46, 167, 50, 0.6);
+        border-radius: 2px;
+        margin: 1px;
+        padding: 4px;
+    }
+    #date-picker .in-range a.ui-state-hover {
+        background:#1b2732;
     }
     
     #date-picker .ui-datepicker-title {
@@ -698,7 +707,7 @@ div.datatablesubrow {display: none;}
 .ui-widget-header .ui-state-default { text-decoration: none; border:none; color: #FFF; font-size:12px; padding:5px; background-color:transparent; text-align:center; background-image:none; box-shadow: none; }
 .ui-datepicker a,
 .ui-datepicker-inline a { text-decoration: none !important; }
-.ui-widget-content .ui-state-hover { background-color:#CCC; color:#424242; text-shadow:none; background-image:none; margin: 1px; padding: 4px; border-radius: 2px; }
+.ui-widget-content .ui-state-hover { background-color:#1b2732; color:#ffffff; text-shadow:none; background-image:none; margin: 1px; padding: 4px; border-radius: 2px; }
 .ui-widget-content .ui-state-active { background-color:#2FA732; color:#FFF; text-shadow:none; background-image:none; margin: 1px; padding: 4px; border-radius: 2px; }
 .ui-datepicker.ui-widget { padding:10px; background-color: #0b131a; }
 .ui-datepicker td { padding:0; border:1px solid #192733; border-left:none; background-color: transparent; }
