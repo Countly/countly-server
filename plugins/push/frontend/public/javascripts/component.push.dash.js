@@ -123,7 +123,7 @@ window.component('push.dash', function (dash) {
             this[tableName] = $(element).dataTable($.extend({}, $.fn.dataTable.defaults, {
                 bServerSide: true,
                 iDisplayLength: 10,
-                sAjaxSource: countlyCommon.API_PARTS.data.r + '/pushes/all?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID,
+                sAjaxSource: countlyCommon.API_PARTS.data.r + '/pushes/all?app_id=' + countlyCommon.ACTIVE_APP_ID,
                 fnServerData: function (sSource, aoData, fnCallback) {
                     $.ajax({
                         dataType: 'jsonp',
