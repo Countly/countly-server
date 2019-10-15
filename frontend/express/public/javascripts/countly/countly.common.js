@@ -2012,7 +2012,7 @@
                 if (countlyCommon.periodObj.dateString === "HH:mm") {
                     formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMin + ":00", "YYYY.M.D HH:mm"), "D MMM, YYYY HH:mm");
                     formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
-                    formattedDateEnd = formattedDateEnd.add(24, "hours").add(59, "minutes");
+                    formattedDateEnd = formattedDateEnd.add(59, "minutes");
                     formattedDateEnd = countlyCommon.formatDate(formattedDateEnd, "D MMM, YYYY HH:mm");
 
                 }
