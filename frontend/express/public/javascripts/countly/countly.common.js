@@ -2004,9 +2004,7 @@
             }
         };
 
-        countlyCommon.getDataRangeForCalendar = function() {
-            countlyCommon.periodObj = getPeriodObj();
-
+        countlyCommon.getDateRangeForCalendar = function() {
             countlyCommon.periodObj = getPeriodObj();
             var formattedDateStart = "";
             var formattedDateEnd = "";
@@ -2021,6 +2019,10 @@
                 else if (countlyCommon.periodObj.dateString === "D MMM, HH:mm") {
                     formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D"), "D MMM, YYYY HH:mm");
                     formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes"), "D MMM, YYYY HH:mm");
+                }
+                else if (countlyCommon.periodObj.dateString === "MMM") { //this year
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin + ".1", "YYYY.M.D"), "D MMM, YYYY");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax + ".31", "YYYY.M.D"), "D MMM, YYYY");
                 }
                 else {
                     formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin, "YYYY.M.D"), "D MMM, YYYY");

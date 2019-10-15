@@ -980,7 +980,7 @@
             $("#" + selectedPeriod).addClass("active");
             $("#date-picker").hide();
             $("#date-selector .calendar").removeClass("selected").removeClass("active");
-            $("#selected-date").text(countlyCommon.getDataRangeForCalendar());
+            $("#selected-date").text(countlyCommon.getDateRangeForCalendar());
 
         });
 
