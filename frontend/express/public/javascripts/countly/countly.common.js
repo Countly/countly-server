@@ -2004,6 +2004,36 @@
             }
         };
 
+        countlyCommon.getDataRangeForCalendar = function() {
+            countlyCommon.periodObj = getPeriodObj();
+
+            countlyCommon.periodObj = getPeriodObj();
+            var formattedDateStart = "";
+            var formattedDateEnd = "";
+            if (!countlyCommon.periodObj.isSpecialPeriod) {
+                if (countlyCommon.periodObj.dateString === "HH:mm") {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMin + ":00", "YYYY.M.D HH:mm"), "D MMM, YYYY HH:mm");
+                    formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
+                    formattedDateEnd = formattedDateEnd.add(24, "hours").add(59, "minutes");
+                    formattedDateEnd = countlyCommon.formatDate(formattedDateEnd, "D MMM, YYYY HH:mm");
+
+                }
+                else if (countlyCommon.periodObj.dateString === "D MMM, HH:mm") {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D"), "D MMM, YYYY HH:mm");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes"), "D MMM, YYYY HH:mm");
+                }
+                else {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin, "YYYY.M.D"), "D MMM, YYYY");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax, "YYYY.M.D"), "D MMM, YYYY");
+                }
+            }
+            else {
+                formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D"), "D MMM, YYYY");
+                formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)], "YYYY.M.D"), "D MMM, YYYY");
+            }
+            return formattedDateStart + " - " + formattedDateEnd;
+        };
+
         /**
         * Merge standard countly metric data object, by mergin updateObj retrieved from action=refresh api requests object into dbObj.
         * Used for merging the received data for today to the existing data while updating the dashboard.

@@ -771,7 +771,7 @@
 
     CountlyHelpers.setUpDateSelectors = function(self) {
         $("#month").text(moment().year());
-        $("#day").text(moment().format("MMM"));
+        $("#day").text(moment().format("MMMM, YYYY"));
         $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
         $("#date-selector").find(".date-selector").click(function() {
@@ -795,6 +795,10 @@
             self.dateChanged(selectedPeriod);
 
             $("#" + selectedPeriod).addClass("active");
+            $("#date-picker").hide();
+            $("#date-selector .calendar").removeClass("selected").removeClass("active");
+            $("#selected-date").text(countlyCommon.getDataRangeForCalendar());
+
         });
 
         $("#date-selector").find(".date-selector").each(function() {

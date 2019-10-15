@@ -405,28 +405,49 @@
 
     <script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector" class="help-zone-vs">
-            <div class="date-buttons-container">
-                <div class="button date-selector" id="month"></div>
-                <div class="button date-selector" id="day"></div>
-                <div class="button date-selector" id="yesterday"></div>
-                <div class="button date-selector" id="hour" data-localize="common.today"></div>
-                <div class="button date-selector" id="7days" data-localize="common.7days"></div>
-                <div class="button date-selector" id="30days" data-localize="common.30days"></div>
-                <div class="button date-selector" id="60days" data-localize="common.60days"></div>
-                <!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
-            </div>
             <div class="calendar" id="date-picker-button">
                 <i class="material-icons">date_range</i>
+                <span id="selected-date"></span>
+                <span class="down ion-chevron-down"></span>
+                <span class="up ion-chevron-up"></span>
             </div>
 			<div id="date-picker">
-				<div class="calendar-container">
-					<div id="date-from" class="calendar"></div>
-					<div id="date-to" class="calendar"></div>
-				</div>
-                <div class="button-container">
-                    <div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
-                    <div id="selected-date"></div>
+                <div class="date-selector-buttons">
+                    <div class="button date-selector" id="yesterday" data-localize="common.yesterday"></div>
+                    <div class="button date-selector" id="hour" data-localize="common.today"></div>
+                    <div class="button date-selector" id="7days" data-localize="taskmanager.last-7days"></div>
+                    <div class="button date-selector" id="30days" data-localize="taskmanager.last-30days"></div>
+                    <div class="button date-selector" id="60days" data-localize="taskmanager.last-60days"></div>
+                    <div class="button date-selector" id="day"></div>
+                    <div class="button date-selector" id="month"></div>
+                    
+                    <!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
+                    <div class="button-container">
+                        <div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
+                        <div id="date-cancel" class="icon-button" data-localize="common.cancel"></div>
+                    </div>
                 </div>
+                <div class="calendar-container">
+                    <table>
+                        <tr>
+                            <td class="calendar-block">
+                                <div id="date-from" class="calendar"></div>
+                            </td>
+                            <td class="calendar-block">
+                                <div id="date-to" class="calendar"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="calendar-block">
+                                <input type="text" class="calendar-input-field" id="date-from-input"></input><span class="date-input-label" data-localize="common.from"></span>
+                            </td>
+                            <td class="calendar-block">
+                                <input type="text" class="calendar-input-field" id="date-to-input"></input><span class="date-input-label" data-localize="common.to"></span>
+                            </td>
+                        </tr>
+                    </table>
+
+				</div>
 			</div>
 		</div>
 	</script>
