@@ -2071,7 +2071,7 @@ app.addPageScript("/users/#", function() {
             "aaSorting": [[ 2, "desc" ]],
             "bServerSide": true,
             "bFilter": false,
-            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_crashes&uid=" + userDetails.uid,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_crashes&uid=" + userDetails.uid,
             "fnServerData": function(sSource, aoData, fnCallback) {
                 self.request = $.ajax({
                     "dataType": 'json',
