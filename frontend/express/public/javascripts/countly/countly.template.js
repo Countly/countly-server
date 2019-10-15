@@ -3573,7 +3573,7 @@ var AppRouter = Backbone.Router.extend({
             });
             /** function sets selected date */
             function setSelectedDate() {
-                $("#selected-date").text(countlyCommon.getDataRangeForCalendar());
+                $("#selected-date").text(countlyCommon.getDateRangeForCalendar());
             }
 
             $.datepicker.setDefaults($.datepicker.regional[""]);
