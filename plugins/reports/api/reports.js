@@ -329,82 +329,92 @@ var metrics = {
                         monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
                         report.date += " - " + endDate.getDate() + " " + monthName;
                     }
-                    async.map(report.apps, appIterator, function(err2, results) {
+                    async.map(report.apps, appIterator, function(err2, apps) {
                         if (err2) {
                             return callback(err2);
                         }
                         report.total_new = 0;
                         var total = 0;
-                        for (var i = 0; i < results.length; i++) {
-                            if (results[i] && results[i].results) {
+                        for (var i = 0; i < apps.length; i++) {
+                            if (apps[i] && apps[i].results) {
                                 countlyCommon.setPeriod(report.period);
-                                countlyCommon.setTimezone(results[i].timezone);
-                                for (var j in results[i].results) {
+                                countlyCommon.setTimezone(apps[i].timezone);
+                                for (var j in apps[i].results) {
                                     if (j === "users") {
-                                        results[i].results[j] = getSessionData(
-                                            results[i].results[j] || {},
-                                            (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {},
-                                            (results[i].results[j] && results[i].results[j].prev_correction) ? results[i].results[j].prev_correction : {}
+                                        apps[i].results[j] = getSessionData(
+                                            apps[i].results[j] || {},
+                                            (apps[i].results[j] && apps[i].results[j].correction) ? apps[i].results[j].correction : {},
+                                            (apps[i].results[j] && apps[i].results[j].prev_correction) ? apps[i].results[j].prev_correction : {}
                                         );
-                                        if (results[i].results[j].total_sessions.total > 0) {
-                                            results[i].display = true;
+                                        if (apps[i].results[j].total_sessions.total > 0) {
+                                            apps[i].display = true;
                                         }
-                                        total += results[i].results[j].total_sessions.total;
-                                        report.total_new += results[i].results[j].new_users.total;
+                                        total += apps[i].results[j].total_sessions.total;
+                                        report.total_new += apps[i].results[j].new_users.total;
 
-                                        results[i].results.analytics = results[i].results[j];
-                                        delete results[i].results[j];
+                                        apps[i].results.analytics = apps[i].results[j];
+                                        delete apps[i].results[j];
 
-                                        let iap_events = common.dot(results[i], 'plugins.revenue.iap_events');
+                                        let iap_events = common.dot(apps[i], 'plugins.revenue.iap_events');
                                         if (iap_events && iap_events.length) {
-                                            if (!results[i].results.revenue) {
-                                                results[i].results.revenue = {};
+                                            if (!apps[i].results.revenue) {
+                                                apps[i].results.revenue = {};
                                             }
-                                            results[i].results.revenue.paying_users = results[i].results.analytics.paying_users;
+                                            apps[i].results.revenue.paying_users = apps[i].results.analytics.paying_users;
                                         }
-                                        delete results[i].results.analytics.paying_users;
+                                        delete apps[i].results.analytics.paying_users;
 
-                                        if ((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)) {
-                                            if (!results[i].results.push) {
-                                                results[i].results.push = {};
+                                        if ((apps[i].gcm && Object.keys(apps[i].gcm).length) || (apps[i].apn && Object.keys(apps[i].apn).length)) {
+                                            if (!apps[i].results.push) {
+                                                apps[i].results.push = {};
                                             }
-                                            results[i].results.push.messaging_users = results[i].results.analytics.messaging_users;
+                                            apps[i].results.push.messaging_users = apps[i].results.analytics.messaging_users;
                                         }
-                                        delete results[i].results.analytics.messaging_users;
+                                        delete apps[i].results.analytics.messaging_users;
                                     }
                                     else if (j === "crashdata") {
-                                        results[i].results.crash = getCrashData(results[i].results[j] || {});
-                                        delete results[i].results[j];
+                                        apps[i].results.crash = getCrashData(apps[i].results[j] || {});
+                                        delete apps[i].results[j];
                                     }
                                     else if (j === "[CLY]_push_sent" || j === "[CLY]_push_open" || j === "[CLY]_push_action") {
-                                        if (!results[i].results.push) {
-                                            results[i].results.push = {};
+                                        if (!apps[i].results.push) {
+                                            apps[i].results.push = {};
                                         }
-                                        results[i].results.push[j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
-                                        delete results[i].results[j];
+                                        apps[i].results.push[j.replace("[CLY]_", "")] = getEventData(apps[i].results[j] || {});
+                                        delete apps[i].results[j];
                                     }
                                     else if (j === "purchases") {
-                                        if (!results[i].results.revenue) {
-                                            results[i].results.revenue = {};
+                                        if (!apps[i].results.revenue) {
+                                            apps[i].results.revenue = {};
                                         }
-                                        var revenueData = getRevenueData(results[i].results[j] || {});
-                                        results[i].results.revenue[j + "_c"] = revenueData.c;
-                                        results[i].results.revenue[j + "_s"] = revenueData.s;
-                                        delete results[i].results[j];
+                                        var revenueData = getRevenueData(apps[i].results[j] || {});
+                                        apps[i].results.revenue[j + "_c"] = revenueData.c;
+                                        apps[i].results.revenue[j + "_s"] = revenueData.s;
+                                        delete apps[i].results[j];
                                     }
                                     else {
-                                        if (!results[i].results.events) {
-                                            results[i].results.events = {};
+                                        if (!apps[i].results.events) {
+                                            apps[i].results.events = {};
                                         }
-                                        results[i].results.events[j] = getEventData(results[i].results[j] || {});
-                                        delete results[i].results[j];
+                                        apps[i].results.events[j] = getEventData(apps[i].results[j] || {});
+                                        delete apps[i].results[j];
                                     }
+                                }
+                                if (apps[i].results.events) {
+                                    const keysSorted = Object.keys(apps[i].results.events)
+                                        .sort(function(a, b) {
+                                            return apps[i].results.events[b].total - apps[i].results.events[a].total;
+                                        });
+                                    const eventData = [];
+                                    keysSorted.forEach((k) => {
+                                        eventData.push({...apps[i].results.events[k], name: k});
+                                    });
+                                    apps[i].results.events = eventData;
                                 }
                             }
                         }
-
                         if (total > 0) {
-                            report.apps = results;
+                            report.apps = apps;
                             report.mailTemplate = "/templates/email.html";
                             process();
                         }
