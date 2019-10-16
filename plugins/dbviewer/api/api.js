@@ -252,7 +252,7 @@ var common = require('../../../api/utils/common.js'),
                 //if app_id was provided, we need to check if user has access for this app_id
                 // is user_of array contain current app_id?
                 var isUserOf = params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1;
-                var isRestricted = params.member.app_restrict && params.member.app_restrict.hasOwnProperty(params.qstring.app_id) !== -1 && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
+                var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
                 if (params.member.global_admin || isUserOf && !isRestricted) {
                     apps = [params.qstring.app_id];
                 }

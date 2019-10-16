@@ -83,7 +83,9 @@ window.DBViewerView = countlyView.extend({
         $('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + $.i18n.map["common.all"] + '</span></div>');
         // append list items
         for (var key in countlyGlobal.apps) {
-            $('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
+            if (!countlyGlobal.member.app_restrict || (countlyGlobal.member.app_restrict && !countlyGlobal.member.app_restrict.hasOwnProperty(key))) {
+                $('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');        
+            }
         }
         // set height 
         if ($('#dbviewer').height() < (window.innerHeight - 150)) {
