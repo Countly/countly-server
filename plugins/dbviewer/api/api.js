@@ -250,13 +250,24 @@ var common = require('../../../api/utils/common.js'),
             var apps = [];
             if (params.qstring.app_id) {
                 //if app_id was provided, we need to check if user has access for this app_id
-                if (params.member.global_admin || (params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1)) {
+                // is user_of array contain current app_id?
+                var isUserOf = params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1;
+                var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
+                if (params.member.global_admin || isUserOf && !isRestricted) {
                     apps = [params.qstring.app_id];
                 }
             }
             else {
                 //use whatever user has permission for
                 apps = params.member.user_of || [];
+                // also check for app based restrictions
+                if (params.member.app_restrict) {
+                    for (var app_id in params.member.app_restrict) {
+                        if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
+                            apps.splice(apps.indexOf(app_id), 1);
+                        }
+                    }
+                }
             }
             var appList = [];
             if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
