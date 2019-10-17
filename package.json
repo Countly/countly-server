@@ -37,6 +37,7 @@
     "basic-auth": "2.0.1",
     "bluebird": "3.5.5",
     "body-parser": "1.19.0",
+    "bunyan": "1.8.12",
     "colors": "^1.2.4",
     "connect-flash": "0.1.1",
     "connect-mongoskin": "github:ar2rsawseen/connect-mongoskin",
