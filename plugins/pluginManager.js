@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 var plugins = require('./plugins.json', 'dont-enclose'),
     pluginsApis = {},
     mongo = require('mongoskin'),
@@ -750,14 +751,17 @@ var pluginManager = function pluginManager() {
             return callback(errors);
         }
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error) {
-            if (error) {
-                errors = true;
-                console.log('error: %j', error);
-            }
-            console.log('Done installing plugin %j', plugin);
-            callback(errors);
-        });
+        if (!this.getConfig("api").offline_mode) {
+            exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error) {
+                if (error) {
+                    errors = true;
+                    console.log('error: %j', error);
+                }
+                console.log('Done installing plugin %j', plugin);
+                callback(errors);
+            });
+        }
+
     };
 
     /**
@@ -785,14 +789,16 @@ var pluginManager = function pluginManager() {
             return callback(errors);
         }
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error) {
-            if (error) {
-                errors = true;
-                console.log('error: %j', error);
-            }
-            console.log('Done upgrading plugin %j', plugin);
-            callback(errors);
-        });
+        if (!this.getConfig("api").offline_mode) {
+            exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error) {
+                if (error) {
+                    errors = true;
+                    console.log('error: %j', error);
+                }
+                console.log('Done upgrading plugin %j', plugin);
+                callback(errors);
+            });
+        }
     };
 
     /**
