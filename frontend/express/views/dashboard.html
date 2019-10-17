@@ -431,7 +431,7 @@
                     <div class="button date-selector" id="60days" data-localize="taskmanager.last-60days"></div>
                     <div class="button date-selector" id="day"></div>
                     <div class="button date-selector" id="month"></div>
-                    
+
                     <!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
                     <div class="button-container">
                         <div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
@@ -2265,7 +2265,7 @@
             </div>
 		</div>
 	</script>
-    
+
     <script id="template-graph-notes-view" type="text/x-handlebars-template">
         <div class="note-table-view-navigator">
             <a href="/dashboard" class="back-link" >
@@ -2327,8 +2327,8 @@
             <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         </div>
     </script>
-    
-    <script id="graph-notes-popup" type="text/x-handlebars-template"> 
+
+    <script id="graph-notes-popup" type="text/x-handlebars-template">
         <div class="graph-note-popup">
             <div class="title">
                 <span> {{this.notePopupTitleTime}}</span>
@@ -2356,10 +2356,11 @@
             </div>
         </div>
 	</script>
-
+<% if (!offline_mode) { %>
     <% if (use_google) { %>
-	<script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <% } %>
+<% } %>
 <% if (production) { %>
 	    <!-- PRODUCTION -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
@@ -2397,8 +2398,10 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
+        <% if (!offline_mode) { %>
+            <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
+        <% } %>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
@@ -2501,7 +2504,9 @@
 		 Countly.userData.set("lastVersion", "<%= countlyVersion %>");
 		 Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
 		 Countly.userData.set("isTrial", <%= countlyTrial %>);
-		 Countly.userData.set("cpus", <%= cpus %>);
+         <% if (!offline_mode) { %>
+            Countly.userData.set("cpus", <%= cpus %>);
+         <% } %>
 		 Countly.userData.push_unique("servers", window.location.hostname);
 		 Countly.userData.push_unique("versions", "<%= countlyVersion %>");
 		 Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");

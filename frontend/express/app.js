@@ -843,7 +843,8 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             use_google: configs.use_google || false,
             themeFiles: theme,
             inject_template: req.template,
-            javascripts: []
+            javascripts: [],
+            offline_mode: configs.offline_mode || false
         };
 
         var plgns = [].concat(plugins.getPlugins());
