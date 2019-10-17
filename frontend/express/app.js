@@ -1174,7 +1174,7 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
 });
 
 app.get(countlyConfig.path + '/sdks.js', function(req, res) {
-    if (!plugins.getConfig("frontend").offline_mode) {
+    if (!plugins.getConfig("api").offline_mode) {
         var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
         request(options, function(a, c, b) {
             res.set('Content-type', 'application/javascript').status(200).send(b);

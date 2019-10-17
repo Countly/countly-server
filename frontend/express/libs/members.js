@@ -45,7 +45,7 @@ membersUtility.recheckConfigs = function(countlyConfigOrig, countlyConfig) {
     if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
         checkUrl = "https://count.ly/configurations/ee/tracking";
     }
-    if (!plugins.getConfig("frontend").offline_mode) {
+    if (!plugins.getConfig("api").offline_mode) {
         request(checkUrl, function(error, response, body) {
             if (typeof body === "string") {
                 try {
@@ -305,7 +305,7 @@ membersUtility.login = function(req, res, callback) {
                 else {
                     plugins.callMethod("loginSuccessful", {req: req, data: member});
                     if (countlyConfig.web.use_intercom && member.global_admin) {
-                        if (!plugins.getConfig("frontend").offline_mode) {
+                        if (!plugins.getConfig("api").offline_mode) {
                             countlyStats.getOverall(membersUtility.db, function(statsObj) {
                                 request({
                                     uri: "https://try.count.ly/s",
@@ -339,7 +339,7 @@ membersUtility.login = function(req, res, callback) {
                         }
                     }
                     if (!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) {
-                        if (!plugins.getConfig("frontend").offline_mode) {
+                        if (!plugins.getConfig("api").offline_mode) {
                             countlyStats.getUser(membersUtility.db, member, function(statsObj) {
                                 var custom = {
                                     apps: (member.user_of) ? member.user_of.length : 0,
@@ -563,7 +563,7 @@ membersUtility.setup = function(req, callback) {
                     membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
                         member = member.ops;
                         if (countlyConfig.web.use_intercom) {
-                            if (!plugins.getConfig("frontend").offline_mode) {
+                            if (!plugins.getConfig("api").offline_mode) {
                                 var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
                                 request(options, function(a, c, b) {
                                     a = {};
