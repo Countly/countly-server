@@ -760,6 +760,7 @@ var pluginManager = function pluginManager() {
     * @returns {void} void
     **/
     this.installPlugin = function(plugin, callback) {
+        var self = this;
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'install.js');
@@ -776,7 +777,7 @@ var pluginManager = function pluginManager() {
                 return callback(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-            if (!this.getConfig("api").offline_mode) {
+            if (!self.getConfig("api").offline_mode) {
                 exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
                     if (error2) {
                         errors = true;
@@ -804,6 +805,7 @@ var pluginManager = function pluginManager() {
     * @returns {void} void
     **/
     this.upgradePlugin = function(plugin, callback) {
+        var self = this;
         console.log('Upgrading plugin %j...', plugin);
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'install.js');
@@ -820,7 +822,7 @@ var pluginManager = function pluginManager() {
                 return callback(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-            if (!this.getConfig("api").offline_mode) {
+            if (!self.getConfig("api").offline_mode) {
                 exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
                     if (error2) {
                         errors = true;
