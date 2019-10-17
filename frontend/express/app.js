@@ -791,6 +791,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         var serverSideRendering = req.query.ssr;
         _.extend(req.config, configs);
         var countlyGlobal = {
+            COUNTLY_CONTAINER: process.env.COUNTLY_CONTAINER,
             countlyTitle: req.countly.title,
             company: req.countly.company,
             languages: languages,
@@ -1440,7 +1441,16 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
         if (member) {
             var serverSideRendering = req.query.ssr || false;
             bruteforce.reset(member.username);
-            res.redirect(countlyConfig.path + '/dashboard?ssr=' + serverSideRendering);
+            var options = "";
+            if (serverSideRendering) {
+                options += "ssr=" + serverSideRendering;
+            }
+
+            if (options && options.length) {
+                options = ("?").concat(options);
+            }
+
+            res.redirect(countlyConfig.path + '/dashboard' + options);
         }
         else {
             res.redirect(countlyConfig.path + '/login?message=login.result');

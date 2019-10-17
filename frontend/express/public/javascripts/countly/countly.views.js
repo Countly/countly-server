@@ -166,10 +166,8 @@ window.GraphNotesView = countlyView.extend({
             showOtherMonths: true,
             onSelect: function() {}
         });
-        /*eslint-disable */
-        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
-        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-        /*eslint-enable */
+
+        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
         self.emailInput = $('#email-list-input').selectize({
             plugins: ['remove_button'],
             persist: false,
@@ -204,16 +202,16 @@ window.GraphNotesView = countlyView.extend({
                 regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[0]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
                 }
 
                 // name <email@address.com>
-                /*eslint-disable */
+
                 regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
-                /*eslint-enable */
+
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[2]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
                 }
                 that.checkInput();
                 return false;
@@ -673,18 +671,29 @@ window.LoyaltyView = countlyView.extend({
 
         // Chart data
         var totals = [0, 0, 0]; //[allTotal, thirtDaysTotal, sevendaysTotal]
+        var i, dp0, dp1, dp2;
 
         for (var iRange = 0; iRange < ranges.length; iRange++) {
             var index = ticks.length - 1;
-            var dp0 = allData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
-            var dp1 = thirtyDaysData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
-            var dp2 = sevenDaysData.find(function(data) { // eslint-disable-line no-loop-func
-                return data._id.replace('&gt;', '>') === ranges[iRange];
-            });
+            dp0 = null, dp1 = null, dp2 = null;
+            for (i = 0; i < allData.length; i++) {
+                if (allData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp0 = allData[i];
+                    break;
+                }
+            }
+            for (i = 0; i < thirtyDaysData.length; i++) {
+                if (thirtyDaysData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp1 = thirtyDaysData[i];
+                    break;
+                }
+            }
+            for (i = 0; i < sevenDaysData.length; i++) {
+                if (sevenDaysData[i]._id.replace('&gt;', '>') === ranges[iRange]) {
+                    dp2 = sevenDaysData[i];
+                    break;
+                }
+            }
 
             if (dp0) {
                 dp[0].data.push([index, dp0.count]);
@@ -731,14 +740,30 @@ window.LoyaltyView = countlyView.extend({
             var sDaysPercentage = countlyCommon.formatNumber((100 * sDays) / totals[2], 2);
             sDaysPercentage = isNaN(sDaysPercentage) ? 0 : sDaysPercentage;
 
+            var allMultiplier = 0.8;
+            var tDaysMultiplier = 0.8;
+            var sDaysMultiplier = 0.8;
+
+            if (allPercentage > 80) {
+                allMultiplier = 0.65;
+            }
+
+            if (tDaysPercentage > 80) {
+                tDaysMultiplier = 0.65;
+            }
+
+            if (sDaysPercentage > 80) {
+                sDaysMultiplier = 0.65;
+            }
+
             chartData.push({
                 l: ticks[iTick][1],
                 a_count: all,
                 td_count: tDays,
                 sd_count: sDays,
-                a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>" + allPercentage + "%",
-                td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * 0.8) + "%'></div>" + tDaysPercentage + "%",
-                sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * 0.8) + "%'></div>" + sDaysPercentage + "%"
+                a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * allMultiplier) + "%'></div>" + allPercentage + "%",
+                td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * tDaysMultiplier) + "%'></div>" + tDaysPercentage + "%",
+                sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * sDaysMultiplier) + "%'></div>" + sDaysPercentage + "%"
             });
         }
 
@@ -1192,6 +1217,8 @@ window.CountriesView = countlyView.extend({
                 }
             });
         }
+
+        CountlyHelpers.applyColors();
     },
     refresh: function(isToggle) {
         var self = this;
@@ -1605,7 +1632,13 @@ window.AppVersionView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appVersionData.chartData,
                 "aoColumns": [
-                    { "mData": "app_versions", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
+                    {
+                        "mData": "app_versions",
+                        "sTitle": jQuery.i18n.map["app-versions.table.app-version"],
+                        "mRender": function(d) {
+                            return d;
+                        }
+                    },
                     {
                         "mData": "t",
                         "sType": "formatted-num",
@@ -2618,7 +2651,6 @@ window.ManageAppsView = countlyView.extend({
                 },
                 dataType: "json",
                 success: function(data) {
-                    afterFirstApp();
                     var sidebarApp = $("#sidebar-new-app>div").clone();
 
                     countlyGlobal.apps[data._id] = data;
@@ -2633,6 +2665,7 @@ window.ManageAppsView = countlyView.extend({
                     newApp.removeAttr("id");
 
                     if (!ext) {
+                        afterFirstApp();
                         $("#save-first-app-add").removeClass("disabled");
                         sidebarApp.find(".name").text(data.name);
                         sidebarApp.data("id", data._id);
@@ -2645,9 +2678,15 @@ window.ManageAppsView = countlyView.extend({
                         initAppManagement(data._id);
                         return true;
                     }
-
-                    $('#add-app-image-form').find("#app_add_image_id").val(data._id);
-                    $('#add-app-image-form').ajaxSubmit({
+                    var app_image_form = $('#add-app-image-form');
+                    if (store.get('first_app')) {
+                        app_image_form = $('#add-first-app-image-form');
+                        app_image_form.find("#first-app_image_id").val(data._id);
+                    }
+                    else {
+                        app_image_form.find("#app_add_image_id").val(data._id);
+                    }
+                    app_image_form.ajaxSubmit({
                         resetForm: true,
                         beforeSubmit: function(formData) {
                             formData.push({ name: '_csrf', value: countlyGlobal.csrf_token });
@@ -2675,6 +2714,7 @@ window.ManageAppsView = countlyView.extend({
                             initAppManagement(data._id);
                         }
                     });
+                    afterFirstApp();
                 }
             });
         }
@@ -3505,6 +3545,9 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
         });
+        $(".manage-users-table .detail .password-text").off("focus").on("focus", function() {
+            $(this).select();
+        });
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
@@ -3909,6 +3952,9 @@ window.ManageUsersView = countlyView.extend({
 
         $(".change-password").off("click").on('click', function() {
             $(this).parents(".row").next().toggle();
+            $(".manage-users-table .detail .password-text").off("focus").on("focus", function() {
+                $(this).select();
+            });
         });
 
         $('body').off('change', '.pp-uploader').on('change', '.pp-uploader', function() {
@@ -4165,6 +4211,7 @@ window.EventsBlueprintView = countlyView.extend({
         $(".event-container").unbind("click");
         $(".event-container").on("click", function() {
             var tmpCurrEvent = $(this).attr("data-key") || "";
+            tmpCurrEvent = countlyCommon.encodeHtml(tmpCurrEvent);
             var myitem = this;
             if ($("#events-apply-changes").css('display') === "none") {
                 $(".event-container").removeClass("active");
@@ -4256,11 +4303,13 @@ window.EventsBlueprintView = countlyView.extend({
 
         var segments = [];
         var i = 0;
-        for (i = 0; i < self.activeEvent.segments.length; i++) {
-            segments.push({"key": self.activeEvent.segments[i], "value": self.activeEvent.segments[i]});
-        }
-        for (i = 0; i < self.activeEvent.omittedSegments.length; i++) {
-            segments.push({"key": self.activeEvent.omittedSegments[i], "value": self.activeEvent.omittedSegments[i]});
+        if (self.activeEvent && self.activeEvent.segments && self.activeEvent.omittedSegments) {
+            for (i = 0; i < self.activeEvent.segments.length; i++) {
+                segments.push({"key": self.activeEvent.segments[i], "value": self.activeEvent.segments[i]});
+            }
+            for (i = 0; i < self.activeEvent.omittedSegments.length; i++) {
+                segments.push({"key": self.activeEvent.omittedSegments[i], "value": self.activeEvent.omittedSegments[i]});
+            }
         }
 
         $('#event-management-projection').selectize({
@@ -4362,6 +4411,7 @@ window.EventsBlueprintView = countlyView.extend({
                 }
                 else if (el.hasClass("event_toggle_visibility")) {
                     var toggleto = el.data("changeto");
+                    event = event.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
                     countlyEvent.update_visibility([event], toggleto, function(result) {
                         if (result === true) {
                             var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
@@ -4549,6 +4599,9 @@ window.EventsBlueprintView = countlyView.extend({
                     }
                     else {
                         if (selected === "show" || selected === "hide") {
+                            for (var k = 0; k < changeList.length; k++) {
+                                changeList[k] = changeList[k].replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
+                            }
                             countlyEvent.update_visibility(changeList, selected, function(result) {
                                 if (result === true) {
                                     var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
@@ -4593,7 +4646,7 @@ window.EventsBlueprintView = countlyView.extend({
             //save chenges for one event
             $("#events-apply-changes").on("click", function() {
                 var eventMap = {};
-                var eventKey = $("#events-settings-table").find(".event_key").val().replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");// eslint-disable-line
+                var eventKey = $("#events-settings-table").find(".event_key").val().replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
                 eventMap[eventKey] = {};
                 var omitted_segments = {};
 
@@ -4930,28 +4983,21 @@ window.EventsOverviewView = countlyView.extend({
         });
         self.overviewList = NeweventOrder;
     },
-    reset_drawer: function() {
-        var self = this;
+    resetOverviewList: function() {
         var overviewList = countlyEvent.getOverviewList();
-        self.overviewList = [];
+        this.overviewList = [];
         for (var i = 0; i < overviewList.length; i++) {
             var evname = overviewList[i].eventKey;
             var propname = overviewList[i].eventProperty;
-            if (self.eventmap && self.eventmap[overviewList[i].eventKey] && self.eventmap[overviewList[i].eventKey].name) {
-                evname = self.eventmap[evname].name;
+            if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey].name) {
+                evname = this.eventmap[evname].name;
             }
-            if (self.eventmap && self.eventmap[overviewList[i].eventKey] && self.eventmap[overviewList[i].eventKey][propname]) {
-                propname = self.eventmap[overviewList[i].eventKey][propname];
+            if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname]) {
+                propname = this.eventmap[overviewList[i].eventKey][propname];
             }
-            self.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
+            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
         }
-
-        self.templateData["overview-list"] = self.overviewList;
-
-        var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-        $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
-        self.overviewTableScripts();
-        app.localize($("#events-overview-table-wrapper"));
+        this.templateData["overview-list"] = this.overviewList;
     },
     fixTrend: function(changePercent) {
         var value = {"class": "", "text": "", "classdiv": "u", "arrow_class": "trending_up"};
@@ -5005,53 +5051,57 @@ window.EventsOverviewView = countlyView.extend({
 
         this.templateData["overview-length"] = this.templateData["overview-graph"].length;
         this.templateData["overview-table-length"] = this.templateData["overview-list"].length;
-        if (!isRefresh) {
-            var overviewList = countlyEvent.getOverviewList();
-            this.overviewList = [];
-            for (var i = 0; i < overviewList.length; i++) {
-                var evname = overviewList[i].eventKey;
-                var propname = overviewList[i].eventProperty;
-                if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey].name) {
-                    evname = this.eventmap[evname].name;
-                }
-                if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname]) {
-                    propname = this.eventmap[overviewList[i].eventKey][propname];
-                }
-                this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
-            }
 
-            this.templateData["overview-list"] = this.overviewList;
+        if (!isRefresh) {
+            this.resetOverviewList();
             this.templateData["overview-length"] = this.templateData["overview-graph"].length;
             this.templateData["overview-table-length"] = this.templateData["overview-list"].length;
             $(this.el).html(this.template(this.templateData));
 
-            self.pageScripts();
-
-            //selecting event or property in drawer
-            $(".cly-select").on("cly-select-change", function() {
-                var event = $("#events-overview-event").clySelectGetSelection();
-                var property = $("#events-overview-attr").clySelectGetSelection();
-                if (event && property) {
-                    $("#add_to_overview").removeClass('disabled');
-                }
-                else {
+            this.overviewDrawer = CountlyHelpers.createDrawer({
+                id: "event-overview-drawer",
+                form: $('#event-overview-drawer'),
+                title: jQuery.i18n.map["data-migration.import-title"],
+                applyChangeTriggers: true,
+                onUpdate: function() {
+                    var event = $("#events-overview-event").clySelectGetSelection();
+                    var property = $("#events-overview-attr").clySelectGetSelection();
+                    if (event && property) {
+                        $("#add_to_overview").removeClass('disabled');
+                    }
+                    else {
+                        $("#add_to_overview").addClass('disabled');
+                    }
+                },
+                resetForm: function() {
+                    self.resetOverviewList();
+                    self.templateData["overview-table-length"] = self.overviewList.length;
+                    $("#events-overview-table").css("max-height", $(window).height() - 280);
+                    $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
+                    $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
                     $("#add_to_overview").addClass('disabled');
+                    $("#update_overview_button").addClass('disabled');
+
+
+                    var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                    $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
+                    self.overviewTableScripts();
+                    app.localize($("#events-overview-table-wrapper"));
                 }
             });
+
+            self.pageScripts();
+
             //open editing drawer
             $("#events-overview-show-configure").on("click", function() {
-                $(".cly-drawer").removeClass("open editing");
-                $("#events-overview-table").css("max-height", $(window).height() - 280);
-                $("#event-overview-drawer").addClass("open");
-                $("#event-overview-drawer").find(".close").off("click").on("click", function() {
-                    $(this).parents(".cly-drawer").removeClass("open");
-                    self.reset_drawer();
-                });
+                self.overviewDrawer.resetForm();
+                self.overviewDrawer.open();
             });
 
             //Add new item to overview
             $("#add_to_overview").on("click", function() {
                 var event = $("#events-overview-event").clySelectGetSelection();
+                var event_encoded = countlyCommon.encodeHtml(event);
                 var property = $("#events-overview-attr").clySelectGetSelection();
                 if (event && property) {
                     if (self.overviewList.length < 12) {
@@ -5063,7 +5113,7 @@ window.EventsOverviewView = countlyView.extend({
                             }
                         }
                         if (unique_over === true) {
-                            self.overviewList.push({eventKey: event, eventProperty: property, eventName: self.eventmap[event].name, propertyName: self.eventmap[event][property] || jQuery.i18n.map["events.table." + property], order: self.overviewList.length});
+                            self.overviewList.push({eventKey: event, eventProperty: property, eventName: self.eventmap[event_encoded].name, propertyName: self.eventmap[event_encoded][property] || jQuery.i18n.map["events.table." + property], order: self.overviewList.length});
                             $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
                             $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
                             $("#update_overview_button").removeClass('disabled');
@@ -5083,6 +5133,9 @@ window.EventsOverviewView = countlyView.extend({
 
             //save changes made in overview drawer
             $("#update_overview_button").on("click", function() {
+                if ($(this).hasClass("disabled")) {
+                    return;
+                }
                 countlyEvent.update_map("", "", JSON.stringify(self.overviewList), "", function(result) {
                     if (result === true) {
                         var widgetCount = self.overviewList ? self.overviewList.length : 0;
@@ -5224,6 +5277,7 @@ window.EventsView = countlyView.extend({
 
                     self.drawTable(eventData);
                     app.localize();
+                    $('.nav-search').find("input").trigger("input");
                 }
             });
         });
@@ -5319,9 +5373,14 @@ window.EventsView = countlyView.extend({
             if (eventData.tableColumns[2] === jQuery.i18n.map["events.table.dur"]) {
                 aaColumns.push({
                     "mData": "dur",
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatSecond(d);
+                    sType: "numeric",
+                    "mRender": function(d, type) {
+                        if (type === "display") {
+                            return countlyCommon.formatSecond(d);
+                        }
+                        else {
+                            return d;
+                        }
                     },
                     "sTitle": eventData.tableColumns[2]
                 });
@@ -5335,9 +5394,14 @@ window.EventsView = countlyView.extend({
                             return (row.dur / row.c);
                         }
                     },
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatSecond(d);
+                    sType: "numeric",
+                    "mRender": function(d, type) {
+                        if (type === "display") {
+                            return countlyCommon.formatSecond(d);
+                        }
+                        else {
+                            return d;
+                        }
                     },
                     "sTitle": jQuery.i18n.map["events.table.avg-dur"]
                 });
@@ -5373,9 +5437,14 @@ window.EventsView = countlyView.extend({
         if (eventData.tableColumns[3]) {
             aaColumns.push({
                 "mData": "dur",
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatSecond(d);
+                sType: "numeric",
+                "mRender": function(d, type) {
+                    if (type === "display") {
+                        return countlyCommon.formatSecond(d);
+                    }
+                    else {
+                        return d;
+                    }
                 },
                 "sTitle": eventData.tableColumns[3]
             });
@@ -5389,9 +5458,14 @@ window.EventsView = countlyView.extend({
                         return (row.dur / row.c);
                     }
                 },
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatSecond(d);
+                sType: "numeric",
+                "mRender": function(d, type) {
+                    if (type === "display") {
+                        return countlyCommon.formatSecond(d);
+                    }
+                    else {
+                        return d;
+                    }
                 },
                 "sTitle": jQuery.i18n.map["events.table.avg-dur"]
             });
@@ -5463,6 +5537,7 @@ window.EventsView = countlyView.extend({
             $(window).on('resize', function() {
                 self.resizeTitle();
             });
+            $('.nav-search').find("input").trigger("input");
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
@@ -5793,6 +5868,7 @@ window.LongTaskView = countlyView.extend({
             this.tabs.on("tabsselect", function(event, ui) {
                 self.taskCreatedBy = typeCodes[ui.index];
                 $("#report-manager-table-title").text(jQuery.i18n.map["report-maanger." + self.taskCreatedBy + "-created-title"]);
+                self.showTableColumns(self);
                 self.refresh();
             });
             this.renderTable();
@@ -5806,9 +5882,11 @@ window.LongTaskView = countlyView.extend({
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind']);
             $(".report-manager-data-col").addClass("report-manager-automatically-created");
         }
+        this.showTableColumns(self);
+    },
+    showTableColumns: function(self) {
         var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
         var automaticallyColumns = [false, true, true, true, false, false, false, false, true, true];
-
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
@@ -5932,6 +6010,7 @@ window.LongTaskView = countlyView.extend({
                         return time;
                     }
                 },
+                "bSortable": false,
                 "sType": "numeric",
                 "sTitle": jQuery.i18n.map["events.table.dur"]
             },

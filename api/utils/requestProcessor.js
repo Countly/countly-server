@@ -236,6 +236,9 @@ const processRequest = (params) => {
                 case 'deleteOwnAccount':
                     validateUserForWriteAPI(countlyApi.mgmt.users.deleteOwnAccount, params);
                     break;
+                case 'ack':
+                    validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
@@ -594,7 +597,7 @@ const processRequest = (params) => {
                     break;
                 case 'name':
                     validateUserForWrite(params, () => {
-                        taskmanager.deleteResult({
+                        taskmanager.nameResult({
                             db: common.db,
                             id: params.qstring.task_id,
                             name: params.qstring.name
@@ -925,12 +928,14 @@ const processRequest = (params) => {
                         for (let i = 0; i < idss.length; i++) {
 
                             if (idss[i].indexOf('.') !== -1) {
-                                updateThese.$unset["map." + idss[i].replace(/\./g, ':')] = 1;
-                                updateThese.$unset["segments." + idss[i].replace(/\./g, ':')] = 1;
+                                updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
+                                updateThese.$unset["segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
+                                updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
                             }
                             else {
                                 updateThese.$unset["map." + idss[i]] = 1;
                                 updateThese.$unset["segments." + idss[i]] = 1;
+                                updateThese.$unset["omitted_segments." + idss[i]] = 1;
                             }
                         }
 
@@ -1053,6 +1058,7 @@ const processRequest = (params) => {
 
                             for (let i = 0; i < idss.length; i++) {
 
+                                var baseID = idss[i].replace(/\\u002e/g, ".");
                                 if (!update_array.map[idss[i]]) {
                                     update_array.map[idss[i]] = {};
                                 }
@@ -1074,7 +1080,7 @@ const processRequest = (params) => {
 
                                 if (params.qstring.set_visibility === 'hide' && event && event.overview && Array.isArray(event.overview)) {
                                     for (let j = 0; j < event.overview.length; j++) {
-                                        if (event.overview[j].eventKey === idss[i]) {
+                                        if (event.overview[j].eventKey === baseID) {
                                             event.overview.splice(j, 1);
                                             j = j - 1;
                                         }

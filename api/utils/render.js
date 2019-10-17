@@ -5,7 +5,17 @@
 * @module api/utils/render
 */
 
-var puppeteer = require('puppeteer');
+var puppeteer;
+try {
+    puppeteer = require('puppeteer');
+}
+catch (err) {
+    console.warn(
+        `Puppeteer not installed. Please install puppeteer (1.19.0) if
+        you would like to use api/utils/render.js. \nGracefully skipping
+        any functionality associated with Puppeteer...`, err.stack
+    );
+}
 var Promise = require('bluebird');
 var pathModule = require('path');
 var exec = require('child_process').exec;
@@ -32,8 +42,15 @@ var countlyConfig = require('./../config', 'dont-enclose');
  * @param  {number} options.dimensions.padding - the padding value to subtract from the height of the screenshot
  * @param  {number} options.dimensions.scale - the scale(ppi) value of the screenshot
  * @param  {function} cb - callback function called with the error value or the image data
+ * @return {void} void
  */
 exports.renderView = function(options, cb) {
+    if (puppeteer === undefined) {
+        cb = typeof cb === 'function' ? cb : () => undefined;
+        return cb(new Error(
+            'Puppeteer not installed. Please install Puppeteer (1.19.0) to use this plugin.'
+        ));
+    }
     Promise.coroutine(function * () {
         /**
          * Function to set a timeout

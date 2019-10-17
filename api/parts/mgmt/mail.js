@@ -99,15 +99,26 @@ mail.sendLocalizedMessage = function(lang, to, subject, message, callback) {
 };
 
 /**
+ * encode string to escape html code
+ * @param {string} s inputed string
+ * @return {string} newString new string escaped html code
+ */
+mail.escapedHTMLString = function(s) {
+    const newString = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return newString;
+};
+
+/**
 * Email to send to new members
 * @param {object} member - member document
 * @param {string} memberPassword - OTP for member to authorize
 **/
 mail.sendToNewMember = function(member, memberPassword) {
     member.lang = member.lang || "en";
+    const password = mail.escapedHTMLString(memberPassword);
     mail.lookup(function(err, host) {
         localize.getProperties(member.lang, function(err2, properties) {
-            var message = localize.format(properties["mail.new-member"], mail.getUserFirstName(member), host, member.username, memberPassword);
+            var message = localize.format(properties["mail.new-member"], mail.getUserFirstName(member), host, member.username, password);
             mail.sendMessage(member.email, properties["mail.new-member-subject"], message);
         });
     });
@@ -120,9 +131,10 @@ mail.sendToNewMember = function(member, memberPassword) {
 **/
 mail.sendToUpdatedMember = function(member, memberPassword) {
     member.lang = member.lang || "en";
+    const password = mail.escapedHTMLString(memberPassword);
     mail.lookup(function(err, host) {
         localize.getProperties(member.lang, function(err2, properties) {
-            var message = localize.format(properties["mail.password-change"], mail.getUserFirstName(member), host, member.username, memberPassword);
+            var message = localize.format(properties["mail.password-change"], mail.getUserFirstName(member), host, member.username, password);
             mail.sendMessage(member.email, properties["mail.password-change-subject"], message);
         });
     });

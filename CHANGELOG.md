@@ -1,4 +1,59 @@
-## Version 19.07
+## Version 19.08.1
+
+**Fixes**
+* [EChartMap] refactor library loading
+* [EchartMap] fixed date change refresh bug
+* [api] fixed i/tasks/name - calling correct function
+* [api] fixed total user correction for server side models
+* [api] increase user count in aggregated data for country when country changes
+* [crashes] fixed crash menu arrow
+* [crashes] update minidump
+* [events] fixed getting undefined _activeEvent in some situations
+* [events] fixed issue with hiding/showing event whan there is '.' in event name
+* [events] fixed issue with matching events in frontend if their keys have special symbols like "&" in them
+* [frontend] changed duration display format
+* [frontend] fixed check for admin apps (some sections that should be shown to admin, where not visible)
+* [frontend] fixed chrome autofill prevention
+* [frontend] fixed countries screen color problem
+* [frontend] fixed keeping filtered events after changing segments
+* [frontend] fixed localization for visits in top
+* [frontend] fixed total user correction in 0 cases
+* [frontend] fixed unknown country check
+* [frontend] fixed uploading app icon on first app screen
+* [frontend] fixes for 0 values having colors on the map
+* [frontend] improved Internet Explorer 11 support
+* [logger] let large texts scroll in table cell
+* [prelogin] fixed issue with showing messages in forgot page
+* [push] GCM Deprecation
+* [push] included in data migration
+* [push] show only for mobile type
+* [scripts] fixed db upgrade script running as separate script
+* [sdk] updated bundled Web SDK
+* [views] view deletion added in systemlogs
+
+**Enterprise fixes**
+* [attribution] prevent user from creating campaign ID with " or '
+* [cohorts] cohort drawer ui bugs fixed
+* [concurrent_users] fixed alerts table
+* [crash_symbols] order the symbols when fetching to always use last symbol if multiple same symbols provided
+* [crashes-jira] fixed check for correct crashes view
+* [dashboards] fixed user estimation correction in custom dashboards
+* [drill] fixed country map bugs
+* [drill] fixed punchcard value formatting
+* [funnels] fixed delete multiple rows bug
+* [funnels] fixed dragging steps only by drag handler
+* [restrict] css fix for hiding menus
+* [users] also validate funnel step segmentation
+* [users] fix custom column selection bugs
+
+**Enterprise Improvements**
+* [cohorts] added configuration to control minimal cohort regeneration time
+* [concurrent_users] added legacy live plugin endpoint support
+* [drill] return undefined values too in BY queries
+* [users] added cursor pointer on view message button
+* [users] updated to use long name and value transformations for custom selected fields
+
+## Version 19.08
 
 **Fixes**
 * [api] fixed error on deleting user with exported data
@@ -32,6 +87,7 @@
 **Enterprise fixes**
 * [attribution] encode link if it is not a custom scheme
 * [attribution] fixed using last campaign urls when creating new campaign
+* [block] fixed creating empty users for new blocked users
 * [cohorts] fixed editing cohorts with big lists
 * [cohorts] handle empy user sets correctly and more efficiently
 * [dashboards] block all popups for dashboard image rendering in emails
@@ -69,6 +125,7 @@
 * [push] option to view recipients of a push
 * [push] proxy authentication support
 * [push] real-time event triggered push notifications
+* [report-manager] smarter more often regenerating automatic reports
 * [security] added password secret salt support in configuration file
 * [slipping-away-users] add flexible periods setting support
 * [two-factor-auth] enable two factor authentication through Microsoft or Google authenticator apps

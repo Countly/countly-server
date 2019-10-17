@@ -237,7 +237,7 @@ class Store extends Base {
      * @param {Number} _id          _id of message
      * @param {Note} note           notification
      * @param {Number} appTzOffset  default tz offset
-     * @param {Number} date         optional date to override
+     * @param {Number} date         optional date to override (if ms number) or a reference date (if a ISO string)
      * @param {Object} over         optional object with properties to override note's ones
      * @param {Object} user         app_users document
      * @return {Object} mapped message object
@@ -247,12 +247,14 @@ class Store extends Base {
         let utz = (user.tz === undefined || user.tz === null ? appTzOffset || 0 : user.tz || 0) * 60000,
             d;
         if (note.auto) {
-            if (date) {
+            if (date && typeof date === 'number') {
                 d = date;
             }
             else {
+                d = typeof Date === 'string' ? new Date(date).getTime() : Date.now();
+
                 if (note.autoTime !== null && note.autoTime !== undefined) {
-                    let auto = new Date();
+                    let auto = new Date(d);
                     auto.setHours(0);
                     auto.setMinutes(0);
                     auto.setSeconds(0);
@@ -268,14 +270,8 @@ class Store extends Base {
                     }
                     // console.log(11, d);
                 }
-                else {
-                    d = Date.now();
-
-                    // console.log(2, note.autoDelay);
-                    if (note.autoDelay) {
-                        d += note.autoDelay;
-                    }
-                    // console.log(22, d);
+                if (note.autoDelay) {
+                    d += note.autoDelay;
                 }
                 if (note.autoEnd && note.autoEnd < d) {
                     log.d('User %s hit end date of campaign', user.uid);
@@ -644,6 +640,10 @@ class Store extends Base {
             this._fetchedQuery(note, uids).then(query => {
                 this.db.collection(`app_users${this.app._id}`).aggregate([
                     {$match: query},
+                    // {$project: {_id: 1, uid: 1, la: 1}},
+                    // {$lookup: {from: `push_${this.app._id}`, localField: 'uid', foreignField: '_id', as: 'tks'}},
+                    // {$unwind: '$tks'},
+                    // {$match: {['tks.tk.' + this.field]: {$exists: true}}},
                     {$project: {_id: '$la'}},
                     {$group: {_id: '$_id', count: {$sum: 1}}}
                 ], (err, results) => {
@@ -706,7 +706,8 @@ class Store extends Base {
                         }
                     },
                     {$unwind: '$tks'},
-                    {$project: prj}
+                    {$match: {['tks.tk.' + this.field]: {$exists: true}}},
+                    {$project: prj},
                 ], res);
             }
             else {
@@ -880,7 +881,7 @@ class Loader extends Store {
      */
     next() {
         return new Promise((resolve, reject) => {
-            this.collection.find().sort({d: 1}).limit(1).toArray((err, next) => {
+            this.collection.find({j: {$exists: false}}).sort({d: 1}).limit(1).toArray((err, next) => {
                 err ? reject(err) : resolve(next && next.length && next[0].d);
             });
         });
@@ -996,9 +997,18 @@ class Loader extends Store {
      * @return {Promise} resolves to an object of kind {'note1 _id string': 10, 'note2 _id string': 834, total: 844} with counts of discarded messages per note id.
      */
     discard(maxDate, maxDateEvents) {
-        log.i('Discarding %d / %d from %s', maxDate, maxDateEvents, this.collectionName);
         return new Promise((resolve, reject) => {
-            this.load(null, Math.max(maxDate, maxDateEvents)).then(msgs => {
+            let q = {
+                d: {$lte: Math.max(maxDate, maxDateEvents)},
+                $or: [{j: {$exists: false}}, {j: null}]
+            };
+
+            log.i('Discarding %d / %d from %s: %j', maxDate, maxDateEvents, this.collectionName, q);
+            this.collection.find(q).project({_id: 1, n: 1, d: 1}).toArray((err, msgs) => {
+                if (err) {
+                    return reject(err);
+                }
+                msgs = msgs || [];
                 log.i('Discarding %d msgs from %s', msgs.length, this.collectionName);
                 if (msgs.length) {
                     msgs.forEach(m => m.n = m.n.toString());
@@ -1007,6 +1017,7 @@ class Loader extends Store {
                     ids = ids.filter((id, i) => ids.indexOf(id) === i);
 
                     this.notes(ids).then(notes => {
+                        log.d('Loaded %d notes', Object.keys(notes).length);
                         let ret = {total: 0};
 
                         ids = [];

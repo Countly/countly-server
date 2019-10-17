@@ -123,7 +123,7 @@ window.component('push.dash', function (dash) {
             this[tableName] = $(element).dataTable($.extend({}, $.fn.dataTable.defaults, {
                 bServerSide: true,
                 iDisplayLength: 10,
-                sAjaxSource: countlyCommon.API_PARTS.data.r + '/pushes/all?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID,
+                sAjaxSource: countlyCommon.API_PARTS.data.r + '/pushes/all?app_id=' + countlyCommon.ACTIVE_APP_ID,
                 fnServerData: function (sSource, aoData, fnCallback) {
                     $.ajax({
                         dataType: 'jsonp',
@@ -419,7 +419,7 @@ window.component('push.dash', function (dash) {
                                             m('div.body', [
                                                 m('div.title', t('pu.dash.btn-group.automated-message')),
                                                 m('div.description', t('pu.dash.btn-group.automated-message-desc')),
-                                                m('a.url', t('Learn more about automation'))
+                                                m('a.url[href="https://count.ly/plugins/automated-push-notifications"][target=_blank]', t('pu.dash.btn-group.automated-message-link'))
                                             ])
                                         ]),
                                         m('div.one-time', { onclick: ctrl.createMessage }, [
@@ -573,15 +573,16 @@ window.MessagingDashboardView = countlyView.extend({
                 );
             }
         }, 500);
+        CountlyHelpers.applyColors();
     },
     refresh: function () {
         if (this.mounted) { this.mounted.refresh(true); }
     },
 
     destroy: function () {
-        m.startComputation();
+        // m.startComputation();
         components.slider.instance.close();
-        m.endComputation();
+        // m.endComputation();
 
         if (this.mounted) {
             delete components.push.dashboard;
@@ -590,11 +591,13 @@ window.MessagingDashboardView = countlyView.extend({
         }
     },
 
-    appChanged: function() {
+    appChanged: function(callback) {
         m.startComputation();
         components.slider.instance.close();
         m.endComputation();
-        this.renderCommon();
+        if (callback) {
+            callback();
+        }
     }
 
 });

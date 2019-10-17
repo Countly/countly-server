@@ -26,8 +26,6 @@
 .views-table tbody tr { cursor: pointer; }
 .btn-view-map {display: block;}
 
-.widget-header .title.small + #drill-down-for-view { margin-top:-3px !important; font-size: 10px !important; padding: 3px 5px 2px 5px !important; }
-
 .cly-drawer .details .section .opts .opt .inner .icon.views { background-image: url("../images/views/views.svg"); }
 .cly-widget .views.table table th { white-space: nowrap; }
 .cly-widget .views.table table td:first-child { white-space: nowrap; max-width:1px; overflow: hidden; text-overflow: ellipsis; }
@@ -44,7 +42,7 @@ html.theme-5 .cly-widget .views table { color:rgba(0, 0, 0, 0.6); }
 
 
 #ViewsDataTableOne_wrapper .dataTable-top .select-column-table-data {
-    height: 34px;
+    height: 32px;
 }
 @media(min-width: 1240px) {
     #ViewsDataTableOne tr th {

@@ -89,7 +89,7 @@ window.WebDashboardView = countlyView.extend({
         var sessionData = countlySession.getSessionData(),
             locationData = countlyLocation.getLocationData({maxCountries: 7});
         this.locationData = locationData;
-        sessionData["page-title"] = countlyCommon.getDateRange();
+        sessionData["page-title"] = jQuery.i18n.map["sidebar.dashboard"];
         sessionData.usage = [
             {
                 "title": jQuery.i18n.map["common.total-sessions"],

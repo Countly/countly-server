@@ -1,4 +1,4 @@
-/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, production, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
+/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
 window.DBViewerView = countlyView.extend({
     initialize: function() {
         this.dbviewer_selected_app = "all";
@@ -134,6 +134,11 @@ window.DBViewerView = countlyView.extend({
         }
 
         $('body').off('click', '.collection-list-item').on('click', '.collection-list-item', function() {
+            if (store.get('countly_collection') !== $(this).data('collection')) {
+                store.set('countly_collectionfilter', '');
+                store.set('countly_collection', $(this).data('collection'));
+                self.filter = '{}';
+            }
             app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection'), false);
             self.db = $(this).data('db');
             self.collection = $(this).data('collection');
@@ -404,7 +409,7 @@ window.DBViewerView = countlyView.extend({
         }
         data.collections.forEach(function(item) {
             var template = '<tr>' +
-            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" class="jh-type-string"><a class="dbviewer-document-detail" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" href="javascript:void(0)">View</a></span></p></th>' +
+            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" class="jh-type-string"><a class="dbviewer-document-detail" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" href="#/manage/db/' + self.db + '/' + self.collection + '/' + item._id + '">View</a></span></p></th>' +
             '</tr>' +
             '<tr>' +
             '<td class="jh-value jh-object-value">' + self.syntaxHighlight(JSON.stringify(item, undefined, 4)) + '</td>' +
@@ -450,7 +455,7 @@ window.DBViewerView = countlyView.extend({
         $('.dbviewer-collections').append('<div class="dbviewer-db-area-title">' + this.db + '</div>');
         $('.dbviewer-collections').append('<div class="dbviewer-collection-list">');
         for (var collection in dbs[currentDbIndex].collections) {
-            $('.dbviewer-collection-list').append('<div class="dbviewer-collection-list-item"><a class="collection-list-item" data-db="' + this.db + '" data-collection="' + dbs[currentDbIndex].collections[collection] + '" href="javascript:void(0)">' + collection + '</a></div>');
+            $('.dbviewer-collection-list').append('<div class="dbviewer-collection-list-item"><a class="collection-list-item" data-db="' + this.db + '" data-collection="' + dbs[currentDbIndex].collections[collection] + '" href="#/manage/db/' + this.db + '/' + dbs[currentDbIndex].collections[collection] + '">' + collection + '</a></div>');
         }
         $('.dbviewer-collections').append('</div>');
         $('.dbviewer-aggregate').hide();
@@ -559,6 +564,7 @@ window.DBViewerView = countlyView.extend({
                 $('#aggregate-header').show();
                 $('#dbviewer-header').hide();
                 $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
+                $('#back_to_dbviewer').attr('href', '#/manage/db/' + self.templateData.db + '/' + self.templateData.collection);
                 $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
                 $('#back_to_dbviewer').css('display', 'block');
             }
@@ -612,8 +618,12 @@ window.DBViewerView = countlyView.extend({
             }
 
             $('body').on('click', '.dbviewer-document-detail', function() {
-                app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection') + '/' + $(this).data('id'));
-                countlyDBviewer.loadDocument($(this).data('db'), $(this).data('collection'), $(this).data('id'))
+                var id = $(this).data('id');
+                if (id.substr(0, 3) === "Obj") {
+                    id = id.split("(")[1].split(")")[0];
+                }
+                app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection') + '/' + id);
+                countlyDBviewer.loadDocument($(this).data('db'), $(this).data('collection'), id)
                     .then(function(response) {
                         self.renderSingleDocument(response);
                     });
@@ -943,7 +953,7 @@ window.DBViewerView = countlyView.extend({
                         }
                         response.collections.forEach(function(item) {
                             var template = '<tr>' +
-                            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" class="jh-type-string"><a href="javascript:void(0)">View</a></span></p></th>' +
+                            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" class="jh-type-string"><a href="#/manage/db/' + self.db + '/' + self.collection + '/' + item._id + '">View</a></span></p></th>' +
                             '</tr>' +
                             '<tr>' +
                             '<td class="jh-value jh-object-value">' + self.syntaxHighlight(JSON.stringify(item, undefined, 4)) + '</td>' +
@@ -1073,10 +1083,5 @@ app.route('/manage/db/aggregate/:dbs/:collection', 'dbs', function(db, collectio
 });
 
 $(document).ready(function() {
-    if (!production) {
-        CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
-        CountlyHelpers.loadJS("dbviewer/javascripts/jquery.json-viewer.js");
-    }
-
     app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
 });

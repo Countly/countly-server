@@ -59,7 +59,7 @@ window.SystemLogsView = countlyView.extend({
         this.templateData = {
             "page-title": jQuery.i18n.map["systemlogs.title"],
             "active-action": activeAction,
-            "actions": meta.a,
+            "actions": meta.action,
             "active-user": activeUser,
             "users": meta.users,
             query: this._query,

@@ -759,7 +759,6 @@ window.ConfigurationsView = countlyView.extend({
                         "username": username,
                         "old_pwd": old_pwd,
                         "new_pwd": new_pwd,
-                        "api_key": api_key,
                         _csrf: countlyGlobal.csrf_token
                     };
 
@@ -1404,7 +1403,12 @@ if (countlyGlobal.member.global_admin) {
     }
 
     app.route('/manage/plugins', 'plugins', function() {
-        this.renderWhenReady(this.pluginsView);
+        if (countlyGlobal.COUNTLY_CONTAINER === 'frontend') {
+            app.navigate("#/", true);
+        }
+        else {
+            this.renderWhenReady(this.pluginsView);
+        }
     });
 
     app.route('/manage/configurations', 'configurations', function() {
@@ -1534,7 +1538,9 @@ app.addPageScript("/manage/plugins", function() {
 
 $(document).ready(function() {
     if (countlyGlobal.member && countlyGlobal.member.global_admin) {
-        app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
+        if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
+            app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
+        }
         app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
     }
 });

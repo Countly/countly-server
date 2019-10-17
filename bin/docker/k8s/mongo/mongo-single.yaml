@@ -1,0 +1,63 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: mongo-storageclass
+provisioner: kubernetes.io/gce-pd
+reclaimPolicy: Retain
+parameters:
+  type: pd-ssd
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  labels:
+    name: mongo
+spec:
+  ports:
+  - port: 27017
+    targetPort: 27017
+  clusterIP: None
+  selector:
+    app: mongo
+
+---
+
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  serviceName: "mongo"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: mongo
+          image: mongo:3.6.12
+          command:
+            - mongod
+            - "--bind_ip"
+            - 0.0.0.0
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: datadir
+              mountPath: /data/db
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+      annotations:
+    spec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "20Gi"
+      storageClassName: "mongo-storageclass"

@@ -37,7 +37,14 @@ module.exports = function(my_db) {
         for (var k in db_params) {
             dbstr_drill += " --" + k + " " + db_params[k];
         }
-        return {dbstr: dbstr, dbstr_drill: dbstr_drill};
+
+        var dbstr_out = "";
+        db_params = plugins.getDbConnectionParams('countly_out');
+        for (var r in db_params) {
+            dbstr_out += " --" + r + " " + db_params[r];
+        }
+
+        return {dbstr: dbstr, dbstr_drill: dbstr_drill, dbstr_out: dbstr_out};
     };
 
 
@@ -159,7 +166,7 @@ module.exports = function(my_db) {
         var set_data = {step: step, status: status, progress: progress, ts: Date.now(), reason: reason};
         if (more_fields) {
             for (var k in more_fields) {
-                if (more_fields.hasOwnProperty(k)) {
+                if (Object.prototype.hasOwnProperty.call(more_fields, k)) {
                     set_data[k] = more_fields[k];
                 }
             }
@@ -475,6 +482,12 @@ module.exports = function(my_db) {
                 dbstr_drill += " --" + z + " " + db_params[z];
             }
 
+            var dbstr_out = "";
+            db_params = plugins.getDbConnectionParams('countly_out');
+            for (var g in db_params) {
+                dbstr_out += " --" + g + " " + db_params[g];
+            }
+
             db.collection("apps").findOne({_id: db.ObjectID(appid)}, function(err, res) {
                 if (err || !res) {
                     reject(Error("Invalid app id"));
@@ -490,7 +503,7 @@ module.exports = function(my_db) {
                         scripts.push('mongo ' + countly_db_name + ' ' + dbstr0 + ' --eval  \'db.apps.update({ _id: ObjectId("' + appid + '") }, { $set: { redirect_url: "' + res.redirect_url + '" } })\'');
                     }
 
-                    var appDocs = ['app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_nxret', 'app_viewdata', 'app_views', 'app_userviews', 'app_viewsmeta', 'campaign_users', 'consent_history', 'event_flows', 'timesofday', 'feedback'];
+                    var appDocs = ['app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_nxret', 'app_viewdata', 'app_views', 'app_userviews', 'app_viewsmeta', 'blocked_users', 'campaign_users', 'consent_history', 'crashes_jira', 'event_flows', 'timesofday', 'feedback', 'push_'];
                     for (let j = 0; j < appDocs.length; j++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + appDocs[j] + appid + ' --out ' + my_folder);
                     }
@@ -499,22 +512,33 @@ module.exports = function(my_db) {
                     scripts.push('mongodump ' + dbstr + ' --collection campaigns -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection crash_share -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection feedback_widgets -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection notes -q \'{ _id: "' + appid + '"}\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection notes -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + '  --collection messages -q \'{ apps: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohortdata -q \'{ a: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohorts -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection server_stats_data_points -q \'{ a: "' + appid + '"}\' --out ' + my_folder);
+                    //concurrent_users
+                    scripts.push('mongodump ' + dbstr + ' --collection concurrent_users_max -q \'{$or:[{ app_id: "' + appid + '"},{ _id: {$in :["' + appid + '_overall", "' + appid + '_overall_new"]}}]}\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection concurrent_users_alerts -q \'{ app: "' + appid + '"}\' --out ' + my_folder);
+
 
                     var sameStructures = ["browser", "carriers", "cities", "consents", "crashdata", "density", "device_details", "devices", "langs", "sources", "users", "retention_daily", "retention_weekly", "retention_monthly", "server_stats_data_points"];
 
                     for (var k = 0; k < sameStructures.length; k++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + sameStructures[k] + ' -q \'{ _id: {$regex: "' + appid + '_.*" }}\' --out ' + my_folder);
                     }
+                    if (dbstr_out && dbstr_out !== "") {
+                        scripts.push('mongodump ' + dbstr_out + ' --collection ' + "ab_testing_experiments" + appid + ' --out ' + my_folder);
+                        scripts.push('mongodump ' + dbstr_out + ' --collection ' + "remoteconfig_parameters" + appid + ' --out ' + my_folder);
+                        scripts.push('mongodump ' + dbstr_out + ' --collection ' + "remoteconfig_conditions" + appid + ' --out ' + my_folder);
+                    }
 
                     scripts.push('mongodump ' + dbstr + ' --collection max_online_counts -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection top_events -q \'{ app_id: ObjectId("' + appid + '")}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection events -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection views -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection funnels -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection calculated_metrics -q \'{ app: "' + appid + '" }\' --out ' + my_folder);
 
                     //internal events
                     for (let j = 0; j < plugins.internalEvents.length; j++) {
@@ -935,6 +959,9 @@ module.exports = function(my_db) {
                         }
                         else if (constr.dbstr_drill.indexOf('--db ' + subdirectory[j]) > -1) {
                             myscripts.push('mongorestore ' + constr.dbstr_drill + ' --dir ' + folder + '/' + myfiles[i] + '/' + subdirectory[j]);
+                        }
+                        else if (constr.dbstr_out.indexOf('--db ' + subdirectory[j]) > -1) {
+                            myscripts.push('mongorestore ' + constr.dbstr_out + ' --dir ' + folder + '/' + myfiles[i] + '/' + subdirectory[j]);
                         }
                     }
                 }

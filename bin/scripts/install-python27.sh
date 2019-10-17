@@ -20,17 +20,17 @@ cd Python-2.7.10
 ./configure --with-zlib=/usr/include
 make altinstall
 
-ln -s /usr/local/bin/python2.7 /usr/bin/python2.7
+ln -sf /usr/local/bin/python2.7 /usr/bin/python2.7
 
 # Install pip for Python 2.7
 yum install python-pip -y
 cd /usr/src
 wget https://bootstrap.pypa.io/get-pip.py
 python2.7 get-pip.py
-ln -s /usr/local/bin/pip2.7 /usr/bin/pip2.7
+ln -sf /usr/local/bin/pip2.7 /usr/bin/pip2.7
 
 # Install meld3 & Supervisor
 yum install -y python-meld3
 
 pip2.7 install supervisor --ignore-installed meld3
-ln -s /usr/local/bin/supervisord /usr/bin/supervisord
+ln -sf /usr/local/bin/supervisord /usr/bin/supervisord

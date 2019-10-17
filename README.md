@@ -98,7 +98,7 @@ Countly is a privacy-focused and 360-degree analytics platform with several, uni
 * Configurable and extensible via open source [plugins](https://count.ly/plugins).
 * Modern and easy to use web based dashboard with a focus on user experience, which makes getting complex insights a breeze.
 * Tracking more than 2500 web sites and 16000 mobile applications.
-* Collecting more than 60 billion datapoints worlwide.
+* Collecting more than 60 billion datapoints worldwide.
 
 ## Differences between Community Edition & Enterprise Edition
 

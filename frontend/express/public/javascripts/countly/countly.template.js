@@ -829,7 +829,7 @@ var AppRouter = Backbone.Router.extend({
             $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").removeAttr("href");
         }
 
-        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").show();
+        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").css('display', 'block');
 
         if (typeof node.callback === "function") {
             node.callback(app_type, parent_code, node, menu);
@@ -1208,7 +1208,7 @@ var AppRouter = Backbone.Router.extend({
 
         this.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
 
-        if (countlyGlobal.member.global_admin || (countlyGlobal.adminOfApps && countlyGlobal.adminOfApps.length)) {
+        if (countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) {
             this.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
         }
         if (countlyGlobal.member.global_admin) {
@@ -1237,7 +1237,20 @@ var AppRouter = Backbone.Router.extend({
         * {{> date-selector }}
         */
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
-
+        /**
+        * Get id value from ObjectID string
+        * @name getIdValue
+        * @memberof Handlebars
+        * @example
+        * <span>{{#clearObjectId value}}{{/clearObjectId}}</span>
+        */
+        Handlebars.registerHelper('clearObjectId', function(string) {
+            var id = string;
+            if (id.substr(0, 3) === "Obj") {
+                id = id.split("(")[1].split(")")[0];
+            }
+            return id;
+        });
         /**
         * Display common date time selecting UI elements
         * @name date-time-selector
@@ -2201,6 +2214,76 @@ var AppRouter = Backbone.Router.extend({
                 e.stopPropagation();
             });
 
+            /**
+             * Clear highlights class from app items
+             * @param {array} filteredItems - filtered app items list
+             */
+            function clearHighlights(filteredItems) {
+                var length = filteredItems.length;
+                for (var i = 0; i < length; i++) {
+                    $(filteredItems[i]).removeClass('highlighted-app-item');
+                }
+            }
+
+            var arrowed = false;
+            var currentIndex;
+            $('#app-navigation').on('keyup', '.nav-search input', function(e) {
+                var code = (e.keyCode || e.which);
+                var filteredItems = $('#app-navigation > div.menu > div.list > .filtered-app-item');
+                var indexLimit = filteredItems.length;
+                if (code === 38) {
+                    clearHighlights(filteredItems);
+                    if (!arrowed) {
+                        arrowed = true;
+                        currentIndex = indexLimit - 1;
+                    }
+                    else {
+                        currentIndex = currentIndex - 1;
+                        if (currentIndex === -1) {
+                            currentIndex = indexLimit - 1;
+                        }
+                    }
+                    $(filteredItems[currentIndex]).addClass('highlighted-app-item');
+                }
+                else if (code === 40) {
+                    clearHighlights(filteredItems);
+                    if (!arrowed) {
+                        arrowed = true;
+                        currentIndex = 0;
+                    }
+                    else {
+                        currentIndex = currentIndex + 1;
+                        if (currentIndex === indexLimit) {
+                            currentIndex = 0;
+                        }
+                    }
+                    $(filteredItems[currentIndex]).addClass('highlighted-app-item');
+                }
+                else if (code === 13) {
+                    $('#app-navigation').removeClass('clicked');
+                    var appKey = $(filteredItems[currentIndex]).data("key"),
+                        appId = $(filteredItems[currentIndex]).data("id"),
+                        appName = $(filteredItems[currentIndex]).find(".name").text(),
+                        appImage = $(filteredItems[currentIndex]).find(".app-icon").css("background-image");
+
+                    $("#active-app-icon").css("background-image", appImage);
+                    $("#active-app-name").text(appName);
+                    $("#active-app-name").attr('title', appName);
+
+                    if (self.activeAppKey !== appKey) {
+                        self.activeAppName = appName;
+                        self.activeAppKey = appKey;
+                        countlyCommon.setActiveApp(appId);
+                        self.activeView.appChanged(function() {
+                            app.onAppSwitch(appId);
+                        });
+                    }
+                }
+                else {
+                    return;
+                }
+            });
+
             $topbar.on("click", ".dropdown .item", function(e) {
                 $topbar.find(".dropdown").removeClass("clicked");
                 e.stopPropagation();
@@ -2648,6 +2731,55 @@ var AppRouter = Backbone.Router.extend({
             y = countlySession.getDurationIndex(y);
 
             return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+        };
+
+        /**
+        * Compare two versions
+        * @param {String} a, First version
+        * @param {String} b, Second version
+        * @returns {Number} returns -1, 0 or 1 by result of comparing
+        */
+        function compareVersions(a, b) {
+            var aParts = a.split('.');
+            var bParts = b.split('.');
+
+            for (var j = 0; j < aParts.length && j < bParts.length; j++) {
+                var aPartNum = parseInt(aParts[j], 10);
+                var bPartNum = parseInt(bParts[j], 10);
+
+                var cmp = Math.sign(aPartNum - bPartNum);
+
+                if (cmp !== 0) {
+                    return cmp;
+                }
+            }
+
+            if (aParts.length === bParts.length) {
+                return 0;
+            }
+
+            var longestArray = aParts;
+            if (bParts.length > longestArray.length) {
+                longestArray = bParts;
+            }
+
+            var continueIndex = Math.min(aParts.length, bParts.length);
+
+            for (var i = continueIndex; i < longestArray.length; i += 1) {
+                if (parseInt(longestArray[i], 10) > 0) {
+                    return longestArray === bParts ? -1 : +1;
+                }
+            }
+
+            return 0;
+        }
+
+        jQuery.fn.dataTableExt.oSort['app_versions-asc'] = function(x, y) {
+            return compareVersions(x, y);
+        };
+
+        jQuery.fn.dataTableExt.oSort['app_versions-desc'] = function(x, y) {
+            return compareVersions(x, y);
         };
 
         jQuery.fn.dataTableExt.oSort['format-ago-asc'] = function(x, y) {
@@ -3352,7 +3484,7 @@ var AppRouter = Backbone.Router.extend({
     },
     pageScript: function() { //scripts to be executed on each view change
         $("#month").text(moment().year());
-        $("#day").text(moment().format("MMM"));
+        $("#day").text(moment().format("MMMM, YYYY"));
         $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
         var self = this;
@@ -3445,6 +3577,7 @@ var AppRouter = Backbone.Router.extend({
 
             $("#date-picker-button").click(function(e) {
                 $("#date-picker").toggle();
+                $("#date-picker-button").toggleClass("active");
 
                 if (self.dateToSelected) {
                     dateTo.datepicker("setDate", moment(self.dateToSelected).toDate());
@@ -3467,7 +3600,12 @@ var AppRouter = Backbone.Router.extend({
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 }
 
-                setSelectedDate();
+                $("#date-from-input").val(moment(dateFrom.datepicker("getDate")).format("MM/DD/YYYY"));
+                $("#date-to-input").val(moment(dateTo.datepicker("getDate")).format("MM/DD/YYYY"));
+
+                dateTo.datepicker("refresh");
+                dateFrom.datepicker("refresh");
+                //setSelectedDate();
                 e.stopPropagation();
             });
 
@@ -3482,11 +3620,18 @@ var AppRouter = Backbone.Router.extend({
                     if (date.getTime() < self.dateFromSelected) {
                         self.dateFromSelected = date.getTime();
                     }
-
+                    $("#date-to-input").val(moment(date).format("MM/DD/YYYY"));
                     dateFrom.datepicker("option", "maxDate", date);
                     self.dateToSelected = date.getTime();
-
-                    setSelectedDate();
+                },
+                beforeShowDay: function(date) {
+                    var ts = date.getTime();
+                    if (ts < moment($("#date-to-input").val()) && ts >= moment($("#date-from-input").val())) {
+                        return [true, "in-range", ""];
+                    }
+                    else {
+                        return [true, "", ""];
+                    }
                 }
             });
 
@@ -3501,23 +3646,72 @@ var AppRouter = Backbone.Router.extend({
                     if (date.getTime() > self.dateToSelected) {
                         self.dateToSelected = date.getTime();
                     }
-
+                    $("#date-from-input").val(moment(date).format("MM/DD/YYYY"));
                     dateTo.datepicker("option", "minDate", date);
                     self.dateFromSelected = date.getTime();
+                },
+                beforeShowDay: function(date) {
+                    var ts = date.getTime();
+                    if (ts <= moment($("#date-to-input").val()) && ts > moment($("#date-from-input").val())) {
+                        return [true, "in-range", ""];
+                    }
+                    else {
+                        return [true, "", ""];
+                    }
+                }
+            });
 
-                    setSelectedDate();
+            $("#date-from-input").keyup(function(event) {
+                if (event.keyCode === 13) {
+                    var date = moment($("#date-from-input").val());
+
+                    if (date.format("MM/DD/YYYY") !== $("#date-from-input").val()) {
+                        var jsDate = $('#date-from').datepicker('getDate');
+                        $("#date-from-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
+                    }
+                    else {
+                        dateTo.datepicker("option", "minDate", date.toDate());
+                        if (date.valueOf() > self.dateToSelected) {
+                            self.dateToSelected = date.valueOf();
+                            dateFrom.datepicker("option", "maxDate", date.toDate());
+                            dateTo.datepicker("setDate", date.toDate());
+                            $("#date-to-input").val(date.format("MM/DD/YYYY"));
+
+                        }
+                        dateFrom.datepicker("setDate", date.toDate());
+                    }
+                }
+            });
+
+
+            $("#date-to-input").keyup(function(event) {
+                if (event.keyCode === 13) {
+                    var date = moment($("#date-to-input").val());
+                    if (date.format("MM/DD/YYYY") !== $("#date-to-input").val()) {
+                        var jsDate = $('#date-to').datepicker('getDate');
+                        $("#date-to-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
+                    }
+                    else {
+                        dateFrom.datepicker("option", "maxDate", date.toDate());
+                        if (date.toDate() < self.dateFromSelected) {
+                            self.dateFromSelected = date.valueOf();
+                            dateTo.datepicker("option", "minDate", date.toDate());
+                            dateFrom.datepicker("setDate", date.toDate());
+                            $("#date-from-input").val(date.format("MM/DD/YYYY"));
+                        }
+                        dateTo.datepicker("setDate", date.toDate());
+                    }
                 }
             });
             /** function sets selected date */
             function setSelectedDate() {
-                var from = moment(dateFrom.datepicker("getDate")).format("D MMM, YYYY"),
-                    to = moment(dateTo.datepicker("getDate")).format("D MMM, YYYY");
-
-                $("#selected-date").text(from + " - " + to);
+                $("#selected-date").text(countlyCommon.getDateRangeForCalendar());
             }
 
             $.datepicker.setDefaults($.datepicker.regional[""]);
             $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+
+
             $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
 
             $("#date-submit").click(function() {
@@ -3530,9 +3724,18 @@ var AppRouter = Backbone.Router.extend({
 
                 self.activeView.dateChanged();
                 app.runRefreshScripts();
-
+                setSelectedDate();
+                $("#date-selector .calendar").removeClass("active");
                 $(".date-selector").removeClass("selected").removeClass("active");
+                $("#date-picker").hide();
             });
+
+            $("#date-cancel").click(function() {
+                $("#date-selector .calendar").removeClass("selected").removeClass("active");
+                $("#date-picker").hide();
+            });
+
+            setSelectedDate();
 
             $('.scrollable').slimScroll({
                 height: '100%',
@@ -3564,11 +3767,11 @@ var AppRouter = Backbone.Router.extend({
 
                 searchInside.filter(function() {
                     return !(searchText.test($(this).text().toLowerCase()));
-                }).css('display', 'none');
+                }).css('display', 'none').removeClass('filtered-app-item');
 
                 searchInside.filter(function() {
                     return searchText.test($(this).text().toLowerCase());
-                }).css('display', 'block');
+                }).css('display', 'block').addClass('filtered-app-item');
             });
 
             $(document).on('input', "#listof-apps .search input", function() {

@@ -75,7 +75,24 @@ function compareVersions(a, b) {
         }
     }
 
-    return Math.sign(a.length - b.length);
+    if (aParts.length === bParts.length) {
+        return 0;
+    }
+
+    let longestArray = aParts;
+    if (bParts.length > longestArray.length) {
+        longestArray = bParts;
+    }
+
+    const continueIndex = Math.min(aParts.length, bParts.length);
+
+    for (let i = continueIndex; i < longestArray.length; i += 1) {
+        if (parseInt(longestArray[i], 10) > 0) {
+            return longestArray === bParts ? -1 : +1;
+        }
+    }
+
+    return 0;
 }
 
 versions = versions.sort(compareVersions);

@@ -11,6 +11,7 @@ var exported = {},
     });
     plugins.register("/o/method/total_users", function(ob) {
         ob.shortcodesForMetrics.languages = "la";
+        ob.shortcodesForMetrics.langs = "la";
     });
     plugins.register("/metric/collection", function(ob) {
         if (ob.metric === "locales" || ob.metric === "langs") {

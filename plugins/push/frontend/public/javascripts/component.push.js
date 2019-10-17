@@ -360,7 +360,7 @@ window.component('push', function(push) {
                 this.setBuild(data);
                 if (data.build && data.build.count) {
                     if (onFullBuild) { onFullBuild(); }
-                } else if (this._id()) {
+                } else if (this._id() && !data.delayed) {
                     setTimeout(this.remotePrepare.bind(this, onFullBuild), 2000);
                 }
             }.bind(this));
@@ -377,7 +377,8 @@ window.component('push', function(push) {
                 delayed: this.delayed(),
                 tz: this.tz(),
                 test: this.test(),
-                auto: this.auto()
+                auto: this.auto(),
+                date: this.date()
             };
             if (includeId) {
                 obj._id = this._id();
@@ -390,7 +391,6 @@ window.component('push', function(push) {
                 obj.badge = this.badge();
                 obj.url = this.url();
                 obj.source = 'dash';
-                obj.date = this.date();
                 obj.buttons = parseInt(this.buttons());
                 obj.media = this.media();
                 obj.autoOnEntry = this.autoOnEntry();
@@ -638,7 +638,7 @@ window.component('push', function(push) {
 
         this.statusString = function() {
             if (this.isSending()) {
-                if (this.error) {
+                if (this.error()) {
                     return t('push.message.status.sending-errors');
                 } else {
                     return t('push.message.status.sending');
@@ -672,13 +672,23 @@ window.component('push', function(push) {
 
     push.remoteDashboard = function(appId, refresh) {
         if (!push.dashboard || push.dashboard.app_id !== appId || refresh) {
-            return m.request({
+            if (push.loadingRemoteDashboard) {
+                return push.loadingRemoteDashboard;
+            }
+
+            var promise = m.request({
                 method: 'GET',
                 url: window.countlyCommon.API_URL + '/i/pushes/dashboard',
                 data: {
                     api_key: window.countlyGlobal.member.api_key,
                     app_id: appId
                 }
+            }).then(function(res){
+                push.loadingRemoteDashboard = undefined;
+                return res;
+            }, function(e){
+                push.loadingRemoteDashboard = undefined;
+                throw e;
             }).then(function(data){
                 return countlyEvent.initialize().then(function(){
                     data.app_id = appId;
@@ -687,6 +697,8 @@ window.component('push', function(push) {
                     return data;
                 });
             });
+
+            return push.loadingRemoteDashboard = promise;
         } else {
             var deferred = m.deferred();
             setTimeout(function(){

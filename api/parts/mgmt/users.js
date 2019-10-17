@@ -259,7 +259,6 @@ usersApi.createUser = function(params) {
 
                 member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
                 common.db.collection('members').update({ '_id': member[0]._id }, { $set: { api_key: member[0].api_key } }, function() { });
-
                 mail.sendToNewMember(member[0], passwordNoHash);
                 plugins.dispatch("/i/users/create", {
                     params: params,
@@ -916,6 +915,18 @@ usersApi.fetchNotes = async function(params) {
         }
     });
     return true;
+};
+
+usersApi.ackNotification = function(params) {
+    common.db.collection('members').updateOne({"_id": common.db.ObjectID(params.member._id)}, {$set: {['notes.' + params.qstring.path]: true}}, err => {
+        if (err) {
+            log.e('Error while acking member notification', err);
+            return common.returnMessage(params, 500, 'Unknown error');
+        }
+        else {
+            common.returnOutput(params, {['notes.' + params.qstring.path]: true});
+        }
+    });
 };
 
 module.exports = usersApi;

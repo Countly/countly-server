@@ -17,8 +17,11 @@ bash $CUR/scripts/remove_chrome_cache.sh
 bash $CUR/scripts/remove_flash_corssorigin.sh
 
 #upgrade plugins
-countly upgrade
+(cd $DIR/../ && npm install --unsafe-perm)
 countly plugin upgrade crashes
+countly plugin upgrade push
+(cd $DIR/../plugins/push/api/parts/apn && npm install --unsafe-perm)
+countly plugin upgrade systemlogs
 countly plugin disable live
 countly plugin enable concurrent_users
 countly plugin enable formulas

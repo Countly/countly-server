@@ -5,7 +5,7 @@
  * @global
  * @namespace countlyCommon
  */
-(function(window, $, undefined) {
+(function(window, $) {
 
     var CommonConstructor = function() {
         // Private Properties
@@ -13,20 +13,31 @@
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
         var htmlEncodeOptions = {
-            "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
+            "whiteList": {"a": ["href", "class", "target"], "ul": [], "li": [], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
             onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
                 if (tag === "a") {
-                    if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
-                        return "target='_blank'"; //set _blank if incorrect value
+                    var re = new RegExp(/{[0-9]*}/);
+                    var tested = re.test(value);
+                    if (name === "target") {
+                        if (!(value === "_blank" || value === "_self" || value === "_top" || value === "_parent" || tested)) {
+                            return 'target="_blank"'; //set _blank if incorrect value
+                        }
+                        else {
+                            return 'target="' + value + '"';
+                        }
                     }
-
-                    if (name === "href" && !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http")) {
-                        return "href='#'"; //set # if incorrect value
+                    if (name === "href") {
+                        if (!(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http" || tested)) {
+                            return 'href="#"'; //set # if incorrect value
+                        }
+                        else {
+                            return 'href="' + value + '"';
+                        }
                     }
                 }
-
             }
         };
+
         /**
         * Get Browser language
         * @returns {string} browser locale in iso format en-US
@@ -1538,7 +1549,7 @@
                     }
 
                     if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                        if (countlyTotalUsers.isUsable() && estOverrideMetric && calculatedObj[rangeArray[j]]) {
+                        if (countlyTotalUsers.isUsable() && estOverrideMetric && typeof calculatedObj[rangeArray[j]] !== "undefined") {
 
                             tmpPropertyObj.u = calculatedObj[rangeArray[j]];
 
@@ -1586,7 +1597,7 @@
                         }
                         // Total users can't be less than new users
                         if (tmpPropertyObj.u < tmpPropertyObj.n) {
-                            if (countlyTotalUsers.isUsable() && estOverrideMetric && calculatedObj[rangeArray[j]]) {
+                            if (countlyTotalUsers.isUsable() && estOverrideMetric && typeof calculatedObj[rangeArray[j]] !== "undefined") {
                                 tmpPropertyObj.n = calculatedObj[rangeArray[j]];
                             }
                             else {
@@ -1993,6 +2004,38 @@
             }
         };
 
+        countlyCommon.getDateRangeForCalendar = function() {
+            countlyCommon.periodObj = getPeriodObj();
+            var formattedDateStart = "";
+            var formattedDateEnd = "";
+            if (!countlyCommon.periodObj.isSpecialPeriod) {
+                if (countlyCommon.periodObj.dateString === "HH:mm") {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMin + ":00", "YYYY.M.D HH:mm"), "D MMM, YYYY HH:mm");
+                    formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
+                    formattedDateEnd = formattedDateEnd.add(59, "minutes");
+                    formattedDateEnd = countlyCommon.formatDate(formattedDateEnd, "D MMM, YYYY HH:mm");
+
+                }
+                else if (countlyCommon.periodObj.dateString === "D MMM, HH:mm") {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D"), "D MMM, YYYY HH:mm");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes"), "D MMM, YYYY HH:mm");
+                }
+                else if (countlyCommon.periodObj.dateString === "MMM") { //this year
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin + ".1", "YYYY.M.D"), "D MMM, YYYY");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax + ".31", "YYYY.M.D"), "D MMM, YYYY");
+                }
+                else {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin, "YYYY.M.D"), "D MMM, YYYY");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax, "YYYY.M.D"), "D MMM, YYYY");
+                }
+            }
+            else {
+                formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D"), "D MMM, YYYY");
+                formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)], "YYYY.M.D"), "D MMM, YYYY");
+            }
+            return formattedDateStart + " - " + formattedDateEnd;
+        };
+
         /**
         * Merge standard countly metric data object, by mergin updateObj retrieved from action=refresh api requests object into dbObj.
         * Used for merging the received data for today to the existing data while updating the dashboard.
@@ -2038,7 +2081,7 @@
             }
 
             for (var level1 in tmpUpdateObj) {
-                if (!tmpUpdateObj.hasOwnProperty(level1)) {
+                if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj, level1)) {
                     continue;
                 }
 
@@ -2099,7 +2142,7 @@
 
                 if (tmpUpdateObj[level1]) {
                     for (var level2 in tmpUpdateObj[level1]) {
-                        if (!tmpUpdateObj[level1].hasOwnProperty(level2)) {
+                        if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj[level1], level2)) {
                             continue;
                         }
 
@@ -3560,7 +3603,7 @@
             if (obj instanceof Object) {
                 copy = {};
                 for (var attr in obj) {
-                    if (obj.hasOwnProperty(attr)) {
+                    if (Object.prototype.hasOwnProperty.call(obj, attr)) {
                         copy[attr] = clone(obj[attr]);
                     }
                 }
@@ -3738,21 +3781,33 @@
         countlyCommon.formatSecond = function(second) {
             var timeLeft = parseInt(second);
             var dict = [
+                {k: 'year', v: 31536000},
                 {k: 'day', v: 86400},
                 {k: 'hour', v: 3600},
                 {k: 'minute', v: 60},
                 {k: 'second', v: 1}
             ];
-            var result = {day: 0, hour: 0, minute: 0, second: 0};
-            for (var i = 0; i < dict.length; i++) {
+            var result = {year: 0, day: 0, hour: 0, minute: 0, second: 0};
+            var resultStrings = [];
+            for (var i = 0; i < dict.length && resultStrings.length < 3; i++) {
                 result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
                 timeLeft = timeLeft % dict[i].v;
+                if (result[dict[i].k] > 0) {
+                    if (result[dict[i].k] === 1) {
+                        resultStrings.push(result[dict[i].k] + "" + jQuery.i18n.map["common." + dict[i].k + ".abrv2"]);
+                    }
+                    else {
+                        resultStrings.push(result[dict[i].k] + "" + jQuery.i18n.map["common." + dict[i].k + ".abrv"]);
+                    }
+                }
             }
-            var dayTrans = result.day > 1 ? jQuery.i18n.map["common.day.abrv"] : jQuery.i18n.map["common.day.abrv2"];
-            return (result.day > 0 ? result.day + " " + dayTrans + ' ' : '') +
-                (result.hour >= 10 ? result.hour + ':' : ('0' + result.hour) + ":") +
-                (result.minute >= 10 ? result.minute + ':' : ('0' + result.minute) + ':') +
-                (result.second >= 10 ? result.second : ('0' + result.second));
+
+            if (resultStrings.length === 0) {
+                return "0";
+            }
+            else {
+                return resultStrings.join(" ");
+            }
         };
 
         /**

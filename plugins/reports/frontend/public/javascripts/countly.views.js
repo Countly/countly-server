@@ -27,8 +27,7 @@ window.ReportingView = countlyView.extend({
         });
 
         allAjaxCalls.push(
-            countlyReporting.initialize(),
-            countlyReporting.requestEmailAddressList()
+            countlyReporting.initialize()
         );
 
         if (this.template) {
@@ -485,11 +484,8 @@ window.ReportingView = countlyView.extend({
         $("#reports-multi-app-dropdown").on("cly-multi-select-change", function() {
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
-        /*eslint-disable */
-        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
-        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-        /*eslint-enable */
 
+        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
         self.emailInput = $('#email-list-input').selectize({
             plugins: ['remove_button'],
             persist: false,
@@ -523,7 +519,7 @@ window.ReportingView = countlyView.extend({
                 regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[0]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
                 }
 
                 // name <email@address.com>
@@ -532,7 +528,7 @@ window.ReportingView = countlyView.extend({
                 /*eslint-enable */
                 match = input.match(regex);
                 if (match) {
-                    return !this.options.hasOwnProperty(match[2]);
+                    return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
                 }
 
                 return false;
@@ -946,7 +942,6 @@ app.addReportsCallbacks("reports", {
             $.get(countlyGlobal.path + '/reports/templates/drawer.html', function(src) {
                 self.reportsDrawer = src;
             }),
-            countlyReporting.requestEmailAddressList(),
             countlyReporting.initialize()
         ).then(function() {
             $('#reports-widget-drawer').remove();

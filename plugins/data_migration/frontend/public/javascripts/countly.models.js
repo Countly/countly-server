@@ -84,7 +84,7 @@
                 if (json.result && typeof json.result === 'object') {
                     var my_imports = [];
                     for (var key in json.result) {
-                        if (json.result.hasOwnProperty(key)) {
+                        if (Object.prototype.hasOwnProperty.call(json.result, key)) {
                             json.result[key].key = key;
 
                             if (json.result[key].last_update && json.result[key].last_update !== '') {

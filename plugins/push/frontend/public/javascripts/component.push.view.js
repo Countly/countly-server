@@ -10,7 +10,7 @@ window.component('push.view', function(view) {
         ERROR_PARSER = /^([ia])([0-9]+)(\+(.+))?$/,
         HELP = {
             i: 'https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html#//apple_ref/doc/uid/TP40008194-CH11-SW17',
-            a: 'https://developers.google.com/cloud-messaging/http-server-ref#error-codes'
+            a: 'https://firebase.google.com/docs/cloud-messaging/http-server-ref#error-codes'
         };
 
     ['push.errorCode.i405.desc', 'push.errorCode.i429.desc', 'push.errorCode.a200+MissingRegistration.desc', 'push.errorCode.a200+InvalidTtl.desc'].forEach(function(code){

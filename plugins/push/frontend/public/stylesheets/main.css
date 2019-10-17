@@ -2043,3 +2043,7 @@ span.emoji-inner {
     color: #2EB52B;
     margin-right: 5px;
 }
+
+.mgmt-plugins-row .help.error {
+    color: #C43132;
+}
