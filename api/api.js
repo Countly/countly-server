@@ -98,7 +98,8 @@ plugins.setConfigs("api", {
     total_users: true,
     export_limit: 10000,
     prevent_duplicate_requests: true,
-    metric_changes: true
+    metric_changes: true,
+    offline_mode: false
 });
 
 /**

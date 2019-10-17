@@ -85,7 +85,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: ""
+    google_maps_api_key: "",
+    offline_mode: false
 });
 
 plugins.setUserConfigs("frontend", {

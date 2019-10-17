@@ -5,6 +5,8 @@ const assistant = require("./assistant.js");
 const Parser = require('rss-parser');
 const underscore = require('underscore');
 const versionInfo = require('../../../frontend/express/version.info');
+const pluginManager = require('../../pluginManager.js');
+const offlineMode = pluginManager.getConfig("api").offline_mode;
 
 var parser;
 if (typeof Parser.parseURL === "undefined") {
@@ -35,67 +37,70 @@ else {
                 const intervalMs = 24 * 60 * 60 * 1000;//the last 24 hours in ms
 
                 let dataForFeedMap = [];
-                // (3.1) blog page
-                {
-                    let feedDataBlog = {};
-                    feedDataBlog.anc_i18n = "assistant.announcement-blog-post";
-                    feedDataBlog.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
-                    feedDataBlog.anc_subtype = 1;
-                    feedDataBlog.anc_version = NOTIFICATION_VERSION;
-                    feedDataBlog.url = 'https://medium.com/feed/countly';
-                    feedDataBlog.targetHour = 11;
-                    dataForFeedMap.push(feedDataBlog);
-                }
 
-                // (3.2) New iOS SDK release
-                {
-                    let feedDataIOS = {};
-                    feedDataIOS.anc_i18n = "assistant.announcement-ios-release";
-                    feedDataIOS.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
-                    feedDataIOS.anc_subtype = 2;
-                    feedDataIOS.anc_version = NOTIFICATION_VERSION;
-                    feedDataIOS.url = 'https://github.com/countly/countly-sdk-ios/releases.atom';
-                    feedDataIOS.targetHour = 12;
-                    dataForFeedMap.push(feedDataIOS);
-                }
-
-                // (3.3) New Android SDK release
-                {
-                    let feedDataAndroid = {};
-                    feedDataAndroid.anc_i18n = "assistant.announcement-android-release";
-                    feedDataAndroid.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
-                    feedDataAndroid.anc_subtype = 3;
-                    feedDataAndroid.anc_version = NOTIFICATION_VERSION;
-                    feedDataAndroid.url = 'https://github.com/countly/countly-sdk-android/releases.atom';
-                    feedDataAndroid.targetHour = 13;
-                    dataForFeedMap.push(feedDataAndroid);
-                }
-
-                if (serverIsCE) {
-                    // (3.4) New community server release
+                if (!offlineMode) {
+                    // (3.1) blog page
                     {
-                        let feedDataCommunity = {};
-                        feedDataCommunity.anc_i18n = "assistant.announcement-community-server-release";
-                        feedDataCommunity.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
-                        feedDataCommunity.anc_subtype = 4;
-                        feedDataCommunity.anc_version = NOTIFICATION_VERSION;
-                        feedDataCommunity.url = 'https://github.com/Countly/countly-server/releases.atom';
-                        feedDataCommunity.targetHour = 14;
-                        dataForFeedMap.push(feedDataCommunity);
+                        let feedDataBlog = {};
+                        feedDataBlog.anc_i18n = "assistant.announcement-blog-post";
+                        feedDataBlog.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
+                        feedDataBlog.anc_subtype = 1;
+                        feedDataBlog.anc_version = NOTIFICATION_VERSION;
+                        feedDataBlog.url = 'https://medium.com/feed/countly';
+                        feedDataBlog.targetHour = 11;
+                        dataForFeedMap.push(feedDataBlog);
                     }
-                }
 
-                if (!serverIsCE) {
-                    // (3.5) New server code release for EE
+                    // (3.2) New iOS SDK release
                     {
-                        let feedDataEE = {};
-                        feedDataEE.anc_i18n = "assistant.announcement-server-release-enterprise";
-                        feedDataEE.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
-                        feedDataEE.anc_subtype = 5;
-                        feedDataEE.anc_version = NOTIFICATION_VERSION;
-                        feedDataEE.url = 'https://github.com/Countly/countly-server/releases.atom';
-                        feedDataEE.targetHour = 15;
-                        dataForFeedMap.push(feedDataEE);
+                        let feedDataIOS = {};
+                        feedDataIOS.anc_i18n = "assistant.announcement-ios-release";
+                        feedDataIOS.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
+                        feedDataIOS.anc_subtype = 2;
+                        feedDataIOS.anc_version = NOTIFICATION_VERSION;
+                        feedDataIOS.url = 'https://github.com/countly/countly-sdk-ios/releases.atom';
+                        feedDataIOS.targetHour = 12;
+                        dataForFeedMap.push(feedDataIOS);
+                    }
+
+                    // (3.3) New Android SDK release
+                    {
+                        let feedDataAndroid = {};
+                        feedDataAndroid.anc_i18n = "assistant.announcement-android-release";
+                        feedDataAndroid.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
+                        feedDataAndroid.anc_subtype = 3;
+                        feedDataAndroid.anc_version = NOTIFICATION_VERSION;
+                        feedDataAndroid.url = 'https://github.com/countly/countly-sdk-android/releases.atom';
+                        feedDataAndroid.targetHour = 13;
+                        dataForFeedMap.push(feedDataAndroid);
+                    }
+
+                    if (serverIsCE) {
+                        // (3.4) New community server release
+                        {
+                            let feedDataCommunity = {};
+                            feedDataCommunity.anc_i18n = "assistant.announcement-community-server-release";
+                            feedDataCommunity.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
+                            feedDataCommunity.anc_subtype = 4;
+                            feedDataCommunity.anc_version = NOTIFICATION_VERSION;
+                            feedDataCommunity.url = 'https://github.com/Countly/countly-server/releases.atom';
+                            feedDataCommunity.targetHour = 14;
+                            dataForFeedMap.push(feedDataCommunity);
+                        }
+                    }
+
+                    if (!serverIsCE) {
+                        // (3.5) New server code release for EE
+                        {
+                            let feedDataEE = {};
+                            feedDataEE.anc_i18n = "assistant.announcement-server-release-enterprise";
+                            feedDataEE.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
+                            feedDataEE.anc_subtype = 5;
+                            feedDataEE.anc_version = NOTIFICATION_VERSION;
+                            feedDataEE.url = 'https://github.com/Countly/countly-server/releases.atom';
+                            feedDataEE.targetHour = 15;
+                            dataForFeedMap.push(feedDataEE);
+                        }
                     }
                 }
 

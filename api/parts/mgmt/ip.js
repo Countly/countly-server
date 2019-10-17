@@ -8,7 +8,8 @@
 var ip = {},
     net = require('net'),
     extIP = require('external-ip'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    offlineMode = plugins.getConfig("api").offline_mode;
 
 /**
  * Function to get the hostname/ip address/url to access dashboard
@@ -24,17 +25,19 @@ ip.getHost = function(callback) {
         callback(false, stripTrailingSlash(domain));
     }
     else {
-        getIP(function(err, ipres) {
-            if (err) {
-                console.log(err);
-                getNetworkIP(function(err2, ipaddress) {
-                    callback(err2, "http://" + ipaddress);
-                });
-            }
-            else {
-                callback(err, "http://" + ipres);
-            }
-        });
+        if (!offlineMode) {
+            getIP(function(err, ipres) {
+                if (err) {
+                    console.log(err);
+                    getNetworkIP(function(err2, ipaddress) {
+                        callback(err2, "http://" + ipaddress);
+                    });
+                }
+                else {
+                    callback(err, "http://" + ipres);
+                }
+            });
+        }
     }
 };
 
