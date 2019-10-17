@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 var plugins = require('./plugins.json', 'dont-enclose'),
     pluginsApis = {},
     mongo = require('mongoskin'),
@@ -763,27 +762,6 @@ var pluginManager = function pluginManager() {
     this.installPlugin = function(plugin, callback) {
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
-        try {
-            var errors;
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
-            delete require.cache[require.resolve(scriptPath)];
-            require(scriptPath);
-        }
-        catch (ex) {
-            console.log(ex.stack);
-            errors = true;
-            return callback(errors);
-        }
-        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
-        if (eplugin && eplugin.prepackaged) {
-            return callback(errors);
-        }
-        var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        if (!this.getConfig("api").offline_mode) {
-            exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error) {
-                if (error) {
-                    errors = true;
-                    console.log('error: %j', error);
         var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
         var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
@@ -798,16 +776,16 @@ var pluginManager = function pluginManager() {
                 return callback(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-            exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
-                if (error2) {
-                    errors = true;
-                    console.log('error: %j', error2);
-                }
-                console.log('Done installing plugin %j', plugin);
-                callback(errors);
-            });
-        }
-
+            if (!this.getConfig("api").offline_mode) {
+                exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
+                    if (error2) {
+                        errors = true;
+                        console.log('error: %j', error2);
+                    }
+                    console.log('Done installing plugin %j', plugin);
+                    callback(errors);
+                });
+            }
         });
 
         process.stdout.on("data", function(data) {
@@ -828,27 +806,6 @@ var pluginManager = function pluginManager() {
     this.upgradePlugin = function(plugin, callback) {
         console.log('Upgrading plugin %j...', plugin);
         callback = callback || function() {};
-        try {
-            var errors;
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
-            delete require.cache[require.resolve(scriptPath)];
-            require(scriptPath);
-        }
-        catch (ex) {
-            console.log(ex.stack);
-            errors = true;
-            return callback(errors);
-        }
-        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
-        if (eplugin && eplugin.prepackaged) {
-            return callback(errors);
-        }
-        var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        if (!this.getConfig("api").offline_mode) {
-            exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error) {
-                if (error) {
-                    errors = true;
-                    console.log('error: %j', error);
         var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
         var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
@@ -863,15 +820,16 @@ var pluginManager = function pluginManager() {
                 return callback(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-            exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
-                if (error2) {
-                    errors = true;
-                    console.log('error: %j', error2);
-                }
-                console.log('Done upgrading plugin %j', plugin);
-                callback(errors);
-            });
-        }
+            if (!this.getConfig("api").offline_mode) {
+                exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
+                    if (error2) {
+                        errors = true;
+                        console.log('error: %j', error2);
+                    }
+                    console.log('Done upgrading plugin %j', plugin);
+                    callback(errors);
+                });
+            }
         });
 
         process.stdout.on("data", function(data) {
