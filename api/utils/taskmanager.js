@@ -398,10 +398,11 @@ taskmanager.getCounts = function(options, callback) {
     options.query = options.query || {};
     options.db.collection("long_tasks").aggregate([
         {$match: options.query},
-        {$group:
+        {
+            $group:
             {
                 _id: '$app_id',
-                c: {$sum:1}
+                c: {$sum: 1}
             }
         }
     ], {allowDiskUse: true}, function(err, docs) {
