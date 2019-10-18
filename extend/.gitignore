@@ -3,3 +3,4 @@
 # Except this file
 !.gitignore
 !aws_ses.example.js
+!mail.debug.example.js
