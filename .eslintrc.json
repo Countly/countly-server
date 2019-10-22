@@ -194,7 +194,8 @@
                 "frontend/express/libs/*.js",
                 "plugins/pluginManager.js",
                 "plugins/*/api/**/*.js",
-                "plugins/*/frontend/*.js"
+                "plugins/*/frontend/*.js",
+                "local-modules/**/*.js"
             ],
             "env": {
                 "es6": true,
