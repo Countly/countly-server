@@ -518,7 +518,7 @@ class Job extends EventEmitter {
             catch (e) {
                 log.w('Job was modified while rescheduling, skipping', e);
             }
-            
+
             if (!neo) {
                 log.w('Job was modified while rescheduling, skipping');
                 return null;
