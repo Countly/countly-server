@@ -419,7 +419,7 @@ window.component('push.dash', function (dash) {
                                             m('div.body', [
                                                 m('div.title', t('pu.dash.btn-group.automated-message')),
                                                 m('div.description', t('pu.dash.btn-group.automated-message-desc')),
-                                                m('a.url', t('Learn more about automation'))
+                                                m('a.url[href="https://count.ly/plugins/automated-push-notifications"][target=_blank]', t('pu.dash.btn-group.automated-message-link'))
                                             ])
                                         ]),
                                         m('div.one-time', { onclick: ctrl.createMessage }, [

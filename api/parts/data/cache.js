@@ -722,6 +722,11 @@ class CacheMaster {
 function createCollection(db, name, size = 1e7) {
     return new Promise((resolve, reject) => {
         db.onOpened(() => {
+            if (!db._native) {
+                return setTimeout(() => {
+                    createCollection(db, name, size).then(resolve, reject);
+                }, 1000);
+            }
             db._native.createCollection(name, {capped: true, size: size}, (e, col) => {
                 if (e) {
                     log.e(`Error while creating capped collection ${name}:`, e);

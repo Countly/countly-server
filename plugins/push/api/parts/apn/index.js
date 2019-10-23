@@ -50,7 +50,7 @@ class ConnectionResource {
                     // msgs.forEach(m => {
                     //  m._id = '' + m._id;
                     // });
-                    msgs = msgs.map(m => [m._id + '', m.t, m.m]);
+                    msgs = msgs.map(m => [m._id + '', m.t, m.m, m.a]);
                     // console.log('======================= 1', msgs[0]);
                     this.connection.feed(msgs, token);
                     msgs = [];

@@ -1268,18 +1268,25 @@ namespace apns {
 					// headers[4] = MAKE_NV("apns-expiration", expiration, NGHTTP2_NV_FLAG_NO_COPY_NAME | NGHTTP2_NV_FLAG_NO_COPY_VALUE);
 				} 
 
+				if (stream->alert) {
+					headers[5].value = PUSH_TYPE_ALERT;
+					headers[5].valuelen = PUSH_TYPE_ALERT_LEN;
+				} else {
+					headers[5].value = PUSH_TYPE_BG;
+					headers[5].valuelen = PUSH_TYPE_BG_LEN;
+				}
 				// static uint8_t buf[200];
 				// ssize_t size = nghttp2_hd_deflate_hd(deflater, buf, 200, headers, ARRLEN(headers));
 
 
 				// fprintf(stderr, "Request headers:\n");
-				// print_nv(headers, headers[6].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 6 : 7);
-				// int len = headers[6].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 6 : 7;
+				// print_nv(headers, headers[7].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 7 : 8);
+				// int len = headers[7].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 7 : 8;
 				// for (int i = 0; i < len; i++) {
-				// 	LOG_DEBUG("header " << i << ": " << headers[i])
+				// 	LOG_DEBUG("header " << i << ": " << headers[i]);
 				// }
 				// LOG_DEBUG("CONN " << uv_thread_self() << ": headers " << nghttp2_strerror(stream->stream_id));
-				stream->stream_id = nghttp2_submit_request(session, NULL, headers, headers[6].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 6 : 7, &global_data, stream);
+				stream->stream_id = nghttp2_submit_request(session, NULL, headers, headers[7].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 7 : 8, &global_data, stream);
 				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending " << stream->stream_id << " to " << stream->id);
 
 				if (stream->stream_id < 0) {

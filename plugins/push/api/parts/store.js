@@ -917,11 +917,6 @@ class Loader extends Store {
                     $or: [{j: {$exists: false}}, {j: _id}]
                 };
                 log.d('Loading %d from %s', data.length, this.collectionName);
-                if (_id === null) {
-                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}})
-                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}})
-                    log.e('------------------------------------ %j ------------------------------------ ', {$set: {j: _id}})
-                }
                 this.collection.updateMany(q, {$set: {j: _id}}, (err2, res) => {
 
                     if (err2) {
@@ -1002,9 +997,18 @@ class Loader extends Store {
      * @return {Promise} resolves to an object of kind {'note1 _id string': 10, 'note2 _id string': 834, total: 844} with counts of discarded messages per note id.
      */
     discard(maxDate, maxDateEvents) {
-        log.i('Discarding %d / %d from %s', maxDate, maxDateEvents, this.collectionName);
         return new Promise((resolve, reject) => {
-            this.load(null, Math.max(maxDate, maxDateEvents)).then(msgs => {
+            let q = {
+                d: {$lte: Math.max(maxDate, maxDateEvents)},
+                $or: [{j: {$exists: false}}, {j: null}]
+            };
+
+            log.i('Discarding %d / %d from %s: %j', maxDate, maxDateEvents, this.collectionName, q);
+            this.collection.find(q).project({_id: 1, n: 1, d: 1}).toArray((err, msgs) => {
+                if (err) {
+                    return reject(err);
+                }
+                msgs = msgs || [];
                 log.i('Discarding %d msgs from %s', msgs.length, this.collectionName);
                 if (msgs.length) {
                     msgs.forEach(m => m.n = m.n.toString());
@@ -1013,6 +1017,7 @@ class Loader extends Store {
                     ids = ids.filter((id, i) => ids.indexOf(id) === i);
 
                     this.notes(ids).then(notes => {
+                        log.d('Loaded %d notes', Object.keys(notes).length);
                         let ret = {total: 0};
 
                         ids = [];

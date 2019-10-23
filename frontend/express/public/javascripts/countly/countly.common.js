@@ -13,7 +13,7 @@
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
         var htmlEncodeOptions = {
-            "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
+            "whiteList": {"a": ["href", "class", "target"], "ul": [], "li": [], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
             onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
                 if (tag === "a") {
                     var re = new RegExp(/{[0-9]*}/);
@@ -2002,6 +2002,38 @@
             else {
                 return fromStr + " - " + toStr;
             }
+        };
+
+        countlyCommon.getDateRangeForCalendar = function() {
+            countlyCommon.periodObj = getPeriodObj();
+            var formattedDateStart = "";
+            var formattedDateEnd = "";
+            if (!countlyCommon.periodObj.isSpecialPeriod) {
+                if (countlyCommon.periodObj.dateString === "HH:mm") {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMin + ":00", "YYYY.M.D HH:mm"), "D MMM, YYYY HH:mm");
+                    formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
+                    formattedDateEnd = formattedDateEnd.add(59, "minutes");
+                    formattedDateEnd = countlyCommon.formatDate(formattedDateEnd, "D MMM, YYYY HH:mm");
+
+                }
+                else if (countlyCommon.periodObj.dateString === "D MMM, HH:mm") {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D"), "D MMM, YYYY HH:mm");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes"), "D MMM, YYYY HH:mm");
+                }
+                else if (countlyCommon.periodObj.dateString === "MMM") { //this year
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin + ".1", "YYYY.M.D"), "D MMM, YYYY");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax + ".31", "YYYY.M.D"), "D MMM, YYYY");
+                }
+                else {
+                    formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin, "YYYY.M.D"), "D MMM, YYYY");
+                    formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax, "YYYY.M.D"), "D MMM, YYYY");
+                }
+            }
+            else {
+                formattedDateStart = countlyCommon.formatDate(moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D"), "D MMM, YYYY");
+                formattedDateEnd = countlyCommon.formatDate(moment(countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)], "YYYY.M.D"), "D MMM, YYYY");
+            }
+            return formattedDateStart + " - " + formattedDateEnd;
         };
 
         /**

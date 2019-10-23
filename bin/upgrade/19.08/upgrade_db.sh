@@ -28,6 +28,7 @@ nodejs "$CUR/scripts/live_concurrent.js"
 nodejs "$CUR/scripts/notes_upgrade.js"
 nodejs "$CUR/scripts/update_crashes.js"
 nodejs "$CUR/scripts/migrate_totp.js"
+nodejs "$CUR/scripts/push.js"
 
 #add indexes
 nodejs "$DIR/scripts/add_indexes.js"

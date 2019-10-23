@@ -75,7 +75,7 @@ class ValidateJob extends job.TransientJob {
 
         let statuses, resourceError;
         try {
-            [statuses, resourceError] = await this.resource.send([{_id: 1, m: '{"test":true}', t: 'testtoken'}]);
+            [statuses, resourceError] = await this.resource.send([{_id: 1, m: '{"test":true}', t: 'testtoken', a: false}]);
             log.i('[%d] returned status for %s: %j / %j', process.pid, this.data.cid, statuses, resourceError);
 
         }

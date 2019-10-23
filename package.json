@@ -59,6 +59,7 @@
     "json2csv": "4.5.2",
     "json2xls": "^0.1.2",
     "later": "^1.1.6",
+    "lodash": "^4.17.15",
     "lru-cache": "^5.1.1",
     "mcc-mnc-list": "1.0.82",
     "method-override": "3.0.0",
