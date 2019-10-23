@@ -294,10 +294,16 @@ class Manager {
                     continue;
                 }
 
-                let old = await JOB.Job.updateAtomically(this.db, {
-                    _id: job._id,
-                    status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED, STATUS.PAUSED]}
-                }, update, false);
+                let old;
+                try {
+                    old = await JOB.Job.updateAtomically(this.db, {
+                        _id: job._id,
+                        status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED, STATUS.PAUSED]}
+                    }, update, false);
+                }
+                catch (e) {
+                    log.i('Job %s wasn\'t found', job._id, e);
+                }
 
                 if (old) {
                     if (old.status === STATUS.RUNNING) {

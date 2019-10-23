@@ -511,7 +511,14 @@ class Job extends EventEmitter {
                 await Job.updateMany(this.db(), {_id: {$in: others.map(o => o._id)}}, {$set: {status: STATUS.CANCELLED}});
             }
 
-            let neo = await Job.updateAtomically(this.db(), query, {$set: this._json});
+            let neo;
+            try {
+                neo = await Job.updateAtomically(this.db(), query, {$set: this._json});
+            }
+            catch (e) {
+                log.w('Job was modified while rescheduling, skipping', e);
+            }
+            
             if (!neo) {
                 log.w('Job was modified while rescheduling, skipping');
                 return null;
