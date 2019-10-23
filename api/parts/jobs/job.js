@@ -438,7 +438,7 @@ class Job extends EventEmitter {
             log.i('Replacing job %s (%j) with date %d: %j', this.name, this.data, next, query);
 
             Job.updateAtomically(this.db(), query, {$set: {next: next}}).then(resolve, err => {
-                if (err === 'Not found') {
+                if (err === 'Job not found') {
                     log.i('Replacing job %s (%j) with date %d: no future jobs to move', this.name, this.data, next);
                     query.next = {$lt: next};
                     Job.findMany(this.db(), query).then(existing => {
