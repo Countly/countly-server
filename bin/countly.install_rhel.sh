@@ -40,7 +40,7 @@ set +e
 NODE_JS_CMD=$(which nodejs)
 set -e
 if [[ -z "$NODE_JS_CMD" ]]; then
-	ln -s $(which node) /usr/bin/nodejs
+	ln -s "$(which node)" /usr/bin/nodejs
 fi
 
 #install nginx
@@ -77,7 +77,10 @@ if grep -q -i "release 6" /etc/redhat-release ; then
     wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
     yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
     source /opt/rh/devtoolset-2/enable
-    export CC=$(which gcc) CXX=$(which g++)
+    CC="$(which gcc)"
+    CXX="$(which g++)"
+    export $CC 
+    export $CXX
 fi
 
 #install grunt & npm modules
@@ -146,7 +149,7 @@ cd "$DIR/.." && grunt dist-all
 #finally start countly api and dashboard
 countly start
 
-ENABLED=`getenforce`
+ENABLED=$(getenforce)
 if [ "$ENABLED" == "Enforcing" ]; then
   echo -e "\e[31mSELinux is enabled, please disable it or add nginx to exception for Countly to work properly\e[0m"
 fi

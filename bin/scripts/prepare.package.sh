@@ -1,6 +1,6 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-VERSION="$(grep -oP 'version:\s*"\K[0-9\.]*' $DIR/../../frontend/express/version.info.js)"
+VERSION="$(grep -oP 'version:\s*"\K[0-9\.]*' "$DIR/../../frontend/express/version.info.js")"
 
 echo "Installing prerequisites"
 if [ "$1" = "zip" ]

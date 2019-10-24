@@ -18,7 +18,7 @@ fi
 yes | cp -rf "$DIR/supervisort.wuser.conf" "$COUNTLY_DIR/bin/config/supervisord.conf"
 
 #check if user not created yet
-if [ $(getent passwd countly)x == 'x' ]; then
+if [ "$(getent passwd countly)x" == 'x' ]; then
     
     #create countly user
     useradd -r -M -U -d "$COUNTLY_DIR" -s /bin/false countly

@@ -32,6 +32,7 @@ workersthreshold=$(nproc)
 appproc=0
 apiproc=0
 workers=0
+# shellcheck disable=SC2009
 paths=$(ps -ax | grep countly)
 while read line; do
     if [[ "$line" = *"dashboard node"* ]]; then

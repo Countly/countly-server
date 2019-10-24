@@ -2,6 +2,7 @@
 
 procowner="0"
 fileowner=$(stat -c '%U' "$(countly dir)")
+# shellcheck disable=SC2009
 paths=$(ps -ux | grep countly)
 while read line; do
     if [[ "$line" = *"dashboard node"* ]]; then

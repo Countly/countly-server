@@ -50,7 +50,7 @@ run_upgrade (){
     else
         echo "Upgrading versions: $1";
     fi
-    arr=$@;
+    arr=("$@");
     for i in ${1//;/ }
     do
         if [[ $2 == "fs" ]]
@@ -63,7 +63,7 @@ run_upgrade (){
                         continue
                     fi
                 fi
-                bash "$DIR/../upgrade/$i/upgrade_fs.sh";
+                #bash "$DIR/../upgrade/$i/upgrade_fs.sh";
             else
                 echo "No filesystem upgrade script provided for $i";
             fi
@@ -101,6 +101,11 @@ countly_upgrade (){
     arr=("$@");
     if [[ " ${arr[*]} " == *" -y "* ]]; then
         y="-y";
+        for arg do
+            shift
+            [ "$arg" = "-y" ] && continue
+            set -- "$@" "$arg"
+        done
     fi
     countly_root ;
     if [ $# -eq 0 ]
@@ -183,8 +188,8 @@ countly_upgrade (){
             (cd "$DIR/../..";
             tar xaf countly-enterprise-edition*.tar.gz --strip=1 countly;)
 
-            EE_PLUGINS=$(cat "$DIR/../../plugins/plugins.ee.json" | sed 's/\"//g' | sed 's/\[//g' | sed 's/\]//g')
-            CE_PLUGINS=$(cat "$DIR/../../plugins/plugins.ce.json" | sed 's/\"//g' | sed 's/\[//g' | sed 's/\]//g')
+            EE_PLUGINS=$(sed 's/\"//g' "$DIR/../../plugins/plugins.ee.json" | sed 's/\[//g' | sed 's/\]//g')
+            CE_PLUGINS=$(sed 's/\"//g' "$DIR/../../plugins/plugins.ce.json" | sed 's/\[//g' | sed 's/\]//g')
             PLUGINS_DIFF=$(echo " ${EE_PLUGINS}, ${CE_PLUGINS}" | tr ',' '\n' | sort | uniq -u)
             echo "Enabling plugins..."
             for plugin in $PLUGINS_DIFF; do
@@ -297,8 +302,13 @@ countly_backupdb (){
     (mkdir -p "$1" ;
     cd "$1" ;
     echo "Backing up mongodb...";
-    mongodump $(node $DIR/scripts/db.conf.js countly) > /dev/null;
-    mongodump $(node $DIR/scripts/db.conf.js countly_drill) > /dev/null;
+    shift
+    #allow passing custom flags
+    connection=( $(node "$DIR/scripts/db.conf.js")  "${@}" );
+    mongodump "${connection[@]}" --db countly > /dev/null;
+    mongodump "${connection[@]}" --db countly_drill > /dev/null;
+    mongodump "${connection[@]}" --db countly_fs > /dev/null;
+    mongodump "${connection[@]}" --db countly_out > /dev/null;
     )
 }
 
@@ -333,13 +343,13 @@ countly_save (){
     if [ -f "$1" ]
     then
         match=false
-        files=$(ls "$2" | wc -l)
+        files=$(find "$2" -maxdepth 1 -type f -printf x | wc -c)
 
-        if [ $files -gt 0 ]
+        if [ "$files" -gt 0 ]
         then
             for d in $2/*; do
-                diff=$(diff $1 $d | wc -l)
-                if [ $diff == 0 ]
+                diff=$(diff "$1" "$d" | wc -l)
+                if [ "$diff" == 0 ]
                 then
                     match=true
                     break
@@ -348,7 +358,7 @@ countly_save (){
         fi
 
         files=$((files+1))
-        filebasename=$(basename $1)
+        filebasename=$(basename "$1")
         if [ "$match" == false ]
         then
             cp -a "$1" "$2/${filebasename}.backup.${files}"
@@ -401,7 +411,7 @@ countly_restorefiles (){
         fi
 
         for d in files/plugins/*; do
-            PLUGIN=$(basename $d);
+            PLUGIN=$(basename "$d");
             if [ -f "$d/config.js" ]; then
                 mkdir -p "$DIR/../../plugins/$PLUGIN" ;
                 cp "$d/config.js" "$DIR/../../plugins/$PLUGIN/config.js" ;
@@ -429,17 +439,34 @@ countly_restoredb (){
         echo "Please provide path" ;
         return 0;
     fi
+    shift
+    #allow passing custom flags
+    connection=( $(node "$DIR/scripts/db.conf.js")  "${@}" );
     if [ -d "$1/dump/countly" ]; then
         echo "Restoring countly database...";
-        mongorestore $(node $DIR/scripts/db.conf.js countly) --batchSize=10 "$1/dump/countly" > /dev/null;
+        mongorestore "${connection[@]}" --db countly --batchSize=10 "$1/dump/countly" > /dev/null;
     else
         echo "No countly database dump to restore from";
     fi
     if [ -d "$1/dump/countly_drill" ]; then
         echo "Restoring countly_drill database...";
-        mongorestore $(node $DIR/scripts/db.conf.js countly_drill) --batchSize=10 "$1/dump/countly_drill" > /dev/null;
+        mongorestore "${connection[@]}" --db countly_drill --batchSize=10 "$1/dump/countly_drill" > /dev/null;
     else
         echo "No countly_drill database dump to restore from";
+    fi
+    
+    if [ -d "$1/dump/countly_fs" ]; then
+        echo "Restoring countly_fs database...";
+        mongorestore "${connection[@]}" --db countly_fs --batchSize=10 "$1/dump/countly_fs" > /dev/null;
+    else
+        echo "No countly_fs database dump to restore from";
+    fi
+    
+    if [ -d "$1/dump/countly_out" ]; then
+        echo "Restoring countly_out database...";
+        mongorestore "${connection[@]}" --db countly_out --batchSize=10 "$1/dump/countly_out" > /dev/null;
+    else
+        echo "No countly_out database dump to restore from";
     fi
 }
 
@@ -465,9 +492,9 @@ source "$DIR/enabled/countly.sh"
 #process command
 NAME="$1";
 SCRIPT="$2";
-if [ -n "$(type -t countly_$1)" ] && [ "$(type -t countly_$1)" = function ]; then
+if [ -n "$(type -t "countly_$1")" ] && [ "$(type -t "countly_$1")" = function ]; then
     shift;
-    countly_${NAME} "$@";
+    "countly_${NAME}" "$@";
 elif [ -f "$DIR/scripts/$NAME.sh" ]; then
     shift;
     bash "$DIR/scripts/$NAME.sh" "$@";

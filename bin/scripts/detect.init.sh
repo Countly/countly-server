@@ -7,7 +7,7 @@ INITSYS="systemd"
 
 if [ -z "$COUNTLY_CONTAINER" ]
 then
-	if [[ `/sbin/init --version` =~ upstart ]];
+	if [[ $(/sbin/init --version) =~ upstart ]];
 	then
 	    INITSYS="upstart"
 	fi 2> /dev/null
