@@ -5,4 +5,4 @@ do
     echo "Installing $plugin..."
 	(cd "$plugin" && HOME=/tmp npm install)
 	echo "done"
-done <   <(find /opt/countly/plugins -type d -mindepth 1 -maxdepth 1)
+done <   <(find /opt/countly/plugins -mindepth 1 -maxdepth 1 -type d -print0)
