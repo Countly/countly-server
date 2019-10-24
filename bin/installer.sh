@@ -36,7 +36,7 @@ else
         fi
     else
         echo "Downloading from CDN..."
-        PACKAGE_NAME=$(awk -F/ '{print $9}' <<< $LATEST)
+        PACKAGE_NAME=$(awk -F/ '{print $9}' <<< "$LATEST")
         CDN_HOST=http://countly-1252600587.cos.ap-guangzhou.myqcloud.com/
         if [[ "$LATEST" == *zip ]]
         then
