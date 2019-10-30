@@ -631,6 +631,9 @@ var AppRouter = Backbone.Router.extend({
             }
         }
         this._myRequests = {};
+        if (this.activeView) {
+            this.activeView._removeMyRequests();//remove requests for view(if not finished)
+        }
     },
     switchApp: function(app_id, callback) {
         countlyCommon.setActiveApp(app_id);
@@ -644,7 +647,6 @@ var AppRouter = Backbone.Router.extend({
         //removing requests saved in app
         app._removeUnfinishedRequests();
         if (app && app.activeView) {
-            app.activeView._removeMyRequests();//remove requests for view(if not finished)
             app.activeView.appChanged(callback);
         }
     },
@@ -905,6 +907,7 @@ var AppRouter = Backbone.Router.extend({
                     $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
 
                     app.onAppSwitch(app_id);
+                    app._removeUnfinishedRequests();
                     app.activeView.appChanged(function() {
                         app.navigate(redirect, true);
                     });
@@ -2274,6 +2277,7 @@ var AppRouter = Backbone.Router.extend({
                         self.activeAppName = appName;
                         self.activeAppKey = appKey;
                         countlyCommon.setActiveApp(appId);
+                        app._removeUnfinishedRequests();
                         self.activeView.appChanged(function() {
                             app.onAppSwitch(appId);
                         });
@@ -2352,6 +2356,7 @@ var AppRouter = Backbone.Router.extend({
                     self.activeAppName = appName;
                     self.activeAppKey = appKey;
                     countlyCommon.setActiveApp(appId);
+                    app._removeUnfinishedRequests();
                     self.activeView.appChanged(function() {
                         app.onAppSwitch(appId);
                     });
