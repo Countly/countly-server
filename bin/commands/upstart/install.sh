@@ -7,4 +7,4 @@ BINDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 pkill -SIGTERM supervisord
 
 #create supervisor upstart script
-(cat $DIR/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $BINDIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
+(cat "$DIR/countly-supervisor.conf" ; echo "exec /usr/bin/supervisord --nodaemon --configuration $BINDIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf

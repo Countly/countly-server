@@ -8,7 +8,7 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-bash $DIR/scripts/logo.sh;
+bash "$DIR/scripts/logo.sh";
 
 #install nginx
 yum -y install wget openssl-devel gcc-c++-4.8.5 make git sqlite unzip bzip2
@@ -19,7 +19,7 @@ name=nginx repo
 baseurl=http://nginx.org/packages/rhel/6/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
-    bash $DIR/scripts/install-google-chrome.sh;
+    bash "$DIR/scripts/install-google-chrome.sh";
 elif grep -q -i "release 7" /etc/redhat-release ; then
 	echo "[nginx]
 name=nginx repo
@@ -39,8 +39,8 @@ yum install -y nodejs
 set +e
 NODE_JS_CMD=$(which nodejs)
 set -e
-if [[ -z $NODE_JS_CMD ]]; then
-	ln -s `which node` /usr/bin/nodejs
+if [[ -z "$NODE_JS_CMD" ]]; then
+	ln -s "$(which node)" /usr/bin/nodejs
 fi
 
 #install nginx
@@ -56,8 +56,10 @@ set -e
 yum -y install python-setuptools
 yum install -y epel-release
 
+yum install ShellCheck
+
 if grep -q -i "release 6" /etc/redhat-release ; then
-    bash $DIR/scripts/install-python27.sh
+    bash "$DIR/scripts/install-python27.sh"
 else
     yum install -y python-pip
     pip install pip --upgrade
@@ -77,52 +79,55 @@ if grep -q -i "release 6" /etc/redhat-release ; then
     wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
     yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
     source /opt/rh/devtoolset-2/enable
-    export CC=`which gcc` CXX=`which g++`
+    CC="$(which gcc)"
+    CXX="$(which g++)"
+    export $CC 
+    export $CXX
 fi
 
 #install grunt & npm modules
-( cd $DIR/.. ; sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
+( cd "$DIR/.." ; sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
 
 #install mongodb
-bash $DIR/scripts/mongodb.install.sh
+bash "$DIR/scripts/mongodb.install.sh"
 
-cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
+cp "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
 
 sed -e "s/Defaults requiretty/#Defaults requiretty/" /etc/sudoers > /etc/sudoers2
 mv /etc/sudoers /etc/sudoers.bak
 mv /etc/sudoers2 /etc/sudoers
 chmod 0440 /etc/sudoers
 
-bash $DIR/scripts/detect.init.sh
+bash "$DIR/scripts/detect.init.sh"
 
 #configure and start nginx
 set +e
-countly save /etc/nginx/conf.d/default.conf $DIR/config/nginx
-countly save /etc/nginx/nginx.conf $DIR/config/nginx
-cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
-cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
+countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"
+countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
+cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
+cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
 service nginx restart
 chkconfig nginx on
 set -e
 
 #create configuration files from samples
-if [ ! -f $DIR/../api/config.js ]; then
-	cp $DIR/../api/config.sample.js $DIR/../api/config.js
+if [ ! -f "$DIR/../api/config.js" ]; then
+	cp "$DIR/../api/config.sample.js" "$DIR/../api/config.js"
 fi
 
-if [ ! -f $DIR/../frontend/express/config.js ]; then
-	cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
+if [ ! -f "$DIR/../frontend/express/config.js" ]; then
+	cp "$DIR/../frontend/express/config.sample.js" "$DIR/../frontend/express/config.js"
 fi
 
-if [ ! -f $DIR/../plugins/plugins.json ]; then
-	cp $DIR/../plugins/plugins.default.json $DIR/../plugins/plugins.json
+if [ ! -f "$DIR/../plugins/plugins.json" ]; then
+	cp "$DIR/../plugins/plugins.default.json" "$DIR/../plugins/plugins.json"
 fi
 
 #install nghttp2
-bash $DIR/scripts/install.nghttp2.sh
+bash "$DIR/scripts/install.nghttp2.sh"
 
 #install plugins
-node $DIR/scripts/install_plugins
+node "$DIR/scripts/install_plugins"
 
 #get web sdk
 countly update sdk-web
@@ -138,7 +143,7 @@ else
 fi
 
 #compile scripts for production
-cd $DIR/.. && grunt dist-all
+cd "$DIR/.." && grunt dist-all
 
 # disable transparent huge pages
 #countly thp
@@ -146,7 +151,7 @@ cd $DIR/.. && grunt dist-all
 #finally start countly api and dashboard
 countly start
 
-ENABLED=`getenforce`
+ENABLED=$(getenforce)
 if [ "$ENABLED" == "Enforcing" ]; then
   echo -e "\e[31mSELinux is enabled, please disable it or add nginx to exception for Countly to work properly\e[0m"
 fi
