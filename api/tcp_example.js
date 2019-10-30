@@ -75,7 +75,7 @@ net.createServer(function(socket) {
             * Accepting req data in format {"url":"endpoint", "body":"data"}
             * Example: {"url":"/o/ping"}
             * Example: {"url":"/i", "body":{"device_id":"test","app_key":"APP_KEY","begin_session":1,"metrics":{}}}
-            **/            
+            **/
             //creating request context
             var params = {
                 //providing data in request object

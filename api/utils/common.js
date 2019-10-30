@@ -2200,7 +2200,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
              *      ]
              *  }
              * }
-             */ 
+             */
             else if (Object.prototype.hasOwnProperty.call(apiConfig, 'replSetServers') && Object.prototype.hasOwnProperty.call(frontendConfig, 'replSetServers')) {
                 if (apiConfig.replSetServers.length === frontendConfig.replSetServers.length && apiConfig.db === frontendConfig.db) {
                     let isCorrect = true;
