@@ -316,27 +316,19 @@ var common = require('../../../api/utils/common.js'),
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
-            aggregation.push({"$count": "total"});
-            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(err, total) {
-                if (!err) {
-                    aggregation.splice(aggregation.length - 1, 1);
-                    var skip = parseInt(params.qstring.iDisplayStart || 0);
-                    aggregation.push({"$skip": skip});
-                    if (params.qstring.iDisplayLength) {
-                        aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
-                    }
-                    var totalRecords = total.length > 0 ? total[0].total : 0;
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(aggregationErr, result) {
-                        if (!aggregationErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: totalRecords, iTotalDisplayRecords: totalRecords, "aaData": result});
-                        }
-                        else {
-                            common.returnMessage(params, 500, aggregationErr);
-                        }
-                    });
+            var skip = parseInt(params.qstring.iDisplayStart || 0);
+            if (skip) {
+                aggregation.push({"$skip": skip});
+            }
+            if (params.qstring.iDisplayLength) {
+                aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
+            }
+            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(aggregationErr, result) {
+                if (!aggregationErr) {
+                    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: result.length, iTotalDisplayRecords: result.length, "aaData": result});
                 }
                 else {
-                    common.returnMessage(params, 500, err);
+                    common.returnMessage(params, 500, aggregationErr);
                 }
             });
         }
