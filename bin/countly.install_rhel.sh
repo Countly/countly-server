@@ -56,7 +56,7 @@ set -e
 yum -y install python-setuptools
 yum install -y epel-release
 
-yum install ShellCheck
+yum install -y ShellCheck
 
 if grep -q -i "release 6" /etc/redhat-release ; then
     bash "$DIR/scripts/install-python27.sh"
