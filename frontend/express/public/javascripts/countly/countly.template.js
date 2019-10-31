@@ -1099,6 +1099,9 @@ var AppRouter = Backbone.Router.extend({
                     if (isEmpty) {
                         $(categories[j]).hide();
                     }
+                    else {
+                        $(categories[j]).show();
+                    }
                 }
 
             }, 1000);
