@@ -181,8 +181,8 @@ countly_upgrade (){
         fi
     elif [ "$1" == "ee" ]
     then
-        if [ -f "$DIR/../../countly-enterprise-edition*.tar.gz" ]; then
-            cp -Rf "$DIR/../../plugins/plugins.default.json" "$DIR/../../plugins/plugins.ce.json"
+        if [ -f "$DIR/../../"countly-enterprise-edition*.tar.gz ]; then
+            cp -Rf "$DIR/../../"plugins/plugins.default.json "$DIR/../../"plugins/plugins.ce.json
 
             echo "Extracting Countly Enterprise Edition..."
             (cd "$DIR/../..";

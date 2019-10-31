@@ -22,7 +22,7 @@ elif [ "$1" = "sdk-web" ]; then
     #LATEST_SDK="$(wget -qO- https://api.github.com/repos/countly/countly-sdk-web/releases | grep tag_name | grep "$SERVER_VERSION" | head -n 1 | cut -d '"' -f 4)";
     (cd "$DIR/../../../" ;
     #npm install countly-sdk-web@$LATEST_SDK ;
-    cp -rf "$DIR/../../../node_modules/countly-sdk-web/lib/*" "$DIR/../../../frontend/express/public/sdk/web/"
+    cp -rf "$DIR/../../../"node_modules/countly-sdk-web/lib/* "$DIR/../../../frontend/express/public/sdk/web/"
     )
 else
     usage ;
