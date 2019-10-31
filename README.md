@@ -3,7 +3,7 @@
 
 <p align="right">
 
-[![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/98c2726f2d734697a5f1ac0d453f0a06)](https://app.codacy.com/app/ar2rsawseen/countly-server?utm_source=github.com&utm_medium=referral&utm_content=Countly/countly-server&utm_campaign=Badge_Grade_Dashboard) [![Install Countly on DigitalOcean](https://count.ly/github/install-on-digital-ocean.svg)](http://do.count.ly)
+[![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](https://count.ly/github/install-on-digital-ocean.svg)](http://do.count.ly)
 
 </p>
 

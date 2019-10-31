@@ -1235,7 +1235,7 @@ window.ConfigurationsView = countlyView.extend({
             return "<input type='number' id='" + id + "' value='" + value + "' max='2147483647' min='0' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
         }
         else {
-            return "<input type='text' id='" + id + "' value='" + value + "'/>";
+            return "<input type='text' id='" + id + "' value='" + value + "' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\"/>";
         }
     },
     getLabel: function(id) {

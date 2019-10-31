@@ -392,7 +392,7 @@
 		<div class="message">
 			<div>
 				<div class="title" data-localize="user-settings.username"></div>
-				<div class="input"><input id="username" type="text" value=""/></div>
+				<div class="input"><input id="username" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
 			</div>
 			<div style="margin-top:15px;">
 				<div class="title" data-localize="user-settings.change-password"></div>
@@ -726,7 +726,7 @@
             <% } %>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
+                <input type="search" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
             </div>
 			<div id="management-app-container" class="scrollable">
 				{{#eachOfObjectValue admin_apps}}
@@ -756,7 +756,7 @@
 							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-name">
 								<td data-localize="management-applications.application-name"></td>
 								<td>
-									<input type="text" value="" placeholder="Enter application name..." data-localize="placeholder.app-name" id="app-add-name">
+									<input type="text" value="" placeholder="Enter application name..." data-localize="placeholder.app-name" id="app-add-name" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 								</td>
 							</tr>
                             <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
@@ -855,7 +855,7 @@
 			<div id="add-first-app">
 				<div class="add-app-input-wrapper">
 					<label class="add-app-input-label" data-localize="management-applications.application-name"></label>
-					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name">
+					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 				</div>
 				<div class="add-app-input-wrapper">
 					<label class="add-app-input-label" id="select-app-type-label" data-localize="management-applications.type"></label>
@@ -991,7 +991,7 @@
 								<td id="app-edit-name">
 									<div class="read"><span></span><a id="app_details" data-localize="management-applications.application-details"></a></div>
 									<div class="edit">
-										<input type="text" value="">
+										<input type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 									</div>
 								</td>
 							</tr>
@@ -1112,7 +1112,7 @@
 								<td id="app-edit-salt">
 									<div class="read"></div>
 									<div class="edit">
-										<input type="text" value="">
+										<input type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 									</div>
                                     <div class="hint" data-localize="management-applications.checksum-salt.hint"></div>
 								</td>
@@ -1175,7 +1175,7 @@
             </div>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/>
+                <input type="search" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/>
             </div>
 			<div class="scrollable" id="event-nav-eventitems" style="max-height:450px;">
 				{{#eachOfArray events}}
@@ -1616,7 +1616,7 @@
 			</div>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/>
+                <input type="search" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/>
             </div>
 			<div class="scrollable" style="max-height:450px;">
 				{{#eachOfArray events}}

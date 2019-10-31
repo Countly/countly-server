@@ -22,5 +22,5 @@ else
         password=$2
     fi
 
-    nodejs $DIR/user_mgmt.js delete $1 $password ;
+    nodejs "$DIR/user_mgmt.js" delete "$1" "$password" ;
 fi

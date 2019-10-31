@@ -20,7 +20,9 @@ before_script:
 - nodejs --version
 - ${PWD}/mongodb-linux-x86_64-${MONGODB}/bin/mongod --version
 - cat ${PWD}/mongod.log
-script: sudo npm test
+script:
+- countly shellcheck
+- sudo npm test
 after_script:
 - cat log/countly-api.log
 - cat log/countly-dashboard.log

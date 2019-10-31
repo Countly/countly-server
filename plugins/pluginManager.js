@@ -421,14 +421,31 @@ var pluginManager = function pluginManager() {
         events[event].push(callback);
     };
 
-    /**
-    * Dispatch specific event on api side
-    * @param {string} event - event to dispatch
-    * @param {object} params - object with parameters to pass to event
-    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
-    * @returns {boolean} true if any one responded to event
-    **/
-    this.dispatch = function(event, params, callback) {
+    var makeSettlePromise = function(promise) {
+        return new Promise(function(resolve) {
+            if (!(promise instanceof Promise)) {
+                resolve({ status: 'fulfilled', value: promise });
+                return;
+            }
+            promise
+                .then((value) => {
+                    resolve({ status: 'fulfilled', value });
+                })
+                .catch((error) => {
+                    resolve({ status: 'rejected', reason: error });
+                });
+        });
+    };
+
+    // This is compatible with Node 12.9 Promise.allSettled()
+    var allSettled = function(promises) {
+        return new Promise(function(resolve) {
+            var settlePromises = promises.map(makeSettlePromise);
+            Promise.all(settlePromises).then(resolve);
+        });
+    };
+
+    var dispatchInternal = function(event, params, syncPrimitive, callback) {
         var used = false,
             promises = [];
         var promise;
@@ -459,14 +476,14 @@ var pluginManager = function pluginManager() {
                             callback(err, data);
                         }
                     }
-                    Promise.all(promises).then(resolver.bind(null, null)).catch(function(error) {
+                    syncPrimitive(promises).then(resolver.bind(null, null)).catch(function(error) {
                         console.log(error);
                         resolver(error);
                     });
                 }));
             }
             else if (callback) {
-                Promise.all(promises).then(callback.bind(null, null)).catch(function(error) {
+                syncPrimitive(promises).then(callback.bind(null, null)).catch(function(error) {
                     console.log(error);
                     callback(error);
                 });
@@ -476,6 +493,28 @@ var pluginManager = function pluginManager() {
             callback();
         }
         return used;
+    };
+
+    /**
+    * Dispatch specific event on api side and wait until all event handlers have processed the event.
+    * @param {string} event - event to dispatch
+    * @param {object} params - object with parameters to pass to event
+    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @returns {boolean} true if any one responded to event
+    **/
+    this.dispatchAllSettled = function(event, params, callback) {
+        return dispatchInternal(event, params, allSettled, callback);
+    };
+
+    /**
+    * Dispatch specific event on api side
+    * @param {string} event - event to dispatch
+    * @param {object} params - object with parameters to pass to event
+    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @returns {boolean} true if any one responded to event
+    **/
+    this.dispatch = function(event, params, callback) {
+        return dispatchInternal(event, params, Promise.all, callback);
     };
 
     /**

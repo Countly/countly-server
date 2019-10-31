@@ -5526,6 +5526,7 @@ window.EventsView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            CountlyHelpers.applyColors();
             if (eventCount > 0) {
                 for (var i in this.showOnGraph) {
                     self.showOnGraph[i] = $(".big-numbers.selected." + i).length;

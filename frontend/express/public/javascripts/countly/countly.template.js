@@ -3735,6 +3735,11 @@ var AppRouter = Backbone.Router.extend({
                 $("#date-picker").hide();
             });
 
+            $("#date-cancel").click(function() {
+                $("#date-selector .calendar").removeClass("selected").removeClass("active");
+                $("#date-picker").hide();
+            });
+
             setSelectedDate();
 
             $('.scrollable').slimScroll({

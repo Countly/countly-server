@@ -1025,7 +1025,7 @@
                 $(context).addClass("active");
 
                 if (itemCount > 10 || $(context).hasClass("big-list")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='search' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\" /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
                 }
             }
 
@@ -1302,7 +1302,7 @@
                 $(this).addClass("active");
 
                 if (itemCount > 10) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='search' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\" /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 
