@@ -635,7 +635,7 @@ var AppRouter = Backbone.Router.extend({
             this.activeView._removeMyRequests();//remove requests for view(if not finished)
         }
     },
-    switchApp: function(app_id, callback, refresh) {
+    switchApp: function(app_id, callback) {
         countlyCommon.setActiveApp(app_id);
         $("#active-app-name").text(countlyGlobal.apps[app_id].name);
         $("#active-app-name").attr('title', countlyGlobal.apps[app_id].name);
@@ -3910,7 +3910,7 @@ Backbone.history.checkUrl = function() {
             if (Backbone.history.checkOthers()) {
                 Backbone.history.__checkUrl();
             }
-        }, true);
+        });
     }
     else {
         if (Backbone.history.checkOthers()) {
