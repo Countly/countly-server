@@ -635,19 +635,31 @@ var AppRouter = Backbone.Router.extend({
             this.activeView._removeMyRequests();//remove requests for view(if not finished)
         }
     },
-    switchApp: function(app_id, callback) {
+    switchApp: function(app_id, callback, refresh) {
         countlyCommon.setActiveApp(app_id);
-
         $("#active-app-name").text(countlyGlobal.apps[app_id].name);
         $("#active-app-name").attr('title', countlyGlobal.apps[app_id].name);
         $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
 
-        app.onAppSwitch(app_id, true);
-
         //removing requests saved in app
         app._removeUnfinishedRequests();
         if (app && app.activeView) {
-            app.activeView.appChanged(callback);
+            if (typeof callback === "function") {
+                app.activeView.appChanged(function() {
+                    app.onAppSwitch(app_id);
+                    callback();
+                });
+            }
+            else {
+                app.activeView.appChanged(function() {
+                    app.onAppSwitch(app_id);
+                });
+            }
+        }
+        else {
+            if (typeof callback === "function") {
+                callback();
+            }
         }
     },
     _menuForTypes: {},
@@ -900,15 +912,7 @@ var AppRouter = Backbone.Router.extend({
                     redirect = "#/" + parts.join("/");
                 }
                 if (app_id !== countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[app_id]) {
-                    countlyCommon.setActiveApp(app_id);
-
-                    $("#active-app-name").text(countlyGlobal.apps[app_id].name);
-                    $("#active-app-name").attr('title', countlyGlobal.apps[app_id].name);
-                    $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
-
-                    app.onAppSwitch(app_id);
-                    app._removeUnfinishedRequests();
-                    app.activeView.appChanged(function() {
+                    app.switchApp(app_id, function() {
                         app.navigate(redirect, true);
                     });
                     return;
@@ -2276,11 +2280,7 @@ var AppRouter = Backbone.Router.extend({
                     if (self.activeAppKey !== appKey) {
                         self.activeAppName = appName;
                         self.activeAppKey = appKey;
-                        countlyCommon.setActiveApp(appId);
-                        app._removeUnfinishedRequests();
-                        self.activeView.appChanged(function() {
-                            app.onAppSwitch(appId);
-                        });
+                        self.switchApp(appId);
                     }
                 }
                 else {
@@ -2355,11 +2355,7 @@ var AppRouter = Backbone.Router.extend({
                 if (self.activeAppKey !== appKey) {
                     self.activeAppName = appName;
                     self.activeAppKey = appKey;
-                    countlyCommon.setActiveApp(appId);
-                    app._removeUnfinishedRequests();
-                    self.activeView.appChanged(function() {
-                        app.onAppSwitch(appId);
-                    });
+                    self.switchApp(appId);
                 }
             });
 
@@ -3914,7 +3910,7 @@ Backbone.history.checkUrl = function() {
             if (Backbone.history.checkOthers()) {
                 Backbone.history.__checkUrl();
             }
-        });
+        }, true);
     }
     else {
         if (Backbone.history.checkOthers()) {
