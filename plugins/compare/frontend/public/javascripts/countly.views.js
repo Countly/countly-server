@@ -178,9 +178,9 @@ window.CompareView = countlyView.extend({
             $("#empty-graph").hide();
         }
 
-        var selectedMetric = $(".big-numbers .inner").find(".selected").is("#metric-dur");
+        var isSelectedMetricDuration = $(".big-numbers .inner").find(".selected").is("#metric-dur");
 
-        if (selectedMetric) {
+        if (isSelectedMetricDuration) {
             for (var index = 0; index < this.selectedAlts.length; index++) {
                 var element = this.selectedAlts[index];
                 countlyCommon.formatSecondForDP(dp, element);
