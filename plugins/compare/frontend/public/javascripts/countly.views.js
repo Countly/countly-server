@@ -57,7 +57,6 @@ window.CompareView = countlyView.extend({
             }
 
             self.el.html(this.template(this.templateData));
-
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": self.viewHelper.model.getTableData(),
                 "fnRowCallback": function(nRow, aData) {
@@ -151,11 +150,9 @@ window.CompareView = countlyView.extend({
     },
     drawGraph: function() {
         var dp = [];
-
         for (var i = 0; i < this.selectedAlts.length; i++) {
             var color = countlyCommon.GRAPH_COLORS[i];
             var data = this.viewHelper.model.getChartData(this.selectedAlts[i], this.selectedMetric).chartDP;
-
             if (data) {
                 data[1].color = color;
 
@@ -181,7 +178,18 @@ window.CompareView = countlyView.extend({
             $("#empty-graph").hide();
         }
 
-        countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
+        var selectedMetric = $(".big-numbers .inner").find(".selected").is("#metric-dur");
+
+        if (selectedMetric) {
+            for (var index = 0; index < this.selectedAlts.length; index++) {
+                var element = this.selectedAlts[index];
+                countlyCommon.formatSecondForDP(dp, element);
+            }
+            countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
+        }
+        else {
+            countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
+        }
     },
     refresh: function() {
         var self = this;
@@ -247,7 +255,6 @@ var compareEventsViewHelper = {
         return [
             {
                 "mData": function(row, type) {
-
                     if (type === "display") {
                         return "<div class='color'></div><span class='name'>" + row.name + "</span>";
                     }
@@ -281,7 +288,7 @@ var compareEventsViewHelper = {
                 "mData": "dur",
                 sType: "formatted-num",
                 "mRender": function(d) {
-                    return countlyCommon.formatNumber(d);
+                    return countlyCommon.formatSecond(d);
                 },
                 "sTitle": jQuery.i18n.map["events.dur"]
             }
