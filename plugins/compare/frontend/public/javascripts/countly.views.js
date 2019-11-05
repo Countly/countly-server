@@ -185,11 +185,9 @@ window.CompareView = countlyView.extend({
                 var element = this.selectedAlts[index];
                 countlyCommon.formatSecondForDP(dp, element);
             }
-            countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
         }
-        else {
-            countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
-        }
+
+        countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
     },
     refresh: function() {
         var self = this;
