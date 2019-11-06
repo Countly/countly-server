@@ -261,6 +261,8 @@ window.DBViewerView = countlyView.extend({
             });
             $('#aggregate-result-table').stickyTableHeaders();
         });
+
+        $('#alert-name-input').attr('placeholder', $.i18n.map["alert.enter-alert-name"]);
     },
     generateColumnArray: function(obj) {
         var aoColumns = [];
