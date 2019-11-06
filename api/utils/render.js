@@ -125,9 +125,23 @@ exports.renderView = function(options, cb) {
 
             yield page.goto(host + '/login/token/' + token + '?ssr=true');
 
-            yield timeout(10000);
+            try {
+                yield page.waitForSelector('countly');
+            }
+            catch (e) {
+                //Wait time exceeded
+            }
+
+            yield timeout(2000);
 
             yield page.goto(host + view);
+
+            try {
+                yield page.waitForSelector('countly');
+            }
+            catch (e) {
+                //Wait time exceeded
+            }
 
             yield timeout(10000);
 
