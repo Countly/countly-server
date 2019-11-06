@@ -514,7 +514,9 @@ var pluginManager = function pluginManager() {
     * @returns {boolean} true if any one responded to event
     **/
     this.dispatch = function(event, params, callback) {
-        return dispatchInternal(event, params, function(promises) { return Promise.all(promises); }, callback);
+        return dispatchInternal(event, params, function(promises) {
+            return Promise.all(promises);
+        }, callback);
     };
 
     /**
