@@ -310,7 +310,7 @@ class Manager {
                         log.i('Job %s is running on another server, won\'t start it here', job.id);
                     }
                     else if (old.status === STATUS.SCHEDULED || old.status === STATUS.PAUSED) {
-                        if (job instanceof JOB.IPCJob) {
+                        if (job instanceof JOB.IPCJob || job instanceof JOB.IPCFaçadeJob) {
                             if (!this.hasResources(job)) {
                                 log.i('Started the job, but all resources are busy for %j, putting it back to SCHEDULED', json);
                                 await JOB.Job.updateAtomically(this.db, {

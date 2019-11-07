@@ -421,33 +421,51 @@ class Job extends EventEmitter {
     /**
     * Replace jobs that will run after provided timestamp
     * @param {number} next - timestamp
+    * @param {function} queror - function which modifies query request
     * @returns {Promise} promise
     **/
-    replaceAfter(next) {
+    replaceAfter(next, queror) {
+        log.d('[!!!!!!!!] %s: replaceAfter %d (%d %j)', this._id, next, this.next, this.data);
         return new Promise((resolve, reject) => {
             let query = {
-                _id: {$ne: this._id},
                 status: STATUS.SCHEDULED,
                 name: this.name,
                 next: {$gte: next}
             };
+            if (this._id) {
+                query._id = {$ne: this._id};
+            }
             if (this.data && Object.keys(this.data).length) {
                 query.data = this.data;
             }
+            if (queror) {
+                queror(query);
+            }
 
-            log.i('Replacing job %s (%j) with date %d: %j', this.name, this.data, next, query);
+            log.d('[!!!!!!!!] %s: replaceAfter %d query', this._id, next, query);
 
-            Job.updateAtomically(this.db(), query, {$set: {next: next}}).then(resolve, err => {
+            Job.updateAtomically(this.db(), query, {$set: {next: next}}).then(arg => {
+                log.d('[!!!!!!!!] %s: replaceAfter %d RESOLVE UPDATED: %j', this._id, next, arg);
+                resolve(arg);
+            }, err => {
+                log.d('[!!!!!!!!] %s: replaceAfter %d ERROR %j', this._id, next, err);
                 if (err === 'Job not found') {
-                    log.i('Replacing job %s (%j) with date %d: no future jobs to move', this.name, this.data, next);
                     query.next = {$lt: next};
                     Job.findMany(this.db(), query).then(existing => {
-                        log.i('Replacing job %s (%j) with date %d: found %d existing jobs', this.name, this.data, next, (existing ? existing.length : 0));
+                        log.d('[!!!!!!!!] %s: replaceAfter %d EXISTING %j', this._id, next, existing);
                         if (existing && existing.length) {
-                            resolve();
+                            log.d('[!!!!!!!!] %s: replaceAfter %d RESOLVE EXISTING', this._id, next);
+                            resolve(existing[0]);
                         }
                         else {
-                            new Job(this.name, this.data).once(next).then(resolve, reject);
+                            log.d('[!!!!!!!!] %s: replaceAfter %d NEW JOB', this._id, next);
+                            new Job(this.name, this.data).once(next).then((arg) => {
+                                log.d('[!!!!!!!!] %s: replaceAfter %d NEW JOB CREATED %j', this._id, next, arg);
+                                resolve(arg);
+                            }, (e2) => {
+                                log.d('[!!!!!!!!] %s: replaceAfter %d NEW JOB ERROR %j', this._id, next, e2);
+                                reject(e2);
+                            });
                         }
                     }, reject);
                 }
@@ -990,7 +1008,13 @@ class IPCFaçadeJob extends ResourcefulJob {
     **/
     _run() {
         log.d('[%s] Running in IPCFaçadeJob', this.job.channel);
-        this.resourceFaçade = this.getResourceFaçade();
+        try {
+            this.resourceFaçade = this.getResourceFaçade();
+        }
+        catch (e) {
+            log.d('[%s] Caught Façade error: %j', this.job.channel, e);
+            return Promise.reject(e);
+        }
 
         this.ipcChannel = new ipc.IdChannel(this.job.channel).attach(this.resourceFaçade._worker);
         this.ipcChannel.on(EVT.UPDATE, (json) => {
