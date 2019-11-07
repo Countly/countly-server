@@ -1893,15 +1893,29 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
+        if (!params.qstring.device_id && typeof user.did === "undefined") {
+            let err = "Device id is not provided for" + params.href;
+            console.log(err);
+            if (callback) {
+                callback(err);
+            }
+            return;
+        }
+
         var user = params.app_user || {};
 
         if (!no_meta && !params.qstring.no_meta) {
             if (typeof user.fac === "undefined") {
-                if (!update.$setOnInsert) {
-                    update.$setOnInsert = {};
+                if (!update.$set) {
+                    update.$set = {};
                 }
-                if (!update.$setOnInsert.fac) {
-                    update.$setOnInsert.fac = params.time.mstimestamp;
+                if (!update.$set.fac) {
+                    if (user.fs && user.fs * 1000 < params.time.mstimestamp) {
+                        update.$set.fac = user.fs * 1000;
+                    }
+                    else {
+                        update.$set.fac = params.time.mstimestamp;
+                    }
                 }
             }
 
@@ -1912,6 +1926,31 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                 if (!update.$set.lac) {
                     update.$set.lac = params.time.mstimestamp;
                 }
+                update.$set.last_sync = Date.now();
+            }
+
+            if (!user.sdk) {
+                user.sdk = {};
+            }
+
+            if (params.qstring.sdk_name && params.qstring.sdk_name !== user.sdk.name) {
+                if (!update.$set) {
+                    update.$set = {};
+                }
+                update.$set["sdk.name"] = params.qstring.sdk_name;
+            }
+            if (params.qstring.sdk_version && params.qstring.sdk_version !== user.sdk.version) {
+                if (!update.$set) {
+                    update.$set = {};
+                }
+                update.$set["sdk.version"] = params.qstring.sdk_version;
+            }
+
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash) {
+                if (!update.$set) {
+                    update.$set = {};
+                }
+                update.$set.last_req = params.request_hash;
             }
         }
 
@@ -1922,13 +1961,6 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             if (!update.$set.did) {
                 update.$set.did = params.qstring.device_id;
             }
-        }
-
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash) {
-            if (!update.$set) {
-                update.$set = {};
-            }
-            update.$set.last_req = params.request_hash;
         }
 
         common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {
