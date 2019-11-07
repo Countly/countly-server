@@ -1,4 +1,4 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter*/
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter,countlyActiveUsers */
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
@@ -555,11 +555,59 @@ window.UserView = countlyView.extend({
                 ]
             }
         };
+        var self = this;
+        if (typeof countlyActiveUsers !== 'undefined') {
+            var totalUsers = countlyActiveUsers.getActiveUsers();
+            this.templateData["graph-and-numbers"] = {
+                "count": 3,
+                "items": totalUsers.totals
+            };
+        }
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
             CountlyHelpers.applyColors();
+
+            if (typeof countlySegmentation !== 'undefined') {
+                countlyCommon.drawTimeGraph(totalUsers.graph, "#dashboard-graph-active-users");
+
+                $("#active-users-menu .cly-list-options").off("click").on("click", function(event) {
+                    event.stopPropagation();
+                    $(event.target).toggleClass("active");
+                    if ($(event.target).hasClass("active")) {
+                        $('#active-users-menu > .cly-button-menu').focus();
+                        $('#active-users-menu > .cly-button-menu').addClass('active');
+                    }
+                    else {
+                        $(event.target).removeClass("active");
+                        $('#active-users-menu > .cly-button-menu').removeClass('active');
+                    }
+                });
+
+                $("#active-users-menu .cly-button-menu .item").off("click").on("click", function(event) {
+                    if (typeof countlyActiveUsers !== 'undefined') {
+                        countlyActiveUsers.clearActiveUsersCache({
+                            app_id: countlyCommon.ACTIVE_APP_ID,
+                            callback: function(success) {
+                                if (success) {
+                                    CountlyHelpers.notify({
+                                        title: jQuery.i18n.map["common.success"],
+                                        message: jQuery.i18n.map["active_users.active-cache-values-cleared"]
+                                    });
+                                    self.refresh();
+                                }
+                                else {
+                                    CountlyHelpers.alert(jQuery.i18n.map["active_users.active-cache-values-error"], "red");
+                                }
+                            }
+                        });
+                    }
+                    $('#active-users-menu > .cly-button-menu').removeClass('active');
+                    $('#active-users-menu > .cly-list-options').removeClass('active');
+                });
+
+            }
             this.dtable = $(".d-table").dataTable(
                 $.extend({}, $.fn.dataTable.defaults, {
                     aaData: userDP.chartData,

@@ -467,6 +467,26 @@
         });
     };
 
+    CountlyHelpers.blinkElement = function(times, speed, element) {
+        element.blinkCn = times;
+
+        element.blinkElement = function() {
+            if (this.blinkCn > 0 || this.blinkCn === -1) {
+                if (this.blinkCn > 0) {
+                    this.blinkCn -= 1;
+                }
+                $(element).fadeTo(speed, 0.1, function() {
+                    $(this).fadeTo(speed, 1.0, function() {
+                        element.blinkElement();
+                    });
+                });
+            }
+        };
+        element.blinkElement();
+    };
+    CountlyHelpers.stopBlinking = function(element) {
+        element.blinkCn = 0;
+    };
     CountlyHelpers.applyColors = function() {
         $('#custom-color-styles').remove();
         // overview bars
