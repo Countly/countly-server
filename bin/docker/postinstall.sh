@@ -20,7 +20,7 @@ else
 
 	while read -r plugin; do
 	  echo "[docker] Installing ${plugin}:"
-	  /usr/local/bin/node "/opt/countly/plugins/$plugin/install.js"
+	  node "/opt/countly/plugins/$plugin/install.js"
 	  echo "[docker] Done installing ${plugin}."
 	done <<< "$a"
 

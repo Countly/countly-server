@@ -4,11 +4,11 @@
 
 case "$COUNTLY_CONTAINER" in
   "api" )
-    exec /usr/local/bin/node /opt/countly/api/api.js
+    exec node /opt/countly/api/api.js
     ;;
 
   "frontend" )
-  	exec /usr/local/bin/node /opt/countly/frontend/express/app.js
+  	exec node /opt/countly/frontend/express/app.js
     ;;
 
    * )
