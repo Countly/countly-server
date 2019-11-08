@@ -661,7 +661,56 @@ window.UserView = countlyView.extend({
             );
 
             $(".d-table").stickyTableHeaders();
+
         }
+
+        if (typeof countlyActiveUsers !== 'undefined') {
+            self.refreshGraph();
+        }
+    },
+    refreshGraph: function() {
+        var self = this;
+        $.when(countlyActiveUsers.fetchActiveUsers(countlyCommon.ACTIVE_APP_ID, countlyCommon.getPeriodForAjax())).then(function() {
+            var totalUsers = countlyActiveUsers.getActiveUsers();
+            if (totalUsers.drillDisabled == true) {
+                self.templateData["graph-and-numbers"] = {
+                    "count": 3,
+                    "items": totalUsers.totals
+                };
+
+                $('.active-users-graph-and-numbers>.inner').css("display", "none");
+                $('.active-users-graph-and-numbers .no-drill-warning').css("display", "block");
+            }
+            else {
+                $('.active-users-graph-and-numbers>.inner').css("display", "block");
+                $('.active-users-graph-and-numbers .no-drill-warning').css("display", "none");
+                self.templateData["graph-and-numbers"] = {
+                    "count": 3,
+                    "items": totalUsers.totals
+                };
+                if (totalUsers.count === 1) {
+                    countlyCommon.drawTimeGraph(totalUsers.graph, "#dashboard-graph-active-users", "daily", true);
+                }
+                else {
+                    countlyCommon.drawTimeGraph(totalUsers.graph, "#dashboard-graph-active-users", "daily");
+                }
+                var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                $(self.el).find(".side-with-numbers table").first().replaceWith(newPage.find(".side-with-numbers table").first());
+                if (totalUsers.calculating === true) {
+                    $('#active-users-calculate-warning').css("display", "block");
+                    CountlyHelpers.blinkElement(-1, 250, $('#active-users-calculate-warning').find('.blinking-item').first());
+                    if (!countlyCommon.periodObj.periodContainsToday) {
+                        setTimeout(function() {
+                            self.refreshGraph();
+                        }, 10000);//not auto refreshed - refresh 
+                    }
+                }
+                else {
+                    CountlyHelpers.stopBlinking($('#active-users-calculate-warning').find(' .blinking-item').first());
+                    $('#active-users-calculate-warning').css("display", "none");
+                }
+            }
+        });
     },
     refresh: function() {
         var self = this;
