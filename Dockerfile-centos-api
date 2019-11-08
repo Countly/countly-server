@@ -1,0 +1,54 @@
+FROM centos/nodejs-8-centos7
+
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
+# Enterprise Edition:
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing
+
+USER root
+
+# Core dependencies
+## Tini
+ENV TINI_VERSION 0.18.0
+ADD https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm /tmp/tini.rpm
+RUN rpm -i /tmp/tini.rpm
+
+ENTRYPOINT ["/usr/bin/tini", "-v", "--"]
+
+RUN yum -y install sendmail openssl-devel gcc-c++-4.8.5 make git make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools
+
+# Required by push plugin
+RUN git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 && \
+	cd /tmp/nghttp2 && \
+	git checkout tags/v1.30.0 && \
+	export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install
+
+# Setup Countly
+ENV COUNTLY_CONTAINER="api"
+ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
+ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0"
+
+## The files
+RUN mkdir /opt/countly && chown 1001:0 /opt/countly
+USER 1001:0
+ENV PATH="/opt/rh/rh-nodejs8/root/usr/bin:${PATH}"
+WORKDIR /opt/countly
+COPY --chown=1001:0 . .
+HEALTHCHECK --start-period=60s CMD curl --fail http://localhost:3001/o/ping || exit 1
+
+## API runtime dependencies
+RUN cp -n api/config.sample.js api/config.js && \
+	cp -n frontend/express/config.sample.js frontend/express/config.js && \
+	HOME=/tmp npm install && \
+	./bin/docker/preinstall.sh
+
+USER root
+
+RUN ./bin/docker/modify.sh && \
+	chown -R 1001:0 /opt/countly && \
+	yum remove -y git gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel && \
+	yum clean all && \
+	rm -rf /tmp/* /var/tmp/*
+
+USER 1001:0
+ENV PATH="/opt/rh/rh-nodejs8/root/usr/bin:${PATH}"
+CMD ["/opt/countly/bin/docker/cmd.sh"]
