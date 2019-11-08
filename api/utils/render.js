@@ -63,24 +63,24 @@ exports.renderView = function(options, cb) {
             });
         }
 
+        if (!chromePath && alternateChrome) {
+            chromePath = yield fetchChromeExecutablePath();
+        }
+
+        var settings = {
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            ignoreHTTPSErrors: true,
+            userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
+        };
+
+        if (chromePath) {
+            settings.executablePath = chromePath;
+        }
+
+        var browser = yield puppeteer.launch(settings);
+
         try {
-            if (!chromePath && alternateChrome) {
-                chromePath = yield fetchChromeExecutablePath();
-            }
-
-            var settings = {
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                ignoreHTTPSErrors: true,
-                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
-            };
-
-            if (chromePath) {
-                settings.executablePath = chromePath;
-            }
-
-            var browser = yield puppeteer.launch(settings);
-
             var page = yield browser.newPage();
 
             page.on('console', (msg) => {
@@ -112,7 +112,7 @@ exports.renderView = function(options, cb) {
             var cbFn = options.cbFn || function() {};
             var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
             var source = options.source;
-            var navigationTimeout = options.timeout || 30000;
+            var updatedTimeout = options.timeout || 30000;
 
             options.dimensions = {
                 width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
@@ -121,27 +121,17 @@ exports.renderView = function(options, cb) {
                 scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
             };
 
-            page.setDefaultNavigationTimeout(navigationTimeout);
+            page.setDefaultNavigationTimeout(updatedTimeout);
 
             yield page.goto(host + '/login/token/' + token + '?ssr=true');
 
-            try {
-                yield page.waitForSelector('countly');
-            }
-            catch (e) {
-                //Wait time exceeded
-            }
+            yield page.waitForSelector('countly', {timeout: updatedTimeout});
 
             yield timeout(2000);
 
             yield page.goto(host + view);
 
-            try {
-                yield page.waitForSelector('countly');
-            }
-            catch (e) {
-                //Wait time exceeded
-            }
+            yield page.waitForSelector('countly', {timeout: updatedTimeout});
 
             yield timeout(10000);
 
@@ -225,6 +215,7 @@ exports.renderView = function(options, cb) {
         }
         catch (e) {
             log.e(e, e.stack);
+            yield browser.close();
             throw e;
         }
     })().then(function(response) {
