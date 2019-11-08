@@ -585,7 +585,7 @@ window.UserView = countlyView.extend({
                     }
                 });
 
-                $("#active-users-menu .cly-button-menu .item").off("click").on("click", function(event) {
+                $("#active-users-menu .cly-button-menu .item").off("click").on("click", function(/*event*/) {
                     if (typeof countlyActiveUsers !== 'undefined') {
                         countlyActiveUsers.clearActiveUsersCache({
                             app_id: countlyCommon.ACTIVE_APP_ID,
@@ -672,7 +672,7 @@ window.UserView = countlyView.extend({
         var self = this;
         $.when(countlyActiveUsers.fetchActiveUsers(countlyCommon.ACTIVE_APP_ID, countlyCommon.getPeriodForAjax())).then(function() {
             var totalUsers = countlyActiveUsers.getActiveUsers();
-            if (totalUsers.drillDisabled == true) {
+            if (totalUsers.drillDisabled === true) {
                 self.templateData["graph-and-numbers"] = {
                     "count": 3,
                     "items": totalUsers.totals
