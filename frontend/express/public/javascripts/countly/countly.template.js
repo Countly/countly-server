@@ -580,6 +580,33 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
 });
 
 /**
+* Set menu items by restriction status, hiding empty menu-categories
+* @name setMenuItems
+* @global
+*/
+function setMenuItems() {
+    // hide empty section headers
+    var type = countlyGlobal.apps[store.get('countly_active_app')].type;
+    var categories = $('#' + type + '-type .menu-category');
+    for (var j = 0; j < categories.length; j++) {
+        var children = categories[j].children;
+        var isEmpty = true;
+        for (var k = 0; k < children.length; k++) {
+            if (children[k].className.indexOf('restrict') === -1 && children[k].className.indexOf('item') !== -1) {
+                isEmpty = false;
+            }
+        }
+        if (isEmpty) {
+            $(categories[j]).hide();
+        }
+        else {
+            // make it visible if it's not
+            $(categories[j]).show();
+        }
+    }
+}
+
+/**
  * Main app instance of Backbone AppRouter used to control views and view change flow
  * @name app
  * @global
@@ -750,7 +777,7 @@ var AppRouter = Backbone.Router.extend({
             }
             this._subMenuForCodes[node.code] = null;
         }
-
+        setMenuItems();
     },
     /**
     * Add second level menu element for specific app type under specified parent code.
@@ -1085,25 +1112,7 @@ var AppRouter = Backbone.Router.extend({
                     selectedCategory.find(".menu-category-title").addClass("active");
                 }
 
-                // hide empty section headers
-                var type = countlyGlobal.apps[store.get('countly_active_app')].type;
-                var categories = $('#' + type + '-type .menu-category');
-                for (var j = 0; j < categories.length; j++) {
-                    var children = categories[j].children;
-                    var isEmpty = true;
-                    for (var k = 0; k < children.length; k++) {
-                        if (children[k].className.indexOf('restrict') === -1 && children[k].className.indexOf('item') !== -1) {
-                            isEmpty = false;
-                        }
-                    }
-                    if (isEmpty) {
-                        $(categories[j]).hide();
-                    }
-                    else {
-                        $(categories[j]).show();
-                    }
-                }
-
+                setMenuItems();                
             }, 1000);
         },
         submenu: {
