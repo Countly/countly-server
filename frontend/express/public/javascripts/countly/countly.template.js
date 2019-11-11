@@ -1112,7 +1112,7 @@ var AppRouter = Backbone.Router.extend({
                     selectedCategory.find(".menu-category-title").addClass("active");
                 }
 
-                setMenuItems();                
+                setMenuItems();
             }, 1000);
         },
         submenu: {
