@@ -588,7 +588,7 @@ function setMenuItems() {
     // hide empty section headers for types listed below
     var types = ['web', 'mobile', 'desktop'], categories;
 
-    for (var i = 0; i < types.length; i ++) {
+    for (var i = 0; i < types.length; i++) {
         categories = $('#' + types[i] + '-type .menu-category');
         for (var j = 0; j < categories.length; j++) {
             var children = categories[j].children;
@@ -604,7 +604,7 @@ function setMenuItems() {
             else {
                 $(categories[j]).show();
             }
-        }    
+        }
     }
 }
 
