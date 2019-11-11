@@ -585,24 +585,26 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
 * @global
 */
 function setMenuItems() {
-    // hide empty section headers
-    var type = countlyGlobal.apps[store.get('countly_active_app')].type;
-    var categories = $('#' + type + '-type .menu-category');
-    for (var j = 0; j < categories.length; j++) {
-        var children = categories[j].children;
-        var isEmpty = true;
-        for (var k = 0; k < children.length; k++) {
-            if (children[k].className.indexOf('restrict') === -1 && children[k].className.indexOf('item') !== -1) {
-                isEmpty = false;
+    // hide empty section headers for types listed below
+    var types = ['web', 'mobile', 'desktop'], categories;
+
+    for (var i = 0; i < types.length; i ++) {
+        categories = $('#' + types[i] + '-type .menu-category');
+        for (var j = 0; j < categories.length; j++) {
+            var children = categories[j].children;
+            var isEmpty = true;
+            for (var k = 0; k < children.length; k++) {
+                if (children[k].className.indexOf('restrict') === -1 && children[k].className.indexOf('item') !== -1) {
+                    isEmpty = false;
+                }
             }
-        }
-        if (isEmpty) {
-            $(categories[j]).hide();
-        }
-        else {
-            // make it visible if it's not
-            $(categories[j]).show();
-        }
+            if (isEmpty) {
+                $(categories[j]).hide();
+            }
+            else {
+                $(categories[j]).show();
+            }
+        }    
     }
 }
 
