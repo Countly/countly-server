@@ -644,7 +644,7 @@
                     <table>
                         <tr>
                             <td class="side-with-numbers">
-                                <div class="title" data-localize="drill.active-users"></div>
+                                <div class="title" data-localize="active_users.active-users"></div>
                                 <table>
                                 {{#each graph-and-numbers.items}}
                                     <tr>
@@ -656,7 +656,7 @@
                                 </table>
                             </td>
                             <td class="my-sided-block">
-                                <div id="dashboard-graph-active-users" style="margin:0 auto !important; height:130px;">
+                                <div id="dashboard-graph-active-users" class="graph" style="margin:0 auto !important; height:130px;">
                                 
                                 </div>
                             </td>
@@ -668,10 +668,15 @@
                             <div class="cly-button-menu">
                                 <div id="clear-active-cache" class="item" data-localize="active_users.clear-cached-active"></div>
                             </div>
+
                         </div>
                         <div id="active-users-calculate-warning" style="display:none;">
                             <span data-localize="active_users.active-users-calculating"></span>
-                            <span class="blinking-item">...</span>
+                            <span class="blinking-item">
+                                <span>.</span>
+                                <span>.</span>
+                                <span>.</span>
+                            </span>
                         </div>
                     </div>
                 </div>

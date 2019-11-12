@@ -572,12 +572,12 @@ window.UserView = countlyView.extend({
             if (typeof countlySegmentation !== 'undefined') {
                 countlyCommon.drawTimeGraph(totalUsers.graph, "#dashboard-graph-active-users");
 
-                $("#active-users-menu .cly-list-options").off("click").on("click", function(event) {
+                $("#active-users-menu").off("click", " .cly-list-options").on("click", " .cly-list-options", function(event) {
                     event.stopPropagation();
                     $(event.target).toggleClass("active");
                     if ($(event.target).hasClass("active")) {
-                        $('#active-users-menu > .cly-button-menu').focus();
-                        $('#active-users-menu > .cly-button-menu').addClass('active');
+                        $('.cly-button-menu').addClass('active');
+                        $('body').find('.cly-button-menu').focus();
                     }
                     else {
                         $(event.target).removeClass("active");
@@ -585,7 +585,14 @@ window.UserView = countlyView.extend({
                     }
                 });
 
-                $("#active-users-menu .cly-button-menu .item").off("click").on("click", function(/*event*/) {
+
+                $(window).click(function() {
+                    $('#active-users-menu > .cly-button-menu').removeClass('active');
+                    $('#active-users-menu > .cly-list-options').removeClass('active');
+                });
+
+
+                $('#active-users-menu').find(".cly-button-menu .item").off("click").on("click", function(/*event*/) {
                     if (typeof countlyActiveUsers !== 'undefined') {
                         countlyActiveUsers.clearActiveUsersCache({
                             app_id: countlyCommon.ACTIVE_APP_ID,
@@ -698,7 +705,7 @@ window.UserView = countlyView.extend({
                 $(self.el).find(".side-with-numbers table").first().replaceWith(newPage.find(".side-with-numbers table").first());
                 if (totalUsers.calculating === true) {
                     $('#active-users-calculate-warning').css("display", "block");
-                    CountlyHelpers.blinkElement(-1, 250, $('#active-users-calculate-warning').find('.blinking-item').first());
+                    CountlyHelpers.blinkDots(-1, 300, $('#active-users-calculate-warning').find('.blinking-item').first());
                     if (!countlyCommon.periodObj.periodContainsToday) {
                         setTimeout(function() {
                             self.refreshGraph();
