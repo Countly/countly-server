@@ -262,6 +262,7 @@ window.slippingView = countlyView.extend({
 app.slippingView = new slippingView();
 
 app.route("/analytics/slipping-away", 'browser', function() {
+    this.slippingView._query = undefined;
     this.renderWhenReady(this.slippingView);
 });
 app.route("/analytics/slipping-away/*query", "slipping-away_query", function(query) {
