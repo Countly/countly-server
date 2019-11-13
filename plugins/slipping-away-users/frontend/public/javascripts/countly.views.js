@@ -6,6 +6,8 @@
     app,
     countlySlippingPlugin,
     slippingView,
+    extendViewWithFilter,
+    CountlyHelpers
     $,
  */
 window.slippingView = countlyView.extend({
@@ -70,7 +72,8 @@ window.slippingView = countlyView.extend({
             "graph-description": jQuery.i18n.map["slipping.graph-description"],
             "font-logo-class": "fa-sign-out",
             "chart-helper": "durations.chart",
-            "table-helper": "durations.table"
+            "table-helper": "durations.table",
+            "drill-filter": countlyGlobal.plugins.indexOf('drill') >= 0,
         };
 
         if (!isRefresh) {
@@ -104,8 +107,155 @@ window.slippingView = countlyView.extend({
 
             $("#date-selector").hide();
             $(".dataTables_length").remove();
+
+            this.byDisabled = true;
+            if (typeof extendViewWithFilter === "function") {
+                extendViewWithFilter(this);
+                this.initDrill();
+                var self = this;
+                setTimeout(function() {
+                    self.filterBlockClone = $("#filter-view").clone(true);
+                    if (self._query) {
+                        if ($(".filter-view-container").is(":visible")) {
+                            $("#filter-view").hide();
+                            $(".filter-view-container").hide();
+                        }
+                        else {
+                            $("#filter-view").show();
+                            $(".filter-view-container").show();
+                            self.adjustFilters();
+                        }
+
+                        $(".flot-text").hide().show(0);
+                        var filter = self._query;
+                        var inputs = [];
+                        var subs = {};
+                        for (var i in filter) {
+                            inputs.push(i);
+                            subs[i] = [];
+                            for (var j in filter[i]) {
+                                if (filter[i][j].length) {
+                                    for (var k = 0; k < filter[i][j].length; k++) {
+                                        subs[i].push([j, filter[i][j][k]]);
+                                    }
+                                }
+                                else {
+                                    subs[i].push([j, filter[i][j]]);
+                                }
+                            }
+                        }
+                        self.setInput(inputs, subs, 0, 0, 1);
+                    }
+                }, 500);
+            }
         }
-    }
+        else {
+            countlyCommon.drawGraph(slippingChartData.chartDP, "#dashboard-graph", "bar", { legend: { show: false }});
+            CountlyHelpers.refreshTable(this.dtable, slippingData);
+        }
+    },
+    setInput: function(inputs, subs, cur, sub, total) {
+        var self = this;
+        sub = sub || 0;
+        if (inputs[cur]) {
+            var filterType = subs[inputs[cur]][sub][0];
+
+            if (filterType === "$in") {
+                filterType = "=";
+            }
+            else if (filterType === "$nin") {
+                filterType = "!=";
+            }
+            var val = subs[inputs[cur]][sub][1];
+            var el = $(".query:nth-child(" + (total) + ")");
+            $(el).data("query_value", val + ""); //saves value as attribute for selected query
+            el.find(".filter-name").trigger("click");
+            el.find(".filter-type").trigger("click");
+
+
+            if (inputs[cur].indexOf("chr.") === 0) {
+                el.find(".filter-name").find(".select-items .item[data-value='chr']").trigger("click");
+                if (val === "t") {
+                    el.find(".filter-type").find(".select-items .item[data-value='=']").trigger("click");
+                }
+                else {
+                    el.find(".filter-type").find(".select-items .item[data-value='!=']").trigger("click");
+                }
+                val = inputs[cur].split(".")[1];
+                subs[inputs[cur]] = ["true"];
+            }
+            else if (inputs[cur] === "did" || inputs[cur] === "chr" || inputs[cur].indexOf(".") > -1) {
+                el.find(".filter-name").find(".select-items .item[data-value='" + inputs[cur] + "']").trigger("click");
+            }
+            else {
+                el.find(".filter-name").find(".select-items .item[data-value='up." + inputs[cur] + "']").trigger("click");
+            }
+
+            el.find(".filter-type").find(".select-items .item[data-value='" + filterType + "']").trigger("click");
+            setTimeout(function() {
+                el.find(".filter-value").not(".hidden").trigger("click");
+                if (el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").length) {
+                    el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").trigger("click");
+                }
+                else if (_.isNumber(val) && (val + "").length === 10) {
+                    el.find(".filter-value.date").find("input").val(countlyCommon.formatDate(moment(val * 1000), "DD MMMM, YYYY"));
+                    el.find(".filter-value.date").find("input").data("timestamp", val);
+                }
+                else {
+                    el.find(".filter-value").not(".hidden").find("input").val(val);
+                }
+
+                if (subs[inputs[cur]].length === sub + 1) {
+                    cur++;
+                    sub = 0;
+                }
+                else {
+                    sub++;
+                }
+                total++;
+                if (inputs[cur]) {
+                    $("#filter-add-container").trigger("click");
+                    if (sub > 0) {
+                        setTimeout(function() {
+                            var elChild = $(".query:nth-child(" + (total) + ")");
+                            elChild.find(".and-or").find(".select-items .item[data-value='OR']").trigger("click");
+                            self.setInput(inputs, subs, cur, sub, total);
+                        }, 500);
+                    }
+                    else {
+                        self.setInput(inputs, subs, cur, sub, total);
+                    }
+                }
+                else {
+                    setTimeout(function() {
+                        $("#apply-filter").removeClass("disabled");
+                        $("#no-filter").hide();
+                        var filterData = self.getFilterObjAndByVal();
+                        $("#current-filter").show().find(".text").text(filterData.bookmarkText);
+                        $("#connector-container").show();
+                    }, 500);
+                }
+            }, 500);
+        }
+    },
+    loadAndRefresh: function() {
+        var filter = {};
+        for (var i in this.filterObj) {
+            filter[i.replace("up.", "")] = this.filterObj[i];
+        }
+        this._query = filter;
+        app.navigate("/analytics/slipping-away/" + JSON.stringify(filter), false);
+        this.refresh();
+    },
+    refresh: function() {
+        var self = this;
+        $.when(countlySlippingPlugin.initialize(self._query)).then(function() {
+            if (app.activeView !== self) {
+                return false;
+            }
+            self.renderCommon(true);
+        });
+    },
 });
 
 //register views
@@ -114,7 +264,10 @@ app.slippingView = new slippingView();
 app.route("/analytics/slipping-away", 'browser', function() {
     this.renderWhenReady(this.slippingView);
 });
-
+app.route("/analytics/slipping-away/*query", "slipping-away_query", function(query) {
+    this.slippingView._query = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
+    this.renderWhenReady(this.slippingView);
+});
 $(document).ready(function() {
     app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
     if (app.configurationsView) {
