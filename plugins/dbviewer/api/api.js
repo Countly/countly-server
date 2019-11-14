@@ -12,6 +12,18 @@ var common = require('../../../api/utils/common.js'),
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
 
+        /*
+        * Get indexes
+        */
+       function getIndexes() {
+            dbs[dbNameOnParam].collection(params.qstring.collection).indexes(function(err, indexes) {
+                if (err) {
+                    common.returnOutput(params, 'Somethings went wrong');
+                }
+                common.returnOutput(params, { limit: 20, start: 1, end: 20, total: indexes.length, pages: Math.ceil(indexes.length / 20), curPage: 1, collections: indexes });
+            })
+        }
+
         /**
         * Check properties and manipulate values
         * @param {object} doc - document
@@ -353,7 +365,22 @@ var common = require('../../../api/utils/common.js'),
 
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function() {
-            if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1) {
+            if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.action === 'get_indexes') {
+                if (params.member.global_admin) {
+                    getIndexes();
+                }
+                else {
+                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
+                        if (hasAccess) {
+                            getIndexes();
+                        }
+                        else {
+                            common.returnMessage(params, 401, 'User does not have right to view this collection');
+                        }
+                    });
+                }
+            }
+            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1) {
                 if (params.member.global_admin) {
                     dbGetDocument();
                 }

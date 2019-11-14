@@ -171,7 +171,7 @@ window.DBViewerView = countlyView.extend({
             }
             else if (state === 6) {
                 app.navigate("#/manage/db/" + self.db + "/" + self.collection, false);
-                countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort)
+                countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort, self.indexes_mode)
                     .then(function(response) {
                         if (response.pages !== 0 && response.curPage > response.pages) {
                             self.page = 1;
@@ -473,7 +473,7 @@ window.DBViewerView = countlyView.extend({
         if (!self.page) {
             self.page = 1;
         }
-        countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort)
+        countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort, self.indexes_mode)
             .then(function(response) {
                 if (response.pages !== 0 && response.curPage > response.pages) {
                     self.page = 1;
@@ -542,7 +542,7 @@ window.DBViewerView = countlyView.extend({
             self.sort = "{}";
         }
 
-        $.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit, this.sort, this.projection, this.isSort)).then(function() {
+        $.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit, this.sort, this.projection, this.isSort, this.indexes_mode)).then(function() {
             var dbs = countlyDBviewer.getData();
             var data = countlyDBviewer.getCollections();
             // sorting option is active?
@@ -928,7 +928,7 @@ window.DBViewerView = countlyView.extend({
             $(".result-limit").change(function() {
                 self.limit = this.value;
                 store.set("countly_limitfilter", self.limit);
-                countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort)
+                countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort, self.indexes_mode)
                     .then(function(response) {
                         $('#dbviewer-collections').html("");
                         $('.pagination').html("");
@@ -1082,6 +1082,21 @@ app.route('/manage/db/aggregate/:dbs/:collection', 'dbs', function(db, collectio
         }
         this.renderWhenReady(this.dbviewerView);
     }
+});
+
+app.route('/manage/db/indexes/:dbs/:collection', 'dbs', function(db, collection) {
+    this.dbviewerView.db = db;
+    this.dbviewerView.collection = collection;
+    this.dbviewerView.document = null;
+    this.dbviewerView.page = null;
+    this.dbviewerView.indexes_mode = true;
+    this.dbviewerView.dbviewer_aggregation = false;
+    if (store.get("countly_collection") !== collection) {
+        store.set("countly_collectionfilter", "{}");
+        store.set("countly_collection", collection);
+        this.dbviewerView.filter = "{}";
+    }
+    this.renderWhenReady(this.dbviewerView);
 });
 
 $(document).ready(function() {
