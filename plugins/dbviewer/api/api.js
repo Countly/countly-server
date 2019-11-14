@@ -12,16 +12,16 @@ var common = require('../../../api/utils/common.js'),
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
 
-        /*
+        /**
         * Get indexes
-        */
-       function getIndexes() {
+        **/
+        function getIndexes() {
             dbs[dbNameOnParam].collection(params.qstring.collection).indexes(function(err, indexes) {
                 if (err) {
                     common.returnOutput(params, 'Somethings went wrong');
                 }
                 common.returnOutput(params, { limit: 20, start: 1, end: 20, total: indexes.length, pages: Math.ceil(indexes.length / 20), curPage: 1, collections: indexes });
-            })
+            });
         }
 
         /**

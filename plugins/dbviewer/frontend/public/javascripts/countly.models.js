@@ -64,8 +64,10 @@
             sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
             projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
             skip: skip
+        };
+        if (isIndexRequest) {
+            requestData.action = "get_indexes";
         }
-        if (isIndexRequest) requestData["action"] = "get_indexes";
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + '/o/db/',

@@ -1258,7 +1258,8 @@ var AppRouter = Backbone.Router.extend({
                     id = id.split("(")[1].split(")")[0];
                 }
                 return id;
-            } else {
+            }
+            else {
                 return '';
             }
         });
