@@ -261,11 +261,11 @@ window.slippingView = countlyView.extend({
 //register views
 app.slippingView = new slippingView();
 
-app.route("/analytics/slipping-away", 'browser', function() {
+app.route("/analytics/slipping-away", 'slipping-away', function() {
     this.slippingView._query = undefined;
     this.renderWhenReady(this.slippingView);
 });
-app.route("/analytics/slipping-away/*query", "slipping-away_query", function(query) {
+app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
     this.slippingView._query = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
     this.renderWhenReady(this.slippingView);
 });
