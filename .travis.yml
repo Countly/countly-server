@@ -1,6 +1,6 @@
 language: nodejs
 dist: trusty
-node_js: "10"
+node_js: "12"
 env:
   global:
   - MONGODB=4.0.12
@@ -20,7 +20,9 @@ before_script:
 - nodejs --version
 - ${PWD}/mongodb-linux-x86_64-${MONGODB}/bin/mongod --version
 - cat ${PWD}/mongod.log
-script: sudo npm test
+script:
+- countly shellcheck
+- sudo npm test
 after_script:
 - cat log/countly-api.log
 - cat log/countly-dashboard.log

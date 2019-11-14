@@ -338,7 +338,6 @@ $(document).ready(function() {
                     type: "GET",
                     url: countlyCommon.API_URL + "/i/users/ack",
                     data: {
-                        api_key: countlyGlobal.member.api_key,
                         path: 'push.gcm'
                     },
                     success: function() {

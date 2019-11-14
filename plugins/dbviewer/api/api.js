@@ -11,6 +11,24 @@ var common = require('../../../api/utils/common.js'),
         var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
+
+        /**
+        * Check properties and manipulate values
+        * @param {object} doc - document
+        * @returns {object} - returns manipulated document object
+        **/
+        function objectIdCheck(doc) {
+            if (typeof doc === "string") {
+                doc = JSON.parse(doc);
+            }
+            for (var key in doc) {
+                if (doc[key] && typeof doc[key].toHexString !== "undefined" && typeof doc[key].toHexString === "function") {
+                    doc[key] = "ObjectId(" + doc[key] + ")";
+                }
+            }
+            return doc;
+        }
+
         /**
         * Get document data from db
         **/
@@ -24,7 +42,7 @@ var common = require('../../../api/utils/common.js'),
                         if (err) {
                             console.error(err);
                         }
-                        common.returnOutput(params, results || {});
+                        common.returnOutput(params, objectIdCheck(results) || {});
                     });
                 }
             }
@@ -71,7 +89,7 @@ var common = require('../../../api/utils/common.js'),
                 cursor.count(function(err, total) {
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
-                            return JSON.stringify(doc);
+                            return JSON.stringify(objectIdCheck(doc));
                         }
                     });
                     var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
@@ -250,13 +268,24 @@ var common = require('../../../api/utils/common.js'),
             var apps = [];
             if (params.qstring.app_id) {
                 //if app_id was provided, we need to check if user has access for this app_id
-                if (params.member.global_admin || (params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1)) {
+                // is user_of array contain current app_id?
+                var isUserOf = params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1;
+                var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
+                if (params.member.global_admin || isUserOf && !isRestricted) {
                     apps = [params.qstring.app_id];
                 }
             }
             else {
                 //use whatever user has permission for
                 apps = params.member.user_of || [];
+                // also check for app based restrictions
+                if (params.member.app_restrict) {
+                    for (var app_id in params.member.app_restrict) {
+                        if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
+                            apps.splice(apps.indexOf(app_id), 1);
+                        }
+                    }
+                }
             }
             var appList = [];
             if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
@@ -305,27 +334,19 @@ var common = require('../../../api/utils/common.js'),
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
-            aggregation.push({"$count": "total"});
-            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(err, total) {
-                if (!err) {
-                    aggregation.splice(aggregation.length - 1, 1);
-                    var skip = parseInt(params.qstring.iDisplayStart || 0);
-                    aggregation.push({"$skip": skip});
-                    if (params.qstring.iDisplayLength) {
-                        aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
-                    }
-                    var totalRecords = total.length > 0 ? total[0].total : 0;
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(aggregationErr, result) {
-                        if (!aggregationErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: totalRecords, iTotalDisplayRecords: totalRecords, "aaData": result});
-                        }
-                        else {
-                            common.returnMessage(params, 500, aggregationErr);
-                        }
-                    });
+            var skip = parseInt(params.qstring.iDisplayStart || 0);
+            if (skip) {
+                aggregation.push({"$skip": skip});
+            }
+            if (params.qstring.iDisplayLength) {
+                aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
+            }
+            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(aggregationErr, result) {
+                if (!aggregationErr) {
+                    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: result.length, iTotalDisplayRecords: result.length, "aaData": result});
                 }
                 else {
-                    common.returnMessage(params, 500, err);
+                    common.returnMessage(params, 500, aggregationErr);
                 }
             });
         }

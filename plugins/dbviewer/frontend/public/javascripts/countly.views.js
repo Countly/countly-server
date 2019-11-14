@@ -83,7 +83,9 @@ window.DBViewerView = countlyView.extend({
         $('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + $.i18n.map["common.all"] + '</span></div>');
         // append list items
         for (var key in countlyGlobal.apps) {
-            $('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
+            if (!countlyGlobal.member.app_restrict || (countlyGlobal.member.app_restrict && !countlyGlobal.member.app_restrict[key])) {
+                $('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
+            }
         }
         // set height 
         if ($('#dbviewer').height() < (window.innerHeight - 150)) {
@@ -409,7 +411,7 @@ window.DBViewerView = countlyView.extend({
         }
         data.collections.forEach(function(item) {
             var template = '<tr>' +
-            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" class="jh-type-string"><a class="dbviewer-document-detail" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" href="javascript:void(0)">View</a></span></p></th>' +
+            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" class="jh-type-string"><a class="dbviewer-document-detail" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" href="#/manage/db/' + self.db + '/' + self.collection + '/' + item._id + '">View</a></span></p></th>' +
             '</tr>' +
             '<tr>' +
             '<td class="jh-value jh-object-value">' + self.syntaxHighlight(JSON.stringify(item, undefined, 4)) + '</td>' +
@@ -455,7 +457,7 @@ window.DBViewerView = countlyView.extend({
         $('.dbviewer-collections').append('<div class="dbviewer-db-area-title">' + this.db + '</div>');
         $('.dbviewer-collections').append('<div class="dbviewer-collection-list">');
         for (var collection in dbs[currentDbIndex].collections) {
-            $('.dbviewer-collection-list').append('<div class="dbviewer-collection-list-item"><a class="collection-list-item" data-db="' + this.db + '" data-collection="' + dbs[currentDbIndex].collections[collection] + '" href="javascript:void(0)">' + collection + '</a></div>');
+            $('.dbviewer-collection-list').append('<div class="dbviewer-collection-list-item"><a class="collection-list-item" data-db="' + this.db + '" data-collection="' + dbs[currentDbIndex].collections[collection] + '" href="#/manage/db/' + this.db + '/' + dbs[currentDbIndex].collections[collection] + '">' + collection + '</a></div>');
         }
         $('.dbviewer-collections').append('</div>');
         $('.dbviewer-aggregate').hide();
@@ -564,6 +566,7 @@ window.DBViewerView = countlyView.extend({
                 $('#aggregate-header').show();
                 $('#dbviewer-header').hide();
                 $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
+                $('#back_to_dbviewer').attr('href', '#/manage/db/' + self.templateData.db + '/' + self.templateData.collection);
                 $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
                 $('#back_to_dbviewer').css('display', 'block');
             }
@@ -617,8 +620,12 @@ window.DBViewerView = countlyView.extend({
             }
 
             $('body').on('click', '.dbviewer-document-detail', function() {
-                app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection') + '/' + $(this).data('id'));
-                countlyDBviewer.loadDocument($(this).data('db'), $(this).data('collection'), $(this).data('id'))
+                var id = $(this).data('id');
+                if (id.substr(0, 3) === "Obj") {
+                    id = id.split("(")[1].split(")")[0];
+                }
+                app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection') + '/' + id);
+                countlyDBviewer.loadDocument($(this).data('db'), $(this).data('collection'), id)
                     .then(function(response) {
                         self.renderSingleDocument(response);
                     });
@@ -948,7 +955,7 @@ window.DBViewerView = countlyView.extend({
                         }
                         response.collections.forEach(function(item) {
                             var template = '<tr>' +
-                            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" class="jh-type-string"><a href="javascript:void(0)">View</a></span></p></th>' +
+                            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" class="jh-type-string"><a href="#/manage/db/' + self.db + '/' + self.collection + '/' + item._id + '">View</a></span></p></th>' +
                             '</tr>' +
                             '<tr>' +
                             '<td class="jh-value jh-object-value">' + self.syntaxHighlight(JSON.stringify(item, undefined, 4)) + '</td>' +

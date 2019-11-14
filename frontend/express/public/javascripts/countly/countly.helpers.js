@@ -954,7 +954,7 @@
 
     CountlyHelpers.setUpDateSelectors = function(self) {
         $("#month").text(moment().year());
-        $("#day").text(moment().format("MMM"));
+        $("#day").text(moment().format("MMMM, YYYY"));
         $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
         $("#date-selector").find(".date-selector").click(function() {
@@ -976,8 +976,13 @@
             countlyCommon.setPeriod(selectedPeriod);
 
             self.dateChanged(selectedPeriod);
+            app.runRefreshScripts();
 
             $("#" + selectedPeriod).addClass("active");
+            $("#date-picker").hide();
+            $("#date-selector .calendar").removeClass("selected").removeClass("active");
+            $("#selected-date").text(countlyCommon.getDateRangeForCalendar());
+
         });
 
         $("#date-selector").find(".date-selector").each(function() {
@@ -1020,7 +1025,7 @@
                 $(context).addClass("active");
 
                 if (itemCount > 10 || $(context).hasClass("big-list")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='search' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\" /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
                 }
             }
 
@@ -1149,6 +1154,11 @@
             //ENTER
             if (e.keyCode === 13) {
                 var selectedItem = $(this).find(".text");
+                var activeKeyItem = $(this).find('.scroll-list').first().children().eq(activeOption);
+                if ($(this).hasClass("disabling-on") && activeKeyItem.hasClass("disabled")) {
+                    e.stopPropagation();
+                    return;
+                }
                 if ($(this).find('.scroll-list').first().children().length > 1) {
                     if ($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').length > 0) {
                         selectedItem.text($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').text());
@@ -1167,12 +1177,16 @@
             e.stopPropagation();
         });
 
-        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function() {
-            var selectedItem = $(this).parents(".cly-select").find(".text");
+        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function(e) {
+            var clySelect = $(this).parents(".cly-select");
+            var selectedItem = clySelect.find(".text");
+            if (clySelect.hasClass("disabling-on") && $(this).hasClass("disabled")) {
+                e.stopPropagation();
+                return;
+            }
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
-
-            $(this).parents(".cly-select").trigger("cly-select-change", [$(this).data("value")]);
+            clySelect.trigger("cly-select-change", [$(this).data("value")]);
         });
 
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function() {
@@ -1221,7 +1235,17 @@
                 $selectItems.html("");
 
                 for (var i = 0; i < items.length; i++) {
-                    $selectItems.append('<div data-value="' + items[i].value + '" class="item">' + items[i].name + '</div>');
+                    var current = items[i];
+                    if (current.type === 'group') {
+                        $selectItems.append('<div class="group">' + current.name + '</div>');
+                    }
+                    else if (current.disabled) {
+                        // effective when .cly-select element has disabling-on class
+                        $selectItems.append('<div data-value="' + current.value + '" class="item disabled">' + current.name + '</div>');
+                    }
+                    else {
+                        $selectItems.append('<div data-value="' + current.value + '" class="item">' + current.name + '</div>');
+                    }
                 }
             }
         };
@@ -1278,7 +1302,7 @@
                 $(this).addClass("active");
 
                 if (itemCount > 10) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='search' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\" /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 

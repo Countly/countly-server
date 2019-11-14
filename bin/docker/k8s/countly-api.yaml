@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countly-api
+spec:
+  ports:
+  - port: 3001
+    protocol: TCP
+    targetPort: 3001
+  selector:
+    app: countly-api
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countly-api-deployment
+spec:
+  selector:
+    matchLabels:
+      app: countly-api
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: countly-api
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - countly-api
+                - mongo           # in case you don't use replica set, give your mongodb pod label app=mongo to ensure it's not on the same node with API
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: countly-api
+        image: countly/api:19.08.1
+#        image: gcr.io/countly-01/api:19.08.1     # Enterprise Edition
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+        readinessProbe:
+          httpGet:
+            path: /o/ping
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+        env:
+          - name: COUNTLY_PLUGINS
+            value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding"
+            # Enterprise Edition: value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,errorlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,plugin-upload,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing"
+          - name: COUNTLY_CONFIG_API_FILESTORAGE
+            value: "gridfs"
+          - name: COUNTLY_CONFIG_API_MONGODB
+            value: "mongodb://mongo-mongodb-replicaset-0.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-1.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-2.mongo-mongodb-replicaset:27017/countly?replicaSet=rs0"
+          - name: COUNTLY_CONFIG_FRONTEND_MONGODB
+            value: "mongodb://mongo-mongodb-replicaset-0.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-1.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-2.mongo-mongodb-replicaset:27017/countly?replicaSet=rs0"

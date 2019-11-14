@@ -33,6 +33,15 @@
                 }
             },
             error: function(xhr, textStatus, errorThrown) {
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                    if (callback && json.result) {
+                        return callback(json.result);
+                    }
+                }
+                catch (e) {
+                    e.message;
+                }
                 var ret = textStatus + " ";
                 ret += xhr.status + ": " + $(xhr.responseText).text();
                 if (errorThrown) {

@@ -30,16 +30,20 @@
     padding-left: 3px;
   }
   .mleft > svg {
-    margin-left: -9px;
+    margin-left: -10px;
+    margin-bottom: 3px;
   }
   .mright > svg {
-      margin-left:-9px;
+      margin-left:-10px;
+      margin-bottom: 3px;
   }
   .bright > svg {
       margin-top: -3px;
+      margin-right: 3px;
   }
   .bleft > svg {
       margin-top: -3px;
+      margin-right: 3px;
   }
   #feedback-sticker-svg {
       height: 14px;

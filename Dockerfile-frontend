@@ -1,0 +1,42 @@
+FROM node:8.16-jessie
+
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
+
+# Core dependencies
+## Tini
+ENV TINI_VERSION v0.18.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+
+ENTRYPOINT ["/tini", "-v", "--"]
+
+RUN apt-get update && apt-get -y install sendmail && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Setup Countly
+ENV COUNTLY_CONTAINER="frontend"
+ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
+ENV COUNTLY_CONFIG_FRONTEND_WEB_HOST="0.0.0.0"
+
+## The files
+RUN mkdir /opt/countly && chown 1001:1001 /opt/countly
+USER 1001
+WORKDIR /opt/countly
+COPY --chown=1001 . .
+HEALTHCHECK --start-period=120s CMD curl --fail http://localhost:6001/ping || exit 1
+
+RUN cp -n frontend/express/public/javascripts/countly/countly.config.sample.js frontend/express/public/javascripts/countly/countly.config.js && \
+	cp -n frontend/express/config.sample.js frontend/express/config.js && \
+	cp -n api/config.sample.js api/config.js && \
+	HOME=/tmp npm install && \
+	./bin/docker/preinstall.sh
+
+USER root
+RUN bash /opt/countly/bin/scripts/detect.init.sh && \
+	apt-get remove -y git g++ gcc make automake autoconf libtool pkg-config unzip python && \
+	apt-get autoremove -y && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+USER 1001
+RUN countly update sdk-web
+CMD ["/opt/countly/bin/docker/cmd.sh"]

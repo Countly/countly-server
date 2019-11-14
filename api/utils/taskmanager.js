@@ -387,6 +387,30 @@ taskmanager.getResults = function(options, callback) {
 };
 
 /**
+* Get task counts based on query and grouped by app_id
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {object} options.query - mongodb query
+* @param {funciton} callback - callback for the result
+*/
+taskmanager.getCounts = function(options, callback) {
+    options.db = options.db || common.db;
+    options.query = options.query || {};
+    options.db.collection("long_tasks").aggregate([
+        {$match: options.query},
+        {
+            $group:
+            {
+                _id: '$app_id',
+                c: {$sum: 1}
+            }
+        }
+    ], {allowDiskUse: true}, function(err, docs) {
+        callback(err, docs);
+    });
+};
+
+/**
 * Get dataTable query results for tasks
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
@@ -413,7 +437,7 @@ taskmanager.getTableQueryResult = async function(options, callback) {
     }
     let sortBy = {'end': -1};
     if (options.sort.sortBy) {
-        const orderbyKey = { 0: 'report_name', 3: 'type', 7: 'end'};
+        const orderbyKey = { 0: 'report_name', 2: 'status', 3: 'type', 7: 'end', 8: 'start'};
         const keyName = orderbyKey[options.sort.sortBy];
         const seq = options.sort.sortSeq === 'desc' ? -1 : 1;
         sortBy = {[keyName]: seq};

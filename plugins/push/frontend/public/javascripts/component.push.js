@@ -174,7 +174,7 @@ window.component('push', function(push) {
             el.querySelectorAll('.pers').forEach(function(el){
                 el.textContent = el.getAttribute('data-fallback');
 
-                var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                var name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
                 if (name) {
                     name = name.title();
                 }
@@ -672,13 +672,23 @@ window.component('push', function(push) {
 
     push.remoteDashboard = function(appId, refresh) {
         if (!push.dashboard || push.dashboard.app_id !== appId || refresh) {
-            return m.request({
+            if (push.loadingRemoteDashboard) {
+                return push.loadingRemoteDashboard;
+            }
+
+            var promise = m.request({
                 method: 'GET',
                 url: window.countlyCommon.API_URL + '/i/pushes/dashboard',
                 data: {
                     api_key: window.countlyGlobal.member.api_key,
                     app_id: appId
                 }
+            }).then(function(res){
+                push.loadingRemoteDashboard = undefined;
+                return res;
+            }, function(e){
+                push.loadingRemoteDashboard = undefined;
+                throw e;
             }).then(function(data){
                 return countlyEvent.initialize().then(function(){
                     data.app_id = appId;
@@ -687,6 +697,8 @@ window.component('push', function(push) {
                     return data;
                 });
             });
+
+            return push.loadingRemoteDashboard = promise;
         } else {
             var deferred = m.deferred();
             setTimeout(function(){

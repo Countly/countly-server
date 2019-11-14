@@ -166,10 +166,8 @@ window.GraphNotesView = countlyView.extend({
             showOtherMonths: true,
             onSelect: function() {}
         });
-        /*eslint-disable */
-        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
-        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-        /*eslint-enable */
+
+        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
         self.emailInput = $('#email-list-input').selectize({
             plugins: ['remove_button'],
             persist: false,
@@ -208,9 +206,9 @@ window.GraphNotesView = countlyView.extend({
                 }
 
                 // name <email@address.com>
-                /*eslint-disable */
+
                 regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
-                /*eslint-enable */
+
                 match = input.match(regex);
                 if (match) {
                     return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
@@ -1634,7 +1632,13 @@ window.AppVersionView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appVersionData.chartData,
                 "aoColumns": [
-                    { "mData": "app_versions", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
+                    {
+                        "mData": "app_versions",
+                        "sTitle": jQuery.i18n.map["app-versions.table.app-version"],
+                        "mRender": function(d) {
+                            return d;
+                        }
+                    },
                     {
                         "mData": "t",
                         "sType": "formatted-num",
@@ -3541,6 +3545,9 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
         });
+        $(".manage-users-table .detail .password-text").off("focus").on("focus", function() {
+            $(this).select();
+        });
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
@@ -3945,6 +3952,9 @@ window.ManageUsersView = countlyView.extend({
 
         $(".change-password").off("click").on('click', function() {
             $(this).parents(".row").next().toggle();
+            $(".manage-users-table .detail .password-text").off("focus").on("focus", function() {
+                $(this).select();
+            });
         });
 
         $('body').off('change', '.pp-uploader').on('change', '.pp-uploader', function() {
@@ -5363,9 +5373,14 @@ window.EventsView = countlyView.extend({
             if (eventData.tableColumns[2] === jQuery.i18n.map["events.table.dur"]) {
                 aaColumns.push({
                     "mData": "dur",
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatSecond(d);
+                    sType: "numeric",
+                    "mRender": function(d, type) {
+                        if (type === "display") {
+                            return countlyCommon.formatSecond(d);
+                        }
+                        else {
+                            return d;
+                        }
                     },
                     "sTitle": eventData.tableColumns[2]
                 });
@@ -5379,9 +5394,14 @@ window.EventsView = countlyView.extend({
                             return (row.dur / row.c);
                         }
                     },
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatSecond(d);
+                    sType: "numeric",
+                    "mRender": function(d, type) {
+                        if (type === "display") {
+                            return countlyCommon.formatSecond(d);
+                        }
+                        else {
+                            return d;
+                        }
                     },
                     "sTitle": jQuery.i18n.map["events.table.avg-dur"]
                 });
@@ -5417,9 +5437,14 @@ window.EventsView = countlyView.extend({
         if (eventData.tableColumns[3]) {
             aaColumns.push({
                 "mData": "dur",
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatSecond(d);
+                sType: "numeric",
+                "mRender": function(d, type) {
+                    if (type === "display") {
+                        return countlyCommon.formatSecond(d);
+                    }
+                    else {
+                        return d;
+                    }
                 },
                 "sTitle": eventData.tableColumns[3]
             });
@@ -5433,9 +5458,14 @@ window.EventsView = countlyView.extend({
                         return (row.dur / row.c);
                     }
                 },
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatSecond(d);
+                sType: "numeric",
+                "mRender": function(d, type) {
+                    if (type === "display") {
+                        return countlyCommon.formatSecond(d);
+                    }
+                    else {
+                        return d;
+                    }
                 },
                 "sTitle": jQuery.i18n.map["events.table.avg-dur"]
             });
@@ -5496,6 +5526,7 @@ window.EventsView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            CountlyHelpers.applyColors();
             if (eventCount > 0) {
                 for (var i in this.showOnGraph) {
                     self.showOnGraph[i] = $(".big-numbers.selected." + i).length;
@@ -5838,6 +5869,7 @@ window.LongTaskView = countlyView.extend({
             this.tabs.on("tabsselect", function(event, ui) {
                 self.taskCreatedBy = typeCodes[ui.index];
                 $("#report-manager-table-title").text(jQuery.i18n.map["report-maanger." + self.taskCreatedBy + "-created-title"]);
+                self.showTableColumns(self);
                 self.refresh();
             });
             this.renderTable();
@@ -5851,9 +5883,11 @@ window.LongTaskView = countlyView.extend({
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind']);
             $(".report-manager-data-col").addClass("report-manager-automatically-created");
         }
+        this.showTableColumns(self);
+    },
+    showTableColumns: function(self) {
         var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
         var automaticallyColumns = [false, true, true, true, false, false, false, false, true, true];
-
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
@@ -5977,6 +6011,7 @@ window.LongTaskView = countlyView.extend({
                         return time;
                     }
                 },
+                "bSortable": false,
                 "sType": "numeric",
                 "sTitle": jQuery.i18n.map["events.table.dur"]
             },

@@ -13,18 +13,18 @@ if [ -f /etc/lsb-release ]; then
 fi
 
 #enable command line
-bash $DIR/scripts/detect.init.sh
+bash "$DIR/scripts/detect.init.sh"
 
 #remove previous dependencies, as they need to be rebuild for new nodejs version
-rm -rf $DIR/../node_modules
+rm -rf "$DIR/../node_modules"
 
 #install dependencies, process files and restart countly
 countly upgrade
 
 #install push dependencies
-bash $DIR/scripts/install.nghttp2.sh
+bash "$DIR/scripts/install.nghttp2.sh"
 
-(cd $DIR/.. ; npm install readable-stream)
+(cd "$DIR/.." ; npm install readable-stream)
 
 #upgrade live plugin if it is installed
 countly plugin upgrade push

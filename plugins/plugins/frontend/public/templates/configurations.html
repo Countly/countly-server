@@ -6,7 +6,7 @@
 
         <div class="nav-search">
             <i class="fa fa-search"></i>
-            <input type="text" id="search-box">
+            <input type="search" id="search-box" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
         </div>
 
         <div id="configs-title-container" class="scrollable">

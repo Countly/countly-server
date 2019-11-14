@@ -308,7 +308,7 @@ class Job extends EventEmitter {
                     reject(err);
                 }
                 else if (!doc || !doc.ok || !doc.value) {
-                    reject('Not found');
+                    reject('Job not found');
                 }
                 else {
                     resolve(doc.value);
@@ -438,7 +438,7 @@ class Job extends EventEmitter {
             log.i('Replacing job %s (%j) with date %d: %j', this.name, this.data, next, query);
 
             Job.updateAtomically(this.db(), query, {$set: {next: next}}).then(resolve, err => {
-                if (err === 'Not found') {
+                if (err === 'Job not found') {
                     log.i('Replacing job %s (%j) with date %d: no future jobs to move', this.name, this.data, next);
                     query.next = {$lt: next};
                     Job.findMany(this.db(), query).then(existing => {
@@ -511,7 +511,14 @@ class Job extends EventEmitter {
                 await Job.updateMany(this.db(), {_id: {$in: others.map(o => o._id)}}, {$set: {status: STATUS.CANCELLED}});
             }
 
-            let neo = await Job.updateAtomically(this.db(), query, {$set: this._json});
+            let neo;
+            try {
+                neo = await Job.updateAtomically(this.db(), query, {$set: this._json});
+            }
+            catch (e) {
+                log.w('Job was modified while rescheduling, skipping', e);
+            }
+
             if (!neo) {
                 log.w('Job was modified while rescheduling, skipping');
                 return null;
