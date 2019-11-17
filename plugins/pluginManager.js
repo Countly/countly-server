@@ -1088,22 +1088,14 @@ var pluginManager = function pluginManager() {
     * @returns {object} db connection params
     **/
     this.dbConnection = function(config) {
-        if (process.argv[1].endsWith('executor.js')) {
-            if (!config || !config.mongodb) {
-                console.log('************************************ executor.js common.db *********************************** no config', process.argv);
-                return this.singleDefaultConnection();
-            }
-            else if ((typeof config.mongodb === 'string' && config.mongodb.indexOf('maxPoolSize=3') === -1) ||
-                (typeof config.mongodb === 'object' && config.mongodb.max_pool_size !== 3)) {
-                console.log('************************************ executor.js common.db *********************************** wrong pool size', process.argv);
-                return this.singleDefaultConnection();
-            }
-        }
-
         var db, maxPoolSize = 10;
+
         if (!cluster.isMaster) {
             //we are in worker
             maxPoolSize = 100;
+        }
+        if (process.argv[1].endsWith('executor.js')) {
+            maxPoolSize = 3;
         }
         if (typeof config === "string") {
             db = config;
