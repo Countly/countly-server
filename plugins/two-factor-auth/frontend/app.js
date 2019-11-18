@@ -4,6 +4,7 @@ var pluginObject = {},
     qrcode = require("qrcode"),
     countlyConfig = require('../../../frontend/express/config'),
     plugins = require('../../pluginManager.js'),
+    membersUtility = require("../../../frontend/express/libs/members.js"),
     languages = require('../../../frontend/express/locale.conf');
 
 GA.options = {
@@ -40,6 +41,53 @@ function generateQRCode(username, secret, callback) {
         app.get(countlyConfig.path + '/login', function(req, res, next) {
             req.template.js += "\naddLocalization('two-factor-auth', countlyGlobal['cdn']+'two-factor-auth/localization/');";
             next();
+        });
+
+        // modify password reset flow
+        app.get(countlyConfig.path + '/reset/:prid', function(req, res, next) {
+            if (req.body.again && req.body.prid) {
+                req.body.prid += "";
+                // password reset id is found
+                countlyDb.collection('password_reset').findOne({prid: req.body.prid}, function(passwordResetErr, passwordReset) {
+                    if (!passwordReset || !passwordReset.user_id) {
+                        next();
+                        return;
+                    }
+
+                    // member is found
+                    countlyDb.collection('members').findOne({_id: passwordReset && passwordReset.user_id}, {}, function(memberErr, member) {
+                        if (member && member.two_factor_auth && member.two_factor_auth.enabled && member.two_factor_auth.secret_token) {
+                            // membersUtility.db.collection('password_reset').remove({ prid: req.body.prid }, function() { });
+                            if (!req.body.auth_code) {
+                                // user has not passed the 2fa
+                                res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa_reset", {
+                                    cdn: countlyConfig.cdn || "",
+                                    countlyFavicon: req.countly.favicon,
+                                    countlyPage: req.countly.page,
+                                    countlyTitle: req.countly.title,
+                                    csrf: req.csrfToken(),
+                                    inject_template: req.template,
+                                    languages: languages,
+                                    message: req.flash('info'),
+                                    path: countlyConfig.path || "",
+                                    themeFiles: req.themeFiles,
+                                    username: req.body.username || "",
+                                    password: req.body.password || ""
+                                });
+                            } else if (GA.check(req.body.auth_code, member.two_factor_auth.secret_token)) {
+                                // everything is ok, let the user reset their password
+                                next();
+                            } else {
+                                // 2FA auth code was wrong, delete the password reset token
+                                countlyDb.collection('password_reset').deleteOne({prid: req.body.prid}, function(passwordResetDelErr) {});
+                                res.redirect(countlyConfig.path + '/forgot');
+                            }
+                        } else {
+                            next();
+                        }
+                    });
+                });
+            }
         });
 
         // modify login flow
@@ -83,7 +131,7 @@ function generateQRCode(username, secret, callback) {
                     }
                     // else if user did not provide 2fa code (login flow first phase)
                     else if (!req.body.auth_code) {
-                        res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa", {
+                        res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa_login", {
                             cdn: countlyConfig.cdn || "",
                             countlyFavicon: req.countly.favicon,
                             countlyPage: req.countly.page,
