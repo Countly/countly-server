@@ -365,7 +365,11 @@ var common = require('../../../api/utils/common.js'),
 
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function() {
-            if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.action === 'get_indexes') {
+            // conditions
+            var isContainDb = params.qstring.dbs || params.qstring.db;
+            var isContainCollection = params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1 && params.qstring.collection;
+            // handle index request
+            if (isContainDb && params.qstring.collection && params.qstring.action === 'get_indexes') {
                 if (params.member.global_admin) {
                     getIndexes();
                 }
@@ -380,7 +384,8 @@ var common = require('../../../api/utils/common.js'),
                     });
                 }
             }
-            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1) {
+            // handle document request
+            else if (isContainDb && isContainCollection && params.qstring.document) {
                 if (params.member.global_admin) {
                     dbGetDocument();
                 }
@@ -395,7 +400,8 @@ var common = require('../../../api/utils/common.js'),
                     });
                 }
             }
-            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf('system.indexes') === -1 && params.qstring.collection.indexOf('sessions_') === -1 && params.qstring.aggregation) {
+            // handle aggregation request
+            else if (isContainDb && params.qstring.aggregation) {
                 if (params.member.global_admin) {
                     try {
                         let aggregation = JSON.parse(params.qstring.aggregation);
@@ -424,7 +430,8 @@ var common = require('../../../api/utils/common.js'),
                     });
                 }
             }
-            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1) {
+            // handle collection request
+            else if (isContainDb && isContainCollection) {
                 if (params.member.global_admin) {
                     dbGetCollection();
                 }
