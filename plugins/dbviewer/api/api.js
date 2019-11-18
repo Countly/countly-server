@@ -367,7 +367,7 @@ var common = require('../../../api/utils/common.js'),
         validateUserForWriteAPI(function() {
             // conditions
             var isContainDb = params.qstring.dbs || params.qstring.db;
-            var isContainCollection = params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1 && params.qstring.collection;
+            var isContainCollection = params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1;
             // handle index request
             if (isContainDb && params.qstring.collection && params.qstring.action === 'get_indexes') {
                 if (params.member.global_admin) {
