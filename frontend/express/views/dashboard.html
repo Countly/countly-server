@@ -144,7 +144,7 @@
 				<div class="empty-state">Apps</div>
 				<div class="menu">
 					<div class="search nav-search">
-						<input type="text" autofocus>
+						<input type="text" autofocus readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 					</div>
 					<div class="list"></div>
 				</div>
@@ -381,7 +381,7 @@
 		<div class="message">
 			<div>
 				<div class="title" data-localize="user-settings.username"></div>
-				<div class="input"><input id="username" type="text" value=""/></div>
+				<div class="input"><input id="username" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
 			</div>
 			<div style="margin-top:15px;">
 				<div class="title" data-localize="user-settings.change-password"></div>
@@ -405,28 +405,49 @@
 
     <script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector" class="help-zone-vs">
-            <div class="date-buttons-container">
-                <div class="button date-selector" id="month"></div>
-                <div class="button date-selector" id="day"></div>
-                <div class="button date-selector" id="yesterday"></div>
-                <div class="button date-selector" id="hour" data-localize="common.today"></div>
-                <div class="button date-selector" id="7days" data-localize="common.7days"></div>
-                <div class="button date-selector" id="30days" data-localize="common.30days"></div>
-                <div class="button date-selector" id="60days" data-localize="common.60days"></div>
-                <!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
-            </div>
             <div class="calendar" id="date-picker-button">
                 <i class="material-icons">date_range</i>
+                <span id="selected-date"></span>
+                <span class="down ion-chevron-down"></span>
+                <span class="up ion-chevron-up"></span>
             </div>
 			<div id="date-picker">
-				<div class="calendar-container">
-					<div id="date-from" class="calendar"></div>
-					<div id="date-to" class="calendar"></div>
-				</div>
-                <div class="button-container">
-                    <div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
-                    <div id="selected-date"></div>
+                <div class="date-selector-buttons">
+                    <div class="button date-selector" id="yesterday" data-localize="common.yesterday"></div>
+                    <div class="button date-selector" id="hour" data-localize="common.today"></div>
+                    <div class="button date-selector" id="7days" data-localize="taskmanager.last-7days"></div>
+                    <div class="button date-selector" id="30days" data-localize="taskmanager.last-30days"></div>
+                    <div class="button date-selector" id="60days" data-localize="taskmanager.last-60days"></div>
+                    <div class="button date-selector" id="day"></div>
+                    <div class="button date-selector" id="month"></div>
+                    
+                    <!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
+                    <div class="button-container">
+                        <div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
+                        <div id="date-cancel" class="icon-button" data-localize="common.cancel"></div>
+                    </div>
                 </div>
+                <div class="calendar-container">
+                    <table>
+                        <tr>
+                            <td class="calendar-block">
+                                <div id="date-from" class="calendar"></div>
+                            </td>
+                            <td class="calendar-block">
+                                <div id="date-to" class="calendar"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="calendar-block">
+                                <input type="text" class="calendar-input-field" id="date-from-input"></input><span class="date-input-label" data-localize="common.from"></span>
+                            </td>
+                            <td class="calendar-block">
+                                <input type="text" class="calendar-input-field" id="date-to-input"></input><span class="date-input-label" data-localize="common.to"></span>
+                            </td>
+                        </tr>
+                    </table>
+
+				</div>
 			</div>
 		</div>
 	</script>
@@ -652,6 +673,7 @@
                     <a id='country-toggle' class='icon-button light btn-header'></a>
                 </div>
 			</div>
+            <div class="widget-tips"><a href="/dashboard#/manage/configurations/frontend"><span data-localize="countries.google-api-key-remind"></a></span></div>
 			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:480px;">
 				<div id="geo-chart-outer" class="big"><div><div id="geo-chart"></div></div></div>
 			</div>
@@ -694,7 +716,7 @@
             <% } %>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text">
+                <input type="search" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
             </div>
 			<div id="management-app-container" class="scrollable">
 				{{#eachOfObjectValue admin_apps}}
@@ -724,7 +746,7 @@
 							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-name">
 								<td data-localize="management-applications.application-name"></td>
 								<td>
-									<input type="text" value="" placeholder="Enter application name..." data-localize="placeholder.app-name" id="app-add-name">
+									<input type="text" value="" placeholder="Enter application name..." data-localize="placeholder.app-name" id="app-add-name" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 								</td>
 							</tr>
                             <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
@@ -823,7 +845,7 @@
 			<div id="add-first-app">
 				<div class="add-app-input-wrapper">
 					<label class="add-app-input-label" data-localize="management-applications.application-name"></label>
-					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name">
+					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 				</div>
 				<div class="add-app-input-wrapper">
 					<label class="add-app-input-label" id="select-app-type-label" data-localize="management-applications.type"></label>
@@ -959,7 +981,7 @@
 								<td id="app-edit-name">
 									<div class="read"><span></span><a id="app_details" data-localize="management-applications.application-details"></a></div>
 									<div class="edit">
-										<input type="text" value="">
+										<input type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 									</div>
 								</td>
 							</tr>
@@ -1080,7 +1102,7 @@
 								<td id="app-edit-salt">
 									<div class="read"></div>
 									<div class="edit">
-										<input type="text" value="">
+										<input type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
 									</div>
                                     <div class="hint" data-localize="management-applications.checksum-salt.hint"></div>
 								</td>
@@ -1143,7 +1165,7 @@
             </div>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text" />
+                <input type="search" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/>
             </div>
 			<div class="scrollable" id="event-nav-eventitems" style="max-height:450px;">
 				{{#eachOfArray events}}
@@ -1584,7 +1606,7 @@
 			</div>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
-                <input type="text" />
+                <input type="search" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/>
             </div>
 			<div class="scrollable" style="max-height:450px;">
 				{{#eachOfArray events}}
@@ -2541,5 +2563,7 @@
     <% if (typeof inject_template.js != 'undefined') { %>
 	<script><%- inject_template.js %></script>
 	<% } %>
+    <!-- The last countly script to load -->
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.loaded.js?<%= countlyVersion %>"></script>
 </body>
 </html>

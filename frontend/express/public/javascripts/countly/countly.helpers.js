@@ -771,7 +771,7 @@
 
     CountlyHelpers.setUpDateSelectors = function(self) {
         $("#month").text(moment().year());
-        $("#day").text(moment().format("MMM"));
+        $("#day").text(moment().format("MMMM, YYYY"));
         $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
         $("#date-selector").find(".date-selector").click(function() {
@@ -795,6 +795,10 @@
             self.dateChanged(selectedPeriod);
 
             $("#" + selectedPeriod).addClass("active");
+            $("#date-picker").hide();
+            $("#date-selector .calendar").removeClass("selected").removeClass("active");
+            $("#selected-date").text(countlyCommon.getDateRangeForCalendar());
+
         });
 
         $("#date-selector").find(".date-selector").each(function() {
@@ -837,7 +841,7 @@
                 $(context).addClass("active");
 
                 if (itemCount > 10 || $(context).hasClass("big-list")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='search' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\" /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
                 }
             }
 
@@ -1095,7 +1099,7 @@
                 $(this).addClass("active");
 
                 if (itemCount > 10) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='search' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\" /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 

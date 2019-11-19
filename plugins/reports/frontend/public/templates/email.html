@@ -166,7 +166,8 @@
                     </td>
                 </tr>
                     <% for(var key in apps[i].results[j]) {%>
-                        <% if (metrics[key] || j == "events") { %>
+                        <% if (metrics[key] || j == "events") { var keyName = key; %>
+                        <% if (j == "events") { keyName = apps[i].results[j][key].name || keyName;}%>
                 <tr>
                     <td style="padding: 10px 0 0 0;">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%" style="display:inline-table">
@@ -178,10 +179,10 @@
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                     <tr>
-                                                        <% if (properties["reports."+key]) { %>
-                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px;word-wrap:break-word;word-break:break-all;"><%= properties["reports."+key] %></td>
+                                                        <% if (properties["reports."+keyName]) { %>
+                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px;word-wrap:break-word;word-break:break-all;"><%= properties["reports."+keyName] %></td>
                                                         <% }else{ %>
-                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px;word-wrap:break-word;word-break:break-all;"><%= key %></td>
+                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px;word-wrap:break-word;word-break:break-all;"><%= keyName %></td>
                                                         <% } %>
                                                     </tr>
                                                 </table>

@@ -597,6 +597,9 @@ app.use(function(req, res, next) {
             req.themeFiles = themeFiles;
             var _render = res.render;
             res.render = function(view, opts, fn, parent, sub) {
+                if (!opts) {
+                    opts = {};
+                }
                 if (!opts.path) {
                     opts.path = countlyConfig.path || "";
                 }
@@ -790,6 +793,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         var serverSideRendering = req.query.ssr;
         _.extend(req.config, configs);
         var countlyGlobal = {
+            COUNTLY_CONTAINER: process.env.COUNTLY_CONTAINER,
             countlyTitle: req.countly.title,
             company: req.countly.company,
             languages: languages,

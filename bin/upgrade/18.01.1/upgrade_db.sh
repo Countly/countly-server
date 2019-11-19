@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
-if [ $1 != "combined" ]; then
+if [ "$1" != "combined" ]; then
     #upgrade existing plugins
     countly plugin upgrade crashes
     countly plugin upgrade views
@@ -10,7 +10,7 @@ if [ $1 != "combined" ]; then
 fi
 
 #remove stuck push collections
-nodejs $DIR/upgrade/18.01.1/scripts/push_clear.js
+nodejs "$DIR/upgrade/18.01.1/scripts/push_clear.js"
 
 #add indexes
-nodejs $DIR/scripts/add_indexes.js
+nodejs "$DIR/scripts/add_indexes.js"

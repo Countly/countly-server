@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countly-frontend
+spec:
+  ports:
+  - port: 6001
+    protocol: TCP
+    targetPort: 6001
+  selector:
+    app: countly-frontend
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countly-frontend-deployment
+spec:
+  selector:
+    matchLabels:
+      app: countly-frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: countly-frontend
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - mongo
+                - mongodb-replicaset
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: countly-frontend
+        image: countly/api:19.08.1
+#        image: gcr.io/countly-01/frontend:19.08.1     # Enterprise Edition
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6001
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 6001
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 3
+        env:
+          - name: COUNTLY_PLUGINS
+            value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding"
+            # Enterprise Edition: value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,errorlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,plugin-upload,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing"
+          - name: COUNTLY_CONFIG_API_FILESTORAGE
+            value: "gridfs"
+          - name: COUNTLY_CONFIG_API_MONGODB
+            value: "mongodb://mongo-mongodb-replicaset-0.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-1.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-2.mongo-mongodb-replicaset:27017/countly?replicaSet=rs0"
+          - name: COUNTLY_CONFIG_FRONTEND_MONGODB
+            value: "mongodb://mongo-mongodb-replicaset-0.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-1.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-2.mongo-mongodb-replicaset:27017/countly?replicaSet=rs0"

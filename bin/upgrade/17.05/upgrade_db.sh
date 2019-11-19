@@ -3,11 +3,11 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
 #add indexes
-nodejs $DIR/upgrade/17.05/removeOld.js
+nodejs "$DIR/upgrade/17.05/removeOld.js"
 
-if [ $1 != "combined" ]; then
+if [ "$1" != "combined" ]; then
     #upgrade all plugins
-    bash $DIR/scripts/countly.install.plugins.sh
+    bash "$DIR/scripts/countly.install.plugins.sh"
     
     #enable new plugins
     countly plugin enable dashboards
@@ -16,4 +16,4 @@ if [ $1 != "combined" ]; then
 fi
 
 #add indexes
-nodejs $DIR/scripts/add_indexes.js
+nodejs "$DIR/scripts/add_indexes.js"

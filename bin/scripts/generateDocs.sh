@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #Original source https://gist.github.com/vidavidorra/548ffbcdae99d752da02
 
@@ -11,11 +11,11 @@ echo 'Setting up the script...'
 set -e
 
 # Create a clean working directory for this script.
-mkdir $DIR/../../code_docs
-cd $DIR/../../code_docs
+mkdir "$DIR/../../code_docs"
+cd "$DIR/../../code_docs"
 
 # Get the current gh-pages branch
-git clone -b gh-pages http://github.com/$TRAVIS_REPO_SLUG repo
+git clone -b gh-pages "http://github.com/$TRAVIS_REPO_SLUG" repo
 cd repo
 
 ##### Configure git.
@@ -30,7 +30,7 @@ git config user.email "travis@travis-ci.org"
 # stayed the same and will only update the changed files. So the gh-pages branch
 # can be safely cleaned, and it is sure that everything pushed later is the new
 # documentation.
-rm -rf *
+rm -rf ./*
 
 # Need to create a .nojekyll file to allow filenames starting with an underscore
 # to be seen on the gh-pages site. Therefore creating an empty .nojekyll file.
@@ -40,7 +40,7 @@ echo "" > .nojekyll
 ##### Generate JSDOC documents.          #####
 echo 'Generating JSDoc code documentation...'
 countly docs generate ;
-mv $DIR/../../frontend/express/public/docs/* ./
+mv "$DIR/../../"frontend/express/public/docs/* ./
 
 ################################################################################
 ##### Upload the documentation to the gh-pages branch of the repository.   #####

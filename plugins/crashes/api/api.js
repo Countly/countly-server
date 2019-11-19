@@ -913,7 +913,7 @@ plugins.setConfigs("crashes", {
                         params.res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
                             'Content-Length': crash.error.length,
-                            'Content-Disposition': "attachment;filename=" + params.qstring.crash_id + "_stacktrace.txt"
+                            'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
                         });
                         params.res.write(crash.error);
                         params.res.end();
@@ -942,7 +942,7 @@ plugins.setConfigs("crashes", {
                         params.res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
                             'Content-Length': buf.byteLength,
-                            'Content-Disposition': "attachment;filename=" + params.qstring.crash_id + "_bin.dmp"
+                            'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_bin.dmp"
                         });
                         let stream = new Duplex();
                         stream.push(buf);

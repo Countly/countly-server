@@ -38,30 +38,18 @@
 
 # Define some global variables.
 working_directory="/tmp/google-chrome-installation"
-repo_file="/etc/yum.repos.d/google-chrome.repo"
+if ping -c 1 google.com >> /dev/null 2>&1; then
+    dl_google_chrome_stable_url="https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+else
+    dl_google_chrome_stable_url="http://countly-1252600587.cos.ap-guangzhou.myqcloud.com/google-chrome-stable_current_x86_64.rpm"
+fi
 
 
 # Work in our working directory.
 echo "Working in ${working_directory}"
 mkdir -p ${working_directory}
-rm -rf ${working_directory}/*
+rm -rf ${working_directory:?}/*
 pushd ${working_directory}
-
-
-# Add the official Google Chrome Centos 7 repo.
-echo "Configuring the Google Chrome repo in ${repo_file}"
-echo "[google-chrome]" > $repo_file
-echo "name=google-chrome" >> $repo_file
-echo "baseurl=http://dl.google.com/linux/chrome/rpm/stable/\$basearch" >> $repo_file
-echo "enabled=1" >> $repo_file
-echo "gpgcheck=1" >> $repo_file
-echo "gpgkey=https://dl-ssl.google.com/linux/linux_signing_key.pub" >> $repo_file
-
-
-# Install the Google Chrome signing key.
-yum install -y wget
-wget https://dl.google.com/linux/linux_signing_key.pub
-rpm --import linux_signing_key.pub
 
 
 # A helper to make sure that Chrome is linked correctly
@@ -71,40 +59,21 @@ function installation_status() {
 }
 
 
-# Try it the old fashioned way, should work on RHEL 7.X.
-echo "Attempting a direction installation with yum."
-yum install -y google-chrome-stable
-if [ $? -eq 0 ]
-then
-    if installation_status; then
-        # Print out the success message.
-        echo "Successfully installed Google Chrome!"
-        rm -rf ${working_directory}
-        popd > /dev/null
-        exit 0
-    fi
-fi
-
-
 # Uninstall any existing/partially installed versions.
 yum --setopt=tsflags=noscripts -y remove google-chrome-stable
 
 
-# Install yumdownloader/repoquery and download the latest RPM.
+# Get latest RPM.
+yum install -y wget
 echo "Downloading the Google Chrome RPM file."
-yum install -y yum-utils
-# There have been issues in the past with the Chrome repository, so we fall back to downloading
-# the latest RPM directly if the package isn't available there. For further details:
-# https://productforums.google.com/forum/#!topic/chrome/xNtfk_wAUC4;context-place=forum/chrome
-yumdownloader google-chrome-stable || \
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-rpm_file=$(echo *.rpm)
+wget ${dl_google_chrome_stable_url}
+rpm_file=$(echo ./*.rpm)
 echo "Downloaded ${rpm_file}"
 
 
 # Install the RPM in a broken state.
-rpm -ih --nodeps ${rpm_file}
-rm ${rpm_file}
+rpm -ih --nodeps "${rpm_file}"
+rm "${rpm_file}"
 
 
 # Install font dependencies, see: https://bugs.chromium.org/p/chromium/issues/detail?id=782161
@@ -128,10 +97,10 @@ function install_package() {
     fi
 
     # Find the URL for the package.
-    url=$(repoquery --repofrompath=centos7,http://mirror.centos.org/centos/7/os/`arch` \
+    url=$(repoquery --repofrompath="centos7,http://mirror.centos.org/centos/7/os/$(arch)" \
         --repoid=centos7 -q --qf="%{location}" "$1" | \
-        sed s/x86_64.rpm$/`arch`.rpm/ | \
-        sed s/i686.rpm$/`arch`.rpm/g | \
+        sed "s/x86_64.rpm$/$(arch).rpm/" | \
+        sed "s/i686.rpm$/$(arch).rpm/g" | \
         sort -u
     )
 
@@ -140,7 +109,7 @@ function install_package() {
 
     # Extract it.
     echo "Extracting $1..."
-    rpm2cpio $1.rpm | cpio -idmv > /dev/null 2>&1
+    rpm2cpio "$1.rpm" | cpio -idmv > /dev/null 2>&1
 }
 
 
@@ -150,9 +119,9 @@ install_package glibc
 
 # Make the library directory and copy over glibc/ld-linux.
 lib_directory=/opt/google/chrome/lib
-mkdir -p $lib_directory
-cp ./lib/* $lib_directory/ 2> /dev/null
-cp ./lib64/* $lib_directory/ 2> /dev/null
+mkdir -p "$lib_directory"
+cp ./lib/* "$lib_directory/" 2> /dev/null
+cp ./lib64/* "$lib_directory/" 2> /dev/null
 
 
 # Install `mount` and its mandatory dependencies from CentOS 7.
@@ -162,20 +131,27 @@ done
 
 
 # Create an `ldd.sh` script to mimic the behavior of `ldd` within the namespace (without bash, etc. dependencies).
-echo '#!/bin/bash' > ldd.sh
-echo '' >> ldd.sh
-echo '# Usage: ldd.sh LIBRARY_PATH EXECUTABLE' >> ldd.sh
-echo 'mount --make-rprivate /' >> ldd.sh
-echo 'unshare -m bash -c "`tail -n +7 $0`" "$0" "$@"' >> ldd.sh
-echo 'exit $?' >> ldd.sh
-echo '' >> ldd.sh
-echo 'LD=$({ ls -1 ${1}/ld-linux* | head -n1 ; } 2> /dev/null)' >> ldd.sh
-echo 'mount --make-private -o remount /' >> ldd.sh
-echo 'mount --bind ${1} $(dirname "$({ ls -1 /lib/ld-linux* /lib64/ld-linux* | head -n1 ; } 2> /dev/null)")' >> ldd.sh
-echo 'for directory in lib lib64 usr/lib usr/lib64; do' >> ldd.sh
-echo '    PATH=./:./bin:./usr/bin LD_LIBRARY_PATH=${1}:./lib64:./usr/lib64:./lib:./usr/lib mount --bind ${1} /${directory} 2> /dev/null' >> ldd.sh
-echo 'done' >> ldd.sh
-echo 'echo -n "$(LD_TRACE_LOADED_OBJECTS=1 LD_LIBRARY_PATH="${1}" "${LD}" "${2}")"' >> ldd.sh
+{
+echo '#!/bin/bash'
+echo ''
+echo '# Usage: ldd.sh LIBRARY_PATH EXECUTABLE'
+echo 'mount --make-rprivate /'
+# shellcheck disable=SC2016
+echo 'unshare -m bash -c "`tail -n +7 $0`" "$0" "$@"'
+echo 'exit $?'
+echo ''
+# shellcheck disable=SC2016
+echo 'LD=$({ ls -1 ${1}/ld-linux* | head -n1 ; } 2> /dev/null)'
+echo 'mount --make-private -o remount /'
+# shellcheck disable=SC2016
+echo 'mount --bind ${1} $(dirname "$({ ls -1 /lib/ld-linux* /lib64/ld-linux* | head -n1 ; } 2> /dev/null)")'
+echo 'for directory in lib lib64 usr/lib usr/lib64; do'
+# shellcheck disable=SC2016
+echo '    PATH=./:./bin:./usr/bin LD_LIBRARY_PATH=${1}:./lib64:./usr/lib64:./lib:./usr/lib mount --bind ${1} /${directory} 2> /dev/null'
+echo 'done'
+# shellcheck disable=SC2016
+echo 'echo -n "$(LD_TRACE_LOADED_OBJECTS=1 LD_LIBRARY_PATH="${1}" "${LD}" "${2}")"'
+} >> ldd.sh
 chmod a+x ldd.sh
 
 
@@ -190,15 +166,16 @@ function install_missing_dependencies() {
         while read -r line
         do
             # Parse the various library listing formats.
-            if [[ $line == *"/"* ]]; then
+            if [[ "$line" == *"/"* ]]; then
                 # Extract the filename when a path is present (e.g. /lib64/).
-                file=`echo $line | sed 's>.*/\([^/:]*\):.*>\1>'`
+                # shellcheck disable=SC2001
+                file=$(echo "$line" | sed 's>.*/\([^/:]*\):.*>\1>')
             else
                 # Extract the filename for missing libraries without a path.
-                file=`echo $line | awk '{print $1;}'`
+                file=$(echo "$line" | awk '{print "$1";}')
             fi
 
-            if [ -z $file ]; then
+            if [ -z "$file" ]; then
                 continue
             fi
 
@@ -208,13 +185,13 @@ function install_missing_dependencies() {
             echo "Finding dependency for ${file}"
 
             # Find the package name for this library.
-            package=$(repoquery --repofrompath=centos7,http://mirror.centos.org/centos/7/os/`arch` \
+            package=$(repoquery --repofrompath="centos7,http://mirror.centos.org/centos/7/os/$(arch)" \
                 --repoid=centos7 -q --qf="%{name}" --whatprovides "$file" | head -n 1)
 
             install_package "${package}"
 
             # Copy it over to our library directory.
-            find . | grep /${file} | xargs -n1 -I{} cp {} ${lib_directory}/
+            find . | grep "/${file}" | xargs -n1 -I{} cp {} ${lib_directory}/
         done <<< "$(./ldd.sh "${lib_directory}" "${executable}" 2>&1 | grep -e "no version information" -e "not found")"
 
         # Break once no new files have been copied in a loop.
@@ -232,13 +209,14 @@ install_missing_dependencies /opt/google/chrome/chrome
 if ! installation_status; then
     # Time for the big guns, we'll try to patch the executables to use our lib directory.
     yum install -y gcc gcc-c++ make autoconf automake
-    echo "Linking issues were encountered, attempting to patch the `chrome` executable."
+    echo "Linking issues were encountered, attempting to patch the Chrome executable."
     wget https://github.com/NixOS/patchelf/archive/0.9.tar.gz -O 0.9.tar.gz
     tar zxf 0.9.tar.gz
     pushd patchelf-0.9
     ./bootstrap.sh
     ./configure
     make
+    # shellcheck disable=SC2012
     LD="$({ ls -1 ${lib_directory}/ld-linux* | head -n1 ; } 2> /dev/null)"
     ./src/patchelf --set-interpreter "${LD}" --set-rpath "${lib_directory}" /opt/google/chrome/chrome
     ./src/patchelf --set-interpreter "${LD}" --set-rpath "${lib_directory}" /opt/google/chrome/chrome-sandbox
