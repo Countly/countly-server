@@ -58,7 +58,7 @@ function generateQRCode(username, secret, callback) {
                     }
 
                     // member is found
-                    countlyDb.collection('members').findOne({_id: passwordReset && passwordReset.user_id}, {}, function(memberErr, member) {
+                    countlyDb.collection('members').findOne({_id: passwordReset.user_id}, {}, function(memberErr, member) {
                         if (member && member.two_factor_auth && member.two_factor_auth.enabled && member.two_factor_auth.secret_token) {
                             if (!req.query.auth_code) {
                                 // user has not passed the 2fa
@@ -115,7 +115,7 @@ function generateQRCode(username, secret, callback) {
                         return;
                     }
 
-                    countlyDb.collection('members').findOne({_id: passwordReset && passwordReset.user_id}, {}, function(memberErr, member) {
+                    countlyDb.collection('members').findOne({_id: passwordReset.user_id}, {}, function(memberErr, member) {
                         if (member && member.two_factor_auth && member.two_factor_auth.enabled && member.two_factor_auth.secret_token) {
                             if (passwordReset.two_factor_auth_passed) {
                                 next();
