@@ -1872,6 +1872,7 @@ var AppRouter = Backbone.Router.extend({
                         "username": username,
                         "old_pwd": old_pwd,
                         "new_pwd": new_pwd,
+                        "api_key": api_key,
                         _csrf: countlyGlobal.csrf_token
                     },
                     success: function(result) {

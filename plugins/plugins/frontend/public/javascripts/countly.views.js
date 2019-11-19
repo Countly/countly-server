@@ -759,6 +759,7 @@ window.ConfigurationsView = countlyView.extend({
                         "username": username,
                         "old_pwd": old_pwd,
                         "new_pwd": new_pwd,
+                        api_key: api_key,
                         _csrf: countlyGlobal.csrf_token
                     };
 
