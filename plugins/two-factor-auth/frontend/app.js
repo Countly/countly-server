@@ -4,7 +4,6 @@ var pluginObject = {},
     qrcode = require("qrcode"),
     countlyConfig = require('../../../frontend/express/config'),
     plugins = require('../../pluginManager.js'),
-    membersUtility = require("../../../frontend/express/libs/members.js"),
     languages = require('../../../frontend/express/locale.conf');
 
 GA.options = {
@@ -52,7 +51,8 @@ function generateQRCode(username, secret, callback) {
                     if (!passwordReset || !passwordReset.user_id) {
                         next();
                         return;
-                    } else if (passwordReset.two_factor_auth_passed) {
+                    }
+                    else if (passwordReset.two_factor_auth_passed) {
                         next();
                         return;
                     }
@@ -74,22 +74,33 @@ function generateQRCode(username, secret, callback) {
                                     path: countlyConfig.path || "",
                                     themeFiles: req.themeFiles
                                 });
-                            } else if (GA.check(req.query.auth_code, member.two_factor_auth.secret_token)) {
+                            }
+                            else if (GA.check(req.query.auth_code, member.two_factor_auth.secret_token)) {
                                 // everything is ok, let the user reset their password
                                 countlyDb.collection('password_reset').updateOne({prid: req.params.prid}, {$set: {two_factor_auth_passed: true}}, {}, function(passwordResetUpdateErr) {
+                                    if (passwordResetUpdateErr) {
+                                        console.log(`Error setting 2FA pass for password reset: ${passwordResetUpdateErr}`);
+                                    }
                                     next();
                                 });
-                            } else {
+                            }
+                            else {
                                 // 2FA auth code was wrong, delete the password reset token
-                                countlyDb.collection('password_reset').deleteOne({prid: req.params.prid}, function(passwordResetDelErr) {});
+                                countlyDb.collection('password_reset').deleteOne({prid: req.params.prid}, function(passwordResetDelErr) {
+                                    if (passwordResetDelErr) {
+                                        console.log(`Error deleting password reset: ${passwordResetDelErr}`);
+                                    }
+                                });
                                 res.redirect(countlyConfig.path + '/forgot');
                             }
-                        } else {
+                        }
+                        else {
                             next();
                         }
                     });
                 });
-            } else {
+            }
+            else {
                 next();
             }
         });
@@ -108,15 +119,18 @@ function generateQRCode(username, secret, callback) {
                         if (member && member.two_factor_auth && member.two_factor_auth.enabled && member.two_factor_auth.secret_token) {
                             if (passwordReset.two_factor_auth_passed) {
                                 next();
-                            } else {
+                            }
+                            else {
                                 res.redirect(countlyConfig.path + '/reset/' + req.body.prid);
                             }
-                        } else {
+                        }
+                        else {
                             next();
                         }
                     });
                 });
-            } else {
+            }
+            else {
                 next();
             }
         });
