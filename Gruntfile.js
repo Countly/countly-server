@@ -80,6 +80,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/visualization/flot/jquery.flot.spline.js',
                     'frontend/express/public/javascripts/visualization/flot/jquery.flot.crosshair.js',
                     'frontend/express/public/javascripts/visualization/flot/jquery.flot.orderBars.js',
+                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.navigate.js',
                     'frontend/express/public/javascripts/visualization/gauge.min.js',
                     'frontend/express/public/javascripts/visualization/d3/d3.min.js',
                     'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js'
