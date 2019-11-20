@@ -5669,7 +5669,8 @@ window.LongTaskView = countlyView.extend({
             "funnels": jQuery.i18n.map["sidebar.funnels"] || "Funnels",
             "drill": jQuery.i18n.map["drill.drill"] || "Drill",
             "retention": jQuery.i18n.map["retention.retention"] || "Retention",
-            "formulas": jQuery.i18n.map["calculated-metrics.formulas"] || "Formulas"
+            "formulas": jQuery.i18n.map["calculated-metrics.formulas"] || "Formulas",
+            "dbviewer": jQuery.i18n.map["dbviewer.title"] || "DBViewer"
         };
 
         this.runTimeTypes = {
