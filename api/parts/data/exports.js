@@ -240,7 +240,7 @@ exports.fromRequest = function(options) {
         options.path = "/" + options.path;
     }
     var opts = {
-        uri: "http://localhost" + options.path,
+        uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.path,
         method: options.method || 'POST',
         json: options.data || {}
     };

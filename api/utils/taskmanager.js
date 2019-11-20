@@ -76,7 +76,7 @@ taskmanager.longtask = function(options) {
             delete json.api_key;
 
             options.request = {
-                uri: "http://localhost" + options.params.fullPath,
+                uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.params.fullPath,
                 method: 'POST',
                 json: json
             };
@@ -349,7 +349,7 @@ taskmanager.checkIfRunning = function(options, callback) {
         //delete jquery param to prevent caching
         delete json._;
         query.request = {
-            uri: "http://localhost" + options.params.fullPath,
+            uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.params.fullPath,
             method: 'POST',
             json: json
         };

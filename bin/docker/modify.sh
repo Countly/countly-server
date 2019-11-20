@@ -23,6 +23,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 			python3.6 -m pip install pandas pystan
 			cd /opt/countly/plugins/ab-testing/api/bayesian && python3.6 model.py
 			python3.6 -m pip uninstall -qy pystan
+			rm -rf ~/.cache
 		else
 			yum install -y python36 python36-libs python36-devel python36-pip centos-release-scl devtoolset-7-gcc-c++
 		    source /opt/rh/devtoolset-7/enable
@@ -31,7 +32,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 			python3 -m pip install pandas pystan
 			cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
 			python3 -m pip uninstall -qy pystan
-			yum remove -y python36-devel centos-release-scl devtoolset-7-gcc-c++
+			yum remove -y python36-devel centos-release-scl devtoolset-7-gcc-c++ devtoolset-7-gcc devtoolset-7-libstdc++-devel
 		fi
 	fi
 fi

@@ -24,6 +24,6 @@ else
 	  echo "[docker] Done installing ${plugin}."
 	done <<< "$a"
 
-	(cd /opt/countly && npx grunt dist-all)
+	(cd /opt/countly && npx grunt dist-all && npm prune --production)
 
 fi
