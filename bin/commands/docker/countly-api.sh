@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ "$INSIDE_DOCKER_NOMONGO" != "1" ]
+if [ "$COUNTLY_MONGO_INSIDE" == "1" ]
 then
 	until mongo localhost --eval "db.stats()" | grep "collections"
 	do
