@@ -1656,8 +1656,8 @@ var AppRouter = Backbone.Router.extend({
             // If date range is selected initialize the calendar with these
             var periodObj = countlyCommon.getPeriod();
             if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
-                self.dateFromSelected = countlyCommon.getPeriod()[0];
-                self.dateToSelected = countlyCommon.getPeriod()[1];
+                self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
+                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
             }
 
             // Initialize localization related stuff
@@ -3447,26 +3447,31 @@ var AppRouter = Backbone.Router.extend({
             $("#date-picker-button").click(function(e) {
                 $("#date-picker").toggle();
                 $("#date-picker-button").toggleClass("active");
-
+                var date;
                 if (self.dateToSelected) {
-                    dateTo.datepicker("setDate", moment(self.dateToSelected).toDate());
-                    dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
+                    date = new Date(self.dateToSelected);
+                    dateTo.datepicker("setDate", date);
+                    dateFrom.datepicker("option", "maxDate", date);
                 }
                 else {
-                    self.dateToSelected = moment().toDate().getTime();
-                    dateTo.datepicker("setDate", moment().toDate());
-                    dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
+                    date = new Date();
+                    date.setHours(0, 0, 0, 0);
+                    self.dateToSelected = date.getTime();
+                    dateTo.datepicker("setDate", date);
+                    dateFrom.datepicker("option", "maxDate", new Date(self.dateToSelected));
                 }
 
                 if (self.dateFromSelected) {
-                    dateFrom.datepicker("setDate", moment(self.dateFromSelected).toDate());
-                    dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
+                    date = new Date(self.dateFromSelected);
+                    dateFrom.datepicker("setDate", date);
+                    dateTo.datepicker("option", "minDate", date);
                 }
                 else {
                     var extendDate = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate();
+                    extendDate.setHours(0, 0, 0, 0);
                     dateFrom.datepicker("setDate", extendDate);
-                    self.dateFromSelected = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate().getTime();
-                    dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
+                    self.dateFromSelected = extendDate.getTime();
+                    dateTo.datepicker("option", "minDate", new Date(self.dateFromSelected));
                 }
 
                 $("#date-from-input").val(moment(dateFrom.datepicker("getDate")).format("MM/DD/YYYY"));
@@ -3485,7 +3490,7 @@ var AppRouter = Backbone.Router.extend({
                 onSelect: function(selectedDate) {
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-
+                    date.setHours(0, 0, 0, 0);
                     if (date.getTime() < self.dateFromSelected) {
                         self.dateFromSelected = date.getTime();
                     }
@@ -3511,7 +3516,7 @@ var AppRouter = Backbone.Router.extend({
                 onSelect: function(selectedDate) {
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-
+                    date.setHours(0, 0, 0, 0);
                     if (date.getTime() > self.dateToSelected) {
                         self.dateToSelected = date.getTime();
                     }
@@ -3541,6 +3546,7 @@ var AppRouter = Backbone.Router.extend({
                     else {
                         dateTo.datepicker("option", "minDate", date.toDate());
                         if (date.valueOf() > self.dateToSelected) {
+                            date.startOf('day');
                             self.dateToSelected = date.valueOf();
                             dateFrom.datepicker("option", "maxDate", date.toDate());
                             dateTo.datepicker("setDate", date.toDate());
@@ -3563,6 +3569,7 @@ var AppRouter = Backbone.Router.extend({
                     else {
                         dateFrom.datepicker("option", "maxDate", date.toDate());
                         if (date.toDate() < self.dateFromSelected) {
+                            date.startOf('day');
                             self.dateFromSelected = date.valueOf();
                             dateTo.datepicker("option", "minDate", date.toDate());
                             dateFrom.datepicker("setDate", date.toDate());
@@ -3588,8 +3595,10 @@ var AppRouter = Backbone.Router.extend({
                     return false;
                 }
 
-                var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected);
-                countlyCommon.setPeriod([self.dateFromSelected - tzCorr, self.dateToSelected - tzCorr]);
+                countlyCommon.setPeriod([
+                    self.dateFromSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected),
+                    self.dateToSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateToSelected) + 24 * 60 * 60 * 1000 - 1
+                ]);
 
                 self.activeView.dateChanged();
                 app.runRefreshScripts();

@@ -3262,15 +3262,15 @@
 
                 // "Date to" selected date timezone changes based on how the
                 // date picker is initialised so we take care of it here
-                var tmpDate = new Date(period[1]);
+                var tmpDate = new Date(period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1]));
                 tmpDate.setHours(0, 0, 0, 0);
 
-                period[1] = tmpDate.getTime();
-                period[1] -= countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
+                var endTs = tmpDate.getTime();
+                endTs -= countlyCommon.getOffsetCorrectionForTimestamp(endTs);
 
                 // One day is selected from the datepicker
-                if (period[0] === period[1]) {
-                    var selectedDate = moment(period[0]),
+                if (period[0] === endTs) {
+                    var selectedDate = moment(period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0])),
                         selectedYear = selectedDate.year(),
                         selectedMonth = (selectedDate.month() + 1),
                         selectedDay = selectedDate.date();
@@ -3287,14 +3287,14 @@
                     periodMin = 0;
                     dateString = "D MMM, HH:mm";
                     numberOfDays = 1;
-                    periodContainsToday = (moment(period[0]).format("YYYYMMDD") === now.format("YYYYMMDD"));
+                    periodContainsToday = (moment(period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[0])).format("YYYYMMDD") === now.format("YYYYMMDD"));
                 }
                 else {
-                    var a = moment(period[0]),
-                        b = moment(period[1]);
+                    var a = moment(period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0])),
+                        b = moment(period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1]));
 
-                    numberOfDays = daysInPeriod = b.diff(a, 'days') + 1;
-                    rangeEndDay = period[1];
+                    numberOfDays = daysInPeriod = moment(period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1])).startOf("day").diff(a, 'days') + 1;
+                    rangeEndDay = period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
                     periodContainsToday = (b.format("YYYYMMDD") === now.format("YYYYMMDD"));
                     isSpecialPeriod = true;
                 }
@@ -3391,7 +3391,7 @@
             }
 
             if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-                if (_period[0] === _period[1]) {
+                if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
                     return [];
                 }
             }
@@ -3515,7 +3515,7 @@
             }
 
             if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-                if (_period[0] === _period[1]) {
+                if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
                     return [];
                 }
             }
@@ -3683,11 +3683,11 @@
         * @returns {number} corrected timestamp applying user's timezone offset
         */
         countlyCommon.getOffsetCorrectionForTimestamp = function(inTS) {
-            var timeZoneOffset = new Date().getTimezoneOffset(),
-                intLength = Math.round(inTS).toString().length,
+            var intLength = Math.round(inTS).toString().length,
+                timeZoneOffset = new Date((intLength === 13) ? inTS : inTS * 1000).getTimezoneOffset(),
                 tzAdjustment = 0;
 
-            if (timeZoneOffset < 0) {
+            if (timeZoneOffset !== 0) {
                 if (intLength === 13) {
                     tzAdjustment = timeZoneOffset * 60000;
                 }
@@ -3895,7 +3895,7 @@
         countlyCommon.getPeriodRange = function(period, baseTimeStamp) {
             var periodRange;
             if (Object.prototype.toString.call(period) === '[object Array]' && period.length === 2) { //range
-                periodRange = period;
+                periodRange = [period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0]), period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1])];
                 return periodRange;
             }
             var endTimeStamp = baseTimeStamp;
