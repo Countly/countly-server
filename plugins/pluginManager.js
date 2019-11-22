@@ -427,13 +427,14 @@ var pluginManager = function pluginManager() {
                 resolve({ status: 'fulfilled', value: promise });
                 return;
             }
-            promise
-                .then((value) => {
+            promise.then(
+                (value) => {
                     resolve({ status: 'fulfilled', value });
-                })
-                .catch((error) => {
-                    resolve({ status: 'rejected', reason: error });
-                });
+                },
+                (reason) => {
+                    resolve({ status: 'rejected', reason });
+                }
+            );
         });
     };
 
