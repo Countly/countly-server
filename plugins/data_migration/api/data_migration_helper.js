@@ -413,12 +413,12 @@ module.exports = function(my_db) {
                     reject(Error(err));
                 }
                 var cid = [];
-                if(res && res.plugins && res.plugins.push ) {
+                if (res && res.plugins && res.plugins.push) {
                     if (res.plugins.push.a && res.plugins.push.a._id) {
                         cid.push('ObjectId(' + res.plugins.push.a._id + ')');
                     }
 
-                    if (res.plugins.push.i && res.plugins.push.i._id ) {
+                    if (res.plugins.push.i && res.plugins.push.i._id) {
                         cid.push('ObjectId("' + res.plugins.push.i._id + '")');
                     }
                 }
