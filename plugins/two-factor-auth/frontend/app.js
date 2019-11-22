@@ -42,6 +42,99 @@ function generateQRCode(username, secret, callback) {
             next();
         });
 
+        // modify password reset flow
+        app.get(countlyConfig.path + '/reset/:prid', function(req, res, next) {
+            if (req.params.prid) {
+                req.params.prid += "";
+                // password reset id is found
+                countlyDb.collection('password_reset').findOne({prid: req.params.prid}, function(passwordResetErr, passwordReset) {
+                    if (!passwordReset || !passwordReset.user_id) {
+                        next();
+                        return;
+                    }
+                    else if (passwordReset.two_factor_auth_passed) {
+                        next();
+                        return;
+                    }
+
+                    // member is found
+                    countlyDb.collection('members').findOne({_id: passwordReset.user_id}, {}, function(memberErr, member) {
+                        if (member && member.two_factor_auth && member.two_factor_auth.enabled && member.two_factor_auth.secret_token) {
+                            if (!req.query.auth_code) {
+                                // user has not passed the 2fa
+                                res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa_reset", {
+                                    cdn: countlyConfig.cdn || "",
+                                    countlyFavicon: req.countly.favicon,
+                                    countlyPage: req.countly.page,
+                                    countlyTitle: req.countly.title,
+                                    csrf: req.csrfToken(),
+                                    inject_template: req.template,
+                                    languages: languages,
+                                    message: req.flash('info'),
+                                    path: countlyConfig.path || "",
+                                    themeFiles: req.themeFiles
+                                });
+                            }
+                            else if (GA.check(req.query.auth_code, member.two_factor_auth.secret_token)) {
+                                // everything is ok, let the user reset their password
+                                countlyDb.collection('password_reset').updateOne({prid: req.params.prid}, {$set: {two_factor_auth_passed: true}}, {}, function(passwordResetUpdateErr) {
+                                    if (passwordResetUpdateErr) {
+                                        console.log(`Error setting 2FA pass for password reset: ${passwordResetUpdateErr}`);
+                                    }
+                                    next();
+                                });
+                            }
+                            else {
+                                // 2FA auth code was wrong, delete the password reset token
+                                countlyDb.collection('password_reset').deleteOne({prid: req.params.prid}, function(passwordResetDelErr) {
+                                    if (passwordResetDelErr) {
+                                        console.log(`Error deleting password reset: ${passwordResetDelErr}`);
+                                    }
+                                });
+                                res.redirect(countlyConfig.path + '/forgot');
+                            }
+                        }
+                        else {
+                            next();
+                        }
+                    });
+                });
+            }
+            else {
+                next();
+            }
+        });
+
+        app.post(countlyConfig.path + '/reset', function(req, res, next) {
+            if (req.body.prid) {
+                req.body.prid += "";
+                // password reset id is found
+                countlyDb.collection('password_reset').findOne({prid: req.body.prid}, function(passwordResetErr, passwordReset) {
+                    if (!passwordReset || !passwordReset.user_id) {
+                        next();
+                        return;
+                    }
+
+                    countlyDb.collection('members').findOne({_id: passwordReset.user_id}, {}, function(memberErr, member) {
+                        if (member && member.two_factor_auth && member.two_factor_auth.enabled && member.two_factor_auth.secret_token) {
+                            if (passwordReset.two_factor_auth_passed) {
+                                next();
+                            }
+                            else {
+                                res.redirect(countlyConfig.path + '/reset/' + req.body.prid);
+                            }
+                        }
+                        else {
+                            next();
+                        }
+                    });
+                });
+            }
+            else {
+                next();
+            }
+        });
+
         // modify login flow
         app.post(countlyConfig.path + '/login', function(req, res, next) {
             countlyDb.collection('members').findOne({"username": req.body.username}, function(memberErr, member) {
@@ -83,7 +176,7 @@ function generateQRCode(username, secret, callback) {
                     }
                     // else if user did not provide 2fa code (login flow first phase)
                     else if (!req.body.auth_code) {
-                        res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa", {
+                        res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa_login", {
                             cdn: countlyConfig.cdn || "",
                             countlyFavicon: req.countly.favicon,
                             countlyPage: req.countly.page,
