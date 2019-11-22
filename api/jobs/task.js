@@ -2,9 +2,11 @@
 
 const job = require('../parts/jobs/job.js'),
     log = require('../utils/log.js')('api:task'),
-    Promise = require("bluebird");
+    Promise = require("bluebird"),
+    plugins = require('../../plugins/pluginManager.js');
 const common = require('../utils/common.js');
 const taskmanager = require('../utils/taskmanager.js');
+
 
 /**
  *  Task Monitor Job extend from Countly Job
@@ -27,48 +29,45 @@ class MonitorJob extends job.Job {
                 return false;
             }
             const lastStart = task.start || 0;
-            const lastEnd = task.end || 0;
+            const lastEnd = task.end || lastStart; //task not running, but end time not recorded(Should not happen) Use start time to prevent further errors.
             const now = Date.now();
             const duration = lastEnd - lastStart;
-            if (duration <= 60 * 1000 && duration >= 0) {
+
+            var interval = plugins.getConfig("api").reports_regenerate_interval;
+            interval = parseInt(interval, 10) || 3600; //in seconds. If there is no int - then using 1 hour
+            if (task.start === 0) { //never started
                 return true;
             }
-            if (duration <= 10 * 60 * 1000 && now - lastEnd >= 2 * 60 * 60 * 1000) {
-                return true;
-            }
-            if (duration <= 30 * 60 * 1000 && now - lastEnd >= 4 * 60 * 60 * 1000) {
-                return true;
-            }
-            if (duration <= 60 * 60 * 1000 && now - lastEnd >= 12 * 60 * 60 * 1000) {
-                return true;
-            }
-            if (duration > 60 * 60 * 1000 && now - lastEnd >= 24 * 60 * 60 * 1000) {
+
+            if ((now + duration - lastStart) / 1000 >= interval) {
                 return true;
             }
             return false;
         }
 
-        common.db.collection("long_tasks").find({
-            autoRefresh: true,
-        }).toArray(function(err, tasks) {
-            log.d('Running Task Monitor Job ....');
-            log.d("job info:", self._json, tasks);
-            const filteredTasks = tasks.filter(tasksFilter);
-            filteredTasks.forEach((task) => {
-                return Promise.coroutine(function *() { // eslint-disable-line require-yield
-                    try {
-                        taskmanager.rerunTask({
-                            db: common.db,
-                            id: task._id
-                        }, () => {});
-                    }
-                    catch (e) {
-                        log.e(e, e.stack);
-                    }
-                })();
-            });
+        plugins.loadConfigs(common.db, function() {
+            common.db.collection("long_tasks").find({
+                autoRefresh: true,
+            }).toArray(function(err, tasks) {
+                log.d('Running Task Monitor Job ....');
+                log.d("job info:", self._json, tasks);
+                const filteredTasks = tasks.filter(tasksFilter);
+                filteredTasks.forEach((task) => {
+                    return Promise.coroutine(function *() { // eslint-disable-line require-yield
+                        try {
+                            taskmanager.rerunTask({
+                                db: common.db,
+                                id: task._id
+                            }, () => {});
+                        }
+                        catch (e) {
+                            log.e(e, e.stack);
+                        }
+                    })();
+                });
 
-            done();
+                done();
+            });
         });
     }
 }
