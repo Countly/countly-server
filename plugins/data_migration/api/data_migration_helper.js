@@ -413,15 +413,13 @@ module.exports = function(my_db) {
                     reject(Error(err));
                 }
                 var cid = [];
-                if (res && res.apn && res.apn.length > 0) {
-                    for (var i = 0; i < res.apn.length; i++) {
-                        cid.push('ObjectId(' + res.apn[i]._id + ')');
+                if (res && res.plugins && res.plugins.push) {
+                    if (res.plugins.push.a && res.plugins.push.a._id) {
+                        cid.push('ObjectId(' + res.plugins.push.a._id + ')');
                     }
-                }
 
-                if (res && res.gcm && res.gcm.length > 0) {
-                    for (var k = 0; k < res.gcm.length; k++) {
-                        cid.push('ObjectId("' + res.gcm[k]._id + '")');
+                    if (res.plugins.push.i && res.plugins.push.i._id) {
+                        cid.push('ObjectId("' + res.plugins.push.i._id + '")');
                     }
                 }
                 if (cid.length > 0) {
