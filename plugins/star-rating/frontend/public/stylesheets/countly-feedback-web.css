@@ -2,7 +2,7 @@
     display: none;
     position: fixed;
     height: 100%;
-    z-index: 1000;
+    z-index: 9999;
     width: 100%;
     top: 0;
     background-color: black;
@@ -70,7 +70,7 @@
       background: 0 0;
   }
   .countly-iframe-wrapper {
-      z-index: 2000;
+      z-index: 9999;
       margin-left: 1%;
       box-sizing: border-box;
       height: 600px;
@@ -80,6 +80,7 @@
       display: none;
   }
   .countly-feedback-sticker {
+      z-index: 9999;
       position: fixed;
       background-color: #13b94d;
       color: #fff;
