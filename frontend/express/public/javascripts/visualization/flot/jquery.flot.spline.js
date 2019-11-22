@@ -84,7 +84,7 @@
 
     var line = [];
 
-    function drawLine(points, ctx, height, fill, seriesColor) {
+    function drawLine(points, ctx, height, fill, seriesColor,dashed) {
         var c = $.color.parse(seriesColor);
 
         c.a = typeof fill == "number" ? fill : .3;
@@ -93,6 +93,9 @@
 
         ctx.beginPath();
         ctx.moveTo(points[0][0], points[0][1]);
+        if(dashed) {
+            ctx.setLineDash([5, 15]);
+        }
 
         var plength = points.length;
 
@@ -199,7 +202,7 @@
 
         queue(ctx, 'quadratic', pts.slice(len - 2, len), [cp[2 * len - 10], cp[2 * len - 9], pts[len - 4], pts[len - 3]]);
 
-        drawLine(line, ctx, plot.height() + 10, series.splines.fill, series.color);
+        drawLine(line, ctx, plot.height() + 10, series.splines.fill, series.color,series.dashed);
 
         ctx.restore();
     }
