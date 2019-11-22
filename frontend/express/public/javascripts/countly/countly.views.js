@@ -4917,6 +4917,7 @@ window.EventsOverviewView = countlyView.extend({
     },
     topEvents: function() {
         var self = this;
+        self.totalEventCount = 5;
         countlyEvent.getTopEventData30Day(function(dd) {
             if (dd) {
                 self.getTopEventData30Day = dd.data;
@@ -5032,10 +5033,10 @@ window.EventsOverviewView = countlyView.extend({
             "admin_rights": app_admin,
             "event-count": Object.keys(this.eventmap).length,
             "currentOverviewListCount": Object.keys(this.currentOverviewList).length,
-            "getTopEventData30Day": this.getTopEventData30Day || [],
-            "getTopEventDataDaily": this.getTopEventDataDaily || [],
+            "getTopEventData30Day": this.getTopEventData30Day,
+            "getTopEventDataDaily": this.getTopEventDataDaily,
             "getTopEventDataLastUpdated": this.getTopEventDataLastUpdated,
-            "topEventDataIsVisible": (!!this.getTopEventData30Day && !!this.getTopEventDataDaily && !!this.getTopEventDataLastUpdated)
+            "topEventsIsVisible": ((!!this.getTopEventData30Day && !!this.getTopEventDataDaily && !!this.getTopEventDataLastUpdated) && Object.keys(this.eventmap).length >= this.totalEventCount)
         };
         if (!this.overviewGraph) {
             this.overviewGraph = [];
