@@ -38,7 +38,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
       - name: countly-frontend
-        image: countly/api:19.08.1
+        image: countly/frontend:19.08.1
 #        image: gcr.io/countly-01/frontend:19.08.1     # Enterprise Edition
         imagePullPolicy: Always
         ports:
