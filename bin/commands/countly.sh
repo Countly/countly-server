@@ -107,7 +107,7 @@ countly_upgrade (){
     then
         (cd $DIR/../.. ;
         echo "Installing dependencies...";
-        sudo npm install ;
+        npm install ;
         echo "Preparing production files...";
         grunt dist-all;
         echo "Restarting Countly...";

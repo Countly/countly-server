@@ -11,6 +11,7 @@ frontend/express/public/localization/min
 frontend/express/public/stylesheets/*.min.css
 plugins/plugins.json
 frontend/express/public/sdk/
+package-lock.json
 **/.DS_Store
 **/node_modules
 bin/scripts/nghttp2

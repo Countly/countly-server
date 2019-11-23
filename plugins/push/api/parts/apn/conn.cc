@@ -1189,7 +1189,7 @@ namespace apns {
 			if (rv < 0) {
 				std::ostringstream out;
 				// out << "H2: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
-				LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
+				LOG_ERROR("CONN " << uv_thread_self() << ": " << out.str());
 				send_error(out.str());
 				conn_thread_stop();
 				return;
@@ -1306,7 +1306,7 @@ namespace apns {
 					if (rv < 0) {
 						std::ostringstream out;
 						out << "H2: Couldn't submit nghttp2_session_mem_send in transmit: " << nghttp2_strerror(rv);
-						LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
+						LOG_ERROR("CONN " << uv_thread_self() << ": " << out.str());
 						send_error(out.str());
 						conn_thread_stop();
 						return;
