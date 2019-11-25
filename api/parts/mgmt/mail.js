@@ -6,14 +6,19 @@
 /** @lends module:api/parts/mgmt/mail */
 var mail = {},
     nodemailer = require('nodemailer'),
-    sendmailTransport = require('nodemailer-sendmail-transport'),
     localize = require('../../utils/localization.js'),
     plugins = require('../../../plugins/pluginManager.js'),
     versionInfo = require('../../../frontend/express/version.info'),
     authorize = require('../../utils/authorizer'),
+    config = require('../../config'),
     ip = require('./ip.js');
 
-mail.smtpTransport = nodemailer.createTransport(sendmailTransport({path: "/usr/sbin/sendmail"}));
+if (config.mail && config.mail.transport) {
+    mail.smtpTransport = nodemailer.createTransport(require(config.mail.transport)(config.mail.config));
+} else {
+    mail.smtpTransport = nodemailer.createTransport(require('nodemailer-sendmail-transport')({path: "/usr/sbin/sendmail"}));
+}
+
 /*
  Use the below transport to send mails through Gmail
 
@@ -71,7 +76,7 @@ mail.sendMail = function(message, callback) {
 mail.sendMessage = function(to, subject, message, callback) {
     mail.sendMail({
         to: to,
-        from: "Countly",
+        from: config.mail && config.mail.strings && config.mail.strings.from || "Countly",
         subject: subject || "",
         html: message || ""
     }, callback);
@@ -189,7 +194,7 @@ mail.getUserFirstName = function(member) {
         userFirstName = "";
 
     if (userName.length === 0) {
-        userFirstName = "there";
+        userFirstName = config.mail && config.mail.strings && config.mail.strings.hithere || "there";
     }
     else {
         userFirstName = userName[0];
