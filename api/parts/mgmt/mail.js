@@ -15,7 +15,8 @@ var mail = {},
 
 if (config.mail && config.mail.transport) {
     mail.smtpTransport = nodemailer.createTransport(require(config.mail.transport)(config.mail.config));
-} else {
+}
+else {
     mail.smtpTransport = nodemailer.createTransport(require('nodemailer-sendmail-transport')({path: "/usr/sbin/sendmail"}));
 }
 
