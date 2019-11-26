@@ -107,6 +107,9 @@ class TopEventsJob extends job.Job {
                             resultEachCallback();
                         }
                     }
+                    else {
+                        resultEachCallback();
+                    }
                 });
             });
         });
