@@ -1,4 +1,4 @@
-/*global store, countlyCommon, countlyTaskManager, $, jQuery*/
+/*global store, countlyCommon, countlyTaskManager, $, jQuery, app*/
 (function(countlyDBviewer) {
 
     //Private Properties

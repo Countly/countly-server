@@ -320,63 +320,51 @@ var common = require('../../../api/utils/common.js'),
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
-            aggregation.push({"$count": "total"});
-            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(err, total) {
-                if (!err) {
-                    aggregation.splice(aggregation.length - 1, 1);
-                    var skip = parseInt(params.qstring.iDisplayStart || 0);
-                    aggregation.push({"$skip": skip});
-                    if (params.qstring.iDisplayLength) {
-                        aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
-                    }
-                    var totalRecords = total.length > 0 ? total[0].total : 0;
-                    // check task is already running?
-                    taskManager.checkIfRunning({
-                        db: dbs[dbNameOnParam],
-                        params: params
-                    }, function(task_id) {
-                        if (task_id) {
-                            common.returnOutput(params, {task_id: task_id});
-                        }
-                        else {
-                            var taskCb = taskManager.longtask({
-                                db: dbs[dbNameOnParam],
-                                threshold: plugins.getConfig("api").request_threshold,
-                                params: params,
-                                type: "dbviewer",
-                                force: params.qstring.save_report || false,
-                                meta: JSON.stringify({
-                                    db: dbNameOnParam,
-                                    collection: params.qstring.collection,
-                                    aggregation: aggregation
-                                }),
-                                view: "#/manage/db/task/",
-                                report_name: params.qstring.report_name,
-                                report_desc: params.qstring.report_desc,
-                                period_desc: params.qstring.period_desc,
-                                name: 'Aggregation-' + Date.now(),
-                                creator: params.member._id + "",
-                                global: params.qstring.global === 'true',
-                                autoRefresh: params.qstring.autoRefresh === 'true',
-                                manually_create: params.qstring.manually_create === 'true',
-                                processData: function(error, result, callback) {
-                                    callback(error, result);
-                                },
-                                outputData: function(aggregationErr, result) {
-                                    if (!aggregationErr) {
-                                        common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: totalRecords, iTotalDisplayRecords: totalRecords, "aaData": result});
-                                    }
-                                    else {
-                                        common.returnMessage(params, 500, aggregationErr);
-                                    }
-                                }
-                            });
-                            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, taskCb);
-                        }
-                    });
+            if (params.qstring.iDisplayLength) {
+                aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
+            }
+            // check task is already running?
+            taskManager.checkIfRunning({
+                db: dbs[dbNameOnParam],
+                params: params
+            }, function(task_id) {
+                if (task_id) {
+                    common.returnOutput(params, {task_id: task_id});
                 }
                 else {
-                    common.returnMessage(params, 500, err);
+                    var taskCb = taskManager.longtask({
+                        db: dbs[dbNameOnParam],
+                        threshold: plugins.getConfig("api").request_threshold,
+                        params: params,
+                        type: "dbviewer",
+                        force: params.qstring.save_report || false,
+                        meta: JSON.stringify({
+                            db: dbNameOnParam,
+                            collection: params.qstring.collection,
+                            aggregation: aggregation
+                        }),
+                        view: "#/manage/db/task/",
+                        report_name: params.qstring.report_name,
+                        report_desc: params.qstring.report_desc,
+                        period_desc: params.qstring.period_desc,
+                        name: 'Aggregation-' + Date.now(),
+                        creator: params.member._id + "",
+                        global: params.qstring.global === 'true',
+                        autoRefresh: params.qstring.autoRefresh === 'true',
+                        manually_create: params.qstring.manually_create === 'true',
+                        processData: function(error, result, callback) {
+                            callback(error, result);
+                        },
+                        outputData: function(aggregationErr, result) {
+                            if (!aggregationErr) {
+                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result});
+                            }
+                            else {
+                                common.returnMessage(params, 500, aggregationErr);
+                            }
+                        }
+                    });
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, taskCb);
                 }
             });
         }
