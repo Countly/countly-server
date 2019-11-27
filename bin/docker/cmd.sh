@@ -2,7 +2,7 @@
 
 /opt/countly/bin/docker/postinstall.sh
 
-if [ -z "$COUNTLY_CONFIG_FRONTEND_HOSTNAME" ]; then
+if [ -z "$COUNTLY_CONFIG_HOSTNAME" ]; then
   echo "[docker] ERROR: Please set COUNTLY_CONFIG_HOSTNAME with your planned Countly hostname, i.e. countly.example.com"
 fi
 
