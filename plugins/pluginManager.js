@@ -806,9 +806,19 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running install.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running install.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
                 return callback(errors);
             }
@@ -827,14 +837,6 @@ var pluginManager = function pluginManager() {
                 callback(errors);
             });
         });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
-        });
     };
 
     /**
@@ -848,9 +850,19 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running install.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running install.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
                 return callback(errors);
             }
@@ -869,14 +881,6 @@ var pluginManager = function pluginManager() {
                 callback(errors);
             });
         });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
-        });
     };
 
     /**
@@ -890,9 +894,19 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running uninstall.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running uninstall.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
             }
             callback(errors);

@@ -582,10 +582,10 @@ usersApi.deleteExport = function(filename, params, callback) {
     }
 };
 
-var run_command = function(my_command) {
+var run_command = function(my_command, my_args) {
     return new Promise(function(resolve, reject) {
-        var child = spawn(my_command, {
-            shell: true,
+        var child = spawn(my_command, my_args, {
+            shell: false,
             cwd: path.resolve(__dirname, './../../../export/AppUser'),
             detached: false
         }, function(error) {
@@ -615,7 +615,7 @@ var run_command = function(my_command) {
 };
 var clear_out_empty_files = function(folder) {
     return new Promise(function(resolve) {
-        run_command("find " + folder + " -type f -name '*.json' -size 0 -delete").then(
+        run_command("find", [folder, "-type", "f", "-name", "*.json", "-size", "0", "-delete"]).then(
             function() {
                 resolve();
             },
@@ -727,11 +727,12 @@ usersApi.export = function(app_id, query, params, callback) {
             }
             var export_filename = 'appUser_' + app_id + '_' + eid;
 
-            var dbstr = "";
+            var dbargs = [];
             var export_commands = {};
             var db_params = plugins.getDbConnectionParams('countly');
             for (var p in db_params) {
-                dbstr += " --" + p + " " + db_params[p];
+                dbargs.push("--" + p);
+                dbargs.push(db_params[p]);
             }
 
             plugins.dispatch("/systemlogs", {
@@ -763,16 +764,17 @@ usersApi.export = function(app_id, query, params, callback) {
                 }
             }).then(function() {
                 //export data from metric_changes
-                return run_command('mongoexport ' + dbstr + ' --collection metric_changes' + app_id + ' -q \'{uid:{$in: ["' + res[0].uid.join('","') + '"]}}\' --out ' + export_folder + '/metric_changes' + app_id + '.json');
+                return run_command('mongoexport', [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{uid:{$in: ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]);
             }).then(function() {
                 //export data from app_users
-                return run_command('mongoexport ' + dbstr + ' --collection app_users' + app_id + ' -q \'{uid: {$in: ["' + res[0].uid.join('","') + '"]}}\' --out ' + export_folder + '/app_users' + app_id + '.json');
+                return run_command('mongoexport', [...dbargs, "--collection", "app_users" + app_id, "-q", '{uid:{$in: ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]);
             }).then(
                 function() {
                     //get other export commands from other plugins
                     plugins.dispatch("/i/app_users/export", {
                         app_id: app_id,
-                        dbstr: dbstr,
+                        dbstr: "",
+                        dbargs: dbargs,
                         export_commands: export_commands,
                         query: query,
                         uids: res[0].uid,
@@ -781,7 +783,7 @@ usersApi.export = function(app_id, query, params, callback) {
                         var commands = [];
                         for (var prop in export_commands) {
                             for (let k = 0; k < export_commands[prop].length; k++) {
-                                commands.push(run_command(export_commands[prop][k]));
+                                commands.push(run_command(export_commands[prop][k].cmd, export_commands[prop][k].args));
                             }
                         }
                         Promise.all(commands).then(
@@ -789,7 +791,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                 //pack export
                                 clear_out_empty_files(path.resolve(__dirname, './../../../export/AppUser/' + export_filename))//remove empty files
                                     .then(function() {
-                                        return run_command("tar -zcvf " + export_filename + ".tar.gz" + " " + export_filename);
+                                        return run_command("tar", ["-zcvf", export_filename + ".tar.gz", export_filename]);
                                     }) //create archive
                                     .then(function() {
                                         return new Promise(function(resolve, reject) { /*save export in gridFS*/

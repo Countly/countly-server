@@ -513,10 +513,10 @@ const PUSH_CACHE_GROUP = 'P';
         }
     });
 
-    plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbstr, export_folder}) => {
+    plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {
         if (uids && uids.length) {
             if (!export_commands.push) {
-                export_commands.push = [`mongoexport ${dbstr} --collection push_${app_id} -q '{uid: {$in: ${JSON.stringify(uids)}}}' --out ${export_folder}/push_${app_id}.json`];
+                export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{uid: {$in: ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
             }
         }
     });
