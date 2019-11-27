@@ -705,7 +705,7 @@ const widgetPropertyPreprocessors = {
                 if (!ob.export_commands.feedback) {
                     ob.export_commands.feedback = [];
                 }
-                ob.export_commands.feedback.push('mongoexport ' + ob.dbstr + ' --collection feedback' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/feedback' + ob.app_id + '.json');
+                ob.export_commands.feedback.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'feedback' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/feedback' + ob.app_id + '.json']});
                 resolve();
             }
         });
