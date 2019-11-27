@@ -136,6 +136,8 @@ window.DBViewerView = countlyView.extend({
         }
 
         $('body').off('click', '.collection-list-item').on('click', '.collection-list-item', function() {
+            self.indexes_mode = false;
+            $('.document-detail-link-wrapper').show();
             if (store.get('countly_collection') !== $(this).data('collection')) {
                 store.set('countly_collectionfilter', '');
                 store.set('countly_collection', $(this).data('collection'));
@@ -541,7 +543,6 @@ window.DBViewerView = countlyView.extend({
             self.projection = "{}";
             self.sort = "{}";
         }
-
         $.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit, this.sort, this.projection, this.isSort, this.indexes_mode)).then(function() {
             var dbs = countlyDBviewer.getData();
             var data = countlyDBviewer.getCollections();
@@ -584,6 +585,10 @@ window.DBViewerView = countlyView.extend({
 
             if (self.filter !== "{}") {
                 $(".dbviewer-collection-filter").val(self.filter);
+            }
+
+            if (self.indexes_mode) {
+                $('.document-detail-link-wrapper').hide();
             }
 
             /*
@@ -1021,6 +1026,7 @@ app.route('/manage/db', 'db', function() {
     this.dbviewerView.collection = null;
     this.dbviewerView.document = null;
     this.dbviewerView.page = null;
+    this.dbviewerView.indexes_mode = false;
     this.renderWhenReady(this.dbviewerView);
 });
 
@@ -1029,6 +1035,7 @@ app.route('/manage/db/:dbs', 'dbs', function(db) {
     this.dbviewerView.collection = null;
     this.dbviewerView.document = null;
     this.dbviewerView.page = null;
+    this.dbviewerView.indexes_mode = false;
     this.renderWhenReady(this.dbviewerView);
 });
 
@@ -1037,6 +1044,7 @@ app.route('/manage/db/:dbs/:collection', 'dbs', function(db, collection) {
     this.dbviewerView.collection = collection;
     this.dbviewerView.document = null;
     this.dbviewerView.page = null;
+    this.dbviewerView.indexes_mode = false;
     if (store.get("countly_collection") !== collection) {
         store.set("countly_collectionfilter", "{}");
         store.set("countly_collection", collection);
@@ -1049,6 +1057,7 @@ app.route('/manage/db/:dbs/:collection/*document', 'dbs', function(db, collectio
     this.dbviewerView.db = db;
     this.dbviewerView.collection = collection;
     this.dbviewerView.document = document;
+    this.dbviewerView.indexes_mode = false;
     this.renderWhenReady(this.dbviewerView);
 });
 
@@ -1057,6 +1066,7 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function(db, collecti
     this.dbviewerView.collection = collection;
     this.dbviewerView.document = null;
     this.dbviewerView.page = parseInt(page);
+    this.dbviewerView.indexes_mode = false;
     if (store.get("countly_collection") !== collection) {
         store.set("countly_collectionfilter", "{}");
         this.dbviewerView.filter = "{}";
@@ -1066,6 +1076,7 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function(db, collecti
 });
 
 app.route('/manage/db/aggregate/:dbs/:collection', 'dbs', function(db, collection) {
+    this.dbviewerView.indexes_mode = false;
     if (typeof db === 'undefined' || typeof collection === 'undefined') {
         app.navigate('#/manage/db', true);
     }
