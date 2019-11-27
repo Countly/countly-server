@@ -3,6 +3,7 @@ const utils = require('../parts/utils');
 const countlyCommon = require('../../../../api/lib/countly.common.js');
 const fetch = require('../../../../api/parts/data/fetch.js');
 const countlyModel = require('../../../../api/lib/countly.model.js');
+const crypto = require('crypto');
 
 const countlySession = countlyModel.load("users");
 const bluebird = require("bluebird");
@@ -136,7 +137,7 @@ const UserAlert = {
                         }
                     }
                     else if (alertConfigs.alertDataSubType === 'Number of page views' || alertConfigs.alertDataSubType === 'Bounce rate') {
-                        const data = yield getViewData(alertConfigs.selectedApps[i]);
+                        const data = yield getViewData(alertConfigs.selectedApps[i], alertConfigs.alertDataSubType2);
                         const result = getCompareValues(alertConfigs, data, i);
                         if (result.matched) {
                             const app = yield utils.getAppInfo(result.currentApp);
@@ -273,9 +274,9 @@ function getAverageSessionDuration(app_id, period) {
 * @param {string} app_id - id of app
 * @return {object} promise
 */
-function getViewData(app_id) {
+function getViewData(app_id, viewId) {
     return new bluebird(function(resolve) {
-        fetch.getTimeObjForEvents("app_viewdata" + app_id, {app_id, qstring: {}}, {unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n"], monthly: ["u", "t", "s", "b", "e", "d", "n"]}}, function(data) {
+        fetch.getTimeObj("app_viewdata" + crypto.createHash('sha1').update(app_id).digest('hex'), {app_id, qstring: {}}, {id: viewId, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n"], monthly: ["u", "t", "s", "b", "e", "d", "n"]}}, function(data) {
             resolve(data);
         });
     }).catch((e)=>{
@@ -303,10 +304,10 @@ function getCompareValues(alertConfigs, data, index) {
         keyName = 's';
     }
     else if (alertConfigs.alertDataSubType === 'Number of page views') {
-        keyName = alertConfigs.alertDataSubType2 + ".t";
+        keyName = 't';
     }
     else if (alertConfigs.alertDataSubType === 'Bounce rate') {
-        keyName = alertConfigs.alertDataSubType2 + ".b";
+        keyName = 'b';
     }
     return utils.compareValues(alertConfigs, data, keyName, index);
 }

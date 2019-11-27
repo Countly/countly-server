@@ -277,12 +277,20 @@ window.AlertsView = countlyView.extend({
     widgetDrawer: {
         loadAppViewData: function(selectedView) {
             var appID = $("#single-app-dropdown").clySelectGetSelection();
+            var self = this;
+            self.selectedView = selectedView;
             if (appID) {
                 alertsPlugin.getViewForApp(appID, function(viewList) {
                     $("#single-target2-dropdown").clySelectSetItems(viewList);
-                    if (selectedView) {
+                    if (self.selectedView) {
                         alertsPlugin.getViewForApp(appID, function() {
-                            $("#single-target2-dropdown").clySelectSetSelection(selectedView, selectedView);
+                            var selectedViewName = '';
+                            for (var i = 0; i < viewList.length; i++) {
+                                if (viewList[i].value === self.selectedView) {
+                                    selectedViewName = viewList[i].name;
+                                }
+                            }
+                            $("#single-target2-dropdown").clySelectSetSelection(self.selectedView, selectedViewName);
                         });
                     }
                     else {
@@ -627,7 +635,7 @@ window.AlertsView = countlyView.extend({
             var selectedSingleAPP = $("#single-app-dropdown").clySelectGetSelection();
             settings.selectedApps = selectedSingleAPP ? [selectedSingleAPP] : null;
 
-            settings.compareDescribe = settings.alertDataSubType + (settings.alertDataSubType2 ? ' (' + settings.alertDataSubType2 + ')' : '') +
+            settings.compareDescribe = settings.alertDataSubType + (settings.alertDataSubType2 ? ' (' + document.querySelector('div[data-value="' + settings.alertDataSubType2 + '"]').textContent + ')' : '') +
 				' ' + settings.compareType +
 				' ' + settings.compareValue + "%";
 
