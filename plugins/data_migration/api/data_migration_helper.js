@@ -547,7 +547,7 @@ module.exports = function(my_db) {
 
                     //internal events
                     for (let j = 0; j < plugins.internalEvents.length; j++) {
-                        var eventCollName = "events" + crypto.createHash('sha1').update(plugins.internalEvents[j] + appid).digest('hex');
+                        let eventCollName = "events" + crypto.createHash('sha1').update(plugins.internalEvents[j] + appid).digest('hex');
                         scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', eventCollName, '--out', my_folder]});
                     }
 
@@ -556,7 +556,7 @@ module.exports = function(my_db) {
                         var drill_events = plugins.internalDrillEvents;
 
                         for (let j = 0; j < drill_events.length; j++) {
-                            eventCollName = "drill_events" + crypto.createHash('sha1').update(drill_events[j] + appid).digest('hex');
+                            let eventCollName = "drill_events" + crypto.createHash('sha1').update(drill_events[j] + appid).digest('hex');
                             scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', eventCollName, '--out', my_folder]});
                         }
 

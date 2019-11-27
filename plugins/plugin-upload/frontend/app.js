@@ -327,8 +327,8 @@ function validate_reset() {
                 log.d("Attempting disabling plugins, which might cause restart");
                 tarray = [tstamp];
                 //try reseting all plugins,enabled in last turn
+                var pluginlist = [];
                 if (fs.existsSync(__dirname + '/last_enabled_plugins.json')) {
-                    var pluginlist = [];
                     let data = fs.readFileSync(__dirname + '/last_enabled_plugins.json');
                     if (data) {
                         try {
