@@ -218,8 +218,10 @@ window.DBViewerView = countlyView.extend({
             $('#aggregate-view').show();
             $('#aggregate-header').show();
             $('#dbviewer-header').hide();
+            $('.dbviewer-prepare-area').show();
+            $('#aggregate-result-table_wrapper').hide();
             $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
-            $('#back_to_dbviewer').css('display', 'block');
+            $('#back_to_dbviewer').css('display', 'inline-block');
         });
 
         $('body').off('click', '#back_to_dbviewer').on('click', '#back_to_dbviewer', function() {
@@ -237,7 +239,38 @@ window.DBViewerView = countlyView.extend({
             $('.aggregate-prepare-area').show();
         });
 
+        if (self._task) {
+            // prepare aggregation view
+            $('#dbviewer').hide();
+            $('#aggregate-view').show();
+            $('#aggregate-header').show();
+            $('#dbviewer-header').hide();
+            $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
+            $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
+            $('#back_to_dbviewer').css('display', 'inline-block');
+
+            // prepare for execution of saved aggregation
+            $('#aggregate-result-table > thead').html("");
+            $('#show-aggregation-input').show();
+            $('.aggregate-prepare-area').hide();
+            countlyDBviewer.executeAggregation(self.db, self.collection, null, store.get('countly_active_app'), self._task, function(data) {
+                if (data) {
+                    var meta = JSON.parse(data.meta);
+                    store.set('dbviewer_current_db', meta.db);
+                    store.set('dbviewer_current_collection', meta.collection);
+                    $('#aggregation_pipeline').val(JSON.stringify(meta.aggregation));
+                    var columns = self.generateColumnArray(data.data[0]);
+                    this.dtable = $('#aggregate-result-table').dataTable({
+                        "aaData": data.data,
+                        "aoColumns": columns
+                    });
+                }
+            });
+            $('#aggregate-result-table').stickyTableHeaders();
+        }
+
         $('body').off('click', '#generate_aggregate_report').on('click', '#generate_aggregate_report', function() {
+            self._task = null;
             var aggregation = $('#aggregation_pipeline').val();
             try {
                 aggregation = JSON.stringify(JSON.parse(aggregation));
@@ -254,10 +287,18 @@ window.DBViewerView = countlyView.extend({
             $('#aggregate-result-table > thead').html("");
             $('#show-aggregation-input').show();
             $('.aggregate-prepare-area').hide();
-            countlyDBviewer.executeAggregation(self.db, self.collection, aggregation, function(data) {
-                var columns = self.generateColumnArray(data.aaData[0]);
-                var dTableConfig = self.generateDTableObject(aggregation, columns, data);
-                this.dtable = $('#aggregate-result-table').dataTable($.extend({}, $.fn.dataTable.defaults, dTableConfig));
+            countlyDBviewer.executeAggregation(self.db, self.collection, aggregation, store.get('countly_active_app'), null, function(data) {
+                if (data && data.aaData) {
+                    var columns = self.generateColumnArray(data.aaData[0]);
+                    this.dtable = $('#aggregate-result-table').dataTable({
+                        "aaData": data.aaData,
+                        "aoColumns": columns,
+                        "bDestroy": true
+                    });
+                }
+                else {
+                    $('#back_to_dbviewer').trigger('click');
+                }
             });
             $('#aggregate-result-table').stickyTableHeaders();
         });
@@ -569,7 +610,7 @@ window.DBViewerView = countlyView.extend({
                 $('#dbviewer-header').hide();
                 $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
                 $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
-                $('#back_to_dbviewer').css('display', 'block');
+                $('#back_to_dbviewer').css('display', 'inline-block');
             }
             $('.dbviewer-aggregate-button > span').html($.i18n.map['dbviewer.aggregate']);
             $('.dbviewer-aggregate').show();
@@ -1014,6 +1055,7 @@ window.DBViewerView = countlyView.extend({
 app.dbviewerView = new DBViewerView();
 
 app.route('/manage/db', 'db', function() {
+    this.dbviewerView._task = null;
     this.dbviewerView.db = null;
     this.dbviewerView.collection = null;
     this.dbviewerView.document = null;
@@ -1022,6 +1064,7 @@ app.route('/manage/db', 'db', function() {
 });
 
 app.route('/manage/db/:dbs', 'dbs', function(db) {
+    this.dbviewerView._task = null;
     this.dbviewerView.db = db;
     this.dbviewerView.collection = null;
     this.dbviewerView.document = null;
@@ -1030,6 +1073,7 @@ app.route('/manage/db/:dbs', 'dbs', function(db) {
 });
 
 app.route('/manage/db/:dbs/:collection', 'dbs', function(db, collection) {
+    this.dbviewerView._task = null;
     this.dbviewerView.db = db;
     this.dbviewerView.collection = collection;
     this.dbviewerView.document = null;
@@ -1043,6 +1087,7 @@ app.route('/manage/db/:dbs/:collection', 'dbs', function(db, collection) {
 });
 
 app.route('/manage/db/:dbs/:collection/*document', 'dbs', function(db, collection, document) {
+    this.dbviewerView._task = null;
     this.dbviewerView.db = db;
     this.dbviewerView.collection = collection;
     this.dbviewerView.document = document;
@@ -1050,6 +1095,7 @@ app.route('/manage/db/:dbs/:collection/*document', 'dbs', function(db, collectio
 });
 
 app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function(db, collection, page) {
+    this.dbviewerView._task = null;
     this.dbviewerView.db = db;
     this.dbviewerView.collection = collection;
     this.dbviewerView.document = null;
@@ -1063,6 +1109,7 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function(db, collecti
 });
 
 app.route('/manage/db/aggregate/:dbs/:collection', 'dbs', function(db, collection) {
+    this.dbviewerView._task = null;
     if (typeof db === 'undefined' || typeof collection === 'undefined') {
         app.navigate('#/manage/db', true);
     }
@@ -1079,6 +1126,11 @@ app.route('/manage/db/aggregate/:dbs/:collection', 'dbs', function(db, collectio
         }
         this.renderWhenReady(this.dbviewerView);
     }
+});
+
+app.route('/manage/db/task/*task', 'task_id', function(task_id) {
+    this.dbviewerView._task = task_id;
+    this.renderWhenReady(this.dbviewerView);
 });
 
 $(document).ready(function() {

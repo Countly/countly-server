@@ -4,6 +4,7 @@ var common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
+    taskManager = require('../../../api/utils/taskmanager.js'),
     exported = {};
 
 (function() {
@@ -21,10 +22,12 @@ var common = require('../../../api/utils/common.js'),
                 }
                 if (dbs[dbNameOnParam]) {
                     dbs[dbNameOnParam].collection(params.qstring.collection).findOne({_id: params.qstring.document}, function(err, results) {
-                        if (err) {
-                            console.error(err);
+                        if (!err) {
+                            common.returnOutput(params, results || {});
                         }
-                        common.returnOutput(params, results || {});
+                        else {
+                            common.returnOutput(params, 500, err);
+                        }
                     });
                 }
             }
@@ -310,25 +313,58 @@ var common = require('../../../api/utils/common.js'),
                 return callback(false);
             }
         }
+
         /**
         * Get aggregated result by the parameter on the url
         * @param {string} collection - collection will be applied related query
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
-            var skip = parseInt(params.qstring.iDisplayStart || 0);
-            if (skip) {
-                aggregation.push({"$skip": skip});
-            }
             if (params.qstring.iDisplayLength) {
                 aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
             }
-            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(aggregationErr, result) {
-                if (!aggregationErr) {
-                    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: result.length, iTotalDisplayRecords: result.length, "aaData": result});
+            // check task is already running?
+            taskManager.checkIfRunning({
+                db: dbs[dbNameOnParam],
+                params: params
+            }, function(task_id) {
+                if (task_id) {
+                    common.returnOutput(params, {task_id: task_id});
                 }
                 else {
-                    common.returnMessage(params, 500, aggregationErr);
+                    var taskCb = taskManager.longtask({
+                        db: dbs[dbNameOnParam],
+                        threshold: plugins.getConfig("api").request_threshold,
+                        params: params,
+                        type: "dbviewer",
+                        force: params.qstring.save_report || false,
+                        meta: JSON.stringify({
+                            db: dbNameOnParam,
+                            collection: params.qstring.collection,
+                            aggregation: aggregation
+                        }),
+                        view: "#/manage/db/task/",
+                        report_name: params.qstring.report_name,
+                        report_desc: params.qstring.report_desc,
+                        period_desc: params.qstring.period_desc,
+                        name: 'Aggregation-' + Date.now(),
+                        creator: params.member._id + "",
+                        global: params.qstring.global === 'true',
+                        autoRefresh: params.qstring.autoRefresh === 'true',
+                        manually_create: params.qstring.manually_create === 'true',
+                        processData: function(error, result, callback) {
+                            callback(error, result);
+                        },
+                        outputData: function(aggregationErr, result) {
+                            if (!aggregationErr) {
+                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result});
+                            }
+                            else {
+                                common.returnMessage(params, 500, aggregationErr);
+                            }
+                        }
+                    });
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, taskCb);
                 }
             });
         }
