@@ -20,7 +20,7 @@ var common = require('../../../api/utils/common.js'),
                 if (err) {
                     common.returnOutput(params, 'Somethings went wrong');
                 }
-                common.returnOutput(params, { limit: 20, start: 1, end: 20, total: indexes.length, pages: Math.ceil(indexes.length / 20), curPage: 1, collections: indexes });
+                common.returnOutput(params, { limit: indexes.length, start: 1, end: indexes.length, total: indexes.length, pages: 1, curPage: 1, collections: indexes });
             });
         }
 
