@@ -39,6 +39,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	yum clean all && \
 	rm -rf /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* && \
 	chown -R 1001:0 /opt/countly && \
+	chmod -R g=u /opt/countly && \
 	\
 	bash ./bin/scripts/detect.init.sh && \
 	./bin/commands/countly.sh update sdk-web
