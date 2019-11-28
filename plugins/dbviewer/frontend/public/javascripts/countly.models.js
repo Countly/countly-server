@@ -53,21 +53,25 @@
         });
     };
 
-    countlyDBviewer.loadCollections = function(db, collection, page, filter, limit, sort, projection, isSort) {
+    countlyDBviewer.loadCollections = function(db, collection, page, filter, limit, sort, projection, isSort, isIndexRequest) {
         limit = limit || 20;
         var skip = (page - 1) * limit;
+        var requestData = {
+            dbs: db,
+            collection: collection,
+            filter: filter || "{}",
+            limit: limit,
+            sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
+            projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
+            skip: skip
+        };
+        if (isIndexRequest) {
+            requestData.action = "get_indexes";
+        }
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + '/o/db/',
-            data: {
-                dbs: db,
-                collection: collection,
-                filter: filter || "{}",
-                limit: limit,
-                sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
-                projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
-                skip: skip
-            },
+            data: requestData,
             success: function(json) {
                 _collections = json;
             }

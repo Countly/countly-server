@@ -1251,12 +1251,17 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <span>{{#clearObjectId value}}{{/clearObjectId}}</span>
         */
-        Handlebars.registerHelper('clearObjectId', function(string) {
-            var id = string;
-            if (id.substr(0, 3) === "Obj") {
-                id = id.split("(")[1].split(")")[0];
+        Handlebars.registerHelper('clearObjectId', function(object) {
+            if (object) {
+                var id = Object._id;
+                if (id.substr(0, 3) === "Obj") {
+                    id = id.split("(")[1].split(")")[0];
+                }
+                return id;
             }
-            return id;
+            else {
+                return '';
+            }
         });
         /**
         * Display common date time selecting UI elements
