@@ -586,7 +586,8 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
 */
 function setMenuItems() {
     // hide empty section headers
-    var categories = $('#' + countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type + '-type .menu-category');
+    var type = countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type ? countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type : "mobile";
+    var categories = $('#' + type + '-type .menu-category');
     for (var j = 0; j < categories.length; j++) {
         var children = categories[j].children;
         var isEmpty = true;
