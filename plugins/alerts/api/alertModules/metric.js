@@ -272,6 +272,7 @@ function getAverageSessionDuration(app_id, period) {
 /**
 * fetch view count and bounce rate data 
 * @param {string} app_id - id of app
+* @param {string} viewId - view id of target view from db collection:countly.viewmeta{appid}
 * @return {object} promise
 */
 function getViewData(app_id, viewId) {
