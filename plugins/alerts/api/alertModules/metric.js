@@ -233,7 +233,7 @@ function getAverageSessionDuration(app_id, period) {
 
             fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                 countlySession.setDb(usersDoc || {});
-                countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
+                countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
 
                 var map = {t: "total_sessions", n: "new_users", u: "total_users", d: "total_time", e: "events"};
                 var ret = {};

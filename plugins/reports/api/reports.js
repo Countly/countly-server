@@ -196,7 +196,7 @@ var metrics = {
                                     fetch.getTimeObj(metric, params, {db: db}, function(output) {
                                         fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
                                             output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
-                                            output.prev_correction = fetch.formatTotalUsersObj(dbTotalUsersObj, true);
+                                            output.prev_correction = fetch.formatTotalUsersObj(dbTotalUsersObj, null, true);
                                             done2(null, {metric: metric, data: output});
                                         });
                                     });
