@@ -10,6 +10,10 @@ rm -rf /opt/countly/plugins/errorlogs
 rm -rf /opt/countly/plugins/plugin-upload
 rm -rf /opt/countly/plugins/updates
 
+if [ ! -f "/etc/timezone" ]; then
+    echo "Etc/UTC" > /etc/timezone
+fi
+
 if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 	# Run ab-testing models compilation if it's there
 	if [ -d /opt/countly/plugins/ab-testing ]; then
