@@ -585,7 +585,7 @@
         *    "color":"#333933"
         *}], "#dashboard-graph");
         */
-        countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small, appIdsForNotes) {
+        countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small, appIdsForNotes, options) {
             _.defer(function() {
                 if (!dataPoints || !dataPoints.length) {
                     $(container).hide();
@@ -702,7 +702,11 @@
                     keyEvents = [];
                     //keyEventsIndex = 0;
 
-                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().series.splines.show && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
+                if (options && _.isObject(options)) {
+                    countlyCommon.deepObjectExtend(graphProperties, options);
+                }
+
+                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
                     if (overrideBucket) {
                         graphObj.getOptions().series.points.radius = 4;
@@ -2460,6 +2464,24 @@
 
             return res;
         };
+
+        /**
+        * Recursively merges an object into another
+        * @param {Object} target - object to be merged into
+        * @param {Object} source - object to merge into the target
+        * @returns {Object} target after the merge
+        */
+        countlyCommon.deepObjectExtend = function(target, source) {
+            Object.keys(source).forEach(function(key) {
+                if ((key in target) && _.isObject(target[key])) {
+                    countlyCommon.deepObjectExtend(target[key], source[key]);
+                } else {
+                    target[key] = source[key];
+                }
+            });
+
+            return target;
+        }
 
         /**
         * Formats the number by separating each 3 digits with ,
