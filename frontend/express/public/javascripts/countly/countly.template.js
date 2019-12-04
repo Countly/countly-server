@@ -3501,8 +3501,8 @@ var AppRouter = Backbone.Router.extend({
                     dateTo.datepicker("option", "minDate", new Date(self.dateFromSelected));
                 }
 
-                $("#date-from-input").val(moment(dateFrom.datepicker("getDate")).format("MM/DD/YYYY"));
-                $("#date-to-input").val(moment(dateTo.datepicker("getDate")).format("MM/DD/YYYY"));
+                $("#date-from-input").val(moment(dateFrom.datepicker("getDate"), "MM-DD-YYYY").format("MM/DD/YYYY"));
+                $("#date-to-input").val(moment(dateTo.datepicker("getDate"), "MM-DD-YYYY").format("MM/DD/YYYY"));
 
                 dateTo.datepicker("refresh");
                 dateFrom.datepicker("refresh");
@@ -3527,7 +3527,7 @@ var AppRouter = Backbone.Router.extend({
                 },
                 beforeShowDay: function(date) {
                     var ts = date.getTime();
-                    if (ts < moment($("#date-to-input").val()) && ts >= moment($("#date-from-input").val())) {
+                    if (ts < moment($("#date-to-input").val(), "MM/DD/YYYY") && ts >= moment($("#date-from-input").val(), "MM/DD/YYYY")) {
                         return [true, "in-range", ""];
                     }
                     else {
@@ -3553,7 +3553,7 @@ var AppRouter = Backbone.Router.extend({
                 },
                 beforeShowDay: function(date) {
                     var ts = date.getTime();
-                    if (ts <= moment($("#date-to-input").val()) && ts > moment($("#date-from-input").val())) {
+                    if (ts <= moment($("#date-to-input").val(), "MM/DD/YYYY") && ts > moment($("#date-from-input").val(), "MM/DD/YYYY")) {
                         return [true, "in-range", ""];
                     }
                     else {
@@ -3564,7 +3564,7 @@ var AppRouter = Backbone.Router.extend({
 
             $("#date-from-input").keyup(function(event) {
                 if (event.keyCode === 13) {
-                    var date = moment($("#date-from-input").val());
+                    var date = moment($("#date-from-input").val(), "MM/DD/YYYY");
 
                     if (date.format("MM/DD/YYYY") !== $("#date-from-input").val()) {
                         var jsDate = $('#date-from').datepicker('getDate');
@@ -3588,7 +3588,7 @@ var AppRouter = Backbone.Router.extend({
 
             $("#date-to-input").keyup(function(event) {
                 if (event.keyCode === 13) {
-                    var date = moment($("#date-to-input").val());
+                    var date = moment($("#date-to-input").val(), "MM/DD/YYYY");
                     if (date.format("MM/DD/YYYY") !== $("#date-to-input").val()) {
                         var jsDate = $('#date-to').datepicker('getDate');
                         $("#date-to-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
