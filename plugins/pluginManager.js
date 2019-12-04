@@ -911,14 +911,6 @@ var pluginManager = function pluginManager() {
             }
             callback(errors);
         });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
-        });
     };
 
     /**
