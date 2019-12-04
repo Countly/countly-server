@@ -567,12 +567,13 @@
 
         /**
         * Draws a time line graph with the given dataPoints to container.
-        * @param {object} dataPoints - data poitns to draw on graph
+        * @param {object} dataPoints - data points to draw on graph
         * @param {string|object} container - selector for container or container object itself where to create graph
         * @param {string=} bucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
         * @param {string=} overrideBucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
         * @param {boolean=} small - if graph won't be full width graph
         * @param {array=} appIdsForNotes - display notes from provided apps ids on graph, will not show notes when empty 
+        * @param {object=} options - extra graph options, see flot documentation
         * @example
         * countlyCommon.drawTimeGraph([{
         *    "data":[[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,12],[8,9],[9,10],[10,5],[11,8],[12,7],[13,9],[14,4],[15,6]],
@@ -2475,13 +2476,14 @@
             Object.keys(source).forEach(function(key) {
                 if ((key in target) && _.isObject(target[key])) {
                     countlyCommon.deepObjectExtend(target[key], source[key]);
-                } else {
+                }
+                else {
                     target[key] = source[key];
                 }
             });
 
             return target;
-        }
+        };
 
         /**
         * Formats the number by separating each 3 digits with ,
