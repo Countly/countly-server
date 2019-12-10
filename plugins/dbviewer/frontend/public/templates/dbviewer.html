@@ -62,6 +62,7 @@
 			<a class="dbviewer-go-back" href="#/manage/db"><div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i> <span>{{back}}</span></div></a>
 			{{/if}}
 			<a class="dbviewer-aggregate" href="#/manage/db/aggregate/{{db}}/{{collection}}"><div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-bar-chart"></i> <span data-localize="dbviewer.aggregate"></span></div></a>
+			<a class="dbviewer-aggregate dbviewer-indexes" href="#/manage/db/indexes/{{db}}/{{collection}}"><div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-table"></i> <span data-localize="dbviewer.indexes"></span></div></a>
 			<div class="dbviewer-gray-area dbviewer-area-pos">
 				<div class="dbviewer-header-of-query-wrapper">
 					<div class="dbviewer-gray dbviewer-left-side-1">
@@ -173,7 +174,15 @@
 					<table class="jh-type-object jh-root" id="dbviewer-collections">
 					{{#eachOfArray data.collections}}
 					<tr>
-						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} <span class="dbviewer-view-link" class="jh-type-string"><a data-db="{{../db}}" data-collection="{{../collection}}" data-id="{{value._id}}" href="#/manage/db/{{../db}}/{{../collection}}/{{#clearObjectId value._id}}{{/clearObjectId}}" class="dbviewer-document-detail">View</a></span></p></th>
+						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} 
+							<span class="document-detail-link-wrapper">
+								<span class="dbviewer-view-link" class="jh-type-string">
+									<a data-db="{{../db}}" data-collection="{{../collection}}" data-id="{{value._id}}" href="#/manage/db/{{../db}}/{{../collection}}/{{#clearObjectId value}}{{/clearObjectId}}" class="dbviewer-document-detail">
+										View
+									</a>
+								</span>
+							</span>
+						</th>
 					</tr>
 					<tr>
 						<td class="jh-value jh-object-value">{{prettyJSON value}}</td>
