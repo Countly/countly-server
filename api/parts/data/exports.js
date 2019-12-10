@@ -257,7 +257,8 @@ exports.fromRequest = function(options) {
     var opts = {
         uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.path,
         method: options.method || 'POST',
-        json: options.data || {}
+        json: options.data || {},
+        strictSSL: false
     };
     options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
 
