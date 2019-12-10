@@ -189,6 +189,9 @@ var verify_token = function(options, return_owner) {
             var expires_after = 0;
             if (res) {
                 var valid_endpoint = true;
+                if (Array.isArray(res.endpoint) && res.endpoint.length === 0) {
+                    res.endpoint = "";
+                }
                 if (res.endpoint && res.endpoint !== "") {
                     //keep backwards compability
                     if (!Array.isArray(res.endpoint)) {
