@@ -94,7 +94,7 @@
         ctx.beginPath();
         ctx.moveTo(points[0][0], points[0][1]);
         if(dashed) {
-            ctx.setLineDash([5, 15]);
+            ctx.setLineDash([4, 4]);
         }
 
         var plength = points.length;
