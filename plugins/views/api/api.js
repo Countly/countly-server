@@ -155,7 +155,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             if (!ob.export_commands.views) {
                 ob.export_commands.views = [];
             }
-            ob.export_commands.views.push('mongoexport ' + ob.dbstr + ' --collection app_userviews' + ob.app_id + ' -q \'{_id:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/app_userviews' + ob.app_id + '.json');
+            ob.export_commands.views.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_userviews' + ob.app_id, '-q', '{_id:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/app_userviews' + ob.app_id + '.json']});
             resolve();
         });
     });

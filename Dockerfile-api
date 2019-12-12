@@ -1,6 +1,10 @@
 FROM node:8.16-jessie
 
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,plugin-upload,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
+# Enterprise Edition:
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing
+
+USER root
 
 # Core dependencies
 ## Tini
@@ -24,10 +28,10 @@ ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
 ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0"
 
 ## The files
-RUN mkdir /opt/countly && chown 1001:1001 /opt/countly
-USER 1001
+RUN mkdir /opt/countly && chown 1001:0 /opt/countly
+USER 1001:0
 WORKDIR /opt/countly
-COPY --chown=1001 . .
+COPY --chown=1001:0 . .
 HEALTHCHECK --start-period=60s CMD curl --fail http://localhost:3001/o/ping || exit 1
 
 ## API runtime dependencies
@@ -37,9 +41,12 @@ RUN cp -n api/config.sample.js api/config.js && \
 	./bin/docker/preinstall.sh
 
 USER root
-RUN apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
+
+RUN ./bin/docker/modify.sh && \
+	chown -R 1001:0 /opt/countly && \
+	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-USER 1001
+USER 1001:0
 CMD ["/opt/countly/bin/docker/cmd.sh"]

@@ -268,7 +268,7 @@ table { border-collapse: collapse; }
                 		.widget-header .logo.durations { background-position:-380px; }
 		                .widget-header .logo.resolutions { background-position:-418px; }
 						.widget-header .logo.densities { background-position:-456px; }
-
+    .widget-tips { display:none; background-color: #f9f9f9; padding: 10px 14px; color: #868686;  font-size: 13px; border: 1px solid #d0d0d0; border-bottom-color: #e9e9e9;overflow: auto;}
 	.widget-footer { text-align:right; min-height:10px; color:#666; font-size:11px; border-bottom-left-radius:2px; border-bottom-right-radius:2px; border:1px solid #D0D0D0; border-top:none; background-color:#FFF; box-shadow:inset 0 1px 0 #FFF; overflow:hidden; }
 	    .widget.google-disabled .widget-footer { border-top:2px solid #D0D0D0; }
     .widget-content { background-color:#FFF; border:1px solid #D0D0D0; }

@@ -84,6 +84,10 @@ var plugins = require('../../pluginManager.js'),
     * @returns {undefined} Returns nothing
     **/
     function updateDataPoints(appId, sessionCount, eventCount) {
+        if (!sessionCount && !eventCount) {
+            return;
+        }
+
         var utcMoment = common.moment.utc();
 
         common.db.collection('server_stats_data_points').update(

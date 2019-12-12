@@ -2,13 +2,17 @@
 
 /opt/countly/bin/docker/postinstall.sh
 
+if [ -z "$COUNTLY_CONFIG_HOSTNAME" ]; then
+  echo "[docker] ERROR: Please set COUNTLY_CONFIG_HOSTNAME with your planned Countly hostname, i.e. countly.example.com"
+fi
+
 case "$COUNTLY_CONTAINER" in
   "api" )
-    exec /usr/local/bin/node /opt/countly/api/api.js
+    exec node /opt/countly/api/api.js
     ;;
 
   "frontend" )
-  	exec /usr/local/bin/node /opt/countly/frontend/express/app.js
+  	exec node /opt/countly/frontend/express/app.js
     ;;
 
    * )

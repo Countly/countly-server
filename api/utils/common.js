@@ -362,7 +362,7 @@ common.convertToType = function(value) {
             return parseFloat(value);
         }
         //check if it is number, but longer than 16 digits (max limit)
-        else if ((value + "").length > 16) {
+        else if ((Math.round(value) + "").length > 16) {
             //convert to string
             return value + "";
         }
