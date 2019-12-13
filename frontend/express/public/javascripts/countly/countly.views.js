@@ -5720,6 +5720,14 @@ window.LongTaskView = countlyView.extend({
         var data = this.task_list;
         for (var i = 0; i < data.length; i++) {
             if (data[i]._id === id) {
+
+                var showPeriod = true;
+                if ((data[i].taskgroup === true && data[i].type === "drill") || data[i].type === "formulas") {
+                    showPeriod = false;
+                    $("#single-period-dropdown").clySelectSetSelection(data[i].period_desc, data[i].period_desc);
+                    $("#report-period-block").css("display", "none");
+                }
+
                 $("#report-name-input").val(data[i].report_name);
                 $("#report-desc-input").val(data[i].report_desc);
 
@@ -5735,10 +5743,12 @@ window.LongTaskView = countlyView.extend({
                 if (data[i].autoRefresh) {
                     $("#report-refresh-option").addClass("selected");
                     $("#report-onetime-option").removeClass("selected");
-                    $("#single-period-dropdown").clySelectSetSelection(
-                        data[i].period_desc,
-                        jQuery.i18n.map["taskmanager.last-" + data[i].period_desc]
-                    );
+                    if (showPeriod === true) {
+                        $("#single-period-dropdown").clySelectSetSelection(
+                            data[i].period_desc,
+                            jQuery.i18n.map["taskmanager.last-" + data[i].period_desc]
+                        );
+                    }
                 }
                 else {
                     $("#report-period-block").css("display", "none");
@@ -5989,6 +5999,17 @@ window.LongTaskView = countlyView.extend({
             {
                 "mData": function(row, type) {
                     var time = 0;
+                    if (row.taskgroup && row.subtasks) {
+                        for (var k = 0; k < row.subtasks.length; k++) {
+                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                row.status = row.subtasks[k].status;
+                                row.start = row.subtasks[k].start || row.start;
+                            }
+                            if (row.end < row.subtasks[k].end) {
+                                row.end = row.subtasks[k].end;
+                            }
+                        }
+                    }
                     if (row.status === "running" || row.status === "rerunning") {
                         time = Math.max(new Date().getTime() - row.start, 0);
                     }
@@ -6075,6 +6096,19 @@ window.LongTaskView = countlyView.extend({
                         row = item;
                     }
                 });
+
+                var subid = id;
+
+                if (row.taskgroup && row.subtasks) {
+                    row.hasData = false;
+                    for (var k in row.subtasks) {
+                        if (row.subtasks[k].hasData === true) {
+                            subid = k;
+                            row.hasData = true;
+                            break;
+                        }
+                    }
+                }
                 $(".tasks-menu").find(".edit-task").data("id", id);
                 if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
                     $(".tasks-menu").find(".delete-task").data("id", id);
@@ -6086,7 +6120,7 @@ window.LongTaskView = countlyView.extend({
 
                 if (row.status !== "running" && row.status !== "rerunning") {
                     if (row.view && row.hasData) {
-                        $(".tasks-menu").find(".view-task").attr("href", row.view + row._id).data("localize", "common.view").text(jQuery.i18n.map["common.view"]).show();
+                        $(".tasks-menu").find(".view-task").attr("href", row.view + subid).data("localize", "common.view").text(jQuery.i18n.map["common.view"]).show();
                     }
                     else {
                         $(".tasks-menu").find(".view-task").hide();
@@ -6100,7 +6134,7 @@ window.LongTaskView = countlyView.extend({
                 }
                 else {
                     if (row.view && row.hasData) {
-                        $(".tasks-menu").find(".view-task").attr("href", row.view + row._id).data("localize", "taskmanager.view-old").text(jQuery.i18n.map["taskmanager.view-old"]).show();
+                        $(".tasks-menu").find(".view-task").attr("href", row.view + subid).data("localize", "taskmanager.view-old").text(jQuery.i18n.map["taskmanager.view-old"]).show();
                     }
                     else {
                         $(".tasks-menu").find(".view-task").hide();

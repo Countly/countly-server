@@ -193,7 +193,25 @@ taskmanager.createTask = function(options, callback) {
     update.report_desc = options.report_desc || "";
     update.period_desc = options.period_desc || "";
     update.manually_create = options.manually_create || false;
-    options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
+    update.subtask_key = options.subtask_key || "";
+    update.taskgroup = options.taskgroup || false;
+    if (options.subtask && options.subtask !== "") {
+        update.subtask = options.subtask;
+        var updateSub = {$set: {}};
+        updateSub.$set["subtasks." + options.id + ".status"] = "running";
+        updateSub.$set["subtasks." + options.id + ".start"] = new Date().getTime();
+        options.db.collection("long_tasks").update({_id: update.subtask}, updateSub, {'upsert': false}, function(err, res) {
+            if (err) {
+                callback(err, res);
+            }
+            else {
+                options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
+            }
+        });
+    }
+    else {
+        options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
+    }
 };
 
 /**
@@ -226,7 +244,21 @@ taskmanager.saveResult = function(options, data, callback) {
                 data: JSON.stringify(data || {}),
                 errormsg: message
             }
-        }, {'upsert': false}, callback);
+        }, {'upsert': false}, function(err, res) {
+            if (options.subtask && !err) {
+                var updateObj = {$set: {}};
+                updateObj.$set["subtasks." + options.id + ".status"] = "errored";
+                updateObj.$set["subtasks." + options.id + ".hasData"] = true;
+                updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
+
+                options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, callback);
+            }
+            else {
+                if (callback) {
+                    callback(err, res);
+                }
+            }
+        });
     }
     else {
         options.db.collection("long_tasks").update({_id: options.id}, {
@@ -236,7 +268,22 @@ taskmanager.saveResult = function(options, data, callback) {
                 hasData: true,
                 data: JSON.stringify(data || {})
             }
-        }, {'upsert': false}, callback);
+        }, {'upsert': false}, function(err, res) {
+            if (options.subtask && !err) {
+                var updateObj = {$set: {}};
+                updateObj.$set["subtasks." + options.id + ".status"] = "completed";
+                updateObj.$set["subtasks." + options.id + ".hasData"] = true;
+                updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
+                options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, callback);
+            }
+            else {
+                if (callback) {
+                    callback(err, res);
+                }
+            }
+        });
+
+
     }
 };
 
@@ -264,6 +311,18 @@ taskmanager.nameResult = function(options, data, callback) {
 taskmanager.getResult = function(options, callback) {
     options.db = options.db || common.db;
     options.db.collection("long_tasks").findOne({_id: options.id}, callback);
+};
+
+/**
+* Get specific task result
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {string} options.id - id of the task result
+* @param {funciton} callback - callback for the result
+*/
+taskmanager.getResultByQuery = function(options, callback) {
+    options.db = options.db || common.db;
+    options.db.collection("long_tasks").findOne(options.query, callback);
 };
 
 /**
@@ -448,7 +507,7 @@ taskmanager.getTableQueryResult = async function(options, callback) {
 */
 taskmanager.deleteResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").remove({_id: options.id}, callback);
+    options.db.collection("long_tasks").remove({$or: [{_id: options.id}, {subtask: options.id}]}, callback);
 };
 
 /**
@@ -460,7 +519,21 @@ taskmanager.deleteResult = function(options, callback) {
 taskmanager.errorResults = function(options, callback) {
     options.db = options.db || common.db;
     options.db.collection("long_tasks").update({status: "running"}, {$set: {status: "errored"}}, {multi: true}, function() {
-        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored"}}, {multi: true}, callback);
+        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored"}}, {multi: true}, function() {
+            options.db.collection("long_tasks").find({status: "errored", subtask: {$exists: true}}).toArray(function(err, res) {
+                if (res && res.length > 0) {
+                    for (var k = 0; k < res.length; k++) {
+                        var updateSub = {$set: {}};
+                        updateSub.$set["subtasks." + res.id + ".status"] = "errored";
+                        options.db.collection("long_tasks").update({_id: res.subtask}, updateSub, {multi: true});
+                    }
+                }
+                if (callback) {
+                    callback(err, {});
+                }
+            });
+        });
+        //callback);
     });
 };
 
@@ -500,6 +573,7 @@ taskmanager.rerunTask = function(options, callback) {
                     taskmanager.saveResult({
                         db: options1.db,
                         id: options1.id,
+                        subtask: options1.subtask,
                         request: res.request
                     }, body);
                 }
@@ -520,6 +594,8 @@ taskmanager.rerunTask = function(options, callback) {
             if (reqData.uri) {
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
+                options.subtask = res.subtask;
+                reqData.json.autoUpdate = options.autoUpdate || false;
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
                         if (member && member.api_key) {
