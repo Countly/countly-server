@@ -900,8 +900,8 @@
 
                     var tooltip = $("#graph-tooltip");
                     var crossHairPos = graphObj.p2c(position);
-                    var tooltipLeft = (crossHairPos.left < 200) ? crossHairPos.left + 20 : crossHairPos.left - tooltip.width() - 20;
-
+                    var minpoz = Math.max(200, tooltip.width());
+                    var tooltipLeft = (crossHairPos.left < minpoz) ? crossHairPos.left + 20 : crossHairPos.left - tooltip.width() - 20;
                     tooltip.css({ left: tooltipLeft });
 
                     if (onPoint) {
@@ -916,11 +916,16 @@
                             var series = dataSet[m],
                                 formattedValue = series.data[dataIndex][1];
 
+                            var addMe = "";
                             // Change label to previous period if there is a ghost graph
                             if (series.mode === "ghost") {
                                 series.label = jQuery.i18n.map["common.previous-period"];
                             }
 
+                            //add lines over color block for dashed 
+                            if (series.dashed) {
+                                addMe = '<svg style="width: 12px; height: 12px; position:absolute; top:0; left:0;"><line stroke-dasharray="2, 2"  x1="0" y1="100%" x2="100%" y2="0" style="stroke:rgb(255,255,255);stroke-width:30"/></svg>';
+                            }
                             if (formattedValue) {
                                 formattedValue = parseFloat(formattedValue).toFixed(2).replace(/[.,]00$/, "");
                             }
@@ -929,7 +934,7 @@
                             }
 
                             tooltipHTML += "<div class='inner'>";
-                            tooltipHTML += "<div class='color' style='background-color: " + series.color + "'></div>";
+                            tooltipHTML += "<div class='color' style='position:relative; background-color: " + series.color + "'>" + addMe + "</div>";
                             tooltipHTML += "<div class='series'>" + series.label + "</div>";
                             tooltipHTML += "<div class='value'>" + formattedValue + "</div>";
                             tooltipHTML += "</div>";
