@@ -2167,7 +2167,7 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
                     }
 
                     // onur, add dashedLine to all grid lines except first one
-                    if (i == 0) {
+                    if (v == 0) {
                         ctx.moveTo(x, y);
                         ctx.lineTo(x + xoff, y + yoff);
                     } else {
@@ -2277,7 +2277,7 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
                         }
                     } else {
                         // onur, add skip 0
-                        if (tick.v == 0) {
+                        if (!axis.options.showZeroTick && tick.v == 0) {
                             continue;
                         }
 
