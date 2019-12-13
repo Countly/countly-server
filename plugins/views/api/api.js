@@ -87,7 +87,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 resolve();
                                 common.returnOutput(params, {result: true});
                                 plugins.dispatch("/systemlogs", { params: ob.params, action: "view_deleted", data: viewrecord });
-                                console.log(ob.params);
                             });
                         });
                     }
