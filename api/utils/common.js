@@ -1893,6 +1893,8 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
+        var user = params.app_user || {};
+
         if (!params.qstring.device_id && typeof user.did === "undefined") {
             let err = "Device id is not provided for" + params.href;
             console.log(err);
@@ -1901,8 +1903,6 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
             return;
         }
-
-        var user = params.app_user || {};
 
         if (!no_meta && !params.qstring.no_meta) {
             if (typeof user.fac === "undefined") {
