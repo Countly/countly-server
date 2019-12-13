@@ -23,11 +23,26 @@ class MonitorJob extends job.Job {
          * @return {boolean} return true if can run now
          */
         function tasksFilter(task) {
-            if (task.status === 'running' || task.status === 'rerunning') {
+            //dont run task if running or is a subtask
+            if (task.status === 'running' || task.status === 'rerunning' || task.subtask) {
                 return false;
             }
-            const lastStart = task.start || 0;
-            const lastEnd = task.end || 0;
+
+            var lastStart = task.start || 0;
+            var lastEnd = task.end || 0;
+            //for taskgroup - check if any of subtasks is running
+            //use 
+            if (task.taskgroup && task.subtasks) {
+                for (var k in task.subtasks) {
+                    if (task.subtasks[k].end > lastEnd) {
+                        lastEnd = task.subtasks[k].end;
+                    }
+                    if (task.subtasks[k].status === 'running' || task.subtasks[k].status === 'rerunning') {
+                        return false;
+                    }
+                }
+            }
+
             const now = Date.now();
             const duration = lastEnd - lastStart;
             if (duration <= 60 * 1000 && duration >= 0) {
@@ -59,7 +74,8 @@ class MonitorJob extends job.Job {
                     try {
                         taskmanager.rerunTask({
                             db: common.db,
-                            id: task._id
+                            id: task._id,
+                            autoUpdate: true
                         }, () => {});
                     }
                     catch (e) {
