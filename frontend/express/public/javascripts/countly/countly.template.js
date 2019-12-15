@@ -1280,7 +1280,7 @@ var AppRouter = Backbone.Router.extend({
         */
         Handlebars.registerHelper('clearObjectId', function(object) {
             if (object) {
-                var id = Object._id;
+                var id = object._id;
                 if (id.substr(0, 3) === "Obj") {
                     id = id.split("(")[1].split(")")[0];
                 }
