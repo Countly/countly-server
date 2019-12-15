@@ -226,6 +226,10 @@ module.exports = function(grunt) {
                 plugins.splice(plugins.indexOf('funnels'), 1);
                 plugins.push('funnels');
             }
+            if (plugins.indexOf('formulas') !== -1) {
+                plugins.splice(plugins.indexOf('formulas'), 1);
+                plugins.push('formulas');
+            }
         }
 
         plugins.forEach(function(plugin) {
