@@ -548,8 +548,8 @@ taskmanager.errorResults = function(options, callback) {
                 if (res && res.length > 0) {
                     for (var k = 0; k < res.length; k++) {
                         var updateSub = {$set: {}};
-                        updateSub.$set["subtasks." + res.id + ".status"] = "errored";
-                        options.db.collection("long_tasks").update({_id: res.subtask}, updateSub, {multi: true});
+                        updateSub.$set["subtasks." + res._id + ".status"] = "errored";
+                        options.db.collection("long_tasks").update({_id: res.subtask}, updateSub, {multi: true}, function(/*err,res*/){});
                     }
                 }
                 if (callback) {
