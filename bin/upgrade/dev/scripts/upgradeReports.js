@@ -21,7 +21,7 @@ countlyDb.collection('long_tasks').update({autoRefresh: true,type:"formulas", ta
                         request.json.period = "732days";
                         request.json.period_desc = "732days";
                         request.json.bucket = "";
-                        request.method = "createReport";
+                        request.json.method = "createReport";
                         countlyDb.collection("long_tasks").update({_id: task._id}, {
                             $set: {
                                 subtasks:{},
