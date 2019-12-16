@@ -1337,6 +1337,22 @@
             });
 
             e.stopPropagation();
+
+            var $multiSelect = $(this);
+
+            setTimeout(function() {
+                var maxToSelect = $multiSelect.data("max");
+                var selectedItems = getSelected($multiSelect) || [];
+                for (var i = 0; i < selectedItems.length; i++) {
+                    $multiSelect.find(".item[data-value='" + selectedItems[i] + "']").addClass("disabled");
+                }
+
+                if (maxToSelect) {
+                    if (selectedItems.length >= maxToSelect) {
+                        $multiSelect.find(".item").addClass("disabled");
+                    }
+                }
+            }, 0);
         });
 
         element.off("click", ".cly-multi-select .select-items .item").on("click", ".cly-multi-select .select-items .item", function(e) {
@@ -1445,6 +1461,11 @@
                 if (getSelected($multiSelect).length < maxToSelect) {
                     $multiSelect.find(".item").removeClass("disabled");
                 }
+            }
+
+            var selectedItems = getSelected($multiSelect) || [];
+            for (var i = 0; i < selectedItems.length; i++) {
+                $multiSelect.find(".item[data-value='" + selectedItems[i] + "']").addClass("disabled");
             }
 
             $multiSelect.data("value", getSelected($multiSelect));
