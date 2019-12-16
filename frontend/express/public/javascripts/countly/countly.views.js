@@ -5732,13 +5732,6 @@ window.LongTaskView = countlyView.extend({
         for (var i = 0; i < data.length; i++) {
             if (data[i]._id === id) {
 
-                var showPeriod = true;
-                if ((data[i].taskgroup === true && data[i].type === "drill") || data[i].type === "formulas") {
-                    showPeriod = false;
-                    $("#single-period-dropdown").clySelectSetSelection(data[i].period_desc, data[i].period_desc);
-                    $("#report-period-block").css("display", "none");
-                }
-
                 $("#report-name-input").val(data[i].report_name);
                 $("#report-desc-input").val(data[i].report_desc);
 
@@ -5751,22 +5744,32 @@ window.LongTaskView = countlyView.extend({
                     $("#report-global-option").removeClass("selected");
                 }
 
-                if (data[i].autoRefresh) {
-                    $("#report-refresh-option").addClass("selected");
-                    $("#report-onetime-option").removeClass("selected");
-                    if (showPeriod === true) {
+
+
+                if ((data[i].taskgroup === true && data[i].type === "drill") || data[i].type === "formulas") {
+                    $("#single-period-dropdown").clySelectSetSelection(data[i].period_desc, data[i].period_desc);
+                    $("#report-period-block").css("display", "none");
+                    $("#report-data-block").css("display", "none");
+                }
+                else {
+                    $("#report-data-block").css("display", "block");
+                    if (data[i].autoRefresh) {
+                        $("#report-period-block").css("display", "block");
+                        $("#report-refresh-option").addClass("selected");
+                        $("#report-onetime-option").removeClass("selected");
                         $("#single-period-dropdown").clySelectSetSelection(
                             data[i].period_desc,
                             jQuery.i18n.map["taskmanager.last-" + data[i].period_desc]
                         );
                     }
+                    else {
+                        $("#report-period-block").css("display", "none");
+                        $("#report-refresh-option").removeClass("selected");
+                        $("#report-onetime-option").addClass("selected");
+                    }
                 }
-                else {
-                    $("#report-period-block").css("display", "none");
-                    $("#report-refresh-option").removeClass("selected");
-                    $("#report-onetime-option").addClass("selected");
 
-                }
+
             }
         }
         $("#report-widget-drawer").addClass("open");
