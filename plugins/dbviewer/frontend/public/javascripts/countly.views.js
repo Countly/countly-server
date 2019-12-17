@@ -935,6 +935,10 @@ window.DBViewerView = countlyView.extend({
                 store.set("countly_limitfilter", self.limit);
                 countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort, self.indexes_mode)
                     .then(function(response) {
+                        response.prev = Math.max(1, response.curPage - 1);
+                        response.next = Math.min(response.pages, response.curPage + 1);
+                        response.start = Math.max(1, response.curPage - 5);
+                        response.end = Math.min(response.pages, response.curPage + 5);
                         $('#dbviewer-collections').html("");
                         $('.pagination').html("");
                         $('.dbviewer-inline').html('Showing ' + response.start + ' - ' + response.end + ' from ' + response.total + ' documents.');
