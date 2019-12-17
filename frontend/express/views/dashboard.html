@@ -637,54 +637,6 @@
 			{{/each}}
 		</div>
 		{{/if}}
-        
-        {{#if graph-and-numbers}}
-            <div class="dashboard-summary active-users-graph-and-numbers">
-                <div class="inner inner-new">
-                    <table>
-                        <tr>
-                            <td class="side-with-numbers">
-                                <div class="title" data-localize="active_users.active-users"></div>
-                                <table>
-                                {{#each graph-and-numbers.items}}
-                                    <tr>
-                                        <td><div class="color" style="background-color:{{this.color}}"></div></td>
-                                        <td class="select">{{this.title}}</td>
-                                        <td class="number">{{getFormattedNumber this.total}}</td>
-                                    </tr>
-                                {{/each}}
-                                </table>
-                            </td>
-                            <td class="my-sided-block">
-                                <div id="dashboard-graph-active-users" class="graph" style="margin:0 auto !important; height:130px;">
-                                
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
-                    <div class="active-users-buttons-wrapper">
-                        <div id="active-users-menu">
-                            <div class="cly-list-options"> </div>
-                            <div class="cly-button-menu">
-                                <div id="clear-active-cache" class="item" data-localize="active_users.clear-cached-active"></div>
-                            </div>
-
-                        </div>
-                        <div id="active-users-calculate-warning" style="display:none;">
-                            <span data-localize="active_users.active-users-calculating"></span>
-                            <span class="blinking-item">
-                                <span>.</span>
-                                <span>.</span>
-                                <span>.</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="no-drill-warning graph-no-data" style="display:none" data-localize="active_users.drill-plugin-warning" >
-
-                </div>
-            </div>
-        {{/if}}
         <table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         {{#if two-tables}}
             {{#if segmentation}}

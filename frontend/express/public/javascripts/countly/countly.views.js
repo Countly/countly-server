@@ -556,65 +556,12 @@ window.UserView = countlyView.extend({
             }
         };
         var self = this;
-        if (typeof countlyActiveUsers !== 'undefined') {
-            var totalUsers = countlyActiveUsers.getActiveUsers();
-            this.templateData["graph-and-numbers"] = {
-                "count": 3,
-                "items": totalUsers.totals
-            };
-        }
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
             CountlyHelpers.applyColors();
 
-            if (typeof countlySegmentation !== 'undefined') {
-                countlyCommon.drawTimeGraph(totalUsers.graph, "#dashboard-graph-active-users");
-
-                $("#active-users-menu").off("click", " .cly-list-options").on("click", " .cly-list-options", function(event) {
-                    event.stopPropagation();
-                    $(event.target).toggleClass("active");
-                    if ($(event.target).hasClass("active")) {
-                        $('.cly-button-menu').addClass('active');
-                        $('body').find('.cly-button-menu').focus();
-                    }
-                    else {
-                        $(event.target).removeClass("active");
-                        $('#active-users-menu > .cly-button-menu').removeClass('active');
-                    }
-                });
-
-
-                $(window).click(function() {
-                    $('#active-users-menu > .cly-button-menu').removeClass('active');
-                    $('#active-users-menu > .cly-list-options').removeClass('active');
-                });
-
-
-                $('#active-users-menu').find(".cly-button-menu .item").off("click").on("click", function(/*event*/) {
-                    if (typeof countlyActiveUsers !== 'undefined') {
-                        countlyActiveUsers.clearActiveUsersCache({
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            callback: function(success) {
-                                if (success) {
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["common.success"],
-                                        message: jQuery.i18n.map["active_users.active-cache-values-cleared"]
-                                    });
-                                    self.refresh();
-                                }
-                                else {
-                                    CountlyHelpers.alert(jQuery.i18n.map["active_users.active-cache-values-error"], "red");
-                                }
-                            }
-                        });
-                    }
-                    $('#active-users-menu > .cly-button-menu').removeClass('active');
-                    $('#active-users-menu > .cly-list-options').removeClass('active');
-                });
-
-            }
             this.dtable = $(".d-table").dataTable(
                 $.extend({}, $.fn.dataTable.defaults, {
                     aaData: userDP.chartData,
@@ -670,54 +617,6 @@ window.UserView = countlyView.extend({
             $(".d-table").stickyTableHeaders();
 
         }
-
-        if (typeof countlyActiveUsers !== 'undefined') {
-            self.refreshGraph();
-        }
-    },
-    refreshGraph: function() {
-        var self = this;
-        $.when(countlyActiveUsers.fetchActiveUsers(countlyCommon.ACTIVE_APP_ID, countlyCommon.getPeriodForAjax())).then(function() {
-            var totalUsers = countlyActiveUsers.getActiveUsers();
-            if (totalUsers.drillDisabled === true) {
-                self.templateData["graph-and-numbers"] = {
-                    "count": 3,
-                    "items": totalUsers.totals
-                };
-
-                $('.active-users-graph-and-numbers>.inner').css("display", "none");
-                $('.active-users-graph-and-numbers .no-drill-warning').css("display", "block");
-            }
-            else {
-                $('.active-users-graph-and-numbers>.inner').css("display", "block");
-                $('.active-users-graph-and-numbers .no-drill-warning').css("display", "none");
-                self.templateData["graph-and-numbers"] = {
-                    "count": 3,
-                    "items": totalUsers.totals
-                };
-                if (totalUsers.count === 1) {
-                    countlyCommon.drawTimeGraph(totalUsers.graph, "#dashboard-graph-active-users", "daily", true);
-                }
-                else {
-                    countlyCommon.drawTimeGraph(totalUsers.graph, "#dashboard-graph-active-users", "daily");
-                }
-                var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-                $(self.el).find(".side-with-numbers table").first().replaceWith(newPage.find(".side-with-numbers table").first());
-                if (totalUsers.calculating === true) {
-                    $('#active-users-calculate-warning').css("display", "block");
-                    CountlyHelpers.blinkDots(-1, 300, $('#active-users-calculate-warning').find('.blinking-item').first());
-                    if (!countlyCommon.periodObj.periodContainsToday) {
-                        setTimeout(function() {
-                            self.refreshGraph();
-                        }, 10000);//not auto refreshed - refresh 
-                    }
-                }
-                else {
-                    CountlyHelpers.stopBlinking($('#active-users-calculate-warning').find(' .blinking-item').first());
-                    $('#active-users-calculate-warning').css("display", "none");
-                }
-            }
-        });
     },
     refresh: function() {
         var self = this;
@@ -733,7 +632,6 @@ window.UserView = countlyView.extend({
             var userDP = countlySession.getUserDP();
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
             CountlyHelpers.refreshTable(self.dtable, userDP.chartData);
-
             app.localize();
         });
     }

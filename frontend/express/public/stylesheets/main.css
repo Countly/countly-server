@@ -3514,17 +3514,6 @@ color:#E95C6C; transition:color 1s;
     font: 13px Ubuntu,Helvetica,sans-serif;
     color: #444;
 }
-.active-users-graph-and-numbers .no-drill-warning {
-    border: 1px solid #DBDBDB;
-    padding: 50px 50px 50px 50px;
-    position: relative;
-    background-color: #ffffff;
-    cursor: default;
-    color: #a2a2a2;
-    font-size: 16px;
-    text-align:center;
-    border-radius: 2px;
-}
 
 .json-dialog { display:none; position:fixed; max-width:600px; left:50%; top:50%; background-color:#FFF; border:1px solid #999; border-radius:2px; z-index:10001; }
 .json-dialog .header { padding: 20px; padding-bottom: 10px; box-shadow: 0px 5px 10px #d2d1d170; overflow: auto; position: relative; z-index: 10000; }
