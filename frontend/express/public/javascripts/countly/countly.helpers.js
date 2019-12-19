@@ -467,6 +467,43 @@
         });
     };
 
+    CountlyHelpers.blinkDots = function(times, speed, element) {
+        element.blinkCn = times;
+        if ($(element).hasClass("blink")) {
+            return;
+        }
+        $(element).addClass("blink");
+        element.blinkElement = function() {
+            var self = this;
+            if (!$(element).hasClass("blink")) {
+                return;
+            }
+            if (this.blinkCn > 0 || this.blinkCn === -1) {
+                if (this.blinkCn > 0) {
+                    this.blinkCn -= 1;
+                }
+                var dots = $(element).find("span");
+                $(dots[0]).fadeTo(speed, 0.1, function() {
+                    $(dots[0]).fadeTo(speed, 1.0, function() {
+                        $(dots[1]).fadeTo(speed, 0.1, function() {
+                            $(dots[1]).fadeTo(speed, 1.0, function() {
+                                $(dots[2]).fadeTo(speed, 0.1, function() {
+                                    $(dots[2]).fadeTo(speed, 1.0, function() {
+                                        self.blinkElement();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            }
+        };
+        element.blinkElement();
+    };
+
+    CountlyHelpers.stopBlinking = function(element) {
+        $(element).removeClass("blink");
+    };
     CountlyHelpers.applyColors = function() {
         $('#custom-color-styles').remove();
         // overview bars
