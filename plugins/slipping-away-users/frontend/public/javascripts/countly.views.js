@@ -69,16 +69,15 @@ window.slippingView = countlyView.extend({
 
         this.templateData = {
             "page-title": jQuery.i18n.map["slipping.title"],
-            "graph-description": jQuery.i18n.map["slipping.graph-description"],
             "font-logo-class": "fa-sign-out",
             "chart-helper": "durations.chart",
             "table-helper": "durations.table",
             "drill-filter": countlyGlobal.plugins.indexOf('drill') >= 0,
         };
-
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawGraph(slippingChartData.chartDP, "#dashboard-graph", "bar");
+            $(" <div class='graph-description'>" + jQuery.i18n.map["slipping.graph-description"] + "</div>").insertAfter("#view-filter");
 
             var columnsDefine = [
                 { "mData": "period", sType: "numeric", "sTitle": jQuery.i18n.map["slipping.period"], "sWidth": "20%" },
