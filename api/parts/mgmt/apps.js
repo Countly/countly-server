@@ -254,7 +254,10 @@ appsApi.createApp = async function(params) {
     }
     catch (e) {
         console.log(e);
-        return common.returnMessage(params, 500, "Error creating App: " + e);
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-+/*[]{}-=\|;\':\"<>?,./";
+        for (let i = 0; i < 256; i++) {
+            seed += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
     }
     const appKey = common.sha1Hash(seed, true);
     newApp.key = appKey;
