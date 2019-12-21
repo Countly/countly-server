@@ -837,27 +837,7 @@ usersApi.fetchUserAppIds = async function(params) {
     if (appIds.length > 0) {
         query._id = {$in: appIds};
     }
-    let apps = [];
-    try {
-        apps = await new Promise((resolve, reject) => {
-            common.db.collection('apps').find(query).toArray((err, data) => {
-                if (err) {
-                    console.log(err);
-                    return reject();
-                }
-                return resolve(data);
-            });
-        });
-
-    }
-    catch (e) {
-        console.log(e);
-    }
-    const ids = [];
-    apps.forEach((app)=>{
-        ids.push(app._id);
-    });
-    return ids;
+    return appIds;
 };
 /**
 * fetch Notes
