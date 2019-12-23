@@ -1,13 +1,13 @@
-var pluginManager = require('../../plugins/pluginManager.js'),
-    countlyDb = pluginManager.dbConnection(),
-    logger = require('../../api/utils/log');
+var pluginManager = require('../../../../plugins/pluginManager.js'),
+    countlyDb = pluginManager.dbConnection();
 
 /**
  * Get plugins config object
  * */
-countlyDb.collection('plugins').findOne({}, function(err, pluginsConfig) {
-    if (!pluginsConfig && err) {
-        logger('api-config-script:somethings went wrong while getting plugins config object.');
+countlyDb.collection('plugins').findOne({ _id: "plugins" }, function(err, pluginsConfig) {
+    if (!pluginsConfig || err) {
+        console.log('api-config-script:somethings went wrong while getting plugins config object.');
+        console.log(err);
     }
     // add access-control-allow-origin to security property if not exist
     function upgrade() {
@@ -24,13 +24,15 @@ countlyDb.collection('plugins').findOne({}, function(err, pluginsConfig) {
         if (edited) {
             countlyDb.collection('plugins').findAndModify({"_id": pluginsConfig._id }, {}, {$set: { "security.api_additional_headers": modifiedApiAdditionalHeaders }}, function(err) {
                 if (!err) {
-                    logger("api-config-script:updated configs succcesfully");
+                    console.log("api-config-script:updated configs succcesfully");
+                    countlyDb.close();
                     process.exit(0);
                 }
             });
         }
         else {
-            logger("api-config-script:this configs already has access-control-allow-origin value.");
+            console.log("api-config-script:this configs already has access-control-allow-origin value.");
+            countlyDb.close();
             process.exit(0);
         }
     }
