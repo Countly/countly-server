@@ -10,7 +10,7 @@
  *              by Keith Wood (kbwood{at}iinet.com.au) June 2007
  *
  *****************************************************************************/
-!function($){function callbackIfComplete(e){e.async&&(e.filesLoaded+=1,e.filesLoaded===e.totalFiles&&e.callback&&e.callback())}function loadAndParseFile(e,a){e = a.countlyVersion ? e + "?" + a.countlyVersion : e;$.ajax({url:e,async:a.async,cache:a.cache,dataType:"text",success:function(e,r){parseData(e,a.mode),callbackIfComplete(a)},error:function(r,t,n){console.log("Failed to download or parse "+e),callbackIfComplete(a)}})}function parseData(data,mode){for(var parsed="",parameters=data.split(/\n/),regPlaceHolder=/(\{\d+})/g,regRepPlaceHolder=/\{(\d+)}/g,unicodeRE=/(\\u.{4})/gi,i=0;i<parameters.length;i++)if(parameters[i]=parameters[i].replace(/^\s\s*/,"").replace(/\s\s*$/,"").replace(/\\\\=/g, '=').replace(/\\\\:/g, ':').replace(/\\\\!/g, '!').replace(/\\=/g, '=').replace(/\\:/g, ':').replace(/\\!/g, '!'),parameters[i].length>0&&"#"!=parameters[i].match("^#")){var pair=parameters[i].split("=")
+!function($){function callbackIfComplete(e){e.async&&(e.filesLoaded+=1,e.filesLoaded===e.totalFiles&&e.callback&&e.callback())}function loadAndParseFile(e,a){$.ajax({url:e,async:a.async,cache:a.cache,dataType:"text",success:function(e,r){parseData(e,a.mode),callbackIfComplete(a)},error:function(r,t,n){console.log("Failed to download or parse "+e),callbackIfComplete(a)}})}function parseData(data,mode){for(var parsed="",parameters=data.split(/\n/),regPlaceHolder=/(\{\d+})/g,regRepPlaceHolder=/\{(\d+)}/g,unicodeRE=/(\\u.{4})/gi,i=0;i<parameters.length;i++)if(parameters[i]=parameters[i].replace(/^\s\s*/,"").replace(/\s\s*$/,"").replace(/\\\\=/g, '=').replace(/\\\\:/g, ':').replace(/\\\\!/g, '!').replace(/\\=/g, '=').replace(/\\:/g, ':').replace(/\\!/g, '!'),parameters[i].length>0&&"#"!=parameters[i].match("^#")){var pair=parameters[i].split("=")
 if(pair.length>0){for(var name=decodeURI(pair[0]).replace(/^\s\s*/,"").replace(/\s\s*$/,""),value=1==pair.length?"":pair[1];"\\"==value.match(/\\$/);)value=value.substring(0,value.length-1),value+=parameters[++i].replace(/\s\s*$/,"")
 for(var s=2;s<pair.length;s++)value+="="+pair[s]
 if(value=value.replace(/^\s\s*/,"").replace(/\s\s*$/,""),"map"==mode||"both"==mode){var unicodeMatches=value.match(unicodeRE)
@@ -22,7 +22,7 @@ parsed+="return "+fnExpr+";};"}else parsed+=name+'="'+value+'";'}}eval(parsed)}f
 if(regDot.test(key))for(var fullname="",names=key.split(/\./),i=0;i<names.length;i++)i>0&&(fullname+="."),fullname+=names[i],eval("typeof "+fullname+' == "undefined"')&&eval(fullname+"={};")}function getFiles(e){return e&&e.constructor==Array?e:[e]}function unescapeUnicode(e){var a=[],r=parseInt(e.substr(2),16)
 r>=0&&r<Math.pow(2,16)&&a.push(r)
 for(var t="",n=0;n<a.length;++n)t+=String.fromCharCode(a[n])
-return t}$.i18n={},$.i18n.map={},$.i18n.parsed={},$.i18n.properties=function(e){var a={name:"Messages",language:"",path:"",mode:"vars",cache:!1,encoding:"UTF-8",async:!1,checkAvailableLanguages:!1,callback:null}
+return t}$.i18n={},$.i18n.map={},$.i18n.properties=function(e){var a={name:"Messages",language:"",path:"",mode:"vars",cache:!1,encoding:"UTF-8",async:!1,checkAvailableLanguages:!1,callback:null}
 e=$.extend(a,e),e.language=this.normaliseLanguageCode(e.language)
 var r=function(a){e.totalFiles=0,e.filesLoaded=0
 var r=getFiles(e.name)
@@ -33,7 +33,7 @@ if(0!=a.length&&-1==$.inArray(s,a)||(e.totalFiles+=1),e.language.length>=5){var 
 var s=e.language.substring(0,2)
 if(0!=a.length&&-1==$.inArray(s,a)||loadAndParseFile(e.path+r[i]+"_"+s+".properties",e),e.language.length>=5){var l=e.language.substring(0,5)
 0!=a.length&&-1==$.inArray(l,a)||loadAndParseFile(e.path+r[i]+"_"+l+".properties",e)}}e.callback&&!e.async&&e.callback()}
-e.checkAvailableLanguages?$.ajax({url:e.path+"languages.json",async:e.async,cache:!1,success:function(e,a,t){r(e.languages||[])}}):r([])},$.i18n.prop=function(e){var a=$.i18n.parsed[e]||$.i18n.map[e]
+e.checkAvailableLanguages?$.ajax({url:e.path+"languages.json",async:e.async,cache:!1,success:function(e,a,t){r(e.languages||[])}}):r([])},$.i18n.prop=function(e){var a=$.i18n.map[e]
 if(null==a)return"["+e+"]"
 var r
 2==arguments.length&&$.isArray(arguments[1])&&(r=arguments[1])
@@ -47,7 +47,7 @@ break}a=a.substring(0,n)+a.substring(++n)}-1==n&&(a=a.substring(0,t)+a.substring
 else if(s=parseInt(a.substring(t+1,n)),!isNaN(s)&&s>=0){var i=a.substring(0,t)
 ""!=i&&l.push(i),l.push(s),t=0,a=a.substring(n+1)}else t=n+1
 else t++
-""!=a&&l.push(a),a=l,$.i18n.parsed[e]=l}if(0==a.length)return""
+""!=a&&l.push(a),a=l,$.i18n.map[e]=l}if(0==a.length)return""
 if(1==a.length&&"string"==typeof a[0])return a[0]
 var g=""
 for(t=0;t<a.length;t++)g+="string"==typeof a[t]?a[t]:r&&a[t]<r.length?r[a[t]]:!r&&a[t]+1<arguments.length?arguments[a[t]+1]:"{"+a[t]+"}"
