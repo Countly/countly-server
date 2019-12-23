@@ -14,9 +14,9 @@
 * @memberof Pre Login
 */
 /* exported showMessage */
-function showMessage(key, prop) {
-    $("#message").data("localize", key);
-    $("#message").html(jQuery.i18n.prop(key, prop));
+function showMessage(key) {
+	$("#message").data("localize", key);
+	$("#message").html(jQuery.i18n.map[key]);
 }
 
 var htmlEncodeOptions = {
