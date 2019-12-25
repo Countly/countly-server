@@ -241,6 +241,8 @@ common.crypto = crypto;
 * @type {object} 
 */
 common.os_mapping = {
+    "webos": "webos",
+    "brew": "brew",
     "unknown": "unk",
     "undefined": "unk",
     "tvos": "atv",
@@ -248,6 +250,9 @@ common.os_mapping = {
     "unity editor": "uty",
     "qnx": "qnx",
     "os/2": "os2",
+    "amazon fire tv": "aft",
+    "amazon": "amz",
+    "web": "web",
     "windows": "mw",
     "open bsd": "ob",
     "searchbot": "sb",
@@ -257,8 +262,21 @@ common.os_mapping = {
     "mac osx": "o",
     "macos": "o",
     "mac": "o",
-    "webos": "web",
-    "brew": "brew"
+    "osx": "o",
+    "linux": "l",
+    "unix": "u",
+    "ios": "i",
+    "android": "a",
+    "blackberry": "b",
+    "windows phone": "w",
+    "wp": "w",
+    "roku": "r",
+    "symbian": "s",
+    "chrome": "c",
+    "debian": "d",
+    "nokia": "n",
+    "firefox": "f",
+    "tizen": "t"
 };
 
 /**
