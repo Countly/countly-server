@@ -246,6 +246,7 @@ common.os_mapping = {
     "unknown": "unk",
     "undefined": "unk",
     "tvos": "atv",
+    "apple tv": "atv",
     "watchos": "wos",
     "unity editor": "uty",
     "qnx": "qnx",

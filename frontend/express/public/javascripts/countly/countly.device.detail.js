@@ -10,6 +10,7 @@
         "unknown": {short: "unk", name: "Unknown"},
         "undefined": {short: "unk", name: "Unknown"},
         "tvos": {short: "atv", name: "Apple TV"},
+        "apple tv": {short: "atv", name: "Apple TV"},
         "watchos": {short: "wos", name: "Apple Watch"},
         "unity editor": {short: "uty", name: "Unknown"},
         "qnx": {short: "qnx", name: "QNX"},
