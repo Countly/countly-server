@@ -1064,8 +1064,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
     }
     //set provided in configuration headers
     var headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json; charset=utf-8'
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
@@ -1131,8 +1130,7 @@ common.returnOutput = function(params, output, noescape, heads) {
     }
     //set provided in configuration headers
     var headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json; charset=utf-8'
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;

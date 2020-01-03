@@ -123,7 +123,7 @@ plugins.setConfigs("security", {
     password_symbol: true,
     password_expiration: 0,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*"
 });
 
 /**
