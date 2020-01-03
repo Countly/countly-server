@@ -4105,7 +4105,7 @@
 
         countlyCommon.getGraphNotes = function(appIds, callBack) {
             if (!appIds) {
-                appIds = [countlyCommon.ACTIVE_APP_ID];
+                appIds = [];
             }
             return window.$.ajax({
                 type: "GET",
