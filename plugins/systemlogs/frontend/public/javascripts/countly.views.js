@@ -326,9 +326,19 @@ window.SystemLogsView = countlyView.extend({
                 if (!jQuery.isEmptyObject(row.i.before)) {
                     ret += "<p>" + jQuery.i18n.map["systemlogs.changed-data"] + ":</p>";
                     ret += "<table style='width:100%;'>";
-                    ret += "<tr><th style='width:20%;'>" + jQuery.i18n.map["systemlogs.field"] + "</th><th style='width:40%;'>" + jQuery.i18n.map["systemlogs.before"] + "</th><th style='width:40%;'>" + jQuery.i18n.map["systemlogs.after"] + "</th></tr>";
+                    ret += "<tr>";
+                    if (typeof row.i.name !== "undefined") {    
+                        ret += "<th>" + jQuery.i18n.map["systemlogs.name"] + "</th>";
+                    }
+                    ret += "<th style='width:20%;'>" + jQuery.i18n.map["systemlogs.field"] + "</th><th style='width:40%;'>" + jQuery.i18n.map["systemlogs.before"] + "</th><th style='width:40%;'>" + jQuery.i18n.map["systemlogs.after"] + "</th>";
+                    ret += '</tr>';
                     for (var i in row.i.before) {
-                        ret += "<tr><td>" + i + "</td><td>" + self.renderField(i, row.i.before[i]) + "</td><td>" + self.renderField(i, row.i.after[i]) + "</td></tr>";
+                        ret += "<tr>";
+                        if (typeof row.i.name !== "undefined") {
+                            ret += "<td>" + row.i.name + "</td>";
+                        }
+                        ret += "<td>" + i + "</td><td>" + self.renderField(i, row.i.before[i]) + "</td><td>" + self.renderField(i, row.i.after[i]) + "</td>";
+                        ret += "</tr>";
                     }
                     ret += "</table>";
                 }
