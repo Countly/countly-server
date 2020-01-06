@@ -63,7 +63,7 @@ run_upgrade (){
                         continue
                     fi
                 fi
-                bash "$DIR/../upgrade/$i/upgrade_fs.sh" combined 2>&1 | tee -a "$DIR/../../../log/countly-upgrade-$i-$DATE.log";
+                bash "$DIR/../upgrade/$i/upgrade_fs.sh" | tee -a "$DIR/../../../log/countly-upgrade-$i-$DATE.log";
             else
                 echo "No filesystem upgrade script provided for $i";
             fi
@@ -77,7 +77,7 @@ run_upgrade (){
                         continue
                     fi
                 fi
-                bash "$DIR/../upgrade/$i/upgrade_db.sh" combined 2>&1 | tee -a "$DIR/../../../log/countly-upgrade-$i-$DATE.log";
+                bash "$DIR/../upgrade/$i/upgrade_db.sh" | tee -a "$DIR/../../../log/countly-upgrade-$i-$DATE.log";
             else
                 echo "No database upgrade script provided for $i";
             fi
@@ -90,7 +90,7 @@ run_upgrade (){
                         continue
                     fi
                 fi
-                bash "$DIR/../upgrade/$i/upgrade.sh" | tee -a "$DIR/../../../log/countly-upgrade-$i-$DATE.log";
+                bash "$DIR/../upgrade/$i/upgrade.sh" combined 2>&1 | tee -a "$DIR/../../../log/countly-upgrade-$i-$DATE.log";
             else
                 echo "No upgrade script provided for $i";
             fi
