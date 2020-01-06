@@ -327,7 +327,7 @@ window.SystemLogsView = countlyView.extend({
                     ret += "<p>" + jQuery.i18n.map["systemlogs.changed-data"] + ":</p>";
                     ret += "<table style='width:100%;'>";
                     ret += "<tr>";
-                    if (typeof row.i.name !== "undefined") {    
+                    if (typeof row.i.name !== "undefined") {
                         ret += "<th>" + jQuery.i18n.map["systemlogs.name"] + "</th>";
                     }
                     ret += "<th style='width:20%;'>" + jQuery.i18n.map["systemlogs.field"] + "</th><th style='width:40%;'>" + jQuery.i18n.map["systemlogs.before"] + "</th><th style='width:40%;'>" + jQuery.i18n.map["systemlogs.after"] + "</th>";
