@@ -113,49 +113,51 @@ window.slippingView = countlyView.extend({
 
             this.byDisabled = true;
             if (typeof extendViewWithFilter === "function") {
-                extendViewWithFilter(this);
-                this.initDrill();
                 var self = this;
-                setTimeout(function() {
-                    self.filterBlockClone = $("#filter-view").clone(true);
-                    if (self._query) {
-                        if ($(".filter-view-container").is(":visible")) {
-                            $("#filter-view").hide();
-                            $(".filter-view-container").hide();
-                        }
-                        else {
-                            $("#filter-view").show();
-                            $(".filter-view-container").show();
-                            self.adjustFilters();
-                        }
-
-                        $(".flot-text").hide().show(0);
-                        var filter = self._query;
-                        var inputs = [];
-                        var subs = {};
-                        for (var i in filter) {
-                            inputs.push(i);
-                            subs[i] = [];
-                            for (var j in filter[i]) {
-                                if (filter[i][j].length) {
-                                    for (var k = 0; k < filter[i][j].length; k++) {
-                                        subs[i].push([j, filter[i][j][k]]);
-                                    }
-                                }
-                                else {
-                                    subs[i].push([j, filter[i][j]]);
-                                }
-                            }
-                        }
-                        self.setInput(inputs, subs, 0, 0, 1);
-                    }
-                }, 500);
+                self.drillInitProcess(self);
             }
         }
         else {
             countlyCommon.drawGraph(slippingChartData.chartDP, "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(this.dtable, slippingData);
         }
+    },
+    drillInitProcess: function(self) {
+        self.initDrill();
+        setTimeout(function() {
+            self.filterBlockClone = $("#filter-view").clone(true);
+            if (self._query) {
+                if ($(".filter-view-container").is(":visible")) {
+                    $("#filter-view").hide();
+                    $(".filter-view-container").hide();
+                }
+                else {
+                    $("#filter-view").show();
+                    $(".filter-view-container").show();
+                    self.adjustFilters();
+                }
+
+                $(".flot-text").hide().show(0);
+                var filter = self._query;
+                var inputs = [];
+                var subs = {};
+                for (var i in filter) {
+                    inputs.push(i);
+                    subs[i] = [];
+                    for (var j in filter[i]) {
+                        if (filter[i][j].length) {
+                            for (var k = 0; k < filter[i][j].length; k++) {
+                                subs[i].push([j, filter[i][j][k]]);
+                            }
+                        }
+                        else {
+                            subs[i].push([j, filter[i][j]]);
+                        }
+                    }
+                }
+                self.setInput(inputs, subs, 0, 0, 1);
+            }
+        }, 500);
     },
     setInput: function(inputs, subs, cur, sub, total) {
         var self = this;
@@ -273,6 +275,9 @@ app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
     this.renderWhenReady(this.slippingView);
 });
 $(document).ready(function() {
+    if (typeof extendViewWithFilter === "function") {
+        extendViewWithFilter(app.slippingView);
+    }
     app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
     if (app.configurationsView) {
         app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
