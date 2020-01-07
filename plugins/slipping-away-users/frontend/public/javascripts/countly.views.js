@@ -44,6 +44,9 @@ window.slippingView = countlyView.extend({
             var data = {
                 "lac": {"$lt": timeStamp}
             };
+            if (app.slippingView._query) {
+                Object.assign(data, app.slippingView._query);
+            }
             window.location.hash = '/users/query/' + JSON.stringify(data);
         };
 
