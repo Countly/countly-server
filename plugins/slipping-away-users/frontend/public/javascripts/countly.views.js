@@ -12,7 +12,8 @@
  */
 window.slippingView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlySlippingPlugin.initialize()).then(function() {});
+        var query = this._query || {}
+        return $.when(countlySlippingPlugin.initialize(query)).then(function() {});
     },
     /**
    * This is for rendering chart and table.
