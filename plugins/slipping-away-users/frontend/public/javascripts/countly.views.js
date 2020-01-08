@@ -4,6 +4,8 @@
     countlyCommon,
     jQuery,
     app,
+    _,
+    moment,
     countlySlippingPlugin,
     slippingView,
     extendViewWithFilter,
@@ -12,7 +14,7 @@
  */
 window.slippingView = countlyView.extend({
     beforeRender: function() {
-        var query = this._query || {}
+        var query = this._query || {};
         return $.when(countlySlippingPlugin.initialize(query)).then(function() {});
     },
     /**
