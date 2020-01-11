@@ -18,41 +18,41 @@ usage (){
 if [ "$1" = "list" ]; then
     for d in $DIR/../../../plugins/*/; do
         if [ "$2" = "states" ]; then
-            PLUGIN=$(basename $d) ;
-            if grep -Fq "\"$PLUGIN\"" $DIR/../../../plugins/plugins.json
+            PLUGIN="$(basename "$d")" ;
+            if grep -Fq "\"$PLUGIN\"" "$DIR/../../../plugins/plugins.json"
             then
-                printf "  $PLUGIN =$GREEN enabled $NC\n";
+                printf "  %s =%b enabled %b\n" "$PLUGIN" "$GREEN" "$NC";
             else
-                printf "  $PLUGIN =$RED disabled $NC\n";
+                printf "  %s =%b disabled %b\n" "$PLUGIN" "$RED" "$NC";
             fi
         else
-            echo "  $(basename $d)";
+            echo "  $(basename "$d")";
         fi
     done
 elif [ -d "$DIR/../../../plugins/$2" ]; then
     if [ "$1" = "enable" ]; then
-        nodejs $DIR/plugin.js enable $2 ;
+        nodejs "$DIR/plugin.js" enable "$2" ;
     elif [ "$1" = "disable" ]; then
-        nodejs $DIR/plugin.js disable $2 ;
+        nodejs "$DIR/plugin.js" disable "$2" ;
     elif [ "$1" = "upgrade" ]; then
-        nodejs $DIR/plugin.js upgrade $2 ;
+        nodejs "$DIR/plugin.js" upgrade "$2" ;
     elif [ "$1" = "status" ]; then
-        if grep -Fq "\"$2\"" $DIR/../../../plugins/plugins.json
+        if grep -Fq "\"$2\"" "$DIR/../../../plugins/plugins.json"
         then
             echo "enabled"
         else
             echo "disabled"
         fi
     elif [ "$1" = "version" ]; then
-        echo "$(grep -oP '"version":\s*"\K[0-9\.]*' $DIR/../../../plugins/$2/package.json)" ;
+        grep -oP '"version":\s*"\K[0-9\.]*' "$DIR/../../../plugins/$2/package.json" ;
     elif [ "$1" = "test" ]; then
-        countly plugin lint $2;
+        countly plugin lint "$2";
         shift;
-        nodejs $DIR/plugin.js test "$@" ;
+        nodejs "$DIR/plugin.js" test "$@" ;
     elif [ "$1" = "lint" ]; then
-        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../.eslintrc.json $DIR/../../../plugins/$2/. ;
+        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" "$DIR/../../../plugins/$2/." ;
     elif [ "$1" = "lintfix" ]; then
-        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../.eslintrc.json $DIR/../../../plugins/$2/. --fix;
+        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" "$DIR/../../../plugins/$2/." --fix;
     else
         usage ;
     fi

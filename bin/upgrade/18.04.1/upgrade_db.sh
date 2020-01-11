@@ -7,11 +7,11 @@ if [ "$1" != "combined" ]; then
     countly plugin upgrade push
     
     #enable new plugins
-    if [ ! -f $DIR/../plugins/plugins.ee.json ]; then
+    if [ ! -f "$DIR/../plugins/plugins.ee.json" ]; then
         countly plugin enable video-intelligence-monetization
     fi
     countly plugin enable alerts
 fi
 
 #add indexes
-nodejs $DIR/scripts/add_indexes.js
+nodejs "$DIR/scripts/add_indexes.js"

@@ -72,7 +72,7 @@ describe('Testing DBViewer', function() {
                     var ob = JSON.parse(res.text);
                     ob.should.not.be.empty;
                     ob.should.be.an.instanceOf(Object);
-                    ob.should.have.property("_id", APP_ID);
+                    ob.should.have.property("_id", 'ObjectId(' + APP_ID + ')');
                     ob.should.have.property("key", APP_KEY);
                     ob.should.have.property("name");
                     ob.should.have.property("country");

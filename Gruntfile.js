@@ -81,6 +81,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/visualization/flot/jquery.flot.spline.js',
                     'frontend/express/public/javascripts/visualization/flot/jquery.flot.crosshair.js',
                     'frontend/express/public/javascripts/visualization/flot/jquery.flot.orderBars.js',
+                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.navigate.js',
                     'frontend/express/public/javascripts/visualization/gauge.min.js',
                     'frontend/express/public/javascripts/visualization/d3/d3.min.js',
                     'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js'
@@ -226,6 +227,10 @@ module.exports = function(grunt) {
                 plugins.splice(plugins.indexOf('funnels'), 1);
                 plugins.push('funnels');
             }
+            if (plugins.indexOf('formulas') !== -1) {
+                plugins.splice(plugins.indexOf('formulas'), 1);
+                plugins.push('formulas');
+            }
         }
 
         plugins.forEach(function(plugin) {
@@ -315,7 +320,7 @@ module.exports = function(grunt) {
             locales[lang].push(path);
         };
 
-        [path.join(__dirname, 'frontend/express/public/localization/dashboard'), path.join(__dirname, 'frontend/express/public/localization/help'), path.join(__dirname, 'frontend/express/public/localization/mail')].forEach(function(dir) {
+        function processLocaleDir(dir) {
             if (!fs.existsSync(dir)) {
                 return;
             }
@@ -325,7 +330,9 @@ module.exports = function(grunt) {
                     pushLocaleFile(name, dir + '/' + name);
                 }
             });
-        });
+        }
+
+        [path.join(__dirname, 'frontend/express/public/localization/dashboard'), path.join(__dirname, 'frontend/express/public/localization/help'), path.join(__dirname, 'frontend/express/public/localization/mail')].forEach(processLocaleDir);
 
         plugins.forEach(function(plugin) {
             var localization = path.join(__dirname, 'plugins', plugin, 'frontend/public/localization');
@@ -346,6 +353,8 @@ module.exports = function(grunt) {
                 }
             }
         });
+
+        processLocaleDir(path.join(__dirname, 'frontend/express/public/localization/custom'));
 
         for (var lang in locales) {
             grunt.config('concat.locales_' + lang + '.options.separator', '\n\n');

@@ -15,7 +15,7 @@ echo "Attempting to create $AMOUNT Gb swap file"
 echo "Reserving space, may take a while"
 
 #create file with small bs setting to allow the dd on low mem instances
-dd if=/dev/zero of=/swapfile bs=1024 count=$(($AMOUNT*1048576))
+dd if=/dev/zero of=/swapfile bs=1024 count=$((AMOUNT*1048576))
 chmod 600 /swapfile
 
 #make file a swap file

@@ -3,13 +3,13 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
 #enable command line
-bash $DIR/scripts/detect.init.sh
+bash "$DIR/scripts/detect.init.sh"
 
 #change nginx config
 echo "Changing nginx.conf file to increase upload limit"
 echo "You can find your old conf file at $DIR/config/nginx.conf.backup.pre.17.09"
-cp /etc/nginx/nginx.conf $DIR/config/nginx.conf.backup.pre.17.09
-cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
+cp /etc/nginx/nginx.conf "$DIR/config/nginx.conf.backup.pre.17.09"
+cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
 sudo nginx -s reload
 
 #upgrade existing plugins

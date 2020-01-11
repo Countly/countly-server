@@ -10,5 +10,5 @@ if [ -z "$1" ]
 then
     usage ;
 else
-    nodejs $DIR/fs.js $1 $2 $3;
+    nodejs "$DIR/fs.js" "$1" "$2" "$3";
 fi

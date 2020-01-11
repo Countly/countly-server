@@ -13,5 +13,5 @@ if [ -z "$1" ] && [ -z "$2" ]
 then
     usage ;
 else
-    nodejs $DIR/config.js $1 $2 ;
+    nodejs "$DIR/config.js" "$1" "$2" ;
 fi

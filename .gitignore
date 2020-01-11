@@ -1,7 +1,7 @@
 api/node_modules/
 .idea
 log
-**/*.properties
+*.properties
 frontend/express/node_modules/
 api/config.js
 countly_marked_version.json

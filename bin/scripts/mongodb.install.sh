@@ -24,7 +24,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
     yum install -y nodejs mongodb-org
     
     #disable transparent-hugepages (requires reboot)
-    cp -f $DIR/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     chkconfig --add disable-transparent-hugepages
 fi
@@ -48,14 +48,14 @@ if [ -f /etc/lsb-release ]; then
     DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
     
     #disable transparent-hugepages (requires reboot)
-    cp -f $DIR/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     update-rc.d disable-transparent-hugepages defaults
 fi
 
 #backup config and remove configuration to prevent duplicates
 cp /etc/mongod.conf /etc/mongod.conf.bak
-nodejs $DIR/configure_mongodb.js /etc/mongod.conf
+nodejs "$DIR/configure_mongodb.js" /etc/mongod.conf
   
 if [ -f /etc/redhat-release ]; then
     #mongodb might need to be started
@@ -67,7 +67,7 @@ if [ -f /etc/redhat-release ]; then
 fi
 
 if [ -f /etc/lsb-release ]; then
-    if [[ `/sbin/init --version` =~ upstart ]]; then
+    if [[ "$(/sbin/init --version)" =~ upstart ]]; then
         restart mongod || echo "mongodb upstart job does not exist"
     else
         systemctl restart mongod || echo "mongodb systemctl job does not exist"

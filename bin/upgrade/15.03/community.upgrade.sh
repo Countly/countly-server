@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ( stop countly-supervisor ; 
-cd $DIR ; 
+cd "$DIR" ; 
 node rename_event_collections.js ;
 mongo sessions.js ; 
 mongo events.js ; 

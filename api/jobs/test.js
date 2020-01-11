@@ -2,8 +2,7 @@
 
 /* jshint ignore:start */
 
-const should = require('should'),
-    J = require('../parts/jobs/job.js'),
+const J = require('../parts/jobs/job.js'),
     R = require('../parts/jobs/resource.js'),
     RET = require('../parts/jobs/retry.js');
 
@@ -107,8 +106,12 @@ class IPCTestJob extends J.IPCJob {
      */
     async run(db) {
         console.log('running in %d', process.pid);
-        should.exist(this.resource);
-        (this.resource instanceof TestResource).should.be.true();
+        if (!this.resource) {
+            throw new Error('Resource should exist');
+        }
+        if (!(this.resource instanceof TestResource)) {
+            throw new Error('Resource should be TestResource');
+        }
         await new Promise((res, rej) => db.collection('jobs').updateOne({_id: this._id}, {$set: {'data.run': 1}}, err => err ? rej(err) : res()));
 
         if (this.data && this.data.fail) {

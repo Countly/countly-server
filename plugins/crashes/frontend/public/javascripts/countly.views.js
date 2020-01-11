@@ -1,4 +1,4 @@
-/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,production,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,Handlebars,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
+/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,Handlebars,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
 window.CrashesView = countlyView.extend({
     convertFilter: {
         "sg.crash": {prop: "_id", type: "string"},
@@ -1835,7 +1835,7 @@ window.CrashgroupView = countlyView.extend({
         // `d` is the original data object for the row
         var str = '';
         if (data) {
-            str += '<div class="datatablesubrow">' +
+            str += '<div class="datatablesubrow crash-detail-subrow">' +
                    '<div class="error_menu">' +
                     '<div class="error-details-menu" data-id="' + data._id + '">' +
                         '<a class="right icon-button cly-button-menu-trigger"></a>' +
@@ -1849,7 +1849,7 @@ window.CrashgroupView = countlyView.extend({
                 '</div>' +
                 '<table>' +
                         '<tr>' +
-                            '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + '</td>' +
+                            '<td class="text-left">' + jQuery.i18n.map["crashes.build_info"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.device"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.state"] + '</td>';
             if (data.custom) {
@@ -1857,8 +1857,12 @@ window.CrashgroupView = countlyView.extend({
             }
             str += '</tr>' +
                         '<tr>' +
-                            '<td class="text-left">' + data.app_version.replace(/:/g, '.') + '</td>' +
-                            '<td class="text-left">' + data.os + ' ';
+                        '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + ": " + data.app_version.replace(/:/g, '.');
+            if (data.os === 'iOS') {
+                str += '<br>' + jQuery.i18n.map["crashes.build_id"] + ": " + data.app_build;
+            }
+            str += '</td>' +
+                '<td class="text-left">' + data.os + ' ';
             if (data.os_version) {
                 str += data.os_version.replace(/:/g, '.') + '<br/>';
             }
@@ -2067,7 +2071,7 @@ app.addPageScript("/users/#", function() {
             "aaSorting": [[ 2, "desc" ]],
             "bServerSide": true,
             "bFilter": false,
-            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_crashes&uid=" + userDetails.uid,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_crashes&uid=" + userDetails.uid,
             "fnServerData": function(sSource, aoData, fnCallback) {
                 self.request = $.ajax({
                     "dataType": 'json',
@@ -2124,9 +2128,6 @@ $(document).ready(function() {
             countlyCrashes.loadList(appId);
         }
     });
-    if (!production) {
-        CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
-    }
 
     app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
     app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});

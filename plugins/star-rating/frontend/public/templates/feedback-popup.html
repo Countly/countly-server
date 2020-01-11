@@ -6,6 +6,11 @@
         </title>
         <link href="./star-rating/stylesheets/countly-feedback.css" rel="stylesheet"/>
         <link href="stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
+        <% if (themeFiles && themeFiles.css) { %>
+            <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
+        <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+            <% } %>
+        <% } %>
         <meta content="width=device-width, initial-scale=1" name="viewport">
         </meta>
     </head>
@@ -336,5 +341,10 @@
                 $('body').on('click','.rating-emotion', rate)
             })();
         </script>
+        <% if (themeFiles && themeFiles.js) { %>
+            <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
+        <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+            <% } %>
+        <% } %>
     </body>
 </html>

@@ -2,6 +2,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #install test dependencies
-( cd $DIR/../../../ ; npm install )
+( cd "$DIR/../../../" ; npm install )
 #run tests
-( cd $DIR/../../../ ; npm test )
+( cd "$DIR/../../../" ; npm test )

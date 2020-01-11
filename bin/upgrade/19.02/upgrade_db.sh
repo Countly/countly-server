@@ -22,11 +22,11 @@ fi
 countly config "views.view_limit" 50000
 
 #run upgrade scripts
-nodejs $CUR/scripts/change_alerts_schedule.js
-nodejs $CUR/scripts/clear_jobs.js
-nodejs $CUR/scripts/drop_sessions.js
-nodejs $CUR/scripts/fix_report_manager.js
-nodejs $CUR/scripts/updateViews.js
+nodejs "$CUR/scripts/change_alerts_schedule.js"
+nodejs "$CUR/scripts/clear_jobs.js"
+nodejs "$CUR/scripts/drop_sessions.js"
+nodejs "$CUR/scripts/fix_report_manager.js"
+nodejs "$CUR/scripts/updateViews.js"
 
 #add indexes
-nodejs $DIR/scripts/add_indexes.js
+nodejs "$DIR/scripts/add_indexes.js"

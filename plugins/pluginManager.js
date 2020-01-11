@@ -421,14 +421,32 @@ var pluginManager = function pluginManager() {
         events[event].push(callback);
     };
 
-    /**
-    * Dispatch specific event on api side
-    * @param {string} event - event to dispatch
-    * @param {object} params - object with parameters to pass to event
-    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
-    * @returns {boolean} true if any one responded to event
-    **/
-    this.dispatch = function(event, params, callback) {
+    var makeSettlePromise = function(promise) {
+        return new Promise(function(resolve) {
+            if (!(promise instanceof Promise)) {
+                resolve({ status: 'fulfilled', value: promise });
+                return;
+            }
+            promise.then(
+                (value) => {
+                    resolve({ status: 'fulfilled', value });
+                },
+                (reason) => {
+                    resolve({ status: 'rejected', reason });
+                }
+            );
+        });
+    };
+
+    // This is compatible with Node 12.9 Promise.allSettled()
+    var allSettled = function(promises) {
+        return new Promise(function(resolve) {
+            var settlePromises = promises.map(makeSettlePromise);
+            Promise.all(settlePromises).then(resolve);
+        });
+    };
+
+    var dispatchInternal = function(event, params, syncPrimitive, callback) {
         var used = false,
             promises = [];
         var promise;
@@ -459,14 +477,14 @@ var pluginManager = function pluginManager() {
                             callback(err, data);
                         }
                     }
-                    Promise.all(promises).then(resolver.bind(null, null)).catch(function(error) {
+                    syncPrimitive(promises).then(resolver.bind(null, null)).catch(function(error) {
                         console.log(error);
                         resolver(error);
                     });
                 }));
             }
             else if (callback) {
-                Promise.all(promises).then(callback.bind(null, null)).catch(function(error) {
+                syncPrimitive(promises).then(callback.bind(null, null)).catch(function(error) {
                     console.log(error);
                     callback(error);
                 });
@@ -476,6 +494,30 @@ var pluginManager = function pluginManager() {
             callback();
         }
         return used;
+    };
+
+    /**
+    * Dispatch specific event on api side and wait until all event handlers have processed the event.
+    * @param {string} event - event to dispatch
+    * @param {object} params - object with parameters to pass to event
+    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @returns {boolean} true if any one responded to event
+    **/
+    this.dispatchAllSettled = function(event, params, callback) {
+        return dispatchInternal(event, params, allSettled, callback);
+    };
+
+    /**
+    * Dispatch specific event on api side
+    * @param {string} event - event to dispatch
+    * @param {object} params - object with parameters to pass to event
+    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @returns {boolean} true if any one responded to event
+    **/
+    this.dispatch = function(event, params, callback) {
+        return dispatchInternal(event, params, function(promises) {
+            return Promise.all(promises);
+        }, callback);
     };
 
     /**
@@ -764,9 +806,19 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running install.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running install.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
                 return callback(errors);
             }
@@ -785,14 +837,6 @@ var pluginManager = function pluginManager() {
                 callback(errors);
             });
         });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
-        });
     };
 
     /**
@@ -806,9 +850,19 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running install.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running install.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
                 return callback(errors);
             }
@@ -827,14 +881,6 @@ var pluginManager = function pluginManager() {
                 callback(errors);
             });
         });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
-        });
     };
 
     /**
@@ -848,20 +894,22 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running uninstall.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running uninstall.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
             }
             callback(errors);
-        });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
         });
     };
 
@@ -913,7 +961,7 @@ var pluginManager = function pluginManager() {
                 query = querystring.parse(parts.pop());
                 conUrl = parts[0];
             }
-            query.maxPoolSize = 1;
+            query.maxPoolSize = 3;
             conUrl += "?" + querystring.stringify(query);
             return this.dbConnection({mongodb: conUrl});
         }
@@ -924,7 +972,7 @@ var pluginManager = function pluginManager() {
                     conf[k] = Object.assign({}, conf[k]);
                 }
             }
-            conf.max_pool_size = 1;
+            conf.max_pool_size = 3;
             return this.dbConnection({mongodb: conf});
         }
     };
@@ -1047,15 +1095,14 @@ var pluginManager = function pluginManager() {
     * @returns {object} db connection params
     **/
     this.dbConnection = function(config) {
-        if (process.argv[1].endsWith('executor.js') && (!config || !config.mongodb || config.mongodb.max_pool_size !== 1)) {
-            console.log('************************************ executor.js common.db ***********************************', process.argv);
-            return this.singleDefaultConnection();
-        }
-
         var db, maxPoolSize = 10;
+
         if (!cluster.isMaster) {
             //we are in worker
             maxPoolSize = 100;
+        }
+        if (process.argv[1].endsWith('executor.js')) {
+            maxPoolSize = 3;
         }
         if (typeof config === "string") {
             db = config;

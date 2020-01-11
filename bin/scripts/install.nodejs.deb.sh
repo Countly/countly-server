@@ -98,7 +98,7 @@ if [ "X${DISTRO}" == "Xdebian" ]; then
   if [ "X${NEWDISTRO}" == "X" ]; then
     print_status "Could not determine distribution from /etc/debian_version..."
   else
-    DISTRO=$NEWDISTRO
+    DISTRO="$NEWDISTRO"
     print_status "Found \"${DISTRO}\" in /etc/debian_version..."
   fi
 fi

@@ -12,11 +12,11 @@
 <div class="create-user-row user-details datatablesubrow d-table">
 	<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">
 		<div class="title" data-localize="management-users.full-name"></div>
-		<div class="detail"><input class="full-name-text" type="text" value=""/></div>
+		<div class="detail"><input class="full-name-text" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
 	</div>
 	<div class="row help-zone-vs" data-help-localize="help.manage-users.username">
 		<div class="title" data-localize="management-users.username"></div>
-		<div class="detail"><input class="username-text" type="text" value=""/></div>
+		<div class="detail"><input class="username-text" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
 	</div>
 	<div class="row">
 		<div class="title" data-localize="management-users.password"></div>
@@ -27,7 +27,7 @@
 	</div>
 	<div class="row help-zone-vs" data-help-localize="help.manage-users.email">
 		<div class="title" data-localize="management-users.email"></div>
-		<div class="detail"><input class="email-text" type="text" value=""/></div>
+		<div class="detail"><input class="email-text" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
 	</div>
 	<div class="row help-zone-vs" data-help-localize="help.manage-users.global-admin">
 		<div class="title" data-localize="management-users.global-admin"></div>
@@ -69,7 +69,7 @@
 <div id="listof-apps">
     <div class="search">
         <i class="fa fa-search"></i>
-        <input type="text" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
+        <input type="search" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
     </div>
 	<div class="scrollable">
 		{{#eachOfObjectValue apps}}

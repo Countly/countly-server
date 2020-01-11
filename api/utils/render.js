@@ -5,7 +5,17 @@
 * @module api/utils/render
 */
 
-var puppeteer = require('puppeteer');
+var puppeteer;
+try {
+    puppeteer = require('puppeteer');
+}
+catch (err) {
+    console.warn(
+        `Puppeteer not installed. Please install puppeteer (1.19.0) if
+        you would like to use api/utils/render.js. \nGracefully skipping
+        any functionality associated with Puppeteer...`, err.stack
+    );
+}
 var Promise = require('bluebird');
 var pathModule = require('path');
 var exec = require('child_process').exec;
@@ -32,8 +42,15 @@ var countlyConfig = require('./../config', 'dont-enclose');
  * @param  {number} options.dimensions.padding - the padding value to subtract from the height of the screenshot
  * @param  {number} options.dimensions.scale - the scale(ppi) value of the screenshot
  * @param  {function} cb - callback function called with the error value or the image data
+ * @return {void} void
  */
 exports.renderView = function(options, cb) {
+    if (puppeteer === undefined) {
+        cb = typeof cb === 'function' ? cb : () => undefined;
+        return cb(new Error(
+            'Puppeteer not installed. Please install Puppeteer (1.19.0) to use this plugin.'
+        ));
+    }
     Promise.coroutine(function * () {
         /**
          * Function to set a timeout
@@ -46,24 +63,24 @@ exports.renderView = function(options, cb) {
             });
         }
 
+        if (!chromePath && alternateChrome) {
+            chromePath = yield fetchChromeExecutablePath();
+        }
+
+        var settings = {
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            ignoreHTTPSErrors: true,
+            userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
+        };
+
+        if (chromePath) {
+            settings.executablePath = chromePath;
+        }
+
+        var browser = yield puppeteer.launch(settings);
+
         try {
-            if (!chromePath && alternateChrome) {
-                chromePath = yield fetchChromeExecutablePath();
-            }
-
-            var settings = {
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                ignoreHTTPSErrors: true,
-                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
-            };
-
-            if (chromePath) {
-                settings.executablePath = chromePath;
-            }
-
-            var browser = yield puppeteer.launch(settings);
-
             var page = yield browser.newPage();
 
             page.on('console', (msg) => {
@@ -82,7 +99,7 @@ exports.renderView = function(options, cb) {
                 log.d("Headless chrome page failed request", request.failure().errorText, request.url());
             });
 
-            var host = "http://127.0.0.1" + countlyConfig.path;
+            var host = "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "127.0.0.1") + countlyConfig.path;
 
             if (options.host) {
                 host = options.host + countlyConfig.path;
@@ -95,7 +112,7 @@ exports.renderView = function(options, cb) {
             var cbFn = options.cbFn || function() {};
             var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
             var source = options.source;
-            var navigationTimeout = options.timeout || 30000;
+            var updatedTimeout = options.timeout || 30000;
 
             options.dimensions = {
                 width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
@@ -104,13 +121,17 @@ exports.renderView = function(options, cb) {
                 scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
             };
 
-            page.setDefaultNavigationTimeout(navigationTimeout);
+            page.setDefaultNavigationTimeout(updatedTimeout);
 
             yield page.goto(host + '/login/token/' + token + '?ssr=true');
 
-            yield timeout(10000);
+            yield page.waitForSelector('countly', {timeout: updatedTimeout});
+
+            yield timeout(2000);
 
             yield page.goto(host + view);
+
+            yield page.waitForSelector('countly', {timeout: updatedTimeout});
 
             yield timeout(10000);
 
@@ -194,6 +215,7 @@ exports.renderView = function(options, cb) {
         }
         catch (e) {
             log.e(e, e.stack);
+            yield browser.close();
             throw e;
         }
     })().then(function(response) {

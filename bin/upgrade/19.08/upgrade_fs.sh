@@ -6,21 +6,21 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #enable command line
-bash $DIR/scripts/detect.init.sh
+bash "$DIR/scripts/detect.init.sh"
 
 
 #remove predefined locale file, it should fallback to default one
-rm -rf $DIR/../frontend/express/public/localization/min/locale_en.properties 
+rm -rf "$DIR/../frontend/express/public/localization/min/locale_en.properties"
 
 #run upgrade scripts
-bash $CUR/scripts/remove_chrome_cache.sh
-bash $CUR/scripts/remove_flash_corssorigin.sh
+bash "$CUR/scripts/remove_chrome_cache.sh"
+bash "$CUR/scripts/remove_flash_corssorigin.sh"
 
 #upgrade plugins
-(cd $DIR/../ && npm install --unsafe-perm)
+(cd "$DIR/../" && npm install --unsafe-perm)
 countly plugin upgrade crashes
 countly plugin upgrade push
-(cd $DIR/../plugins/push/api/parts/apn && npm install --unsafe-perm)
+(cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
 countly plugin upgrade systemlogs
 countly plugin disable live
 countly plugin enable concurrent_users

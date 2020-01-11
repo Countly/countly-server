@@ -383,13 +383,19 @@ class ResourceFaçade extends ResourceInterface {
         else {
             log.w('Opening underlying resource %s from façade', this.id);
             return new Promise((resolve, reject) => {
-                setTimeout(() => {
+                let to = setTimeout(() => {
                     reject(JOB.ERROR.TIMEOUT);
                     this.close().catch(e => log.w('[%d]: Error in .open() of resource %s', process.pid, this.id, e.stack || e));
                 }, RESOURCE_CMD_TIMEOUT);
                 this.channel.send(CMD.OPENED);
-                this.channel.once(CMD.OPENED, resolve);
-                this.channel.once(CMD.CLOSED, reject);
+                this.channel.once(CMD.OPENED, arg => {
+                    clearTimeout(to);
+                    resolve(arg);
+                });
+                this.channel.once(CMD.CLOSED, arg => {
+                    clearTimeout(to);
+                    reject(arg);
+                });
             });
         }
     }

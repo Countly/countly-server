@@ -7,12 +7,12 @@ BINDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 pkill -SIGTERM supervisord
 
 #create supervisor service script
-(cat $DIR/countly.service ; echo "ExecStart=/usr/bin/supervisord --nodaemon --configuration $BINDIR/config/supervisord.conf") > /etc/systemd/system/countly.service
+(cat "$DIR/countly.service" ; echo "ExecStart=/usr/bin/supervisord --nodaemon --configuration $BINDIR/config/supervisord.conf") > /etc/systemd/system/countly.service
 
 if [ -n "$(command -v apt-get)" ]; then
     if [ ! -f /etc/systemd/system/mongod.service ]; then
         #create mongodb service script
-        (cat $DIR/mongod.service ; 
+        (cat "$DIR/mongod.service" ; 
             echo "ExecStart=$( which mongod ) --quiet --config /etc/mongod.conf") > /etc/systemd/system/mongod.service
         
         #reload services

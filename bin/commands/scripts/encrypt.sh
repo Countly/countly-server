@@ -14,4 +14,4 @@ else
     text=$1
 fi
 
-nodejs $DIR/encrypt.js $text ;
+nodejs "$DIR/encrypt.js" "$text" ;

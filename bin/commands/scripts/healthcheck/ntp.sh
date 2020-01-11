@@ -13,7 +13,7 @@ elif [ -x "$(command -v ntpq)" ]; then
 elif [ -x "$(command -v timedatectl)" ]; then
     res=$(timedatectl status | grep 'NTP synchronized' | tr -d ' ' | cut -d ':' -f 2);
     echo "result $res"
-    if ! [[ $res == "yes" ]]; then
+    if ! [[ "$res" == "yes" ]]; then
         echo -e "NTP does not seem to work properly";
     fi
 else

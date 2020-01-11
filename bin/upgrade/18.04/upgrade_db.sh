@@ -11,7 +11,7 @@ if [ "$1" != "combined" ]; then
 fi
 
 #remove stuck push collections
-nodejs $DIR/upgrade/18.01.1/scripts/push_clear.js
+nodejs "$DIR/upgrade/18.01.1/scripts/push_clear.js"
 
 #add indexes
-nodejs $DIR/scripts/add_indexes.js
+nodejs "$DIR/scripts/add_indexes.js"

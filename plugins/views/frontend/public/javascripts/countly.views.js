@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -401,8 +401,8 @@ window.ViewsView = countlyView.extend({
                         countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
                             self.token = token && token.result;
                             if (self.token) {
-                                newWindow.location.href = url;
                                 newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                                newWindow.location.href = url;
                             }
                         });
                     }
@@ -433,8 +433,8 @@ window.ViewsView = countlyView.extend({
                     self.token = token && token.result;
                     if (self.token) {
                         var path = self.useView.replace("#/analytics/views/action-map/", "");
-                        newWindow.location.href = url + path;
                         newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                        newWindow.location.href = url + path;
                     }
                 });
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
@@ -914,9 +914,6 @@ app.addPageScript("/custom#", function() {
 });
 
 $(document).ready(function() {
-    if (!production) {
-        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
-    }
     jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
         x = countlyViews.getFrequencyIndex(x);
         y = countlyViews.getFrequencyIndex(y);
