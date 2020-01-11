@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ENABLE_MONGOD="yes"
 CONF=/etc/mongod.conf

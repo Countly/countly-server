@@ -20,7 +20,7 @@ var exported = {},
         //search for the outmost right ip address ignoring provided proxies
         var ip = "";
         for (var i = ips.length - 1; i >= 0; i--) {
-            if (ips[i].trim() !== "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)) {
+            if (ips[i].trim() !== countlyConfig.web.host && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)) {
                 ip = ips[i].trim();
                 break;
             }

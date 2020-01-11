@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=`date +%Y-%m-%d:%H:%M:%S`
 totalm=$(free -m | awk '/^Mem:/{print $2}')

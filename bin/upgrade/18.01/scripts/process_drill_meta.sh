@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #upgrade drill meta if needed
 if [ "$(countly plugin status drill)" != "Plugin drill does not exist" ] 

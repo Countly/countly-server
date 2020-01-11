@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 #Original source https://gist.github.com/vidavidorra/548ffbcdae99d752da02
 

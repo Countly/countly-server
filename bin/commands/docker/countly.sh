@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 countly_start (){ 
     sudo /usr/bin/sv start countly-api countly-dashboard;

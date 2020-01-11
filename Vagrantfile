@@ -59,7 +59,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell" do |s|
     s.inline = <<-SHELL
       cd /opt/countly
-      /bin/bash /opt/countly/bin/countly.install.sh
+      /opt/countly/bin/countly.install.sh
       # in case you've built the project on your host, you need to rebuild (possibly different platform)
       npm rebuild
       countly restart

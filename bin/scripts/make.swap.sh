@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 # This helper script creates a 4 GB swap file on /swapfile, activates it, 
 # and writes to /etc/fstab so that swap is enabled each time your instance is rebooted.

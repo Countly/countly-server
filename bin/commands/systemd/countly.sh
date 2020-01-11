@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 countly_start () { 
     countly_root ;

@@ -5,8 +5,13 @@
   "description": "Plugin for automatical updates of Countly server",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/updates/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
@@ -14,7 +19,6 @@
     "plugins",
     "updates"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

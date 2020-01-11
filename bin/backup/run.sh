@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # this script creates a default user and an app for countly.
 # default values are as following

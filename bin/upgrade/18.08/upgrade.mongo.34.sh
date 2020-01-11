@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #check if authentication is required
 isAuth=`mongo --eval "db.getUsers()" | grep "not auth"`

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 nginxpath="/var/log/nginx/error.log"
 curdate=$(date "+%Y/%m/%d %H")

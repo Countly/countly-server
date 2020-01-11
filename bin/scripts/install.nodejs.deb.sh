@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Discussion, issues and change requests at:
 #   https://github.com/nodesource/distributions

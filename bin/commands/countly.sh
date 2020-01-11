@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #get current dir through symlink
 SOURCE="${BASH_SOURCE[0]}"

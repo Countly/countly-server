@@ -12,11 +12,11 @@ rcvar=${name}_enable
 pidfile=/var/run/${name}.pid
 
 command="/usr/sbin/daemon"
-command_args="-o /var/log/${name}.log -P ${pidfile} -u countly -r /usr/local/bin/node frontend/express/app.js"
+command_args="-o ../../log/countly-dashboard.log -P ${pidfile} -u countly -r /usr/local/bin/node ../../frontend/express/app.js"
 
 load_rc_config ${name}
 
 : ${countly_dashboard_enable="NO"}
-: ${countly_dashboard_chdir=/usr/home/countly/countly-server}
+: ${countly_dashboard_chdir=/usr/home/countly/countly-server/bin/config}
 
 run_rc_command "$1"

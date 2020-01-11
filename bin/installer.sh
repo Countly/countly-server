@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #   use this to get latest stable release
 #       wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash

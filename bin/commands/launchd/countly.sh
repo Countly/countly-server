@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 countly_start () { 
     launchctl start com.countly.api;

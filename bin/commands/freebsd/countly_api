@@ -12,11 +12,11 @@ rcvar=${name}_enable
 pidfile=/var/run/${name}.pid
 
 command="/usr/sbin/daemon"
-command_args="-o /var/log/${name}.log -P ${pidfile} -u countly -r /usr/local/bin/node api/api.js"
+command_args="-o ../../log/countly-api.log -P ${pidfile} -u countly -r /usr/local/bin/node ../../api/api.js"
 
 load_rc_config ${name}
 
 : ${countly_api_enable="NO"}
-: ${countly_api_chdir=/usr/home/countly/countly-server}
+: ${countly_api_chdir=/usr/home/countly/countly-server/bin/config}
 
 run_rc_command "$1"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #drop packages coming from 0/0 going through mongodb port
 #allow those coming from localhost

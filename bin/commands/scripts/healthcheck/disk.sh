@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 alert_threshold=80
 res=""
 for disk in `df |grep dev |grep -v tmpfs |grep -v udev| awk -F" " '{print $1}' | cut -d/ -f3`; do
