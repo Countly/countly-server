@@ -52,16 +52,16 @@
         <div id="login-logo" style="margin-bottom:25px;"></div>
         <form method="POST">
             <div>
-                <input autocapitalize="off" autocomplete="off" type="text" name="full_name" placeholder="Full Name" data-localize="placeholder.full-name"/>
+                <input required autocapitalize="off" autocomplete="off" type="text" name="full_name" placeholder="Full Name" data-localize="placeholder.full-name"/>
             </div>
             <div>
-                <input autocapitalize="off" autocomplete="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email"/>
+                <input required autocapitalize="off" autocomplete="off" type="email" name="email" placeholder="Email" data-localize="placeholder.email"/>
             </div>
             <div>
-                <input type="text" autocapitalize="off" autocomplete="off" name="username" placeholder="Username" data-localize="placeholder.username"/>
+                <input required type="text" autocapitalize="off" autocomplete="off" name="username" placeholder="Username" data-localize="placeholder.username"/>
             </div>
             <div>
-                <input name="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"/>
+                <input required minlength="8" name="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"/>
             </div>
             <% if (typeof inject_template.form != "undefined") { %>
                 <%- inject_template.form %>
@@ -89,7 +89,6 @@
                 document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
             }
 		});
-		
 		$(document).bind('clyLangChange', function() {
 			if (jQuery.i18n.map["setup.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
