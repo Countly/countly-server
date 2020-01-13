@@ -170,8 +170,8 @@ window.SystemLogsView = countlyView.extend({
                                 }
                                 if (typeof row.i.before !== "undefined" && typeof row.i.after !== "undefined") {
                                     if (!jQuery.isEmptyObject(row.i.before)) {
-                                        if (typeof row.i._id !== "undefined") {
-                                            ret += "<p title='" + row.i._id + "'>" + jQuery.i18n.map["systemlogs.for-id"] + ": " + row.i._id + "</p>";
+                                        if (typeof row.i.before._id !== "undefined") {
+                                            ret += "<p title='" + row.i.before._id + "'>" + jQuery.i18n.map["systemlogs.for-id"] + ": " + row.i.before._id + "</p>";
                                         }
                                     }
                                 }
@@ -327,16 +327,10 @@ window.SystemLogsView = countlyView.extend({
                     ret += "<p>" + jQuery.i18n.map["systemlogs.changed-data"] + ":</p>";
                     ret += "<table style='width:100%;'>";
                     ret += "<tr>";
-                    if (typeof row.i.name !== "undefined") {
-                        ret += "<th>" + jQuery.i18n.map["systemlogs.name"] + "</th>";
-                    }
                     ret += "<th style='width:20%;'>" + jQuery.i18n.map["systemlogs.field"] + "</th><th style='width:40%;'>" + jQuery.i18n.map["systemlogs.before"] + "</th><th style='width:40%;'>" + jQuery.i18n.map["systemlogs.after"] + "</th>";
                     ret += '</tr>';
                     for (var i in row.i.before) {
                         ret += "<tr>";
-                        if (typeof row.i.name !== "undefined") {
-                            ret += "<td>" + row.i.name + "</td>";
-                        }
                         ret += "<td>" + i + "</td><td>" + self.renderField(i, row.i.before[i]) + "</td><td>" + self.renderField(i, row.i.after[i]) + "</td>";
                         ret += "</tr>";
                     }
