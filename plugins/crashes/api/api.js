@@ -103,11 +103,7 @@ plugins.setConfigs("crashes", {
                                 if (!crash.nonfatal) {
                                     mod.fatal = -1;
                                 }
-                                common.db.collection('app_crashusers' + params.app_id).findAndModify({"group": 0, uid: uid}, {}, {$inc: mod}, {upsert: true, new: true}, function(crashUserErr, res) {
-                                    res = res && res.ok ? res.value : null;
-                                    if (res && res.crashes <= 0) {
-                                        common.db.collection('app_crashusers' + params.app_id).remove({"group": 0, uid: uid}, function() {});
-                                    }
+                                common.db.collection('app_crashusers' + params.app_id).findAndModify({"group": 0, uid: uid}, {}, {$inc: mod}, {upsert: true, new: true}, function() {
                                     done(null, true);
                                 });
                             }
@@ -175,6 +171,24 @@ plugins.setConfigs("crashes", {
             }
         });
     });
+
+    //post process session
+    plugins.register("/session/post", function(ob) {
+        return new Promise(function(resolve) {
+            var params = ob.params;
+            var dbAppUser = ob.dbAppUser;
+            if (dbAppUser.hadCrash) {
+                //record crashed session
+                common.recordCustomMetric(params, "crashdata", params.app_id, ["crses"]);
+                common.updateAppUser(params, {$set: {hadCrash: false}});
+                resolve();
+            }
+            else {
+                resolve();
+            }
+        });
+    });
+
     //write api call
     plugins.register("/i", function(ob) {
         return new Promise(function(resolve) {
@@ -301,6 +315,10 @@ plugins.setConfigs("crashes", {
                                 report.group = hash;
                                 report.uid = dbAppUser.uid;
                                 report.ts = params.time.timestamp;
+
+                                if (!dbAppUser.hadCrash) {
+                                    common.updateAppUser(params, {$set: {hadCrash: true}});
+                                }
 
                                 var set = {group: hash, 'uid': report.uid, last: report.ts};
                                 if (dbAppUser && dbAppUser.sc) {
@@ -537,11 +555,15 @@ plugins.setConfigs("crashes", {
                                                     //update meta document
                                                     groupInc = {};
                                                     groupInc.reports = 1;
-                                                    if (userAll && userAll.crashes === 1) {
+                                                    if (!userAll || !userAll.crashes) {
                                                         groupInc.users = 1;
                                                     }
 
-                                                    if (!report.nonfatal && userAll && userAll.fatal === 1) {
+                                                    if (!userAll || typeof userAll.crashes !== "undefined") {
+                                                        common.recordCustomMetric(params, "crashdata", params.app_id, ["crau"], 1, null, ["crau"], userAll && userAll.lastTs);
+                                                    }
+
+                                                    if (!report.nonfatal && (!userAll || !userAll.fatal)) {
                                                         groupInc.usersfatal = 1;
                                                     }
 
@@ -576,20 +598,20 @@ plugins.setConfigs("crashes", {
                                                 if (group) {
                                                     lastTs = group.lastTs;
                                                 }
+                                                var update = {$set: {group: 0, 'uid': report.uid, lastTs: params.time.timestamp}};
                                                 if (!user || !user.reports) {
                                                     var inc = {crashes: 1};
                                                     if (!report.nonfatal) {
                                                         inc.fatal = 1;
                                                     }
+                                                    update.$inc = inc;
+                                                }
 
-                                                    common.db.collection('app_crashusers' + params.app_id).findAndModify({group: 0, 'uid': report.uid}, {}, {$set: {group: 0, 'uid': report.uid}, $inc: inc}, {upsert: true, new: true}, function(crashUsersErr, userAll) {
-                                                        userAll = userAll && userAll.ok ? userAll.value : null;
-                                                        processCrash(userAll, lastTs);
-                                                    });
-                                                }
-                                                else {
-                                                    processCrash(null, lastTs);
-                                                }
+                                                common.db.collection('app_crashusers' + params.app_id).findAndModify({group: 0, 'uid': report.uid}, {}, update, {upsert: true, new: false}, function(crashUsersErr, userAll) {
+                                                    console.log("testing", crashUsersErr, userAll);
+                                                    userAll = userAll && userAll.ok ? userAll.value : null;
+                                                    processCrash(userAll, lastTs);
+                                                });
                                             });
                                         }
                                         else {
@@ -725,7 +747,7 @@ plugins.setConfigs("crashes", {
                                     }
                                 }
                             }
-                            fetch.getTimeObj("crashdata", params, {unique: "cru"/*, levels:{daily:["cr","crnf","cru","crf", "crru"], monthly:["cr","crnf","cru","crf", "crru"]}*/}, function(data) {
+                            fetch.getTimeObj("crashdata", params, {unique: ["cru", "crau"]/*, levels:{daily:["cr","crnf","cru","crf", "crru"], monthly:["cr","crnf","cru","crf", "crru"]}*/}, function(data) {
                                 result.data = data;
                                 common.returnOutput(params, result);
                             });
