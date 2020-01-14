@@ -160,7 +160,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 1, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 1, "news": 1, "renewed": 0, "os": {"Android": 1}, "highest_app": "1.1"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 1, crnf: 1, cru: 1});
+                    verifyMetrics(ob.data, {meta: {}, cr: 1, crnf: 1, cru: 1, crau: 1});
                     done();
                 });
         });
@@ -349,7 +349,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 2, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 2, "news": 0, "renewed": 0, "os": {"Android": 2}, "highest_app": "1.1"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 2, crnf: 2, cru: 1});
+                    verifyMetrics(ob.data, {meta: {}, cr: 2, crnf: 2, cru: 1, crau: 2});
                     done();
                 });
         });
@@ -566,7 +566,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 3, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 3}, "highest_app": "1.2"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 3, crnf: 3, cru: 1});
+                    verifyMetrics(ob.data, {meta: {}, cr: 3, crnf: 3, cru: 1, crau: 2, crses: 1});
                     done();
                 });
         });
@@ -742,7 +742,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 4, "unique": 2, "resolved": 0, "unresolved": 2, "fatal": 1, "nonfatal": 3, "news": 1, "renewed": 0, "os": {"Android": 4}, "highest_app": "1.2"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 4, crnf: 3, crf: 1, cru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 4, crnf: 3, crf: 1, cru: 2, crau: 2, crses: 1});
                     done();
                 });
         });
@@ -934,7 +934,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 5, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 3, "news": 1, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3});
+                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3, crau: 3, crses: 1});
                     done();
                 });
         });
@@ -1627,7 +1627,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3});
+                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3, crau: 3, crses: 1});
                     done();
                 });
         });
@@ -1714,7 +1714,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3, crru: 1});
+                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3, crru: 1, crau: 3, crses: 2});
                     done();
                 });
         });
@@ -1801,7 +1801,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3, crru: 2, crau: 3, crses: 3});
                     done();
                 });
         });
@@ -1936,7 +1936,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 6, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 4, "news": 0, "renewed": 1, "os": {"Android": 5, "Windows Phone": 1}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 6, crnf: 4, crf: 2, cru: 3, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 6, crnf: 4, crf: 2, cru: 3, crru: 2, crau: 3, crses: 3});
                     done();
                 });
         });
@@ -2087,7 +2087,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 7, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 1, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
@@ -2177,7 +2177,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 7, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
@@ -2266,7 +2266,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 7, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
@@ -2407,7 +2407,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 8, "unique": 4, "resolved": 0, "unresolved": 4, "fatal": 3, "nonfatal": 5, "news": 1, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1, "iOS": 1}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 8, crnf: 5, crf: 3, cru: 4, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 8, crnf: 5, crf: 3, cru: 4, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
@@ -2583,7 +2583,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 9, "unique": 4, "resolved": 0, "unresolved": 4, "fatal": 4, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1, "iOS": 2}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
@@ -2706,7 +2706,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 8, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 3, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 5, "Windows Phone": 1, "iOS": 2}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
@@ -2806,7 +2806,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 7, "unique": 2, "resolved": 0, "unresolved": 2, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 5, "Windows Phone": 0, "iOS": 2}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
@@ -2893,7 +2893,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 2, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 2, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 2}, "highest_app": "1.3"});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
@@ -2963,7 +2963,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 0}, "highest_app": ""});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
+                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2, crau: 3, crses: 4});
                     done();
                 });
         });
