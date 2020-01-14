@@ -40,6 +40,8 @@ window.CrashesView = countlyView.extend({
         this.metrics = {
             cr: jQuery.i18n.map["crashes.total"],
             cru: jQuery.i18n.map["crashes.unique"],
+            crau: jQuery.i18n.map["crashes.free-users"],
+            crses: jQuery.i18n.map["crashes.free-sessions"],
             crnf: jQuery.i18n.map["crashes.nonfatal"] + " " + jQuery.i18n.map["crashes.title"],
             crf: jQuery.i18n.map["crashes.fatal"] + " " + jQuery.i18n.map["crashes.title"],
             crru: jQuery.i18n.map["crashes.resolved-users"]
@@ -447,7 +449,20 @@ window.CrashesView = countlyView.extend({
                     "data": dashboard.usage.crt,
                     "id": "crash-cr-session",
                     "help": "crashes.help-session"
-                }/*,
+                },
+                {
+                    "title": jQuery.i18n.map["crashes.free-users"],
+                    "data": dashboard.usage.crau,
+                    "id": "crash-crau",
+                    "help": "crashes.help-affected-users"
+                },
+                {
+                    "title": jQuery.i18n.map["crashes.free-sessions"],
+                    "data": dashboard.usage.crses,
+                    "id": "crash-crses",
+                    "help": "crashes.help-affected-sessions"
+                },
+                /*,
                 {
                     "title":jQuery.i18n.map["crashes.resolved-users"],
                     "data":dashboard.usage['crru'],
