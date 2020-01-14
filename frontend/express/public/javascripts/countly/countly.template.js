@@ -152,7 +152,23 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeOnce()).always(function() {
+            $.when(this.beforeRender(), initializeOnce()).always(function(XMLHttpRequest, textStatus, errorThrown) {
+                if (XMLHttpRequest && XMLHttpRequest.status === 0) {
+                    // eslint-disable-next-line no-console
+                    console.error("Check Your Network Connection");
+                }
+                else if (XMLHttpRequest && XMLHttpRequest.status === 404) {
+                    // eslint-disable-next-line no-console
+                    console.error("Requested URL not found: " + XMLHttpRequest.my_set_url + " with " + JSON.stringify(XMLHttpRequest.my_set_data));
+                }
+                else if (XMLHttpRequest && XMLHttpRequest.status === 500) {
+                    // eslint-disable-next-line no-console
+                    console.error("Internel Server Error: " + XMLHttpRequest.my_set_url + " with " + JSON.stringify(XMLHttpRequest.my_set_data));
+                }
+                else if ((XMLHttpRequest && typeof XMLHttpRequest.status === "undefined") || errorThrown) {
+                    // eslint-disable-next-line no-console
+                    console.error("Unknow Error: " + (XMLHttpRequest || XMLHttpRequest.responseText) + "\n" + textStatus + "\n" + errorThrown);
+                }
                 if (app.activeView === self) {
                     self.isLoaded = true;
                     self.renderCommon();
@@ -4012,21 +4028,22 @@ app.noHistory = function(hash) {
 $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //add to options for independent!!!
 
+    var myurl = "";
+    var mydata = "";
+    if (originalOptions && originalOptions.url) {
+        myurl = originalOptions.url;
+    }
+    if (originalOptions && originalOptions.data) {
+        mydata = JSON.stringify(originalOptions.data);
+    }
+    //request which is not killed on view change(only on app change)
+    jqXHR.my_set_url = myurl;
+    jqXHR.my_set_data = mydata;
+
     if (originalOptions && (originalOptions.type === 'GET' || originalOptions.type === 'get') && originalOptions.url.substr(0, 2) === '/o') {
         if (originalOptions.data && originalOptions.data.preventGlobalAbort && originalOptions.data.preventGlobalAbort === true) {
             return true;
         }
-        var myurl = "";
-        var mydata = "";
-        if (originalOptions && originalOptions.url) {
-            myurl = originalOptions.url;
-        }
-        if (originalOptions && originalOptions.data) {
-            mydata = JSON.stringify(originalOptions.data);
-        }
-        //request which is not killed on view change(only on app change)
-        jqXHR.my_set_url = myurl;
-        jqXHR.my_set_data = mydata;
 
         if (originalOptions.data && originalOptions.data.preventRequestAbort && originalOptions.data.preventRequestAbort === true) {
             if (app._myRequests[myurl] && app._myRequests[myurl][mydata]) {
