@@ -839,7 +839,7 @@ plugins.setConfigs("crashes", {
 
                             cursor.toArray(function(cursorErr, res) {
                                 res = res || [];
-                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: count, aaData: res});
+                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: Math.max(total, 0), iTotalDisplayRecords: count, aaData: res});
                             });
                         });
                     });
