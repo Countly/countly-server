@@ -64,7 +64,7 @@ function passwordCheck(password) {
     return true;
 }
 function validateForm() {
-    var password = document.forms["account-form"]["password"].value;``
+    var password = document.forms["account-form"]["password"].value;
     var result = passwordCheck(password);
     if (result === true) {
         return true;
