@@ -50,7 +50,7 @@
 	</div>
 	<div id="login-form" style="height:306px; margin-top:-153px;">
         <div id="login-logo" style="margin-bottom:25px;"></div>
-        <form method="POST">
+        <form id="account-form" method="POST" onsubmit="return validateForm()">
             <div>
                 <input required autocapitalize="off" autocomplete="off" type="text" name="full_name" placeholder="Full Name" data-localize="placeholder.full-name"/>
             </div>
@@ -82,6 +82,7 @@
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
     <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
+
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
