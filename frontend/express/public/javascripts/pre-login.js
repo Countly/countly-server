@@ -1,4 +1,4 @@
-/*global store, jQuery, $, document, countlyGlobal, filterXSS */
+/*global store, jQuery, $, document, countlyGlobal, filterXSS, alert, window */
 
 /**
  * Javascript file loaded on pre login pages with some handy global functions
@@ -48,6 +48,15 @@ function encodeSomeHtml(html, options) {
         return filterXSS(html, htmlEncodeOptions);
     }
 }
+
+
+/**
+* Check password Validation.
+* @param {string} password - password string
+* @return {bool} result - return password is validated or not.
+* @memberof Pre Login
+* 
+/* exported passwordCheck */
 function passwordCheck(password) {
     if (password.length < 8) {
         return jQuery.i18n.prop("management-users.password.length", 8);
@@ -63,12 +72,20 @@ function passwordCheck(password) {
     }
     return true;
 }
-function validateForm() {
+
+/**
+* Check form before submit.
+* @return {bool} result - return false to prevent submit action if check password failed.
+* @memberof Pre Login
+*
+/* exported validateForm */
+window.validateForm = function() {
     var password = document.forms["account-form"]["password"].value;
     var result = passwordCheck(password);
     if (result === true) {
         return true;
-    } else {
+    }
+    else {
         alert(result);
         return false;
     }
