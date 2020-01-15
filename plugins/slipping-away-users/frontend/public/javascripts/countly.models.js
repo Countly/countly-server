@@ -3,6 +3,7 @@
     var _data = {};
     /**
      * This is for initializing model
+     * @param {object} query user drill filter query
      * @return {func} ajax func to request data and store in _data
     */
     countlySlippingPlugin.initialize = function(query) {
