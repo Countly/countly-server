@@ -2,6 +2,7 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     GA = require("otplib/authenticator"),
     log = common.log('two-factor-auth:api'),
+    utils = require("../../../api/utils/utils.js"),
     plugins = require('../../pluginManager.js');
 
 plugins.setConfigs("two-factor-auth", {
@@ -19,7 +20,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
     case "enable":
         ob.validateUserForWriteAPI(ob.params, function() {
             var member = ob.params.member,
-                secretToken = ob.params.qstring.secret_token,
+                secretToken = utils.encrypt(ob.params.qstring.secret_token),
                 authCode = ob.params.qstring.auth_code;
 
             if (!/^\d{6}$/.test(authCode)) {

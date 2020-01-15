@@ -4,6 +4,7 @@ var pluginObject = {},
     qrcode = require("qrcode"),
     countlyConfig = require('../../../frontend/express/config'),
     plugins = require('../../pluginManager.js'),
+    apiUtils = require("../../../api/utils/utils.js"),
     languages = require('../../../frontend/express/locale.conf');
 
 GA.options = {
@@ -75,7 +76,7 @@ function generateQRCode(username, secret, callback) {
                                     themeFiles: req.themeFiles
                                 });
                             }
-                            else if (GA.check(req.query.auth_code, member.two_factor_auth.secret_token)) {
+                            else if (GA.check(req.query.auth_code, apiUtils.decrypt(member.two_factor_auth.secret_token))) {
                                 // everything is ok, let the user reset their password
                                 countlyDb.collection('password_reset').updateOne({prid: req.params.prid}, {$set: {two_factor_auth_passed: true}}, {}, function(passwordResetUpdateErr) {
                                     if (passwordResetUpdateErr) {
@@ -194,7 +195,7 @@ function generateQRCode(username, secret, callback) {
                     // else everything is alright (login flow second phase)
                     else {
                         try {
-                            var verified = GA.check(req.body.auth_code, (member.two_factor_auth && member.two_factor_auth.secret_token) || req.body.secret_token);
+                            var verified = GA.check(req.body.auth_code, apiUtils.decrypt(member.two_factor_auth && member.two_factor_auth.secret_token || req.body.secret_token));
                             if (verified) {
                                 if (req.body.secret_token) {
                                     countlyDb.collection("members").findAndModify(
@@ -203,7 +204,7 @@ function generateQRCode(username, secret, callback) {
                                         {
                                             $set: {
                                                 "two_factor_auth.enabled": true,
-                                                "two_factor_auth.secret_token": req.body.secret_token
+                                                "two_factor_auth.secret_token": apiUtils.encrypt(req.body.secret_token)
                                             }
                                         },
                                         function(enableErr) {
