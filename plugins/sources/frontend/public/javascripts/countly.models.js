@@ -91,5 +91,27 @@
         return countlyCommon.mergeMetricsByName(data, "_id");
     };
 
+
+    countlySources.getCodesFromName = function(value) {
+        var codes = [];
+        var lowerCase = value.toLowerCase();
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
+            if (stores) {
+                for (var p in stores) {
+                    if (stores[p].toLowerCase().startsWith(lowerCase)) {
+                        codes.push(p);
+                    }
+                }
+            }
+        }
+        else {
+            var vv = value.replace("://", "://www.");
+            codes.push(vv);
+        }
+
+        return codes;
+    };
+
+
     CountlyHelpers.createMetricModel(window.countlySources, {name: "sources", estOverrideMetric: "sources"}, jQuery, getSourceName);
 }());
