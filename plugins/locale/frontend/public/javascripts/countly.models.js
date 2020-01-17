@@ -26,7 +26,7 @@
     }
 
     /** Function gets list of language codes
-    * @param {string} search  - language name
+    * @param {string} name  - language name
     * @returns{array} list if language codes
     */
     function getCodesFromName(name) {
