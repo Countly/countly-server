@@ -39,6 +39,19 @@
             return jQuery.i18n.map["common.unknown"] || "Unknown";
         }
     };
+
+    countlyLocation.getCodesFromName = function(name) {
+        var codes = [];
+        var lowerCase = name.toLowerCase();
+        for (var p in _countryMap) {
+            if (_countryMap[p].toLowerCase().startsWith(lowerCase)) {
+                codes.push(p);
+            }
+        }
+        return codes;
+    };
+
+
     CountlyHelpers.createMetricModel(window.countlyLocation, {name: "countries", estOverrideMetric: "countries"}, jQuery, countlyLocation.getCountryName);
 
     countlyLocation.getRegionName = function(rgn) {

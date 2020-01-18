@@ -196,4 +196,23 @@
         }
         return osName;
     };
+
+    countlyDeviceDetails.getOSVersionList = function(name) {
+        var codes = {};
+        var lowerCase = name.toLowerCase();
+        for (var i in countlyDeviceDetails.os_mapping) {
+            if (countlyDeviceDetails.os_mapping[i].name.toLowerCase().startsWith(lowerCase)) {
+                codes[countlyDeviceDetails.os_mapping[i].short] = true;
+            }
+            else {
+                var changed = lowerCase.replace(new RegExp("^" + countlyDeviceDetails.os_mapping[i].name.toLowerCase(), "g"), countlyDeviceDetails.os_mapping[i].short);
+                changed = changed.replace(/ /g, ""); //removes spaces
+                changed = (changed + "").replace(/\./g, ":");
+                codes[changed] = true;
+            }
+
+        }
+        return Object.keys(codes);
+    };
+
 }());
