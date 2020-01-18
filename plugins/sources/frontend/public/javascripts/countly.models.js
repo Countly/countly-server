@@ -105,10 +105,8 @@
             }
         }
         else {
-            var vv = value.replace("://", "://www.");
-            codes.push(vv);
+            codes.push(value);
         }
-
         return codes;
     };
 
