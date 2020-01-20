@@ -329,11 +329,7 @@ namespace apns {
 				obj->stats.state |= ST_RESOLVED | ST_ERROR_RECOVERABLE;
 				LOG_WARNING("dns resolve error, let's retry once " << uv_err_name(status));
 		
-				struct addrinfo hints;
-				hints.ai_family = AF_INET;
-				hints.ai_socktype = SOCK_STREAM;
-				hints.ai_protocol = 0;
-				hints.ai_flags = AI_ADDRCONFIG;
+				struct addrinfo hints = { .ai_family = AF_INET, .ai_socktype = SOCK_STREAM, .ai_flags = AI_ADDRCONFIG | AI_V4MAPPED };
 				uv_getaddrinfo(uv_default_loop(), handle, resolve_cb, obj->hostname.c_str(), "443", &hints);
 			}
 		} else {
@@ -375,12 +371,7 @@ namespace apns {
 		obj->handle_resolve = new uv_getaddrinfo_t;
 		obj->handle_resolve->data = persistentHandle;
 
-		struct addrinfo hints;
-		hints.ai_family = AF_UNSPEC;
-		hints.ai_socktype = SOCK_STREAM;
-		hints.ai_protocol = 0;
-		hints.ai_flags = AI_ADDRCONFIG;
-
+		struct addrinfo hints = { .ai_family = AF_UNSPEC, .ai_socktype = SOCK_STREAM, .ai_flags = AI_ADDRCONFIG | AI_V4MAPPED };
 		uv_getaddrinfo(uv_default_loop(), obj->handle_resolve, resolve_cb, host.c_str(), port.c_str(), &hints);
 
 		info.GetReturnValue().Set(promise);

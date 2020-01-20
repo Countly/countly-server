@@ -369,13 +369,10 @@ namespace apns {
 			}
 
 			fd_set set;
-			struct timeval timeout;
+			struct timeval timeout = { .tv_sec = 4 };
 
 			FD_ZERO (&set);
 			FD_SET (obj->fd, &set);
-
-			timeout.tv_sec = 4;
-			timeout.tv_usec = 0;
 
 			/* select returns 0 if timeout, 1 if input available, -1 if error. */
 			val = select(FD_SETSIZE, NULL, &set, NULL, &timeout);
