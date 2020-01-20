@@ -5,6 +5,7 @@ var pluginObject = {},
     countlyConfig = require('../../../frontend/express/config'),
     plugins = require('../../pluginManager.js'),
     apiUtils = require("../../../api/utils/utils.js"),
+    members = require("../../../frontend/express/libs/members.js"),
     languages = require('../../../frontend/express/locale.conf');
 
 GA.options = {
@@ -138,11 +139,7 @@ function generateQRCode(username, secret, callback) {
 
         // modify login flow
         app.post(countlyConfig.path + '/login', function(req, res, next) {
-            countlyDb.collection('members').findOne({"username": req.body.username}, function(memberErr, member) {
-                if (memberErr) {
-                    console.log(`Database error searching for member during login with 2FA: ${memberErr.message}`);
-                }
-
+            members.findByUsernameOrEmail(req.body.username, function(member) {
                 // if member exists and 2fa is enabled globally or for the user
                 if (member && (member.two_factor_auth && member.two_factor_auth.enabled || plugins.getConfig("two-factor-auth").globally_enabled)) {
                     // if 2fa is not set up for the user
