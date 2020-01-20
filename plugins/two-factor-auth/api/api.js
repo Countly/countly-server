@@ -20,7 +20,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
     case "enable":
         ob.validateUserForWriteAPI(ob.params, function() {
             var member = ob.params.member,
-                secretToken = utils.encrypt(ob.params.qstring.secret_token),
+                secretToken = ob.params.qstring.secret_token,
                 authCode = ob.params.qstring.auth_code;
 
             if (!/^\d{6}$/.test(authCode)) {
@@ -36,7 +36,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
                             {
                                 $set: {
                                     "two_factor_auth.enabled": true,
-                                    "two_factor_auth.secret_token": secretToken
+                                    "two_factor_auth.secret_token": utils.encrypt(secretToken)
                                 }
                             },
                             function(err) {
