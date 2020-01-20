@@ -6,6 +6,7 @@ var pluginObject = {},
     plugins = require('../../pluginManager.js'),
     apiUtils = require("../../../api/utils/utils.js"),
     members = require("../../../frontend/express/libs/members.js"),
+    versionInfo = require("../../../frontend/express/version.info"),
     languages = require('../../../frontend/express/locale.conf');
 
 GA.options = {
@@ -18,17 +19,19 @@ GA.options = {
  @param {function} callback - function to call with an error, if any, and a SVG string
  */
 function generateQRCode(username, secret, callback) {
-    var domain = "Countly";
+    var domain = versionInfo.company || versionInfo.title || "Countly";
 
-    try {
-        const apiURL = plugins.getConfig("api").domain;
-        if (apiURL) {
-            let parsedURL = new URL(apiURL);
-            domain = parsedURL.hostname;
+    if (domain === "Countly") {
+        try {
+            const apiURL = plugins.getConfig("api").domain;
+            if (apiURL) {
+                let parsedURL = new URL(apiURL);
+                domain = parsedURL.hostname;
+            }
         }
-    }
-    catch (err) {
-        console.log(`Error parsing api URL: ${err}`);
+        catch (err) {
+            console.log(`Error parsing api URL: ${err}`);
+        }
     }
 
     qrcode.toString(GA.keyuri(username, domain, secret),
