@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ -f /opt/countly/plugins/plugins.json ]; then
 	echo "[docker] Plugins have been built, skipping rebuilding"

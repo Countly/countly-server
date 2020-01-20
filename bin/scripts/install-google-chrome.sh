@@ -132,7 +132,7 @@ done
 
 # Create an `ldd.sh` script to mimic the behavior of `ldd` within the namespace (without bash, etc. dependencies).
 {
-echo '#!/bin/bash'
+echo '#!/usr/bin/env bash'
 echo ''
 echo '# Usage: ldd.sh LIBRARY_PATH EXECUTABLE'
 echo 'mount --make-rprivate /'
