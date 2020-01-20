@@ -373,6 +373,12 @@ common.convertToType = function(value) {
         }
         return value;
     }
+    else if (value && typeof value === "object") {
+        for (var key in value) {
+            value[key] = common.convertToType(value[key]);
+        }
+        return value;
+    }
     //if value can be a number
     else if (common.isNumber(value)) {
         //check if it is string but is less than 16 length
