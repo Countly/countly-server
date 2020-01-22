@@ -513,8 +513,40 @@ namespace apns {
 
 		if (obj->proxyport == 0) {
 			val = connect(obj->fd, obj->address->ai_addr, obj->address->ai_addrlen);
-			LOG_DEBUG("CONN " << uv_thread_self() << ": CONN " << uv_thread_self() << ": connect " << val);
-			if (val != 0 && errno != EINPROGRESS) {
+			LOG_DEBUG("CONN " << uv_thread_self() << ": CONN " << uv_thread_self() << ": connect " << val << ", errno: " << errno);
+			if (errno == EINPROGRESS) {
+				fd_set set;
+				struct timeval timeout = { .tv_sec = 4 };
+	
+				FD_ZERO (&set);
+				FD_SET (obj->fd, &set);
+	
+				/* select returns 0 if timeout, 1 if input available, -1 if error. */
+				val = select(FD_SETSIZE, NULL, &set, NULL, &timeout);
+				if (val == 0) {
+					obj->send_error("Connect timeout");
+					if (obj->tcp_init_sem) {
+						uv_sem_post(obj->tcp_init_sem);
+					}
+					SSL_free(obj->ssl);
+					obj->ssl = nullptr;
+					close(obj->fd);
+					obj->fd = 0;
+					return;
+				} else if (val < 0) {
+					std::ostringstream out;
+					out << "Cannot connect to server: " << strerror(val);
+					obj->send_error(out.str());
+					if (obj->tcp_init_sem) {
+						uv_sem_post(obj->tcp_init_sem);
+					}
+					SSL_free(obj->ssl);
+					obj->ssl = nullptr;
+					close(obj->fd);
+					obj->fd = 0;
+					return;
+				}
+			} else if (val != 0) {
 				std::ostringstream out;
 				out << "connect() failed: " << strerror(val);
 				obj->send_error(out.str());
@@ -610,8 +642,6 @@ namespace apns {
 
 		stats.reading = true;
 
-		char buf[1024 * 10];
-
 		if(!SSL_is_init_finished(ssl)) {
 			int r = SSL_connect(ssl);
 			if(r < 0) {
@@ -621,6 +651,7 @@ namespace apns {
 		} else {
 			// connect, check if there is encrypted data, or we need to send app data
 			int s;
+			char buf[1024 * 10];
 			do {
 				int ng = 0;
 
