@@ -13,7 +13,7 @@ class ClearAutoTasks extends job.Job {
     run(db, done) {
         const beforeTime = new Date().getTime() - 1000 * 60 * 60 * 24 * 90;  //90 days ago
         const query = {
-            manually_create: false,
+            manually_create: {$ne: true},
             ts: { $lt: beforeTime }
         };
         db.collection("long_tasks").remove(query, function(error) {
