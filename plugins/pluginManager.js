@@ -1182,21 +1182,30 @@ var pluginManager = function pluginManager() {
         if (dbName.indexOf('mongodb://') !== 0) {
             dbName = 'mongodb://' + dbName;
         }
+        var db_name = "countly";
+        try {
+            db_name = dbName.split("/").pop().split("?")[0];
+        }
+        catch (ex) {
+            db_name = "countly";
+        }
 
         try {
-            dbOptions.appname = process.title + ": " + dbName.split("/").pop().split("?")[0] + "(" + maxPoolSize + ") " + process.pid;
+            dbOptions.appname = process.title + ": " + db_name + "(" + maxPoolSize + ") " + process.pid;
         }
         catch (ex) {
             //silent
         }
 
         mngr.dispatch("/db/pre_connect", {
+            db: db_name,
             connection: dbName,
             options: dbOptions
         });
 
         var countlyDb = mongo.db(dbName, dbOptions);
         countlyDb._cly_debug = {
+            db: db_name,
             connection: dbName,
             options: dbOptions
         };
@@ -1235,7 +1244,8 @@ var pluginManager = function pluginManager() {
 
         countlyDb.onOpened(function() {
             mngr.dispatch("/db/connected", {
-                db: countlyDb,
+                db: db_name,
+                instance: countlyDb,
                 connection: dbName,
                 options: dbOptions
             });
@@ -1329,6 +1339,7 @@ var pluginManager = function pluginManager() {
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback) {
                 mngr.dispatch("/db/readAndUpdate", {
+                    db: db_name,
                     operation: "findAndModify",
                     collection: collection,
                     query: query,
@@ -1372,6 +1383,7 @@ var pluginManager = function pluginManager() {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, doc, options, callback) {
                     mngr.dispatch("/db/update", {
+                        db: db_name,
                         operation: name,
                         collection: collection,
                         query: selector,
@@ -1458,6 +1470,7 @@ var pluginManager = function pluginManager() {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, options, callback) {
                     mngr.dispatch("/db/write", {
+                        db: db_name,
                         operation: name,
                         collection: collection,
                         query: selector,
@@ -1525,6 +1538,7 @@ var pluginManager = function pluginManager() {
                 obj["_" + name] = obj[name];
                 obj[name] = function(query, options, callback) {
                     mngr.dispatch("/db/read", {
+                        db: db_name,
                         operation: name,
                         collection: collection,
                         query: query,
@@ -1579,6 +1593,7 @@ var pluginManager = function pluginManager() {
                     }
                 }
                 mngr.dispatch("/db/read", {
+                    db: db_name,
                     operation: "find",
                     collection: collection,
                     query: query,
