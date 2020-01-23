@@ -678,6 +678,18 @@
 
                 if (_period === "month" && !bucket) {
                     tickObj = countlyCommon.getTickObj("monthly");
+                    if (tickObj.labelCn === 1) {
+                        for (var kk = 0; kk < dataPoints.length; kk++) {
+                            dataPoints[kk].data = dataPoints[kk].data.slice(0, 1);
+                        }
+                        graphProperties.series.points.radius = 4;
+                        overrideBucket = true;//to get the dots added
+                    }
+                    else if (tickObj.labelCn === 2) {
+                        for (var kkk = 0; kkk < dataPoints.length; kkk++) {
+                            dataPoints[kkk].data = dataPoints[kkk].data.slice(0, 2);
+                        }
+                    }
                 }
                 else {
                     tickObj = countlyCommon.getTickObj(bucket, overrideBucket);
@@ -2388,6 +2400,7 @@
                 tickTexts = _.compact(tickTexts);
             }
 
+            var labelCn = ticks.length;
             if (ticks.length <= 2) {
                 limitAdjustment = 0.02;
                 var tmpTicks = [],
@@ -2431,7 +2444,8 @@
                 min: 0 - limitAdjustment,
                 max: (limitAdjustment) ? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
                 tickTexts: tickTexts,
-                ticks: _.compact(ticks)
+                ticks: _.compact(ticks),
+                labelCn: labelCn
             };
         };
 
