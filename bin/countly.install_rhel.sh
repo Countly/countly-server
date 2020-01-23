@@ -33,7 +33,7 @@ else
 fi
 
 #install nodejs
-curl -sL https://rpm.nodesource.com/setup_8.x | bash -
+curl -sL https://rpm.nodesource.com/setup_10.x | bash -
 yum install -y nodejs
 
 set +e

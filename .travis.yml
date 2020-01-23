@@ -1,6 +1,6 @@
 language: nodejs
 dist: trusty
-node_js: "12"
+node_js: "10"
 env:
   global:
   - MONGODB=4.0.12
