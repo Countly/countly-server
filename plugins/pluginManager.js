@@ -1096,6 +1096,7 @@ var pluginManager = function pluginManager() {
     **/
     this.dbConnection = function(config) {
         var db, maxPoolSize = 10;
+        var mngr = this;
 
         if (!cluster.isMaster) {
             //we are in worker
@@ -1189,11 +1190,17 @@ var pluginManager = function pluginManager() {
             //silent
         }
 
+        mngr.dispatch("/db/pre_connect", {
+            connection: dbName,
+            options: dbOptions
+        });
+
         var countlyDb = mongo.db(dbName, dbOptions);
         countlyDb._cly_debug = {
-            db: dbName,
+            connection: dbName,
             options: dbOptions
         };
+
         logDbRead.d("New connection %j", countlyDb._cly_debug);
         countlyDb._emitter.setMaxListeners(0);
         if (!countlyDb.ObjectID) {
@@ -1225,6 +1232,14 @@ var pluginManager = function pluginManager() {
                 });
             }
         };
+
+        countlyDb.onOpened(function() {
+            mngr.dispatch("/db/connected", {
+                db: countlyDb,
+                connection: dbName,
+                options: dbOptions
+            });
+        });
 
         countlyDb.admin().buildInfo({}, (err, result) => {
             if (!err && result) {
@@ -1313,6 +1328,14 @@ var pluginManager = function pluginManager() {
 
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback) {
+                mngr.dispatch("/db/readAndUpdate", {
+                    operation: "findAndModify",
+                    collection: collection,
+                    query: query,
+                    sort: sort,
+                    update: doc,
+                    options: typeof options === "function" ? {} : options
+                });
                 var e;
                 var args = arguments;
                 var at = "";
@@ -1348,6 +1371,13 @@ var pluginManager = function pluginManager() {
             var overwriteRetryWrite = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, doc, options, callback) {
+                    mngr.dispatch("/db/update", {
+                        operation: name,
+                        collection: collection,
+                        query: selector,
+                        update: doc,
+                        options: typeof options === "function" ? {} : options
+                    });
                     var args = arguments;
                     var e;
                     var at = "";
@@ -1427,6 +1457,12 @@ var pluginManager = function pluginManager() {
             var overwriteDefaultWrite = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, options, callback) {
+                    mngr.dispatch("/db/write", {
+                        operation: name,
+                        collection: collection,
+                        query: selector,
+                        options: typeof options === "function" ? {} : options
+                    });
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -1488,6 +1524,12 @@ var pluginManager = function pluginManager() {
             var overwriteDefaultRead = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(query, options, callback) {
+                    mngr.dispatch("/db/read", {
+                        operation: name,
+                        collection: collection,
+                        query: query,
+                        options: typeof options === "function" ? {} : options
+                    });
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -1532,10 +1574,16 @@ var pluginManager = function pluginManager() {
                         options.projection = options.fields;
                         delete options.fields;
                     }
-                    else {
+                    else if (Object.keys(options).length) {
                         options = {projection: options};
                     }
                 }
+                mngr.dispatch("/db/read", {
+                    operation: "find",
+                    collection: collection,
+                    query: query,
+                    options: options || {}
+                });
                 if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
                     e = new Error();
                     at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
