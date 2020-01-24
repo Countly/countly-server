@@ -241,13 +241,19 @@ common.crypto = crypto;
 * @type {object} 
 */
 common.os_mapping = {
+    "webos": "webos",
+    "brew": "brew",
     "unknown": "unk",
     "undefined": "unk",
     "tvos": "atv",
+    "apple tv": "atv",
     "watchos": "wos",
     "unity editor": "uty",
     "qnx": "qnx",
     "os/2": "os2",
+    "amazon fire tv": "aft",
+    "amazon": "amz",
+    "web": "web",
     "windows": "mw",
     "open bsd": "ob",
     "searchbot": "sb",
@@ -257,8 +263,21 @@ common.os_mapping = {
     "mac osx": "o",
     "macos": "o",
     "mac": "o",
-    "webos": "web",
-    "brew": "brew"
+    "osx": "o",
+    "linux": "l",
+    "unix": "u",
+    "ios": "i",
+    "android": "a",
+    "blackberry": "b",
+    "windows phone": "w",
+    "wp": "w",
+    "roku": "r",
+    "symbian": "s",
+    "chrome": "c",
+    "debian": "d",
+    "nokia": "n",
+    "firefox": "f",
+    "tizen": "t"
 };
 
 /**
@@ -351,6 +370,12 @@ common.convertToType = function(value) {
     if (Array.isArray(value)) {
         for (var i = 0; i < value.length; i++) {
             value[i] = common.convertToType(value[i]);
+        }
+        return value;
+    }
+    else if (value && typeof value === "object") {
+        for (var key in value) {
+            value[key] = common.convertToType(value[key]);
         }
         return value;
     }

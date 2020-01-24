@@ -2627,11 +2627,12 @@
             }
 
             if (oSVersionData.chartData) {
-                var reg = new RegExp("^" + osName, "g");
+                var regTest = new RegExp("^" + osName + "[0-9]");
+                var reg = new RegExp("^" + osName);
                 for (i = 0; i < oSVersionData.chartData.length; i++) {
                     var shouldDelete = true;
                     oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(/:/g, ".");
-                    if (reg.test(oSVersionData.chartData[i][metric_pd || _name])) {
+                    if (regTest.test(oSVersionData.chartData[i][metric_pd || _name])) {
                         shouldDelete = false;
                         oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(reg, "");
                     }

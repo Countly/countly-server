@@ -131,7 +131,6 @@ const processRequest = (params) => {
     params.req.headers = params.req.headers || {};
     params.req.socket = params.req.socket || {};
     params.req.connection = params.req.connection || {};
-    params.req.connection = params.req.connection || {};
 
     //copying query string data as qstring param
     if (queryString) {

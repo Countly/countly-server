@@ -31,8 +31,9 @@ var s=e.language.substring(0,2)
 if(0!=a.length&&-1==$.inArray(s,a)||(e.totalFiles+=1),e.language.length>=5){var l=e.language.substring(0,5)
 0!=a.length&&-1==$.inArray(l,a)||(e.totalFiles+=1)}}for(var i=0,g=r.length;g>i;i++){loadAndParseFile(e.path+r[i]+".properties",e)
 var s=e.language.substring(0,2)
+if(s!=="en"){
 if(0!=a.length&&-1==$.inArray(s,a)||loadAndParseFile(e.path+r[i]+"_"+s+".properties",e),e.language.length>=5){var l=e.language.substring(0,5)
-0!=a.length&&-1==$.inArray(l,a)||loadAndParseFile(e.path+r[i]+"_"+l+".properties",e)}}e.callback&&!e.async&&e.callback()}
+0!=a.length&&-1==$.inArray(l,a)||loadAndParseFile(e.path+r[i]+"_"+l+".properties",e)}}else{callbackIfComplete(e)}}e.callback&&!e.async&&e.callback()}
 e.checkAvailableLanguages?$.ajax({url:e.path+"languages.json",async:e.async,cache:!1,success:function(e,a,t){r(e.languages||[])}}):r([])},$.i18n.prop=function(e){var a=$.i18n.parsed[e]||$.i18n.map[e]
 if(null==a)return"["+e+"]"
 var r
