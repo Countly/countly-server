@@ -69,7 +69,7 @@ var plugins = require('../../pluginManager.js'),
     * Register to /i/server-stats/update-data-points
     * @param {{appId: string, sessionCount: number, eventCount: number}} ob - data points params
     **/
-    plugins.register("/i/server-stats/update-data-points", function(ob) {
+    plugins.register("/server-stats/update-data-points", function(ob) {
         const {appId, sessionCount, eventCount} = ob;
         updateDataPoints(appId, sessionCount, eventCount);
     });
