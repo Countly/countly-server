@@ -222,24 +222,33 @@ function generateQRCode(username, secret, callback) {
                             else {
                                 // 2fa is being set up
                                 if (req.body.secret_token) {
-                                    res.render("../../../plugins/two-factor-auth/frontend/public/templates/setup2fa", {
-                                        cdn: countlyConfig.cdn || "",
-                                        countlyFavicon: req.countly.favicon,
-                                        countlyPage: req.countly.page,
-                                        countlyTitle: req.countly.title,
-                                        csrf: req.csrfToken(),
-                                        inject_template: req.template,
-                                        languages: languages,
-                                        message: req.flash('info'),
-                                        path: countlyConfig.path || "",
-                                        themeFiles: req.themeFiles,
-                                        username: req.body.username || "",
-                                        password: req.body.password || "",
-                                        secret_token: secretToken,
-                                        qrcode_html: svg
+                                    generateQRCode(member.username, req.body.secret_token, function(err, svg) {
+                                        if (err) {
+                                            console.log(`Error generating QR code: ${err}`);
+                                            res.redirect(countlyConfig.path + "/login?message=two-factor-auth.login.error");
+                                        }
+                                        else {
+                                            res.render("../../../plugins/two-factor-auth/frontend/public/templates/setup2fa", {
+                                                cdn: countlyConfig.cdn || "",
+                                                countlyFavicon: req.countly.favicon,
+                                                countlyPage: req.countly.page,
+                                                countlyTitle: req.countly.title,
+                                                csrf: req.csrfToken(),
+                                                inject_template: req.template,
+                                                languages: languages,
+                                                message: req.flash('info'),
+                                                path: countlyConfig.path || "",
+                                                themeFiles: req.themeFiles,
+                                                username: req.body.username || "",
+                                                password: req.body.password || "",
+                                                secret_token: secretToken,
+                                                qrcode_html: svg
+                                            });
+                                        }
                                     });
+                                }
                                 // 2fa is already set up
-                                } else {
+                                else {
                                     res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa_login", {
                                         cdn: countlyConfig.cdn || "",
                                         countlyFavicon: req.countly.favicon,
