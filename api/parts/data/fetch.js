@@ -325,7 +325,7 @@ fetch.fetchDashboard = function(params) {
                     fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                         countlyCommon.setPeriod(period.period);
 
-                        countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
+                        countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
 
                         var data = {
                             out: period.out,
@@ -441,7 +441,7 @@ fetch.fetchAllApps = function(params) {
 
                 fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                     countlySession.setDb(usersDoc || {});
-                    countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
+                    countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
 
                     var sessionData = countlySession.getSessionData();
                     var charts = {
@@ -789,7 +789,7 @@ fetch.fetchCountries = function(params) {
             fetch.getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
                 countlyCommon.setPeriod(period.period);
 
-                countlyLocation.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
+                countlyLocation.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
 
                 var data = {
                     out: period.out,

@@ -15,6 +15,7 @@
 */
 /* exported showMessage */
 function showMessage(key, prop) {
+    key = encodeSomeHtml(key);
     $("#message").data("localize", key);
     $("#message").html(jQuery.i18n.prop(key, prop));
 }

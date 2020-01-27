@@ -263,20 +263,19 @@ function validate_files(my_path) {
 
 /**Function used to call new child process, separated from parent. For validate_reset() 
 * @param {string} my_command = command to call
-* @param {string} my_dir - folder
+* @param {array} my_args - array with command arguments
 * @param {string} logpath - path to log file
 * @returns {Promise} promise
 */
-function run_command(my_command, my_dir, logpath) {
+function run_command(my_command, my_args, logpath) {
     return new Promise(function(resolve, reject) {
         var stdio = ['inherit', 'inherit', 'inherit'];
         if (logpath) {
             const out = fs.openSync(logpath, 'a');
             const err = fs.openSync(logpath, 'a');
             stdio = [ 'ignore', out, err ];
-
         }
-        var child = spawn(my_command, {cwd: __dirname, shell: true, detached: true, stdio: stdio}, function(error) {
+        var child = spawn(my_command, my_args, {cwd: __dirname, shell: false, detached: true, stdio: stdio}, function(error) {
             if (error) {
                 return reject(Error('error:' + JSON.stringify(error)));
             }
@@ -326,8 +325,8 @@ function validate_reset() {
                 log.d("Attempting disabling plugins, which might cause restart");
                 tarray = [tstamp];
                 //try reseting all plugins,enabled in last turn
+                var pluginlist = [];
                 if (fs.existsSync(__dirname + '/last_enabled_plugins.json')) {
-                    var pluginlist = [];
                     let data = fs.readFileSync(__dirname + '/last_enabled_plugins.json');
                     if (data) {
                         try {
@@ -342,8 +341,7 @@ function validate_reset() {
                     var logpath = path.resolve(__dirname, './../../../log/plugins-disable' + (new Date().toISOString().replace('T', ':')) + '.log');
 
                     var mydir = path.resolve(__dirname + '/../scripts');
-                    run_command('bash ' + mydir + '/disable_plugins.sh ' + pluginlist.join(' '),
-                        mydir, logpath)
+                    run_command('bash', [mydir + '/disable_plugins.sh', ...pluginlist], logpath)
                         .then(
                             function() {
                                 try {
@@ -423,11 +421,12 @@ function extract_files(ext, target_path) {
         }
         //for other - tar, tar.gz
         else {
-            var command = "tar xzf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
+            var command = "tar";
+            var args = ["xzf", target_path, "-C", path.resolve(__dirname + '/upload/unpacked')];
             if (ext === "tar") {
-                command = "tar xf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
+                args = ["xf", target_path, "-C", path.resolve(__dirname + '/upload/unpacked')];
             }
-            run_command(command, null, null).then(function() {
+            run_command(command, args, null).then(function() {
                 resolve();
             },
             function() {

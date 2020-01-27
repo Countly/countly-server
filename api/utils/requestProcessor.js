@@ -131,7 +131,6 @@ const processRequest = (params) => {
     params.req.headers = params.req.headers || {};
     params.req.socket = params.req.socket || {};
     params.req.connection = params.req.connection || {};
-    params.req.connection = params.req.connection || {};
 
     //copying query string data as qstring param
     if (queryString) {
@@ -1314,6 +1313,7 @@ const processRequest = (params) => {
                         else {
                             params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
                         }
+                        params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
@@ -1379,6 +1379,7 @@ const processRequest = (params) => {
                         else {
                             params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
                         }
+                        params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);

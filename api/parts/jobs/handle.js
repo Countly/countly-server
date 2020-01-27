@@ -54,7 +54,7 @@ class Handle {
                         if (channel !== null) {
                             channel.remove();
                             channel = null;
-                            reject('Timeout');
+                            reject('Transient timeout');
                         }
                     }, TRANSIENT_JOB_TIMEOUT),
 

@@ -1620,7 +1620,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
     //check if we can correct data using total users correction
     if (totalUserOverrideObj) {
         for (let i = 0; i < unique.length; i++) {
-            if (current[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
+            if (typeof current[unique[i]] !== "undefined" && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
                 current[unique[i]] = totalUserOverrideObj[unique[i]];
             }
         }
@@ -1628,7 +1628,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
 
     if (prevTotalUserOverrideObj) {
         for (let i = 0; i < unique.length; i++) {
-            if (previous[unique[i]] && typeof prevTotalUserOverrideObj[unique[i]] !== "undefined" && prevTotalUserOverrideObj[unique[i]]) {
+            if (typeof previous[unique[i]] !== "undefined" && typeof prevTotalUserOverrideObj[unique[i]] !== "undefined" && prevTotalUserOverrideObj[unique[i]]) {
                 previous[unique[i]] = prevTotalUserOverrideObj[unique[i]];
             }
         }

@@ -27,7 +27,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_8.x | bash -
+wget -qO- https://deb.nodesource.com/setup_10.x | bash -
 
 #update g++ to 4.8
 add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -56,8 +56,9 @@ apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 #apt-get -y install sendmail
 
 #install grunt & npm modules
+node --version
 npm --version
-( npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
+(  npm install npm@6.4.1 -g; npm --version; npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
 
 #install mongodb
 #bash $DIR/scripts/mongodb.install.sh
@@ -80,6 +81,10 @@ cp "$DIR/../frontend/express/config.sample.js" "$DIR/../frontend/express/config.
 
 if [ ! -f "$DIR/../plugins/plugins.json" ]; then
 	cp "$DIR/../plugins/plugins.default.json" "$DIR/../plugins/plugins.json"
+fi
+
+if [ ! -f "/etc/timezone" ]; then
+    echo "Etc/UTC" > /etc/timezone
 fi
 
 #add all plugins to test

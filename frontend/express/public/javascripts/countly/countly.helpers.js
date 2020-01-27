@@ -467,6 +467,43 @@
         });
     };
 
+    CountlyHelpers.blinkDots = function(times, speed, element) {
+        element.blinkCn = times;
+        if ($(element).hasClass("blink")) {
+            return;
+        }
+        $(element).addClass("blink");
+        element.blinkElement = function() {
+            var self = this;
+            if (!$(element).hasClass("blink")) {
+                return;
+            }
+            if (this.blinkCn > 0 || this.blinkCn === -1) {
+                if (this.blinkCn > 0) {
+                    this.blinkCn -= 1;
+                }
+                var dots = $(element).find("span");
+                $(dots[0]).fadeTo(speed, 0.1, function() {
+                    $(dots[0]).fadeTo(speed, 1.0, function() {
+                        $(dots[1]).fadeTo(speed, 0.1, function() {
+                            $(dots[1]).fadeTo(speed, 1.0, function() {
+                                $(dots[2]).fadeTo(speed, 0.1, function() {
+                                    $(dots[2]).fadeTo(speed, 1.0, function() {
+                                        self.blinkElement();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            }
+        };
+        element.blinkElement();
+    };
+
+    CountlyHelpers.stopBlinking = function(element) {
+        $(element).removeClass("blink");
+    };
     CountlyHelpers.applyColors = function() {
         $('#custom-color-styles').remove();
         // overview bars
@@ -1337,6 +1374,22 @@
             });
 
             e.stopPropagation();
+
+            var $multiSelect = $(this);
+
+            setTimeout(function() {
+                var maxToSelect = $multiSelect.data("max");
+                var selectedItems = getSelected($multiSelect) || [];
+                for (var i = 0; i < selectedItems.length; i++) {
+                    $multiSelect.find(".item[data-value='" + selectedItems[i] + "']").addClass("disabled");
+                }
+
+                if (maxToSelect) {
+                    if (selectedItems.length >= maxToSelect) {
+                        $multiSelect.find(".item").addClass("disabled");
+                    }
+                }
+            }, 0);
         });
 
         element.off("click", ".cly-multi-select .select-items .item").on("click", ".cly-multi-select .select-items .item", function(e) {
@@ -1445,6 +1498,11 @@
                 if (getSelected($multiSelect).length < maxToSelect) {
                     $multiSelect.find(".item").removeClass("disabled");
                 }
+            }
+
+            var selectedItems = getSelected($multiSelect) || [];
+            for (var i = 0; i < selectedItems.length; i++) {
+                $multiSelect.find(".item[data-value='" + selectedItems[i] + "']").addClass("disabled");
             }
 
             $multiSelect.data("value", getSelected($multiSelect));
@@ -2569,11 +2627,12 @@
             }
 
             if (oSVersionData.chartData) {
-                var reg = new RegExp("^" + osName, "g");
+                var regTest = new RegExp("^" + osName + "[0-9]");
+                var reg = new RegExp("^" + osName);
                 for (i = 0; i < oSVersionData.chartData.length; i++) {
                     var shouldDelete = true;
                     oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(/:/g, ".");
-                    if (reg.test(oSVersionData.chartData[i][metric_pd || _name])) {
+                    if (regTest.test(oSVersionData.chartData[i][metric_pd || _name])) {
                         shouldDelete = false;
                         oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(reg, "");
                     }

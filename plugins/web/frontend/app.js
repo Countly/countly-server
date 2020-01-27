@@ -18,7 +18,7 @@ var exported = {},
         }
         app.get(countlyConfig.path + '/pixel.png', function(req, res) {
             if (req.query.app_key) {
-                var options = {uri: "http://localhost/i", method: "POST", timeout: 4E3, json: {}, strictSSL: false};
+                var options = {uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "127.0.0.1") + "/i", method: "POST", timeout: 4E3, json: {}, strictSSL: false};
                 if (req && req.headers && req.headers['user-agent']) {
                     options.headers = {'user-agent': req.headers['user-agent']};
                 }

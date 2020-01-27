@@ -43,7 +43,9 @@
         });
 
         countlyCity.drawGeoChart = function(options) {
-
+            if (countlyGlobal.config.use_google && !countlyGlobal.config.google_maps_api_key) {
+                window.$(".routename-countries .widget-tips").css("display", "block");
+            }
             if (options) {
                 if (options.chartElementId) {
                     _chartElementId = options.chartElementId;

@@ -427,13 +427,14 @@ var pluginManager = function pluginManager() {
                 resolve({ status: 'fulfilled', value: promise });
                 return;
             }
-            promise
-                .then((value) => {
+            promise.then(
+                (value) => {
                     resolve({ status: 'fulfilled', value });
-                })
-                .catch((error) => {
-                    resolve({ status: 'rejected', reason: error });
-                });
+                },
+                (reason) => {
+                    resolve({ status: 'rejected', reason });
+                }
+            );
         });
     };
 
@@ -514,7 +515,9 @@ var pluginManager = function pluginManager() {
     * @returns {boolean} true if any one responded to event
     **/
     this.dispatch = function(event, params, callback) {
-        return dispatchInternal(event, params, Promise.all, callback);
+        return dispatchInternal(event, params, function(promises) {
+            return Promise.all(promises);
+        }, callback);
     };
 
     /**
@@ -803,9 +806,19 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running install.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running install.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
                 return callback(errors);
             }
@@ -824,14 +837,6 @@ var pluginManager = function pluginManager() {
                 callback(errors);
             });
         });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
-        });
     };
 
     /**
@@ -845,9 +850,19 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running install.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running install.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
                 return callback(errors);
             }
@@ -866,14 +881,6 @@ var pluginManager = function pluginManager() {
                 callback(errors);
             });
         });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
-        });
     };
 
     /**
@@ -887,20 +894,22 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
         var errors = false;
-        var process = exec("nodejs " + scriptPath, {maxBuffer: 1024 * 20000}, function(error) {
-            console.log('Done running uninstall.js with %j', error);
-            if (error) {
+        var m = cp.spawn("nodejs", [scriptPath]);
+
+        m.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        m.on('close', (code) => {
+            console.log('Done running uninstall.js with %j', code);
+            if (parseInt(code, 10) !== 0) {
                 errors = true;
             }
             callback(errors);
-        });
-
-        process.stdout.on("data", function(data) {
-            console.log(data.toString());
-        });
-
-        process.stderr.on("data", function(data) {
-            console.log(data.toString());
         });
     };
 
@@ -1086,22 +1095,15 @@ var pluginManager = function pluginManager() {
     * @returns {object} db connection params
     **/
     this.dbConnection = function(config) {
-        if (process.argv[1].endsWith('executor.js')) {
-            if (!config || !config.mongodb) {
-                console.log('************************************ executor.js common.db *********************************** no config', process.argv);
-                return this.singleDefaultConnection();
-            }
-            else if ((typeof config.mongodb === 'string' && config.mongodb.indexOf('maxPoolSize=3') === -1) ||
-                (typeof config.mongodb === 'object' && config.mongodb.max_pool_size !== 3)) {
-                console.log('************************************ executor.js common.db *********************************** wrong pool size', process.argv);
-                return this.singleDefaultConnection();
-            }
-        }
-
         var db, maxPoolSize = 10;
+        var mngr = this;
+
         if (!cluster.isMaster) {
             //we are in worker
             maxPoolSize = 100;
+        }
+        if (process.argv[1].endsWith('executor.js')) {
+            maxPoolSize = 3;
         }
         if (typeof config === "string") {
             db = config;
@@ -1180,19 +1182,34 @@ var pluginManager = function pluginManager() {
         if (dbName.indexOf('mongodb://') !== 0) {
             dbName = 'mongodb://' + dbName;
         }
+        var db_name = "countly";
+        try {
+            db_name = dbName.split("/").pop().split("?")[0];
+        }
+        catch (ex) {
+            db_name = "countly";
+        }
 
         try {
-            dbOptions.appname = process.title + ": " + dbName.split("/").pop().split("?")[0] + "(" + maxPoolSize + ") " + process.pid;
+            dbOptions.appname = process.title + ": " + db_name + "(" + maxPoolSize + ") " + process.pid;
         }
         catch (ex) {
             //silent
         }
 
+        mngr.dispatch("/db/pre_connect", {
+            db: db_name,
+            connection: dbName,
+            options: dbOptions
+        });
+
         var countlyDb = mongo.db(dbName, dbOptions);
         countlyDb._cly_debug = {
-            db: dbName,
+            db: db_name,
+            connection: dbName,
             options: dbOptions
         };
+
         logDbRead.d("New connection %j", countlyDb._cly_debug);
         countlyDb._emitter.setMaxListeners(0);
         if (!countlyDb.ObjectID) {
@@ -1224,6 +1241,15 @@ var pluginManager = function pluginManager() {
                 });
             }
         };
+
+        countlyDb.onOpened(function() {
+            mngr.dispatch("/db/connected", {
+                db: db_name,
+                instance: countlyDb,
+                connection: dbName,
+                options: dbOptions
+            });
+        });
 
         countlyDb.admin().buildInfo({}, (err, result) => {
             if (!err && result) {
@@ -1312,6 +1338,15 @@ var pluginManager = function pluginManager() {
 
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback) {
+                mngr.dispatch("/db/readAndUpdate", {
+                    db: db_name,
+                    operation: "findAndModify",
+                    collection: collection,
+                    query: query,
+                    sort: sort,
+                    update: doc,
+                    options: typeof options === "function" ? {} : options
+                });
                 var e;
                 var args = arguments;
                 var at = "";
@@ -1347,6 +1382,14 @@ var pluginManager = function pluginManager() {
             var overwriteRetryWrite = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, doc, options, callback) {
+                    mngr.dispatch("/db/update", {
+                        db: db_name,
+                        operation: name,
+                        collection: collection,
+                        query: selector,
+                        update: doc,
+                        options: typeof options === "function" ? {} : options
+                    });
                     var args = arguments;
                     var e;
                     var at = "";
@@ -1426,6 +1469,13 @@ var pluginManager = function pluginManager() {
             var overwriteDefaultWrite = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, options, callback) {
+                    mngr.dispatch("/db/write", {
+                        db: db_name,
+                        operation: name,
+                        collection: collection,
+                        query: selector,
+                        options: typeof options === "function" ? {} : options
+                    });
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -1487,6 +1537,13 @@ var pluginManager = function pluginManager() {
             var overwriteDefaultRead = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(query, options, callback) {
+                    mngr.dispatch("/db/read", {
+                        db: db_name,
+                        operation: name,
+                        collection: collection,
+                        query: query,
+                        options: typeof options === "function" ? {} : options
+                    });
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -1531,10 +1588,17 @@ var pluginManager = function pluginManager() {
                         options.projection = options.fields;
                         delete options.fields;
                     }
-                    else {
+                    else if (Object.keys(options).length) {
                         options = {projection: options};
                     }
                 }
+                mngr.dispatch("/db/read", {
+                    db: db_name,
+                    operation: "find",
+                    collection: collection,
+                    query: query,
+                    options: options || {}
+                });
                 if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
                     e = new Error();
                     at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];

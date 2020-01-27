@@ -241,13 +241,19 @@ common.crypto = crypto;
 * @type {object} 
 */
 common.os_mapping = {
+    "webos": "webos",
+    "brew": "brew",
     "unknown": "unk",
     "undefined": "unk",
     "tvos": "atv",
+    "apple tv": "atv",
     "watchos": "wos",
     "unity editor": "uty",
     "qnx": "qnx",
     "os/2": "os2",
+    "amazon fire tv": "aft",
+    "amazon": "amz",
+    "web": "web",
     "windows": "mw",
     "open bsd": "ob",
     "searchbot": "sb",
@@ -257,8 +263,21 @@ common.os_mapping = {
     "mac osx": "o",
     "macos": "o",
     "mac": "o",
-    "webos": "web",
-    "brew": "brew"
+    "osx": "o",
+    "linux": "l",
+    "unix": "u",
+    "ios": "i",
+    "android": "a",
+    "blackberry": "b",
+    "windows phone": "w",
+    "wp": "w",
+    "roku": "r",
+    "symbian": "s",
+    "chrome": "c",
+    "debian": "d",
+    "nokia": "n",
+    "firefox": "f",
+    "tizen": "t"
 };
 
 /**
@@ -354,6 +373,12 @@ common.convertToType = function(value) {
         }
         return value;
     }
+    else if (value && typeof value === "object") {
+        for (var key in value) {
+            value[key] = common.convertToType(value[key]);
+        }
+        return value;
+    }
     //if value can be a number
     else if (common.isNumber(value)) {
         //check if it is string but is less than 16 length
@@ -362,7 +387,7 @@ common.convertToType = function(value) {
             return parseFloat(value);
         }
         //check if it is number, but longer than 16 digits (max limit)
-        else if ((value + "").length > 16) {
+        else if ((Math.round(value) + "").length > 16) {
             //convert to string
             return value + "";
         }
@@ -1064,8 +1089,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
     }
     //set provided in configuration headers
     var headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json; charset=utf-8'
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
@@ -1131,8 +1155,7 @@ common.returnOutput = function(params, output, noescape, heads) {
     }
     //set provided in configuration headers
     var headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json; charset=utf-8'
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
@@ -1893,6 +1916,8 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
+        var user = params.app_user || {};
+
         if (!params.qstring.device_id && typeof user.did === "undefined") {
             let err = "Device id is not provided for" + params.href;
             console.log(err);
@@ -1901,8 +1926,6 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
             return;
         }
-
-        var user = params.app_user || {};
 
         if (!no_meta && !params.qstring.no_meta) {
             if (typeof user.fac === "undefined") {

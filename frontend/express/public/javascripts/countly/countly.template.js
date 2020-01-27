@@ -152,7 +152,23 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeOnce()).always(function() {
+            $.when(this.beforeRender(), initializeOnce()).always(function(XMLHttpRequest, textStatus, errorThrown) {
+                if (XMLHttpRequest && XMLHttpRequest.status === 0) {
+                    // eslint-disable-next-line no-console
+                    console.error("Check Your Network Connection");
+                }
+                else if (XMLHttpRequest && XMLHttpRequest.status === 404) {
+                    // eslint-disable-next-line no-console
+                    console.error("Requested URL not found: " + XMLHttpRequest.my_set_url + " with " + JSON.stringify(XMLHttpRequest.my_set_data));
+                }
+                else if (XMLHttpRequest && XMLHttpRequest.status === 500) {
+                    // eslint-disable-next-line no-console
+                    console.error("Internel Server Error: " + XMLHttpRequest.my_set_url + " with " + JSON.stringify(XMLHttpRequest.my_set_data));
+                }
+                else if ((XMLHttpRequest && typeof XMLHttpRequest.status === "undefined") || errorThrown) {
+                    // eslint-disable-next-line no-console
+                    console.error("Unknow Error: " + (XMLHttpRequest || XMLHttpRequest.responseText) + "\n" + textStatus + "\n" + errorThrown);
+                }
                 if (app.activeView === self) {
                     self.isLoaded = true;
                     self.renderCommon();
@@ -580,6 +596,32 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
 });
 
 /**
+* Set menu items by restriction status, hiding empty menu-categories
+* @name setMenuItems
+* @global
+*/
+function setMenuItems() {
+    // hide empty section headers
+    var type = countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type ? countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type : "mobile";
+    var categories = $('#' + type + '-type .menu-category');
+    for (var j = 0; j < categories.length; j++) {
+        var children = categories[j].children;
+        var isEmpty = true;
+        for (var k = 0; k < children.length; k++) {
+            if (children[k].className.indexOf('restrict') === -1 && children[k].className.indexOf('item') !== -1) {
+                isEmpty = false;
+            }
+        }
+        if (isEmpty) {
+            $(categories[j]).hide();
+        }
+        else {
+            $(categories[j]).show();
+        }
+    }
+}
+
+/**
  * Main app instance of Backbone AppRouter used to control views and view change flow
  * @name app
  * @global
@@ -764,7 +806,7 @@ var AppRouter = Backbone.Router.extend({
             }
             this._subMenuForCodes[node.code] = null;
         }
-
+        setMenuItems();
     },
     /**
     * Add second level menu element for specific app type under specified parent code.
@@ -1092,6 +1134,7 @@ var AppRouter = Backbone.Router.extend({
                     selectedCategory.find(".menu-category-title").addClass("active");
                 }
 
+                setMenuItems();
             }, 1000);
         },
         submenu: {
@@ -1253,7 +1296,7 @@ var AppRouter = Backbone.Router.extend({
         */
         Handlebars.registerHelper('clearObjectId', function(object) {
             if (object) {
-                var id = Object._id;
+                var id = object._id;
                 if (id.substr(0, 3) === "Obj") {
                     id = id.split("(")[1].split(")")[0];
                 }
@@ -1681,8 +1724,8 @@ var AppRouter = Backbone.Router.extend({
             // If date range is selected initialize the calendar with these
             var periodObj = countlyCommon.getPeriod();
             if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
-                self.dateFromSelected = countlyCommon.getPeriod()[0];
-                self.dateToSelected = countlyCommon.getPeriod()[1];
+                self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
+                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
             }
 
             // Initialize localization related stuff
@@ -1897,6 +1940,7 @@ var AppRouter = Backbone.Router.extend({
                         "username": username,
                         "old_pwd": old_pwd,
                         "new_pwd": new_pwd,
+                        "api_key": api_key,
                         _csrf: countlyGlobal.csrf_token
                     },
                     success: function(result) {
@@ -3584,30 +3628,35 @@ var AppRouter = Backbone.Router.extend({
             $("#date-picker-button").click(function(e) {
                 $("#date-picker").toggle();
                 $("#date-picker-button").toggleClass("active");
-
+                var date;
                 if (self.dateToSelected) {
-                    dateTo.datepicker("setDate", moment(self.dateToSelected).toDate());
-                    dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
+                    date = new Date(self.dateToSelected);
+                    dateTo.datepicker("setDate", date);
+                    dateFrom.datepicker("option", "maxDate", date);
                 }
                 else {
-                    self.dateToSelected = moment().toDate().getTime();
-                    dateTo.datepicker("setDate", moment().toDate());
-                    dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
+                    date = new Date();
+                    date.setHours(0, 0, 0, 0);
+                    self.dateToSelected = date.getTime();
+                    dateTo.datepicker("setDate", date);
+                    dateFrom.datepicker("option", "maxDate", new Date(self.dateToSelected));
                 }
 
                 if (self.dateFromSelected) {
-                    dateFrom.datepicker("setDate", moment(self.dateFromSelected).toDate());
-                    dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
+                    date = new Date(self.dateFromSelected);
+                    dateFrom.datepicker("setDate", date);
+                    dateTo.datepicker("option", "minDate", date);
                 }
                 else {
                     var extendDate = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate();
+                    extendDate.setHours(0, 0, 0, 0);
                     dateFrom.datepicker("setDate", extendDate);
-                    self.dateFromSelected = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate().getTime();
-                    dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
+                    self.dateFromSelected = extendDate.getTime();
+                    dateTo.datepicker("option", "minDate", new Date(self.dateFromSelected));
                 }
 
-                $("#date-from-input").val(moment(dateFrom.datepicker("getDate")).format("MM/DD/YYYY"));
-                $("#date-to-input").val(moment(dateTo.datepicker("getDate")).format("MM/DD/YYYY"));
+                $("#date-from-input").val(moment(dateFrom.datepicker("getDate"), "MM-DD-YYYY").format("MM/DD/YYYY"));
+                $("#date-to-input").val(moment(dateTo.datepicker("getDate"), "MM-DD-YYYY").format("MM/DD/YYYY"));
 
                 dateTo.datepicker("refresh");
                 dateFrom.datepicker("refresh");
@@ -3622,7 +3671,7 @@ var AppRouter = Backbone.Router.extend({
                 onSelect: function(selectedDate) {
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-
+                    date.setHours(0, 0, 0, 0);
                     if (date.getTime() < self.dateFromSelected) {
                         self.dateFromSelected = date.getTime();
                     }
@@ -3632,7 +3681,7 @@ var AppRouter = Backbone.Router.extend({
                 },
                 beforeShowDay: function(date) {
                     var ts = date.getTime();
-                    if (ts < moment($("#date-to-input").val()) && ts >= moment($("#date-from-input").val())) {
+                    if (ts < moment($("#date-to-input").val(), "MM/DD/YYYY") && ts >= moment($("#date-from-input").val(), "MM/DD/YYYY")) {
                         return [true, "in-range", ""];
                     }
                     else {
@@ -3648,7 +3697,7 @@ var AppRouter = Backbone.Router.extend({
                 onSelect: function(selectedDate) {
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-
+                    date.setHours(0, 0, 0, 0);
                     if (date.getTime() > self.dateToSelected) {
                         self.dateToSelected = date.getTime();
                     }
@@ -3658,7 +3707,7 @@ var AppRouter = Backbone.Router.extend({
                 },
                 beforeShowDay: function(date) {
                     var ts = date.getTime();
-                    if (ts <= moment($("#date-to-input").val()) && ts > moment($("#date-from-input").val())) {
+                    if (ts <= moment($("#date-to-input").val(), "MM/DD/YYYY") && ts > moment($("#date-from-input").val(), "MM/DD/YYYY")) {
                         return [true, "in-range", ""];
                     }
                     else {
@@ -3669,7 +3718,7 @@ var AppRouter = Backbone.Router.extend({
 
             $("#date-from-input").keyup(function(event) {
                 if (event.keyCode === 13) {
-                    var date = moment($("#date-from-input").val());
+                    var date = moment($("#date-from-input").val(), "MM/DD/YYYY");
 
                     if (date.format("MM/DD/YYYY") !== $("#date-from-input").val()) {
                         var jsDate = $('#date-from').datepicker('getDate');
@@ -3678,6 +3727,7 @@ var AppRouter = Backbone.Router.extend({
                     else {
                         dateTo.datepicker("option", "minDate", date.toDate());
                         if (date.valueOf() > self.dateToSelected) {
+                            date.startOf('day');
                             self.dateToSelected = date.valueOf();
                             dateFrom.datepicker("option", "maxDate", date.toDate());
                             dateTo.datepicker("setDate", date.toDate());
@@ -3692,7 +3742,7 @@ var AppRouter = Backbone.Router.extend({
 
             $("#date-to-input").keyup(function(event) {
                 if (event.keyCode === 13) {
-                    var date = moment($("#date-to-input").val());
+                    var date = moment($("#date-to-input").val(), "MM/DD/YYYY");
                     if (date.format("MM/DD/YYYY") !== $("#date-to-input").val()) {
                         var jsDate = $('#date-to').datepicker('getDate');
                         $("#date-to-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
@@ -3700,6 +3750,7 @@ var AppRouter = Backbone.Router.extend({
                     else {
                         dateFrom.datepicker("option", "maxDate", date.toDate());
                         if (date.toDate() < self.dateFromSelected) {
+                            date.startOf('day');
                             self.dateFromSelected = date.valueOf();
                             dateTo.datepicker("option", "minDate", date.toDate());
                             dateFrom.datepicker("setDate", date.toDate());
@@ -3725,8 +3776,10 @@ var AppRouter = Backbone.Router.extend({
                     return false;
                 }
 
-                var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected);
-                countlyCommon.setPeriod([self.dateFromSelected - tzCorr, self.dateToSelected - tzCorr]);
+                countlyCommon.setPeriod([
+                    self.dateFromSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected),
+                    self.dateToSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateToSelected) + 24 * 60 * 60 * 1000 - 1
+                ]);
 
                 self.activeView.dateChanged();
                 app.runRefreshScripts();
@@ -3975,21 +4028,22 @@ app.noHistory = function(hash) {
 $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //add to options for independent!!!
 
+    var myurl = "";
+    var mydata = "";
+    if (originalOptions && originalOptions.url) {
+        myurl = originalOptions.url;
+    }
+    if (originalOptions && originalOptions.data) {
+        mydata = JSON.stringify(originalOptions.data);
+    }
+    //request which is not killed on view change(only on app change)
+    jqXHR.my_set_url = myurl;
+    jqXHR.my_set_data = mydata;
+
     if (originalOptions && (originalOptions.type === 'GET' || originalOptions.type === 'get') && originalOptions.url.substr(0, 2) === '/o') {
         if (originalOptions.data && originalOptions.data.preventGlobalAbort && originalOptions.data.preventGlobalAbort === true) {
             return true;
         }
-        var myurl = "";
-        var mydata = "";
-        if (originalOptions && originalOptions.url) {
-            myurl = originalOptions.url;
-        }
-        if (originalOptions && originalOptions.data) {
-            mydata = JSON.stringify(originalOptions.data);
-        }
-        //request which is not killed on view change(only on app change)
-        jqXHR.my_set_url = myurl;
-        jqXHR.my_set_data = mydata;
 
         if (originalOptions.data && originalOptions.data.preventRequestAbort && originalOptions.data.preventRequestAbort === true) {
             if (app._myRequests[myurl] && app._myRequests[myurl][mydata]) {

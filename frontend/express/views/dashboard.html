@@ -431,7 +431,7 @@
                     <div class="button date-selector" id="60days" data-localize="taskmanager.last-60days"></div>
                     <div class="button date-selector" id="day"></div>
                     <div class="button date-selector" id="month"></div>
-                    
+
                     <!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
                     <div class="button-container">
                         <div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
@@ -684,6 +684,7 @@
                     <a id='country-toggle' class='icon-button light btn-header'></a>
                 </div>
 			</div>
+            <div class="widget-tips"><a href="/dashboard#/manage/configurations/frontend"><span data-localize="countries.google-api-key-remind"></a></span></div>
 			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:480px;">
 				<div id="geo-chart-outer" class="big"><div><div id="geo-chart"></div></div></div>
 			</div>
@@ -1376,38 +1377,36 @@
 		<div id="event-main">
             <div class="widget">
 				<div id="top-events-widget-container">
-				{{#if topEventDataIsVisible}}
-					{{#ifCond currentOverviewListCount ">=" "5"}}
-					<div class="top-events-widget">
-					<div class="widget-header top-events-widget-header" data-localize="events.top-events.title"></div>
- 				<div class="outer">
-				<div class="row border">
-					<div class="left title" data-localize="events.top-events.24hours"></div>
-					<div class="right">
-					{{#eachOfObjectValue getTopEventDataDaily}}
-					<div class="col">
-						<h4>{{this.name}}</h4>
-						<label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-					</div>
-					{{/eachOfObjectValue}}
-					</div>
-				</div>
-				<div class="row">
-					<div class="left title" data-localize="events.top-events.30days"></div>
-					<div class="right">
-					{{#eachOfObjectValue getTopEventData30Day}}
-					<div class="col">
-						<h4>{{this.name}}</h4>
-						<label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-					</div>
-					{{/eachOfObjectValue}}
-					</div>
-				</div>
-				<div class="info_text" data-localize="events.top-events.info-text"></div>
-				</div>
-				{{/ifCond}}
-					{{/if}}
-				</div>
+                    {{#if topEventsIsVisible}}
+                    <div class="top-events-widget">
+                        <div class="widget-header top-events-widget-header" data-localize="events.top-events.title"></div>
+                        <div class="outer">
+                            <div class="row border">
+                                <div class="left title" data-localize="events.top-events.24hours"></div>
+                                <div class="right">
+                                    {{#eachOfObjectValue getTopEventDataDaily}}
+                                    <div class="col">
+                                        <h4>{{this.name}}</h4>
+                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                    </div>
+                                    {{/eachOfObjectValue}}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="left title" data-localize="events.top-events.30days"></div>
+                                <div class="right">
+                                    {{#eachOfObjectValue getTopEventData30Day}}
+                                    <div class="col">
+                                        <h4>{{this.name}}</h4>
+                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                    </div>
+                                    {{/eachOfObjectValue}}
+                                </div>
+                            </div>
+                            <div class="info_text" data-localize="events.top-events.info-text"></div>
+                        </div>
+                        {{/if}}
+                    </div>
 				</div>
                 <div class="widget-header">
                     <div class="left">
@@ -2039,7 +2038,7 @@
 
 				</div>
 
-				<div class="section">
+				<div class="section" id="report-data-block">
 					<div class="label" data-localize='drill.report-data' ></div>
 					<div class="checks">
 						<div id="report-refresh-option" class="check selected">
@@ -2265,7 +2264,7 @@
             </div>
 		</div>
 	</script>
-    
+
     <script id="template-graph-notes-view" type="text/x-handlebars-template">
         <div class="note-table-view-navigator">
             <a href="/dashboard" class="back-link" >
@@ -2327,8 +2326,8 @@
             <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         </div>
     </script>
-    
-    <script id="graph-notes-popup" type="text/x-handlebars-template"> 
+
+    <script id="graph-notes-popup" type="text/x-handlebars-template">
         <div class="graph-note-popup">
             <div class="title">
                 <span> {{this.notePopupTitleTime}}</span>
@@ -2379,6 +2378,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.spline.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.crosshair.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.orderBars.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.navigate.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/gauge.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.js"></script>
@@ -2573,5 +2573,7 @@
     <% if (typeof inject_template.js != 'undefined') { %>
 	<script><%- inject_template.js %></script>
 	<% } %>
+    <!-- The last countly script to load -->
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.loaded.js?<%= countlyVersion %>"></script>
 </body>
 </html>
