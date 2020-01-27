@@ -854,6 +854,8 @@ div.datatablesubrow {display: none;}
 .cly-select.float-right.green.disabled { background-color:#FDFDFD; border-color:#D0D0D0; }
 .cly-select.float-right.green.disabled .text{ color:#444;}
 .cly-select.float-right.green.disabled .right.combo:before{ color:#717171;}
+.cly-select.disabling-on .select-items .item.disabled { opacity: 0.5; cursor: default; }
+.cly-select.disabling-on .select-items .item.disabled:hover { background-color: #FFF; }
 
 .cly-multi-select { position:relative; background-color:#FDFDFD; user-select:none; display:inline-block; width:135px; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:pointer; }
 .cly-multi-select .select-inner { position:relative; width:100%; height:100%; }
@@ -1389,6 +1391,7 @@ margin: 50px 0;}
 .cly-drawer .details .section input[type=text].input { width: 100%; box-sizing: border-box; border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; }
 .cly-drawer .buttons { position: relative; background-color: #fff; border-top: 1px solid #ECECED; width: 100%; padding: 20px 20px; margin: 0; left: 0; right: 0; box-sizing: border-box; bottom: 0; }
 .cly-drawer .buttons .icon-button { float:none; font-size: 15px; text-align: center; padding: 12px; margin:0; }
+.cly-drawer .buttons .icon-button.disabled, .cly-drawer  .icon-button.disabled { cursor: auto; }
 .cly-drawer .panel { background-color: #ffffff; border: 1px solid #D0D0D0; font-size: 13px; border-radius: 2px; }
 .cly-drawer .panel .panel-heading { padding: 8px 20px; background-color: #ECECEC; color: #636363; text-transform: uppercase; border-bottom: 1px solid #D0D0D0; font-weight: 500; }
 .cly-drawer .panel .panel-body { padding: 20px; position: relative; }
@@ -3537,3 +3540,12 @@ color:#E95C6C; transition:color 1s;
     cursor: pointer;
     top: 7px;
 }
+.highlighted-app-item {
+    background-color: #ebebeb;
+}
+
+.routename-loyalty #label-container .labels { position: relative; margin-top:20px; width:100%; text-align:center; }
+.routename-loyalty #label-container .label { cursor:pointer; overflow:hidden; max-width:128px; margin:2px 10px; position: relative; display: inline-block; }
+.routename-loyalty #label-container .label.hidden { opacity:0.3; }
+.routename-loyalty #label-container .label .color { float:left; margin-right:8px; height:15px; width:15px; border-radius:1px; }
+.routename-loyalty #label-container .label .text { float:left; font: 13px Ubuntu; line-height:111%; color:#666; max-width:105px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}

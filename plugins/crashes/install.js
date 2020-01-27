@@ -36,7 +36,7 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
     }
     async.forEach(apps, upgrade, function() {
         fs.chmod(path.resolve(__dirname + "/bin/minidump_stackwalk"), 0o744, function(err) {
-            if (err) {
+            if (err && !process.env.COUNTLY_CONTAINER) {
                 console.log(err);
             }
             console.log("Crash plugin installation finished");

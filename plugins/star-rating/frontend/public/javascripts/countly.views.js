@@ -1,16 +1,11 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, Handlebars, production, path1*/
+/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, Handlebars, path1*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
      * @type {object}
      */
     initialize: function() {
-        if (!production) {
-            //For color picker, copy to clipboard feature and tooltip
-            CountlyHelpers.loadJS("star-rating/javascripts/jquery.colorpicker.js");
-            CountlyHelpers.loadJS("star-rating/javascripts/clipboard.min.js");
-            CountlyHelpers.loadJS("star-rating/javascripts/tippy.all.min.js");
-        }
+
     },
     templateData: {
         "page-title": jQuery.i18n.map["star.menu-title"],
@@ -1180,10 +1175,17 @@ window.starView = countlyView.extend({
             $('body').off("click", ".options-item .show-instructions").on("click", ".options-item .show-instructions", function() {
                 $('#overlay').fadeIn();
                 $('#widgets-array').html($(this).data('id'));
-                $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + $(this).data('id') + "']}]);");
-                $('.feedback-modal').css({
-                    "display": "block"
-                });
+                if (countlyGlobal.apps[store.get('countly_active_app')].type === "web") {
+                    $('#feedback-web-integration').css({
+                        "display": "block"
+                    });
+                    $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + $(this).data('id') + "']}]);");
+                }
+                else {
+                    $('#feedback-mobile-integration').css({
+                        "display": "block"
+                    });
+                }
                 var id = $(this).data('id');
                 $('.edit-menu').splice(0, $('.edit-menu').length).forEach(function(menu) {
                     if (id !== menu.id) {
@@ -1746,6 +1748,17 @@ window.starView = countlyView.extend({
             };
 
             $("#create-feedback-widget-button").on("click", function() {
+                if (countlyGlobal.apps[store.get('countly_active_app')].type !== "web") {
+                    // set it as final step
+                    self.step = 3;
+                    $('#countly-feedback-next-step').text(jQuery.i18n.map['feedback.complete']);
+                    $('#feedback-step1-title').css({'width': '50%', 'margin-left': '25%', 'float': 'left'});
+                    $('.feedback-step-desc').css({'color': 'black'});
+                    $('#feedback-step1-title').removeClass('feedback-active-step');
+                    $('#feedback-step2-title').hide();
+                    $('#feedback-step3-title').hide();
+                    $('.feedback-step-title').hide();
+                }
                 store.set('drawer-type', 'create');
                 $('#feedback-drawer-title').html(jQuery.i18n.map['feedback.add-widget']);
                 self.feedbackWidget._id = "";
@@ -1941,9 +1954,16 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.successfully-created'],
                                     message: jQuery.i18n.map['feedback.successfully-created-message']
                                 });
-                                $('.feedback-modal').css({
-                                    "display": "block"
-                                });
+                                if (countlyGlobal.apps[store.get('countly_active_app')].type === "web") {
+                                    $('#feedback-web-integration').css({
+                                        "display": "block"
+                                    });
+                                }
+                                else {
+                                    $('#feedback-mobile-integration').css({
+                                        "display": "block"
+                                    });
+                                }
                                 self.renderFeedbacksTable(true);
                             }
                             else {

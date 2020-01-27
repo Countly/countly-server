@@ -71,8 +71,8 @@ plugins.setConfigs("crashes", {
                 if (!ob.export_commands.crashes) {
                     ob.export_commands.crashes = [];
                 }
-                ob.export_commands.crashes.push('mongoexport ' + ob.dbstr + ' --collection app_crashes' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/crashes' + ob.app_id + '.json');
-                ob.export_commands.crashes.push('mongoexport ' + ob.dbstr + ' --collection app_crashusers' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/crashusers' + ob.app_id + '.json');
+                ob.export_commands.crashes.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_crashes' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/crashes' + ob.app_id + '.json']});
+                ob.export_commands.crashes.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_crashusers' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/crashusers' + ob.app_id + '.json']});
                 resolve();
             }
         });

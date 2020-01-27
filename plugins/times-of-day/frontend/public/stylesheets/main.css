@@ -43,3 +43,13 @@
 
 /* White */
 html.theme-5 .cly-widget .timesofday table { color:rgba(0, 0, 0, 0.6); }
+
+.routename-times-of-day #date-selector2 { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:6px; padding-right:0; user-select:none; position: relative; }
+.routename-times-of-day #date-selector2 .button { visibility: visible; cursor:pointer; user-select:none; background-color:#ececec; float:left; padding:7px 5px; padding-top:6px; border:1px solid #D0D0D0; margin-right:-1px; }
+.routename-times-of-day #date-selector2 .button { visibility: visible; }
+.routename-times-of-day #date-selector2 .date-buttons-container { float: left; }
+.routename-times-of-day #date-selector2 .date-buttons-container .button:first-child { border-top-left-radius:2px; border-bottom-left-radius:2px; }
+.routename-times-of-day #date-selector2 .date-buttons-container .button:last-child { border-top-right-radius:2px; border-bottom-right-radius:2px; border-right:1px solid #D0D0D0; }
+.routename-times-of-day #date-selector2 .button:hover { background-color:#F9F9F9; }
+.routename-times-of-day #date-selector2 .button:active  { background-color:#F9F9F9; }
+.routename-times-of-day #date-selector2 .button.active { background-color:#F9F9F9; }

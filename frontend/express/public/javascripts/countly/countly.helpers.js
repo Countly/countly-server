@@ -83,6 +83,189 @@
     };
 
     /**
+    * Create drawer
+    * @param {object} options - Options object
+    * @param {string} options.id - Optional. Id for drawer
+    * @param {object} options.template - Handelbars template object(optional). After creating element from template ".details" and ".buttons" are moved to drawer object. Other parts are not used.
+    * @param {object} options.templateData - Data for template (optional)
+    * @param {object} options.form  - (optional) Existing html element with form. ".details" and ".buttons" are moved to drawer object. Options.form element is removed.
+    * @param {string} options.title - (optional) Title for drawer
+    * @param {object} options.root - (optional) Element to which drawer should be appended. If not set drawer is appended to (".widget").
+    * @param {boolean} options.saveButtonText - (optional) If there is only single button and there is not set any button using form or template - then passing this string sets text for save button.
+    * @param {boolean} options.preventBaseReset - (optional) If true then when reseting form base reset function,which empties text fields won't be called.
+    * @param {object} options.applyChangeTriggers  -(optional)  If true - Ads event listeners on textaria and input[text],  cly-multi-select, cly-single select in form to trigger "cly-drawer-form-updated" on drawer. * This event callls options.onUpdate function. 
+    * @param {function} options.onUpdate - (optional) function called when "cly-drawer-form-updated" is triggered on drawer.
+    * @param {function} options.onClose(callback) - (optional) function called when calling drawer.close() or hitting [X] button. Has one parameter - callback function. Only if callback function returns true as first param - drawer is closed. 
+    * @param {function} options.onClosed(callback) - (optional) function called after drawer is successfully closed.
+    * @returns {object} Drawer object
+    * @example
+    * var drawer = CountlyHelpers.createDrawer({
+    *           id: "my-id",
+    *           form: $('#id-of-elem'), //if using form
+    *           title: 'My Drawer title',
+    *           applyChangeTriggers: true, //add triggers
+    *           onUpdate: function(){
+    *              //check all fields here
+    *            },
+    *            resetForm: function() {
+    *                //empty all fields. Text fields are emptied automatically because options.preventBaseReset is not set.
+    *            },
+    *            onClose: function(callback) {
+    *                callback(true); //allow closing form
+    *                callback(false); //don't close form
+    *            },
+    *            onClosed: function() {
+    *                //form is closed
+    *            }
+    *        });
+    * //After creation drawer object is returned. Object has multiple functions:
+    * drawer.open() //opens drawer
+    * drawer.close(force); //closes drawer. force - close anyway even if there is onClose function set. (Withot validating)
+    * drawer.resetForm(); //resets drawer (Normally called after closing or before opening drawer)
+    *    
+    */
+    CountlyHelpers.createDrawer = function(options) {
+        var drawer = $("#cly-drawer-template").clone();
+        drawer.removeAttr("id");
+
+        if (options.template) { //from template or string
+            var newPage = "";
+            if (typeof options.template === 'function') {
+                newPage = $("<div>" + options.template(options.templateData || {}) + "</div>");
+            }
+            else {
+                newPage = $("<div>" + options.template + "</div>");
+            }
+            $(drawer).find('.details').first().replaceWith($(newPage).find('.details').first()); //copy details
+            $(drawer).find('.buttons').first().replaceWith($(newPage).find('.buttons').first()); //copy buttons
+        }
+
+        if (options.form) { //from existing html element
+            $(drawer).find('.details').first().replaceWith($(options.form).find('.details').first()); //copy details
+            $(drawer).find('.buttons').first().replaceWith($(options.form).find('.buttons').first()); //copy buttons
+            options.form.remove();
+        }
+
+        if (options.id) { //sets id
+            $(drawer).attr("id", options.id);
+        }
+        if (options.title) { //sets title
+            $(drawer).find(".title span").first().html(options.title);
+        }
+        if (options.saveButtonText) {
+            $(drawer).find(".buttons .save-drawer-button").first().html(options.saveButtonText);
+        }
+
+        //appends drawer to 
+        if (options.root) {
+            options.root.append(drawer);
+        }
+        else {
+            $(".widget").first().append(drawer);
+        }
+
+        if (options.onClose && typeof options.onClose === 'function') {
+            drawer.onClose = options.onClose;
+        }
+
+        $(drawer).find(".close").off("click").on("click", function() {
+            drawer.close();
+        });
+
+        app.localize(drawer);
+
+        drawer._resetForm = function() {
+            $(this.drawerElement).find("input[type=text]").val("");
+            $(this.drawerElement).find("textarea").val("");
+        };
+        if (options.resetForm) {
+            drawer.resetForm = function() {
+                if (!options.preventBaseReset) {
+                    this._resetForm();
+                }
+                options.resetForm();
+            };
+        }
+        else {
+            drawer.resetForm = drawer._resetForm;
+        }
+        if (options.initForm) {
+            options.initForm();
+        }
+
+        drawer.open = function() {
+            $(".cly-drawer").removeClass("open editing"); //closes all drawers
+            $(this).addClass("open");
+        };
+
+        drawer.close = function(force) {
+            if (force) {
+                $(drawer).removeClass("open editing");
+                drawer.trigger('cly-drawer-closed');
+            }
+            else if (drawer.onClose && typeof drawer.onClose === 'function') {
+                drawer.onClose(function(closeMe) {
+                    if (closeMe) {
+                        $(drawer).removeClass("open editing");
+                        drawer.trigger('cly-drawer-closed');
+                    }
+                });
+            }
+            else {
+                $(drawer).removeClass("open editing");
+                drawer.trigger('cly-drawer-closed');
+            }
+        };
+
+        if (options.applyChangeTriggers) {
+            //on off switch
+            $(drawer).find('.on-off-switch input').on("change", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //input text field
+            $(drawer).find("input[type=text]").on("keyup", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //textarea
+            $(drawer).find("textarea").on("keyup", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //single select
+            $(drawer).find(".cly-select").on("cly-select-change", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+            //multi select
+            $(drawer).on('cly-multi-select-change', function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //green checkboxes
+            $(drawer).find(".check-green").on("click", function() {
+                var isChecked = $(this).hasClass("fa-check-square"); //now is checked
+                if (isChecked) {
+                    $(this).addClass("fa-square-o");
+                    $(this).removeClass("fa-check-square");
+                }
+                else {
+                    $(this).removeClass("fa-square-o");
+                    $(this).addClass("fa-check-square");
+                }
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+        }
+        if (options.onUpdate) {
+            $(drawer).on('cly-drawer-form-updated', options.onUpdate);
+        }
+        if (options.onClosed) {
+            $(drawer).on('cly-drawer-closed', options.onClosed);
+        }
+        return drawer;
+    };
+
+    /**
     * Display dashboard notification using Amaran JS library
     * @param {object} msg - notification message object
     * @param {string=} msg.title - title of the notification
@@ -284,6 +467,43 @@
         });
     };
 
+    CountlyHelpers.blinkDots = function(times, speed, element) {
+        element.blinkCn = times;
+        if ($(element).hasClass("blink")) {
+            return;
+        }
+        $(element).addClass("blink");
+        element.blinkElement = function() {
+            var self = this;
+            if (!$(element).hasClass("blink")) {
+                return;
+            }
+            if (this.blinkCn > 0 || this.blinkCn === -1) {
+                if (this.blinkCn > 0) {
+                    this.blinkCn -= 1;
+                }
+                var dots = $(element).find("span");
+                $(dots[0]).fadeTo(speed, 0.1, function() {
+                    $(dots[0]).fadeTo(speed, 1.0, function() {
+                        $(dots[1]).fadeTo(speed, 0.1, function() {
+                            $(dots[1]).fadeTo(speed, 1.0, function() {
+                                $(dots[2]).fadeTo(speed, 0.1, function() {
+                                    $(dots[2]).fadeTo(speed, 1.0, function() {
+                                        self.blinkElement();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            }
+        };
+        element.blinkElement();
+    };
+
+    CountlyHelpers.stopBlinking = function(element) {
+        $(element).removeClass("blink");
+    };
     CountlyHelpers.applyColors = function() {
         $('#custom-color-styles').remove();
         // overview bars
@@ -793,6 +1013,7 @@
             countlyCommon.setPeriod(selectedPeriod);
 
             self.dateChanged(selectedPeriod);
+            app.runRefreshScripts();
 
             $("#" + selectedPeriod).addClass("active");
             $("#date-picker").hide();
@@ -970,6 +1191,11 @@
             //ENTER
             if (e.keyCode === 13) {
                 var selectedItem = $(this).find(".text");
+                var activeKeyItem = $(this).find('.scroll-list').first().children().eq(activeOption);
+                if ($(this).hasClass("disabling-on") && activeKeyItem.hasClass("disabled")) {
+                    e.stopPropagation();
+                    return;
+                }
                 if ($(this).find('.scroll-list').first().children().length > 1) {
                     if ($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').length > 0) {
                         selectedItem.text($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').text());
@@ -988,12 +1214,16 @@
             e.stopPropagation();
         });
 
-        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function() {
-            var selectedItem = $(this).parents(".cly-select").find(".text");
+        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function(e) {
+            var clySelect = $(this).parents(".cly-select");
+            var selectedItem = clySelect.find(".text");
+            if (clySelect.hasClass("disabling-on") && $(this).hasClass("disabled")) {
+                e.stopPropagation();
+                return;
+            }
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
-
-            $(this).parents(".cly-select").trigger("cly-select-change", [$(this).data("value")]);
+            clySelect.trigger("cly-select-change", [$(this).data("value")]);
         });
 
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function() {
@@ -1042,7 +1272,17 @@
                 $selectItems.html("");
 
                 for (var i = 0; i < items.length; i++) {
-                    $selectItems.append('<div data-value="' + items[i].value + '" class="item">' + items[i].name + '</div>');
+                    var current = items[i];
+                    if (current.type === 'group') {
+                        $selectItems.append('<div class="group">' + current.name + '</div>');
+                    }
+                    else if (current.disabled) {
+                        // effective when .cly-select element has disabling-on class
+                        $selectItems.append('<div data-value="' + current.value + '" class="item disabled">' + current.name + '</div>');
+                    }
+                    else {
+                        $selectItems.append('<div data-value="' + current.value + '" class="item">' + current.name + '</div>');
+                    }
                 }
             }
         };
@@ -1134,6 +1374,22 @@
             });
 
             e.stopPropagation();
+
+            var $multiSelect = $(this);
+
+            setTimeout(function() {
+                var maxToSelect = $multiSelect.data("max");
+                var selectedItems = getSelected($multiSelect) || [];
+                for (var i = 0; i < selectedItems.length; i++) {
+                    $multiSelect.find(".item[data-value='" + selectedItems[i] + "']").addClass("disabled");
+                }
+
+                if (maxToSelect) {
+                    if (selectedItems.length >= maxToSelect) {
+                        $multiSelect.find(".item").addClass("disabled");
+                    }
+                }
+            }, 0);
         });
 
         element.off("click", ".cly-multi-select .select-items .item").on("click", ".cly-multi-select .select-items .item", function(e) {
@@ -1242,6 +1498,11 @@
                 if (getSelected($multiSelect).length < maxToSelect) {
                     $multiSelect.find(".item").removeClass("disabled");
                 }
+            }
+
+            var selectedItems = getSelected($multiSelect) || [];
+            for (var i = 0; i < selectedItems.length; i++) {
+                $multiSelect.find(".item[data-value='" + selectedItems[i] + "']").addClass("disabled");
             }
 
             $multiSelect.data("value", getSelected($multiSelect));
@@ -2366,11 +2627,12 @@
             }
 
             if (oSVersionData.chartData) {
-                var reg = new RegExp("^" + osName, "g");
+                var regTest = new RegExp("^" + osName + "[0-9]");
+                var reg = new RegExp("^" + osName);
                 for (i = 0; i < oSVersionData.chartData.length; i++) {
                     var shouldDelete = true;
                     oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(/:/g, ".");
-                    if (reg.test(oSVersionData.chartData[i][metric_pd || _name])) {
+                    if (regTest.test(oSVersionData.chartData[i][metric_pd || _name])) {
                         shouldDelete = false;
                         oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(reg, "");
                     }

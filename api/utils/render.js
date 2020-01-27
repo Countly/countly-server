@@ -99,7 +99,7 @@ exports.renderView = function(options, cb) {
                 log.d("Headless chrome page failed request", request.failure().errorText, request.url());
             });
 
-            var host = "http://127.0.0.1" + countlyConfig.path;
+            var host = "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "127.0.0.1") + countlyConfig.path;
 
             if (options.host) {
                 host = options.host + countlyConfig.path;

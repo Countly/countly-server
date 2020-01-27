@@ -219,15 +219,15 @@ class Job extends EventEmitter {
     /**
     * Schedule job
     * @param {object} schedule - schedule object from later js
-    * @param {boolean} strict - if schedule is strict
-    * @param {object} nextTime - next run time
+    * @param {number} strict (optional) - maximum time in ms after each schedule occurrence date the job must be run, otherwise it'd be discarded
+    * @param {object} nextTime (optional) - next run time
     * @returns {object} result of saving job
     **/
     schedule(schedule, strict, nextTime) {
         this._json.schedule = schedule;
         this._json.status = STATUS.SCHEDULED;
 
-        if (strict) {
+        if (strict !== undefined) {
             this._json.strict = strict;
         }
 
@@ -250,12 +250,12 @@ class Job extends EventEmitter {
     /**
     * Run job once
     * @param {number|Date} date - date when to run
-    * @param {boolean} strict - if schedule is strict
+    * @param {number} strict (optional) - maximum time in ms after scheduled date the job must be run, otherwise it'd be discarded
     * @returns {object} result of saving job
     **/
     once(date, strict) {
         this._json.next = typeof date === 'number' ? date : date.getTime();
-        if (strict) {
+        if (strict !== undefined) {
             this._json.strict = strict;
         }
 
@@ -494,13 +494,13 @@ class Job extends EventEmitter {
         log.i('Replacing jobs %s (%j)', this.name, query);
 
         if (this._json.schedule) {
-            query.next = {$lte: Date.now() + 30000};
+            // query.next = {$lte: Date.now() + 30000};
             let updated = await Job.updateMany(this.db(), query, {$set: {status: STATUS.CANCELLED}});
             if (updated) {
                 log.i('Cancelled %d previous jobs %s (%j)', updated, this.name, query);
             }
 
-            delete query.next;
+            // delete query.next;
         }
 
         let existing = await Job.findMany(this.db(), query);

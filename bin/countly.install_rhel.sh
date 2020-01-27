@@ -86,7 +86,7 @@ if grep -q -i "release 6" /etc/redhat-release ; then
 fi
 
 #install grunt & npm modules
-( cd "$DIR/.." ; sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
+( cd "$DIR/.." ;  sudo npm install npm@6.4.1 -g; npm --version;  sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
 
 #install mongodb
 bash "$DIR/scripts/mongodb.install.sh"
@@ -121,6 +121,10 @@ fi
 
 if [ ! -f "$DIR/../plugins/plugins.json" ]; then
 	cp "$DIR/../plugins/plugins.default.json" "$DIR/../plugins/plugins.json"
+fi
+
+if [ ! -f "/etc/timezone" ]; then
+    echo "Etc/UTC" > /etc/timezone
 fi
 
 #install nghttp2

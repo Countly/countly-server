@@ -454,7 +454,7 @@ membersUtility.loginWithToken = function(req, callback) {
         callback: function(valid) {
             if (!valid) {
                 plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token}});
-                callback(undefined);
+                return callback(undefined);
             }
             membersUtility.db.collection('members').findOne({"_id": membersUtility.db.ObjectID(valid)}, function(err, member) {
                 if (err || !member) {

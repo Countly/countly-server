@@ -57,7 +57,7 @@ apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 
 #install grunt & npm modules
 npm --version
-( npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
+(  npm install npm@6.4.1 -g; npm --version; npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
 
 #install mongodb
 #bash $DIR/scripts/mongodb.install.sh
@@ -80,6 +80,10 @@ cp "$DIR/../frontend/express/config.sample.js" "$DIR/../frontend/express/config.
 
 if [ ! -f "$DIR/../plugins/plugins.json" ]; then
 	cp "$DIR/../plugins/plugins.default.json" "$DIR/../plugins/plugins.json"
+fi
+
+if [ ! -f "/etc/timezone" ]; then
+    echo "Etc/UTC" > /etc/timezone
 fi
 
 #add all plugins to test
