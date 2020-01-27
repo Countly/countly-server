@@ -404,6 +404,11 @@ var common = require('../../../api/utils/common.js'),
             // conditions
             var isContainDb = params.qstring.dbs || params.qstring.db;
             var isContainCollection = params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1;
+
+            if (isContainDb && (typeof dbs[params.qstring.db]) === "undefined" && typeof dbs[params.qstring.dbs] === "undefined") {
+                common.returnMessage(params, 404, 'Database not found.');
+            }
+
             // handle index request
             if (isContainDb && params.qstring.collection && params.qstring.action === 'get_indexes') {
                 if (params.member.global_admin) {
