@@ -17,6 +17,17 @@ var pluginOb = {},
         if (data.os === "Mac OS") {
             data.os = "Mac";
         }
+        else if (data.os === "iOS" || data.os === "Android") {
+            if (agent.browser.name === "Firefox") {
+                agent.browser.name = "Firefox Mobile";
+            }
+            else if (agent.browser.name === "Chrome") {
+                agent.browser.name = "Chrome Mobile";
+            }
+            else if (agent.browser.name === "Edge") {
+                agent.browser.name = "Edge Mobile";
+            }
+        }
 
         if (params.qstring.begin_session) {
             //try to add metrics based on user agent
