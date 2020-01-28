@@ -2167,7 +2167,7 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
                     }
 
                     // onur, add dashedLine to all grid lines except first one
-                    if (i == 0) {
+                    if (v == 0) {
                         ctx.moveTo(x, y);
                         ctx.lineTo(x + xoff, y + yoff);
                     } else {
@@ -2277,7 +2277,7 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
                         }
                     } else {
                         // onur, add skip 0
-                        if (tick.v == 0) {
+                        if (!axis.options.showZeroTick && tick.v == 0) {
                             continue;
                         }
 
@@ -2329,12 +2329,15 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
         }
 
         function drawSeriesLines(series) {
-            function plotLine(datapoints, xoffset, yoffset, axisx, axisy) {
+            function plotLine(datapoints, xoffset, yoffset, axisx, axisy, dashed) {
                 var points = datapoints.points,
                     ps = datapoints.pointsize,
                     prevx = null, prevy = null;
 
                 ctx.beginPath();
+                if(dashed) {
+                    ctx.setLineDash([4, 4]);
+                }
                 for (var i = ps; i < points.length; i += ps) {
                     var x1 = points[i - ps], y1 = points[i - ps + 1],
                         x2 = points[i], y2 = points[i + 1];
@@ -2578,7 +2581,7 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
             }
 
             if (lw > 0)
-                plotLine(series.datapoints, 0, 0, series.xaxis, series.yaxis);
+                plotLine(series.datapoints, 0, 0, series.xaxis, series.yaxis, series.dashed);
             ctx.restore();
         }
 

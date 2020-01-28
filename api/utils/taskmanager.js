@@ -6,6 +6,7 @@
 /** @lends module:api/utils/taskmanager */
 var taskmanager = {};
 var common = require("./common.js");
+var countlyFs = require("./countlyFs.js");
 var crypto = require("crypto");
 var request = require("request");
 const log = require('./log.js')('core:taskmanager');
@@ -76,7 +77,7 @@ taskmanager.longtask = function(options) {
             delete json.api_key;
 
             options.request = {
-                uri: "http://localhost" + options.params.fullPath,
+                uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.params.fullPath,
                 method: 'POST',
                 json: json
             };
@@ -193,7 +194,25 @@ taskmanager.createTask = function(options, callback) {
     update.report_desc = options.report_desc || "";
     update.period_desc = options.period_desc || "";
     update.manually_create = options.manually_create || false;
-    options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
+    update.subtask_key = options.subtask_key || "";
+    update.taskgroup = options.taskgroup || false;
+    if (options.subtask && options.subtask !== "") {
+        update.subtask = options.subtask;
+        var updateSub = {$set: {}};
+        updateSub.$set["subtasks." + options.id + ".status"] = "running";
+        updateSub.$set["subtasks." + options.id + ".start"] = new Date().getTime();
+        options.db.collection("long_tasks").update({_id: update.subtask}, updateSub, {'upsert': false}, function(err, res) {
+            if (err) {
+                callback(err, res);
+            }
+            else {
+                options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
+            }
+        });
+    }
+    else {
+        options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
+    }
 };
 
 /**
@@ -209,6 +228,13 @@ taskmanager.createTask = function(options, callback) {
 */
 taskmanager.saveResult = function(options, data, callback) {
     options.db = options.db || common.db;
+    var update = {
+        end: new Date().getTime(),
+        status: "completed",
+        hasData: true,
+        data: JSON.stringify(data || {}),
+    };
+
     if (options.errored) {
         var message = "";
         if (options.errormsg) {
@@ -217,27 +243,43 @@ taskmanager.saveResult = function(options, data, callback) {
         if (message.message) {
             message = message.message;
         }
+        update.status = "errored";
+        update.errormsg = message;
+    }
 
+    options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
         options.db.collection("long_tasks").update({_id: options.id}, {
-            $set: {
-                end: new Date().getTime(),
-                status: "errored",
-                hasData: true,
-                data: JSON.stringify(data || {}),
-                errormsg: message
+            $set: update
+        }, {'upsert': false}, function(err, res) {
+            if (options.subtask && !err) {
+                var updateObj = {$set: {}};
+                updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
+                updateObj.$set["subtasks." + options.id + ".hasData"] = true;
+                updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
+
+                options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
             }
-        }, {'upsert': false}, callback);
-    }
-    else {
-        options.db.collection("long_tasks").update({_id: options.id}, {
-            $set: {
-                end: new Date().getTime(),
-                status: "completed",
-                hasData: true,
-                data: JSON.stringify(data || {})
+
+            //document too large for update or it was already previous stored in gridfs
+            if ((err && err.code === 17419) || (task && task.gridfs)) {
+                //let's store it in gridfs
+                update.data = {};
+                update.gridfs = true;
+                options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, function() {
+                    countlyFs.gridfs.saveData("task_results", options.id, JSON.stringify(data || {}), {id: options.id}, function(err2, res2) {
+                        if (callback) {
+                            callback(err2, res2);
+                        }
+                    });
+                });
             }
-        }, {'upsert': false}, callback);
-    }
+            else {
+                if (callback) {
+                    callback(err, res);
+                }
+            }
+        });
+    });
 };
 
 /**
@@ -263,7 +305,19 @@ taskmanager.nameResult = function(options, data, callback) {
 */
 taskmanager.getResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne({_id: options.id}, callback);
+    options.db.collection("long_tasks").findOne({_id: options.id}, getResult(callback));
+};
+
+/**
+* Get specific task result
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {string} options.query - query for the task result
+* @param {funciton} callback - callback for the result
+*/
+taskmanager.getResultByQuery = function(options, callback) {
+    options.db = options.db || common.db;
+    options.db.collection("long_tasks").findOne(options.query, getResult(callback));
 };
 
 /**
@@ -349,7 +403,7 @@ taskmanager.checkIfRunning = function(options, callback) {
         //delete jquery param to prevent caching
         delete json._;
         query.request = {
-            uri: "http://localhost" + options.params.fullPath,
+            uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.params.fullPath,
             method: 'POST',
             json: json
         };
@@ -387,6 +441,30 @@ taskmanager.getResults = function(options, callback) {
 };
 
 /**
+* Get task counts based on query and grouped by app_id
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {object} options.query - mongodb query
+* @param {funciton} callback - callback for the result
+*/
+taskmanager.getCounts = function(options, callback) {
+    options.db = options.db || common.db;
+    options.query = options.query || {};
+    options.db.collection("long_tasks").aggregate([
+        {$match: options.query},
+        {
+            $group:
+            {
+                _id: '$app_id',
+                c: {$sum: 1}
+            }
+        }
+    ], {allowDiskUse: true}, function(err, docs) {
+        callback(err, docs);
+    });
+};
+
+/**
 * Get dataTable query results for tasks
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
@@ -413,7 +491,7 @@ taskmanager.getTableQueryResult = async function(options, callback) {
     }
     let sortBy = {'end': -1};
     if (options.sort.sortBy) {
-        const orderbyKey = { 0: 'report_name', 3: 'type', 7: 'end'};
+        const orderbyKey = { 0: 'report_name', 2: 'status', 3: 'type', 7: 'end', 8: 'start'};
         const keyName = orderbyKey[options.sort.sortBy];
         const seq = options.sort.sortSeq === 'desc' ? -1 : 1;
         sortBy = {[keyName]: seq};
@@ -448,7 +526,24 @@ taskmanager.getTableQueryResult = async function(options, callback) {
 */
 taskmanager.deleteResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").remove({_id: options.id}, callback);
+    options.db.collection("long_tasks").findOne({_id: options.id}, function(err, task) {
+        if (err || !task) {
+            return callback(err);
+        }
+        if (task.gridfs) {
+            countlyFs.gridfs.deleteFile("task_results", options.id, {id: options.id}, function() {});
+        }
+        options.db.collection("long_tasks").remove({_id: options.id}, callback);
+        if (task.taskgroup) {
+            options.db.collection("long_tasks").find({subtask: options.id}, {_id: 1}).toArray(function(err2, tasks) {
+                if (tasks && tasks.length) {
+                    for (var i = 0; i < tasks.length; i++) {
+                        taskmanager.deleteResult({id: tasks[i]._id, db: options.db}, function() {});
+                    }
+                }
+            });
+        }
+    });
 };
 
 /**
@@ -460,7 +555,21 @@ taskmanager.deleteResult = function(options, callback) {
 taskmanager.errorResults = function(options, callback) {
     options.db = options.db || common.db;
     options.db.collection("long_tasks").update({status: "running"}, {$set: {status: "errored"}}, {multi: true}, function() {
-        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored"}}, {multi: true}, callback);
+        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored"}}, {multi: true}, function() {
+            options.db.collection("long_tasks").find({status: "errored", subtask: {$exists: true}}).toArray(function(err, res) {
+                if (res && res.length > 0) {
+                    for (var k = 0; k < res.length; k++) {
+                        var updateSub = {$set: {}};
+                        updateSub.$set["subtasks." + res[k]._id + ".status"] = "errored";
+                        options.db.collection("long_tasks").update({_id: res[k].subtask}, updateSub, {}, function(/*err,res*/) {});
+                    }
+                }
+                if (callback) {
+                    callback(err, {});
+                }
+            });
+        });
+        //callback);
     });
 };
 
@@ -500,6 +609,7 @@ taskmanager.rerunTask = function(options, callback) {
                     taskmanager.saveResult({
                         db: options1.db,
                         id: options1.id,
+                        subtask: options1.subtask,
                         request: res.request
                     }, body);
                 }
@@ -520,6 +630,8 @@ taskmanager.rerunTask = function(options, callback) {
             if (reqData.uri) {
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
+                options.subtask = res.subtask;
+                reqData.json.autoUpdate = options.autoUpdate || false;
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
                         if (member && member.api_key) {
@@ -557,4 +669,33 @@ taskmanager.rerunTask = function(options, callback) {
         }
     });
 };
+
+/**
+ *  Create a callback for getting result, including checking gridfs
+ *  @param {function} callback - callback for the result
+ *  @returns {function} callback to use for db query
+ */
+function getResult(callback) {
+    return function(err, data) {
+        if (!err) {
+            if (data && data.gridfs) {
+                countlyFs.gridfs.getData("task_results", data._id + "", {id: data._id}, function(err2, largeData) {
+                    if (!err2) {
+                        data.data = largeData;
+                        callback(null, data);
+                    }
+                    else {
+                        callback(err2, data);
+                    }
+                });
+            }
+            else {
+                callback(err, data);
+            }
+        }
+        else {
+            callback(err, data);
+        }
+    };
+}
 module.exports = taskmanager;

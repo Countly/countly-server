@@ -710,7 +710,7 @@ function cachedData(note) {
                 log.i('Saved full audience for %s: %j', note._id, neo);
                 return neo;
             }, err => {
-                if (err === 'Not found') {
+                if (err === 'Note not found') {
                     note.updateAtomically(common.db, {'result.status': N.Status.Created}, update).then(() => {
                         log.i('Saved full audience for already created %s', note._id);
                         note.schedule(common.db, jobs);

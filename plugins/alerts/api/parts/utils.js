@@ -27,12 +27,11 @@ utils.sendRequest = function(url, callback) {
 utils.getDatesValue = function(alertConfig, data, keyPath) {
     const keyName = keyPath.split('.')[0];
     const subKeyName = keyPath.split('.')[1];
-
     const today = new moment();
     const tYear = today.year();
     const tMonth = today.month() + 1;
     const tDate = today.date();
-    let todayValue = data[tYear] && data[tYear][tMonth] && data[tYear][tMonth][tDate] && data[tYear][tMonth][tDate][keyName];
+    let todayValue = data[tYear] && data[tYear][tMonth] && data[tYear][tMonth][tDate] && data[tYear][tMonth][tDate][keyName] || 0;
 
     let lastDayGap = 1;
     // if (alertConfig.comparePeriod && alertConfig.comparePeriod === 'same_day_last_week') {
@@ -42,7 +41,7 @@ utils.getDatesValue = function(alertConfig, data, keyPath) {
     const lYear = lastDay.year();
     const lMonth = lastDay.month() + 1;
     const lDate = lastDay.date();
-    let lastDateValue = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate][keyName];
+    let lastDateValue = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate][keyName] || 0;
 
     if (subKeyName) {
         todayValue = todayValue ? todayValue[subKeyName] : todayValue;

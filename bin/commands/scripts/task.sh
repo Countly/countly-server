@@ -9,7 +9,7 @@ if [ -z "$1" ]
 then
     usage ;
 else
-    (cd $DIR/../../.. ;
-    grunt $1;
+    (cd "$DIR/../../.." ;
+    grunt "$1";
     )
 fi

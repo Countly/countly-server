@@ -1,12 +1,11 @@
 #!/bin/bash
 
 #check if authentication is required
-isAuth=`mongo --eval "db.getUsers()" | grep "not auth"`
+isAuth=$(mongo --eval "db.getUsers()" | grep "not auth")
 
 #check if we have previous upgrade needed
 FEATVER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
 VER=$(mongod -version | grep "db version" | cut -d ' ' -f 3 | cut -d 'v' -f 2)
-DEBIAN_FRONTEND=noninteractive
 
 if ! [ -z "$isAuth" ] ; then
     echo "mongod auth is ENABLED, manual upgrade will be required"
@@ -14,18 +13,18 @@ if ! [ -z "$isAuth" ] ; then
 fi
 
 if [ -x "$(command -v mongo)" ]; then
-    if echo $VER | grep -q -i "3.6" ; then
-        if echo $FEATVER | grep -q -i "3.4" ; then
+    if echo "$VER" | grep -q -i "3.6" ; then
+        if echo "$FEATVER" | grep -q -i "3.4" ; then
             echo "run this command to ugprade to 3.6";
             echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"3.6\\\" } )\"";
         else
             echo "We already have version 3.6";
         fi
         exit 0;
-    elif echo $VER | grep -q -i "3.2" ; then
+    elif echo "$VER" | grep -q -i "3.2" ; then
         echo "Run upgrade.mongo.34.sh";
         exit 0;
-    elif echo $VER | grep -q -i "3.4" ; then
+    elif echo "$VER" | grep -q -i "3.4" ; then
         echo "Upgrading to MongoDB 3.6";
     else
         echo "Unsupported MongodB version $VER";
@@ -68,7 +67,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
     yum install -y mongodb-org
     
     #disable transparent-hugepages (requires reboot)
-    cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f "$DIR/scripts/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     chkconfig --add disable-transparent-hugepages
 fi
@@ -95,7 +94,7 @@ if [ -f /etc/lsb-release ]; then
     apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
     
     #disable transparent-hugepages (requires reboot)
-    cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f "$DIR/scripts/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     update-rc.d disable-transparent-hugepages defaults
 fi
@@ -110,7 +109,7 @@ if [ -f /etc/redhat-release ]; then
 fi
 
 if [ -f /etc/lsb-release ]; then
-    if [[ `/sbin/init --version` =~ upstart ]]; then
+    if [[ $(/sbin/init --version) =~ upstart ]]; then
         restart mongod || echo "mongodb upstart job does not exist"
     else
         systemctl restart mongod || echo "mongodb systemctl job does not exist"

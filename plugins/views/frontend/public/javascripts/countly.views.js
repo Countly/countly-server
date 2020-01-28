@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -914,9 +914,6 @@ app.addPageScript("/custom#", function() {
 });
 
 $(document).ready(function() {
-    if (!production) {
-        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
-    }
     jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
         x = countlyViews.getFrequencyIndex(x);
         y = countlyViews.getFrequencyIndex(y);

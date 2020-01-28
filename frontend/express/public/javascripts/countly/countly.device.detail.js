@@ -5,17 +5,24 @@
     CountlyHelpers.createMetricModel(window.countlyDeviceDetails, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
 
     countlyDeviceDetails.os_mapping = {
+        "webos": {short: "webos", name: "Webos"},
+        "brew": {short: "brew", name: "Brew"},
         "unknown": {short: "unk", name: "Unknown"},
         "undefined": {short: "unk", name: "Unknown"},
         "tvos": {short: "atv", name: "Apple TV"},
+        "apple tv": {short: "atv", name: "Apple TV"},
         "watchos": {short: "wos", name: "Apple Watch"},
         "unity editor": {short: "uty", name: "Unknown"},
         "qnx": {short: "qnx", name: "QNX"},
         "os/2": {short: "os2", name: "OS/2"},
+        "amazon fire tv": {short: "aft", name: "Amazon Fire TV"},
+        "amazon": {short: "amz", name: "Amazon"},
+        "web": {short: "web", name: "Web"},
         "windows": {short: "mw", name: "Windows"},
         "open bsd": {short: "ob", name: "Open BSD"},
         "searchbot": {short: "sb", name: "SearchBot"},
         "sun os": {short: "so", name: "Sun OS"},
+        "solaris": {short: "so", name: "Sun OS"},
         "beos": {short: "bo", name: "BeOS"},
         "mac osx": {short: "o", name: "Mac"},
         "macos": {short: "o", name: "Mac"},
@@ -196,4 +203,23 @@
         }
         return osName;
     };
+
+    countlyDeviceDetails.getOSVersionList = function(name) {
+        var codes = {};
+        var lowerCase = name.toLowerCase();
+        for (var i in countlyDeviceDetails.os_mapping) {
+            if (countlyDeviceDetails.os_mapping[i].name.toLowerCase().startsWith(lowerCase)) {
+                codes[countlyDeviceDetails.os_mapping[i].short] = true;
+            }
+            else {
+                var changed = lowerCase.replace(new RegExp("^" + countlyDeviceDetails.os_mapping[i].name.toLowerCase(), "g"), countlyDeviceDetails.os_mapping[i].short);
+                changed = changed.replace(/ /g, ""); //removes spaces
+                changed = (changed + "").replace(/\./g, ":");
+                codes[changed] = true;
+            }
+
+        }
+        return Object.keys(codes);
+    };
+
 }());

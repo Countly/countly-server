@@ -9,7 +9,7 @@ if [ -f /etc/redhat-release ]; then
 	yum remove -y nodejs
 	yum install -y nodejs bzip2
 	if grep -q -i "release 6" /etc/redhat-release ; then
-		bash $DIR/scripts/install-google-chrome.sh;
+		bash "$DIR/scripts/install-google-chrome.sh";
 	else
 		yum install -y pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc
 	fi
@@ -22,24 +22,24 @@ if [ -f /etc/lsb-release ]; then
 fi
 
 #enable command line
-bash $DIR/scripts/detect.init.sh
+bash "$DIR/scripts/detect.init.sh"
 
 #upgrade config
-mv $DIR/../frontend/express/public/javascripts/countly/countly.config.js $DIR/../frontend/express/public/javascripts/countly/countly.config.backup.18.08.js
-cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
+mv "$DIR/../frontend/express/public/javascripts/countly/countly.config.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.backup.18.08.js"
+cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
 
 #remove previous dependencies, as they need to be rebuild for new nodejs version
-rm -rf $DIR/../node_modules
+rm -rf "$DIR/../node_modules"
 
 #remove predefined locale file, it should fallback to default one
-rm -rf $DIR/../frontend/express/public/localization/min/locale_en.properties 
+rm -rf "$DIR/../frontend/express/public/localization/min/locale_en.properties"
 
 
 countly upgrade
 
 #upgrade plugins
 countly plugin upgrade push
-cd $DIR/../plugins/push/api/parts/apn && npm install --unsafe-perm
+cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm
 countly plugin upgrade revenue
 countly plugin upgrade attribution
 countly plugin upgrade crashes

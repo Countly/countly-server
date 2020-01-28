@@ -28,17 +28,30 @@
 
     window.countlyLocation = window.countlyLocation || {};
     countlyLocation.getCountryName = function(cc) {
-        var countryName = _countryMap[cc && cc.toUpperCase()];
+        var countryName = _countryMap[cc && (cc + "").toUpperCase()];
         if (countryName) {
             return countryName;
         }
-        else if (cc && cc.toUpperCase() === "EU") {
+        else if (cc && (cc + "").toUpperCase() === "EU") {
             return jQuery.i18n.map["common.eu"] || "European Union";
         }
         else {
             return jQuery.i18n.map["common.unknown"] || "Unknown";
         }
     };
+
+    countlyLocation.getCodesFromName = function(name) {
+        var codes = [];
+        var lowerCase = name.toLowerCase();
+        for (var p in _countryMap) {
+            if (_countryMap[p].toLowerCase().startsWith(lowerCase)) {
+                codes.push(p);
+            }
+        }
+        return codes;
+    };
+
+
     CountlyHelpers.createMetricModel(window.countlyLocation, {name: "countries", estOverrideMetric: "countries"}, jQuery, countlyLocation.getCountryName);
 
     countlyLocation.getRegionName = function(rgn) {

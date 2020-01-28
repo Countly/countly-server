@@ -23,7 +23,7 @@ var plugins = require('../../pluginManager.js'),
 
             for (var i = 0; i < events.length; i++) {
                 if (events[i].key) {
-                    eventCount += (events[i].count) ? events[i].count : 1;
+                    eventCount += 1;
                 }
             }
 
@@ -84,6 +84,10 @@ var plugins = require('../../pluginManager.js'),
     * @returns {undefined} Returns nothing
     **/
     function updateDataPoints(appId, sessionCount, eventCount) {
+        if (!sessionCount && !eventCount) {
+            return;
+        }
+
         var utcMoment = common.moment.utc();
 
         common.db.collection('server_stats_data_points').update(

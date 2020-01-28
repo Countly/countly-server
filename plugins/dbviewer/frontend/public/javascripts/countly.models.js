@@ -1,4 +1,4 @@
-/*global store, countlyCommon, $, jQuery*/
+/*global store, countlyCommon, countlyTaskManager, $, jQuery, app*/
 (function(countlyDBviewer) {
 
     //Private Properties
@@ -53,40 +53,63 @@
         });
     };
 
-    countlyDBviewer.loadCollections = function(db, collection, page, filter, limit, sort, projection, isSort) {
+    countlyDBviewer.loadCollections = function(db, collection, page, filter, limit, sort, projection, isSort, isIndexRequest) {
         limit = limit || 20;
         var skip = (page - 1) * limit;
+        var requestData = {
+            dbs: db,
+            collection: collection,
+            filter: filter || "{}",
+            limit: limit,
+            sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
+            projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
+            skip: skip
+        };
+        if (isIndexRequest) {
+            requestData.action = "get_indexes";
+        }
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + '/o/db/',
-            data: {
-                dbs: db,
-                collection: collection,
-                filter: filter || "{}",
-                limit: limit,
-                sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
-                projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
-                skip: skip
-            },
+            data: requestData,
             success: function(json) {
                 _collections = json;
             }
         });
     };
 
-    countlyDBviewer.executeAggregation = function(db, collection, aggregation, callback) {
-        return $.ajax({
-            type: "GET",
-            url: countlyCommon.API_URL + "/o/db",
-            data: {
-                dbs: db,
-                collection: collection,
-                aggregation: aggregation
-            },
-            success: function(json) {
+    countlyDBviewer.executeAggregation = function(db, collection, aggregation, app_id, task_id, callback) {
+        if (task_id) {
+            return $.when(countlyTaskManager.fetchResult(task_id, function(json) {
                 callback(json);
-            }
-        });
+            }));
+        }
+        else {
+            return $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o/db",
+                data: {
+                    dbs: db,
+                    collection: collection,
+                    aggregation: aggregation,
+                    app_id: app_id
+                },
+                success: function(json) {
+                    if (json.aaData && json.aaData.task_id) {
+                        app.recordEvent({
+                            "key": "move-to-report-manager",
+                            "count": 1,
+                            "segmentation": {type: "dbviewer"}
+                        });
+                        countlyTaskManager.monitor(json.aaData.task_id);
+                        callback(false);
+                    }
+                    else {
+                        callback(json);
+                    }
+                }
+            });
+        }
     };
 
     countlyDBviewer.loadDocument = function(db, collection, id) {

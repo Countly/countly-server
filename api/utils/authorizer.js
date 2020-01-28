@@ -102,7 +102,7 @@ authorizer.read = function(options) {
 * @param {object} options.db - database connection
 * @param {string} options.token - token to rvalidate
 * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired) 
-*/ 
+*/
 authorizer.check_if_expired = function(options) {
     options.db = options.db || common.db;
     options.token = options.token + "";
@@ -189,6 +189,9 @@ var verify_token = function(options, return_owner) {
             var expires_after = 0;
             if (res) {
                 var valid_endpoint = true;
+                if (Array.isArray(res.endpoint) && res.endpoint.length === 0) {
+                    res.endpoint = "";
+                }
                 if (res.endpoint && res.endpoint !== "") {
                     //keep backwards compability
                     if (!Array.isArray(res.endpoint)) {
