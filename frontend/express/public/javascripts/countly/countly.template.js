@@ -152,7 +152,7 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeOnce()).always(function(XMLHttpRequest, textStatus, errorThrown) {
+            $.when(this.beforeRender(), initializeOnce()).fail(function(XMLHttpRequest, textStatus, errorThrown) {
                 if (XMLHttpRequest && XMLHttpRequest.status === 0) {
                     // eslint-disable-next-line no-console
                     console.error("Check Your Network Connection");
@@ -169,13 +169,15 @@ var countlyView = Backbone.View.extend({
                     // eslint-disable-next-line no-console
                     console.error("Unknow Error: " + (XMLHttpRequest || XMLHttpRequest.responseText) + "\n" + textStatus + "\n" + errorThrown);
                 }
-                if (app.activeView === self) {
-                    self.isLoaded = true;
-                    self.renderCommon();
-                    self.afterRender();
-                    app.pageScript();
-                }
-            });
+            })
+                .always(function() {
+                    if (app.activeView === self) {
+                        self.isLoaded = true;
+                        self.renderCommon();
+                        self.afterRender();
+                        app.pageScript();
+                    }
+                });
         }
         else {
             if (app.activeView === this) {
