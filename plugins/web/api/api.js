@@ -64,7 +64,7 @@ var pluginOb = {},
         //check if view events need to have platform segment
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
             params.qstring.events = params.qstring.events.map(function(currEvent) {
-                if (currEvent.key === "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name && !currEvent.segmentation.segment) {
+                if (currEvent.key === "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name && (!currEvent.segmentation.segment && !currEvent.segmentation.platform)) {
                     currEvent.segmentation.segment = data.os;
                 }
                 return currEvent;
