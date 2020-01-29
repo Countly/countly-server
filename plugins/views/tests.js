@@ -446,7 +446,7 @@ describe('Testing views plugin', function() {
 
     var dataSegments = [];
     var limit = 20;
-    var myList = {"platform": ["Android", "IOS"], "testSegment": []};
+    var myList = {"platform": ["Android"], "testSegment": []};
 
     describe('checking limit for segment values', function() {
         it('Adding a lot of segment values', function(done) {
