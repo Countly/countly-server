@@ -441,12 +441,12 @@ describe('Testing views plugin', function() {
 
         });
         verifyTotals("30days");
-        verifySegments({"platform": ["Android", "IOS"]});
+        verifySegments({"platform": ["Android", "IOS"], "domains": []});
     });
 
     var dataSegments = [];
     var limit = 20;
-    var myList = {"platform": ["Android"], "testSegment": []};
+    var myList = {"platform": ["Android", "IOS"], "domains": [], "testSegment": []};
 
     describe('checking limit for segment values', function() {
         it('Adding a lot of segment values', function(done) {
