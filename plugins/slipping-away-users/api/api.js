@@ -25,12 +25,8 @@ const plugins = require('../../pluginManager'),
             const tasks = [];
             const conditions = [];
 
-            const now = new moment();
-            now.utc().hours(0).minutes(0).seconds(0).unix();
-            const dayOfYear = now.dayOfYear();
-
             periods.forEach((p) => {
-                timeList[p] = now.dayOfYear(dayOfYear - p).utc().unix() * 1000;
+                timeList[p] = moment().subtract(p, 'days').utc().unix() * 1000;
                 conditions.push({
                     lac: {$lt: timeList[p]},
                 });
