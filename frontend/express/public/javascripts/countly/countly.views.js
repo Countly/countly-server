@@ -806,7 +806,7 @@ window.LoyaltyView = countlyView.extend({
             }
 
             $('.widget-content').css('height', '350px');
-            $('#dashboard-graph').css("height", "85%");
+            $('#dashboard-graph').attr('style', $('#dashboard-graph').attr('style') + 'height: 85% !important');
             $('#dashboard-graph').after(labelsHtml);
             if (chartData.chartData.length > 0) {
                 $('#label-container').show();
