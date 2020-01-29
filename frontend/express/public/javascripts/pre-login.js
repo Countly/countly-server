@@ -1,4 +1,4 @@
-/*global store, jQuery, $, document, countlyGlobal, filterXSS, alert, window */
+/*global store, jQuery, $, document, countlyGlobal, filterXSS */
 
 /**
  * Javascript file loaded on pre login pages with some handy global functions
