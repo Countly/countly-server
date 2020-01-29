@@ -105,3 +105,9 @@ body.mobile { padding-top:0; min-height:300px; }
 .mobile #login-logo { margin: 0 auto; }
 .mobile #login-left { float:none; margin:0 auto; margin-bottom:30px; padding:0; width:250px; text-align: center; }
 .mobile #login-right { margin:0 auto; width:250px; text-align: center; }
+#error-message {
+  padding-top: 40px;
+  height: 40px;
+  text-align: center;
+  color: #ED6262;
+}

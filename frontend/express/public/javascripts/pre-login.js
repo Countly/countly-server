@@ -49,48 +49,6 @@ function encodeSomeHtml(html, options) {
     }
 }
 
-
-/**
-* Check password Validation.
-* @param {string} password - password string
-* @return {bool} result - return password is validated or not.
-* @memberof Pre Login
-* 
-/* exported passwordCheck */
-function passwordCheck(password) {
-    if (password.length < 8) {
-        return jQuery.i18n.prop("management-users.password.length", 8);
-    }
-    if (!/[A-Z]/.test(password)) {
-        return jQuery.i18n.map["management-users.password.has-char"];
-    }
-    if (!/\d/.test(password)) {
-        return jQuery.i18n.map["management-users.password.has-number"];
-    }
-    if (!/[^A-Za-z\d]/.test(password)) {
-        return jQuery.i18n.map["management-users.password.has-special"];
-    }
-    return true;
-}
-
-/**
-* Check form before submit.
-* @return {bool} result - return false to prevent submit action if check password failed.
-* @memberof Pre Login
-*
-/* exported validateForm */
-window.validateForm = function() {
-    var password = document.forms["account-form"]["password"].value;
-    var result = passwordCheck(password);
-    if (result === true) {
-        return true;
-    }
-    else {
-        alert(result);
-        return false;
-    }
-};
-
 /**
 * By default only pre-login property file localization is available on prelogin pages, but you can additionally load other localization files, like for example needed for your plugin, using this function
 * @param {string} name - base name of the property file without the locale/language. Should be the same name as your plugin
