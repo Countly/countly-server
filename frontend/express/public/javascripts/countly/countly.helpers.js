@@ -361,7 +361,7 @@
             self.cancel = [clFn];
         };
 
-        $("#model-continue").live('click', function() {
+        $(document).on('click', "#model-continue", function() {
             var breakStatus = false;
             for (var i = 0; i < self.continue.length; i++) {
                 var call = self.continue[i].bind(this);
@@ -380,7 +380,7 @@
             }
         });
 
-        $("#model-cancel").live('click', function() {
+        $(document).on('click', "#model-cancel", function() {
             var breakStatus = false;
             for (var i = 0; i < self.cancel.length; i++) {
                 var call = self.cancel[i].bind(this);
@@ -2949,7 +2949,7 @@
             }
         });
 
-        $("#dialog-ok, #dialog-cancel, #dialog-continue").live('click', function() {
+        $(document).on('click', "#dialog-ok, #dialog-cancel, #dialog-continue", function() {
             $(this).parents(".dialog:visible").fadeOut().remove();
             if (!$('.dialog:visible').length) {
                 $("#overlay").hide();

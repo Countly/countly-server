@@ -390,7 +390,9 @@ if (countlyGlobal.member.global_admin) {
 
     app.addPageScript("/manage/compliance#", function() {
         if (app.activeView && app.activeView.tabs) {
-            app.activeView.tabs.tabs('add', '#consent-actionlogs', jQuery.i18n.map["consent.export-history"]);
+            var ul = app.activeView.tabs.find("ul");
+            $("<li><a href='#consent-actionlogs'>" + jQuery.i18n.map["consent.export-history"] + "</a></li>").appendTo(ul);
+            $("<div id='consent-actionlogs'></div>").appendTo(app.activeView.tabs);
             app.activeView.tabs.tabs("refresh");
             $.when(countlySystemLogs.initialize()).then(function() {
                 var html = "<div class='widget-header include-dateselector'><div class='left'><div style='overflow: auto'><div class='title small'>" + jQuery.i18n.map["consent.export-history"] + "</div></div>" +

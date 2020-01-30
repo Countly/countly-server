@@ -3910,6 +3910,9 @@
                 return obj;
             }
             else {
+                if (typeof obj[is[0]] === "undefined" && value !== undefined) {
+                    obj[is[0]] = {};
+                }
                 return countlyCommon.dot(obj[is[0]], is.slice(1), value);
             }
         };

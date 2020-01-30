@@ -2281,11 +2281,15 @@ window.ManageAppsView = countlyView.extend({
             self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false});
             self.el.find('.app-details-plugins > div').off('accordionactivate').on('accordionactivate', function(event, ui) {
                 var index = parseInt(ui.oldHeader.data('index'));
-                self.appManagementViews[index].afterCollapse();
+                if (self.appManagementViews[index]) {
+                    self.appManagementViews[index].afterCollapse();
+                }
             });
             self.el.find('.app-details-plugins > div').off('accordionbeforeactivate').on('accordionbeforeactivate', function(event, ui) {
                 var index = parseInt(ui.newHeader.data('index'));
-                self.appManagementViews[index].beforeExpand();
+                if (self.appManagementViews[index]) {
+                    self.appManagementViews[index].beforeExpand();
+                }
             });
 
             /*
@@ -3097,7 +3101,7 @@ window.ManageAppsView = countlyView.extend({
             initAppManagement(appId2);
         });
 
-        $("#management-app-container .app-container:not(#app-container-new)").live("click", function() {
+        $(document).on("click", "#management-app-container .app-container:not(#app-container-new)", function() {
             var appId2 = $(this).data("id");
             hideEdit();
             $(".app-container").removeClass("active");
@@ -5882,8 +5886,8 @@ window.LongTaskView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.tabs = $("#reports-manager-tabs").tabs();
-            this.tabs.on("tabsselect", function(event, ui) {
-                self.taskCreatedBy = typeCodes[ui.index];
+            this.tabs.on("tabsactivate", function(event, ui) {
+                self.taskCreatedBy = typeCodes[ui.newTab.index()];
                 $("#report-manager-table-title").text(jQuery.i18n.map["report-maanger." + self.taskCreatedBy + "-created-title"]);
                 self.showTableColumns(self);
                 self.refresh();

@@ -764,7 +764,7 @@ var AppRouter = Backbone.Router.extend({
         if (!node.url && category !== "management" && category !== "users") {
             this._subMenus[node.code] = true;
             menu.hide();
-            menu.after('<div class="sidebar-submenu" id="' + node.code + '-submenu">');
+            menu = menu.add('<div class="sidebar-submenu" id="' + node.code + '-submenu">');
         }
         var added = false;
         var selector = "#sidebar-menu #" + app_type + "-type ." + category + "-category";
@@ -1919,7 +1919,7 @@ var AppRouter = Backbone.Router.extend({
                 });
             });
 
-            $("#save-account-details:not(.disabled)").live('click', function() {
+            $(document).on('click', "#save-account-details:not(.disabled)", function() {
                 var username = $(".dialog #username").val(),
                     old_pwd = $(".dialog #old_pwd").val(),
                     new_pwd = $(".dialog #new_pwd").val(),
