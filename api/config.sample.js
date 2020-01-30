@@ -119,7 +119,36 @@ var countlyConfig = {
     *Specifies after how long time configurations are reloded from data base. Default value is 10000 (10 seconds)
     * @type {integer} [default=10000]
     **/
-    reloadConfigAfter: 10000
+    reloadConfigAfter: 10000,
+
+    /**
+     * Simple SMTP mail sender configuration. 
+     * Can only be used when you don't have custom mailer extend ({@code countly/extend/mail.js}).
+     * If omited, sendmail will be used. Sendmail is not installed in Docker images.
+     * @type {Object}
+     */
+    /*
+    mail: {
+        // nodemailer transport to use (only nodemailer-sendmail-transport & nodemailer-smtp-transport are installed by default,
+        transport: 'nodemailer-smtp-transport',
+        
+        // config object passed to the transport
+        config: {
+            host: 'smtp.example.com',
+            port: 25,
+            auth: {
+                user: 'USER',
+                pass: 'PASSWORD'
+            },
+        },
+        
+        // standard strings used in email templates
+        strings: {
+            from: 'countly@example.com',
+            hithere: 'there' // as in "Hi, there" when name is unknown
+        }
+    }
+    */
 };
 
 // Set your host IP or domain to be used in the emails sent

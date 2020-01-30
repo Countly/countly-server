@@ -38,7 +38,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
       - name: countly-frontend
-        image: countly/api:19.08.1
+        image: countly/frontend:19.08.1
 #        image: gcr.io/countly-01/frontend:19.08.1     # Enterprise Edition
         imagePullPolicy: Always
         ports:
@@ -60,3 +60,5 @@ spec:
             value: "mongodb://mongo-mongodb-replicaset-0.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-1.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-2.mongo-mongodb-replicaset:27017/countly?replicaSet=rs0"
           - name: COUNTLY_CONFIG_FRONTEND_MONGODB
             value: "mongodb://mongo-mongodb-replicaset-0.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-1.mongo-mongodb-replicaset:27017,mongo-mongodb-replicaset-2.mongo-mongodb-replicaset:27017/countly?replicaSet=rs0"
+          - name: COUNTLY_CONFIG_HOSTNAME
+            value: countly.example.com

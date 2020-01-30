@@ -10,7 +10,7 @@ else
 		fi
 
 		COUNTLY_PLUGINS="$COUNTLY_DEFAULT_PLUGINS"
-		echo "[docker] Using default plguin list: $COUNTLY_PLUGINS"
+		echo "[docker] Using default plugin list: $COUNTLY_PLUGINS"
 	else
 		echo "[docker] Using COUNTLY_PLUGINS: $COUNTLY_PLUGINS"
 	fi
@@ -20,10 +20,10 @@ else
 
 	while read -r plugin; do
 	  echo "[docker] Installing ${plugin}:"
-	  /usr/local/bin/node "/opt/countly/plugins/$plugin/install.js"
+	  node "/opt/countly/plugins/$plugin/install.js"
 	  echo "[docker] Done installing ${plugin}."
 	done <<< "$a"
 
-	(cd /opt/countly && npx grunt dist-all)
+	(cd /opt/countly && npx grunt dist-all && npm prune --production)
 
 fi

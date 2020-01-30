@@ -99,7 +99,8 @@ plugins.setConfigs("api", {
     export_limit: 10000,
     prevent_duplicate_requests: true,
     metric_changes: true,
-    offline_mode: false
+    offline_mode: false,
+    reports_regenerate_interval: 3600
 });
 
 /**
@@ -123,7 +124,7 @@ plugins.setConfigs("security", {
     password_symbol: true,
     password_expiration: 0,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*"
 });
 
 /**
@@ -243,7 +244,7 @@ if (cluster.isMaster) {
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
-        jobs.job('api:task').replace().schedule('every 1 hour on the first min');
+        jobs.job('api:task').replace().schedule('every 5 minutes');
         jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
     }, 10000);
 }

@@ -395,7 +395,7 @@ class CentralWorker extends CentralSuper {
                 process.send(this.fromMe(data, now));
                 setTimeout(() => {
                     delete this.promises[now];
-                    reject('Timeout');
+                    reject('IPC Timeout');
                 }, this.readTimeout);
             });
         return promise;

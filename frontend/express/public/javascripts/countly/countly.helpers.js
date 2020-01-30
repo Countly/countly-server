@@ -467,6 +467,43 @@
         });
     };
 
+    CountlyHelpers.blinkDots = function(times, speed, element) {
+        element.blinkCn = times;
+        if ($(element).hasClass("blink")) {
+            return;
+        }
+        $(element).addClass("blink");
+        element.blinkElement = function() {
+            var self = this;
+            if (!$(element).hasClass("blink")) {
+                return;
+            }
+            if (this.blinkCn > 0 || this.blinkCn === -1) {
+                if (this.blinkCn > 0) {
+                    this.blinkCn -= 1;
+                }
+                var dots = $(element).find("span");
+                $(dots[0]).fadeTo(speed, 0.1, function() {
+                    $(dots[0]).fadeTo(speed, 1.0, function() {
+                        $(dots[1]).fadeTo(speed, 0.1, function() {
+                            $(dots[1]).fadeTo(speed, 1.0, function() {
+                                $(dots[2]).fadeTo(speed, 0.1, function() {
+                                    $(dots[2]).fadeTo(speed, 1.0, function() {
+                                        self.blinkElement();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            }
+        };
+        element.blinkElement();
+    };
+
+    CountlyHelpers.stopBlinking = function(element) {
+        $(element).removeClass("blink");
+    };
     CountlyHelpers.applyColors = function() {
         $('#custom-color-styles').remove();
         // overview bars
@@ -1025,7 +1062,7 @@
                 $(context).addClass("active");
 
                 if (itemCount > 10 || $(context).hasClass("big-list")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='search' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\" /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
                 }
             }
 
@@ -1154,6 +1191,11 @@
             //ENTER
             if (e.keyCode === 13) {
                 var selectedItem = $(this).find(".text");
+                var activeKeyItem = $(this).find('.scroll-list').first().children().eq(activeOption);
+                if ($(this).hasClass("disabling-on") && activeKeyItem.hasClass("disabled")) {
+                    e.stopPropagation();
+                    return;
+                }
                 if ($(this).find('.scroll-list').first().children().length > 1) {
                     if ($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').length > 0) {
                         selectedItem.text($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').text());
@@ -1172,12 +1214,16 @@
             e.stopPropagation();
         });
 
-        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function() {
-            var selectedItem = $(this).parents(".cly-select").find(".text");
+        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function(e) {
+            var clySelect = $(this).parents(".cly-select");
+            var selectedItem = clySelect.find(".text");
+            if (clySelect.hasClass("disabling-on") && $(this).hasClass("disabled")) {
+                e.stopPropagation();
+                return;
+            }
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
-
-            $(this).parents(".cly-select").trigger("cly-select-change", [$(this).data("value")]);
+            clySelect.trigger("cly-select-change", [$(this).data("value")]);
         });
 
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function() {
@@ -1226,7 +1272,17 @@
                 $selectItems.html("");
 
                 for (var i = 0; i < items.length; i++) {
-                    $selectItems.append('<div data-value="' + items[i].value + '" class="item">' + items[i].name + '</div>');
+                    var current = items[i];
+                    if (current.type === 'group') {
+                        $selectItems.append('<div class="group">' + current.name + '</div>');
+                    }
+                    else if (current.disabled) {
+                        // effective when .cly-select element has disabling-on class
+                        $selectItems.append('<div data-value="' + current.value + '" class="item disabled">' + current.name + '</div>');
+                    }
+                    else {
+                        $selectItems.append('<div data-value="' + current.value + '" class="item">' + current.name + '</div>');
+                    }
                 }
             }
         };
@@ -1283,7 +1339,7 @@
                 $(this).addClass("active");
 
                 if (itemCount > 10) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='search' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\" /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 
@@ -1318,6 +1374,22 @@
             });
 
             e.stopPropagation();
+
+            var $multiSelect = $(this);
+
+            setTimeout(function() {
+                var maxToSelect = $multiSelect.data("max");
+                var selectedItems = getSelected($multiSelect) || [];
+                for (var i = 0; i < selectedItems.length; i++) {
+                    $multiSelect.find(".item[data-value='" + selectedItems[i] + "']").addClass("disabled");
+                }
+
+                if (maxToSelect) {
+                    if (selectedItems.length >= maxToSelect) {
+                        $multiSelect.find(".item").addClass("disabled");
+                    }
+                }
+            }, 0);
         });
 
         element.off("click", ".cly-multi-select .select-items .item").on("click", ".cly-multi-select .select-items .item", function(e) {
@@ -1426,6 +1498,11 @@
                 if (getSelected($multiSelect).length < maxToSelect) {
                     $multiSelect.find(".item").removeClass("disabled");
                 }
+            }
+
+            var selectedItems = getSelected($multiSelect) || [];
+            for (var i = 0; i < selectedItems.length; i++) {
+                $multiSelect.find(".item[data-value='" + selectedItems[i] + "']").addClass("disabled");
             }
 
             $multiSelect.data("value", getSelected($multiSelect));
@@ -2550,11 +2627,12 @@
             }
 
             if (oSVersionData.chartData) {
-                var reg = new RegExp("^" + osName, "g");
+                var regTest = new RegExp("^" + osName + "[0-9]");
+                var reg = new RegExp("^" + osName);
                 for (i = 0; i < oSVersionData.chartData.length; i++) {
                     var shouldDelete = true;
                     oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(/:/g, ".");
-                    if (reg.test(oSVersionData.chartData[i][metric_pd || _name])) {
+                    if (regTest.test(oSVersionData.chartData[i][metric_pd || _name])) {
                         shouldDelete = false;
                         oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(reg, "");
                     }

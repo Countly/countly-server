@@ -98,6 +98,26 @@ countlyBrowser.fixBrowserVersion = function(val, data) {
     return val;
 };
 
+countlyBrowser.getBrowserVersionList = function(name, data) {
+    var lowerCase = name.toLowerCase();
+    var codes = [];
+    var browsers = data || countlyBrowser.getMeta("browser");
+
+    for (var i = 0; i < browsers.length; i++) {
+        if (browsers[i] && lowerCase.indexOf(browsers[i].toLowerCase()) === 0) { //have fll browser name
+            //codes.push(
+            var vv = lowerCase;
+            vv = vv.replace(browsers[i].toLowerCase(), "[" + browsers[i].toLowerCase() + "]_");
+            vv = vv.replace(/ /g, "");//remove spaces in middle
+            vv = vv.replace(/\./g, ":");//replace . to :
+            codes.push(vv);
+        }
+        else if (browsers[i] && browsers[i].toLowerCase().indexOf(lowerCase) > -1) {
+            codes.push("[" + browsers[i].toLowerCase() + "]_");
+        }
+    }
+    return codes;
+};
 countlyBrowser.getBrowserVersionData = function(browser) {
     browser = browser.toLowerCase();
     var data = countlyBrowser.getData(true, false, "browser_version").chartData;

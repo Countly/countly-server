@@ -44,6 +44,11 @@ static std::string NGHTTP2_H2_ALPN = std::string("\x2h2");
 static std::string NGHTTP2_H2 = std::string("h2");
 static std::string EMPTY_STR = std::string("");
 
+static uint8_t * PUSH_TYPE_ALERT = (uint8_t *) "alert";
+static uint8_t PUSH_TYPE_ALERT_LEN = 5;
+static uint8_t * PUSH_TYPE_BG = (uint8_t *) "background";
+static uint8_t PUSH_TYPE_BG_LEN = 10;
+
 #define BUFPOOL_CAPACITY 1000
 #define DUMMY_BUF_SIZE 100000
 #define BUF_SIZE 100000
@@ -78,6 +83,7 @@ namespace apns {
 		std::string path;
 		std::string data;
 		std::string response;
+		bool alert = true;
 		uint32_t data_written = 0;
 		int32_t stream_id = 0;
 		int32_t status = 0;
@@ -188,7 +194,7 @@ namespace apns {
 		nghttp2_session *session;
 		nghttp2_hd_deflater *deflater;
 		nghttp2_hd_inflater *inflater;
-		nghttp2_nv headers[7];
+		nghttp2_nv headers[8];
 		bool first;
 		void send_error(std::string error);
 		static void resolve_cb(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);

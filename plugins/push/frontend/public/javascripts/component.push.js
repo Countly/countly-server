@@ -174,7 +174,7 @@ window.component('push', function(push) {
             el.querySelectorAll('.pers').forEach(function(el){
                 el.textContent = el.getAttribute('data-fallback');
 
-                var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                var name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
                 if (name) {
                     name = name.title();
                 }

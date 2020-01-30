@@ -241,13 +241,19 @@ common.crypto = crypto;
 * @type {object} 
 */
 common.os_mapping = {
+    "webos": "webos",
+    "brew": "brew",
     "unknown": "unk",
     "undefined": "unk",
     "tvos": "atv",
+    "apple tv": "atv",
     "watchos": "wos",
     "unity editor": "uty",
     "qnx": "qnx",
     "os/2": "os2",
+    "amazon fire tv": "aft",
+    "amazon": "amz",
+    "web": "web",
     "windows": "mw",
     "open bsd": "ob",
     "searchbot": "sb",
@@ -257,8 +263,21 @@ common.os_mapping = {
     "mac osx": "o",
     "macos": "o",
     "mac": "o",
-    "webos": "web",
-    "brew": "brew"
+    "osx": "o",
+    "linux": "l",
+    "unix": "u",
+    "ios": "i",
+    "android": "a",
+    "blackberry": "b",
+    "windows phone": "w",
+    "wp": "w",
+    "roku": "r",
+    "symbian": "s",
+    "chrome": "c",
+    "debian": "d",
+    "nokia": "n",
+    "firefox": "f",
+    "tizen": "t"
 };
 
 /**
@@ -354,6 +373,12 @@ common.convertToType = function(value) {
         }
         return value;
     }
+    else if (value && typeof value === "object") {
+        for (var key in value) {
+            value[key] = common.convertToType(value[key]);
+        }
+        return value;
+    }
     //if value can be a number
     else if (common.isNumber(value)) {
         //check if it is string but is less than 16 length
@@ -362,7 +387,7 @@ common.convertToType = function(value) {
             return parseFloat(value);
         }
         //check if it is number, but longer than 16 digits (max limit)
-        else if ((value + "").length > 16) {
+        else if ((Math.round(value) + "").length > 16) {
             //convert to string
             return value + "";
         }
@@ -1064,8 +1089,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
     }
     //set provided in configuration headers
     var headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json; charset=utf-8'
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
@@ -1131,8 +1155,7 @@ common.returnOutput = function(params, output, noescape, heads) {
     }
     //set provided in configuration headers
     var headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json; charset=utf-8'
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
@@ -1895,13 +1918,27 @@ common.updateAppUser = function(params, update, no_meta, callback) {
 
         var user = params.app_user || {};
 
+        if (!params.qstring.device_id && typeof user.did === "undefined") {
+            let err = "Device id is not provided for" + params.href;
+            console.log(err);
+            if (callback) {
+                callback(err);
+            }
+            return;
+        }
+
         if (!no_meta && !params.qstring.no_meta) {
             if (typeof user.fac === "undefined") {
-                if (!update.$setOnInsert) {
-                    update.$setOnInsert = {};
+                if (!update.$set) {
+                    update.$set = {};
                 }
-                if (!update.$setOnInsert.fac) {
-                    update.$setOnInsert.fac = params.time.mstimestamp;
+                if (!update.$set.fac) {
+                    if (user.fs && user.fs * 1000 < params.time.mstimestamp) {
+                        update.$set.fac = user.fs * 1000;
+                    }
+                    else {
+                        update.$set.fac = params.time.mstimestamp;
+                    }
                 }
             }
 
@@ -1912,6 +1949,31 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                 if (!update.$set.lac) {
                     update.$set.lac = params.time.mstimestamp;
                 }
+                update.$set.last_sync = Date.now();
+            }
+
+            if (!user.sdk) {
+                user.sdk = {};
+            }
+
+            if (params.qstring.sdk_name && params.qstring.sdk_name !== user.sdk.name) {
+                if (!update.$set) {
+                    update.$set = {};
+                }
+                update.$set["sdk.name"] = params.qstring.sdk_name;
+            }
+            if (params.qstring.sdk_version && params.qstring.sdk_version !== user.sdk.version) {
+                if (!update.$set) {
+                    update.$set = {};
+                }
+                update.$set["sdk.version"] = params.qstring.sdk_version;
+            }
+
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash) {
+                if (!update.$set) {
+                    update.$set = {};
+                }
+                update.$set.last_req = params.request_hash;
             }
         }
 
@@ -1922,13 +1984,6 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             if (!update.$set.did) {
                 update.$set.did = params.qstring.device_id;
             }
-        }
-
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash) {
-            if (!update.$set) {
-                update.$set = {};
-            }
-            update.$set.last_req = params.request_hash;
         }
 
         common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {
@@ -2200,7 +2255,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
              *      ]
              *  }
              * }
-             */ 
+             */
             else if (Object.prototype.hasOwnProperty.call(apiConfig, 'replSetServers') && Object.prototype.hasOwnProperty.call(frontendConfig, 'replSetServers')) {
                 if (apiConfig.replSetServers.length === frontendConfig.replSetServers.length && apiConfig.db === frontendConfig.db) {
                     let isCorrect = true;

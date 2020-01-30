@@ -396,6 +396,44 @@ window.ConfigurationsView = countlyView.extend({
         });
 
         this.registerLabel("frontend.google_maps_api_key", "configs.frontend-google_maps_api_key");
+
+        this.registerInput("api.reports_regenerate_interval", function(value) {
+            //5 minutes | 30 minutes | 1 hour | 3 hours | 12 hours | 24 hours
+            var values = {
+                300: jQuery.i18n.prop("common.every.minutes", 5),
+                1800: jQuery.i18n.prop("common.every.minutes", 30),
+                3600: jQuery.i18n.prop("common.every.hour", 1),
+                10800: jQuery.i18n.prop("common.every.hours", 3),
+                43200: jQuery.i18n.prop("common.every.hours", 12),
+                86400: jQuery.i18n.prop("common.every.hours", 24)
+            };
+            var select = '<div class="cly-select" id="api.reports_regenerate_interval">' +
+                '<div class="select-inner">' +
+                '<div class="text-container">';
+            if (!values[value]) {
+                select += '<div class="text"></div>';
+            }
+            else {
+                select += '<div class="text">' + values[value] + '</div>';
+            }
+
+            select += '</div>' +
+                '<div class="right combo"></div>' +
+                '</div>' +
+                '<div class="select-items square">' +
+                '<div>';
+
+            for (var i in values) {
+                select += '<div data-value="' + i + '" class="segmentation-option item">' + values[i] + '</div>';
+            }
+
+            select += '</div>' +
+                '</div>' +
+                '</div>';
+            return select;
+
+        });
+
     },
     beforeRender: function() {
         if (this.template) {
@@ -759,6 +797,7 @@ window.ConfigurationsView = countlyView.extend({
                         "username": username,
                         "old_pwd": old_pwd,
                         "new_pwd": new_pwd,
+                        api_key: api_key,
                         _csrf: countlyGlobal.csrf_token
                     };
 
@@ -1235,7 +1274,7 @@ window.ConfigurationsView = countlyView.extend({
             return "<input type='number' id='" + id + "' value='" + value + "' max='2147483647' min='0' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
         }
         else {
-            return "<input type='text' id='" + id + "' value='" + value + "'/>";
+            return "<input type='text' id='" + id + "' value='" + value + "' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\"/>";
         }
     },
     getLabel: function(id) {

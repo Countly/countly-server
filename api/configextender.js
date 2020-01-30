@@ -139,7 +139,7 @@ module.exports = function(mode, config, opts) {
 
     config = JSON.parse(JSON.stringify(config));
 
-    Object.keys(opts).filter(n => n.indexOf(`COUNTLY_CONFIG_${mode}_`) === 0).forEach(n => {
+    Object.keys(opts).filter(n => n.indexOf(`COUNTLY_CONFIG_${mode}_`) === 0 || n.indexOf(`COUNTLY_CONFIG__`) === 0).forEach(n => {
         let comps = n.split('_').slice(3);
         dig(config, OVERRIDES, comps.join('_'), parser(opts[n]));
     });

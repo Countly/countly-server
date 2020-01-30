@@ -274,6 +274,7 @@ label {
     border: 1px solid #DBDBDB;
     height: 30px;
     margin-top: 10px;
+    box-sizing: border-box;
     line-height: 20px;
     padding-left: 2px;
     font-size: 13px;
@@ -285,6 +286,7 @@ label {
     height: 60px;
     margin-top: 10px;
     resize: none;
+    box-sizing: border-box;
     border: 1px solid #DBDBDB;
     outline: none;
     font-size: 13px;

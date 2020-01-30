@@ -1,0 +1,56 @@
+FROM centos/nodejs-8-centos7
+
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
+# Enterprise Edition:
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing
+
+HEALTHCHECK --start-period=60s CMD curl --fail http://localhost:3001/o/ping || exit 1
+
+USER root
+
+# Core dependencies
+## Tini
+ENV COUNTLY_CONTAINER="api" \
+	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
+	COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
+	TINI_VERSION="0.18.0" \
+	PATH="/opt/rh/rh-nodejs8/root/usr/bin:${PATH}"
+
+WORKDIR /opt/countly
+COPY . .
+
+RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
+	rpm -i /tmp/tini.rpm && \
+	yum -y install openssl-devel gcc-c++-4.8.5 make git make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools && \
+	git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 --single-branch --branch=v1.30.0 --depth=1 && \
+	(cd /tmp/nghttp2; \
+	 export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install) && \
+	\
+	# modify standard distribution
+	./bin/docker/modify.sh && \
+	\
+	# preinstall
+	cp -n ./api/config.sample.js ./api/config.js && \
+	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
+	HOME=/tmp npm install && \
+	./bin/docker/preinstall.sh && \
+	\
+	# cleanup & chown
+	npm remove -y mocha nyc should supertest && \
+	rm -rf /opt/app-root/src/.npm && \
+	yum remove -y git gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel && \
+	# yum -y autoremove && \
+	yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
+	yum clean all && \
+	rm -rf /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* && \
+	chown -R 1001:0 /opt/countly && \
+	chmod -R g=u /opt/countly
+
+
+USER 1001:0
+
+#ENV PATH="/opt/rh/rh-nodejs8/root/usr/bin:${PATH}"
+
+ENTRYPOINT ["/usr/bin/tini", "-v", "--"]
+
+CMD ["/opt/countly/bin/docker/cmd.sh"]

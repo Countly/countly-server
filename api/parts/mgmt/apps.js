@@ -194,7 +194,7 @@ const iconUpload = function(params) {
 * @param {params} params - params object with args to create app
 * @returns {boolean} true if operation successful
 **/
-appsApi.createApp = function(params) {
+appsApi.createApp = async function(params) {
     var argProps = {
             'name': {
                 'required': true,
@@ -241,15 +241,30 @@ appsApi.createApp = function(params) {
     newApp.edited_at = newApp.created_at;
     newApp.owner = params.member._id + "";
     newApp.seq = 0;
+    let seed = '';
+    try {
+        seed = await new Promise((resolve, reject) => {
+            crypto.randomBytes(256, (err, buf) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(buf.toString('hex'));
+            });
+        });
+    }
+    catch (e) {
+        console.log(e);
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-+/*[]{}-=\|;\':\"<>?,./";
+        for (let i = 0; i < 256; i++) {
+            seed += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+    }
+    const appKey = common.sha1Hash(seed, true);
+    newApp.key = appKey;
 
     common.db.collection('apps').insert(newApp, function(err, app) {
         if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
-            var appKey = common.sha1Hash(app.ops[0]._id, true);
-
-            common.db.collection('apps').update({'_id': app.ops[0]._id}, {$set: {key: appKey}}, function() {});
-
             newApp._id = app.ops[0]._id;
-            newApp.key = appKey;
 
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
@@ -259,7 +274,7 @@ appsApi.createApp = function(params) {
                 "ls": 1
             }, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true, unique: true }, function() {});
             common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
                 expireAfterSeconds: 60 * 60 * 3,
                 background: true

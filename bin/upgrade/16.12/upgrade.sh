@@ -14,15 +14,15 @@ if [ -f /etc/lsb-release ]; then
 fi
 
 #enable command line
-bash $DIR/scripts/detect.init.sh
+bash "$DIR/scripts/detect.init.sh"
 
 #remove previous dependencies, as they need to be rebuild for new nodejs version
-rm -rf $DIR/../node_modules
+rm -rf "$DIR/../node_modules"
 countly upgrade
 
 #upgrade graph colors for new UI
-mv $DIR/../frontend/express/public/javascripts/countly/countly.config.js $DIR/../frontend/express/public/javascripts/countly/countly.config.backup.js
-cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
+mv "$DIR/../frontend/express/public/javascripts/countly/countly.config.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.backup.js"
+cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
 
 pkill -f executor.js
 
@@ -42,7 +42,7 @@ countly plugin enable slipping-away-users
 countly plugin enable star-rating
 
 #add indexes
-nodejs $DIR/scripts/add_indexes.js
+nodejs "$DIR/scripts/add_indexes.js"
 
 #install dependencies, process files and restart countly
 countly upgrade

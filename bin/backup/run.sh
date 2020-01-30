@@ -14,10 +14,11 @@
 
 
 #  make relative paths work.
-cd $(dirname $0)
+cd "$(dirname "$0")"
 
 function check_connectivity_mongo() {
-	local MONGO_OK=$(mongo \
+    local MONGO_OK;
+	MONGO_OK=$(mongo \
 		--quiet \
 		--eval "db.serverStatus().ok == true")
 
@@ -32,16 +33,16 @@ function check_connectivity_mongo() {
 # generic check connectivity function
 function check_connectivity() {
 	retries=600
-	until eval "check_connectivity_$@"; do
+	until eval "check_connectivity_$*"; do
 		sleep 1
 		let retries--
 		if [ $retries == 0 ]; then
-			echo "time out while waiting for $@ is ready"
+			echo "time out while waiting for $* is ready"
 			exit 1
 		fi
-		echo "$@ is not reachable yet, trying again..."
+		echo "$* is not reachable yet, trying again..."
 	done
-	echo "$@ is up and running..."
+	echo "$* is up and running..."
 }
 
 # wait till mongo becomes online.
