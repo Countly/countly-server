@@ -1183,7 +1183,7 @@ app.get(countlyConfig.path + '/sdks.js', function(req, res) {
         });
     }
     else {
-        console.log("this request cannot be made in offline mode.");
+        res.status(403).send("Server is in offline mode, this request cannot be happen.");
     }
 });
 

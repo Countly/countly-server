@@ -8,8 +8,8 @@
 var ip = {},
     net = require('net'),
     extIP = require('external-ip'),
-    plugins = require('../../../plugins/pluginManager.js'),
-    offlineMode = plugins.getConfig("api").offline_mode;
+    plugins = require('../../../plugins/pluginManager.js');
+
 
 /**
  * Function to get the hostname/ip address/url to access dashboard
@@ -17,7 +17,8 @@ var ip = {},
  */
 ip.getHost = function(callback) {
     // If host is set in config.js use that, otherwise get the external IP from ifconfig.me
-    var domain = plugins.getConfig("api").domain;
+    var domain = plugins.getConfig("api").domain,
+        offlineMode = plugins.getConfig("api").offline_mode;
     if (typeof domain !== "undefined" && domain !== "") {
         if (domain.indexOf("://") === -1) {
             domain = "http://" + domain;

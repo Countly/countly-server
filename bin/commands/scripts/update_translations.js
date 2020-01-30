@@ -222,3 +222,6 @@ if (!manager.getConfig("api").offline_mode) {
         }
     });
 }
+else {
+    console.log("Server is in offline mode, will not attempt to update translations");
+}

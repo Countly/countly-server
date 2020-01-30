@@ -579,6 +579,9 @@ membersUtility.setup = function(req, callback) {
                                     });
                                 });
                             }
+                            else {
+                                callback();
+                            }
                         }
                         else {
                             var a = {};
