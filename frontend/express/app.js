@@ -1186,7 +1186,7 @@ app.get(countlyConfig.path + '/sdks.js', function(req, res) {
         });
     }
     else {
-        res.status(403).send("Server is in offline mode, this request cannot be happen.");
+        res.status(403).send("Server is in offline mode, this request cannot be completed.");
     }
 });
 
