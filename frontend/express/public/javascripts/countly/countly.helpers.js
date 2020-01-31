@@ -687,22 +687,6 @@
     };
 
     /**
-    * Check custom path from url and return if it exist
-    * @returns {string} custom path value
-    * @example
-    * CountlyHelpers.getCustomPathIfExist();
-    */
-    CountlyHelpers.getCustomPathIfExist = function() {
-        var pathString = "";
-        var urlArray = window.location.href.split("/");
-        var dashboardIndex = urlArray.indexOf("dashboard#");
-        if (dashboardIndex === 4) {
-            pathString = urlArray[3];
-        }
-        return pathString;
-    };
-
-    /**
     * Check the value which passing as parameter
     * isJSON or not
     * return result as boolean
@@ -769,7 +753,7 @@
             data.limit = hardLimit;
             data.skip = page * hardLimit;
 
-            var url = CountlyHelpers.getCustomPathIfExist() + (exportByAPI ? "/o/export/request" : "/o/export/db");
+            var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
                 if (CountlyHelpers.isJSON(v)) {
@@ -905,7 +889,7 @@
             data.data = JSON.stringify(getExportData(dtable, type));
             data.filename = getFileName(type);
 
-            var url = CountlyHelpers.getCustomPathIfExist() + "/o/export/data";
+            var url = countlyCommon.API_URL + "/o/export/data";
             var form = $('<form method="POST" action="' + url + '">');
 
             $.each(data, function(k, v) {
