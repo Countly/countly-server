@@ -42,8 +42,6 @@ window.CrashesView = countlyView.extend({
             cru: jQuery.i18n.map["crashes.unique"],
             crau: jQuery.i18n.map["crashes.free-users"],
             crses: jQuery.i18n.map["crashes.free-sessions"],
-            crnf: jQuery.i18n.map["crashes.nonfatal"] + " " + jQuery.i18n.map["crashes.title"],
-            crf: jQuery.i18n.map["crashes.fatal"] + " " + jQuery.i18n.map["crashes.title"],
             crru: jQuery.i18n.map["crashes.resolved-users"]
         };
     },
@@ -424,45 +422,37 @@ window.CrashesView = countlyView.extend({
                     "title": jQuery.i18n.map["crashes.total"],
                     "data": dashboard.usage.cr,
                     "id": "crash-cr",
+                    "inverse": "inverse-trend",
                     "help": "crashes.help-total"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.unique"],
                     "data": dashboard.usage.cru,
                     "id": "crash-cru",
+                    "inverse": "inverse-trend",
                     "help": "crashes.help-unique"
-                },
-                {
-                    "title": jQuery.i18n.map["crashes.nonfatal"] + " " + jQuery.i18n.map["crashes.title"],
-                    "data": dashboard.usage.crnf,
-                    "id": "crash-crnf",
-                    "help": "crashes.help-nonfatal"
-                },
-                {
-                    "title": jQuery.i18n.map["crashes.fatal"] + " " + jQuery.i18n.map["crashes.title"],
-                    "data": dashboard.usage.crf,
-                    "id": "crash-crf",
-                    "help": "crashes.help-fatal"
-                },
-                {//toal crashes pes session
-                    "title": jQuery.i18n.map["crashes.total-per-session"],
-                    "data": dashboard.usage.crt,
-                    "id": "crash-cr-session",
-                    "help": "crashes.help-session"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.free-users"],
                     "data": dashboard.usage.crau,
                     "id": "crash-crau",
-                    "help": "crashes.help-affected-users"
+                    "inverse": "",
+                    "help": "crashes.help-free-users"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.free-sessions"],
                     "data": dashboard.usage.crses,
                     "id": "crash-crses",
-                    "help": "crashes.help-affected-sessions"
+                    "inverse": "",
+                    "help": "crashes.help-free-sessions"
                 },
-                /*,
+                {//toal crashes pes session
+                    "title": jQuery.i18n.map["crashes.total-per-session"],
+                    "data": dashboard.usage.crt,
+                    "id": "crash-cr-session",
+                    "inverse": "inverse-trend",
+                    "help": "crashes.help-session"
+                }/*,
                 {
                     "title":jQuery.i18n.map["crashes.resolved-users"],
                     "data":dashboard.usage['crru'],
@@ -473,20 +463,20 @@ window.CrashesView = countlyView.extend({
             "chart-select": [
                 {
                     title: jQuery.i18n.map["crashes.total_overall"],
-                    trend: dashboard.usage.crt['trend-total'],
-                    total: dashboard.usage.crt.total,
+                    trend: dashboard.usage.cr['trend-total'],
+                    total: dashboard.usage.cr.total,
                     myclass: "crashes-total"
                 },
                 {
                     title: jQuery.i18n.map["crashes.fatal"],
-                    trend: dashboard.usage.crt['trend-fatal'],
-                    total: dashboard.usage.crt['total-fatal'],
+                    trend: dashboard.usage.crf['trend-total'],
+                    total: dashboard.usage.crf.total,
                     myclass: "crashes-fatal"
                 },
                 {
                     title: jQuery.i18n.map["crashes.nonfatal"],
-                    trend: dashboard.usage.crt['trend-nonfatal'],
-                    total: dashboard.usage.crt['total-nonfatal'],
+                    trend: dashboard.usage.crnf['trend-total'],
+                    total: dashboard.usage.crnf.total,
                     myclass: "crashes-nonfatal"
                 },
             ],
@@ -835,6 +825,69 @@ window.CrashesView = countlyView.extend({
     },
     pageScripts: function() {
         var self = this;
+
+        var dashboard = countlyCrashes.getDashboardData();
+        var total, fatal, nfatal;
+        $("#data-selector").show();
+        if (this.curMetric === "cr-session") {
+            total = $("#data-selector .big-numbers:nth-child(1)");
+            total.find(".number").text(dashboard.usage.crt.total);
+            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crt['trend-total']).html(dashboard.usage.crt['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            fatal = $("#data-selector .big-numbers:nth-child(2)");
+            fatal.find(".number").text(dashboard.usage.crt['total-fatal']);
+            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crt['trend-fatal']).html(dashboard.usage.crt['trend-fatal'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            nfatal = $("#data-selector .big-numbers:nth-child(3)");
+            nfatal.find(".number").text(dashboard.usage.crt['total-nonfatal']);
+            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crt['trend-nonfatal']).html(dashboard.usage.crt['trend-nonfatal'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+        }
+        else if (this.curMetric === "crses") {
+            total = $("#data-selector .big-numbers:nth-child(1)");
+            total.find(".number").text(dashboard.usage.crses.total);
+            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crses['trend-total']).html(dashboard.usage.crses['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            fatal = $("#data-selector .big-numbers:nth-child(2)");
+            fatal.find(".number").text(dashboard.usage.crfses.total);
+            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crfses['trend-total']).html(dashboard.usage.crfses['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            nfatal = $("#data-selector .big-numbers:nth-child(3)");
+            nfatal.find(".number").text(dashboard.usage.crnfses.total);
+            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crnfses['trend-total']).html(dashboard.usage.crnfses['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+        }
+        else if (this.curMetric === "crau") {
+            total = $("#data-selector .big-numbers:nth-child(1)");
+            total.find(".number").text(dashboard.usage.crau.total);
+            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crau['trend-total']).html(dashboard.usage.crau['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            fatal = $("#data-selector .big-numbers:nth-child(2)");
+            fatal.find(".number").text(dashboard.usage.crauf.total);
+            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crauf['trend-total']).html(dashboard.usage.crauf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            nfatal = $("#data-selector .big-numbers:nth-child(3)");
+            nfatal.find(".number").text(dashboard.usage.craunf.total);
+            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.craunf['trend-total']).html(dashboard.usage.craunf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+        }
+        else if (this.curMetric === "cr") {
+            total = $("#data-selector .big-numbers:nth-child(1)");
+            total.find(".number").text(dashboard.usage.cr.total);
+            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.cr['trend-total']).html(dashboard.usage.cr['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            fatal = $("#data-selector .big-numbers:nth-child(2)");
+            fatal.find(".number").text(dashboard.usage.crf.total);
+            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crf['trend-total']).html(dashboard.usage.crf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            nfatal = $("#data-selector .big-numbers:nth-child(3)");
+            nfatal.find(".number").text(dashboard.usage.crnf.total);
+            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crnf['trend-total']).html(dashboard.usage.crnf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+        }
+        else if (this.curMetric === "cru") {
+            total = $("#data-selector .big-numbers:nth-child(1)");
+            total.find(".number").text(dashboard.usage.cru.total);
+            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.cru['trend-total']).html(dashboard.usage.cru['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            fatal = $("#data-selector .big-numbers:nth-child(2)");
+            fatal.find(".number").text(dashboard.usage.cruf.total);
+            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.cruf['trend-total']).html(dashboard.usage.cruf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+            nfatal = $("#data-selector .big-numbers:nth-child(3)");
+            nfatal.find(".number").text(dashboard.usage.crunf.total);
+            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crunf['trend-total']).html(dashboard.usage.crunf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
+        }
+        else {
+            $("#data-selector").hide();
+        }
+
         $(".crashes-show-switch").unbind("click");
         $(".crashes-show-switch").removeClass("selected");
         for (var i in this.showOnGraph) {
@@ -853,12 +906,6 @@ window.CrashesView = countlyView.extend({
             $(this).toggleClass("selected");
             self.refresh();
         });
-        if (this.curMetric === "cr-session") {
-            $("#data-selector").css("display", "block");
-        }
-        else {
-            $("#data-selector").css("display", "none");
-        }
     },
     switchMetric: function() {
         var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric], this.showOnGraph);
