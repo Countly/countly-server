@@ -86,6 +86,9 @@ class PingJob extends job.Job {
                     }
                 });
             }
+            else {
+                done();
+            }
         });
     }
 }

@@ -829,18 +829,16 @@ var pluginManager = function pluginManager() {
                 return callback(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-            this.syncPlugins(this.getConfig("plugins"), function() {
-                if (!self.getConfig("api").offline_mode) {
-                    exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
-                        if (error2) {
-                            errors = true;
-                            console.log('error: %j', error2);
-                        }
-                        console.log('Done installing plugin %j', plugin);
-                        callback(errors);
-                    });
-                }
-            });
+            if (!self.getConfig("api").offline_mode) {
+                exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error2) {
+                    if (error2) {
+                        errors = true;
+                        console.log('error: %j', error2);
+                    }
+                    console.log('Done installing plugin %j', plugin);
+                    callback(errors);
+                });
+            }
         });
     };
 
@@ -878,18 +876,16 @@ var pluginManager = function pluginManager() {
                 return callback(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-            this.syncPlugins(this.getConfig("plugins"), function() {
-                if (!self.getConfig("api").offline_mode) {
-                    exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
-                        if (error2) {
-                            errors = true;
-                            console.log('error: %j', error2);
-                        }
-                        console.log('Done upgrading plugin %j', plugin);
-                        callback(errors);
-                    });
-                }
-            });
+            if (!self.getConfig("api").offline_mode) {
+                exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error2) {
+                    if (error2) {
+                        errors = true;
+                        console.log('error: %j', error2);
+                    }
+                    console.log('Done upgrading plugin %j', plugin);
+                    callback(errors);
+                });
+            }
         });
     };
 

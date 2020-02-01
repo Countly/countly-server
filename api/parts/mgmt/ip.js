@@ -39,6 +39,9 @@ ip.getHost = function(callback) {
                 }
             });
         }
+        else {
+            callback("Offline Mode");
+        }
     }
 };
 

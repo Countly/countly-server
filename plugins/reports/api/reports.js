@@ -13,8 +13,7 @@ var reportsInstance = {},
     localize = require('../../../api/utils/localization.js'),
     common = require('../../../api/utils/common.js'),
     log = require('../../../api/utils/log')('reports:reports'),
-    versionInfo = require('../../../frontend/express/version.info'),
-    offlineMode = plugins.getConfig("api").offline_mode;
+    versionInfo = require('../../../frontend/express/version.info');
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
@@ -103,7 +102,7 @@ var metrics = {
          * @param {func} cb - callback function
          */
         function processUniverse(cb) {
-            if (!offlineMode) {
+            if (!plugins.getConfig("api").offline_mode) {
                 if (versionInfo.title.indexOf("Countly") > -1) {
                     var options = {
                         uri: 'http://count.ly/email-news.txt',

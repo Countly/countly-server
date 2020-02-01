@@ -562,7 +562,7 @@ membersUtility.setup = function(req, callback) {
                     }
                     membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
                         member = member.ops;
-                        if (countlyConfig.web.use_intercom) {
+                        if (countlyConfig.web.use_intercom && !plugins.getConfig("api").offline_mode) {
                             if (!plugins.getConfig("api").offline_mode) {
                                 var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
                                 request(options, function(a, c, b) {
@@ -578,9 +578,6 @@ membersUtility.setup = function(req, callback) {
                                         });
                                     });
                                 });
-                            }
-                            else {
-                                callback();
                             }
                         }
                         else {
