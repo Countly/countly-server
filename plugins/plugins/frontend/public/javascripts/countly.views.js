@@ -677,7 +677,7 @@ window.ConfigurationsView = countlyView.extend({
                 $(".configs #api-key").val(CountlyHelpers.generatePassword(32, true)).trigger("keyup");
             });
 
-            $('.config-container').off('click').on('click', function() {
+            $('.config-container:not(.title)').off('click').on('click', function() {
                 var key = $(this).attr('id').replace('nav-item-', '');
                 app.navigate("/manage/configurations/" + key);
 
