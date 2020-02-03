@@ -421,7 +421,9 @@ window.GraphNotesView = countlyView.extend({
                     "sTitle": jQuery.i18n.map["notes.note-date-and-time"],
                 },
                 {
-                    "mData": "noteType",
+                    "mData": function(row) {
+                        return jQuery.i18n.map["notes.note-" + row.noteType] || row.noteType;
+                    },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["notes.note-type"],
                 },

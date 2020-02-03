@@ -146,7 +146,7 @@ window.AlertsView = countlyView.extend({
                 {
                     "mData": 'alertName',
                     "sType": "string",
-                    "sTitle": 'Alert Name'
+                    "sTitle": jQuery.i18n.map["alert.Alert_Name"],
                 },
                 {
                     "mData": function(row, type) {
@@ -168,21 +168,21 @@ window.AlertsView = countlyView.extend({
                         }
                     },
                     "sType": "string",
-                    "sTitle": 'Status',
+                    "sTitle": jQuery.i18n.map["common.status"],
                     "bSortable": false,
 
                 },
                 {
                     "mData": 'appNameList',
                     "sType": "string",
-                    "sTitle": 'Application',
+                    "sTitle": jQuery.i18n.map["alert.Application"],
                     "bSortable": false,
 
                 },
                 {
                     "mData": 'condtionText',
                     "sType": "string",
-                    "sTitle": 'Condition',
+                    "sTitle": jQuery.i18n.map["alert.Condition"],
                     "bSortable": false,
                 }
             ]
@@ -191,7 +191,7 @@ window.AlertsView = countlyView.extend({
             dataTableDefine.aoColumns.push({
                 "mData": 'createdByUser',
                 "sType": "string",
-                "sTitle": 'Created by',
+                "sTitle": jQuery.i18n.map["alert.CreateBy"],
                 "bSortable": false
             });
         }
@@ -200,8 +200,8 @@ window.AlertsView = countlyView.extend({
                 return "<div class='options-item'>" +
 					"<div class='edit'></div>" +
 					"<div class='edit-menu alerts-menu'>" +
-					"<div class='edit-alert item'" + " id='" + row.id + "'" + "><i class='fa fa-pencil'></i>Edit</div>" +
-					"<div class='delete-alert item'" + " id='" + row.id + "'" + " data-name='" + row.alertName + "'" + "><i class='fa fa-trash'></i>Delete</div></div>" +
+					"<div class='edit-alert item'" + " id='" + row.id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["alert.Edit"] + "</div>" +
+					"<div class='delete-alert item'" + " id='" + row.id + "'" + " data-name='" + row.alertName + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["alert.Delete"] + "</div></div>" +
 					"</div>";
             },
             "bSortable": false,
@@ -315,8 +315,8 @@ window.AlertsView = countlyView.extend({
             }
             else {
                 $("#single-target2-dropdown").clySelectSetSelection("", "please select app first");
-
             }
+            $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
 
         },
         init: function() {
@@ -374,8 +374,10 @@ window.AlertsView = countlyView.extend({
                     });
                     metricClickListner();
                     self.checkDisabled();
+                    $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
                     app.localize();
                 });
+
             };
             $(".alert-data-type").off("click").on("click", function() {
                 var dataType = $(this).data("dataType");
@@ -402,8 +404,7 @@ window.AlertsView = countlyView.extend({
                     break;
                 }
                 self.checkDisabled();
-
-
+                $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
             });
             // init content
             $(".alert-condition-block").html('');
