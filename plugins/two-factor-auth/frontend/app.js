@@ -241,7 +241,7 @@ function generateQRCode(username, secret, callback) {
                                                 themeFiles: req.themeFiles,
                                                 username: req.body.username || "",
                                                 password: req.body.password || "",
-                                                secret_token: secretToken,
+                                                secret_token: req.body.secret_token,
                                                 qrcode_html: svg
                                             });
                                         }
