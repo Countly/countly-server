@@ -2066,6 +2066,18 @@ app.addPageScript("/users/#", function() {
         app.activeView.tabs.tabs("refresh");
         var userDetails = countlyUserdata.getUserdetails();
         $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>" + jQuery.i18n.map["userdata.crashes"] + "</div></div></div><table  data-view='crashesView' id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
+        app.activeView.shouldLoadCrashes = false;
+        app.activeView.tabs.on("tabsshow", function(event, ui) {
+            if (ui && ui.panel) {
+                var tab = ($(ui.panel).attr("id") + "").replace("usertab-", "");
+                if (tab === "crashes" && !app.activeView.shouldLoadCrashes) {
+                    app.activeView.shouldLoadCrashes = true;
+                    if (app.activeView.dtablecrashes) {
+                        app.activeView.dtablecrashes.fnDraw(false);
+                    }
+                }
+            }
+        });
         app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "iDisplayLength": 30,
             "aaSorting": [[ 2, "desc" ]],
@@ -2073,15 +2085,17 @@ app.addPageScript("/users/#", function() {
             "bFilter": false,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_crashes&uid=" + userDetails.uid,
             "fnServerData": function(sSource, aoData, fnCallback) {
-                self.request = $.ajax({
-                    "dataType": 'json',
-                    "type": "POST",
-                    "url": sSource,
-                    "data": aoData,
-                    "success": function(data) {
-                        fnCallback(data);
-                    }
-                });
+                if (app.activeView.shouldLoadCrashes) {
+                    self.request = $.ajax({
+                        "dataType": 'json',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data) {
+                            fnCallback(data);
+                        }
+                    });
+                }
             },
             "aoColumns": [
                 {
