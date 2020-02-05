@@ -148,7 +148,7 @@ function generateQRCode(username, secret, callback) {
                     // if 2fa is not set up for the user
                     if ((member.two_factor_auth === undefined || member.two_factor_auth.secret_token === undefined) &&
                         (req.body.auth_code === undefined || req.body.secret_token === undefined)) {
-                        var secretToken = GA.generateSecret();
+                        const secretToken = GA.generateSecret();
 
                         generateQRCode(member.username, secretToken, function(err, svg) {
                             if (err) {
@@ -195,8 +195,9 @@ function generateQRCode(username, secret, callback) {
                     // else everything is alright (login flow second phase)
                     else {
                         try {
-                            var verified = GA.check(req.body.auth_code, apiUtils.decrypt(member.two_factor_auth && member.two_factor_auth.secret_token || req.body.secret_token));
-                            if (verified) {
+                            const secretToken = member.two_factor_auth && member.two_factor_auth.secret_token ? apiUtils.decrypt(member.two_factor_auth.secret_token) : req.body.secret_token;
+
+                            if (GA.check(req.body.auth_code, secretToken)) {
                                 if (req.body.secret_token) {
                                     countlyDb.collection("members").findAndModify(
                                         {_id: member._id},
