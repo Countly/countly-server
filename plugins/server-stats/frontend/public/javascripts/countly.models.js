@@ -19,7 +19,7 @@
                     _dataPointsObj = json;
 
                     // format months object
-                    var periods = Object.keys(json["all-apps"]).splice(0, 3).concat(Object.keys(json["all-apps"]).splice(12, 13));
+                    var periods = Object.keys(json["all-apps"]).slice(0, 3).concat(Object.keys(json["all-apps"]).slice(12, 15));
 
                     if (_dataPointsObj["all-apps"]) {
                         for (var i = 0; i < periods.length; i++) {
