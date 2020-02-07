@@ -1466,7 +1466,7 @@ if (countlyGlobal.member.global_admin) {
             }
         }));
     }
- 
+
     app.route('/manage/plugins', 'plugins', function() {
         if (countlyGlobal.COUNTLY_CONTAINER === 'frontend') {
             app.navigate("#/", true);
