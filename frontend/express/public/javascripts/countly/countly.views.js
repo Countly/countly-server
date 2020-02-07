@@ -155,6 +155,7 @@ window.GraphNotesView = countlyView.extend({
         content.html(noteHTML(this));
         CountlyHelpers.revealDialog(dialog);
         app.localize();
+        $(".graph-note-textarea").attr("placeholder", jQuery.i18n.map["notes.note-textarea-placeholder"]);
 
         //date time picker
         var element = $('.date-time-picker');
@@ -166,7 +167,7 @@ window.GraphNotesView = countlyView.extend({
             showOtherMonths: true,
             onSelect: function() {}
         });
-
+        $(element).datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
         var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
         self.emailInput = $('#email-list-input').selectize({
             plugins: ['remove_button'],
@@ -237,7 +238,6 @@ window.GraphNotesView = countlyView.extend({
         self.emailInput.off("change").on("change", function() {
             that.checkInput();
         });
-
         $(".date-time-selector-container").off("click").on("click", function() {
             setTimeout(function() {
                 $('.date-time-picker').toggle();
@@ -374,10 +374,10 @@ window.GraphNotesView = countlyView.extend({
         }
         var self = this;
         this.types = {
-            all: "All",
-            public: "Public",
-            shared: "Shared",
-            private: "Private",
+            all: jQuery.i18n.map["notes.note-all"],
+            public: jQuery.i18n.map["notes.note-public"],
+            shared: jQuery.i18n.map["notes.note-shared"],
+            private: jQuery.i18n.map["notes.note-private"],
         };
         this.templateData = {
             "page-title": jQuery.i18n.map["notes.manage-notes"],

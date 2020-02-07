@@ -223,8 +223,12 @@ window.AlertsView = countlyView.extend({
             }
             var keys = _.keys(self.statusChanged);
             if (keys && keys.length > 0) {
-                $(".data-save-bar-remind").text(' You made ' + keys.length + (keys.length === 1 ? ' change.' : ' changes.'));
-
+                if (keys.length === 1) {
+                    $(".data-save-bar-remind").text(jQuery.i18n.prop("alert.make-change-remind"));
+                }
+                else {
+                    $(".data-save-bar-remind").text(jQuery.i18n.prop("alert.make-changes-remind", keys.length));
+                }
                 return $(".data-saver-bar").removeClass("data-saver-bar-hide");
             }
             $(".data-saver-bar").addClass("data-saver-bar-hide");
