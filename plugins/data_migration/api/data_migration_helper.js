@@ -27,24 +27,27 @@ module.exports = function(my_db) {
 
     var self = this;
     var create_con_strings = function() {
-        var dbstr = "";
+        var dbargs = [];
         var db_params = plugins.getDbConnectionParams('countly');
         for (var p in db_params) {
-            dbstr += " --" + p + " " + db_params[p];
+            dbargs.push("--" + p);
+            dbargs.push(db_params[p]);
         }
-        var dbstr_drill = "";
+        var dbargs_drill = [];
         db_params = plugins.getDbConnectionParams('countly_drill');
         for (var k in db_params) {
-            dbstr_drill += " --" + k + " " + db_params[k];
+            dbargs_drill.push("--" + k);
+            dbargs_drill.push(db_params[k]);
         }
 
-        var dbstr_out = "";
+        var dbargs_out = [];
         db_params = plugins.getDbConnectionParams('countly_out');
         for (var r in db_params) {
-            dbstr_out += " --" + r + " " + db_params[r];
+            dbargs_out.push("--" + r);
+            dbargs_out.push(db_params[r]);
         }
 
-        return {dbstr: dbstr, dbstr_drill: dbstr_drill, dbstr_out: dbstr_out};
+        return {dbargs: dbargs, dbargs_drill: dbargs_drill, dbargs_out: dbargs_out};
     };
 
 
@@ -339,7 +342,7 @@ module.exports = function(my_db) {
         }
     };
 
-    var run_command = function(my_command, update = true) {
+    var run_command = function(my_command, my_args, update = true) {
         return new Promise(function(resolve, reject) {
             var starr = ['inherit', 'inherit', 'inherit'];
             if (my_logpath !== '') {
@@ -348,7 +351,7 @@ module.exports = function(my_db) {
                 starr = [ 'ignore', out, err ];
                 log_me(my_logpath, "running command " + my_command, false);
             }
-            var child = spawn(my_command, {shell: true, cwd: __dirname, detached: false, stdio: starr}, function(error) {
+            var child = spawn(my_command, my_args, {shell: false, cwd: __dirname, detached: false, stdio: starr}, function(error) {
                 if (error) {
                     return reject(Error('error:' + JSON.stringify(error)));
                 }
@@ -391,10 +394,10 @@ module.exports = function(my_db) {
                         if (res[j].list && res[j].list.length > 0) {
                             for (var z = 0; z < res[j].list.length; z++) {
                                 var eventCollName = "events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
-                                scripts.push('mongodump ' + data.dbstr + ' --collection ' + eventCollName + ' --out ' + data.my_folder);
+                                scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', eventCollName, '--out', data.my_folder]});
                                 if (plugins.isPluginEnabled('drill')) {
                                     eventCollName = "drill_events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
-                                    scripts.push('mongodump ' + data.dbstr_drill + ' --collection ' + eventCollName + ' --out ' + data.my_folder);
+                                    scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', eventCollName, '--out', data.my_folder]});
                                 }
                             }
                         }
@@ -413,19 +416,17 @@ module.exports = function(my_db) {
                     reject(Error(err));
                 }
                 var cid = [];
-                if (res && res.apn && res.apn.length > 0) {
-                    for (var i = 0; i < res.apn.length; i++) {
-                        cid.push('ObjectId(' + res.apn[i]._id + ')');
+                if (res && res.plugins && res.plugins.push) {
+                    if (res.plugins.push.a && res.plugins.push.a._id) {
+                        cid.push('ObjectId(' + res.plugins.push.a._id + ')');
                     }
-                }
 
-                if (res && res.gcm && res.gcm.length > 0) {
-                    for (var k = 0; k < res.gcm.length; k++) {
-                        cid.push('ObjectId("' + res.gcm[k]._id + '")');
+                    if (res.plugins.push.i && res.plugins.push.i._id) {
+                        cid.push('ObjectId("' + res.plugins.push.i._id + '")');
                     }
                 }
                 if (cid.length > 0) {
-                    resolve(['mongodump ' + data.dbstr + ' --collection credentials -q \'{ _id: {$in:[' + cid.join() + ']}}\' --out ' + data.my_folder]);
+                    resolve([{cmd: 'mongodump', args: [...data.dbargs, '--collection', 'credentials', '-q', '{ _id: {$in:[' + cid.join() + ']}}', '--out', data.my_folder]}]);
                 }
                 else {
                     resolve([]);
@@ -441,15 +442,15 @@ module.exports = function(my_db) {
             db.collection("views").findOne({'_id': db.ObjectID(appId)}, {}, function(err, viewInfo) {
 
                 var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
-                scripts.push('mongodump ' + data.dbstr + ' --collection ' + colName + ' --out ' + data.my_folder);
+                scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder]});
                 if (viewInfo) {
                     for (let segKey in viewInfo.segments) {
                         colName = "app_viewdata" + crypto.createHash('sha1').update(segKey + appId).digest('hex');
-                        scripts.push('mongodump ' + data.dbstr + ' --collection ' + colName + ' --out ' + data.my_folder);
+                        scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder]});
                     }
                 }
                 colName = "app_viewdata" + crypto.createHash('sha1').update('platform' + appId).digest('hex');
-                scripts.push('mongodump ' + data.dbstr + ' --collection ' + colName + ' --out ' + data.my_folder);
+                scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder]});
                 resolve(scripts);
             });
 
@@ -462,30 +463,34 @@ module.exports = function(my_db) {
             var my_folder = data.my_folder;
 
             var scripts = [];
-            var dbstr = "";
-            var dbstr0 = "";
+            var dbargs = [];
+            var dbargs0 = [];
             var countly_db_name = "";
             var db_params = plugins.getDbConnectionParams('countly');
             for (var p in db_params) {
-                dbstr += " --" + p + " " + db_params[p];
+                dbargs.push("--" + p);
+                dbargs.push(db_params[p]);
                 if (p !== 'db') {
-                    dbstr0 += " --" + p + " " + db_params[p];
+                    dbargs0.push("--" + p);
+                    dbargs0.push(db_params[p]);
                 }
                 else {
                     countly_db_name = db_params[p];
                 }
             }
 
-            var dbstr_drill = "";
+            var dbargs_drill = [];
             db_params = plugins.getDbConnectionParams('countly_drill');
             for (var z in db_params) {
-                dbstr_drill += " --" + z + " " + db_params[z];
+                dbargs_drill.push("--" + z);
+                dbargs_drill.push(db_params[z]);
             }
 
-            var dbstr_out = "";
+            var dbargs_out = [];
             db_params = plugins.getDbConnectionParams('countly_out');
             for (var g in db_params) {
-                dbstr_out += " --" + g + " " + db_params[g];
+                dbargs_out.push("--" + g);
+                dbargs_out.push(db_params[g]);
             }
 
             db.collection("apps").findOne({_id: db.ObjectID(appid)}, function(err, res) {
@@ -494,56 +499,56 @@ module.exports = function(my_db) {
                 }
                 else {
                     if (!res.redirect_url || res.redirect_url === "") {
-                        scripts.push('mongodump ' + dbstr + ' --collection apps -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
+                        scripts.push({cmd: 'mongodump', args: [...dbargs, "--collection", "apps", "-q", '{ _id: ObjectId("' + appid + '") }', "--out", my_folder]});
                     }
                     else {
                         //remove redirect field and add it after dump.
-                        scripts.push('mongo ' + countly_db_name + ' ' + dbstr0 + ' --eval  \'db.apps.update({ _id: ObjectId("' + appid + '") }, { $unset: { redirect_url: 1 } })\'');
-                        scripts.push('mongodump ' + dbstr + ' --collection apps -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
-                        scripts.push('mongo ' + countly_db_name + ' ' + dbstr0 + ' --eval  \'db.apps.update({ _id: ObjectId("' + appid + '") }, { $set: { redirect_url: "' + res.redirect_url + '" } })\'');
+                        scripts.push({cmd: 'mongo', args: [countly_db_name, ...dbargs0, "--eval", 'db.apps.update({ _id: ObjectId("' + appid + '") }, { $unset: { redirect_url: 1 } })']});
+                        scripts.push({cmd: 'mongodump', args: [...dbargs, "--collection", "apps", "-q", '{ _id: ObjectId("' + appid + '") }', "--out", my_folder]});
+                        scripts.push({cmd: 'mongo', args: [countly_db_name, ...dbargs0, "--eval", 'db.apps.update({ _id: ObjectId("' + appid + '") }, { $set: { redirect_url: "' + res.redirect_url + '" } })']});
                     }
 
                     var appDocs = ['app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_nxret', 'app_viewdata', 'app_views', 'app_userviews', 'app_viewsmeta', 'blocked_users', 'campaign_users', 'consent_history', 'crashes_jira', 'event_flows', 'timesofday', 'feedback', 'push_'];
                     for (let j = 0; j < appDocs.length; j++) {
-                        scripts.push('mongodump ' + dbstr + ' --collection ' + appDocs[j] + appid + ' --out ' + my_folder);
+                        scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', appDocs[j] + appid, '--out', my_folder]});
                     }
 
-                    scripts.push('mongodump ' + dbstr + ' --collection campaigndata -q \'{ a: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection campaigns -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection crash_share -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection feedback_widgets -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection notes -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + '  --collection messages -q \'{ apps: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection cohortdata -q \'{ a: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection cohorts -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection server_stats_data_points -q \'{ a: "' + appid + '"}\' --out ' + my_folder);
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'campaigndata', '-q', '{ a: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'campaigns', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'crash_share', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'feedback_widgets', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'notes', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'messages', '-q', '{ apps: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohortdata', '-q', '{ a: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohorts', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'server_stats_data_points', '-q', '{ a: "' + appid + '"}', '--out', my_folder]});
                     //concurrent_users
-                    scripts.push('mongodump ' + dbstr + ' --collection concurrent_users_max -q \'{$or:[{ app_id: "' + appid + '"},{ _id: {$in :["' + appid + '_overall", "' + appid + '_overall_new"]}}]}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection concurrent_users_alerts -q \'{ app: "' + appid + '"}\' --out ' + my_folder);
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'concurrent_users_max', '-q', '{$or:[{ app_id: "' + appid + '"},{ _id: {$in :["' + appid + '_overall", "' + appid + '_overall_new"]}}]}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'concurrent_users_alerts', '-q', '{ app: "' + appid + '"}', '--out', my_folder]});
 
 
                     var sameStructures = ["browser", "carriers", "cities", "consents", "crashdata", "density", "device_details", "devices", "langs", "sources", "users", "retention_daily", "retention_weekly", "retention_monthly", "server_stats_data_points"];
 
                     for (var k = 0; k < sameStructures.length; k++) {
-                        scripts.push('mongodump ' + dbstr + ' --collection ' + sameStructures[k] + ' -q \'{ _id: {$regex: "' + appid + '_.*" }}\' --out ' + my_folder);
+                        scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', sameStructures[k], '-q', '{ _id: {$regex: "' + appid + '_.*" }}', '--out', my_folder]});
                     }
-                    if (dbstr_out && dbstr_out !== "") {
-                        scripts.push('mongodump ' + dbstr_out + ' --collection ' + "ab_testing_experiments" + appid + ' --out ' + my_folder);
-                        scripts.push('mongodump ' + dbstr_out + ' --collection ' + "remoteconfig_parameters" + appid + ' --out ' + my_folder);
-                        scripts.push('mongodump ' + dbstr_out + ' --collection ' + "remoteconfig_conditions" + appid + ' --out ' + my_folder);
+                    if (dbargs_out && dbargs_out.length) {
+                        scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "ab_testing_experiments" + appid, '--out', my_folder]});
+                        scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "remoteconfig_parameters" + appid, '--out', my_folder]});
+                        scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "remoteconfig_conditions" + appid, '--out', my_folder]});
                     }
 
-                    scripts.push('mongodump ' + dbstr + ' --collection max_online_counts -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection top_events -q \'{ app_id: ObjectId("' + appid + '")}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection events -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection views -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection funnels -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection calculated_metrics -q \'{ app: "' + appid + '" }\' --out ' + my_folder);
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'max_online_counts', '-q', '{ _id: ObjectId("' + appid + '") }', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'top_events', '-q', '{ app_id: ObjectId("' + appid + '")}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'events', '-q', '{ _id: ObjectId("' + appid + '") }', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'views', '-q', '{ _id: ObjectId("' + appid + '") }', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'funnels', '-q', '{ app_id: "' + appid + '" }', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'calculated_metrics', '-q', '{ app: "' + appid + '" }', '--out', my_folder]});
 
                     //internal events
                     for (let j = 0; j < plugins.internalEvents.length; j++) {
-                        var eventCollName = "events" + crypto.createHash('sha1').update(plugins.internalEvents[j] + appid).digest('hex');
-                        scripts.push('mongodump ' + dbstr + ' --collection ' + eventCollName + ' --out ' + data.my_folder);
+                        let eventCollName = "events" + crypto.createHash('sha1').update(plugins.internalEvents[j] + appid).digest('hex');
+                        scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', eventCollName, '--out', my_folder]});
                     }
 
                     if (plugins.isPluginEnabled('drill')) {
@@ -551,28 +556,28 @@ module.exports = function(my_db) {
                         var drill_events = plugins.internalDrillEvents;
 
                         for (let j = 0; j < drill_events.length; j++) {
-                            eventCollName = "drill_events" + crypto.createHash('sha1').update(drill_events[j] + appid).digest('hex');
-                            scripts.push('mongodump ' + dbstr_drill + ' --collection ' + eventCollName + ' --out ' + my_folder);
+                            let eventCollName = "drill_events" + crypto.createHash('sha1').update(drill_events[j] + appid).digest('hex');
+                            scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', eventCollName, '--out', my_folder]});
                         }
 
-                        scripts.push('mongodump ' + dbstr_drill + ' --collection drill_bookmarks -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
-                        scripts.push('mongodump ' + dbstr_drill + ' --collection drill_meta' + appid + ' --out ' + my_folder);
+                        scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_bookmarks', '-q', '{ app_id: "' + appid + '" }', '--out', my_folder]});
+                        scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_meta' + appid, '--out', my_folder]});
                     }
                     //export symbolication files
                     if (data.aditional_files) {
-                        scripts.push('mongodump ' + dbstr + ' --collection app_crashsymbols' + appid + ' --out ' + my_folder);
-                        scripts.push('mongodump ' + dbstr + ' --collection symbolication_jobs -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
+                        scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'app_crashsymbols' + appid, '--out', my_folder]});
+                        scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'symbolication_jobs', '-q', '{ app_id: "' + appid + '" }', '--out', my_folder]});
                     }
 
                     //events sctipts
-                    generate_events_scripts({appid: appid, my_folder: my_folder, dbstr: dbstr, dbstr_drill: dbstr_drill}, db)
+                    generate_events_scripts({appid: appid, my_folder: my_folder, dbargs: dbargs, dbargs_drill: dbargs_drill}, db)
                         .then(
                             function(result) {
                                 if (result && Array.isArray(result)) {
                                     scripts = scripts.concat(result);
                                 }
 
-                                return generate_credentials_scripts({appid: appid, my_folder: my_folder, dbstr: dbstr, dbstr_drill: dbstr_drill});
+                                return generate_credentials_scripts({appid: appid, my_folder: my_folder, dbargs: dbargs, dbargs_drill: dbargs_drill});
                             })
                         .then(
                             function(result) {
@@ -580,7 +585,7 @@ module.exports = function(my_db) {
                                     scripts = scripts.concat(result);
                                 }
 
-                                return createScriptsForViews({appid: appid, my_folder: my_folder, dbstr: dbstr, dbstr_drill: dbstr_drill});
+                                return createScriptsForViews({appid: appid, my_folder: my_folder, dbargs: dbargs, dbargs_drill: dbargs_drill});
                             })
                         .then(
                             function(result) {
@@ -628,16 +633,21 @@ module.exports = function(my_db) {
     var pack_data = function(my_exportid, pack_path, target_path) {
         return new Promise(function(resolve, reject) {
             update_progress(my_exportid, "packing", "progress", 0, "", true);
-            var my_command = "";
+            var my_command = "tar";
+            var my_args = ["-zcvf"];
             if (target_path !== '') {
                 let my_dir = path.dirname(target_path);
-                my_command = "tar -zcvf " + target_path + " --directory=" + my_dir + " " + my_exportid;
+                my_args.push(target_path);
+                my_args.push("--directory=" + my_dir);
+                my_args.push(my_exportid);
             }
             else {
                 let my_dir = path.resolve(__dirname, "./../export");
-                my_command = "tar -zcvf " + my_dir + "/" + my_exportid + ".tar.gz --directory=" + my_dir + " " + my_exportid;
+                my_args.push(my_dir + "/" + my_exportid + ".tar.gz");
+                my_args.push("--directory=" + my_dir);
+                my_args.push(my_exportid);
             }
-            run_command(my_command).then(
+            run_command(my_command, my_args).then(
                 function() {
                     return resolve();
                 },
@@ -954,14 +964,14 @@ module.exports = function(my_db) {
                 if (myfiles[i] !== '.' && myfiles[i] !== '..' && fs.lstatSync(path.resolve(folder, './' + myfiles[i])).isDirectory() && myfiles[i] !== 'countly_app_icons') {
                     var subdirectory = fs.readdirSync(path.resolve(folder, './' + myfiles[i]));
                     for (var j = 0; j < subdirectory.length; j++) {
-                        if (constr.dbstr.indexOf('--db ' + subdirectory[j]) > -1) {
-                            myscripts.push('mongorestore ' + constr.dbstr + ' --dir ' + folder + '/' + myfiles[i] + '/' + subdirectory[j]);
+                        if (constr.dbargs.indexOf(subdirectory[j]) > -1) {
+                            myscripts.push({cmd: 'mongorestore', args: [...constr.dbargs, '--dir', folder + '/' + myfiles[i] + '/' + subdirectory[j]]});
                         }
-                        else if (constr.dbstr_drill.indexOf('--db ' + subdirectory[j]) > -1) {
-                            myscripts.push('mongorestore ' + constr.dbstr_drill + ' --dir ' + folder + '/' + myfiles[i] + '/' + subdirectory[j]);
+                        else if (constr.dbargs_drill.indexOf(subdirectory[j]) > -1) {
+                            myscripts.push({cmd: 'mongorestore', args: [...constr.dbargs_drill, '--dir', folder + '/' + myfiles[i] + '/' + subdirectory[j]]});
                         }
-                        else if (constr.dbstr_out.indexOf('--db ' + subdirectory[j]) > -1) {
-                            myscripts.push('mongorestore ' + constr.dbstr_out + ' --dir ' + folder + '/' + myfiles[i] + '/' + subdirectory[j]);
+                        else if (constr.dbargs_out.indexOf(subdirectory[j]) > -1) {
+                            myscripts.push({cmd: 'mongorestore', args: [...constr.dbargs_out, '--dir', folder + '/' + myfiles[i] + '/' + subdirectory[j]]});
                         }
                     }
                 }
@@ -969,7 +979,9 @@ module.exports = function(my_db) {
             if (myscripts.length > 0) {
                 log_me(logpath, 'Scripts generated sucessfully', false);
                 my_logpath = logpath;
-                Promise.each(myscripts, run_command).then(
+                Promise.each(myscripts, function(command) {
+                    run_command(command.cmd, command.args);
+                }).then(
                     function() {
                         resolve();
                     },
@@ -1160,7 +1172,9 @@ module.exports = function(my_db) {
                                 log_me(my_logpath, "Export scripts created", false);
                                 exp_count = scripts.length;
                                 resolve(exportid);
-                                Promise.each(scripts, run_command).then(
+                                Promise.each(scripts, function(command) {
+                                    run_command(command.cmd, command.args);
+                                }).then(
                                     function() {
                                         log_me(my_logpath, "Files generated sucessfully", false);
                                         //create info file
@@ -1305,7 +1319,7 @@ module.exports = function(my_db) {
             process_dir = path.resolve(__dirname, './../import/' + foldername);
         }
 
-        run_command("tar xvzf " + import_file + " -C " + process_dir, false) //unpack file
+        run_command("tar", ["xvzf", import_file, "-C", process_dir], false) //unpack file
             .then(
                 function() {
                     log_me(logpath, 'File unarchived sucessfully', false);

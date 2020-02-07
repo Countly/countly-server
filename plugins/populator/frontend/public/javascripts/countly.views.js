@@ -1,4 +1,4 @@
-/*global countlyPopulator, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, Handlebars, jQuery, PopulatorView, CountlyHelpers, production*/
+/*global countlyPopulator, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, Handlebars, jQuery, PopulatorView, CountlyHelpers*/
 window.PopulatorView = countlyView.extend({
     initialize: function() {
     },
@@ -197,9 +197,6 @@ app.addAppManagementSwitchCallback(function() {
 });
 
 $(document).ready(function() {
-    if (!production) {
-        CountlyHelpers.loadJS("populator/javascripts/chance.js");
-    }
     var style = "display:none;";
     if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
         style = "";

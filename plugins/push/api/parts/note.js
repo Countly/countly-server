@@ -238,7 +238,7 @@ class Note {
         return new Promise((resolve, reject) => {
             db.collection('messages').findOne({_id: typeof _id === 'string' ? db.ObjectID(_id) : _id}, (err, message) => {
                 if (err || !message) {
-                    reject(err || 'Not found');
+                    reject(err || 'Note not found');
                 }
                 else {
                     resolve(new Note(message));
@@ -276,7 +276,7 @@ class Note {
                     reject(err || 'WTF');
                 }
                 else if (!res.matchedCount) {
-                    reject('Not found');
+                    reject('Note not found');
                 }
                 else {
                     resolve(!!res.modifiedCount);
@@ -302,7 +302,7 @@ class Note {
                     reject(err);
                 }
                 else if (!doc || !doc.ok || !doc.value) {
-                    reject('Not found');
+                    reject('Note not found');
                 }
                 else {
                     resolve(doc.value);

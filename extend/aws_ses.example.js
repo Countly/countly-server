@@ -47,20 +47,24 @@ module.exports = function(mail) {
     };
 
     mail.sendToNewMember = function(member, memberPassword) {
+        const password = mail.escapedHTMLString(memberPassword);
+
         mail.lookup(function(err, host) {
             mail.sendMessage(member.email, "Your " + company + " Account",
                 "Hi " + mail.getUserFirstName(member) + ",<br/><br/>\n" +
                 "Your " + company + " account on <a href='" + host + "'>" + host + "</a> is created with the following details;<br/><br/>\n" +
-                "Username: " + member.username + "<br/>Password: " + memberPassword + "<br/><br/>\n" +
+                "Username: " + member.username + "<br/>Password: " + password + "<br/><br/>\n" +
                 "Enjoy,<br/>A fellow " + company + " Admin");
         });
     };
 
     mail.sendToUpdatedMember = function(member, memberPassword) {
+        const password = mail.escapedHTMLString(memberPassword);
+
         mail.lookup(function(err, host) {
             mail.sendMessage(member.email, "" + company + " Account - Password Change", "Hi " + mail.getUserFirstName(member) + ",<br/><br/>\n" +
             "Your password for your " + company + " account on <a href='" + host + "'>" + host + "</a> has been changed. Below you can find your updated account details;<br/><br/>\n" +
-            "Username: " + member.username + "<br/>Password: " + memberPassword + "<br/><br/>\n" +
+            "Username: " + member.username + "<br/>Password: " + password + "<br/><br/>\n" +
             "Best,<br/>A fellow " + company + " Admin");
         });
     };

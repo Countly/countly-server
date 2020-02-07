@@ -567,12 +567,13 @@
 
         /**
         * Draws a time line graph with the given dataPoints to container.
-        * @param {object} dataPoints - data poitns to draw on graph
+        * @param {object} dataPoints - data points to draw on graph
         * @param {string|object} container - selector for container or container object itself where to create graph
         * @param {string=} bucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
         * @param {string=} overrideBucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
         * @param {boolean=} small - if graph won't be full width graph
         * @param {array=} appIdsForNotes - display notes from provided apps ids on graph, will not show notes when empty 
+        * @param {object=} options - extra graph options, see flot documentation
         * @example
         * countlyCommon.drawTimeGraph([{
         *    "data":[[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,12],[8,9],[9,10],[10,5],[11,8],[12,7],[13,9],[14,4],[15,6]],
@@ -585,7 +586,7 @@
         *    "color":"#333933"
         *}], "#dashboard-graph");
         */
-        countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small, appIdsForNotes) {
+        countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small, appIdsForNotes, options) {
             _.defer(function() {
                 if (!dataPoints || !dataPoints.length) {
                     $(container).hide();
@@ -702,7 +703,11 @@
                     keyEvents = [];
                     //keyEventsIndex = 0;
 
-                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().series.splines.show && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
+                if (options && _.isObject(options)) {
+                    countlyCommon.deepObjectExtend(graphProperties, options);
+                }
+
+                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
                     if (overrideBucket) {
                         graphObj.getOptions().series.points.radius = 4;
@@ -851,7 +856,7 @@
                                     var app = countlyGlobal.apps[noteId] || {};
                                     titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
                                     "<div class='note-content'>" + notes[0].note + "</div>" +
-                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType + "</span> </div>" +
+                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + (jQuery.i18n.map["notes.note-" + notes[0].noteType] || notes[0].noteType) + "</span> </div>" +
                                         "</div>";
                                 }
                                 else {
@@ -900,8 +905,8 @@
 
                     var tooltip = $("#graph-tooltip");
                     var crossHairPos = graphObj.p2c(position);
-                    var tooltipLeft = (crossHairPos.left < 200) ? crossHairPos.left + 20 : crossHairPos.left - tooltip.width() - 20;
-
+                    var minpoz = Math.max(200, tooltip.width());
+                    var tooltipLeft = (crossHairPos.left < minpoz) ? crossHairPos.left + 20 : crossHairPos.left - tooltip.width() - 20;
                     tooltip.css({ left: tooltipLeft });
 
                     if (onPoint) {
@@ -916,11 +921,16 @@
                             var series = dataSet[m],
                                 formattedValue = series.data[dataIndex][1];
 
+                            var addMe = "";
                             // Change label to previous period if there is a ghost graph
                             if (series.mode === "ghost") {
                                 series.label = jQuery.i18n.map["common.previous-period"];
                             }
 
+                            //add lines over color block for dashed 
+                            if (series.dashed) {
+                                addMe = '<svg style="width: 12px; height: 12px; position:absolute; top:0; left:0;"><line stroke-dasharray="2, 2"  x1="0" y1="100%" x2="100%" y2="0" style="stroke:rgb(255,255,255);stroke-width:30"/></svg>';
+                            }
                             if (formattedValue) {
                                 formattedValue = parseFloat(formattedValue).toFixed(2).replace(/[.,]00$/, "");
                             }
@@ -929,7 +939,7 @@
                             }
 
                             tooltipHTML += "<div class='inner'>";
-                            tooltipHTML += "<div class='color' style='background-color: " + series.color + "'></div>";
+                            tooltipHTML += "<div class='color' style='position:relative; background-color: " + series.color + "'>" + addMe + "</div>";
                             tooltipHTML += "<div class='series'>" + series.label + "</div>";
                             tooltipHTML += "<div class='value'>" + formattedValue + "</div>";
                             tooltipHTML += "</div>";
@@ -2462,6 +2472,25 @@
         };
 
         /**
+        * Recursively merges an object into another
+        * @param {Object} target - object to be merged into
+        * @param {Object} source - object to merge into the target
+        * @returns {Object} target after the merge
+        */
+        countlyCommon.deepObjectExtend = function(target, source) {
+            Object.keys(source).forEach(function(key) {
+                if ((key in target) && _.isObject(target[key])) {
+                    countlyCommon.deepObjectExtend(target[key], source[key]);
+                }
+                else {
+                    target[key] = source[key];
+                }
+            });
+
+            return target;
+        };
+
+        /**
         * Formats the number by separating each 3 digits with ,
         * @param {number} x - number to format
         * @returns {string} formatted number
@@ -3262,15 +3291,15 @@
 
                 // "Date to" selected date timezone changes based on how the
                 // date picker is initialised so we take care of it here
-                var tmpDate = new Date(period[1]);
+                var tmpDate = new Date(period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1]));
                 tmpDate.setHours(0, 0, 0, 0);
 
-                period[1] = tmpDate.getTime();
-                period[1] -= countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
+                var endTs = tmpDate.getTime();
+                endTs -= countlyCommon.getOffsetCorrectionForTimestamp(endTs);
 
                 // One day is selected from the datepicker
-                if (period[0] === period[1]) {
-                    var selectedDate = moment(period[0]),
+                if (period[0] === endTs) {
+                    var selectedDate = moment(period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0])),
                         selectedYear = selectedDate.year(),
                         selectedMonth = (selectedDate.month() + 1),
                         selectedDay = selectedDate.date();
@@ -3287,14 +3316,14 @@
                     periodMin = 0;
                     dateString = "D MMM, HH:mm";
                     numberOfDays = 1;
-                    periodContainsToday = (moment(period[0]).format("YYYYMMDD") === now.format("YYYYMMDD"));
+                    periodContainsToday = (moment(period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[0])).format("YYYYMMDD") === now.format("YYYYMMDD"));
                 }
                 else {
-                    var a = moment(period[0]),
-                        b = moment(period[1]);
+                    var a = moment(period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0])),
+                        b = moment(period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1]));
 
-                    numberOfDays = daysInPeriod = b.diff(a, 'days') + 1;
-                    rangeEndDay = period[1];
+                    numberOfDays = daysInPeriod = moment(period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1])).startOf("day").diff(a, 'days') + 1;
+                    rangeEndDay = period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
                     periodContainsToday = (b.format("YYYYMMDD") === now.format("YYYYMMDD"));
                     isSpecialPeriod = true;
                 }
@@ -3391,7 +3420,7 @@
             }
 
             if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-                if (_period[0] === _period[1]) {
+                if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
                     return [];
                 }
             }
@@ -3515,7 +3544,7 @@
             }
 
             if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-                if (_period[0] === _period[1]) {
+                if (_period[0] + 24 * 60 * 60 * 1000 >= _period[1]) {
                     return [];
                 }
             }
@@ -3683,11 +3712,11 @@
         * @returns {number} corrected timestamp applying user's timezone offset
         */
         countlyCommon.getOffsetCorrectionForTimestamp = function(inTS) {
-            var timeZoneOffset = new Date().getTimezoneOffset(),
-                intLength = Math.round(inTS).toString().length,
+            var intLength = Math.round(inTS).toString().length,
+                timeZoneOffset = new Date((intLength === 13) ? inTS : inTS * 1000).getTimezoneOffset(),
                 tzAdjustment = 0;
 
-            if (timeZoneOffset < 0) {
+            if (timeZoneOffset !== 0) {
                 if (intLength === 13) {
                     tzAdjustment = timeZoneOffset * 60000;
                 }
@@ -3895,7 +3924,7 @@
         countlyCommon.getPeriodRange = function(period, baseTimeStamp) {
             var periodRange;
             if (Object.prototype.toString.call(period) === '[object Array]' && period.length === 2) { //range
-                periodRange = period;
+                periodRange = [period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0]), period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1])];
                 return periodRange;
             }
             var endTimeStamp = baseTimeStamp;
@@ -4076,7 +4105,7 @@
 
         countlyCommon.getGraphNotes = function(appIds, callBack) {
             if (!appIds) {
-                appIds = [countlyCommon.ACTIVE_APP_ID];
+                appIds = [];
             }
             return window.$.ajax({
                 type: "GET",

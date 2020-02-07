@@ -30,7 +30,8 @@ countlyEvents.processEvents = function(params) {
             var appEvents = [],
                 appSegments = {},
                 metaToFetch = {},
-                omitted_segments = {};
+                omitted_segments = {},
+                pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
 
             if (!err && eventColl) {
                 if (eventColl.list) {
@@ -46,16 +47,30 @@ countlyEvents.processEvents = function(params) {
                 }
             }
 
+            var userProps = {};
+
             for (let i = 0; i < params.qstring.events.length; i++) {
                 var currEvent = params.qstring.events[i],
                     shortEventName = "",
                     eventCollectionName = "";
+
+                if (currEvent.key === "[CLY]_orientation") {
+                    if (currEvent.segmentation && currEvent.segmentation.mode) {
+                        userProps.ornt = currEvent.segmentation.mode;
+                    }
+                    continue;
+                }
+
+                if (!currEvent.segmentation) {
+                    continue;
+                }
+
                 if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key && currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
                     continue;
                 }
 
-                if (plugins.getConfig("api", params.app && params.app.plugins, true).event_limit &&
-                        appEvents.length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_limit &&
+                if (pluginsGetConfig.event_limit &&
+                        appEvents.length >= pluginsGetConfig.event_limit &&
                         appEvents.indexOf(currEvent.key) === -1) {
                     continue;
                 }
@@ -80,10 +95,10 @@ countlyEvents.processEvents = function(params) {
                             continue;
                         }
 
-                        if (plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_limit &&
+                        if (pluginsGetConfig.event_segmentation_limit &&
                                 appSegments[currEvent.key] &&
                                 appSegments[currEvent.key].indexOf(segKey) === -1 &&
-                                appSegments[currEvent.key].length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_limit) {
+                                appSegments[currEvent.key].length >= pluginsGetConfig.event_segmentation_limit) {
                             continue;
                         }
 
@@ -102,7 +117,7 @@ countlyEvents.processEvents = function(params) {
                         }
 
                         // Mongodb field names can't start with $ or contain .
-                        tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
+                        tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
 
                         if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                             tmpSegVal = "[CLY]" + tmpSegVal;
@@ -115,6 +130,10 @@ countlyEvents.processEvents = function(params) {
 
                     }
                 }
+            }
+
+            if (Object.keys(userProps).length) {
+                common.updateAppUser(params, {$set: userProps}, true);
             }
 
             async.map(Object.keys(metaToFetch), fetchEventMeta, function(err2, eventMetaDocs) {
@@ -175,7 +194,8 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         shortEventName = "",
         eventCollectionName = "",
         eventHashMap = {},
-        forbiddenSegValues = [];
+        forbiddenSegValues = [],
+        pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
 
     for (let i = 1; i < 32; i++) {
         forbiddenSegValues.push(i + "");
@@ -192,8 +212,8 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             continue;
         }
 
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).event_limit &&
-                appEvents.length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_limit &&
+        if (pluginsGetConfig.event_limit &&
+                appEvents.length >= pluginsGetConfig.event_limit &&
                 appEvents.indexOf(currEvent.key) === -1) {
             continue;
         }
@@ -258,10 +278,10 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     continue;
                 }
 
-                if (plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_limit &&
+                if (pluginsGetConfig.event_segmentation_limit &&
                         appSegments[currEvent.key] &&
                         appSegments[currEvent.key].indexOf(segKey) === -1 &&
-                        appSegments[currEvent.key].length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_limit) {
+                        appSegments[currEvent.key].length >= pluginsGetConfig.event_segmentation_limit) {
                     continue;
                 }
 
@@ -288,12 +308,12 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
 
                 var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
 
-                if (plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_value_limit &&
+                if (pluginsGetConfig.event_segmentation_value_limit &&
                         appSgValues[eventCollectionName] &&
                         appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix] &&
                         appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey] &&
                         appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].indexOf(tmpSegVal) === -1 &&
-                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_value_limit) {
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].length >= pluginsGetConfig.event_segmentation_value_limit) {
                     continue;
                 }
 
@@ -337,7 +357,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         params.time = time;
     }
 
-    if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+    if (!pluginsGetConfig.safe) {
         for (let collection in eventCollections) {
             if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length) {
                 for (let i = 0; i < eventSegmentsZeroes[collection].length; i++) {

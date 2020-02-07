@@ -1079,7 +1079,6 @@
                 data: {
                     data: JSON.stringify({app_id: countlyCommon.ACTIVE_APP_ID}),
                     action: "populator_run",
-                    "api_key": countlyGlobal.member.api_key,
                     populator: true
                 },
                 success: function() {}

@@ -597,6 +597,9 @@ app.use(function(req, res, next) {
             req.themeFiles = themeFiles;
             var _render = res.render;
             res.render = function(view, opts, fn, parent, sub) {
+                if (!opts) {
+                    opts = {};
+                }
                 if (!opts.path) {
                     opts.path = countlyConfig.path || "";
                 }

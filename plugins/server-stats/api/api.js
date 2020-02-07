@@ -66,6 +66,15 @@ var plugins = require('../../pluginManager.js'),
     });
 
     /**
+    * Register to /i/server-stats/update-data-points
+    * @param {{appId: string, sessionCount: number, eventCount: number}} ob - data points params
+    **/
+    plugins.register("/server-stats/update-data-points", function(ob) {
+        const {appId, sessionCount, eventCount} = ob;
+        updateDataPoints(appId, sessionCount, eventCount);
+    });
+
+    /**
     * Saves session and event count information to server_stats_data_points
     * collection in countly database
 
@@ -84,6 +93,10 @@ var plugins = require('../../pluginManager.js'),
     * @returns {undefined} Returns nothing
     **/
     function updateDataPoints(appId, sessionCount, eventCount) {
+        if (!sessionCount && !eventCount) {
+            return;
+        }
+
         var utcMoment = common.moment.utc();
 
         common.db.collection('server_stats_data_points').update(
@@ -176,7 +189,7 @@ var plugins = require('../../pluginManager.js'),
     });
 
     /**
-     *  Get's datapoint data from database and outputs it to browser 
+     *  Get's datapoint data from database and outputs it to browser
      *  @param {params} params - params object
      *  @param {object} filter - to filter documents
      *  @param {array} periodsToFetch - array with periods

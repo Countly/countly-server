@@ -14,7 +14,7 @@ class PingJob extends job.Job {
      * @param {done} done callback
      */
     run(db, done) {
-        request({strictSSL: false, uri: "http://localhost/configs"}, function(err, res, body) {
+        request({strictSSL: false, uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + "/configs"}, function(err, res, body) {
             log.d(err, body);
         });
         var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));

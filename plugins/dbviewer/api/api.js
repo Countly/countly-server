@@ -4,6 +4,7 @@ var common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
+    taskManager = require('../../../api/utils/taskmanager.js'),
     exported = {};
 
 (function() {
@@ -11,6 +12,36 @@ var common = require('../../../api/utils/common.js'),
         var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
+
+        /**
+        * Get indexes
+        **/
+        function getIndexes() {
+            dbs[dbNameOnParam].collection(params.qstring.collection).indexes(function(err, indexes) {
+                if (err) {
+                    common.returnOutput(params, 'Somethings went wrong');
+                }
+                common.returnOutput(params, { limit: indexes.length, start: 1, end: indexes.length, total: indexes.length, pages: 1, curPage: 1, collections: indexes });
+            });
+        }
+
+        /**
+        * Check properties and manipulate values
+        * @param {object} doc - document
+        * @returns {object} - returns manipulated document object
+        **/
+        function objectIdCheck(doc) {
+            if (typeof doc === "string") {
+                doc = JSON.parse(doc);
+            }
+            for (var key in doc) {
+                if (doc[key] && typeof doc[key].toHexString !== "undefined" && typeof doc[key].toHexString === "function") {
+                    doc[key] = "ObjectId(" + doc[key] + ")";
+                }
+            }
+            return doc;
+        }
+
         /**
         * Get document data from db
         **/
@@ -21,10 +52,12 @@ var common = require('../../../api/utils/common.js'),
                 }
                 if (dbs[dbNameOnParam]) {
                     dbs[dbNameOnParam].collection(params.qstring.collection).findOne({_id: params.qstring.document}, function(err, results) {
-                        if (err) {
-                            console.error(err);
+                        if (!err) {
+                            common.returnOutput(params, objectIdCheck(results) || {});
                         }
-                        common.returnOutput(params, results || {});
+                        else {
+                            common.returnOutput(params, 500, err);
+                        }
                     });
                 }
             }
@@ -71,7 +104,7 @@ var common = require('../../../api/utils/common.js'),
                 cursor.count(function(err, total) {
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
-                            return JSON.stringify(doc);
+                            return JSON.stringify(objectIdCheck(doc));
                         }
                     });
                     var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
@@ -310,40 +343,91 @@ var common = require('../../../api/utils/common.js'),
                 return callback(false);
             }
         }
+
         /**
         * Get aggregated result by the parameter on the url
         * @param {string} collection - collection will be applied related query
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
-            aggregation.push({"$count": "total"});
-            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(err, total) {
-                if (!err) {
-                    aggregation.splice(aggregation.length - 1, 1);
-                    var skip = parseInt(params.qstring.iDisplayStart || 0);
-                    aggregation.push({"$skip": skip});
-                    if (params.qstring.iDisplayLength) {
-                        aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
-                    }
-                    var totalRecords = total.length > 0 ? total[0].total : 0;
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(aggregationErr, result) {
-                        if (!aggregationErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: totalRecords, iTotalDisplayRecords: totalRecords, "aaData": result});
-                        }
-                        else {
-                            common.returnMessage(params, 500, aggregationErr);
-                        }
-                    });
+            if (params.qstring.iDisplayLength) {
+                aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
+            }
+            // check task is already running?
+            taskManager.checkIfRunning({
+                db: dbs[dbNameOnParam],
+                params: params
+            }, function(task_id) {
+                if (task_id) {
+                    common.returnOutput(params, {task_id: task_id});
                 }
                 else {
-                    common.returnMessage(params, 500, err);
+                    var taskCb = taskManager.longtask({
+                        db: dbs[dbNameOnParam],
+                        threshold: plugins.getConfig("api").request_threshold,
+                        params: params,
+                        type: "dbviewer",
+                        force: params.qstring.save_report || false,
+                        meta: JSON.stringify({
+                            db: dbNameOnParam,
+                            collection: params.qstring.collection,
+                            aggregation: aggregation
+                        }),
+                        view: "#/manage/db/task/",
+                        report_name: params.qstring.report_name,
+                        report_desc: params.qstring.report_desc,
+                        period_desc: params.qstring.period_desc,
+                        name: 'Aggregation-' + Date.now(),
+                        creator: params.member._id + "",
+                        global: params.qstring.global === 'true',
+                        autoRefresh: params.qstring.autoRefresh === 'true',
+                        manually_create: params.qstring.manually_create === 'true',
+                        processData: function(error, result, callback) {
+                            callback(error, result);
+                        },
+                        outputData: function(aggregationErr, result) {
+                            if (!aggregationErr) {
+                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result});
+                            }
+                            else {
+                                common.returnMessage(params, 500, aggregationErr);
+                            }
+                        }
+                    });
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, taskCb);
                 }
             });
         }
 
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function() {
-            if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1) {
+            // conditions
+            var isContainDb = params.qstring.dbs || params.qstring.db;
+            var isContainCollection = params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1;
+
+            if (isContainDb && (typeof dbs[params.qstring.db]) === "undefined" && typeof dbs[params.qstring.dbs] === "undefined") {
+                common.returnMessage(params, 404, 'Database not found.');
+                return true;
+            }
+
+            // handle index request
+            if (isContainDb && params.qstring.collection && params.qstring.action === 'get_indexes') {
+                if (params.member.global_admin) {
+                    getIndexes();
+                }
+                else {
+                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
+                        if (hasAccess) {
+                            getIndexes();
+                        }
+                        else {
+                            common.returnMessage(params, 401, 'User does not have right to view this collection');
+                        }
+                    });
+                }
+            }
+            // handle document request
+            else if (isContainDb && isContainCollection && params.qstring.document) {
                 if (params.member.global_admin) {
                     dbGetDocument();
                 }
@@ -358,7 +442,8 @@ var common = require('../../../api/utils/common.js'),
                     });
                 }
             }
-            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf('system.indexes') === -1 && params.qstring.collection.indexOf('sessions_') === -1 && params.qstring.aggregation) {
+            // handle aggregation request
+            else if (isContainDb && params.qstring.aggregation) {
                 if (params.member.global_admin) {
                     try {
                         let aggregation = JSON.parse(params.qstring.aggregation);
@@ -387,7 +472,8 @@ var common = require('../../../api/utils/common.js'),
                     });
                 }
             }
-            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1) {
+            // handle collection request
+            else if (isContainDb && isContainCollection) {
                 if (params.member.global_admin) {
                     dbGetCollection();
                 }

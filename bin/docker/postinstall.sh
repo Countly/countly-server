@@ -20,10 +20,10 @@ else
 
 	while read -r plugin; do
 	  echo "[docker] Installing ${plugin}:"
-	  /usr/local/bin/node "/opt/countly/plugins/$plugin/install.js"
+	  node "/opt/countly/plugins/$plugin/install.js"
 	  echo "[docker] Done installing ${plugin}."
 	done <<< "$a"
 
-	(cd /opt/countly && npx grunt dist-all)
+	(cd /opt/countly && npx grunt dist-all && npm prune --production)
 
 fi

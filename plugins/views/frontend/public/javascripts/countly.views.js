@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -914,9 +914,6 @@ app.addPageScript("/custom#", function() {
 });
 
 $(document).ready(function() {
-    if (!production) {
-        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
-    }
     jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
         x = countlyViews.getFrequencyIndex(x);
         y = countlyViews.getFrequencyIndex(y);
@@ -956,13 +953,13 @@ function initializeViewsWidget() {
 
     var viewsWidgetTemplate;
     var viewsMetric = [
-        { name: "Total Visitors", value: "u" },
-        { name: "New Visitors", value: "n" },
-        { name: "Total Visits", value: "t" },
-        { name: "Avg. Time", value: "d" },
-        { name: "Landings", value: "s" },
-        { name: "Exits", value: "e" },
-        { name: "Bounces", value: "b" }
+        { name: jQuery.i18n.prop("views.u"), value: "u" },
+        { name: jQuery.i18n.prop("views.n"), value: "n" },
+        { name: jQuery.i18n.prop("views.t"), value: "t" },
+        { name: jQuery.i18n.prop("views.d"), value: "d" },
+        { name: jQuery.i18n.prop("views.s"), value: "s" },
+        { name: jQuery.i18n.prop("views.e"), value: "e" },
+        { name: jQuery.i18n.prop("views.b"), value: "b" }
     ];
     /**
      * Function to return view name

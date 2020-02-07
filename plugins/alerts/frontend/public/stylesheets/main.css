@@ -6,11 +6,8 @@
 #alert-widget-drawer #alert-widget-drawer-create-title { display: block; }
 #alert-widget-drawer #create-widget { display: block; }
 
-#alert-widget-drawer.editing #alert-widget-drawer-create-title { display: none; }
-#alert-widget-drawer.editing #alert-widget-drawer-edit-title { display: block; }
 #alert-widget-drawer.editing #create-widget { display: none; }
 #alert-widget-drawer.editing #save-widget { display: block; }
-
 
 #alert-view .cly-button-menu-group { position: relative; }
 #alert-view .cly-button-menu-group .icon-button { border-bottom-right-radius: 0; border-top-right-radius: 0; margin:0; float:left; }

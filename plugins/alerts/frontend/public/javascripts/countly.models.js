@@ -204,16 +204,17 @@
             url: countlyCommon.API_PARTS.data.r,
             data: {
                 "app_id": appId,
-                "method": "views"
+                "method": "views",
+                "action": "getTable",
             },
             dataType: "json",
             success: function(res) {
-                if (res && res.meta && res.meta.views && callback) {
+                if (res && res.aaData && res.aaData.length > 0 && callback) {
                     var data = [];
-                    for (var i = 0; i < res.meta.views.length; i++) {
+                    for (var i = 0; i < res.aaData.length; i++) {
                         data.push({
-                            value: res.meta.views[i],
-                            name: res.meta.views[i]
+                            value: res.aaData[i]._id,
+                            name: res.aaData[i].view
                         });
                     }
                     callback(data);

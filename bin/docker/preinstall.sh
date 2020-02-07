@@ -1,8 +1,12 @@
 #!/bin/bash
 
-for plugin in `find /opt/countly/plugins -type d -mindepth 1 -maxdepth 1`
+source /etc/os-release
+
+while IFS= read -r -d '' plugin
 do
-	echo "Installing $plugin..."
-	(cd "$plugin" && HOME=/tmp npm install)
+    echo "Installing $plugin..."
+	(cd "$plugin" && HOME=/tmp npm install --unsafe-perm)
 	echo "done"
-done
+done <   <(find /opt/countly/plugins -mindepth 1 -maxdepth 1 -type d -print0)
+
+export CXX="" && export CC=""
