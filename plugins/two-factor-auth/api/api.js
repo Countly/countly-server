@@ -2,6 +2,7 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     GA = require("otplib/authenticator"),
     log = common.log('two-factor-auth:api'),
+    utils = require("../../../api/utils/utils.js"),
     plugins = require('../../pluginManager.js');
 
 plugins.setConfigs("two-factor-auth", {
@@ -35,7 +36,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
                             {
                                 $set: {
                                     "two_factor_auth.enabled": true,
-                                    "two_factor_auth.secret_token": secretToken
+                                    "two_factor_auth.secret_token": utils.encrypt(secretToken)
                                 }
                             },
                             function(err) {
