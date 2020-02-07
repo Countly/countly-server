@@ -262,7 +262,7 @@ var plugins = require('../../pluginManager.js'),
                             toReturn[dataPerApp[i].a]["6_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["6_months"], dataPerApp[i]);
                         }
                         // only last 3 months
-                        if (j > 2) {
+                        if (j > 8) {
                             toReturn[dataPerApp[i].a]["3_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["3_months"], dataPerApp[i]);
                             toReturn["all-apps"]["3_months"] = increaseDataPoints(toReturn["all-apps"]["3_months"], dataPerApp[i]);
                         }
