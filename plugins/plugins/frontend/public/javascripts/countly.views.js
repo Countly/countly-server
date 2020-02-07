@@ -434,6 +434,11 @@ window.ConfigurationsView = countlyView.extend({
 
         });
 
+        this.registerLabel("api.google_maps_api_key", "configs.frontend-google_maps_api_key");
+
+        this.registerInput("api.send_test_email", function() {
+            return '<div id="send_test_email" style="margin-left: 0px;" class="icon-button green">Send</div>';
+        });
     },
     beforeRender: function() {
         if (this.template) {
@@ -1025,6 +1030,27 @@ window.ConfigurationsView = countlyView.extend({
             });
 
             $("#config-row-google_maps_api_key-frontend").parent().append($("#config-row-google_maps_api_key-frontend"));
+            $("#send_test_email").off("click").on("click", function() {
+                if ($("#send_test_email").hasClass("disabled")) {
+                    return;
+                }
+                $("#send_test_email").addClass("disabled");
+
+                return $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/email_test",
+                    data: {},
+                    success: function() {
+                        $("#send_test_email").removeClass("disabled");
+                        CountlyHelpers.notify({ type: "ok", message: jQuery.i18n.map['configs.help.api-send_test_email_delivered']});
+
+                    },
+                    fail: function() {
+                        $("#send_test_email").removeClass("disabled");
+                        CountlyHelpers.notify({ type: "error", message: jQuery.i18n.map['configs.help.api-send_test_email_failed']});
+                    }
+                });
+            });
         }
     },
     updateConfig: function(id, value) {
@@ -1365,7 +1391,7 @@ app.pluginsView = new PluginsView();
 app.configurationsView = new ConfigurationsView();
 
 if (countlyGlobal.member.global_admin) {
-    var showInAppManagment = {"api": {"safe": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true}};
+    var showInAppManagment = {"api": {"safe": true, "send_test_email": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true}};
 
     if (countlyGlobal.plugins.indexOf("drill") !== -1) {
         showInAppManagment.drill = {"big_list_limit": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_views": true};

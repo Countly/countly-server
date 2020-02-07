@@ -3,6 +3,7 @@ var plugin = {},
     path = require('path'),
     common = require('../../../api/utils/common.js'),
     parser = require('properties-parser'),
+    mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js');
 
 (function() {
@@ -338,6 +339,44 @@ var plugin = {},
             break;
         }
     };
+
+    plugins.register("/o/email_test", function(ob) {
+        // check if global admin
+        ob.validateUserForGlobalAdmin(ob.params, function(params) {
+            const member = ob.params.member || {};
+            if (!member.global_admin || !member.email) {
+                common.returnMessage(params, 401, 'User is not a global administrator or no valid email address');
+                return true;
+            }
+
+            var fullpath = path.resolve(__dirname, "../");
+            var local_path = fullpath + "/frontend/public/localization/plugins.properties";
+            if (params.member.lang && params.member.lang !== "en") {
+                path = fullpath + "/frontend/public/localization/plugins" + "_" + params.member.lang + ".properties";
+                if (fs.existsSync(path)) {
+                    local_path = path;
+                }
+            }
+            let subject = 'Countly test email';
+            let message = 'Countly test email succesfully delivered!';
+            if (fs.existsSync(local_path)) {
+                var local_properties = fs.readFileSync(local_path);
+                local_properties = parser.parse(local_properties);
+                subject = local_properties["configs.help.api-send_test_email_subject"] || subject;
+                message = local_properties["configs.help.api-send_test_email_message"] || message;
+            }
+
+            mail.sendMessage(member.email, subject, message, (err) => {
+                if (err) {
+                    return common.returnMessage(params, 503, 'Failed');
+                }
+                return common.returnMessage(params, 200, 'OK');
+            });
+
+        });
+        return true;
+    });
+
 }(plugin));
 
 module.exports = plugin;
