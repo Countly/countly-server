@@ -753,7 +753,7 @@
             data.limit = hardLimit;
             data.skip = page * hardLimit;
 
-            var url = exportByAPI ? "/o/export/request" : "/o/export/db";
+            var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
                 if (CountlyHelpers.isJSON(v)) {
@@ -888,8 +888,8 @@
             data.type = type;
             data.data = JSON.stringify(getExportData(dtable, type));
             data.filename = getFileName(type);
-            var url = "/o/export/data";
 
+            var url = countlyCommon.API_URL + "/o/export/data";
             var form = $('<form method="POST" action="' + url + '">');
 
             $.each(data, function(k, v) {

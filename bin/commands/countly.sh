@@ -114,7 +114,7 @@ countly_upgrade (){
         echo "Installing dependencies...";
         sudo npm install ;
         echo "Preparing production files...";
-        grunt dist-all;
+        countly task dist-all;
         echo "Restarting Countly...";
         sudo countly restart;
         )

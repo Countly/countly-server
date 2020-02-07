@@ -668,6 +668,19 @@ app.addPageScript("/users/#", function() {
         app.activeView.tabs.tabs("refresh");
         var userDetails = countlyUserdata.getUserdetails();
         $("#usertab-consent").append("<div class='widget-header'><div class='left'><div class='title'>" + jQuery.i18n.map["userdata.consents"] + "</div></div></div><table id='d-table-consents' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0' data-view='consentManagementView'></table>");
+
+        app.activeView.shouldLoadConsents = false;
+        app.activeView.tabs.on("tabsshow", function(event, ui) {
+            if (ui && ui.panel) {
+                var tab = ($(ui.panel).attr("id") + "").replace("usertab-", "");
+                if (tab === "consent" && !app.activeView.shouldLoadConsents) {
+                    app.activeView.shouldLoadConsents = true;
+                    if (app.activeView.dtableconsents) {
+                        app.activeView.dtableconsents.fnDraw(false);
+                    }
+                }
+            }
+        });
         app.activeView.dtableconsents = $('#d-table-consents').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "iDisplayLength": 30,
             "aaSorting": [[ 5, "desc" ]],
@@ -675,16 +688,18 @@ app.addPageScript("/users/#", function() {
             "bFilter": false,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "/consent/search?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&query=" + JSON.stringify({uid: userDetails.uid}),
             "fnServerData": function(sSource, aoData, fnCallback) {
-                $.ajax({
-                    "dataType": 'json',
-                    "type": "POST",
-                    "url": sSource,
-                    "data": aoData,
-                    "success": function(data) {
-                        fnCallback(data);
-                        CountlyHelpers.reopenRows(app.activeView.dtableconsents, formatConsent);
-                    }
-                });
+                if (app.activeView.shouldLoadConsents) {
+                    $.ajax({
+                        "dataType": 'json',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data) {
+                            fnCallback(data);
+                            CountlyHelpers.reopenRows(app.activeView.dtableconsents, formatConsent);
+                        }
+                    });
+                }
             },
             "fnRowCallback": function(nRow, aData) {
                 $(nRow).attr("id", aData._id);

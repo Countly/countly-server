@@ -476,7 +476,7 @@
 					<div  class="date-clear icon-button" data-localize="common.close" style="float:right;"></div>
 				</div>
 				<div class="time-field">
-					<span class="time-label">Pick Time:</span>
+					<span class="time-label" data-localize="datepicker.pick-time"></span>
 					<input name="hour" type="number"  onchange="if( this.value.length == 1 ) this.value='0'+this.value;" class="time-input hour" min="0" max="23" value="00"/>
 					<span class="time-split"> : </span>
 					<input name="minute" type="number"  onchange="if( this.value.length == 1 ) this.value='0'+this.value;" class="time-input minute" min="0" max="59" value="00"/>
@@ -2222,7 +2222,7 @@
 			<div class="fields">
 				<div class="section">
                     <div class="label" data-localize="notes.note"></div>
-                    <textarea maxlength="150" class="note graph-note-textarea"  rows="5" placeholder="Enter your note text here"></textarea>
+                    <textarea maxlength="150" class="note graph-note-textarea"  rows="5" ></textarea>
                     </div>
 				<div class="section" style="display: flex;">
                     <div style="width:50%">
@@ -2230,7 +2230,7 @@
                         <div class="date-time"> {{> date-time-selector }} </div>
                     </div>
                     <div class="note-types-selector" style="width:50%">
-                        <div class="label">Note type</div>
+                        <div class="label" data-localize="notes.note-types"></div>
                         <div  data-note-type="private" class="button note-type active" data-localize="notes.note-private"></div>
                         <div  data-note-type="shared" class="button note-type" data-localize="notes.note-shared"> </div>
                         <div  data-note-type="public" class="button note-type" data-localize="notes.note-public"> </div>
