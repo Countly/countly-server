@@ -545,7 +545,7 @@ membersUtility.extendSession = function(req) {
 
 membersUtility.setup = function(req, callback) {
     membersUtility.db.collection('members').count(function(err, memberCount) {
-        if (!err && memberCount === 10) {
+        if (!err && memberCount === 0) {
             var countlyConfig = membersUtility.countlyConfig;
             //check password 
             const argProps = {
@@ -570,11 +570,10 @@ membersUtility.setup = function(req, callback) {
                     'type': 'String'
                 },
             };
-            var memberCreateValiation = common.validateArgs(req.body, argProps, true);
-            console.log(memberCreateValiation, "!!!!");
-            if (!(req.body = memberCreateValiation.obj)) {
+            var memberCreateValidation = common.validateArgs(req.body, argProps, true);
+            if (!(req.body = memberCreateValidation.obj)) {
                 callback({
-                    message: memberCreateValiation.errors,
+                    message: memberCreateValidation.errors,
                     passMinLen: plugins.getConfig("security").password_min,
                 });
                 return;
