@@ -210,6 +210,11 @@ var plugins = require('../../pluginManager.js'),
                 "sessions": 0,
                 "data-points": 0
             };
+            toReturn["all-apps"]["3_months"] = {
+                "events": 0,
+                "sessions": 0,
+                "data-points": 0
+            };
 
             for (let i = 0; i < periodsToFetch.length; i++) {
                 let formattedDate = periodsToFetch[i].replace(":", "-");
@@ -249,6 +254,13 @@ var plugins = require('../../pluginManager.js'),
                             "data-points": 0
                         };
                     }
+                    if (!toReturn[dataPerApp[i].a]["3_months"]) {
+                        toReturn[dataPerApp[i].a]["3_months"] = {
+                            "events": 0,
+                            "sessions": 0,
+                            "data-points": 0
+                        };
+                    }
 
                     if (dataPerApp[i].m === periodsToFetch[j]) {
                         toReturn[dataPerApp[i].a][formattedDate] = increaseDataPoints(toReturn[dataPerApp[i].a][formattedDate], dataPerApp[i]);
@@ -257,6 +269,11 @@ var plugins = require('../../pluginManager.js'),
                         if (j > 5) {
                             toReturn["all-apps"]["6_months"] = increaseDataPoints(toReturn["all-apps"]["6_months"], dataPerApp[i]);
                             toReturn[dataPerApp[i].a]["6_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["6_months"], dataPerApp[i]);
+                        }
+                        // only last 3 months
+                        if (j > 8) {
+                            toReturn[dataPerApp[i].a]["3_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["3_months"], dataPerApp[i]);
+                            toReturn["all-apps"]["3_months"] = increaseDataPoints(toReturn["all-apps"]["3_months"], dataPerApp[i]);
                         }
                         toReturn[dataPerApp[i].a]["12_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["12_months"], dataPerApp[i]);
                         toReturn["all-apps"]["12_months"] = increaseDataPoints(toReturn["all-apps"]["12_months"], dataPerApp[i]);

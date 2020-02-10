@@ -14,10 +14,19 @@ const plugins = require('../../pluginManager'),
     });
 
     plugins.register("/o/slipping", function(ob) {
-        var params = ob.params;
-        var app_id = params.qstring.app_id;
-        var validate = ob.validateUserForDataReadAPI;
-        var countlyDb = common.db;
+        const params = ob.params;
+        const app_id = params.qstring.app_id;
+        let user_query = params.qstring.query;
+        if (user_query) {
+            try {
+                user_query = JSON.parse(user_query);
+            }
+            catch (e) {
+                console.log(e);
+            }
+        }
+        const validate = ob.validateUserForDataReadAPI;
+        const countlyDb = common.db;
         const sp = plugins.getConfig("slipping-away-users");
         const periods = [sp.p1, sp.p2, sp.p3, sp.p4, sp.p5];
         validate(params, function() {
@@ -25,15 +34,15 @@ const plugins = require('../../pluginManager'),
             const tasks = [];
             const conditions = [];
 
-            const now = new moment();
-            now.utc().hours(0).minutes(0).seconds(0).unix();
-            const dayOfYear = now.dayOfYear();
-
             periods.forEach((p) => {
-                timeList[p] = now.dayOfYear(dayOfYear - p).utc().unix() * 1000;
-                conditions.push({
+                timeList[p] = moment().subtract(p, 'days').utc().unix() * 1000;
+                let c = {
                     lac: {$lt: timeList[p]},
-                });
+                };
+                if (user_query) {
+                    c = Object.assign(c, user_query);
+                }
+                conditions.push(c);
             });
 
             conditions.push({}); // find  all user count;

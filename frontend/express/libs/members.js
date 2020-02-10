@@ -894,4 +894,19 @@ membersUtility.settings = function(req, callback) {
     }
 };
 
+/**
+ * Searches for a user with the given username/email. Useful for the input from the login prompt.
+ * @param {string} input - username or the email address of the user we are looking for
+ * @param {function} callback - function with one parameter, the member object if a user is found, undefined otherwise
+*/
+membersUtility.findByUsernameOrEmail = function(input, callback) {
+    input = (input + "").trim();
+    membersUtility.db.collection('members').findOne({$or: [{username: input}, {email: input}]}, function(err, member) {
+        if (err) {
+            console.log(`Database error searching for user: ${err}`);
+        }
+        callback(member);
+    });
+};
+
 module.exports = membersUtility;
