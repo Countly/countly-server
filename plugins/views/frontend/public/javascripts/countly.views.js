@@ -209,7 +209,7 @@ window.ViewsView = countlyView.extend({
             self.haveActionColumn = false;
             if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && domains.length) {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && (domains.length || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0)) {
                     self.haveActionColumn = true;
                     columns.push({
                         "mData": function(row) {
