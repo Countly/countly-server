@@ -1416,7 +1416,8 @@ const processRequest = (params) => {
                         }
                         taskmanager.getResult({
                             db: common.db,
-                            id: params.qstring.task_id
+                            id: params.qstring.task_id,
+                            subtask_key: params.qstring.subtask_key
                         }, (err, res) => {
                             if (res) {
                                 common.returnOutput(params, res);

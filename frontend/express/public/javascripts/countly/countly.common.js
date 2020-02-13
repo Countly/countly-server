@@ -709,6 +709,25 @@
                 graphProperties.xaxis.ticks = tickObj.ticks;
 
                 graphTicks = tickObj.tickTexts;
+                //set dashed line for not finished yet
+
+                if (countlyCommon.periodObj.periodContainsToday === true) {
+                    for (var z = 0; z < dataPoints.length; z++) {
+                        if (dataPoints[z].mode !== "ghost" && dataPoints[z].mode !== "previous") {
+                            if (_period === "hour") {
+                                var now = moment().format("h");
+                                dataPoints[z].dashAfter = parseInt(now, 10) - 1;
+                            }
+                            else if (_period === "day") { //days in this month
+                                var c = countlyCommon.periodObj.currentPeriodArr.length;
+                                dataPoints[z].dashAfter = c - 1;
+                            }
+                            else {
+                                dataPoints[z].dashAfter = graphTicks.length - 2;
+                            }
+                        }
+                    }
+                }
 
                 var graphObj = $(container).data("plot"),
                     keyEventCounter = "A",
@@ -719,7 +738,7 @@
                     countlyCommon.deepObjectExtend(graphProperties, options);
                 }
 
-                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
+                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().grid.show && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
                     if (overrideBucket) {
                         graphObj.getOptions().series.points.radius = 4;
@@ -938,10 +957,13 @@
                             if (series.mode === "ghost") {
                                 series.label = jQuery.i18n.map["common.previous-period"];
                             }
-
+                            var opacity = "1.0";
                             //add lines over color block for dashed 
                             if (series.dashed) {
                                 addMe = '<svg style="width: 12px; height: 12px; position:absolute; top:0; left:0;"><line stroke-dasharray="2, 2"  x1="0" y1="100%" x2="100%" y2="0" style="stroke:rgb(255,255,255);stroke-width:30"/></svg>';
+                            }
+                            if (series.alpha) {
+                                opacity = series.alpha + "";
                             }
                             if (formattedValue) {
                                 formattedValue = parseFloat(formattedValue).toFixed(2).replace(/[.,]00$/, "");
@@ -951,7 +973,7 @@
                             }
 
                             tooltipHTML += "<div class='inner'>";
-                            tooltipHTML += "<div class='color' style='position:relative; background-color: " + series.color + "'>" + addMe + "</div>";
+                            tooltipHTML += "<div class='color' style='position:relative; background-color: " + series.color + "; opacity:" + opacity + ";'>" + addMe + "</div>";
                             tooltipHTML += "<div class='series'>" + series.label + "</div>";
                             tooltipHTML += "<div class='value'>" + formattedValue + "</div>";
                             tooltipHTML += "</div>";

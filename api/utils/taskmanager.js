@@ -310,7 +310,22 @@ taskmanager.nameResult = function(options, data, callback) {
 */
 taskmanager.getResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne({_id: options.id}, callback);
+    options.db.collection("long_tasks").findOne({_id: options.id}, function(err, task) {
+        if (!task) {
+            callback(err, task);
+        }
+        else if (options.subtask_key && task.taskgroup === true) {
+            taskmanager.getResultByQuery({db: options.db, query: {subtask: task._id, subtask_key: options.subtask_key}}, (err2, subtask) => {
+                if (!subtask) {
+                    taskmanager.rerunTask({db: options.db, id: task._id}, function() {});
+                }
+                callback(err2, subtask);
+            });
+        }
+        else {
+            callback(err, task);
+        }
+    });
 };
 
 /**
@@ -339,8 +354,10 @@ taskmanager.editTask = function(options, callback) {
         if (!err) {
             try {
                 var req = JSON.parse(data.request);
-                req.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
-                req.json.period_desc = options.data.period_desc;
+                if (options.data.period_desc && options.data.period_desc !== "" && options.data.period_desc !== "false") {
+                    req.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
+                    req.json.period_desc = options.data.period_desc;
+                }
                 options.data.request = JSON.stringify(req);
                 options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
             }

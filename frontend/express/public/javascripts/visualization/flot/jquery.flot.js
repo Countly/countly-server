@@ -2329,16 +2329,32 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
         }
 
         function drawSeriesLines(series) {
-            function plotLine(datapoints, xoffset, yoffset, axisx, axisy, dashed) {
+            function plotLine(datapoints, xoffset, yoffset, axisx, axisy, options) {
                 var points = datapoints.points,
                     ps = datapoints.pointsize,
-                    prevx = null, prevy = null;
+                    prevx = null, prevy = null,
+                    dashed = false,
+                    dashAfter = -1;
+                    if(options){
+                        dashed = options.dashed;
+                        dashAfter = options.dashAfter;
+                        if(options.alpha){
+                            ctx.globalAlpha = options.alpha;
+                        }
+                    }
 
                 ctx.beginPath();
                 if(dashed) {
                     ctx.setLineDash([4, 4]);
                 }
                 for (var i = ps; i < points.length; i += ps) {
+                    if(dashAfter && (dashAfter*ps) < i){
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(axisx.p2c(prevx) + xoffset, axisy.p2c(prevy) + yoffset);
+                        ctx.setLineDash([4, 4]);
+                        dashAfter = -1; //to not set again;
+                    }
                     var x1 = points[i - ps], y1 = points[i - ps + 1],
                         x2 = points[i], y2 = points[i + 1];
 
@@ -2410,6 +2426,7 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
                     ctx.lineTo(axisx.p2c(x2) + xoffset, axisy.p2c(y2) + yoffset);
                 }
                 ctx.stroke();
+                ctx.globalAlpha = 1.0;
             }
 
             function plotLineArea(datapoints, axisx, axisy) {
@@ -2581,7 +2598,7 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
             }
 
             if (lw > 0)
-                plotLine(series.datapoints, 0, 0, series.xaxis, series.yaxis, series.dashed);
+                plotLine(series.datapoints, 0, 0, series.xaxis, series.yaxis,{alpha:series.alpha,dashed: series.dashed, dashAfter: series.dashAfter});
             ctx.restore();
         }
 
