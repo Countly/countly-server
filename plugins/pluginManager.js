@@ -1273,6 +1273,8 @@ var pluginManager = function pluginManager() {
             }
         });
 
+        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session"];
+
         countlyDb.s = {};
         countlyDb._collection_cache = {};
         //overwrite some methods
@@ -1354,6 +1356,14 @@ var pluginManager = function pluginManager() {
 
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback) {
+                if (typeof options === "function") {
+                    callback = options;
+                    options = {};
+                }
+                else {
+                    options = options || {};
+                }
+
                 mngr.dispatch("/db/readAndUpdate", {
                     db: db_name,
                     operation: "findAndModify",
@@ -1361,7 +1371,7 @@ var pluginManager = function pluginManager() {
                     query: query,
                     sort: sort,
                     update: doc,
-                    options: typeof options === "function" ? {} : options
+                    options: options
                 });
                 var e;
                 var args = arguments;
@@ -1370,41 +1380,41 @@ var pluginManager = function pluginManager() {
                     e = new Error();
                     at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                 }
-                if (typeof options === "function") {
-                    //options was not passed, we have callback
-                    logDbWrite.d("findAndModify " + collection + " %j %j %j" + at, query, sort, doc);
-                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                    return this._findAndModify(query, sort, doc, retryifNeeded(options, null, e, copyArguments(arguments, "findAndModify")));
+
+                logDbWrite.d("findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
+                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                if (options.upsert) {
+                    var self = this;
+
+                    return this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
+                        logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
+                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                        self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(args, "findAndModify")));
+                    }, e, copyArguments(arguments, "findAndModify")));
                 }
                 else {
-                    //we have options
-                    logDbWrite.d("findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
-                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                    if (options.upsert) {
-                        var self = this;
-
-                        return this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
-                            logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
-                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(args, "findAndModify")));
-                        }, e, copyArguments(arguments, "findAndModify")));
-                    }
-                    else {
-                        return this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
-                    }
+                    return this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
                 }
             };
 
             var overwriteRetryWrite = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, doc, options, callback) {
+                    if (typeof options === "function") {
+                        callback = options;
+                        options = {};
+                    }
+                    else {
+                        options = options || {};
+                    }
+
                     mngr.dispatch("/db/update", {
                         db: db_name,
                         operation: name,
                         collection: collection,
                         query: selector,
                         update: doc,
-                        options: typeof options === "function" ? {} : options
+                        options: options
                     });
                     var args = arguments;
                     var e;
@@ -1413,29 +1423,20 @@ var pluginManager = function pluginManager() {
                         e = new Error();
                         at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                     }
-                    if (typeof options === "function") {
-                        //options was not passed, we have callback
-                        logDbWrite.d(name + " " + collection + " %j %j" + at, selector, doc);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        return this["_" + name](selector, doc, retryifNeeded(options, null, e, copyArguments(arguments, name)));
+
+                    logDbWrite.d(name + " " + collection + " %j %j %j" + at, selector, doc, options);
+                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                    if (options.upsert) {
+                        var self = this;
+
+                        return this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
+                            logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
+                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                            self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(args, name)));
+                        }, e, copyArguments(arguments, name)));
                     }
                     else {
-                        options = options || {};
-                        //we have options
-                        logDbWrite.d(name + " " + collection + " %j %j %j" + at, selector, doc, options);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        if (options.upsert) {
-                            var self = this;
-
-                            return this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
-                                logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
-                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                                self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(args, name)));
-                            }, e, copyArguments(arguments, name)));
-                        }
-                        else {
-                            return this["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
-                        }
+                        return this["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                     }
                 };
             };
@@ -1443,6 +1444,8 @@ var pluginManager = function pluginManager() {
             overwriteRetryWrite(ob, "updateOne");
             overwriteRetryWrite(ob, "updateMany");
             overwriteRetryWrite(ob, "replaceOne");
+            overwriteRetryWrite(ob, "findOneAndUpdate");
+            overwriteRetryWrite(ob, "findOneAndReplace");
 
             //overwrite with write logging
             var logForWrites = function(callback, e, data) {
@@ -1485,12 +1488,20 @@ var pluginManager = function pluginManager() {
             var overwriteDefaultWrite = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, options, callback) {
+                    if (typeof options === "function") {
+                        callback = options;
+                        options = {};
+                    }
+                    else {
+                        options = options || {};
+                    }
+
                     mngr.dispatch("/db/write", {
                         db: db_name,
                         operation: name,
                         collection: collection,
                         query: selector,
-                        options: typeof options === "function" ? {} : options
+                        options: options
                     });
                     var e;
                     var at = "";
@@ -1498,18 +1509,10 @@ var pluginManager = function pluginManager() {
                         e = new Error();
                         at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                     }
-                    if (typeof options === "function") {
-                        //options was not passed, we have callback
-                        logDbWrite.d(name + " " + collection + " %j" + at, selector);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        return this["_" + name](selector, logForWrites(options, e, copyArguments(arguments, name)));
-                    }
-                    else {
-                        //we have options
-                        logDbWrite.d(name + " " + collection + " %j %j" + at, selector, options);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        return this["_" + name](selector, options, logForWrites(callback, e, copyArguments(arguments, name)));
-                    }
+
+                    logDbWrite.d(name + " " + collection + " %j %j" + at, selector, options);
+                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                    return this["_" + name](selector, options, logForWrites(callback, e, copyArguments(arguments, name)));
                 };
             };
             overwriteDefaultWrite(ob, "deleteOne");
@@ -1553,12 +1556,20 @@ var pluginManager = function pluginManager() {
             var overwriteDefaultRead = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(query, options, callback) {
+                    if (typeof options === "function") {
+                        callback = options;
+                        options = {};
+                    }
+                    else {
+                        options = options || {};
+                    }
+
                     mngr.dispatch("/db/read", {
                         db: db_name,
                         operation: name,
                         collection: collection,
                         query: query,
-                        options: typeof options === "function" ? {} : options
+                        options: options
                     });
                     var e;
                     var at = "";
@@ -1566,31 +1577,25 @@ var pluginManager = function pluginManager() {
                         e = new Error();
                         at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                     }
-                    if (typeof options === "function") {
-                        //options was not passed, we have callback
-                        logDbRead.d(name + " " + collection + " %j" + at, query);
-                        logDbRead.d("From connection %j", countlyDb._cly_debug);
-                        return this["_" + name](query, logForReads(options, e, copyArguments(arguments, name)));
-                    }
-                    else {
-                        if (name === "findOne" && options && !options.projection) {
-                            if (options.fields) {
-                                options.projection = options.fields;
-                                delete options.fields;
-                            }
-                            else {
-                                options = {projection: options};
-                            }
+
+                    if (name === "findOne" && options && !options.projection) {
+                        if (options.fields) {
+                            options.projection = options.fields;
+                            delete options.fields;
                         }
-                        //we have options
-                        logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
-                        logDbRead.d("From connection %j", countlyDb._cly_debug);
-                        return this["_" + name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
+                        else if (findOptions.indexOf(Object.keys(options)[0]) === -1) {
+
+                            options = {projection: options};
+                        }
                     }
+                    logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
+                    logDbRead.d("From connection %j", countlyDb._cly_debug);
+                    return this["_" + name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
                 };
             };
 
             overwriteDefaultRead(ob, "findOne");
+            overwriteDefaultRead(ob, "findOneAndDelete");
             overwriteDefaultRead(ob, "aggregate");
 
             ob._find = ob.find;
@@ -1604,16 +1609,19 @@ var pluginManager = function pluginManager() {
                         options.projection = options.fields;
                         delete options.fields;
                     }
-                    else if (Object.keys(options).length) {
+                    else if (findOptions.indexOf(Object.keys(options)[0]) === -1) {
                         options = {projection: options};
                     }
+                }
+                else {
+                    options = options || {};
                 }
                 mngr.dispatch("/db/read", {
                     db: db_name,
                     operation: "find",
                     collection: collection,
                     query: query,
-                    options: options || {}
+                    options: options
                 });
                 if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
                     e = new Error();
