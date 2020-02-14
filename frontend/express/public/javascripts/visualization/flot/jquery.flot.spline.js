@@ -99,13 +99,16 @@
         var dashAfter = plength;
         if(options) {
             dashed = options.dashed;
+            if(dashed === true){
+                ctx.setLineDash([4, 4]);
+            }
+    
             dashAfter = options.dashAfter || plength;
+            
             if(options.alpha){
                 ctx.globalAlpha = options.alpha;
             }
         }
-       
-        
 
         for (var i = 0; i < dashAfter && i<plength; i++) {
             ctx[points[i][3]].apply(ctx, points[i][2]);

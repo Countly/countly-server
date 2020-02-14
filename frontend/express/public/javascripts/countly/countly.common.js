@@ -714,16 +714,40 @@
                 if (countlyCommon.periodObj.periodContainsToday === true) {
                     for (var z = 0; z < dataPoints.length; z++) {
                         if (dataPoints[z].mode !== "ghost" && dataPoints[z].mode !== "previous") {
+                            var bDate = new Date();
                             if (_period === "hour") {
-                                var now = moment().format("h");
-                                dataPoints[z].dashAfter = parseInt(now, 10) - 1;
+
+                                var settings = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID];
+                                var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: settings.timezone }));
+                                if (bDate.getDate() == tzDate.getDate()) {
+                                    dataPoints[z].dashAfter = tzDate.getHours() - 1;
+                                }
+                                else if (bDate.getDate() > tzDate.getDate()) {
+                                    dataPoints[z].dashed = true; //all dashed because app lives still in yesterday
+                                }
+                                //for last - none dashed - because app lives in tomorrow(so don't do anything for this case)
                             }
                             else if (_period === "day") { //days in this month
                                 var c = countlyCommon.periodObj.currentPeriodArr.length;
-                                dataPoints[z].dashAfter = c - 1;
+                                dataPoints[z].dashAfter = c - 2;
+                            }
+                            else if (_period == "month" && bDate.getMonth() <= 2 && (!bucket || bucket == "monthly")) {
+                                dataPoints[z].dashed = true;
                             }
                             else {
-                                dataPoints[z].dashAfter = graphTicks.length - 2;
+                                if (bucket == "hourly") {
+                                    var settings = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID];
+                                    var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: settings.timezone }));
+                                    dataPoints[z].dashAfter = graphTicks.length - (24 - tzDate.getHours() + 1);
+                                }
+                                else {
+                                    dataPoints[z].dashAfter = graphTicks.length - 2;
+                                }
+                            }
+
+                            if (typeof dataPoints[z].dashAfter !== 'undefined' && dataPoints[z].dashAfter <= 0) {
+                                delete dataPoints[z].dashAfter;
+                                dataPoints[z].dashed = true; //dash whole line
                             }
                         }
                     }
@@ -959,7 +983,7 @@
                             }
                             var opacity = "1.0";
                             //add lines over color block for dashed 
-                            if (series.dashed) {
+                            if (series.dashed && series.previous) {
                                 addMe = '<svg style="width: 12px; height: 12px; position:absolute; top:0; left:0;"><line stroke-dasharray="2, 2"  x1="0" y1="100%" x2="100%" y2="0" style="stroke:rgb(255,255,255);stroke-width:30"/></svg>';
                             }
                             if (series.alpha) {
