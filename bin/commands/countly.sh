@@ -121,7 +121,7 @@ countly_upgrade (){
 
         (cd "$DIR/../.." ;
         echo "Preparing production files...";
-        grunt dist-all;
+        countly task dist-all;
         echo "Restarting Countly...";
         sudo countly restart;
         )

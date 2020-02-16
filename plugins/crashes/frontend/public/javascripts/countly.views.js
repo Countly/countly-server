@@ -1358,18 +1358,18 @@ window.CrashgroupView = countlyView.extend({
             });
 
             if (crashData.is_public) {
-                $('#crash-share-public').attr('checked', true);
+                $('#crash-share-public').prop('checked', true);
                 $(".crash-share").show();
             }
             else {
-                $('#crash-share-public').attr('checked', false);
+                $('#crash-share-public').prop('checked', false);
                 $(".crash-share").hide();
             }
 
             if (crashData.share) {
                 for (var c in crashData.share) {
                     if (crashData.share[c]) {
-                        $('#crash-share-' + c).attr('checked', true);
+                        $('#crash-share-' + c).prop('checked', true);
                     }
                 }
             }
@@ -1415,14 +1415,14 @@ window.CrashgroupView = countlyView.extend({
                     $(".flot-text").hide().show(0);
                 }
             });
-            this.tabs.on("tabsshow", function(event, ui) {
-                if (ui && ui.panel) {
-                    var id = $(ui.panel).attr("id") + "";
+            this.tabs.on("tabsactivate", function(event, ui) {
+                if (ui && ui.newPanel) {
+                    var id = $(ui.newPanel).attr("id") + "";
                     if (id === "notes") {
-                        $(ui.panel).closest("#tabs").find(".error_menu").hide();
+                        $(ui.newPanel).closest("#tabs").find(".error_menu").hide();
                     }
                     else {
-                        $(ui.panel).closest("#tabs").find(".error_menu").show();
+                        $(ui.newPanel).closest("#tabs").find(".error_menu").show();
                     }
                 }
             });
@@ -2062,10 +2062,24 @@ app.addPageScript("/drill#", function() {
 
 app.addPageScript("/users/#", function() {
     if (app.activeView && app.activeView.tabs) {
-        app.activeView.tabs.tabs('add', '#usertab-crashes', jQuery.i18n.map["crashes.title"]);
+        var ul = app.activeView.tabs.find("ul");
+        $("<li><a href='#usertab-crashes'>" + jQuery.i18n.map["crashes.title"] + "</a></li>").appendTo(ul);
+        $("<div id='usertab-crashes'></div>").appendTo(app.activeView.tabs);
         app.activeView.tabs.tabs("refresh");
         var userDetails = countlyUserdata.getUserdetails();
         $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>" + jQuery.i18n.map["userdata.crashes"] + "</div></div></div><table  data-view='crashesView' id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
+        app.activeView.shouldLoadCrashes = false;
+        app.activeView.tabs.on("tabsshow", function(event, ui) {
+            if (ui && ui.panel) {
+                var tab = ($(ui.panel).attr("id") + "").replace("usertab-", "");
+                if (tab === "crashes" && !app.activeView.shouldLoadCrashes) {
+                    app.activeView.shouldLoadCrashes = true;
+                    if (app.activeView.dtablecrashes) {
+                        app.activeView.dtablecrashes.fnDraw(false);
+                    }
+                }
+            }
+        });
         app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "iDisplayLength": 30,
             "aaSorting": [[ 2, "desc" ]],
@@ -2073,15 +2087,17 @@ app.addPageScript("/users/#", function() {
             "bFilter": false,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=user_crashes&uid=" + userDetails.uid,
             "fnServerData": function(sSource, aoData, fnCallback) {
-                self.request = $.ajax({
-                    "dataType": 'json',
-                    "type": "POST",
-                    "url": sSource,
-                    "data": aoData,
-                    "success": function(data) {
-                        fnCallback(data);
-                    }
-                });
+                if (app.activeView.shouldLoadCrashes) {
+                    self.request = $.ajax({
+                        "dataType": 'json',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data) {
+                            fnCallback(data);
+                        }
+                    });
+                }
             },
             "aoColumns": [
                 {

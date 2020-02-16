@@ -953,13 +953,13 @@ function initializeViewsWidget() {
 
     var viewsWidgetTemplate;
     var viewsMetric = [
-        { name: "Total Visitors", value: "u" },
-        { name: "New Visitors", value: "n" },
-        { name: "Total Visits", value: "t" },
-        { name: "Avg. Time", value: "d" },
-        { name: "Landings", value: "s" },
-        { name: "Exits", value: "e" },
-        { name: "Bounces", value: "b" }
+        { name: jQuery.i18n.prop("views.u"), value: "u" },
+        { name: jQuery.i18n.prop("views.n"), value: "n" },
+        { name: jQuery.i18n.prop("views.t"), value: "t" },
+        { name: jQuery.i18n.prop("views.d"), value: "d" },
+        { name: jQuery.i18n.prop("views.s"), value: "s" },
+        { name: jQuery.i18n.prop("views.e"), value: "e" },
+        { name: jQuery.i18n.prop("views.b"), value: "b" }
     ];
     /**
      * Function to return view name

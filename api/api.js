@@ -100,7 +100,8 @@ plugins.setConfigs("api", {
     prevent_duplicate_requests: true,
     metric_changes: true,
     offline_mode: false,
-    reports_regenerate_interval: 3600
+    reports_regenerate_interval: 3600,
+    send_test_email: ""
 });
 
 /**

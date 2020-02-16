@@ -195,6 +195,7 @@
                 "plugins/pluginManager.js",
                 "plugins/*/api/**/*.js",
                 "plugins/*/frontend/*.js",
+                "local-modules/**/*.js",
                 "plugins/*/extend/*.js"
             ],
             "env": {
