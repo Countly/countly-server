@@ -839,6 +839,11 @@ var pluginManager = function pluginManager() {
                     callback(errors);
                 });
             }
+            else {
+                errors = true;
+                callback(errors);
+                console.log('Server is in offline mode, this command cannot be run. %j');
+            }
         });
     };
 
@@ -885,6 +890,11 @@ var pluginManager = function pluginManager() {
                     console.log('Done upgrading plugin %j', plugin);
                     callback(errors);
                 });
+            }
+            else {
+                errors = true;
+                callback(errors);
+                console.log('Server is in offline mode, this command cannot be run. %j');
             }
         });
     };

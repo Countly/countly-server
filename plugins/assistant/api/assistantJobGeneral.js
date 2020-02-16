@@ -38,69 +38,6 @@ else {
 
                 let dataForFeedMap = [];
                 pluginManager.loadConfigs(db, function() {
-                    //go through all feeds
-                    async.each(dataForFeedMap, function(feedItem, callbackOuter) {
-                    //collect needed feed items
-                        parser.parseURL(feedItem.url, function(parserErr, feed) {
-                            if (parserErr !== null) {
-                                log.w('Assistant plugin, feed reader returned error while reading feed. url: [%j] error: [%j] ', feedItem.url, parserErr);
-                                callbackOuter();
-                            }
-                            else {
-                                if (typeof feed.feed !== "undefined") {
-                                    feed = feed.feed;
-                                    feed.items = feed.entries;
-                                }
-                                let arrayForDataToNotify = [];
-                                if (!underscore.isUndefined(feed)) {
-                                    feed.items.forEach(function(entry) {
-                                        let eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
-                                        let blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
-                                        let data = [entry.title, entry.link];
-
-                                        if (blog_post_ready) {
-                                            arrayForDataToNotify.push({blog_post_ready: blog_post_ready, data: data});
-                                        }
-                                    });
-
-                                }
-                                else {
-                                    log.w('Assistant plugin, feed reader returned undefined! Probably timeout. url: [%j] error: [%j] ', feedItem.url, parserErr);
-                                }
-                                //go through collected feed items
-                                async.each(arrayForDataToNotify, function(feedMiddleItem, callbackMiddle) {
-                                //go through all apps
-                                    async.each(providedInfo.appsData, function(ret_app_data, callbackInner) {
-                                        let apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
-                                        let anc = assistant.prepareNotificationSpecificFields(apc, feedItem.anc_i18n, feedItem.anc_type, feedItem.anc_subtype, feedItem.anc_version);
-
-                                        assistant.createNotificationIfRequirementsMet(-1, feedItem.targetHour, (feedMiddleItem.blog_post_ready), feedMiddleItem.data, anc);
-                                        callbackInner(null);
-                                    }, function(err) {
-                                        if (err !== null) {
-                                            log.w('Assistant feed generation internal resolving with error:[%j]', err);
-                                        }
-                                        callbackMiddle(null);
-                                    });
-
-                                }, function(feedHandlerErr) {
-                                    if (feedHandlerErr !== null) {
-                                        log.w('Assistant feed generation middle resolving with error:[%j]', feedHandlerErr);
-                                    }
-                                    callbackOuter(null);
-                                });
-                            }
-                        });
-
-                    }, function(err) {
-                        if (err !== null) {
-                            log.w('Assistant feed generation outer resolving with an error:[%j]', err);
-                        }
-                        else {
-                            log.i('Assistant for [%j] plugin resolving with no errors', PLUGIN_NAME);
-                        }
-                        resolve();
-                    });
                     const offlineMode = pluginManager.getConfig("api").offline_mode;
                     if (!offlineMode) {
                         // (3.1) blog page
@@ -166,6 +103,69 @@ else {
                                 dataForFeedMap.push(feedDataEE);
                             }
                         }
+                        //go through all feeds
+                        async.each(dataForFeedMap, function(feedItem, callbackOuter) {
+                        //collect needed feed items
+                            parser.parseURL(feedItem.url, function(parserErr, feed) {
+                                if (parserErr !== null) {
+                                    log.w('Assistant plugin, feed reader returned error while reading feed. url: [%j] error: [%j] ', feedItem.url, parserErr);
+                                    callbackOuter();
+                                }
+                                else {
+                                    if (typeof feed.feed !== "undefined") {
+                                        feed = feed.feed;
+                                        feed.items = feed.entries;
+                                    }
+                                    let arrayForDataToNotify = [];
+                                    if (!underscore.isUndefined(feed)) {
+                                        feed.items.forEach(function(entry) {
+                                            let eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+                                            let blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                            let data = [entry.title, entry.link];
+
+                                            if (blog_post_ready) {
+                                                arrayForDataToNotify.push({blog_post_ready: blog_post_ready, data: data});
+                                            }
+                                        });
+
+                                    }
+                                    else {
+                                        log.w('Assistant plugin, feed reader returned undefined! Probably timeout. url: [%j] error: [%j] ', feedItem.url, parserErr);
+                                    }
+                                    //go through collected feed items
+                                    async.each(arrayForDataToNotify, function(feedMiddleItem, callbackMiddle) {
+                                    //go through all apps
+                                        async.each(providedInfo.appsData, function(ret_app_data, callbackInner) {
+                                            let apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
+                                            let anc = assistant.prepareNotificationSpecificFields(apc, feedItem.anc_i18n, feedItem.anc_type, feedItem.anc_subtype, feedItem.anc_version);
+
+                                            assistant.createNotificationIfRequirementsMet(-1, feedItem.targetHour, (feedMiddleItem.blog_post_ready), feedMiddleItem.data, anc);
+                                            callbackInner(null);
+                                        }, function(err) {
+                                            if (err !== null) {
+                                                log.w('Assistant feed generation internal resolving with error:[%j]', err);
+                                            }
+                                            callbackMiddle(null);
+                                        });
+
+                                    }, function(feedHandlerErr) {
+                                        if (feedHandlerErr !== null) {
+                                            log.w('Assistant feed generation middle resolving with error:[%j]', feedHandlerErr);
+                                        }
+                                        callbackOuter(null);
+                                    });
+                                }
+                            });
+
+                        }, function(err) {
+                            if (err !== null) {
+                                log.w('Assistant feed generation outer resolving with an error:[%j]', err);
+                            }
+                            else {
+                                log.i('Assistant for [%j] plugin resolving with no errors', PLUGIN_NAME);
+                            }
+                            resolve();
+                        });
                     }
                 });
             }

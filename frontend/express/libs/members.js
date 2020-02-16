@@ -563,22 +563,20 @@ membersUtility.setup = function(req, callback) {
                     membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
                         member = member.ops;
                         if (countlyConfig.web.use_intercom && !plugins.getConfig("api").offline_mode) {
-                            if (!plugins.getConfig("api").offline_mode) {
-                                var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
-                                request(options, function(a, c, b) {
-                                    a = {};
-                                    a.api_key = md5Hash(member[0]._id + (new Date).getTime());
-                                    b && (b.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (a.in_user_hash = b.in_user_hash));
+                            var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
+                            request(options, function(a, c, b) {
+                                a = {};
+                                a.api_key = md5Hash(member[0]._id + (new Date).getTime());
+                                b && (b.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (a.in_user_hash = b.in_user_hash));
 
-                                    membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
-                                        plugins.callMethod("setup", {req: req, data: member[0]});
-                                        setLoggedInVariables(req, member[0], membersUtility.db, function() {
-                                            req.session.install = true;
-                                            callback();
-                                        });
+                                membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
+                                    plugins.callMethod("setup", {req: req, data: member[0]});
+                                    setLoggedInVariables(req, member[0], membersUtility.db, function() {
+                                        req.session.install = true;
+                                        callback();
                                     });
                                 });
-                            }
+                            });
                         }
                         else {
                             var a = {};
