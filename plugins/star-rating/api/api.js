@@ -743,7 +743,7 @@ const widgetPropertyPreprocessors = {
             widget.is_active = "false";
             widget.hide_sticker = false;
 
-            common.db.collection("feedback_widgets").insert(widget, function(err, result) {
+            common.db.collection("feedback_widgets").insert(widget, function(err) {
                 if (!err) {
                     resolve(true);
                 }
