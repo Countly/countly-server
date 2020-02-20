@@ -613,7 +613,9 @@ const widgetPropertyPreprocessors = {
     });
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
-        common.db.collection('feedback_widgets').drop(function() {});
+        common.db.collection('feedback_widgets').remove({
+            "app_id": appId
+        });
         common.db.collection('feedback' + appId).drop(function() {});
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) {
@@ -657,7 +659,9 @@ const widgetPropertyPreprocessors = {
     });
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
-        common.db.collection('feedback_widgets').drop(function() {});
+        common.db.collection('feedback_widgets').remove({
+            "app_id": appId
+        });
         common.db.collection('feedback' + appId).drop(function() {
             common.db.collection('feedback' + appId).ensureIndex({
                 "uid": 1
