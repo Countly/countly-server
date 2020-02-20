@@ -39,6 +39,23 @@ EOF
 }
 EOF
     fi
+
+    if [ -f /etc/redhat-release ]; then
+        #mongodb might need to be started
+        if grep -q -i "release 6" /etc/redhat-release ; then
+            service mongod restart || echo "mongodb service does not exist"
+        else
+            systemctl restart mongod || echo "mongodb systemctl job does not exist"
+        fi
+    fi
+
+    if [ -f /etc/lsb-release ]; then
+        if [[ "$(/sbin/init --version)" =~ upstart ]]; then
+            restart mongod || echo "mongodb upstart job does not exist"
+        else
+            systemctl restart mongod || echo "mongodb systemctl job does not exist"
+        fi
+    fi
 else
         echo 'Command logrotate is not found, continuing without logrotate setup.'
 fi
