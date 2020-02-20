@@ -3,7 +3,7 @@ var fs = require("fs");
 
 var myArgs = process.argv.slice(2);
 if (myArgs.length && fs.existsSync(myArgs[0])) {
-    // Load yaml file using yaml.load 
+    // Load yaml file using yaml.load
     var ob = yaml.load(myArgs[0]);
 
 
@@ -20,6 +20,11 @@ if (myArgs.length && fs.existsSync(myArgs[0])) {
         ob.net = {};
     }
     ob.net.bindIp = "127.0.0.1";
+
+    if (!ob.systemLog) {
+        ob.systemLog = {};
+    }
+    ob.systemLog.logRotate = "reopen";
 
     fs.writeFileSync(myArgs[0], yaml.stringify(ob, 4));
 }
