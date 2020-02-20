@@ -1,5 +1,5 @@
 {
-  "name": "from-countly-root",
+  "name": "countly-root",
   "version": "0.1.0",
   "description": "Resolves a relative path from Countly root directory to an absolute path.",
   "main": "index.js",
