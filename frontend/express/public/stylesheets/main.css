@@ -806,7 +806,8 @@ div.datatablesubrow {display: none;}
     .cly-select .search { top:100%; position:absolute; z-index:2; background-color: #FFF; width:100%; border:1px solid #D0D0D0; border-bottom:none; margin-left:-1px; cursor:default; overflow:auto; }
         .cly-select .search .fa { position: absolute; right:0; top:5px; color:#CCC; font-size: 10px; }
         .cly-select .search .inner { position:relative; margin:5px 8px; padding:4px 1px; padding-right:20px; background-color:#FFF; font:13px Ubuntu; line-height:111%; }
-        .cly-select .search input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; }
+        .cly-select .search input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; -webkit-appearance: textfield; }
+        .cly-select .search input::-webkit-search-decoration { -webkit-appearance: none; }
     .cly-select .search + .select-items { margin-top: 33px; border-top-left-radius: 0; border-top-right-radius: 0; }
     .cly-select .select-items { top:100%; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; }
     .cly-select.upside-down .select-items { bottom:100%; top: auto;}
