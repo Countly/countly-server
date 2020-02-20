@@ -150,7 +150,10 @@ class Manager {
                                             name: j.name
                                         };
                                     }));
-                                    this.process(array.filter(j => this.types.indexOf(j.name) !== -1));
+                                    this.process(array.filter(j => this.types.indexOf(j.name) !== -1)).catch(e => {
+                                        log.e('Error during job resuming', e);
+                                        resume();
+                                    });
                                 }
                                 else {
                                     this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
@@ -224,7 +227,10 @@ class Manager {
                 this.checkAfterDelay();
             }
             else {
-                this.process(jobs);
+                this.process(jobs).catch(e => {
+                    log.e('Error during job processing', e);
+                    this.checkAfterDelay();
+                });
             }
         });
     }
@@ -256,7 +262,15 @@ class Manager {
 
                 if (!this.canRun(job)) {
                     jobs = jobs.filter(j => j.name !== job.name);
+                    log.d('Cannot run %s:%s:%s, skipping for now', json.name, json._id, new Date(json.next));
                     continue;
+                }
+
+                if (job instanceof JOB.IPCJob) {
+                    if (!this.hasResources(job)) {
+                        log.i('All resources are busy for %s:%s:%s, skipping for now', json.name, json._id, new Date(json.next));
+                        continue;
+                    }
                 }
 
                 log.i('Trying to start job %j', json);
@@ -270,7 +284,7 @@ class Manager {
                 job._json.status = STATUS.RUNNING;
                 job._json.started = update.$set.started;
 
-                if (job.strict !== null && (Date.now() - job.next) > job.strict) {
+                if ((job.strict !== null && job.strict !== undefined) && (Date.now() - job.next) > job.strict) {
                     update.$set.status = job._json.status = STATUS.DONE;
                     update.$set.done = job._json.done = Date.now();
                     update.$set.error = job._json.error = 'Job expired';
@@ -280,15 +294,33 @@ class Manager {
                     continue;
                 }
 
-                let old = await JOB.Job.updateAtomically(this.db, {
-                    _id: job._id,
-                    status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED, STATUS.PAUSED]}
-                }, update, false);
+                let old;
+                try {
+                    old = await JOB.Job.updateAtomically(this.db, {
+                        _id: job._id,
+                        status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED, STATUS.PAUSED]}
+                    }, update, false);
+                }
+                catch (e) {
+                    log.i('Job %s wasn\'t found', job._id, e);
+                }
+
                 if (old) {
                     if (old.status === STATUS.RUNNING) {
                         log.i('Job %s is running on another server, won\'t start it here', job.id);
                     }
                     else if (old.status === STATUS.SCHEDULED || old.status === STATUS.PAUSED) {
+                        if (job instanceof JOB.IPCJob || job instanceof JOB.IPCFaçadeJob) {
+                            if (!this.hasResources(job)) {
+                                log.i('Started the job, but all resources are busy for %j, putting it back to SCHEDULED', json);
+                                await JOB.Job.updateAtomically(this.db, {
+                                    _id: job._id,
+                                    status: STATUS.RUNNING
+                                }, {$set: {status: STATUS.SCHEDULED}}, false);
+                                return;
+                            }
+                        }
+
                         let p = this.start(job);
                         if (!p) {
                             await JOB.Job.updateAtomically(this.db, {
@@ -325,7 +357,7 @@ class Manager {
                 nextFrom = new Date(job.next);
             var next = later.schedule(schedule).next(2, nextFrom);
             if (next && next.length > 1) {
-                if (job.strict !== null) {
+                if (job.strict !== null && job.strict !== undefined) {
                     // for strict jobs we're going to repeat all missed tasks up to current date after restart
                     // for non-strict ones, we want to start from current date
                     while (next[1].getTime() < Date.now()) {

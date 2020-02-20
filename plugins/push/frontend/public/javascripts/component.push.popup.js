@@ -405,7 +405,7 @@ window.component('push.popup', function(popup) {
                             valuePers: l.messageTitlePers, 
                             valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
-                            persOpts: push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
+                            persOpts: push.PERS_OPTS && push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
                         l.messageCtrl = new C.emoji.controller({
@@ -416,7 +416,7 @@ window.component('push.popup', function(popup) {
                             valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
-                            persOpts: push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
+                            persOpts: push.PERS_OPTS && push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
 
@@ -1238,7 +1238,7 @@ window.component('push.popup', function(popup) {
                                                 el.querySelectorAll('.pers').forEach(function(el){
                                                     el.textContent = el.getAttribute('data-fallback');
 
-                                                    var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                    var name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
                                                     if (name) {
                                                         name = name.title();
                                                     }
@@ -1275,7 +1275,7 @@ window.component('push.popup', function(popup) {
                                             el.querySelectorAll('.pers').forEach(function(el){
                                                 el.textContent = el.getAttribute('data-fallback');
 
-                                                var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                var name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
                                                 if (name) {
                                                     name = name.title();
                                                 }

@@ -58,6 +58,7 @@ static std::string timestr(int offset) {
 // #define MAKE_NV(K, V, F) { (uint8_t *) K, (uint8_t *)V, sizeof(K) - 1, sizeof(V) - 1, F ? NGHTTP2_NV_FLAG_NONE : NGHTTP2_NV_FLAG_NO_INDEX }
 
 #define MAKE_NV(K, V, F) { (uint8_t *) K, (uint8_t *) V.c_str(), sizeof(K) - 1, V.size(), F }
+#define MAKE_NVC(K, V, VL, F) { (uint8_t *) K, V, sizeof(K) - 1, VL, F }
 
 
 

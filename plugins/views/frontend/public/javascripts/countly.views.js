@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -209,7 +209,7 @@ window.ViewsView = countlyView.extend({
             self.haveActionColumn = false;
             if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && domains.length) {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && (domains.length || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0)) {
                     self.haveActionColumn = true;
                     columns.push({
                         "mData": function(row) {
@@ -401,8 +401,8 @@ window.ViewsView = countlyView.extend({
                         countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
                             self.token = token && token.result;
                             if (self.token) {
-                                newWindow.location.href = url;
                                 newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                                newWindow.location.href = url;
                             }
                         });
                     }
@@ -433,8 +433,8 @@ window.ViewsView = countlyView.extend({
                     self.token = token && token.result;
                     if (self.token) {
                         var path = self.useView.replace("#/analytics/views/action-map/", "");
-                        newWindow.location.href = url + path;
                         newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                        newWindow.location.href = url + path;
                     }
                 });
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
@@ -914,9 +914,6 @@ app.addPageScript("/custom#", function() {
 });
 
 $(document).ready(function() {
-    if (!production) {
-        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
-    }
     jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
         x = countlyViews.getFrequencyIndex(x);
         y = countlyViews.getFrequencyIndex(y);
@@ -956,13 +953,13 @@ function initializeViewsWidget() {
 
     var viewsWidgetTemplate;
     var viewsMetric = [
-        { name: "Total Visitors", value: "u" },
-        { name: "New Visitors", value: "n" },
-        { name: "Total Visits", value: "t" },
-        { name: "Avg. Time", value: "d" },
-        { name: "Landings", value: "s" },
-        { name: "Exits", value: "e" },
-        { name: "Bounces", value: "b" }
+        { name: jQuery.i18n.prop("views.u"), value: "u" },
+        { name: jQuery.i18n.prop("views.n"), value: "n" },
+        { name: jQuery.i18n.prop("views.t"), value: "t" },
+        { name: jQuery.i18n.prop("views.d"), value: "d" },
+        { name: jQuery.i18n.prop("views.s"), value: "s" },
+        { name: jQuery.i18n.prop("views.e"), value: "e" },
+        { name: jQuery.i18n.prop("views.b"), value: "b" }
     ];
     /**
      * Function to return view name

@@ -71,8 +71,8 @@ plugins.setConfigs("crashes", {
                 if (!ob.export_commands.crashes) {
                     ob.export_commands.crashes = [];
                 }
-                ob.export_commands.crashes.push('mongoexport ' + ob.dbstr + ' --collection app_crashes' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/crashes' + ob.app_id + '.json');
-                ob.export_commands.crashes.push('mongoexport ' + ob.dbstr + ' --collection app_crashusers' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/crashusers' + ob.app_id + '.json');
+                ob.export_commands.crashes.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_crashes' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/crashes' + ob.app_id + '.json']});
+                ob.export_commands.crashes.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_crashusers' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/crashusers' + ob.app_id + '.json']});
                 resolve();
             }
         });
@@ -913,7 +913,7 @@ plugins.setConfigs("crashes", {
                         params.res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
                             'Content-Length': crash.error.length,
-                            'Content-Disposition': "attachment;filename=" + params.qstring.crash_id + "_stacktrace.txt"
+                            'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
                         });
                         params.res.write(crash.error);
                         params.res.end();
@@ -942,7 +942,7 @@ plugins.setConfigs("crashes", {
                         params.res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
                             'Content-Length': buf.byteLength,
-                            'Content-Disposition': "attachment;filename=" + params.qstring.crash_id + "_bin.dmp"
+                            'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_bin.dmp"
                         });
                         let stream = new Duplex();
                         stream.push(buf);

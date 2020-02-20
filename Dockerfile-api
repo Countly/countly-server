@@ -1,0 +1,52 @@
+FROM node:8.16-jessie
+
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
+# Enterprise Edition:
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing
+
+USER root
+
+# Core dependencies
+## Tini
+ENV TINI_VERSION v0.18.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+
+ENTRYPOINT ["/tini", "-v", "--"]
+
+RUN apt-get update && apt-get -y install sendmail sqlite3
+
+# Required by push plugin
+RUN git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 && \
+	cd /tmp/nghttp2 && \
+	git checkout tags/v1.30.0 && \
+	export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install
+
+# Setup Countly
+ENV COUNTLY_CONTAINER="api"
+ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
+ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0"
+
+## The files
+RUN mkdir /opt/countly && chown 1001:0 /opt/countly
+USER 1001:0
+WORKDIR /opt/countly
+COPY --chown=1001:0 . .
+HEALTHCHECK --start-period=60s CMD curl --fail http://localhost:3001/o/ping || exit 1
+
+## API runtime dependencies
+RUN cp -n api/config.sample.js api/config.js && \
+	cp -n frontend/express/config.sample.js frontend/express/config.js && \
+	HOME=/tmp npm install && \
+	./bin/docker/preinstall.sh
+
+USER root
+
+RUN ./bin/docker/modify.sh && \
+	chown -R 1001:0 /opt/countly && \
+	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
+	apt-get autoremove -y && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+USER 1001:0
+CMD ["/opt/countly/bin/docker/cmd.sh"]

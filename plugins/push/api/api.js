@@ -210,7 +210,7 @@ const PUSH_CACHE_GROUP = 'P';
             nuid = newUser.uid;
 
         if (ouid && nuid) {
-            log.i(`Merging push data of ${ouid} into ${nuid}`);
+            log.d(`Merging push data of ${ouid} into ${nuid}`);
             common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
                 if (err || !users) {
                     log.e('Couldn\'t load users to merge', err);
@@ -223,7 +223,7 @@ const PUSH_CACHE_GROUP = 'P';
                     opts = {};
 
                 if (ou && nu) {
-                    log.i('Merging %j into %j', ou, nu);
+                    log.d('Merging %j into %j', ou, nu);
                     if (ou.tk && Object.keys(ou.tk).length) {
                         update.$set = {};
                         for (let k in ou.tk) {
@@ -246,19 +246,19 @@ const PUSH_CACHE_GROUP = 'P';
                     }
                 }
                 else if (ou && Object.keys(ou).length > 1 && !nu) {
-                    log.i('No new uid, setting old');
+                    log.d('No new uid, setting old');
                     update.$set = ou;
                     opts.upsert = true;
                     delete update.$set._id;
                 }
                 else if (ou && Object.keys(ou).length === 1 && !nu) {
-                    log.i('Empty old uid, nothing to merge');
+                    log.d('Empty old uid, nothing to merge');
                 }
                 else if (!ou && nu) {
-                    log.i('No old uid, nothing to merge');
+                    log.d('No old uid, nothing to merge');
                 }
                 else {
-                    log.i('Nothing to merge at all');
+                    log.d('Nothing to merge at all');
                 }
 
                 if (ou) {
@@ -513,10 +513,10 @@ const PUSH_CACHE_GROUP = 'P';
         }
     });
 
-    plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbstr, export_folder}) => {
+    plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {
         if (uids && uids.length) {
             if (!export_commands.push) {
-                export_commands.push = [`mongoexport ${dbstr} --collection push_${app_id} -q '{uid: {$in: ${JSON.stringify(uids)}}}' --out ${export_folder}/push_${app_id}.json`];
+                export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{uid: {$in: ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
             }
         }
     });

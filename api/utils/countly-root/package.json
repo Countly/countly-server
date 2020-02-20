@@ -1,0 +1,10 @@
+{
+  "name": "countly-root",
+  "version": "0.1.0",
+  "description": "Resolves a relative path from Countly root directory to an absolute path.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Countly/countly-server.git"
+  }
+}

@@ -149,21 +149,8 @@ function getTotalEvents(callback, apps) {
         }
         query._id = {$in: inarray};
     }
-    countlyDb.collection("events").find(query, {'list': 1}).toArray(function(err, events) {
-        if (err || !events) {
-            callback(0);
-        }
-        else {
-            var eventCount = 0;
-
-            for (let i = 0; i < events.length; i++) {
-                if (events[i] && events[i].list) {
-                    eventCount += events[i].list.length;
-                }
-            }
-
-            callback(eventCount);
-        }
+    countlyDb.collection("events").aggregate([{$match: query}, {$project: {len: {$size: '$list'}}}, {$group: {_id: 'count', len: {$sum: '$len'}}}], function(err, count) {
+        callback(count && count[0] && count[0].len || 0);
     });
 }
 
@@ -221,21 +208,8 @@ function getTotalMsgSent(callback, apps) {
         }
         query.apps = {$in: inarray};
     }
-    countlyDb.collection("messages").find(query, {"result": 1}).toArray(function(err, messages) {
-        if (err || !messages) {
-            callback(0);
-        }
-        else {
-            var sentMsgCount = 0;
-
-            for (let i = 0; i < messages.length; i++) {
-                if (messages[i] && messages[i].result && messages[i].result.sent) {
-                    sentMsgCount += messages[i].result.sent;
-                }
-            }
-
-            callback(sentMsgCount);
-        }
+    countlyDb.collection("messages").aggregate([{$match: query}, {$group: {_id: 'count', sent: {$sum: '$result.sent'}}}], function(err, count) {
+        callback(count && count[0] && count[0].sent || 0);
     });
 }
 

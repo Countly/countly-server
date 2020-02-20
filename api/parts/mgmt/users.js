@@ -259,7 +259,6 @@ usersApi.createUser = function(params) {
 
                 member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
                 common.db.collection('members').update({ '_id': member[0]._id }, { $set: { api_key: member[0].api_key } }, function() { });
-
                 mail.sendToNewMember(member[0], passwordNoHash);
                 plugins.dispatch("/i/users/create", {
                     params: params,
@@ -811,7 +810,34 @@ usersApi.deleteUserNotes = async function(params) {
     });
     return true;
 };
-
+/**
+ * fetch apps id for those user can access;
+* @param {params} params - params object
+* @returns {array} app id array
+ */
+usersApi.fetchUserAppIds = async function(params) {
+    const query = {};
+    const appIds = [];
+    if (!params.member.global_admin) {
+        if (params.member.admin_of) {
+            for (let i = 0; i < params.member.admin_of.length ;i++) {
+                if (params.member.admin_of[i] === "") {
+                    continue;
+                }
+                appIds.push(params.member.admin_of[i]);
+            }
+        }
+        if (params.member.user_of) {
+            for (let i = 0; i < params.member.user_of.length ;i++) {
+                appIds.push(params.member.user_of[i]);
+            }
+        }
+    }
+    if (appIds.length > 0) {
+        query._id = {$in: appIds};
+    }
+    return appIds;
+};
 /**
 * fetch Notes
 * @param {params} params - params object
@@ -819,11 +845,15 @@ usersApi.deleteUserNotes = async function(params) {
 **/
 usersApi.fetchNotes = async function(params) {
     countlyCommon.getPeriodObj(params);
+
     const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
     let appIds = [];
     let filtedAppIds = [];
     try {
         appIds = JSON.parse(params.qstring.notes_apps);
+        if (!appIds || appIds.length === 0) {
+            appIds = await usersApi.fetchUserAppIds(params);
+        }
         filtedAppIds = appIds.filter((appId) => {
             if (params.member.global_admin || params.member.user_of.indexOf(appId) > -1 || params.member.admin_of.indexOf(appId) > -1) {
                 return true;

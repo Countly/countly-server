@@ -5,9 +5,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 #rename config property
 WARN="$(countly config "logs.warning")"
 countly config "logs.warning" null
-countly config "logs.warn" $WARN
+countly config "logs.warn" "$WARN"
 
-if [ $1 != "combined" ]; then
+if [ "$1" != "combined" ]; then
     #upgrade existing plugins
     countly plugin upgrade push
     
@@ -21,5 +21,5 @@ if [ $1 != "combined" ]; then
 fi
 
 #add indexes
-nodejs $DIR/scripts/add_indexes.js
+nodejs "$DIR/scripts/add_indexes.js"
 

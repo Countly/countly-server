@@ -47,6 +47,12 @@ const DEFAULT_EXPIRY = 1000 * 60 * 60 * 24 * 7;
 
 const S = '|';
 
+/** isset function def, returns false if passed is null or undefined
+ * @param {object} v - anything to check
+ * @returns {boolean} true - if  not null or undefined
+*/
+const isset = v => v !== undefined && v !== null;
+
 /** 
  * Main notification class, stored in messages
  */
@@ -232,7 +238,7 @@ class Note {
         return new Promise((resolve, reject) => {
             db.collection('messages').findOne({_id: typeof _id === 'string' ? db.ObjectID(_id) : _id}, (err, message) => {
                 if (err || !message) {
-                    reject(err || 'Not found');
+                    reject(err || 'Note not found');
                 }
                 else {
                     resolve(new Note(message));
@@ -270,7 +276,7 @@ class Note {
                     reject(err || 'WTF');
                 }
                 else if (!res.matchedCount) {
-                    reject('Not found');
+                    reject('Note not found');
                 }
                 else {
                     resolve(!!res.modifiedCount);
@@ -296,7 +302,7 @@ class Note {
                     reject(err);
                 }
                 else if (!doc || !doc.ok || !doc.value) {
-                    reject('Not found');
+                    reject('Note not found');
                 }
                 else {
                     resolve(doc.value);
@@ -400,6 +406,35 @@ class Note {
         return ret;
     }
 
+    /**
+     * apn-push-type check
+     * @param  {String}  platform platform
+     * @param  {Object}  msg      message object
+     * @return {Boolean}          true if the note is an alert for corresponding message
+     */
+    isAlert(platform, msg) {
+        if (platform === Platform.IOS) {
+            let o = msg.o || {},
+                p = msg.p || {},
+                mpl = o.messagePerLocale || this.messagePerLocale || null,
+                lang = p.la || 'default',
+                alert = null,
+                sound = isset(o.sound) ? o.sound : isset(this.sound) ? this.sound : null,
+                badge = isset(o.badge) ? o.badge : isset(this.badge) ? this.badge : null;
+
+            if (mpl) {
+                if (mpl && mpl[lang]) {
+                    alert = this.personalize(mpl[lang], mpl[`${lang}${S}p`], p);
+                }
+                else if (mpl && mpl.default) {
+                    alert = this.personalize(mpl.default, mpl[`default${S}p`], p);
+                }
+            }
+
+            return sound !== null || badge !== null || alert !== null;
+        }
+    }
+
     /** compile
      * @param {string} platform - platform
      * @param {object} msg - message obj
@@ -420,11 +455,6 @@ class Note {
             title = null,
             // alert = (mpl && mpl[lang]) || (mpl && mpl['default']) || null,
             // title = (mpl && mpl[`${lang}${S}t`]) || (mpl && mpl[`default${S}t`]) || null,
-            /** isset function def, returns false if passed is null or undefined
-             * @param {object} v - anything to check
-             * @returns {boolean} true - if  not null or undefined
-            */
-            isset = v => v !== undefined && v !== null,
             sound = isset(o.sound) ? o.sound : isset(this.sound) ? this.sound : null,
             badge = isset(o.badge) ? o.badge : isset(this.badge) ? this.badge : null,
             media = isset(o.media) ? o.media : isset(this.media) ? this.media : null,

@@ -47,7 +47,7 @@
 					</div>
 					<ul class="dbviewer-collection-list-{{value.name}}">
 					{{#eachOfArray value.list}}
-					<li data-db="{{../value.name}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" class="collection-list-item searchable"><a class="dbviewer-link-in-collection-list" href='javascript:void(0)'>{{value}}</a></li>
+					<li data-db="{{../value.name}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" class="collection-list-item searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a></li>
 					{{/eachOfArray}}
 					</ul>
 				</div>
@@ -56,17 +56,22 @@
 		</div>
 		<div class="right-side">
 			<!-- Collection Back Button -->
-			<a class="dbviewer-go-back" href="javascript:void(0)"><div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i> <span>{{back}}</span></div></a>
-			<a class="dbviewer-aggregate" href="javascript:void(0)"><div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-bar-chart"></i> <span data-localize="dbviewer.aggregate"></span></div></a>
+			{{#if document}}
+			<a class="dbviewer-go-back" href="#/manage/db/{{db}}/{{collection}}"><div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i> <span>{{back}}</span></div></a>
+			{{else}}
+			<a class="dbviewer-go-back" href="#/manage/db"><div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i> <span>{{back}}</span></div></a>
+			{{/if}}
+			<a class="dbviewer-aggregate" href="#/manage/db/aggregate/{{db}}/{{collection}}"><div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-bar-chart"></i> <span data-localize="dbviewer.aggregate"></span></div></a>
+			<a class="dbviewer-aggregate dbviewer-indexes" href="#/manage/db/indexes/{{db}}/{{collection}}"><div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-table"></i> <span data-localize="dbviewer.indexes"></span></div></a>
 			<div class="dbviewer-gray-area dbviewer-area-pos">
 				<div class="dbviewer-header-of-query-wrapper">
 					<div class="dbviewer-gray dbviewer-left-side-1">
 						<a id="dbviewer-go-back" href='javascript:void()'>/</a>
 						{{#if db}}
 							{{#if collection}}
-						<a class="dbviewer-gray dbviewer-go-back" id="dbviewer-go-collectionlist" data-db="{{db}}" href='javascript:void(0)'><strong>{{db}}</strong></a>
+						<a class="dbviewer-gray dbviewer-go-back" id="dbviewer-go-collectionlist" data-db="{{db}}" href='#/manage/db/{{db}}'><strong>{{db}}</strong></a>
 								{{#if document}}
-						<a class="dbviewer-gray" href='javascript:void(0)'>/ {{collection}}</a>
+						<a class="dbviewer-gray" href='#/manage/db/{{db}}/{{collection}}'>/ {{collection}}</a>
 								{{else}}
 						/{{collection}}
 								{{/if}}
@@ -169,7 +174,15 @@
 					<table class="jh-type-object jh-root" id="dbviewer-collections">
 					{{#eachOfArray data.collections}}
 					<tr>
-						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} <span class="dbviewer-view-link" class="jh-type-string"><a data-db="{{../db}}" data-collection="{{../collection}}" data-id="{{value._id}}" href='javascript:void(0)' class="dbviewer-document-detail">View</a></span></p></th>
+						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} 
+							<span class="document-detail-link-wrapper">
+								<span class="dbviewer-view-link" class="jh-type-string">
+									<a data-db="{{../db}}" data-collection="{{../collection}}" data-id="{{value._id}}" href="#/manage/db/{{../db}}/{{../collection}}/{{#clearObjectId value}}{{/clearObjectId}}" class="dbviewer-document-detail">
+										View
+									</a>
+								</span>
+							</span>
+						</th>
 					</tr>
 					<tr>
 						<td class="jh-value jh-object-value">{{prettyJSON value}}</td>
@@ -220,7 +233,7 @@
 										<div class="dbviewer-collection-list">
 										{{#eachOfArray value.list}}
 											<div class="dbviewer-collection-list-item">
-												<a class="collection-list-item" data-db="{{../../../db}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" href="javascript:void(0)">{{value}}</a>
+												<a class="collection-list-item" data-db="{{../../../db}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" href="#/manage/db/{{../../../db}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a>
 											</div>
 										{{/eachOfArray}}
 										</div>
@@ -228,12 +241,12 @@
 						{{/eachOfArray}}
 						{{else}}
 							{{#eachOfArray dbs}}
-								<a href="javascript:void(0)">
+								<a href="#/manage/db/{{value.name}}">
 									<div class="dbviewer-db-square db-detail" id="{{value.name}}-box" data-db="{{value.name}}">
 										<img class="dbviewer-box-svg" src="./dbviewer/images/dbviewer/{{value.name}}.svg">
 										<h3 class="dbviewer-db-title" data-localize="dbviewer.{{value.name}}-database"></h3>
 										<p class="dbviewer-db-description" data-localize="dbviewer.{{value.name}}-database-description"></p>
-									</div>	
+									</div>
 								</a>
 							{{/eachOfArray}}
 						{{/if}}

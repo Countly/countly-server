@@ -147,12 +147,82 @@ class ProcessJob extends J.IPCJob {
         return new R.IPCRetryPolicy(3);
     }
 
+    /** how much of jobs of this type is allowed to run at the same time
+     * @returns {int} 5 jobs by default
+     */
+    getConcurrency() {
+        return 3;
+    }
+
     /** rescedule
      * @param {number} date - timestamp
      * @returns {Promise} - resolved if updated
      */
     reschedule(date) {
         return this.replaceAfter(date);
+    }
+
+    /** replaceAfter
+     * @param {number} next - timestamp
+     * @returns {Promise} - resolved if updated
+     */
+    replaceAfter(next) {
+        return super.replaceAfter(next, query => {
+            if (query.data) {
+                let q = {};
+                Object.keys(query.data).forEach(k => {
+                    if (('' + query.data[k]).length === 24) {
+                        try {
+                            q['data.' + k] = {
+                                $in: [
+                                    query.data[k],
+                                    typeof query.data[k] === 'string' ? this.db().ObjectID(query.data[k]) : '' + query.data[k]
+                                ]
+                            };
+                        }
+                        catch (e) {
+                            q['data.' + k] = query.data[k];
+                            this.log.w('Cannot expand reschedule query', e);
+                        }
+                    }
+                    else {
+                        q['data.' + k] = query.data[k];
+                    }
+                });
+
+                Object.keys(q).forEach(k => query[k] = q[k]);
+                this.log.d('Expanded query: %j', query);
+                delete query.data;
+            }
+        });
+    }
+
+    /**
+     * Schedule next job
+     */
+    requeue() {
+        if (this.loader) {
+            try {
+                this.log.d('>>>>>>>>>>>>>> requeue %s %j', this._id, this.data);
+                this.loader.next().then(next => {
+                    this.log.d('>>>>>>>>>>>>>> requeue date %s %j: %j', this._id, this.data, next);
+                    if (next) {
+                        this.reschedule(next).then(n => {
+                            if (n) {
+                                this.log.d('>>>>>>>>>>>>>> requeue result %s %j: %j', this._id, this.data, n._id, new Date(n.next));
+                            }
+                        }, e => {
+                            this.log.e('While requeue 1', e);
+                        });
+                    }
+                }, e => {
+                    this.log.e('While requeue 2', e);
+                });
+            }
+            catch (e) {
+                this.log.e('While requeue 3', e);
+            }
+        }
     }
 
     /** fork 
@@ -186,6 +256,7 @@ class ProcessJob extends J.IPCJob {
             let note = notes[m.n.toString()];
             if (note) {
                 m.m = note.compile(this.platform, m);
+                m.a = note.isAlert(this.platform, m);
                 // if (pn && pn === note && pp === m.p && po === m.o) {
                 //     m.m = pm;
                 // } else {
@@ -219,6 +290,10 @@ class ProcessJob extends J.IPCJob {
                     await this.handleResults(err, Object.values(notes));
                 }
             }
+        }
+
+        if (!this.isCompleted) {
+            this.requeue();
         }
 
         return await super._finish(err);
@@ -639,7 +714,7 @@ class ProcessJob extends J.IPCJob {
                     };
                     this.loader.updateNotes(q, {$set: {'result.nextbatch': next}}).catch(this.log.e.bind(this.log, 'Error while updating note nextbatch: %j'));
                 }
-                await this.reschedule(next);
+                // await this.reschedule(next);
                 return true;
             }
         }
