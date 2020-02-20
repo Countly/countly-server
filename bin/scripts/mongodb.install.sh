@@ -55,6 +55,10 @@ fi
 
 #add mongod entry for logrotate daemon
 if [ -x "$(command -v logrotate)" ]; then
+    #delete if any other logRotate directive exist and add logRotate to mongod.conf
+    sed -i '/logRotate/d' /etc/mongod.conf
+    sed -i 's#systemLog:#systemLog:\n    logRotate: "reopen"#g' /etc/mongod.conf
+
     if [ -f /etc/redhat-release ]; then
         cat <<'EOF' >> /etc/logrotate.d/mongod
 /var/log/mongodb/mongod.log {
