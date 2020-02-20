@@ -41,7 +41,7 @@ var testUtils = function testUtils() {
     this.testScalingFactor = 1.0;//this is used to multiply the base timeout time for tests. Should be decreased of more powerful servers
     this.testWaitTimeForDrillEvents = 5100;//in ms, how long should the test wait for drill to finish it's actions
     this.testWaitTimeForResetApp = 1000;//in ms, how long should the test wait for a app reset
-    this.weekPassword = "20202020";
+    this.weakPassword = "20202020";
     this.setCSRF = function(token) {
         csrf = token;
     };

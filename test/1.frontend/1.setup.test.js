@@ -162,7 +162,7 @@ describe('Setting Up', function() {
         it('should redirect to setup', function(done) {
             agent
                 .post('/setup')
-                .send({full_name: testUtils.name, username: testUtils.username, email: testUtils.email, password: testUtils.weekPassword, _csrf: testUtils.getCSRF()})
+                .send({full_name: testUtils.name, username: testUtils.username, email: testUtils.email, password: testUtils.weakPassword, _csrf: testUtils.getCSRF()})
                 .expect('location', '/setup?error=%7B%22message%22:[%22password%20should%20has%20upchar%22,%22password%20should%20has%20special%20character%22],%22passMinLen%22:8%7D')
                 .expect(302, done);
         });
