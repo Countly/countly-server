@@ -197,31 +197,36 @@ function getFile(resource, language) {
     });
 }
 
-if (!manager.getConfig("api").offline_mode) {
-//get resources
-// Requesting this resource, response data is mandatory.
-    makeRequest("https://www.transifex.com/api/2/project/countly/resources/", false, function(err, resources) {
-        if (err) {
-            console.log("Can't update translations: " + err);
-            return;
-        }
-        // Keep this for future improvements.
-        // Possibly having command arguments to update only specific languages, or skip some specific languages updates.
-        var languages = default_langs.filter(function(l) {
-            if (l.language_code === "en") {
-                return false;
+var db = manager.dbConnection();
+manager.loadConfigs(db, function() {
+    if (!manager.getConfig("api").offline_mode) {
+        //get resources
+        // Requesting this resource, response data is mandatory.
+        makeRequest("https://www.transifex.com/api/2/project/countly/resources/", false, function(err, resources) {
+            if (err) {
+                console.log("Can't update translations: " + err);
+                return;
             }
-            return true;
+            // Keep this for future improvements.
+            // Possibly having command arguments to update only specific languages, or skip some specific languages updates.
+            var languages = default_langs.filter(function(l) {
+                if (l.language_code === "en") {
+                    return false;
+                }
+                return true;
+            });
+            //get translation files
+            // Ignite all requests, the agent is going to queue and process them automatically.
+            for (var i = 0; i < resources.length; i++) {
+                for (var j = 0; j < languages.length; j++) {
+                    getFile(resources[i], languages[j]);
+                }
+            }
         });
-        //get translation files
-        // Ignite all requests, the agent is going to queue and process them automatically.
-        for (var i = 0; i < resources.length; i++) {
-            for (var j = 0; j < languages.length; j++) {
-                getFile(resources[i], languages[j]);
-            }
-        }
-    });
-}
-else {
-    console.log("Server is in offline mode, will not attempt to update translations");
-}
+        db.close();
+    }
+    else {
+        console.log("Server is in offline mode, will not attempt to update translations");
+        db.close();
+    }
+});

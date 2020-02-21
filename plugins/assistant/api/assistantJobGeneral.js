@@ -163,8 +163,8 @@ else {
                             }
                             else {
                                 log.i('Assistant for [%j] plugin resolving with no errors', PLUGIN_NAME);
+                                resolve();
                             }
-                            resolve();
                         });
                     }
                 });
