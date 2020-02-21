@@ -1098,8 +1098,8 @@ app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
         else if (err === "User exists") {
             res.redirect(countlyConfig.path + '/login');
         }
-        else if (err === "Wrong request parameters") {
-            res.redirect(countlyConfig.path + '/setup');
+        else if (err && err.message) {
+            res.redirect(countlyConfig.path + `/setup?error=${JSON.stringify(err)}`);
         }
         else {
             res.status(500).send('Server Error');

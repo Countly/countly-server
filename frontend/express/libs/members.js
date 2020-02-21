@@ -12,7 +12,9 @@
  */
 
 var authorize = require('./../../../api/utils/authorizer.js'); //for token validations
+var common = require('./../../../api/utils/common.js');
 var plugins = require('./../../../plugins/pluginManager.js');
+
 var configs = require('./../config', 'dont-enclose');
 var countlyMail = require('./../../../api/parts/mgmt/mail.js');
 var countlyStats = require('./../../../api/parts/data/stats.js');
@@ -551,52 +553,78 @@ membersUtility.setup = function(req, callback) {
     membersUtility.db.collection('members').count(function(err, memberCount) {
         if (!err && memberCount === 0) {
             var countlyConfig = membersUtility.countlyConfig;
-            if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
-                var secret = membersUtility.countlyConfig.passwordSecret || "";
-                argon2Hash(req.body.password + secret).then(password => {
-                    req.body.email = (req.body.email + "").trim();
-                    req.body.username = (req.body.username + "").trim();
-                    var doc = {"full_name": req.body.full_name, "username": req.body.username, "password": password, "email": req.body.email, "global_admin": true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
-                    if (req.body.lang) {
-                        doc.lang = req.body.lang;
-                    }
-                    membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
-                        member = member.ops;
-                        if (countlyConfig.web.use_intercom && !plugins.getConfig("api").offline_mode) {
-                            var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
-                            request(options, function(a, c, b) {
-                                a = {};
-                                a.api_key = md5Hash(member[0]._id + (new Date).getTime());
-                                b && (b.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (a.in_user_hash = b.in_user_hash));
-
-                                membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
-                                    plugins.callMethod("setup", {req: req, data: member[0]});
-                                    setLoggedInVariables(req, member[0], membersUtility.db, function() {
-                                        req.session.install = true;
-                                        callback();
-                                    });
-                                });
-                            });
-                        }
-                        else {
-                            var a = {};
+            //check password
+            const argProps = {
+                'full_name': {
+                    'required': true,
+                    'type': 'String'
+                },
+                'username': {
+                    'required': true,
+                    'type': 'String'
+                },
+                'password': {
+                    'required': true,
+                    'type': 'String',
+                    'min-length': plugins.getConfig("security").password_min,
+                    'has-number': plugins.getConfig("security").password_number,
+                    'has-upchar': plugins.getConfig("security").password_char,
+                    'has-special': plugins.getConfig("security").password_symbol
+                },
+                'email': {
+                    'required': true,
+                    'type': 'String'
+                },
+            };
+            var memberCreateValidation = common.validateArgs(req.body, argProps, true);
+            if (!(req.body = memberCreateValidation.obj)) {
+                callback({
+                    message: memberCreateValidation.errors,
+                    passMinLen: plugins.getConfig("security").password_min,
+                });
+                return;
+            }
+            var secret = membersUtility.countlyConfig.passwordSecret || "";
+            argon2Hash(req.body.password + secret).then(password => {
+                req.body.email = (req.body.email + "").trim();
+                req.body.username = (req.body.username + "").trim();
+                var doc = {"full_name": req.body.full_name, "username": req.body.username, "password": password, "email": req.body.email, "global_admin": true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
+                if (req.body.lang) {
+                    doc.lang = req.body.lang;
+                }
+                membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
+                    member = member.ops;
+                    if (countlyConfig.web.use_intercom && !plugins.getConfig("api").offline_mode) {
+                        var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
+                        request(options, function(a, c, b) {
+                            a = {};
                             a.api_key = md5Hash(member[0]._id + (new Date).getTime());
+                            b && (b.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (a.in_user_hash = b.in_user_hash));
 
                             membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
+                                plugins.callMethod("setup", {req: req, data: member[0]});
                                 setLoggedInVariables(req, member[0], membersUtility.db, function() {
                                     req.session.install = true;
                                     callback();
                                 });
                             });
-                        }
-                    });
-                }).catch(function() {
-                    callback("Wrong request parameters");
+                        });
+                    }
+                    else {
+                        var a = {};
+                        a.api_key = md5Hash(member[0]._id + (new Date).getTime());
+
+                        membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
+                            setLoggedInVariables(req, member[0], membersUtility.db, function() {
+                                req.session.install = true;
+                                callback();
+                            });
+                        });
+                    }
                 });
-            }
-            else {
+            }).catch(function() {
                 callback("Wrong request parameters");
-            }
+            });
         }
         else if (err) {
             callback(err);
