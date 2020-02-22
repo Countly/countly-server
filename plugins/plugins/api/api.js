@@ -42,15 +42,17 @@ var plugin = {},
                     }
                     plugins.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
                     process.send({ cmd: "startPlugins" });
-                    plugins.syncPlugins(params.qstring.plugin, function(err) {
-                        if (!err) {
-                            process.send({ cmd: "endPlugins" });
-                            updatePluginState("end");
-                        }
-                        else {
-                            updatePluginState("failed");
-                        }
-                    }, common.db);
+                    plugins.loadConfigs(common.db, function() {
+                        plugins.syncPlugins(params.qstring.plugin, function(err) {
+                            if (!err) {
+                                process.send({ cmd: "endPlugins" });
+                                updatePluginState("end");
+                            }
+                            else {
+                                updatePluginState("failed");
+                            }
+                        }, common.db);
+                    });
                 }
             }
             else {

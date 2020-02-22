@@ -2355,10 +2355,11 @@
             </div>
         </div>
 	</script>
-
+<% if (!offline_mode) { %>
     <% if (use_google) { %>
-	<script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <% } %>
+<% } %>
 <% if (production) { %>
 	    <!-- PRODUCTION -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
@@ -2386,8 +2387,8 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.common.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.helpers.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.event.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.session.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.event.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.session.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.city.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.location.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.map.helper.js?<%= countlyVersion %>"></script>
@@ -2397,8 +2398,8 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
@@ -2418,102 +2419,105 @@
     <% } %>
 
 	<script>Backbone.history.start();</script>
+    <% if (!offline_mode) { %>
+        <% if (!track || track == "GA" && member['global_admin'] || track == "noneGA" && !member['global_admin']) { %>
+            <!--Countly script-->
+            <script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js'></script>
+            <script type='text/javascript'>
 
-	<% if (!track || track == "GA" && member['global_admin'] || track == "noneGA" && !member['global_admin']) { %>
-		<!--Countly script-->
-		<script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js'></script>
-		<script type='text/javascript'>
+            //initializing countly with params
+            Countly.init({
+                app_key: "<%= frontend_app || "386012020c7bf7fcb2f1edf215f1801d6146913f" %>",
+                url: "<%= frontend_server || "https://stats.count.ly/" %>",
+                device_id: countlyGlobal["member"]["email"],
+                app_version: "<%= countlyVersion %>",
+                interval:1000
+            });
 
-		//initializing countly with params
-		Countly.init({
-			app_key: "<%= frontend_app || "386012020c7bf7fcb2f1edf215f1801d6146913f" %>",
-			url: "<%= frontend_server || "https://stats.count.ly/" %>",
-			device_id: countlyGlobal["member"]["email"],
-			app_version: "<%= countlyVersion %>",
-			interval:1000
-		});
+            //track sessions automatically
+            Countly.track_sessions();
 
-		//track sessions automatically
-		Countly.track_sessions();
-
-        Countly.getViewName = function(){
-            var view = "/dashboard#";
-            var fragment = Backbone.history.getFragment();
-            var parts = fragment.split("/");
-            if (fragment.indexOf("/analytics/retention/") === 0) {
-                parts[4] = ":event";
-            }
-            if (fragment.indexOf("/attribution/") === 0) {
-                parts[2] = ":campaign_id";
-            }
-            for (var i = 1; i < parts.length; i++) {
-                if (/\d/.test(parts[i])) {
-                    parts[i] = ":id";
+            Countly.getViewName = function(){
+                var view = "/dashboard#";
+                var fragment = Backbone.history.getFragment();
+                var parts = fragment.split("/");
+                if (fragment.indexOf("/analytics/retention/") === 0) {
+                    parts[4] = ":event";
                 }
-                if (parts[i][0] === "{") {
-                    parts[i] = ":query";
+                if (fragment.indexOf("/attribution/") === 0) {
+                    parts[2] = ":campaign_id";
                 }
-            }
-            return view + parts.join("/");
-        };
-
-        Countly.getViewUrl = function(){
-            var view = "/dashboard#";
-            var fragment = Backbone.history.getFragment();
-            var parts = fragment.split("/");
-            if (fragment.indexOf("/analytics/retention/") === 0) {
-                parts[4] = "[CLY]_session";
-            }
-            if (fragment.indexOf("/attribution/") === 0) {
-                parts[2] = "";
-            }
-            for (var i = 1; i < parts.length; i++) {
-                if (/\d/.test(parts[i])) {
-                    parts[i] = "";
+                for (var i = 1; i < parts.length; i++) {
+                    if (/\d/.test(parts[i])) {
+                        parts[i] = ":id";
+                    }
+                    if (parts[i][0] === "{") {
+                        parts[i] = ":query";
+                    }
                 }
-                if (parts[i][0] === "{") {
-                    parts[i] = "{}";
+                return view + parts.join("/");
+            };
+
+            Countly.getViewUrl = function(){
+                var view = "/dashboard#";
+                var fragment = Backbone.history.getFragment();
+                var parts = fragment.split("/");
+                if (fragment.indexOf("/analytics/retention/") === 0) {
+                    parts[4] = "[CLY]_session";
                 }
-            }
-            return view + parts.join("/");
-        };
+                if (fragment.indexOf("/attribution/") === 0) {
+                    parts[2] = "";
+                }
+                for (var i = 1; i < parts.length; i++) {
+                    if (/\d/.test(parts[i])) {
+                        parts[i] = "";
+                    }
+                    if (parts[i][0] === "{") {
+                        parts[i] = "{}";
+                    }
+                }
+                return view + parts.join("/");
+            };
 
-		//track pageviews automatically
-		Countly.track_pageview(Countly.getViewName());
+            //track pageviews automatically
+            Countly.track_pageview(Countly.getViewName());
 
-		$(window).on('hashchange', function() {
-			Countly.track_pageview(Countly.getViewName());
-		});
+            $(window).on('hashchange', function() {
+                Countly.track_pageview(Countly.getViewName());
+            });
 
-		//track any clicks to webpages automatically
-		Countly.track_clicks();
+            //track any clicks to webpages automatically
+            Countly.track_clicks();
 
-		//track javascript errors
-		Countly.track_errors();
+            //track javascript errors
+            Countly.track_errors();
 
-		Countly.user_details({
-			"name": countlyGlobal["member"]["full_name"] || "",
-			"username": countlyGlobal["member"]["username"] || "",
-			"email": countlyGlobal["member"]["email"]
-		 });
+            Countly.user_details({
+                "name": countlyGlobal["member"]["full_name"] || "",
+                "username": countlyGlobal["member"]["username"] || "",
+                "email": countlyGlobal["member"]["email"]
+            });
 
-		 Countly.userData.set("lastServer", window.location.hostname);
-		 Countly.userData.set("lastVersion", "<%= countlyVersion %>");
-		 Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
-		 Countly.userData.set("isTrial", <%= countlyTrial %>);
-		 Countly.userData.set("cpus", <%= cpus %>);
-		 Countly.userData.push_unique("servers", window.location.hostname);
-		 Countly.userData.push_unique("versions", "<%= countlyVersion %>");
-		 Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
-		 Countly.userData.save();
+            Countly.userData.set("lastServer", window.location.hostname);
+            Countly.userData.set("lastVersion", "<%= countlyVersion %>");
+            Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
+            Countly.userData.set("isTrial", <%= countlyTrial %>);
+            <% if (!offline_mode) { %>
+                Countly.userData.set("cpus", <%= cpus %>);
+            <% } %>
+            Countly.userData.push_unique("servers", window.location.hostname);
+            Countly.userData.push_unique("versions", "<%= countlyVersion %>");
+            Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
+            Countly.userData.save();
 
-		 <% if (installed) { %>
-		 Countly.add_event({
-			key:"INSTALL"
-		  });
-		 <% } %>
-		</script>
-	<% } %>
+            <% if (installed) { %>
+            Countly.add_event({
+                key:"INSTALL"
+            });
+            <% } %>
+            </script>
+        <% } %>
+    <% } %>
     <script type='text/javascript'>
     app.recordEvent = function (event) {
         if (typeof Countly !== "undefined" && Countly.add_event) {
@@ -2522,50 +2526,52 @@
     };
     </script>
 
-	<% if(intercom && member['global_admin'] || config.autonomous) { %>
-	<script>
-		$(document).ready(function() {
-			$(".activate_intercom").on("click", function() {
-                Intercom('show');
-        	});
-			$('.list .item_info').on("click", function(e){
-				e.stopPropagation();
-			});
+    <% if (!offline_mode) { %>
+        <% if(intercom && member['global_admin'] || config.autonomous) { %>
+        <script>
+            $(document).ready(function() {
+                $(".activate_intercom").on("click", function() {
+                    Intercom('show');
+                });
+                $('.list .item_info').on("click", function(e){
+                    e.stopPropagation();
+                });
 
-        });
-	</script>
-    <script id="IntercomSettingsScriptTag">
-        var intercomSettings = {
-            app_id: 'pt60eheo',
-            widget: {
-                activator: '.activate_intercom'
-            },
-            email: "<%= member.email %>",
-            created_at: parseInt("<%= member.created_at %>") || 1349863810,
-            name: "<%= member.full_name %>",
-            user_id: "<%= member.in_user_id %>",
-            user_hash: "<%= member.in_user_hash %>",
-            trial_user: <%= countlyTrial %>
-        };
-    </script>
-    <script>
-        (function() {
-            var i=function(){i.c(arguments)};i.q=[];
-            i.c=function(args){i.q.push(args)};window.Intercom=i;
-            function async_load() {
-                var s = document.createElement('script');
-                s.type = 'text/javascript'; s.async = true;
-                s.src = 'https://api.intercom.io/api/js/library.js';
-                var x = document.getElementsByTagName('script')[0];
-                x.parentNode.insertBefore(s, x);
-            }
-            if (window.attachEvent) {
-                window.attachEvent('onload', async_load);
-            } else {
-                window.addEventListener('load', async_load, false);
-            }
-        })();
-    </script>
+            });
+        </script>
+        <script id="IntercomSettingsScriptTag">
+            var intercomSettings = {
+                app_id: 'pt60eheo',
+                widget: {
+                    activator: '.activate_intercom'
+                },
+                email: "<%= member.email %>",
+                created_at: parseInt("<%= member.created_at %>") || 1349863810,
+                name: "<%= member.full_name %>",
+                user_id: "<%= member.in_user_id %>",
+                user_hash: "<%= member.in_user_hash %>",
+                trial_user: <%= countlyTrial %>
+            };
+        </script>
+        <script>
+            (function() {
+                var i=function(){i.c(arguments)};i.q=[];
+                i.c=function(args){i.q.push(args)};window.Intercom=i;
+                function async_load() {
+                    var s = document.createElement('script');
+                    s.type = 'text/javascript'; s.async = true;
+                    s.src = 'https://api.intercom.io/api/js/library.js';
+                    var x = document.getElementsByTagName('script')[0];
+                    x.parentNode.insertBefore(s, x);
+                }
+                if (window.attachEvent) {
+                    window.attachEvent('onload', async_load);
+                } else {
+                    window.addEventListener('load', async_load, false);
+                }
+            })();
+        </script>
+        <% } %>
 	<% } %>
     <% if (typeof inject_template.html != "undefined") { %>
         <%- inject_template.html %>

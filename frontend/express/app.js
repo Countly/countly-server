@@ -85,7 +85,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: ""
+    google_maps_api_key: "",
+    offline_mode: false
 });
 
 plugins.setUserConfigs("frontend", {
@@ -845,7 +846,8 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             use_google: configs.use_google || false,
             themeFiles: theme,
             inject_template: req.template,
-            javascripts: []
+            javascripts: [],
+            offline_mode: configs.offline_mode || false
         };
 
         var plgns = [].concat(plugins.getPlugins());
@@ -1177,10 +1179,15 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
 });
 
 app.get(countlyConfig.path + '/sdks.js', function(req, res) {
-    var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
-    request(options, function(a, c, b) {
-        res.set('Content-type', 'application/javascript').status(200).send(b);
-    });
+    if (!plugins.getConfig("api").offline_mode) {
+        var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
+        request(options, function(a, c, b) {
+            res.set('Content-type', 'application/javascript').status(200).send(b);
+        });
+    }
+    else {
+        res.status(403).send("Server is in offline mode, this request cannot be completed.");
+    }
 });
 
 app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
