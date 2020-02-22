@@ -850,6 +850,14 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             offline_mode: configs.offline_mode || false
         };
 
+        // google services cannot work when offline mode enable
+        if (toDashboard.offline_mode) {
+            toDashboard.use_google = false;
+        }
+        if (countlyGlobal.config.offline_mode) {
+            countlyGlobal.config.use_google = false;
+        }
+
         var plgns = [].concat(plugins.getPlugins());
         if (plgns.indexOf('push') !== -1) {
             plgns.splice(plgns.indexOf('push'), 1);
