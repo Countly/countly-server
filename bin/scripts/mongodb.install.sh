@@ -3,8 +3,8 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ -f /etc/redhat-release ]; then
-    #install latest mongodb 
-    
+    #install latest mongodb
+
     #select source based on release
 	if grep -q -i "release 6" /etc/redhat-release ; then
         echo "[mongodb-org-3.6]
@@ -22,7 +22,7 @@ enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
     fi
     yum install -y nodejs mongodb-org
-    
+
     #disable transparent-hugepages (requires reboot)
     cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
@@ -30,7 +30,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
 fi
 
 if [ -f /etc/lsb-release ]; then
-    #install latest mongodb 
+    #install latest mongodb
 	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
     UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
@@ -46,17 +46,61 @@ if [ -f /etc/lsb-release ]; then
     apt-get update
     #install mongodb
     DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
-    
+
     #disable transparent-hugepages (requires reboot)
     cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     update-rc.d disable-transparent-hugepages defaults
 fi
 
+#add mongod entry for logrotate daemon
+if [ -x "$(command -v logrotate)" ]; then
+    #delete if any other logRotate directive exist and add logRotate to mongod.conf
+    sed -i '/logRotate/d' /etc/mongod.conf
+    sed -i 's#systemLog:#systemLog:\n    logRotate: "reopen"#g' /etc/mongod.conf
+
+    if [ -f /etc/redhat-release ]; then
+        cat <<'EOF' >> /etc/logrotate.d/mongod
+/var/log/mongodb/mongod.log {
+  daily
+  size 100M
+  rotate 5
+  missingok
+  notifempty
+  create 0600 mongod mongod
+  sharedscripts
+  postrotate
+    /bin/kill -SIGUSR1 $(cat /var/lib/mongo/mongod.lock)
+  endscript
+}
+EOF
+    fi
+
+    if [ -f /etc/lsb-release ]; then
+        cat <<'EOF' >> /etc/logrotate.d/mongod
+/var/log/mongodb/mongod.log {
+  daily
+  size 100M
+  rotate 5
+  missingok
+  notifempty
+  create 0600 mongodb mongodb
+  sharedscripts
+  postrotate
+    /bin/kill -SIGUSR1 $(cat /var/lib/mongodb/mongod.lock)
+  endscript
+}
+EOF
+    fi
+else
+        echo 'Command logrotate is not found, continuing without logrotate setup.'
+fi
+
+
 #backup config and remove configuration to prevent duplicates
 cp /etc/mongod.conf /etc/mongod.conf.bak
 nodejs "$DIR/configure_mongodb.js" /etc/mongod.conf
-  
+
 if [ -f /etc/redhat-release ]; then
     #mongodb might need to be started
     if grep -q -i "release 6" /etc/redhat-release ; then
