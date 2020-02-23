@@ -518,7 +518,7 @@ module.exports = function(my_db) {
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'crash_share', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'feedback_widgets', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'notes', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'messages', '-q', '{ apps: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'messages', '-q', '{ apps: ObjectId("' + appid + '")}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohortdata', '-q', '{ a: "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohorts', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'server_stats_data_points', '-q', '{ a: "' + appid + '"}', '--out', my_folder]});
