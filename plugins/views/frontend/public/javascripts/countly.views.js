@@ -193,7 +193,11 @@ window.ViewsView = countlyView.extend({
                 columns.push({
                     "mData": function(row) {
                         if (row.t !== 0 && row.scr) {
-                            return parseFloat(row.scr) / parseFloat(row.t);
+                            var vv = parseFloat(row.scr) / parseFloat(row.t);
+                            if (vv > 100) {
+                                vv = 100;
+                            }
+                            return vv;
                         }
                         else {
                             return 0;
