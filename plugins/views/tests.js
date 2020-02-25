@@ -492,7 +492,7 @@ describe('Testing views plugin', function() {
             var ss = {"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "testSegment": "testValue0", "visit": 1, "start": 1}};
             for (var i = 0; i < 97; i++) { //testview0 and platform already used. 98 spots left
                 ss.segmentation["tS" + i] = "tV0";
-                myList["tS" + i] = ["tV0"];
+                myList.segments["tS" + i] = ["tV0"];
             }
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user0" + '&timestamp=' + (myTime) + '&events=' + JSON.stringify([ss]))
