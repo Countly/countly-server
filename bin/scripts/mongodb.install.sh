@@ -55,9 +55,11 @@ fi
 
 #add mongod entry for logrotate daemon
 if [ -x "$(command -v logrotate)" ]; then
+    INDENT_LEVEL=$(cat /etc/mongod.conf | grep dbPath | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
+    INDENT_STRING=$(printf ' %.0s' $(seq 1 $INDENT_LEVEL))
     #delete if any other logRotate directive exist and add logRotate to mongod.conf
     sed -i '/logRotate/d' /etc/mongod.conf
-    sed -i 's#systemLog:#systemLog:\n    logRotate: "reopen"#g' /etc/mongod.conf
+    sed -i "s#systemLog:#systemLog:\n${INDENT_STRING}logRotate: \"reopen\"#g" /etc/mongod.conf
 
     if [ -f /etc/redhat-release ]; then
         cat <<'EOF' >> /etc/logrotate.d/mongod
