@@ -14,6 +14,7 @@ if [ -f /etc/redhat-release ]; then
 fi
 
 if [ -f /etc/lsb-release ]; then
+    sudo dpkg --configure -a
 	wget -qO- https://deb.nodesource.com/setup_10.x | bash -
 	apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 fi
@@ -32,7 +33,7 @@ rm -rf "$DIR/../node_modules"
 bash "$CUR/scripts/remove_moved_files.sh"
 
 #upgrade plugins
-(cd "$DIR/../" && npm install --unsafe-perm)
+(cd "$DIR/../" && sudo npm install --unsafe-perm)
 countly plugin upgrade push
 (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
 countly plugin enable active_users
