@@ -120,7 +120,6 @@ function verifySegments(values) {
             .expect(200)
             .end(function(err, res) {
                 var resDecoded = JSON.parse(res.text);
-                resDecoded = resDecoded.segments;
                 for (var z in values) {
                     if (z != 'testSegment') {
                         if (resDecoded[z]) {
