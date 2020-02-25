@@ -472,7 +472,7 @@ describe('Testing views plugin', function() {
     describe('Adding segment key with dot in middle', function() {
         it('Adding segment', function(done) {
             dataSegments = [{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "test.My.Segment": "testValue", "visit": 1, "start": 1}}];
-            myList["testMySegment"] = ["testValue"];
+            myList.segments["testMySegment"] = ["testValue"];
 
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user0" + '&timestamp=' + (myTime) + '&events=' + JSON.stringify(dataSegments))
