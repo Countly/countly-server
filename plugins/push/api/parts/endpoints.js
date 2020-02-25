@@ -1358,13 +1358,15 @@ function cachedData(note) {
 
                 if (config.rate.rate) {
                     update.$set = Object.assign(update.$set || {}, {'plugins.push.rate.rate': config.rate.rate});
-                } else {
+                }
+                else {
                     update.$unset = Object.assign(update.$unset || {}, {'plugins.push.rate.rate': 1});
                 }
 
                 if (config.rate.period) {
                     update.$set = Object.assign(update.$set || {}, {'plugins.push.rate.period': config.rate.period});
-                } else {
+                }
+                else {
                     update.$unset = Object.assign(update.$unset || {}, {'plugins.push.rate.period': 1});
                 }
             }

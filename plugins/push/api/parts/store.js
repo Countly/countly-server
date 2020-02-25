@@ -624,7 +624,12 @@ class Store extends Base {
         // });
     }
 
-    periods (count) {
+    /**
+     * Split `count` of messages into periods according rate limits in app settings (if any)
+     * @param  {Number} count number of messages to split
+     * @return {Array}        array of [up to number, add time in seconds] arrays
+     */
+    periods(count) {
         let rate = this.app.plugins.push.rate;
 
         if (!rate || !rate.rate || !rate.period) {
@@ -1430,6 +1435,14 @@ class Loader extends Store {
 
         log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
         require('../../../../api/parts/data/events.js').processEvents(params);
+
+        try {
+            log.d('Recording %d data points', sent);
+            require('../../../server-stats/api/api.js').updateDataPoints(this.app._id, 0, sent);
+        }
+        catch (e) {
+            log.d('Error during dp recording', e);
+        }
     }
 }
 

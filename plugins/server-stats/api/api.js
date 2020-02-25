@@ -1,5 +1,6 @@
 var plugins = require('../../pluginManager.js'),
-    common = require('../../../api/utils/common.js');
+    common = require('../../../api/utils/common.js'),
+    udp;
 
 (function() {
 
@@ -119,6 +120,7 @@ var plugins = require('../../pluginManager.js'),
             function() {}
         );
     }
+    udp = updateDataPoints;
 
     /**
     * Update data-point object with new events and sessions counts
@@ -287,4 +289,4 @@ var plugins = require('../../pluginManager.js'),
 
 }());
 
-module.exports = {};
+module.exports = {updateDataPoints: udp};
