@@ -9,7 +9,7 @@ if [ -x "$(command -v logrotate)" ]; then
     sed -i "s#systemLog:#systemLog:\n${INDENT_STRING}logRotate: \"reopen\"#g" /etc/mongod.conf
 
     if [ -f /etc/redhat-release ]; then
-        cat <<'EOF' >> /etc/logrotate.d/mongod
+        cat <<'EOF' > /etc/logrotate.d/mongod
 /var/log/mongodb/mongod.log {
   daily
   size 100M
@@ -26,7 +26,7 @@ EOF
     fi
 
     if [ -f /etc/lsb-release ]; then
-        cat <<'EOF' >> /etc/logrotate.d/mongod
+        cat <<'EOF' > /etc/logrotate.d/mongod
 /var/log/mongodb/mongod.log {
   daily
   size 100M
