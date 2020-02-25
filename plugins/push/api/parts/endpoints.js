@@ -1352,6 +1352,23 @@ function cachedData(note) {
                 update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.ANDROID]: data});
             }
 
+            if (config.rate) {
+                config.rate.rate = config.rate.rate ? parseInt(config.rate.rate) : 0;
+                config.rate.period = config.rate.period ? parseInt(config.rate.period) : 0;
+
+                if (config.rate.rate) {
+                    update.$set = Object.assign(update.$set || {}, {'plugins.push.rate.rate': config.rate.rate});
+                } else {
+                    update.$unset = Object.assign(update.$unset || {}, {'plugins.push.rate.rate': 1});
+                }
+
+                if (config.rate.period) {
+                    update.$set = Object.assign(update.$set || {}, {'plugins.push.rate.period': config.rate.period});
+                } else {
+                    update.$unset = Object.assign(update.$unset || {}, {'plugins.push.rate.period': 1});
+                }
+            }
+
             if (credsToCheck.length) {
                 Promise.all(credsToCheck).then(results => {
                     log.d('Done saving credentials for app %s: %j', app._id, results);
@@ -1372,7 +1389,7 @@ function cachedData(note) {
                     })).then(() => {
                         log.d('Done checking temporary credentials for app %s, updating app', app._id);
                         common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(() => {
-                            plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins ? app.plugins.push : {}, update: update.$set || {}}});
+                            plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins ? app.plugins.push : {}, update: JSON.stringify(update.$set || {})}});
                             common.dbPromise('credentials', 'removeMany', {_id: {$in: credsToRemove}}).then(resolve.bind(null, config), resolve.bind(null, config));
                         }, reject);
                     }, reject);
@@ -1380,7 +1397,7 @@ function cachedData(note) {
             }
             else if (Object.keys(update).length) {
                 common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(() => {
-                    plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins ? app.plugins.push : {}, update: update.$set || {}}});
+                    plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins ? app.plugins.push : {}, update: JSON.stringify(update.$set || {})}});
                     resolve(config);
                 }, reject);
             }

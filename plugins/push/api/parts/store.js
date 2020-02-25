@@ -240,9 +240,10 @@ class Store extends Base {
      * @param {Number} date         optional date to override (if ms number) or a reference date (if a ISO string)
      * @param {Object} over         optional object with properties to override note's ones
      * @param {Object} user         app_users document
+     * @param {Number} add          optionally add `add` seconds to the date
      * @return {Object} mapped message object
      */
-    mapUser(_id, note, appTzOffset, date, over, user) {
+    mapUser(_id, note, appTzOffset, date, over, user, add) {
         // console.log(arguments);
         let utz = (user.tz === undefined || user.tz === null ? appTzOffset || 0 : user.tz || 0) * 60000,
             d;
@@ -320,7 +321,7 @@ class Store extends Base {
         }
         let ret = {
             _id: _id,
-            d: d,
+            d: d + (add ? add * 1000 : 0),
             n: note._id,
             t: user[C.DB_USER_MAP.tokens][this.field],
             u: user.uid,
@@ -436,9 +437,17 @@ class Store extends Base {
         }
 
         let offset = momenttz.tz(this.app.timezone).utcOffset(),
-            id = await this.incSequence(users.length) - users.length;
+            id = await this.incSequence(users.length) - users.length,
+            periods = this.periods(users.length),
+            i = 0;
 
-        return await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
+        log.d('Periods %j for %d users', periods, users.length);
+
+        return await this._push(users.map(usr => {
+            let add = (periods.filter(p => p[0] > i)[0] || periods[periods.length - 1])[1];
+            i++;
+            return this.mapUser(id++, note, offset, date, over, usr, add);
+        }), note._id);
     }
 
     /** fetchedQuery
@@ -588,9 +597,17 @@ class Store extends Base {
             ret.inserted -= deleted;
         }
         let id = await this.incSequence(users.length) - users.length,
-            pushed = await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
+            periods = this.periods(users.length),
+            i = 0,
+            pushed = await this._push(users.map(usr => {
+                let add = (periods.filter(p => p[0] > i)[0] || periods[periods.length - 1])[1];
+                i++;
+                return this.mapUser(id++, note, offset, date, over, usr, add);
+            }), note._id);
         ret.inserted += pushed.inserted;
         ret.next = pushed.next;
+
+        log.d('Periods %j for %d users', periods, users.length);
 
         return ret;
 
@@ -605,6 +622,25 @@ class Store extends Base {
         //      }
         //  });
         // });
+    }
+
+    periods (count) {
+        let rate = this.app.plugins.push.rate;
+
+        if (!rate || !rate.rate || !rate.period) {
+            return [count, 0];
+        }
+
+        let periodsCount = Math.ceil(count / rate.rate);
+        if (periodsCount === 1) {
+            return [count, 0];
+        }
+
+        let periods = [];
+        for (let i = 0; i < periodsCount; i++) {
+            periods.push([(i + 1) * rate.rate, i * rate.period]);
+        }
+        return periods;
     }
 
     /**
