@@ -29,6 +29,12 @@ var pluginOb = {},
             }
         }
 
+        if (agent.browser.name === "Edge") {
+            if (agent.engine.name === "WebKit") {
+                agent.browser.name = "Edge Chromium";
+            }
+        }
+
         if (params.qstring.begin_session) {
             //try to add metrics based on user agent
             if (!params.qstring.metrics) {
