@@ -1,5 +1,5 @@
 language: nodejs
-dist: trusty
+dist: bionic
 node_js: "10"
 env:
   global:

@@ -562,10 +562,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                     var selOptions = {app_id: params.qstring.app_id, startPos: startPos, dataLength: dataLength, sortby: sortby, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr"]}};
 
-                    if (sortcol === 'name' || params.qstring.sSearch) {
+                    if (sortcol === 'name' || (params.qstring.sSearch && params.qstring.sSearch !== "")) {
                         selOptions.count_query = {};
                         var query = [];
-                        if (params.qstring.sSearch) {
+                        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                             query = [{$match: {"view": {$regex: params.qstring.sSearch}}}];
                             selOptions.count_query = {"view": {$regex: params.qstring.sSearch}};
                         }
@@ -574,7 +574,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             query.push({$skip: startPos});
 
                         }
-                        if (dataLength !== 0) {
+                        if (dataLength !== 0 && sortcol === 'name') {
                             query.push({$limit: dataLength});
                         }
                         common.db.collection("app_viewsmeta" + params.qstring.app_id).aggregate(query, {allowDiskUse: true}, function(err1, res) {
