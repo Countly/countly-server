@@ -55,7 +55,7 @@ const getFeedbackCollectionList = () => {
             if (!err) {
                 let feedbackCollections = [];
                 collectionList.forEach(function(col) {
-                    let c = col.s.name;
+                    let c = col.collectionName;
                     if (c.substr(0, 8) === "feedback" && c !== "feedback_widgets") {
                         feedbackCollections.push(c);
                     }

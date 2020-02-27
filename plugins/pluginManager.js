@@ -1140,15 +1140,14 @@ var pluginManager = function pluginManager() {
         var dbName;
         var dbOptions = {
             poolSize: maxPoolSize,
-            reconnectInterval: 1000,
-            reconnectTries: 999999999,
-            autoReconnect: true,
             noDelay: true,
             keepAlive: true,
             keepAliveInitialDelay: 30000,
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
-            useNewUrlParser: true
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            auto_reconnect: true
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
