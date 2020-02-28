@@ -1017,7 +1017,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
         common.db.collection(metaToFetch[id].coll).findOne({'_id': metaToFetch[id].id}, {meta_v2: 1}, function(err, metaDoc) {
             var retObj = metaDoc || {};
             retObj.coll = metaToFetch[id].coll;
-            callback(false, retObj);
+            callback(null, retObj);
         });
     }
 
