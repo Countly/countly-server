@@ -1798,11 +1798,11 @@ window.starView = countlyView.extend({
                 $("#save-widget").addClass('disabled');
 
                 $('.tooltip').on("hover", function() {
-                    $(this).prev().css({"visibility":"visible"});
+                    $(this).prev().css({"visibility": "visible"});
                 });
 
                 $('.tooltip').on("mouseout", function() {
-                    $(this).prev().css({"visibility":"hidden"});
+                    $(this).prev().css({"visibility": "hidden"});
                 });
             });
             $("body").on("click", ".edit-widget", function() {
