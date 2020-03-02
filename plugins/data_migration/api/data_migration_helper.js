@@ -984,7 +984,7 @@ module.exports = function(my_db) {
                 log_me(logpath, 'Scripts generated sucessfully', false);
                 my_logpath = logpath;
                 Promise.each(myscripts, function(command) {
-                    run_command(command.cmd, command.args);
+                    return run_command(command.cmd, command.args);
                 }).then(
                     function() {
                         //update messages 
@@ -1218,7 +1218,7 @@ module.exports = function(my_db) {
                                 exp_count = scripts.length;
                                 resolve(exportid);
                                 Promise.each(scripts, function(command) {
-                                    run_command(command.cmd, command.args);
+                                    return run_command(command.cmd, command.args);
                                 }).then(
                                     function() {
                                         log_me(my_logpath, "Files generated sucessfully", false);
