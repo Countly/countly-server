@@ -2108,7 +2108,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     border-radius: 0;
     border-top: 1px solid #D0D0D0;
     background-color: #ECECEC;
-    margin-top: 0;
+    margin: 0px;
     vertical-align: middle;
 }
 
@@ -2256,9 +2256,6 @@ h4 + .mgmt-plugins-row {
     background-color: #F9F9F9;
 }
 
-.mgmt-plugins > form > div:nth-last-child(2) {
-    padding-bottom: 70px;
-}
 .mgmt-plugins > form > h4 {
     background-color: white;
 }

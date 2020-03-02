@@ -2280,7 +2280,7 @@ window.ManageAppsView = countlyView.extend({
                     view.render(view);
                 });
             });
-            self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false});
+            self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false, heightStyle: "content" });
             self.el.find('.app-details-plugins > div').off('accordionactivate').on('accordionactivate', function(event, ui) {
                 var index = parseInt(ui.oldHeader.data('index'));
                 if (self.appManagementViews[index]) {
