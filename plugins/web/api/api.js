@@ -63,7 +63,7 @@ var pluginOb = {},
             }
 
             if (!params.qstring.metrics._device) {
-                if (agent.device.model) {
+                if (typeof agent.device.model !== "undefined") {
                     params.qstring.metric._device = agent.device.model;
                 }
                 else {
@@ -104,7 +104,7 @@ var pluginOb = {},
             }
 
             if (!params.qstring.metrics._device) {
-                if (agent.device.model) {
+                if (typeof agent.device.model !== "undefined") {
                     params.qstring.metric._device = agent.device.model;
                 }
                 else {
