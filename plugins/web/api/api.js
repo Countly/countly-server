@@ -63,7 +63,12 @@ var pluginOb = {},
             }
 
             if (!params.qstring.metrics._device) {
-                params.qstring.metrics._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
+                if (agent.device.model) {
+                    params.qstring.metric._device = agent.device.model;
+                }
+                else {
+                    params.qstring.metrics._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
+                }
             }
         }
 
@@ -98,8 +103,13 @@ var pluginOb = {},
                 params.qstring.crash._browser = agent.browser.name;
             }
 
-            if (!params.qstring.crash._device) {
-                params.qstring.crash._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
+            if (!params.qstring.metrics._device) {
+                if (agent.device.model) {
+                    params.qstring.metric._device = agent.device.model;
+                }
+                else {
+                    params.qstring.metrics._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
+                }
             }
         }
     });
