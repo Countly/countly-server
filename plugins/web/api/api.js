@@ -64,7 +64,7 @@ var pluginOb = {},
 
             if (!params.qstring.metrics._device) {
                 if (typeof agent.device.model !== "undefined") {
-                    params.qstring.metric._device = agent.device.model;
+                    params.qstring.metrics._device = agent.device.model;
                 }
                 else {
                     params.qstring.metrics._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
@@ -105,7 +105,7 @@ var pluginOb = {},
 
             if (!params.qstring.metrics._device) {
                 if (typeof agent.device.model !== "undefined") {
-                    params.qstring.metric._device = agent.device.model;
+                    params.qstring.metrics._device = agent.device.model;
                 }
                 else {
                     params.qstring.metrics._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
