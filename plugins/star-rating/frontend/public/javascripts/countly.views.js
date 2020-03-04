@@ -1908,7 +1908,7 @@ window.starView = countlyView.extend({
             });
             $('.feedback-create-side-header-slice').on('click', function() {
                 if (store.get('drawer-type') === 'create') {
-                    if ((parseInt($(this).data('step')) - parseInt(self.step)) === 1) {
+                    if ((parseInt($(this).data('step')) < parseInt(self.step))) {
                         self.step = $(this).data('step');
                         self.renderFeedbackDrawer();
                     }
