@@ -1303,7 +1303,7 @@ var AppRouter = Backbone.Router.extend({
             self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
             self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
             if (countlyGlobal.member.global_admin) {
-                self.addSubMenu("events", {code: "all-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
+                self.addSubMenu("events", {code: "manage-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
             }
             self.addMenu("utilities", {
                 code: "management",
