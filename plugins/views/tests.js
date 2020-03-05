@@ -544,7 +544,7 @@ describe('Testing views plugin', function() {
     describe('Validating user merging', function() {
         it('getting Info about users', function(done) {
 
-            db.collection("app_userviews" + APP_ID).aggregate({$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}, function(err, res) {
+            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
                         userObject[res[k].userinfo[0].did] = res[k];
@@ -573,7 +573,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate({$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}, function(err, res) {
+            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -608,7 +608,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate({$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}, function(err, res) {
+            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -644,7 +644,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate({$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}, function(err, res) {
+            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {

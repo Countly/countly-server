@@ -122,18 +122,18 @@ window.ConsentManagementView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             this.drawGraph(true);
             this.tabs = $("#tabs").tabs();
-            this.tabs.on("tabsshow", function(event, ui) {
-                if (ui && ui.panel) {
-                    if ($(ui.panel).find(".widget-header.include-dateselector").length) {
-                        $("#date-selector").appendTo($(ui.panel).find(".widget-header"));
+            this.tabs.on("tabsactivate", function(event, ui) {
+                if (ui && ui.newPanel) {
+                    if ($(ui.newPanel).find(".widget-header.include-dateselector").length) {
+                        $("#date-selector").appendTo($(ui.newPanel).find(".widget-header"));
                     }
-                    if ($(ui.panel).find(".d-table").length && !$(ui.panel).find(".d-table").hasClass("sticky")) {
-                        $(ui.panel).find(".d-table").addClass("sticky");
+                    if ($(ui.newPanel).find(".d-table").length && !$(ui.newPanel).find(".d-table").hasClass("sticky")) {
+                        $(ui.newPanel).find(".d-table").addClass("sticky");
                         setTimeout(function() {
-                            $(ui.panel).find(".d-table").stickyTableHeaders();
+                            $(ui.newPanel).find(".d-table").stickyTableHeaders();
                         }, 10);
                     }
-                    var tab = ($(ui.panel).attr("id") + "").replace("consent-", "");
+                    var tab = ($(ui.newPanel).attr("id") + "").replace("consent-", "");
                     if (tab && tab.length) {
                         if (tab === "metrics") {
                             app.noHistory("#/manage/compliance");
@@ -169,7 +169,7 @@ window.ConsentManagementView = countlyView.extend({
                 setTimeout(function() {
                     var index = $(".ui-tabs-panel", self.tabs).index($("#consent-" + self._tab));
                     if (index !== -1) {
-                        self.tabs.tabs("select", index);
+                        self.tabs.tabs("option", "active", index);
                     }
                 }, 0);
             }
@@ -407,7 +407,7 @@ window.ConsentManagementView = countlyView.extend({
                         app.noHistory("#/manage/compliance/history/" + id);
                         var index = $(".ui-tabs-panel", self.tabs).index($("#consent-history"));
                         if (index !== -1) {
-                            self.tabs.tabs("select", index);
+                            self.tabs.tabs("option", "active", index);
                         }
                         $(document).scrollTop(0);
                     }
@@ -662,10 +662,25 @@ app.addPageScript("/users/#", function() {
             }
             return str;
         };
-        app.activeView.tabs.tabs('add', '#usertab-consent', jQuery.i18n.map["consent.title"]);
+        var ul = app.activeView.tabs.find("ul");
+        $("<li><a href='#usertab-consent'>" + jQuery.i18n.map["consent.title"] + "</a></li>").appendTo(ul);
+        $("<div id='usertab-consent'></div>").appendTo(app.activeView.tabs);
         app.activeView.tabs.tabs("refresh");
         var userDetails = countlyUserdata.getUserdetails();
         $("#usertab-consent").append("<div class='widget-header'><div class='left'><div class='title'>" + jQuery.i18n.map["userdata.consents"] + "</div></div></div><table id='d-table-consents' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0' data-view='consentManagementView'></table>");
+
+        app.activeView.shouldLoadConsents = false;
+        app.activeView.tabs.on("tabsshow", function(event, ui) {
+            if (ui && ui.panel) {
+                var tab = ($(ui.panel).attr("id") + "").replace("usertab-", "");
+                if (tab === "consent" && !app.activeView.shouldLoadConsents) {
+                    app.activeView.shouldLoadConsents = true;
+                    if (app.activeView.dtableconsents) {
+                        app.activeView.dtableconsents.fnDraw(false);
+                    }
+                }
+            }
+        });
         app.activeView.dtableconsents = $('#d-table-consents').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "iDisplayLength": 30,
             "aaSorting": [[ 5, "desc" ]],
@@ -673,16 +688,18 @@ app.addPageScript("/users/#", function() {
             "bFilter": false,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "/consent/search?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&query=" + JSON.stringify({uid: userDetails.uid}),
             "fnServerData": function(sSource, aoData, fnCallback) {
-                $.ajax({
-                    "dataType": 'json',
-                    "type": "POST",
-                    "url": sSource,
-                    "data": aoData,
-                    "success": function(data) {
-                        fnCallback(data);
-                        CountlyHelpers.reopenRows(app.activeView.dtableconsents, formatConsent);
-                    }
-                });
+                if (app.activeView.shouldLoadConsents) {
+                    $.ajax({
+                        "dataType": 'json',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data) {
+                            fnCallback(data);
+                            CountlyHelpers.reopenRows(app.activeView.dtableconsents, formatConsent);
+                        }
+                    });
+                }
             },
             "fnRowCallback": function(nRow, aData) {
                 $(nRow).attr("id", aData._id);

@@ -302,7 +302,7 @@ class Manager {
                     }, update, false);
                 }
                 catch (e) {
-                    log.i('Job %s wasn\'t found', job._id, e);
+                    log.i('Job %s:%s wasn\'t found: %j', job._id, job.name, e);
                 }
 
                 if (old) {

@@ -110,11 +110,18 @@ countly_upgrade (){
     countly_root ;
     if [ $# -eq 0 ]
     then
+        INOFFLINEMODE=$(countly config 'api.offline_mode' | awk -F'= ' '{print $2}')
+
+        if [ $INOFFLINEMODE == "false" ]
+        then
+            (cd $DIR/../..;
+            echo "Installing dependencies...";
+            sudo npm install;)
+        fi
+
         (cd "$DIR/../.." ;
-        echo "Installing dependencies...";
-        sudo npm install ;
         echo "Preparing production files...";
-        grunt dist-all;
+        countly task dist-all;
         echo "Restarting Countly...";
         sudo countly restart;
         )

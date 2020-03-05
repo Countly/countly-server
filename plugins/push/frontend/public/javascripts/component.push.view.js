@@ -329,8 +329,8 @@ window.component('push.view', function(view) {
                             }}) : ''
                     ]),
                     opts.count === opts.total ? 
-                        m('span', opts.titleClick ? m('a[href=#]', {onclick: opts.titleClick, title: opts.titleTitle || ''}, opts.count) : m('b', opts.count))
-                        : m('span', [opts.titleClick ? m('a[href=#]', {onclick: opts.titleClick, title: opts.titleTitle || ''}, opts.count) : m('b', opts.count), t('of'), m('b', opts.total)])
+                        m('span', opts.titleClick && opts.count ? m('a[href=#]', {onclick: opts.titleClick, title: opts.titleTitle || ''}, opts.count) : m('b', opts.count))
+                        : m('span', [opts.titleClick && opts.count ? m('a[href=#]', {onclick: opts.titleClick, title: opts.titleTitle || ''}, opts.count) : m('b', opts.count), t('of'), m('b', opts.total)])
                 ]),
                 m('.col-right', [
                     m('.comp-bar', [

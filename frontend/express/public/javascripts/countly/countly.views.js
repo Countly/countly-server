@@ -155,6 +155,7 @@ window.GraphNotesView = countlyView.extend({
         content.html(noteHTML(this));
         CountlyHelpers.revealDialog(dialog);
         app.localize();
+        $(".graph-note-textarea").attr("placeholder", jQuery.i18n.map["notes.note-textarea-placeholder"]);
 
         //date time picker
         var element = $('.date-time-picker');
@@ -166,7 +167,7 @@ window.GraphNotesView = countlyView.extend({
             showOtherMonths: true,
             onSelect: function() {}
         });
-
+        $(element).datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
         var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
         self.emailInput = $('#email-list-input').selectize({
             plugins: ['remove_button'],
@@ -237,7 +238,6 @@ window.GraphNotesView = countlyView.extend({
         self.emailInput.off("change").on("change", function() {
             that.checkInput();
         });
-
         $(".date-time-selector-container").off("click").on("click", function() {
             setTimeout(function() {
                 $('.date-time-picker').toggle();
@@ -374,10 +374,10 @@ window.GraphNotesView = countlyView.extend({
         }
         var self = this;
         this.types = {
-            all: "All",
-            public: "Public",
-            shared: "Shared",
-            private: "Private",
+            all: jQuery.i18n.map["notes.note-all"],
+            public: jQuery.i18n.map["notes.note-public"],
+            shared: jQuery.i18n.map["notes.note-shared"],
+            private: jQuery.i18n.map["notes.note-private"],
         };
         this.templateData = {
             "page-title": jQuery.i18n.map["notes.manage-notes"],
@@ -421,7 +421,9 @@ window.GraphNotesView = countlyView.extend({
                     "sTitle": jQuery.i18n.map["notes.note-date-and-time"],
                 },
                 {
-                    "mData": "noteType",
+                    "mData": function(row) {
+                        return jQuery.i18n.map["notes.note-" + row.noteType] || row.noteType;
+                    },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["notes.note-type"],
                 },
@@ -2278,14 +2280,18 @@ window.ManageAppsView = countlyView.extend({
                     view.render(view);
                 });
             });
-            self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false});
+            self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false, heightStyle: "content" });
             self.el.find('.app-details-plugins > div').off('accordionactivate').on('accordionactivate', function(event, ui) {
                 var index = parseInt(ui.oldHeader.data('index'));
-                self.appManagementViews[index].afterCollapse();
+                if (self.appManagementViews[index]) {
+                    self.appManagementViews[index].afterCollapse();
+                }
             });
             self.el.find('.app-details-plugins > div').off('accordionbeforeactivate').on('accordionbeforeactivate', function(event, ui) {
                 var index = parseInt(ui.newHeader.data('index'));
-                self.appManagementViews[index].beforeExpand();
+                if (self.appManagementViews[index]) {
+                    self.appManagementViews[index].beforeExpand();
+                }
             });
 
             /*
@@ -3097,7 +3103,7 @@ window.ManageAppsView = countlyView.extend({
             initAppManagement(appId2);
         });
 
-        $("#management-app-container .app-container:not(#app-container-new)").live("click", function() {
+        $(document).on("click", "#management-app-container .app-container:not(#app-container-new)", function() {
             var appId2 = $(this).data("id");
             hideEdit();
             $(".app-container").removeClass("active");
@@ -5882,8 +5888,8 @@ window.LongTaskView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.tabs = $("#reports-manager-tabs").tabs();
-            this.tabs.on("tabsselect", function(event, ui) {
-                self.taskCreatedBy = typeCodes[ui.index];
+            this.tabs.on("tabsactivate", function(event, ui) {
+                self.taskCreatedBy = typeCodes[ui.newTab.index()];
                 $("#report-manager-table-title").text(jQuery.i18n.map["report-maanger." + self.taskCreatedBy + "-created-title"]);
                 self.showTableColumns(self);
                 self.refresh();

@@ -193,7 +193,11 @@ window.ViewsView = countlyView.extend({
                 columns.push({
                     "mData": function(row) {
                         if (row.t !== 0 && row.scr) {
-                            return parseFloat(row.scr) / parseFloat(row.t);
+                            var vv = parseFloat(row.scr) / parseFloat(row.t);
+                            if (vv > 100) {
+                                vv = 100;
+                            }
+                            return vv;
                         }
                         else {
                             return 0;
@@ -209,7 +213,7 @@ window.ViewsView = countlyView.extend({
             self.haveActionColumn = false;
             if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && domains.length) {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && (domains.length || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0)) {
                     self.haveActionColumn = true;
                     columns.push({
                         "mData": function(row) {
@@ -953,13 +957,13 @@ function initializeViewsWidget() {
 
     var viewsWidgetTemplate;
     var viewsMetric = [
-        { name: "Total Visitors", value: "u" },
-        { name: "New Visitors", value: "n" },
-        { name: "Total Visits", value: "t" },
-        { name: "Avg. Time", value: "d" },
-        { name: "Landings", value: "s" },
-        { name: "Exits", value: "e" },
-        { name: "Bounces", value: "b" }
+        { name: jQuery.i18n.prop("views.u"), value: "u" },
+        { name: jQuery.i18n.prop("views.n"), value: "n" },
+        { name: jQuery.i18n.prop("views.t"), value: "t" },
+        { name: jQuery.i18n.prop("views.d"), value: "d" },
+        { name: jQuery.i18n.prop("views.s"), value: "s" },
+        { name: jQuery.i18n.prop("views.e"), value: "e" },
+        { name: jQuery.i18n.prop("views.b"), value: "b" }
     ];
     /**
      * Function to return view name

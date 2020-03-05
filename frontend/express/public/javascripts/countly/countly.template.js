@@ -152,14 +152,32 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeOnce()).always(function() {
-                if (app.activeView === self) {
-                    self.isLoaded = true;
-                    self.renderCommon();
-                    self.afterRender();
-                    app.pageScript();
+            $.when(this.beforeRender(), initializeOnce()).fail(function(XMLHttpRequest, textStatus, errorThrown) {
+                if (XMLHttpRequest && XMLHttpRequest.status === 0) {
+                    // eslint-disable-next-line no-console
+                    console.error("Check Your Network Connection");
                 }
-            });
+                else if (XMLHttpRequest && XMLHttpRequest.status === 404) {
+                    // eslint-disable-next-line no-console
+                    console.error("Requested URL not found: " + XMLHttpRequest.my_set_url + " with " + JSON.stringify(XMLHttpRequest.my_set_data));
+                }
+                else if (XMLHttpRequest && XMLHttpRequest.status === 500) {
+                    // eslint-disable-next-line no-console
+                    console.error("Internel Server Error: " + XMLHttpRequest.my_set_url + " with " + JSON.stringify(XMLHttpRequest.my_set_data));
+                }
+                else if ((XMLHttpRequest && typeof XMLHttpRequest.status === "undefined") || errorThrown) {
+                    // eslint-disable-next-line no-console
+                    console.error("Unknow Error: " + (XMLHttpRequest || XMLHttpRequest.responseText) + "\n" + textStatus + "\n" + errorThrown);
+                }
+            })
+                .always(function() {
+                    if (app.activeView === self) {
+                        self.isLoaded = true;
+                        self.renderCommon();
+                        self.afterRender();
+                        app.pageScript();
+                    }
+                });
         }
         else {
             if (app.activeView === this) {
@@ -694,7 +712,60 @@ var AppRouter = Backbone.Router.extend({
     _subMenuForAllTypes: [],
     _subMenuForCodes: {},
     _subMenus: {},
-    _internalMenuCategories: ["understand", "explore", "reach", "improve", "utilities", "management", "user"],
+    _internalMenuCategories: ["management", "user"],
+    /**
+    * Add menu category. Categories will be copied for all app types and its visibility should be controled from the app type plugin
+    * @param {string} category - new menu category
+    * @param {Object} node - object defining category lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {number} node.priority - priority order number, the less it is, the more on top category will be
+    * @param {string} node.classes - string with css classes to add to category element
+    * @param {string} node.style - string with css styling to add to category element
+    * @param {string} node.html - additional HTML to append after text
+    * @param {function} node.callback - called when and each time category is added passing same parameters as to this method plus added jquery category element as 3th param
+    **/
+    addMenuCategory: function(category, node) {
+        if (this._internalMenuCategories.indexOf(category) !== -1) {
+            throw "Category already exists with name: " + category;
+        }
+        if (typeof node.priority === "undefined") {
+            throw "Provide priority property for category element";
+        }
+        var menu = $("<div></div>");
+        menu.addClass("menu-category");
+        menu.addClass(category + "-category");
+        menu.attr("data-priority", node.priority);
+        if (node.classes) {
+            menu.addClass(node.classes);
+        }
+        if (node.style) {
+            menu.attr("style", node.style);
+        }
+        menu.append('<span class="menu-category-title" data-localize="' + (node.text || "sidebar.category." + category) + '"></span>');
+        if (node.html) {
+            menu.append(node.html);
+        }
+        this._internalMenuCategories.push(category);
+        var added = false;
+        var selector = "#sidebar-menu .sidebar-menu";
+        //try adding before first greater priority
+        $(selector + " > div.menu-category").each(function() {
+            var cur = parseInt($(this).attr("data-priority"));
+            if (node.priority < cur) {
+                added = true;
+                $(this).before(menu);
+                return false;
+            }
+        });
+
+        //if not added, maybe we are first or last, so just add it
+        if (!added) {
+            $(selector).append(menu);
+        }
+        if (typeof node.callback === "function") {
+            node.callback(category, node, menu);
+        }
+    },
     /**
     * Add first level menu element for specific app type under specified category. You can only add app type specific menu to categories "understand", "explore", "reach", "improve", "utilities"
     * @param {string} app_type - type of the app for which to add menu
@@ -748,7 +819,7 @@ var AppRouter = Backbone.Router.extend({
         if (!node.url && category !== "management" && category !== "users") {
             this._subMenus[node.code] = true;
             menu.hide();
-            menu.after('<div class="sidebar-submenu" id="' + node.code + '-submenu">');
+            menu = menu.add('<div class="sidebar-submenu" id="' + node.code + '-submenu">');
         }
         var added = false;
         var selector = "#sidebar-menu #" + app_type + "-type ." + category + "-category";
@@ -1215,44 +1286,50 @@ var AppRouter = Backbone.Router.extend({
         this.refreshScripts = {};
         this.appSettings = {};
         this.widgetCallbacks = {};
-
-        /**
-        * Add menus
-        **/
-
-        this.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.dashboard", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10});
-        this.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
-        this.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
-        this.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
-        this.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
-        this.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
-        if (countlyGlobal.member.global_admin) {
-            this.addSubMenu("events", {code: "all-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
-        }
-        this.addMenu("utilities", {
-            code: "management",
-            text: "sidebar.utilities",
-            icon: '<div class="logo management ion-wrench"></div>',
-            priority: 10000000,
-            callback: function(type, category, node, menu) {
-            //for backwards compatability of old plugins adding menu to management
-                menu.filter("#management-submenu").append("<span class='help-toggle'></span>");
+        var self = this;
+        $(document).ready(function() {
+            /**
+            * Add menus
+            **/
+            self.addMenuCategory("understand", {priority: 10});
+            self.addMenuCategory("explore", {priority: 20});
+            self.addMenuCategory("reach", {priority: 30});
+            self.addMenuCategory("improve", {priority: 40});
+            self.addMenuCategory("utilities", {priority: 50});
+            self.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.dashboard", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10});
+            self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
+            self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
+            self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
+            self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+            self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
+            if (countlyGlobal.member.global_admin) {
+                self.addSubMenu("events", {code: "all-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
             }
+            self.addMenu("utilities", {
+                code: "management",
+                text: "sidebar.utilities",
+                icon: '<div class="logo management ion-wrench"></div>',
+                priority: 10000000,
+                callback: function(type, category, node, menu) {
+                //for backwards compatability of old plugins adding menu to management
+                    menu.filter("#management-submenu").append("<span class='help-toggle'></span>");
+                }
+            });
+
+            self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+
+            if (countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) {
+                self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
+            }
+            if (countlyGlobal.member.global_admin) {
+                self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
+            }
+
+            self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
+
+            self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
+            self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
         });
-
-        this.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
-
-        if (countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) {
-            this.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
-        }
-        if (countlyGlobal.member.global_admin) {
-            this.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
-        }
-
-        this.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
-
-        this.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
-        this.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
 
         this.routesHit = 0; //keep count of number of routes handled by your application
         /**
@@ -1570,7 +1647,6 @@ var AppRouter = Backbone.Router.extend({
             return options.fn(object[options.hash.key]);
         });
 
-        var self = this;
         $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
         jQuery.i18n.properties({
             name: 'locale',
@@ -1903,7 +1979,7 @@ var AppRouter = Backbone.Router.extend({
                 });
             });
 
-            $("#save-account-details:not(.disabled)").live('click', function() {
+            $(document).on('click', "#save-account-details:not(.disabled)", function() {
                 var username = $(".dialog #username").val(),
                     old_pwd = $(".dialog #old_pwd").val(),
                     new_pwd = $(".dialog #new_pwd").val(),
@@ -4014,21 +4090,22 @@ app.noHistory = function(hash) {
 $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //add to options for independent!!!
 
+    var myurl = "";
+    var mydata = "";
+    if (originalOptions && originalOptions.url) {
+        myurl = originalOptions.url;
+    }
+    if (originalOptions && originalOptions.data) {
+        mydata = JSON.stringify(originalOptions.data);
+    }
+    //request which is not killed on view change(only on app change)
+    jqXHR.my_set_url = myurl;
+    jqXHR.my_set_data = mydata;
+
     if (originalOptions && (originalOptions.type === 'GET' || originalOptions.type === 'get') && originalOptions.url.substr(0, 2) === '/o') {
         if (originalOptions.data && originalOptions.data.preventGlobalAbort && originalOptions.data.preventGlobalAbort === true) {
             return true;
         }
-        var myurl = "";
-        var mydata = "";
-        if (originalOptions && originalOptions.url) {
-            myurl = originalOptions.url;
-        }
-        if (originalOptions && originalOptions.data) {
-            mydata = JSON.stringify(originalOptions.data);
-        }
-        //request which is not killed on view change(only on app change)
-        jqXHR.my_set_url = myurl;
-        jqXHR.my_set_data = mydata;
 
         if (originalOptions.data && originalOptions.data.preventRequestAbort && originalOptions.data.preventRequestAbort === true) {
             if (app._myRequests[myurl] && app._myRequests[myurl][mydata]) {

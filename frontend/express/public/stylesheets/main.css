@@ -806,7 +806,8 @@ div.datatablesubrow {display: none;}
     .cly-select .search { top:100%; position:absolute; z-index:2; background-color: #FFF; width:100%; border:1px solid #D0D0D0; border-bottom:none; margin-left:-1px; cursor:default; overflow:auto; }
         .cly-select .search .fa { position: absolute; right:0; top:5px; color:#CCC; font-size: 10px; }
         .cly-select .search .inner { position:relative; margin:5px 8px; padding:4px 1px; padding-right:20px; background-color:#FFF; font:13px Ubuntu; line-height:111%; }
-        .cly-select .search input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; }
+        .cly-select .search input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; -webkit-appearance: textfield; }
+        .cly-select .search input::-webkit-search-decoration { -webkit-appearance: none; }
     .cly-select .search + .select-items { margin-top: 33px; border-top-left-radius: 0; border-top-right-radius: 0; }
     .cly-select .select-items { top:100%; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; }
     .cly-select.upside-down .select-items { bottom:100%; top: auto;}
@@ -1475,8 +1476,8 @@ margin: 50px 0;}
 .ui-tabs .ui-tabs-nav li { width:50%; margin:0; padding:0; background-color: #f8f8f8; border-radius:0; }
 .ui-tabs .ui-tabs-nav li a { display: block; float:none; padding:12px 0 15px 0; font-size:13px; font-family: Ubuntu; text-transform: uppercase; color:#636363; }
 .ui-tabs.ui-widget-content .ui-tabs-nav > .ui-state-default { border:none; background-image: none; padding:0; border-top: 3px solid #f8f8f8; }
-.ui-tabs.ui-widget-content .ui-tabs-nav > li.ui-tabs-selected { background-color: white; border-top: 3px solid #19cc63; border-bottom:1px solid #FFF !important; }
-.ui-tabs .ui-tabs-nav li.ui-tabs-selected a { cursor:default; }
+.ui-tabs.ui-widget-content .ui-tabs-nav > li.ui-tabs-active { background-color: white; border-top: 3px solid #19cc63; border-bottom:1px solid #FFF !important; }
+.ui-tabs .ui-tabs-nav li.ui-tabs-active a { cursor:default; }
 .ui-tabs .ui-tabs-nav { height: auto; background-image: none; background-color: transparent; border: none; padding: 0; margin: 0; border-radius: 0; margin-top:-1px; }
 .ui-tabs { border-radius:0; border:none; }
 .ui-tabs .ui-tabs-nav li { border-bottom:1px solid #eaeaea !important; }
@@ -2107,7 +2108,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     border-radius: 0;
     border-top: 1px solid #D0D0D0;
     background-color: #ECECEC;
-    margin-top: 0;
+    margin: 0px;
     vertical-align: middle;
 }
 
@@ -2255,9 +2256,6 @@ h4 + .mgmt-plugins-row {
     background-color: #F9F9F9;
 }
 
-.mgmt-plugins > form > div:nth-last-child(2) {
-    padding-bottom: 70px;
-}
 .mgmt-plugins > form > h4 {
     background-color: white;
 }
@@ -2301,8 +2299,8 @@ h4 + .mgmt-plugins-row {
 #report-manager-view .ui-tabs .ui-tabs-panel{padding:0;}
 #report-manager-view .ui-tabs .ui-tabs-nav li a{background-color: transparent;  color: #666; padding: 0px 0px 6px 0px;  font-size:15px}
 #report-manager-view .ui-tabs.ui-widget-content .ui-tabs-nav > .ui-state-default {border-top: none;}
-#report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected {border-top: none; border-bottom: none !important; background-color:transparent;}
-#report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected a{color:#333; border-bottom: 2px solid #19cc63 !important;}
+#report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-active {border-top: none; border-bottom: none !important; background-color:transparent;}
+#report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-active a{color:#333; border-bottom: 2px solid #19cc63 !important;}
 #report-manager-view .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
 #report-manager-view .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
 .report-manager-table td { line-height: 20px; }

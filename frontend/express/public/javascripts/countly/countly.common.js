@@ -911,7 +911,7 @@
                                     var app = countlyGlobal.apps[noteId] || {};
                                     titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
                                     "<div class='note-content'>" + notes[0].note + "</div>" +
-                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType + "</span> </div>" +
+                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + (jQuery.i18n.map["notes.note-" + notes[0].noteType] || notes[0].noteType) + "</span> </div>" +
                                         "</div>";
                                 }
                                 else {
@@ -3956,6 +3956,9 @@
                 return obj;
             }
             else {
+                if (typeof obj[is[0]] === "undefined" && value !== undefined) {
+                    obj[is[0]] = {};
+                }
                 return countlyCommon.dot(obj[is[0]], is.slice(1), value);
             }
         };
@@ -4165,7 +4168,7 @@
 
         countlyCommon.getGraphNotes = function(appIds, callBack) {
             if (!appIds) {
-                appIds = [countlyCommon.ACTIVE_APP_ID];
+                appIds = [];
             }
             return window.$.ajax({
                 type: "GET",
