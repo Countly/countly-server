@@ -5,22 +5,22 @@
                     <div class="title small">{{page-title}}</div>
                 </div>
                 <div class='filter-selector-wrapper'>
-                    <div id="rating-selector-graph" class='star-rating-filter-title'>
-                        <a data-localize="star.all-ratings"></a>
+                    <div id="crashes-selector-graph" class='crashes-filter-title'>
+                        <a data-localize="crashes.filter.fatal"></a>
                         <div style="display: table-cell; vertical-align:middle; position: relative; float:left; width:30px;">
                             <span class="down ion-chevron-down"></span>
                             <span class="up ion-chevron-up"></span>
                         </div>
                     </div>
-                    <div id="star-rating-rating-filter" class="star-rating-selector-form">
+                    <div id="crashes-filter" class="crashes-selector-form">
                         <table>
                             <tr>
                                 <td data-localize="platforms.table.platform"></td>
                                 <td>
-                                    <div class="cly-select" id="ratings_platform_ratings">
+                                    <div class="cly-select" id="crashes_filter_platform">
                                         <div class="select-inner">
                                             <div class="text-container">
-                                                <div class="text"><div class="placeholder" data-localize="feedback.select-platform"></div></div>
+                                                <div class="text"><div class="placeholder" data-localize="crashes.filter.select-platform"></div></div>
                                             </div>
                                             <div class="right combo"></div>
                                         </div>
@@ -35,10 +35,10 @@
                             <tr>
                                 <td data-localize="app-versions.table.app-version"></td>
                                 <td>
-                                    <div class="cly-select" id="ratings_version_ratings">
+                                    <div class="cly-select" id="crashes_filter_version">
                                         <div class="select-inner">
                                             <div class="text-container">
-                                                <div class="text"><div class="placeholder" data-localize="feedback.select-version"></div></div>
+                                                <div class="text"><div class="placeholder" data-localize="crashes.filter.select-version"></div></div>
                                             </div>
                                             <div class="right combo"></div>
                                         </div>
@@ -51,12 +51,12 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td data-localize="feedback.widget"></td>
+                                <td data-localize="crashes.filter.fatal-type"></td>
                                 <td>
-                                    <div class="cly-select" id="ratings_widget_ratings">
+                                    <div class="cly-select" id="crashes_filter_fatal_type">
                                         <div class="select-inner">
                                             <div class="text-container">
-                                                <div class="text"><div class="placeholder" data-localize="feedback.select-widget"></div></div>
+                                                <div class="text"><div class="placeholder" data-localize="crashes.filter.select-fatal-type"></div></div>
                                             </div>
                                             <div class="right combo"></div>
                                         </div>
@@ -70,8 +70,8 @@
                             </tr>
                             
                         </table>
-                        <button class="icon-button green apply-star-rating-filter" data-localize="common.apply"></button>
-                        <div class="icon-button light remove-star-rating-filter" data-localize="star.reset-filters">Remove me</div>
+                        <button class="icon-button green apply-crashes-filter" data-localize="common.apply"></button>
+                        <div class="icon-button light remove-crashes-filter" data-localize="crashes.filter.reset-filters">Remove me</div>
                        
                     </div>
                 </div>

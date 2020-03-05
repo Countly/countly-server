@@ -421,8 +421,8 @@ window.CrashesView = countlyView.extend({
         var values = this.ratingFilter[this._tab];
         if (!keepOpen) {
             $("#rating-selector").removeClass('active');
-            $("#rating-selector-graph").removeClass('active');
-            $(".star-rating-selector-form").hide();
+            $("#crashes-selector-graph").removeClass('active');
+            $(".crashes-selector-form").hide();
         }
         if (values.rating === "") {
             $("#ratings_rating_" + this._tab).clySelectSetSelection("", "");
@@ -474,18 +474,18 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-        $("#rating-selector-graph").on("click", function() {
+        $("#crashes-selector-graph").on("click", function() {
             if ($(this).hasClass('active')) {
                 $(this).removeClass('active');
-                $("#star-rating-rating-filter").hide();
+                $("#crashes-filter").hide();
             }
             else {
                 $(this).addClass('active');
-                $("#star-rating-rating-filter").show();
+                $("#crashes-filter").show();
             }
         });
 
-        $(".remove-star-rating-filter").on("click", function() {
+        $(".remove-crashes-filter").on("click", function() {
             if (self._tab === "comments") {
                 self.ratingFilter.comments = {'platform': "", "version": "", "rating": "", "widget": ""};
                 self.resetFilterBox(true);
@@ -497,15 +497,15 @@ window.CrashesView = countlyView.extend({
             else {
                 self.ratingFilter.ratings = {'platform': "", "version": "", "widget": ""};
                 self.resetFilterBox(true);
-                $("#rating-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
+                $("#crashes-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
                 self.refresh();
             }
         });
 
-        $(".apply-star-rating-filter").on("click", function() {
+        $(".apply-crashes-filter").on("click", function() {
             $("#rating-selector").removeClass('active');
-            $("#rating-selector-graph").removeClass('active');
-            $(".star-rating-selector-form").hide();
+            $("#crashes-selector-graph").removeClass('active');
+            $(".crashes-selector-form").hide();
             var selectText = [];
 
             self.ratingFilter[self._tab] = {'platform': "", "version": "", "widget": ""};
@@ -571,10 +571,10 @@ window.CrashesView = countlyView.extend({
             }
             else {
                 if (have_filter) {
-                    $("#rating-selector-graph a").text(selectText.join(", "));
+                    $("#crashes-selector-graph a").text(selectText.join(", "));
                 }
                 else {
-                    $("#rating-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
+                    $("#crashes-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
                 }
                 self.refresh();
             }
@@ -715,7 +715,7 @@ window.CrashesView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             self.switchMetric();
             self.addScriptsForFilter();
-            //self.resetFilterBox();
+            // self.resetFilterBox();
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });
