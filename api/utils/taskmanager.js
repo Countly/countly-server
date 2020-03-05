@@ -305,7 +305,7 @@ taskmanager.nameResult = function(options, data, callback) {
 */
 taskmanager.getResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne({_id: options.id}, getResult(callback,options));
+    options.db.collection("long_tasks").findOne({_id: options.id}, getResult(callback, options));
 };
 
 /**
@@ -317,7 +317,7 @@ taskmanager.getResult = function(options, callback) {
 */
 taskmanager.getResultByQuery = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne(options.query, getResult(callback,options));
+    options.db.collection("long_tasks").findOne(options.query, getResult(callback, options));
 };
 
 /**
@@ -671,18 +671,18 @@ taskmanager.rerunTask = function(options, callback) {
         }
     });
 };
-   
-    /**
+
+/**
  *  Create a callback for getting result, including checking gridfs
  *  @param {function} callback - callback for the result
  *  @param {object} options - options object
  *  @returns {function} callback to use for db query
  */
-function getResult(callback,options) {
+function getResult(callback, options) {
     return function(err, data) {
         if (!err) {
             if (data && options && options.subtask_key && data.taskgroup === true) {
-                taskmanager.getResultByQuery({db: options.db, query: {subtask: data._id, subtask_key: options.subtask_key}}, getResult(function(err2, subtask){
+                taskmanager.getResultByQuery({db: options.db, query: {subtask: data._id, subtask_key: options.subtask_key}}, getResult(function(err2, subtask) {
                     if (!subtask) {
                         taskmanager.rerunTask({db: options.db, id: data._id}, function() {});
                     }
