@@ -1414,13 +1414,13 @@ app.get(countlyConfig.path + '/render', function(req, res) {
         db: countlyDb,
         multi: false,
         owner: req.session.uid,
+        ttl: 500,
         purpose: "LoginAuthToken",
         callback: function(err2, token) {
             if (err2) {
                 console.log(err2);
                 return res.send(false);
             }
-
             options.token = token;
             render.renderView(options, function(err3) {
                 if (err3) {
