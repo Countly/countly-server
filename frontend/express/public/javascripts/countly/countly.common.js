@@ -712,14 +712,13 @@
                 //set dashed line for not finished yet
 
                 if (countlyCommon.periodObj.periodContainsToday === true) {
+                    var settings = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID];
+                    var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: settings.timezone }));
                     for (var z = 0; z < dataPoints.length; z++) {
                         if (dataPoints[z].mode !== "ghost" && dataPoints[z].mode !== "previous") {
                             var bDate = new Date();
                             if (_period === "hour") {
-
-                                var settings = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID];
-                                var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: settings.timezone }));
-                                if (bDate.getDate() == tzDate.getDate()) {
+                                if (bDate.getDate() === tzDate.getDate()) {
                                     dataPoints[z].dashAfter = tzDate.getHours() - 1;
                                 }
                                 else if (bDate.getDate() > tzDate.getDate()) {
@@ -731,13 +730,11 @@
                                 var c = countlyCommon.periodObj.currentPeriodArr.length;
                                 dataPoints[z].dashAfter = c - 2;
                             }
-                            else if (_period == "month" && bDate.getMonth() <= 2 && (!bucket || bucket == "monthly")) {
+                            else if (_period === "month" && bDate.getMonth() <= 2 && (!bucket || bucket === "monthly")) {
                                 dataPoints[z].dashed = true;
                             }
                             else {
-                                if (bucket == "hourly") {
-                                    var settings = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID];
-                                    var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: settings.timezone }));
+                                if (bucket === "hourly") {
                                     dataPoints[z].dashAfter = graphTicks.length - (24 - tzDate.getHours() + 1);
                                 }
                                 else {
