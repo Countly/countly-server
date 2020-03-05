@@ -51,28 +51,28 @@ authorizer.save = function(options) {
             }
             else if (member) {
                 authorizer.clearExpiredTokens(options);
-                if(options.tryReuse === true ) {
-                    var rules = {"multi":options.multi,"endpoint":options.endpoint,"app":options.app, "owner":options.owner,"purpose":options.purpose};
-                    if(options.ttl > 0) {
-                        rules["ttl"] = {$gt:0};
-                        rules["ends"] = {$gt:Math.round(Date.now() / 1000)};
+                if (options.tryReuse === true) {
+                    var rules = {"multi": options.multi, "endpoint": options.endpoint, "app": options.app, "owner": options.owner, "purpose": options.purpose};
+                    if (options.ttl > 0) {
+                        rules.ttl = {$gt: 0};
+                        rules.ends = {$gt: Math.round(Date.now() / 1000)};
                     }
                     else {
-                        rules["ttl"] = options.ttl;
+                        rules.ttl = options.ttl;
                     }
-                    
-                    if(options.purpose === "LoggedInAuth") {
+
+                    if (options.purpose === "LoggedInAuth") {
                         //Login token, allow switching from expiring to not expiring(and other way around)
                         //If there is changes to session expiration - this will allow to treat those tokens as same token.
-                        rules={};
-                        rules['$or'] = [{"ttl":0}, {"ttl":{"$gt":0},"ends":{$gt:Math.round(Date.now() / 1000)}}];
+                        rules = {};
+                        rules.$or = [{"ttl": 0}, {"ttl": {"$gt": 0}, "ends": {$gt: Math.round(Date.now() / 1000)}}];
                     }
-                
-                    
-                    var setObj = {ttl:options.ttl};
-                    setObj["ends"] = options.ttl + Math.round(Date.now() / 1000);
-                    options.db.collection("auth_tokens").findAndModify(rules,{},{$set:setObj}, function(err_token, token) {
-                        if(token && token.value){
+
+
+                    var setObj = {ttl: options.ttl};
+                    setObj.ends = options.ttl + Math.round(Date.now() / 1000);
+                    options.db.collection("auth_tokens").findAndModify(rules, {}, {$set: setObj}, function(err_token, token) {
+                        if (token && token.value) {
                             options.callback(err_token, token.value._id);
                         }
                         else {
@@ -143,10 +143,10 @@ authorizer.read = function(options) {
 };
 
 
-authorizer.clearExpiredTokens = function(options){
+authorizer.clearExpiredTokens = function(options) {
     var ends = Math.round(Date.now() / 1000);
-    options.db.collection("auth_tokens").remove({ttl: {$gt:0}, ends: {$lt:ends}});
-}
+    options.db.collection("auth_tokens").remove({ttl: {$gt: 0}, ends: {$lt: ends}});
+};
 
 /**
 * Checks if token is not expired yet
