@@ -417,62 +417,42 @@ window.CrashesView = countlyView.extend({
      * @param {boolean} keepOpen - will it keep open?
      */
     resetFilterBox: function(keepOpen) {
-        var self = this;
-        var values = this.ratingFilter[this._tab];
+        
         if (!keepOpen) {
             $("#rating-selector").removeClass('active');
             $("#crashes-selector-graph").removeClass('active');
             $(".crashes-selector-form").hide();
         }
-        if (values.rating === "") {
-            $("#ratings_rating_" + this._tab).clySelectSetSelection("", "");
-            $("#ratings_rating_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-rating">' + jQuery.i18n.map['feedback.select-rating'] + '</div>');
-        }
-        else {
-            $("#ratings_rating_" + this._tab).clySelectSetSelection(values.rating, jQuery.i18n.map[this.localizeStars[parseInt(values.rating) - 1]]);
-        }
+
+        var values = {};
 
         if (values.platform === "") {
-            $("#ratings_platform_" + this._tab).clySelectSetSelection("", "");
-            $("#ratings_platform_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-platform">' + jQuery.i18n.map['feedback.select-platform'] + '</div>');
+            $("#crashes_filter_platform").clySelectSetSelection("", "");
+            $("#crashes_filter_platform .text").html('<div class="placeholder" data-localize="feedback.select-platform">' + jQuery.i18n.map['feedback.select-platform'] + '</div>');
         }
         else {
-            $("#ratings_platform_" + this._tab).clySelectSetSelection(values.platform, values.platform);
+            $("#crashes_filter_platform").clySelectSetSelection(values.platform, values.platform);
         }
 
         if (values.version === "") {
-            $("#ratings_version_" + this._tab).clySelectSetSelection("", "");
-            $("#ratings_version_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
+            $("#crashes_filter_version").clySelectSetSelection("", "");
+            $("#crashes_filter_version .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
         }
         else {
-            $("#ratings_version_" + this._tab).clySelectSetSelection(values.version, values.version.replace(/:/g, "."));
+            $("#crashes_filter_version").clySelectSetSelection(values.version, values.version);
         }
 
         if (values.widget === "") {
-            $("#ratings_widget_" + this._tab).clySelectSetSelection("", "");
-            $("#ratings_widget_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-widget">' + jQuery.i18n.map['feedback.select-widget'] + '</div>');
+            $("#crashes_filter_fatal_type").clySelectSetSelection("", "");
+            $("#crashes_filter_fatal_type .text").html('<div class="placeholder" data-localize="feedback.select-fatal-type">' + jQuery.i18n.map['feedback.select-widget'] + '</div>');
         }
         else {
-            for (var i = 0; i < this.templateData.widget.length; i++) {
-                if (this.templateData.widget[i]._id === values.widget) {
-                    $("#ratings_widget_" + self._tab).clySelectSetSelection(values.widget, this.templateData.widget[i].popup_header_text);
-                }
-            }
+            $("#crashes_filter_fatal_type").clySelectSetSelection(values.fatal_type, values.fatal_type);
         }
 
     },
     addScriptsForFilter: function() {
         var self = this;
-        $("#rating-selector").on("click", function() {
-            if ($(this).hasClass('active')) {
-                $(this).removeClass('active');
-                $("#star-rating-comment-filter").hide();
-            }
-            else {
-                $(this).addClass('active');
-                $("#star-rating-comment-filter").show();
-            }
-        });
 
         $("#crashes-selector-graph").on("click", function() {
             if ($(this).hasClass('active')) {
@@ -486,51 +466,24 @@ window.CrashesView = countlyView.extend({
         });
 
         $(".remove-crashes-filter").on("click", function() {
-            if (self._tab === "comments") {
-                self.ratingFilter.comments = {'platform': "", "version": "", "rating": "", "widget": ""};
-                self.resetFilterBox(true);
-                $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
-                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function() {
-                    self.updateViews();
-                });
-            }
-            else {
-                self.ratingFilter.ratings = {'platform': "", "version": "", "widget": ""};
-                self.resetFilterBox(true);
-                $("#crashes-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
-                self.refresh();
-            }
+            self.resetFilterBox(true);
+            $("#crashes-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
+            self.refresh();
         });
 
         $(".apply-crashes-filter").on("click", function() {
-            $("#rating-selector").removeClass('active');
             $("#crashes-selector-graph").removeClass('active');
             $(".crashes-selector-form").hide();
             var selectText = [];
 
-            self.ratingFilter[self._tab] = {'platform': "", "version": "", "widget": ""};
-            var rating = $("#ratings_rating_" + self._tab).clySelectGetSelection();
-            var version = $("#ratings_version_" + self._tab).clySelectGetSelection();
-            var platform = $("#ratings_platform_" + self._tab).clySelectGetSelection();
-            var widget = $("#ratings_widget_" + self._tab).clySelectGetSelection();
+            var version = $("#crashes_filter_version").clySelectGetSelection();
+            var platform = $("#crashes_filter_platform").clySelectGetSelection();
+            var widget = $("#crashes_filter_fatal_type").clySelectGetSelection();
 
             var have_filter = false;
-            //rating
-            if (self._tab === "comments") {
-                if (rating && rating !== "All Ratings" && rating !== "") {
-                    selectText.push($("#ratings_rating_" + self._tab).find(".select-inner .text").html());
-                    self.ratingFilter[self._tab].rating = rating;
-                    have_filter = true;
-                }
-                else {
-                    selectText.push(jQuery.i18n.map['star.all-ratings']);
-                    self.ratingFilter[self._tab].rating = "";
-                }
-            }
             //platform
             if (platform && platform !== "All Platforms" && platform !== "") {
-                selectText.push($("#ratings_platform_" + self._tab).find(".select-inner .text").html());
-                self.ratingFilter[self._tab].platform = platform;
+                selectText.push($("#crashes_filter_platform").find(".select-inner .text").html());
                 have_filter = true;
             }
             else {
@@ -539,8 +492,7 @@ window.CrashesView = countlyView.extend({
 
             //version
             if (version && version !== "All Versions" && version !== "") {
-                selectText.push(jQuery.i18n.map['version_history.version'] + " " + $("#ratings_version_" + self._tab).find(".select-inner .text").html());
-                self.ratingFilter[self._tab].version = version;
+                selectText.push(jQuery.i18n.map['version_history.version'] + " " + $("#crashes_filter_version").find(".select-inner .text").html());
                 have_filter = true;
             }
             else {
@@ -549,35 +501,21 @@ window.CrashesView = countlyView.extend({
 
             //widget
             if (widget && widget !== "All Widgets" && widget !== "") {
-                self.ratingFilter[self._tab].widget = widget;
-                selectText.push($("#ratings_widget_" + self._tab).find(".select-inner .text").html());
+                selectText.push($("#crashes_filter_fatal_type").find(".select-inner .text").html());
                 have_filter = true;
             }
             else {
                 selectText.push(jQuery.i18n.map['star.all-widgets']);
             }
 
-            if (self._tab === "comments") {
-                if (have_filter) {
-                    $("#rating-selector a").text(selectText.join(", "));
-                }
-                else {
-                    $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
-                }
-
-                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function() {
-                    self.updateViews();
-                });
+            if (have_filter) {
+                $("#crashes-selector-graph a").text(selectText.join(", "));
             }
             else {
-                if (have_filter) {
-                    $("#crashes-selector-graph a").text(selectText.join(", "));
-                }
-                else {
-                    $("#crashes-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
-                }
-                self.refresh();
+                $("#crashes-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
             }
+            self.refresh();
+        
         });
     },
     renderCommon: function(isRefresh) {
