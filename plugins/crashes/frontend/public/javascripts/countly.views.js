@@ -480,7 +480,7 @@ window.CrashesView = countlyView.extend({
                 have_filter = true;
             }
             else {
-                selectText.push(jQuery.i18n.map['star.all-platforms']);
+                selectText.push("All Platforms");
             }
 
             //version
@@ -489,7 +489,7 @@ window.CrashesView = countlyView.extend({
                 have_filter = true;
             }
             else {
-                selectText.push(jQuery.i18n.map['star.all-app-versions']);
+                selectText.push(jQuery.i18n.map['version_history.version']);
             }
 
             //widget
@@ -498,7 +498,7 @@ window.CrashesView = countlyView.extend({
                 have_filter = true;
             }
             else {
-                selectText.push(jQuery.i18n.map['star.all-widgets']);
+                selectText.push(jQuery.i18n.map['crashes.filter.fatal']);
             }
 
             if (have_filter) {
