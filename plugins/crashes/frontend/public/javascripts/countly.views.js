@@ -410,16 +410,9 @@ window.CrashesView = countlyView.extend({
         $(".action-segmentation").addClass("disabled");
         this.refresh();
     },
-    /**
-     * This is for render rating dropdown select view.
-     * @namespace starView
-     * @method loadRatingData
-     * @param {boolean} keepOpen - will it keep open?
-     */
     resetFilterBox: function(keepOpen) {
         
         if (!keepOpen) {
-            $("#rating-selector").removeClass('active');
             $("#crashes-selector-graph").removeClass('active');
             $(".crashes-selector-form").hide();
         }
@@ -428,7 +421,7 @@ window.CrashesView = countlyView.extend({
 
         if (values.platform === "") {
             $("#crashes_filter_platform").clySelectSetSelection("", "");
-            $("#crashes_filter_platform .text").html('<div class="placeholder" data-localize="feedback.select-platform">' + jQuery.i18n.map['feedback.select-platform'] + '</div>');
+            $("#crashes_filter_platform .text").html('<div class="placeholder" data-localize="crashes.filter.select-platform">' + jQuery.i18n.map['crashes.filter.select-platform'] + '</div>');
         }
         else {
             $("#crashes_filter_platform").clySelectSetSelection(values.platform, values.platform);
@@ -436,7 +429,7 @@ window.CrashesView = countlyView.extend({
 
         if (values.version === "") {
             $("#crashes_filter_version").clySelectSetSelection("", "");
-            $("#crashes_filter_version .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
+            $("#crashes_filter_version .text").html('<div class="placeholder" data-localize="crashes.filter.select-version">' + jQuery.i18n.map['crashes.filter.select-version'] + '</div>');
         }
         else {
             $("#crashes_filter_version").clySelectSetSelection(values.version, values.version);
@@ -444,7 +437,7 @@ window.CrashesView = countlyView.extend({
 
         if (values.widget === "") {
             $("#crashes_filter_fatal_type").clySelectSetSelection("", "");
-            $("#crashes_filter_fatal_type .text").html('<div class="placeholder" data-localize="feedback.select-fatal-type">' + jQuery.i18n.map['feedback.select-widget'] + '</div>');
+            $("#crashes_filter_fatal_type .text").html('<div class="placeholder" data-localize="crashes.filter.select-fatal-type">' + jQuery.i18n.map['crashes.filter.select-fatal-type'] + '</div>');
         }
         else {
             $("#crashes_filter_fatal_type").clySelectSetSelection(values.fatal_type, values.fatal_type);
@@ -467,7 +460,7 @@ window.CrashesView = countlyView.extend({
 
         $(".remove-crashes-filter").on("click", function() {
             self.resetFilterBox(true);
-            $("#crashes-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
+            $("#crashes-selector-graph a").text(jQuery.i18n.map['crashes.filter.fatal']);
             self.refresh();
         });
 
@@ -512,7 +505,7 @@ window.CrashesView = countlyView.extend({
                 $("#crashes-selector-graph a").text(selectText.join(", "));
             }
             else {
-                $("#crashes-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
+                $("#crashes-selector-graph a").text(jQuery.i18n.map['crashes.filter.fatal']);
             }
             self.refresh();
         
