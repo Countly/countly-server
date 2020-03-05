@@ -410,6 +410,176 @@ window.CrashesView = countlyView.extend({
         $(".action-segmentation").addClass("disabled");
         this.refresh();
     },
+    /**
+     * This is for render rating dropdown select view.
+     * @namespace starView
+     * @method loadRatingData
+     * @param {boolean} keepOpen - will it keep open?
+     */
+    resetFilterBox: function(keepOpen) {
+        var self = this;
+        var values = this.ratingFilter[this._tab];
+        if (!keepOpen) {
+            $("#rating-selector").removeClass('active');
+            $("#rating-selector-graph").removeClass('active');
+            $(".star-rating-selector-form").hide();
+        }
+        if (values.rating === "") {
+            $("#ratings_rating_" + this._tab).clySelectSetSelection("", "");
+            $("#ratings_rating_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-rating">' + jQuery.i18n.map['feedback.select-rating'] + '</div>');
+        }
+        else {
+            $("#ratings_rating_" + this._tab).clySelectSetSelection(values.rating, jQuery.i18n.map[this.localizeStars[parseInt(values.rating) - 1]]);
+        }
+
+        if (values.platform === "") {
+            $("#ratings_platform_" + this._tab).clySelectSetSelection("", "");
+            $("#ratings_platform_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-platform">' + jQuery.i18n.map['feedback.select-platform'] + '</div>');
+        }
+        else {
+            $("#ratings_platform_" + this._tab).clySelectSetSelection(values.platform, values.platform);
+        }
+
+        if (values.version === "") {
+            $("#ratings_version_" + this._tab).clySelectSetSelection("", "");
+            $("#ratings_version_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
+        }
+        else {
+            $("#ratings_version_" + this._tab).clySelectSetSelection(values.version, values.version.replace(/:/g, "."));
+        }
+
+        if (values.widget === "") {
+            $("#ratings_widget_" + this._tab).clySelectSetSelection("", "");
+            $("#ratings_widget_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-widget">' + jQuery.i18n.map['feedback.select-widget'] + '</div>');
+        }
+        else {
+            for (var i = 0; i < this.templateData.widget.length; i++) {
+                if (this.templateData.widget[i]._id === values.widget) {
+                    $("#ratings_widget_" + self._tab).clySelectSetSelection(values.widget, this.templateData.widget[i].popup_header_text);
+                }
+            }
+        }
+
+    },
+    addScriptsForFilter: function() {
+        var self = this;
+        $("#rating-selector").on("click", function() {
+            if ($(this).hasClass('active')) {
+                $(this).removeClass('active');
+                $("#star-rating-comment-filter").hide();
+            }
+            else {
+                $(this).addClass('active');
+                $("#star-rating-comment-filter").show();
+            }
+        });
+
+        $("#rating-selector-graph").on("click", function() {
+            if ($(this).hasClass('active')) {
+                $(this).removeClass('active');
+                $("#star-rating-rating-filter").hide();
+            }
+            else {
+                $(this).addClass('active');
+                $("#star-rating-rating-filter").show();
+            }
+        });
+
+        $(".remove-star-rating-filter").on("click", function() {
+            if (self._tab === "comments") {
+                self.ratingFilter.comments = {'platform': "", "version": "", "rating": "", "widget": ""};
+                self.resetFilterBox(true);
+                $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
+                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function() {
+                    self.updateViews();
+                });
+            }
+            else {
+                self.ratingFilter.ratings = {'platform': "", "version": "", "widget": ""};
+                self.resetFilterBox(true);
+                $("#rating-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
+                self.refresh();
+            }
+        });
+
+        $(".apply-star-rating-filter").on("click", function() {
+            $("#rating-selector").removeClass('active');
+            $("#rating-selector-graph").removeClass('active');
+            $(".star-rating-selector-form").hide();
+            var selectText = [];
+
+            self.ratingFilter[self._tab] = {'platform': "", "version": "", "widget": ""};
+            var rating = $("#ratings_rating_" + self._tab).clySelectGetSelection();
+            var version = $("#ratings_version_" + self._tab).clySelectGetSelection();
+            var platform = $("#ratings_platform_" + self._tab).clySelectGetSelection();
+            var widget = $("#ratings_widget_" + self._tab).clySelectGetSelection();
+
+            var have_filter = false;
+            //rating
+            if (self._tab === "comments") {
+                if (rating && rating !== "All Ratings" && rating !== "") {
+                    selectText.push($("#ratings_rating_" + self._tab).find(".select-inner .text").html());
+                    self.ratingFilter[self._tab].rating = rating;
+                    have_filter = true;
+                }
+                else {
+                    selectText.push(jQuery.i18n.map['star.all-ratings']);
+                    self.ratingFilter[self._tab].rating = "";
+                }
+            }
+            //platform
+            if (platform && platform !== "All Platforms" && platform !== "") {
+                selectText.push($("#ratings_platform_" + self._tab).find(".select-inner .text").html());
+                self.ratingFilter[self._tab].platform = platform;
+                have_filter = true;
+            }
+            else {
+                selectText.push(jQuery.i18n.map['star.all-platforms']);
+            }
+
+            //version
+            if (version && version !== "All Versions" && version !== "") {
+                selectText.push(jQuery.i18n.map['version_history.version'] + " " + $("#ratings_version_" + self._tab).find(".select-inner .text").html());
+                self.ratingFilter[self._tab].version = version;
+                have_filter = true;
+            }
+            else {
+                selectText.push(jQuery.i18n.map['star.all-app-versions']);
+            }
+
+            //widget
+            if (widget && widget !== "All Widgets" && widget !== "") {
+                self.ratingFilter[self._tab].widget = widget;
+                selectText.push($("#ratings_widget_" + self._tab).find(".select-inner .text").html());
+                have_filter = true;
+            }
+            else {
+                selectText.push(jQuery.i18n.map['star.all-widgets']);
+            }
+
+            if (self._tab === "comments") {
+                if (have_filter) {
+                    $("#rating-selector a").text(selectText.join(", "));
+                }
+                else {
+                    $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
+                }
+
+                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function() {
+                    self.updateViews();
+                });
+            }
+            else {
+                if (have_filter) {
+                    $("#rating-selector-graph a").text(selectText.join(", "));
+                }
+                else {
+                    $("#rating-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
+                }
+                self.refresh();
+            }
+        });
+    },
     renderCommon: function(isRefresh) {
         var crashData = countlyCrashes.getData();
         var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric]);
@@ -544,6 +714,8 @@ window.CrashesView = countlyView.extend({
             chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
             $(this.el).html(this.template(this.templateData));
             self.switchMetric();
+            self.addScriptsForFilter();
+            //self.resetFilterBox();
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });
