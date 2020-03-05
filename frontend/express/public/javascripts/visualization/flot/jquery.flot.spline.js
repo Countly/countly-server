@@ -117,10 +117,7 @@
         ctx.stroke();
         
         if(dashAfter && dashAfter!= plength){
-            ctx.closePath();
-            ctx.beginPath();
             ctx.setLineDash([4, 4]);
-            ctx.moveTo([points[dashAfter-1][0]], points[dashAfter-1][1]);
             for (var i = dashAfter; i < plength; i++) {
                 ctx[points[i][3]].apply(ctx, points[i][2]);
             }
