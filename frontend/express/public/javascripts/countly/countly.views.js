@@ -6440,7 +6440,12 @@ window.TokenManagerView = countlyView.extend({
                 "aoColumns": [
                     {
                         "mData": function(row) {
-                            var retv = row._id || "-"; var retp = row.purpose || "-"; return retp + '<span class="tokenvalue_wrapper"><input class="tokenvalue" type="text" value="' + retv + '" /></span>';
+                            var retv = row._id || "-";
+                            var retp = row.purpose || "-";
+                            if (jQuery.i18n.map["token_manager." + row.purpose + "-description"]) {
+                                retp = "<b>(" + row.purpose + ")</b> " + jQuery.i18n.map["token_manager." + row.purpose + "-description"];
+                            }
+                            return retp + '<span class="tokenvalue_wrapper"><input class="tokenvalue" type="text" value="' + retv + '" /></span>';
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["token_manager.table.purpose"],
