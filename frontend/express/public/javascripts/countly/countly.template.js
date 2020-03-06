@@ -3685,6 +3685,8 @@ var AppRouter = Backbone.Router.extend({
                 e.stopPropagation();
             });
 
+            var dateTo;
+            var dateFrom;
             $("#date-picker-button").click(function(e) {
                 $("#date-picker").toggle();
                 $("#date-picker-button").toggleClass("active");
@@ -3698,7 +3700,7 @@ var AppRouter = Backbone.Router.extend({
                     date = new Date();
                     date.setHours(0, 0, 0, 0);
                     self.dateToSelected = date.getTime();
-                    dateTo.datepicker("setDate", date);
+                    dateTo.datepicker("setDate", new Date(self.dateToSelected));
                     dateFrom.datepicker("option", "maxDate", new Date(self.dateToSelected));
                 }
 
@@ -3708,7 +3710,7 @@ var AppRouter = Backbone.Router.extend({
                     dateTo.datepicker("option", "minDate", date);
                 }
                 else {
-                    var extendDate = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate();
+                    var extendDate = moment(dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
                     extendDate.setHours(0, 0, 0, 0);
                     dateFrom.datepicker("setDate", extendDate);
                     self.dateFromSelected = extendDate.getTime();
@@ -3724,7 +3726,7 @@ var AppRouter = Backbone.Router.extend({
                 e.stopPropagation();
             });
 
-            var dateTo = $("#date-to").datepicker({
+            dateTo = $("#date-to").datepicker({
                 numberOfMonths: 1,
                 showOtherMonths: true,
                 maxDate: moment().toDate(),
@@ -3750,7 +3752,7 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 
-            var dateFrom = $("#date-from").datepicker({
+            dateFrom = $("#date-from").datepicker({
                 numberOfMonths: 1,
                 showOtherMonths: true,
                 maxDate: moment().subtract(1, 'days').toDate(),

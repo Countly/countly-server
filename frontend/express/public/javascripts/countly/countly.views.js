@@ -6119,17 +6119,6 @@ window.LongTaskView = countlyView.extend({
                 });
 
                 var subid = id;
-
-                if (row.taskgroup && row.subtasks) {
-                    row.hasData = false;
-                    for (var k in row.subtasks) {
-                        if (row.subtasks[k].hasData === true) {
-                            subid = k;
-                            row.hasData = true;
-                            break;
-                        }
-                    }
-                }
                 $(".tasks-menu").find(".edit-task").data("id", id);
                 if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
                     $(".tasks-menu").find(".delete-task").data("id", id);
