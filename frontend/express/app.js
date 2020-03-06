@@ -1414,7 +1414,7 @@ app.get(countlyConfig.path + '/render', function(req, res) {
         db: countlyDb,
         multi: false,
         owner: req.session.uid,
-        ttl: 500,
+        ttl: 300,
         purpose: "LoginAuthToken",
         callback: function(err2, token) {
             if (err2) {
