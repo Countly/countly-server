@@ -21,7 +21,7 @@ before_script:
 - ${PWD}/mongodb-linux-x86_64-${MONGODB}/bin/mongod --version
 - cat ${PWD}/mongod.log
 script:
-# - countly shellcheck
+- countly shellcheck
 - sudo npm test
 after_script:
 - cat log/countly-api.log
