@@ -120,7 +120,6 @@ function verifySegments(values) {
             .expect(200)
             .end(function(err, res) {
                 var resDecoded = JSON.parse(res.text);
-                resDecoded = resDecoded.segments;
                 for (var z in values) {
                     if (z != 'testSegment') {
                         if (resDecoded[z]) {
@@ -441,12 +440,12 @@ describe('Testing views plugin', function() {
 
         });
         verifyTotals("30days");
-        verifySegments({"platform": ["Android", "IOS"]});
+        verifySegments({"segments": { "platform": ["Android", "IOS"] }, "domains": []});
     });
 
     var dataSegments = [];
     var limit = 20;
-    var myList = {"platform": ["Android", "IOS"], "testSegment": []};
+    var myList = {"segments": { "platform": ["Android", "IOS"] }, "domains": [], "testSegment": []};
 
     describe('checking limit for segment values', function() {
         it('Adding a lot of segment values', function(done) {
@@ -473,7 +472,7 @@ describe('Testing views plugin', function() {
     describe('Adding segment key with dot in middle', function() {
         it('Adding segment', function(done) {
             dataSegments = [{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "test.My.Segment": "testValue", "visit": 1, "start": 1}}];
-            myList["testMySegment"] = ["testValue"];
+            myList.segments["testMySegment"] = ["testValue"];
 
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user0" + '&timestamp=' + (myTime) + '&events=' + JSON.stringify(dataSegments))
@@ -493,7 +492,7 @@ describe('Testing views plugin', function() {
             var ss = {"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "testSegment": "testValue0", "visit": 1, "start": 1}};
             for (var i = 0; i < 97; i++) { //testview0 and platform already used. 98 spots left
                 ss.segmentation["tS" + i] = "tV0";
-                myList["tS" + i] = ["tV0"];
+                myList.segments["tS" + i] = ["tV0"];
             }
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user0" + '&timestamp=' + (myTime) + '&events=' + JSON.stringify([ss]))
