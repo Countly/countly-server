@@ -435,7 +435,7 @@ window.CrashesView = countlyView.extend({
             $("#crashes_filter_version").clySelectSetSelection(values.version, values.version);
         }
 
-        if (values.widget === "") {
+        if (values.fatal_type === "") {
             $("#crashes_filter_fatal_type").clySelectSetSelection("", "");
             $("#crashes_filter_fatal_type .text").html('<div class="placeholder" data-localize="crashes.filter.select-fatal-type">' + jQuery.i18n.map['crashes.filter.select-fatal-type'] + '</div>');
         }
@@ -471,7 +471,7 @@ window.CrashesView = countlyView.extend({
 
             var version = $("#crashes_filter_version").clySelectGetSelection();
             var platform = $("#crashes_filter_platform").clySelectGetSelection();
-            var widget = $("#crashes_filter_fatal_type").clySelectGetSelection();
+            var fatalType = $("#crashes_filter_fatal_type").clySelectGetSelection();
 
             var have_filter = false;
             //platform
@@ -492,8 +492,8 @@ window.CrashesView = countlyView.extend({
                 selectText.push(jQuery.i18n.map['version_history.version']);
             }
 
-            //widget
-            if (widget && widget !== "All Widgets" && widget !== "") {
+            //fatal type
+            if (fatalType && fatalType !== "Fatal" && fatalType !== "") {
                 selectText.push($("#crashes_filter_fatal_type").find(".select-inner .text").html());
                 have_filter = true;
             }
