@@ -166,8 +166,9 @@ namespace apns {
 		Nan::SetPrototypeMethod(tpl, "close_connection", close_connection);
 		Nan::SetPrototypeMethod(tpl, "feed", feed);
 
-		constructor.Reset(tpl->GetFunction());
-		exports->Set(Nan::New("Connection").ToLocalChecked(), tpl->GetFunction());
+		v8::Local<v8::Context> context = exports->CreationContext();
+		constructor.Reset(tpl->GetFunction(context).ToLocalChecked());
+		exports->Set(Nan::New("Connection").ToLocalChecked(), tpl->GetFunction(context).ToLocalChecked());
 	}
 
 	void H2::New(const Nan::FunctionCallbackInfo<Value>& info) {
@@ -188,16 +189,16 @@ namespace apns {
 		v8::Local<v8::Function> tpl = v8::Local<v8::Function>::Cast(info[0]);
 		obj->errorer.Reset(tpl);
 
-		auto resolver = v8::Promise::Resolver::New(info.GetIsolate());
+		auto resolver = v8::Promise::Resolver::New(info.GetIsolate()->GetCurrentContext()).ToLocalChecked();
 		auto promise = resolver->GetPromise();
 		auto persistent = new ResolverPersistent(resolver);
 		auto persistentHandle = new PeristentHandle;
 		persistentHandle->resolver = persistent;
 		persistentHandle->conn = obj;
 
-		obj->proxyhost = std::string(*v8::String::Utf8Value(info[1]));
-		obj->proxyport = std::stoi(std::string(*v8::String::Utf8Value(info[2])));
-		obj->proxyauth = std::string(*v8::String::Utf8Value(info[3]));
+		obj->proxyhost = std::string(*Nan::Utf8String(info[1]));
+		obj->proxyport = std::stoi(std::string(*Nan::Utf8String(info[2])));
+		obj->proxyauth = std::string(*Nan::Utf8String(info[3]));
 
 		LOG_DEBUG("proxy " << obj->proxyauth << " @ " << obj->proxyport << ": " << obj->proxyport);
 
@@ -291,10 +292,10 @@ namespace apns {
 
 			if (persistentHandle->error.empty()) {
 				obj->stats.state |= ST_SSL;
-				resolver->Resolve(Nan::New("some init result").ToLocalChecked());
+				resolver->Resolve(Nan::GetCurrentContext(), Nan::New("some init result").ToLocalChecked());
 			} else {
 				obj->stats.state |= ST_SSL | ST_ERROR_NONRECOVERABLE;
-				resolver->Reject(Nan::New(persistentHandle->error).ToLocalChecked());
+				resolver->Reject(Nan::GetCurrentContext(), Nan::New(persistentHandle->error).ToLocalChecked());
 			}
 
 			persistent->Reset();
@@ -320,7 +321,7 @@ namespace apns {
 				obj->stats.state |= ST_RESOLVED | ST_ERROR_NONRECOVERABLE;
 				obj->stats.error_connection = uv_err_name(status);
 				LOG_ERROR("dns resolve error, no more retrying after " << obj->stats.error_connection);
-				resolver->Reject(Nan::New(obj->stats.error_connection).ToLocalChecked());
+				resolver->Reject(Nan::GetCurrentContext(), Nan::New(obj->stats.error_connection).ToLocalChecked());
 				persistent->Reset();
 				delete persistentHandle;
 				delete persistent;
@@ -338,7 +339,7 @@ namespace apns {
 			char addr[17] = {'\0'};
 			uv_ip4_name((struct sockaddr_in*) response->ai_addr, addr, 16);
 			LOG_INFO("dns resolved: " << addr << ", has next? " << !!response->ai_next);
-			resolver->Resolve(Nan::New(addr).ToLocalChecked());
+			resolver->Resolve(Nan::GetCurrentContext(), Nan::New(addr).ToLocalChecked());
 			persistentHandle->conn->address = response;
 
 			persistent->Reset();
@@ -361,7 +362,7 @@ namespace apns {
 
 		LOG_INFO("resolving " << host);
 
-		auto resolver = v8::Promise::Resolver::New(info.GetIsolate());
+		auto resolver = v8::Promise::Resolver::New(info.GetIsolate()->GetCurrentContext()).ToLocalChecked();
 		auto promise = resolver->GetPromise();
 		auto persistent = new ResolverPersistent(resolver);
 		auto persistentHandle = new PeristentHandle;
@@ -381,7 +382,7 @@ namespace apns {
 		H2* obj = ObjectWrap::Unwrap<H2>(info.Holder());
 		LOG_INFO("init_connection to " << obj->hostname << " in " << uv_thread_self());
 
-		auto resolver = v8::Promise::Resolver::New(info.GetIsolate());
+		auto resolver = v8::Promise::Resolver::New(info.GetIsolate()->GetCurrentContext()).ToLocalChecked();
 		auto promise = resolver->GetPromise();
 		auto persistent = new ResolverPersistent(resolver);
 		auto persistentHandle = new PeristentHandle;
@@ -411,9 +412,9 @@ namespace apns {
 			LOG_DEBUG("init_done_l: " << obj->stats.error_connection);
 
 			if (obj->stats.error_connection.empty()) {
-				resolver->Resolve(Nan::New("some init result").ToLocalChecked());
+				resolver->Resolve(Nan::GetCurrentContext(), Nan::New("some init result").ToLocalChecked());
 			} else {
-				resolver->Reject(Nan::New(obj->stats.error_connection).ToLocalChecked());
+				resolver->Reject(Nan::GetCurrentContext(), Nan::New(obj->stats.error_connection).ToLocalChecked());
 			}
 
 			persistent->Reset();
@@ -436,7 +437,7 @@ namespace apns {
 
 		v8::Local<v8::Array> input = v8::Local<v8::Array>::Cast(info[0]);
 		for (unsigned int i = 0; i < input->Length(); i++) {
-			auto str = new std::string(*v8::String::Utf8Value(input->Get(i)));
+			auto str = new std::string(*Nan::Utf8String(input->Get(i)));
 			LOG_DEBUG("message " << i << ": " << str << ", " << *str);
 			obj->messages.push_back(str);
 			// delete ch;
@@ -465,7 +466,7 @@ namespace apns {
 		obj->main_async->data = obj;
 		obj->service_async->data = obj;
 
-		auto resolver = v8::Promise::Resolver::New(info.GetIsolate());
+		auto resolver = v8::Promise::Resolver::New(info.GetIsolate()->GetCurrentContext()).ToLocalChecked();
 		auto promise = resolver->GetPromise();
 		auto persistent = new ResolverPersistent(resolver);
 		auto persistentHandle = new PeristentHandle;
@@ -527,9 +528,9 @@ namespace apns {
 			// auto obj = persistentHandle->conn;
 
 			if (persistentHandle->error.empty()) {
-				resolver->Resolve(Nan::New("some send result").ToLocalChecked());
+				resolver->Resolve(Nan::GetCurrentContext(), Nan::New("some send result").ToLocalChecked());
 			} else {
-				resolver->Reject(Nan::New(persistentHandle->error).ToLocalChecked());
+				resolver->Reject(Nan::GetCurrentContext(), Nan::New(persistentHandle->error).ToLocalChecked());
 			}
 
 			persistent->Reset();
@@ -572,21 +573,21 @@ namespace apns {
 					h2_stream *stream = new h2_stream;
 					stream->obj = obj;
 
-					stream->id = std::string(*v8::String::Utf8Value(array->Get(0)));
-					stream->path = H2_APN_PATH + std::string(*v8::String::Utf8Value(array->Get(1)));
+					stream->id = std::string(*Nan::Utf8String(array->Get(0)));
+					stream->path = H2_APN_PATH + std::string(*Nan::Utf8String(array->Get(1)));
 
-					// v8::String::Utf8Value str1(array->Get(0));
+					// Nan::Utf8String(array->Get(0));
 					// stream.id = (char *)malloc(str1.length() + 1);
 					// strcpy(stream.id, *str1);
 
-					// v8::String::Utf8Value str2(array->Get(1));
+					// Nan::Utf8String(array->Get(1));
 					// stream.path = (char *)malloc(str2.length() + 1);
 					// strcpy(stream.path, *str2);
 
 					// LOG_DEBUG("for " << stream->id << " data is " << array->Get(2)->IntegerValue());
 					// auto data = obj->messages[(uint8_t)array->Get(2)->IntegerValue()];
-					stream->data = std::string(*v8::String::Utf8Value(array->Get(2)));;
-					stream->alert = array->Get(3)->ToBoolean()->Value();
+					stream->data = std::string(*Nan::Utf8String(array->Get(2)));;
+					stream->alert = array->Get(3)->ToBoolean(info.GetIsolate())->Value();
 					// auto data = obj->messages[(uint8_t)array->Get(2)->IntegerValue()];
 					// stream->data = data;
 
@@ -603,7 +604,7 @@ namespace apns {
 
 				if (obj->certificate.empty()) {
 					LOG_DEBUG("feed token was " << obj->passphrase);
-					obj->passphrase = std::string(*v8::String::Utf8Value(info[1]));
+					obj->passphrase = std::string(*Nan::Utf8String(info[1]));
 					obj->headers[7] = MAKE_NV("authorization", obj->passphrase, NGHTTP2_NV_FLAG_NONE);
 					LOG_DEBUG("feed token now " << obj->passphrase);
 				}
@@ -640,7 +641,7 @@ namespace apns {
 					int ask = H2_QUEUE_SIZE - obj->queue.size();
 					Local<Value> argv[1] = { v8::Integer::New(isolate, ask) };
 					auto local = Local<Function>::New(isolate, obj->feeder);
-					local->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+					local->Call(isolate->GetCurrentContext(), isolate->GetCurrentContext()->Global(), 1, argv);
 					// LOG_DEBUG("feeding call done with queue " << obj->queue.size() << " asking for " << ask);
 			} else {
 				// LOG_DEBUG("won't feed for now - mutex locked");
@@ -671,7 +672,7 @@ namespace apns {
 
 				Local<Value> argv[1] = { array };
 				auto local = Local<Function>::New(isolate, obj->statuser);
-				local->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+				local->Call(isolate->GetCurrentContext(), isolate->GetCurrentContext()->Global(), 1, argv);
 				// LOG_DEBUG("status call done, sent " << array->Length());
 
 			}
@@ -694,7 +695,7 @@ namespace apns {
 		H2* obj = ObjectWrap::Unwrap<H2>(info.Holder());
 		LOG_DEBUG("closing " << obj->hostname);
 
-		auto resolver = v8::Promise::Resolver::New(info.GetIsolate());
+		auto resolver = v8::Promise::Resolver::New(info.GetIsolate()->GetCurrentContext()).ToLocalChecked();
 		auto promise = resolver->GetPromise();
 		auto persistent = new ResolverPersistent(resolver);
 		auto persistentHandle = new PeristentHandle;
@@ -729,9 +730,9 @@ namespace apns {
 			LOG_INFO("conn_thread joined");
 
 			if (persistentHandle->error.empty()) {
-				resolver->Resolve(Nan::New("some close result").ToLocalChecked());
+				resolver->Resolve(Nan::GetCurrentContext(), Nan::New("some close result").ToLocalChecked());
 			} else {
-				resolver->Reject(Nan::New(persistentHandle->error).ToLocalChecked());
+				resolver->Reject(Nan::GetCurrentContext(), Nan::New(persistentHandle->error).ToLocalChecked());
 			}
 
 			persistent->Reset();

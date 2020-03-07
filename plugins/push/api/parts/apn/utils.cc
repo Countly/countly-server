@@ -37,7 +37,7 @@ static int base64_decode(const char* b64message, unsigned char** buffer, size_t*
 }
 
 static std::string argString(v8::Local<v8::Value> value) {
-	v8::String::Utf8Value param1(value->ToString());
+	Nan::Utf8String param1(value);
 	return std::string(*param1);
 	// return tempString(*v8::String::Utf8Value(value));
 }
@@ -53,7 +53,9 @@ static std::string timestr(int offset) {
 
 #define ARRLEN(x) (sizeof(x) / sizeof(x[0]))
 
+#ifndef MIN
 #define MIN(X,Y) {X < Y ? X : Y}
+#endif
 
 // #define MAKE_NV(K, V, F) { (uint8_t *) K, (uint8_t *)V, sizeof(K) - 1, sizeof(V) - 1, F ? NGHTTP2_NV_FLAG_NONE : NGHTTP2_NV_FLAG_NO_INDEX }
 
