@@ -459,10 +459,14 @@
             },
             dataType: "json",
             success: function(json) {
-                callback && callback(json);
+                if (typeof callback === "function") {
+                    callback(json);
+                }
             },
             error: function() {
-                callback && callback(false);
+                if (typeof callback === "function") {
+                    callback(false);
+                }
             }
         });
     };
@@ -480,10 +484,14 @@
                 if (json && json.result) {
                     json = json.result;
                 }
-                callback && callback(json);
+                if (typeof callback === "function") {
+                    callback(json);
+                }
             },
             error: function() {
-                callback && callback(false);
+                if (typeof callback === "function") {
+                    callback(false);
+                }
             }
         });
     };
