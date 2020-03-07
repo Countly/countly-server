@@ -528,7 +528,7 @@ describe('Testing views plugin', function() {
             tableResponse["30days"].iTotalDisplayRecords -= 1;
             tableResponse["30days"].aaData.splice(0, 1);
             request
-                .get('/i/delete_view?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&view_id=' + viewsListed[0].view)
+                .get('/i/views?method=delete_view&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&view_id=' + viewsListed[0].view)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {

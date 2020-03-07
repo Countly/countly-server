@@ -448,10 +448,32 @@
         return getRange().indexOf(value);
     };
 
+    countlyViews.renameViews = function(data, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + '/views',
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "rename_views",
+                "data": JSON.stringify(data)
+            },
+            dataType: "json",
+            success: function(json) {
+                if (typeof callback === "function") {
+                    callback(json);
+                }
+            },
+            error: function() {
+                if (typeof callback === "function") {
+                    callback(false);
+                }
+            }
+        });
+    };
     countlyViews.deleteView = function(view, callback) {
         return $.ajax({
             type: "POST",
-            url: countlyCommon.API_PARTS.data.w + '/delete_view',
+            url: countlyCommon.API_PARTS.data.w + '/views',
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "delete_view",
@@ -459,7 +481,17 @@
             },
             dataType: "json",
             success: function(json) {
-                callback && callback(json);
+                if (json && json.result) {
+                    json = json.result;
+                }
+                if (typeof callback === "function") {
+                    callback(json);
+                }
+            },
+            error: function() {
+                if (typeof callback === "function") {
+                    callback(false);
+                }
             }
         });
     };
