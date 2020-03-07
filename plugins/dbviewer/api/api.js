@@ -256,8 +256,8 @@ var common = require('../../../api/utils/common.js'),
                                 else {
                                     done();
                                 }
-                            }, function(mapError) {
-                                callback(mapError, db);
+                            }, function(asyncError) {
+                                callback(asyncError, db);
                             });
                         });
                     }
