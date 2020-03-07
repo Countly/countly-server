@@ -693,7 +693,6 @@ window.ViewManageView = countlyView.extend({
             });
 
             $(".manage-views-table-block").on("keyup", ".rename-view-input", function() {
-                console.log("keyup");
                 self.updatedFields();
             });
 
