@@ -3,7 +3,7 @@ var exported = {},
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin} = require('../../../api/utils/rights.js');
+    {validateUserForWrite} = require('../../../api/utils/rights.js');
 
 const widgetProperties = {
     popup_header_text: {
