@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -102,7 +102,7 @@ window.ViewsView = countlyView.extend({
             var columns = [
                 {
                     "mData": function(row, type) {
-                        var text = row.view || row._id;
+                        var text = row.display || row.view || row._id;
                         if (type === "display") {
                             if (self.graphColors[row._id] && self.selectedViews.indexOf(row._id) !== -1) {
                                 return text + "<div class='color' style='background-color:" + self.graphColors[row._id] + "'></div>";
@@ -247,7 +247,7 @@ window.ViewsView = countlyView.extend({
                 "mData": function(row) {
                     var text = row._id;
                     if (row.view) {
-                        text = row.view;
+                        text = row.display || row.view;
                     }
                     return '<a class="cly-list-options" data-title="' + text + '" data-url="' + row._id + '"></a>';
                 },
@@ -310,6 +310,12 @@ window.ViewsView = countlyView.extend({
             }));
 
             $(".d-table").stickyTableHeaders();
+            $(".dataTable-top div:last").after('<a class="icon-button" id="manage-views-button" data-localize="views.table.edit-views">Edit</a>');
+
+            $("#manage-views-button").on("click", function() {
+                window.location.hash = "/analytics/views/manage";
+            });
+
             $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>" + jQuery.i18n.map["views.maximum-items"] + " (" + countlyCommon.GRAPH_COLORS.length + ")</div>");
 
             CountlyHelpers.initializeTableOptions($('.views-table-block'));
@@ -321,13 +327,18 @@ window.ViewsView = countlyView.extend({
                 //if ($(dataInstance.target).hasClass("delete-view")) {
                 return CountlyHelpers.confirm(jQuery.i18n.prop("views.delete-confirm", "<b>" + self.targetViewTitle + "</b>"), "popStyleGreen", function(result) {
                     if (result) {
-                        countlyViews.deleteView(self.targetViewUrl, function() {
-                            $.when(
-                                window.countlyViews.reset(),
-                                window.countlyViews.initialize()
-                            ).then(function() {
-                                self.refresh();
-                            });
+                        countlyViews.deleteView(self.targetViewUrl, function(res) {
+                            if (res === false) {
+                                CountlyHelpers.alert(jQuery.i18n.map["views.deleting-view-error"], "red");
+                            }
+                            else {
+                                $.when(
+                                    window.countlyViews.reset(),
+                                    window.countlyViews.initialize()
+                                ).then(function() {
+                                    self.refresh();
+                                });
+                            }
                         });
                     }
                 }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["views.yes-delete-view"]], {title: jQuery.i18n.map["views.delete-confirm-title"], image: "delete-view"});
@@ -567,6 +578,177 @@ window.ViewsView = countlyView.extend({
             //CountlyHelpers.refreshTable(self.dtable, "");
             self.drawGraph();
         });
+    }
+});
+
+window.ViewManageView = countlyView.extend({
+    beforeRender: function() {
+        var self = this;
+        return $.when($.get(countlyGlobal.path + '/views/templates/manageViews.html', function(src) {
+            self.template = Handlebars.compile(src);
+        }), countlyViews.initialize()).then(function() {});
+    },
+    updatedFields: function() {
+        var data = this.data;
+        var same = true;
+
+        for (var k = 0; k < data.length; k++) {
+            var value = $("#update_input_" + data[k]._id).val();
+            if (value !== data[k].sortcol) {
+                same = false;
+                break;
+            }
+        }
+        if (same) {
+            $(".apply-view-changes").addClass("disabled");
+        }
+        else {
+            $(".apply-view-changes").removeClass("disabled");
+        }
+    },
+    renderCommon: function(isRefresh) {
+        var self = this;
+        this.templateData = {
+            "page-title": jQuery.i18n.map["views.title"],
+        };
+
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "bServerSide": true,
+                "sAjaxSource": countlyCommon.API_PARTS.data.r + "?method=views&action=getTableNames&api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                "fnServerData": function(sSource, aoData, fnCallback) {
+                    self.request = $.ajax({
+                        "dataType": 'json',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data) {
+                            fnCallback(data);
+                            if (data && data.aaData) {
+                                self.data = data.aaData;
+                            }
+                        }
+                    });
+                },
+                "fnRowCallback": function(nRow, aData) {
+                    $(nRow).data("viewid", aData._id);
+                },
+                "aoColumns": [
+                    {
+                        "mData": function(row/*, type*/) {
+                            var text = row.sortcol;
+                            return "<input id='update_input_" + row._id + "' class='rename-view-input' type='text' value='" + text + "' />";
+                        },
+                        sType: "string",
+                        "sTitle": jQuery.i18n.map["views.display-name"]
+                    },
+                    {
+                        "mData": function(row/*, type*/) {
+                            return row.view || row._id;
+                        },
+                        sType: "string",
+                        "sTitle": jQuery.i18n.map["views.table.view"]
+                    },
+                    {
+                        "mData": function(row) {
+                            var text = row._id;
+                            if (row.view) {
+                                text = text = row.display || row.view;
+                            }
+                            return '<a class="cly-list-options" data-title="' + text + '" data-url="' + row._id + '"></a>';
+                        },
+                        "sType": "string",
+                        "sTitle": "",
+                        "sClass": "shrink center",
+                        bSortable: false
+                    }
+
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
+            $(".manage-views-table-block .cly-button-menu").on("cly-list.click", function(event, dataInstance) {
+                self.targetViewUrl = $(dataInstance.currentTarget).data("url");
+                self.targetViewTitle = $(dataInstance.currentTarget).data("title");
+            });
+
+            CountlyHelpers.initializeTableOptions($('.manage-views-table-block'));
+            $(".manage-views-table-block .cly-button-menu").on("cly-list.item", function(/*event, dataInstance*/) {
+                //if ($(dataInstance.target).hasClass("delete-view")) {
+                return CountlyHelpers.confirm(jQuery.i18n.prop("views.delete-confirm", "<b>" + self.targetViewTitle + "</b>"), "popStyleGreen", function(result) {
+                    if (result) {
+                        countlyViews.deleteView(self.targetViewUrl, function() {
+                            $.when(
+                                window.countlyViews.reset(),
+                                window.countlyViews.initialize()
+                            ).then(function() {
+                                self.refresh(true);
+                            });
+                        });
+                    }
+                }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["views.yes-delete-view"]], {title: jQuery.i18n.map["views.delete-confirm-title"], image: "delete-view"});
+                //}
+            });
+
+            $(".manage-views-table-block").on("keyup", ".rename-view-input", function() {
+                console.log("keyup");
+                self.updatedFields();
+            });
+
+            $('.apply-view-changes').click(function() {
+                if ($(this).hasClass("disabled")) {
+                    return;
+                }
+                $(this).addClass("disabled");
+                var data = self.data;
+                var updateFields = [];
+                for (var k = 0; k < data.length; k++) {
+                    var value = $("#update_input_" + data[k]._id).val();
+                    if (value !== data[k].sortcol) {
+                        if (value === "" || value === data[k].view) {
+                            updateFields.push({"key": data[k]._id, "value": ""});
+                        }
+                        else {
+                            updateFields.push({"key": data[k]._id, "value": value});
+                        }
+                    }
+                }
+                if (updateFields.length > 0) {
+                    countlyViews.renameViews(updateFields, function(result) {
+                        if (result) {
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["common.success"],
+                                message: jQuery.i18n.map["views.view-names-updated"]
+                            });
+                            $.when(
+                                window.countlyViews.reset(),
+                                window.countlyViews.initialize()
+                            ).then(function() {
+                                self.refresh(true);
+                            });
+                        }
+                        else {
+                            $('.apply-view-changes').removeClass('disabled');
+                            CountlyHelpers.alert(jQuery.i18n.map["views.error-update-views"], "red");
+                        }
+                    });
+                }
+            });
+        }
+    },
+    refresh: function(reloadTable) {
+        var self = this;
+        if (reloadTable) {
+            $.when(countlyViews.refresh()).then(function() {
+                if (app.activeView !== self) {
+                    return false;
+                }
+                self.renderCommon(true);
+                self.dtable.fnDraw(false);
+            });
+        }
     }
 });
 
@@ -813,10 +995,16 @@ window.ActionMapView = countlyView.extend({
 app.viewsView = new ViewsView();
 app.viewFrequencyView = new ViewFrequencyView();
 app.actionMapView = new ActionMapView();
+app.viewManageView = new ViewManageView();
 
 app.route("/analytics/views", 'views', function() {
     this.renderWhenReady(this.viewsView);
 });
+
+app.route("/analytics/views/manage", 'views', function() {
+    this.renderWhenReady(this.viewManageView);
+});
+
 
 app.route("/analytics/view-frequency", 'views', function() {
     this.renderWhenReady(this.viewFrequencyView);
