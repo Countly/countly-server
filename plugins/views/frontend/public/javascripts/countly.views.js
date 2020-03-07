@@ -655,7 +655,7 @@ window.ViewManageView = countlyView.extend({
                         "mData": function(row) {
                             var text = row._id;
                             if (row.view) {
-                                text = text = row.display || row.view;
+                                text = row.display || row.view;
                             }
                             return '<a class="cly-list-options" data-title="' + text + '" data-url="' + row._id + '"></a>';
                         },
