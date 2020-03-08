@@ -20,8 +20,11 @@ before_script:
 - nodejs --version
 - ${PWD}/mongodb-linux-x86_64-${MONGODB}/bin/mongod --version
 - cat ${PWD}/mongod.log
+- sudo rm -rf ./node_modules
+- sudo npm install --unsafe-perm
+- sudo countly restart
 script:
-# - countly shellcheck
+- countly shellcheck
 - sudo npm test
 after_script:
 - cat log/countly-api.log
