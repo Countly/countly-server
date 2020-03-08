@@ -417,24 +417,32 @@ membersUtility.login = function(req, res, callback) {
 function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
     countlyDb.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
         var delete_us = [];
-        for (var i = 0; i < sessions.length; i++) {
-            var parsed_data = "";
-            try {
-                parsed_data = JSON.parse(sessions[i].session);
+        if (sessions) {
+            for (var i = 0; i < sessions.length; i++) {
+                var parsed_data = "";
+                try {
+                    parsed_data = JSON.parse(sessions[i].session);
+                }
+                catch (error) {
+                    console.log(error);
+                }
+
+                if ((!my_session || sessions[i]._id !== my_session) && parsed_data && parsed_data.uid === userId) {
+                    delete_us.push(sessions[i]._id);
+                }
             }
-            catch (error) {
-                console.log(error);
+            if (delete_us.length > 0) {
+                countlyDb.collection('sessions_').remove({'_id': {$in: delete_us}});
             }
-            if (sessions[i]._id !== my_session && parsed_data && parsed_data.uid === userId) {
-                delete_us.push(sessions[i]._id);
-            }
-        }
-        if (delete_us.length > 0) {
-            countlyDb.collection('sessions_').remove({'_id': {$in: delete_us}});
         }
     });
     //delete other auth tokens with purpose:"LoggedInAuth"
-    countlyDb.collection('auth_tokens').remove({'owner': countlyDb.ObjectID(userId), 'purpose': "LoggedInAuth", '_id': {$ne: my_token}});
+    if (my_token) {
+        countlyDb.collection('auth_tokens').remove({'owner': countlyDb.ObjectID(userId), 'purpose': "LoggedInAuth", '_id': {$ne: my_token}});
+    }
+    else {
+        countlyDb.collection('auth_tokens').remove({'owner': countlyDb.ObjectID(userId), 'purpose': "LoggedInAuth"});
+    }
 }
 
 /**
@@ -709,6 +717,7 @@ membersUtility.reset = function(req, callback) {
                 membersUtility.db.collection('password_reset').findOne({ prid: req.body.prid }, function(err, passwordReset) {
                     membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
                         member = member && member.ok ? member.value : null;
+                        killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db);
                         plugins.callMethod("passwordReset", { req: req, data: member }); //only req, used for systemolgs
                         callback(false, member);
                     });
