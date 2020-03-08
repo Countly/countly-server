@@ -243,21 +243,21 @@ var common = require('../../../api/utils/common.js'),
                     if (dbs[name]) {
                         dbs[name].collections(function(error, results) {
                             var db = {name: name, collections: {}};
-                            async.map(results, function(col, done) {
-                                if (col.s.name.indexOf("system.indexes") === -1 && col.s.name.indexOf("sessions_") === -1) {
-                                    dbUserHassAccessToCollection(col.s.name, function(hasAccess) {
+                            async.each(results, function(col, done) {
+                                if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
+                                    dbUserHassAccessToCollection(col.collectionName, function(hasAccess) {
                                         if (hasAccess) {
-                                            ob = parseCollectionName(col.s.name, lookup, eventList, viewList);
+                                            ob = parseCollectionName(col.collectionName, lookup, eventList, viewList);
                                             db.collections[ob.pretty] = ob.name;
                                         }
-                                        done(false, true);
+                                        done();
                                     });
                                 }
                                 else {
-                                    done(false, true);
+                                    done();
                                 }
-                            }, function(mapError) {
-                                callback(mapError, db);
+                            }, function(asyncError) {
+                                callback(asyncError, db);
                             });
                         });
                     }

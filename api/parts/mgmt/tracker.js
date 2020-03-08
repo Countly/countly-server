@@ -232,7 +232,7 @@ function getHosting(callback) {
                     done(true);
                 }
                 else {
-                    done(false);
+                    done();
                 }
             });
         }, function() {
@@ -278,7 +278,7 @@ function getDistro(callback) {
                         done(true);
                     }
                     else {
-                        done(false);
+                        done(null);
                     }
                 });
             }, function() {
