@@ -3,7 +3,21 @@
 const job = require("../parts/jobs/job.js");
 const log = require('../utils/log.js')('job:clearAutoTasks');
 const taskManager = require('../utils/taskmanager');
-
+/**
+ * clear task with  task id
+ * @params {string} taskId
+ * @return {promise} 
+ */
+const clearTaskRecord = (taskId) => {
+    return new Promise((resolve, reject) => { 
+        taskManager.deleteResult({id:taskId}, (err2) => {
+            if (err2) {
+               return reject(err2);
+            }
+            resolve();
+        });
+    });
+}
 /** Class for job of clearing auto tasks created long time ago **/
 class ClearAutoTasks extends job.Job {
     /**
@@ -17,20 +31,12 @@ class ClearAutoTasks extends job.Job {
             manually_create: {$ne: true},
             ts: { $lt: beforeTime }
         };
-        db.collection("long_tasks").find(query).toArray(async function (err, tasks) {
+        db.collection("long_tasks").find(query).toArray(async function(err, tasks) {
             if (err) {
                 log.e("Error deleting auto tasks.");
             }
             for (let i = 0; i < tasks.length; i++) {
-                await new Promise((resolve,reject) => { 
-                    taskManager.deleteResult({id:tasks._id}, (err, ok) => {
-                        if (err) {
-                           return reject(err)
-                        }
-                       resolve() 
-                    })
-                })
-
+                await clearTaskRecord(tasks[i]._id);
             }
             done();
         });
