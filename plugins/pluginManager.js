@@ -421,32 +421,14 @@ var pluginManager = function pluginManager() {
         events[event].push(callback);
     };
 
-    var makeSettlePromise = function(promise) {
-        return new Promise(function(resolve) {
-            if (!(promise instanceof Promise)) {
-                resolve({ status: 'fulfilled', value: promise });
-                return;
-            }
-            promise.then(
-                (value) => {
-                    resolve({ status: 'fulfilled', value });
-                },
-                (reason) => {
-                    resolve({ status: 'rejected', reason });
-                }
-            );
-        });
-    };
-
-    // This is compatible with Node 12.9 Promise.allSettled()
-    var allSettled = function(promises) {
-        return new Promise(function(resolve) {
-            var settlePromises = promises.map(makeSettlePromise);
-            Promise.all(settlePromises).then(resolve);
-        });
-    };
-
-    var dispatchInternal = function(event, params, syncPrimitive, callback) {
+    /**
+    * Dispatch specific event on api side
+    * @param {string} event - event to dispatch
+    * @param {object} params - object with parameters to pass to event
+    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @returns {boolean} true if any one responded to event
+    **/
+    this.dispatch = function(event, params, callback) {
         var used = false,
             promises = [];
         var promise;
@@ -477,14 +459,14 @@ var pluginManager = function pluginManager() {
                             callback(err, data);
                         }
                     }
-                    syncPrimitive(promises).then(resolver.bind(null, null)).catch(function(error) {
+                    Promise.allSettled(promises).then(resolver.bind(null, null)).catch(function(error) {
                         console.log(error);
                         resolver(error);
                     });
                 }));
             }
             else if (callback) {
-                syncPrimitive(promises).then(callback.bind(null, null)).catch(function(error) {
+                Promise.allSettled(promises).then(callback.bind(null, null)).catch(function(error) {
                     console.log(error);
                     callback(error);
                 });
@@ -497,27 +479,14 @@ var pluginManager = function pluginManager() {
     };
 
     /**
-    * Dispatch specific event on api side and wait until all event handlers have processed the event.
+    * Dispatch specific event on api side and wait until all event handlers have processed the event (legacy)
     * @param {string} event - event to dispatch
     * @param {object} params - object with parameters to pass to event
     * @param {function} callback - function to call, when all event handlers that return Promise finished processing
     * @returns {boolean} true if any one responded to event
     **/
     this.dispatchAllSettled = function(event, params, callback) {
-        return dispatchInternal(event, params, allSettled, callback);
-    };
-
-    /**
-    * Dispatch specific event on api side
-    * @param {string} event - event to dispatch
-    * @param {object} params - object with parameters to pass to event
-    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
-    * @returns {boolean} true if any one responded to event
-    **/
-    this.dispatch = function(event, params, callback) {
-        return dispatchInternal(event, params, function(promises) {
-            return Promise.all(promises);
-        }, callback);
+        return this.dispatch(event, params, callback);
     };
 
     /**
@@ -1156,15 +1125,14 @@ var pluginManager = function pluginManager() {
         var dbName;
         var dbOptions = {
             poolSize: maxPoolSize,
-            reconnectInterval: 1000,
-            reconnectTries: 999999999,
-            autoReconnect: true,
             noDelay: true,
             keepAlive: true,
             keepAliveInitialDelay: 30000,
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
-            useNewUrlParser: true
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            auto_reconnect: true
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);

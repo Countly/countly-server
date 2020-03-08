@@ -15,8 +15,8 @@ fi
 
 if [ -f /etc/lsb-release ]; then
     sudo dpkg --configure -a
-	wget -qO- https://deb.nodesource.com/setup_10.x | bash -
-	apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
+    wget -qO- https://deb.nodesource.com/setup_10.x | bash -
+    apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 fi
 
 #enable command line
@@ -25,6 +25,9 @@ bash "$DIR/scripts/detect.init.sh"
 
 #remove predefined locale file, it should fallback to default one
 rm -rf "$DIR/../frontend/express/public/localization/min/locale_en.properties"
+
+#remove previous dependencies, as they need to be rebuild for new nodejs version
+rm -rf "$DIR/../node_modules"
 
 #remove previous dependencies, as they need to be rebuild for new nodejs version
 rm -rf "$DIR/../node_modules"

@@ -168,7 +168,7 @@ countlyEvents.processEvents = function(params) {
                     var retObj = eventMetaDoc || {};
                     retObj.coll = metaToFetch[id].coll;
 
-                    callback(false, retObj);
+                    callback(null, retObj);
                 });
             }
         });
@@ -533,13 +533,13 @@ function updateEventDb(eventDoc, callback) {
         'safe': true
     }, function(err, result) {
         if (!err && result && result.result && result.result.ok === 1) {
-            callback(false, {
+            callback(null, {
                 status: "ok",
                 obj: eventDoc
             });
         }
         else {
-            callback(false, {
+            callback(null, {
                 status: "failed",
                 obj: eventDoc
             });
@@ -554,7 +554,7 @@ function updateEventDb(eventDoc, callback) {
 **/
 function rollbackEventDb(eventUpdateResult, callback) {
     if (eventUpdateResult.status === "failed") {
-        callback(false, {});
+        callback(null, {});
     }
     else {
         var eventDoc = eventUpdateResult.obj;
