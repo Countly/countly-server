@@ -4,20 +4,21 @@ const job = require("../parts/jobs/job.js");
 const log = require('../utils/log.js')('job:clearAutoTasks');
 const taskManager = require('../utils/taskmanager');
 /**
- * clear task with  task id
- * @params {string} taskId
- * @return {promise} 
+ * clear task record in db with  task id
+ * @param {string} taskId - the id of task in db.
+ * @returns {Promise} promise - Promise object
  */
 const clearTaskRecord = (taskId) => {
-    return new Promise((resolve, reject) => { 
-        taskManager.deleteResult({id:taskId}, (err2) => {
+    return new Promise((resolve, reject) => {
+        taskManager.deleteResult({id: taskId}, (err2) => {
             if (err2) {
-               return reject(err2);
+                return reject(err2);
             }
             resolve();
         });
     });
-}
+};
+
 /** Class for job of clearing auto tasks created long time ago **/
 class ClearAutoTasks extends job.Job {
     /**
