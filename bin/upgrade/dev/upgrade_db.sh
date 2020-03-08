@@ -14,6 +14,7 @@ fi
 nodejs "$CUR/scripts/upgradeReports.js"
 nodejs "$CUR/scripts/encrypt_2fa_secrets.js"
 nodejs "$CUR/scripts/set_additional_api_configs.js"
+nodejs "$CUR/scripts/clearOldTokens.js"
 
 #add indexes
 nodejs "$DIR/scripts/add_indexes.js"
