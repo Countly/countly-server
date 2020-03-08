@@ -594,6 +594,14 @@ input:disabled + label {
     border-bottom-color: #2B2B2B;
 }
 
+.preview-message-app {
+    display: inline-block;
+    max-width: 180px;
+    max-height: 25px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
 
 .preview-i .preview-message-app { text-transform: uppercase; opacity: 0.7; }
 .preview-i .preview-message-date { margin-right: 8px; float: right; opacity: 0.5; font-size: 9px; }

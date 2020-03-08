@@ -40,7 +40,28 @@ html.theme-5 .cly-widget .views table { color:rgba(0, 0, 0, 0.6); }
     margin-left: -6px;
 }
 
+.manage-views-table-block .dataTable-top{
+    border-radius: 0px;
+}
+.manage-views-table-block .dataTables_wrapper {
+    margin-top: 0px;
+}
+.apply-view-changes {
+    margin: 7px 6px 7px;
+}
+.apply-view-changes.disabled {
+    cursor: auto;
+}
 
+#manage-views-button{
+    margin-top: 6px;
+    color: #636363;
+    padding: 2px 7px;
+    border: 1px solid #D0D0D0;
+    border-radius: 3px;
+    background-color: #F3F3F3;
+    font-size: 11px;
+}
 #ViewsDataTableOne_wrapper .dataTable-top .select-column-table-data {
     height: 32px;
 }

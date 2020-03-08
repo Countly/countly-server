@@ -241,6 +241,7 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
         db: countlyDb,
         multi: true,
         owner: req.session.uid,
+        tryReuse: true,
         ttl: getSessionTimeoutInMs(req) / 1000,
         purpose: "LoggedInAuth",
         callback: function(err2, token) {

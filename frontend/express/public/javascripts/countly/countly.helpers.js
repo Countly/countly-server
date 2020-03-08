@@ -2647,7 +2647,7 @@
             }
 
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
-            platformVersionTotal = _.compact(platformVersionTotal);
+            platformVersionTotal = _.without(platformVersionTotal, false, null, "", undefined, NaN);
 
             var platformVersionNames = _.pluck(oSVersionData.chartData, metric_pd || _name);
 
