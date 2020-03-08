@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "argon2": "0.24.0",
-    "async": "2.6.3",
+    "async": "3.2.0",
     "basic-auth": "2.0.1",
     "bluebird": "3.5.5",
     "body-parser": "1.19.0",
