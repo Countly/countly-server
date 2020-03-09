@@ -786,6 +786,11 @@ membersUtility.settings = function(req, callback) {
             callback(false, "user-settings.api-key-length");
             return;
         }
+        if (!req.body.api_key.match(/^[0-9a-zA-Z]+([0-9]+)([a-z]+)([A-Z]+)[0-9a-zA-Z]+$/)) {
+            callback(false, "user-settings.api-key-restrict");
+            return;
+        }
+
         req.body.username = (req.body.username + "").trim();
         if (req.body.member_image && req.body.member_image !== "delete") {
             updatedUser.member_image = req.body.member_image;
