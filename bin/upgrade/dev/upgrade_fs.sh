@@ -29,17 +29,16 @@ rm -rf "$DIR/../frontend/express/public/localization/min/locale_en.properties"
 #remove previous dependencies, as they need to be rebuild for new nodejs version
 rm -rf "$DIR/../node_modules"
 
-#remove previous dependencies, as they need to be rebuild for new nodejs version
-rm -rf "$DIR/../node_modules"
-
 #run upgrade scripts
 bash "$CUR/scripts/remove_moved_files.sh"
 
 #upgrade plugins
 (cd "$DIR/../" && sudo npm install --unsafe-perm)
+(cd "$DIR/../" && sudo npm install argon2 --build-from-source)
 countly plugin upgrade push
 (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
 countly plugin upgrade attribution
+countly plugin upgrade web
 countly plugin enable active_users
 
 #install dependencies, process files and restart countly
