@@ -36,8 +36,13 @@ class ClearAutoTasks extends job.Job {
             if (err) {
                 log.e("Error deleting auto tasks.");
             }
-            for (let i = 0; i < tasks.length; i++) {
-                await clearTaskRecord(tasks[i]._id);
+            try {
+                for (let i = 0; i < tasks.length; i++) {
+                    await clearTaskRecord(tasks[i]._id);
+                }
+            }
+            catch (e) {
+                log.d("error while deleting auto task record: %j", e);
             }
             done();
         });
