@@ -1,3 +1,9 @@
+.left-m4 {
+     left: -4px;
+}
+.left-m8 {
+     left: -8px;
+}
 .tooltip-text {
      visibility: hidden;
      position: absolute;
