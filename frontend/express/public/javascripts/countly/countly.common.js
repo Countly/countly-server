@@ -1733,19 +1733,24 @@
                 data;
             for (var i = 0; i < chartData.length; i++) {
                 data = chartData[i];
-                if (data[metric] && !uniqueNames[data[metric]]) {
-                    uniqueNames[data[metric]] = data;
+                var newName = (data[metric] + "").trim();
+                if (newName === "") {
+                    newName = jQuery.i18n.map["common.unknown"];
+                }
+                data[metric] = newName;
+                if (newName && !uniqueNames[newName]) {
+                    uniqueNames[newName] = data;
                 }
                 else {
                     for (var key in data) {
                         if (typeof data[key] === "string") {
-                            uniqueNames[data[metric]][key] = data[key];
+                            uniqueNames[newName][key] = data[key];
                         }
                         else if (typeof data[key] === "number") {
-                            if (!uniqueNames[data[metric]][key]) {
-                                uniqueNames[data[metric]][key] = 0;
+                            if (!uniqueNames[newName][key]) {
+                                uniqueNames[newName][key] = 0;
                             }
-                            uniqueNames[data[metric]][key] += data[key];
+                            uniqueNames[newName][key] += data[key];
                         }
                     }
                 }
