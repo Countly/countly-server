@@ -4,6 +4,9 @@ var pluginObject = {},
     qrcode = require("qrcode"),
     countlyConfig = require('../../../frontend/express/config'),
     plugins = require('../../pluginManager.js'),
+    apiUtils = require("../../../api/utils/utils.js"),
+    members = require("../../../frontend/express/libs/members.js"),
+    versionInfo = require("../../../frontend/express/version.info"),
     languages = require('../../../frontend/express/locale.conf');
 
 GA.options = {
@@ -16,17 +19,19 @@ GA.options = {
  @param {function} callback - function to call with an error, if any, and a SVG string
  */
 function generateQRCode(username, secret, callback) {
-    var domain = "Countly";
+    var domain = versionInfo.company || versionInfo.title || "Countly";
 
-    try {
-        const apiURL = plugins.getConfig("api").domain;
-        if (apiURL) {
-            let parsedURL = new URL(apiURL);
-            domain = parsedURL.hostname;
+    if (domain === "Countly") {
+        try {
+            const apiURL = plugins.getConfig("api").domain;
+            if (apiURL) {
+                let parsedURL = new URL(apiURL);
+                domain = parsedURL.hostname;
+            }
         }
-    }
-    catch (err) {
-        console.log(`Error parsing api URL: ${err}`);
+        catch (err) {
+            console.log(`Error parsing api URL: ${err}`);
+        }
     }
 
     qrcode.toString(GA.keyuri(username, domain, secret),
@@ -75,7 +80,7 @@ function generateQRCode(username, secret, callback) {
                                     themeFiles: req.themeFiles
                                 });
                             }
-                            else if (GA.check(req.query.auth_code, member.two_factor_auth.secret_token)) {
+                            else if (GA.check(req.query.auth_code, apiUtils.decrypt(member.two_factor_auth.secret_token))) {
                                 // everything is ok, let the user reset their password
                                 countlyDb.collection('password_reset').updateOne({prid: req.params.prid}, {$set: {two_factor_auth_passed: true}}, {}, function(passwordResetUpdateErr) {
                                     if (passwordResetUpdateErr) {
@@ -137,17 +142,13 @@ function generateQRCode(username, secret, callback) {
 
         // modify login flow
         app.post(countlyConfig.path + '/login', function(req, res, next) {
-            countlyDb.collection('members').findOne({"username": req.body.username}, function(memberErr, member) {
-                if (memberErr) {
-                    console.log(`Database error searching for member during login with 2FA: ${memberErr.message}`);
-                }
-
+            members.findByUsernameOrEmail(req.body.username, function(member) {
                 // if member exists and 2fa is enabled globally or for the user
                 if (member && (member.two_factor_auth && member.two_factor_auth.enabled || plugins.getConfig("two-factor-auth").globally_enabled)) {
                     // if 2fa is not set up for the user
                     if ((member.two_factor_auth === undefined || member.two_factor_auth.secret_token === undefined) &&
                         (req.body.auth_code === undefined || req.body.secret_token === undefined)) {
-                        var secretToken = GA.generateSecret();
+                        const secretToken = GA.generateSecret();
 
                         generateQRCode(member.username, secretToken, function(err, svg) {
                             if (err) {
@@ -194,8 +195,9 @@ function generateQRCode(username, secret, callback) {
                     // else everything is alright (login flow second phase)
                     else {
                         try {
-                            var verified = GA.check(req.body.auth_code, (member.two_factor_auth && member.two_factor_auth.secret_token) || req.body.secret_token);
-                            if (verified) {
+                            const secretToken = member.two_factor_auth && member.two_factor_auth.secret_token ? apiUtils.decrypt(member.two_factor_auth.secret_token) : req.body.secret_token;
+
+                            if (GA.check(req.body.auth_code, secretToken)) {
                                 if (req.body.secret_token) {
                                     countlyDb.collection("members").findAndModify(
                                         {_id: member._id},
@@ -203,7 +205,7 @@ function generateQRCode(username, secret, callback) {
                                         {
                                             $set: {
                                                 "two_factor_auth.enabled": true,
-                                                "two_factor_auth.secret_token": req.body.secret_token
+                                                "two_factor_auth.secret_token": apiUtils.encrypt(req.body.secret_token)
                                             }
                                         },
                                         function(enableErr) {
@@ -219,7 +221,50 @@ function generateQRCode(username, secret, callback) {
                                 next();
                             }
                             else {
-                                res.redirect(countlyConfig.path + "/login?message=two-factor-auth.login.code");
+                                // 2fa is being set up
+                                if (req.body.secret_token) {
+                                    generateQRCode(member.username, req.body.secret_token, function(err, svg) {
+                                        if (err) {
+                                            console.log(`Error generating QR code: ${err}`);
+                                            res.redirect(countlyConfig.path + "/login?message=two-factor-auth.login.error");
+                                        }
+                                        else {
+                                            res.render("../../../plugins/two-factor-auth/frontend/public/templates/setup2fa", {
+                                                cdn: countlyConfig.cdn || "",
+                                                countlyFavicon: req.countly.favicon,
+                                                countlyPage: req.countly.page,
+                                                countlyTitle: req.countly.title,
+                                                csrf: req.csrfToken(),
+                                                inject_template: req.template,
+                                                languages: languages,
+                                                message: req.flash('info'),
+                                                path: countlyConfig.path || "",
+                                                themeFiles: req.themeFiles,
+                                                username: req.body.username || "",
+                                                password: req.body.password || "",
+                                                secret_token: req.body.secret_token,
+                                                qrcode_html: svg
+                                            });
+                                        }
+                                    });
+                                }
+                                // 2fa is already set up
+                                else {
+                                    res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa_login", {
+                                        cdn: countlyConfig.cdn || "",
+                                        countlyFavicon: req.countly.favicon,
+                                        countlyPage: req.countly.page,
+                                        countlyTitle: req.countly.title,
+                                        csrf: req.csrfToken(),
+                                        inject_template: req.template,
+                                        languages: languages,
+                                        message: req.flash('info'),
+                                        path: countlyConfig.path || "",
+                                        themeFiles: req.themeFiles,
+                                        username: req.body.username || "",
+                                        password: req.body.password || ""
+                                    });
+                                }
                             }
                         }
                         catch (verifyErr) {

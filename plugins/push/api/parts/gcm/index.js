@@ -286,7 +286,7 @@ class ConnectionResource extends EventEmitter {
                             ids[i][1] = -200;
                             ids[i][2] = result.error;
                         }
-                        else if (result.error === 'NotRegistered') {
+                        else if (result.error === 'NotRegistered' || (code === 200 && result.error === 'InvalidParameters')) {
                             ids[i][1] = -200;
                         }
                         else if (result.error === 'MessageTooBig' || result.error === 'InvalidDataKey' ||

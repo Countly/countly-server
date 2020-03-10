@@ -3,6 +3,8 @@ var plugin = {},
     fetch = require("../../../api/parts/data/fetch.js"),
     crypto = require("crypto"),
     async = require("async"),
+    fs = require("fs"),
+    path = require("path"),
     Duplex = require('stream').Duplex,
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
@@ -13,6 +15,13 @@ plugins.setConfigs("crashes", {
 });
 
 (function() {
+    plugins.register("/master", function() {
+        fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {
+            if (err && !process.env.COUNTLY_CONTAINER) {
+                console.log(err);
+            }
+        });
+    });
     var ranges = ["ram", "bat", "disk", "run", "session"];
     var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
     var bools = {"root": true, "online": true, "muted": true, "signal": true, "background": true};

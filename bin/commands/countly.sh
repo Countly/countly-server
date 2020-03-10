@@ -110,11 +110,18 @@ countly_upgrade (){
     countly_root ;
     if [ $# -eq 0 ]
     then
+        INOFFLINEMODE=$(countly config 'api.offline_mode' | awk -F'= ' '{print $2}')
+
+        if [ $INOFFLINEMODE == "false" ]
+        then
+            (cd $DIR/../..;
+            echo "Installing dependencies...";
+            sudo npm install;)
+        fi
+
         (cd "$DIR/../.." ;
-        echo "Installing dependencies...";
-        sudo npm install ;
         echo "Preparing production files...";
-        grunt dist-all;
+        countly task dist-all;
         echo "Restarting Countly...";
         sudo countly restart;
         )
@@ -498,10 +505,17 @@ if [ -n "$(type -t "countly_$1")" ] && [ "$(type -t "countly_$1")" = function ];
 elif [ -f "$DIR/scripts/$NAME.sh" ]; then
     shift;
     bash "$DIR/scripts/$NAME.sh" "$@";
+elif [ -f "$DIR/scripts/$NAME.js" ]; then
+    shift;
+    nodejs "$DIR/scripts/$NAME.js" "$@";
 elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts/$SCRIPT.sh" ]; then
     shift;
     shift;
     bash "$DIR/../../plugins/$NAME/scripts/$SCRIPT.sh" "$@";
+elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts/$SCRIPT.js" ]; then
+    shift;
+    shift;
+    nodejs "$DIR/../../plugins/$NAME/scripts/$SCRIPT.js" "$@";
 else
     echo "";
     echo "countly usage:";

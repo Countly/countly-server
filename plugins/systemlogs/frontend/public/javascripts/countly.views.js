@@ -16,20 +16,37 @@ window.SystemLogsView = countlyView.extend({
         }
     },
     getExportAPI: function(tableID) {
+        var query, requestPath, apiQueryData;
         if (tableID === 'd-table-actionlogs') {
-            var query = app.activeView.action_query || {a: {$in: ["export_app_user", "app_user_deleted", "export_app_user_deleted"]}};
+            query = app.activeView.action_query || {a: {$in: ["export_app_user", "app_user_deleted", "export_app_user_deleted"]}};
             query["i.app_id"] = countlyCommon.ACTIVE_APP_ID;
 
-            var requestPath = '/o?api_key=' + countlyGlobal.member.api_key +
+            requestPath = '/o?api_key=' + countlyGlobal.member.api_key +
             "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=systemlogs&iDisplayStart=0" +
             "&query=" + encodeURIComponent(JSON.stringify(query)) +
             "&period=" + countlyCommon.getPeriodForAjax();
-            var apiQueryData = {
+            apiQueryData = {
                 api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
                 method: "GET",
-                filename: "Systemlogs_on_" + moment().format("DD-MMM-YYYY"),
+                filename: "Export_Purge_History_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        else if (tableID === 'systemlogs-table') {
+            query = app.activeView.action_query ;
+            requestPath = '/o?api_key=' + countlyGlobal.member.api_key +
+            "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=systemlogs&iDisplayStart=0&export=true" +
+            "&query=" + encodeURIComponent(JSON.stringify(query)) +
+            "&period=" + countlyCommon.getPeriodForAjax();
+            apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename: "Auditlogs_on_" + moment().format("DD-MMM-YYYY"),
                 prop: ['aaData']
             };
             return apiQueryData;
@@ -77,8 +94,6 @@ window.SystemLogsView = countlyView.extend({
                 app.back();
             });
 
-            var tableData = [];
-
             this.dtable = $('#systemlogs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaSorting": [[ 1, "desc" ]],
                 "bServerSide": true,
@@ -91,7 +106,6 @@ window.SystemLogsView = countlyView.extend({
                         "data": aoData,
                         "success": function(data) {
                             fnCallback(data);
-                            tableData = data.aaData;
                             CountlyHelpers.reopenRows(self.dtable, self.expandTable, self);
                         }
                     });
@@ -117,7 +131,6 @@ window.SystemLogsView = countlyView.extend({
                             }
                         },
                         "sType": "string",
-                        "sExport": "systemlogs",
                         "sTitle": jQuery.i18n.map["systemlogs.timestamp"]
                     },
                     {
@@ -168,12 +181,12 @@ window.SystemLogsView = countlyView.extend({
                                 if (typeof row.i.appuser_id !== "undefined") {
                                     ret += "<p title='" + row.i.appuser_id + "'>" + jQuery.i18n.map["systemlogs.for-appuser"] + ": " + row.i.appuser_id + "</p>";
                                 }
-                                if (typeof row.i.before !== "undefined" && typeof row.i.after !== "undefined") {
-                                    if (!jQuery.isEmptyObject(row.i.before)) {
-                                        if (typeof row.i.before._id !== "undefined") {
-                                            ret += "<p title='" + row.i.before._id + "'>" + jQuery.i18n.map["systemlogs.for-id"] + ": " + row.i.before._id + "</p>";
-                                        }
+                                if (typeof row.i._id !== "undefined") {
+                                    var name = jQuery.i18n.map["systemlogs.for-id"] + ": " + row.i._id;
+                                    if (row.i.name) {
+                                        name += " (" + row.i.name + ")";
                                     }
+                                    ret += "<p title='" + name + "'>" + name + "</p>";
                                 }
                             }
                             return ret;
@@ -188,53 +201,6 @@ window.SystemLogsView = countlyView.extend({
             this.dtable.stickyTableHeaders();
             //this.dtable.fnSort( [ [0,'desc'] ] );
             CountlyHelpers.expandRows(this.dtable, this.expandTable, this);
-
-            app.addDataExport("systemlogs", function() {
-                var ret = [];
-                var elem;
-                var users = {};
-                for (i = 0; i < meta.users.length; i++) {
-                    users[meta.users[i]._id] = meta.users[i];
-                }
-                if (tableData) {
-                    for (i = 0; i < tableData.length; i++) {
-                        elem = {};
-                        elem[jQuery.i18n.map["systemlogs.timestamp"]] = moment(parseInt(tableData[i].ts) * 1000).format("ddd, D MMM YYYY HH:mm:ss");
-                        if (tableData[i].user_id && users[tableData[i].user_id]) {
-                            elem[jQuery.i18n.map["systemlogs.user"]] = users[tableData[i].user_id].email + " (" + users[tableData[i].user_id].username + ")";
-                        }
-                        else {
-                            elem[jQuery.i18n.map["systemlogs.user"]] = tableData[i].u;
-                        }
-                        elem[jQuery.i18n.map["systemlogs.ip-address"]] = tableData[i].ip;
-                        elem[jQuery.i18n.map["systemlogs.action"]] = ((jQuery.i18n.map["systemlogs.action." + tableData[i].a]) ? jQuery.i18n.map["systemlogs.action." + tableData[i].a] : tableData[i].a);
-                        elem[jQuery.i18n.map["systemlogs.data"]] = "";
-                        elem[jQuery.i18n.map["systemlogs.before"]] = "";
-                        elem[jQuery.i18n.map["systemlogs.after"]] = "";
-                        if (typeof tableData[i].i === "object") {
-                            if (typeof tableData[i].i.before !== "undefined" && typeof tableData[i].i.after !== "undefined") {
-                                var data = {};
-                                for (var d in tableData[i].i) {
-                                    if (d !== "before" && d !== "after" && d !== "update") {
-                                        data[d] = tableData[i].i[d];
-                                    }
-                                }
-                                elem[jQuery.i18n.map["systemlogs.data"]] = JSON.stringify(data);
-                                elem[jQuery.i18n.map["systemlogs.before"]] = JSON.stringify(tableData[i].i.before);
-                                elem[jQuery.i18n.map["systemlogs.after"]] = JSON.stringify(tableData[i].i.after);
-                            }
-                            else if (!jQuery.isEmptyObject(tableData[i].i)) {
-                                elem[jQuery.i18n.map["systemlogs.data"]] = JSON.stringify(tableData[i].i);
-                            }
-                        }
-                        else {
-                            elem[jQuery.i18n.map["systemlogs.data"]] = tableData[i].i;
-                        }
-                        ret.push(elem);
-                    }
-                }
-                return ret;
-            });
 
             $(".action-segmentation .segmentation-option").on("click", function() {
                 if (!self._query) {
@@ -390,7 +356,9 @@ if (countlyGlobal.member.global_admin) {
 
     app.addPageScript("/manage/compliance#", function() {
         if (app.activeView && app.activeView.tabs) {
-            app.activeView.tabs.tabs('add', '#consent-actionlogs', jQuery.i18n.map["consent.export-history"]);
+            var ul = app.activeView.tabs.find("ul");
+            $("<li><a href='#consent-actionlogs'>" + jQuery.i18n.map["consent.export-history"] + "</a></li>").appendTo(ul);
+            $("<div id='consent-actionlogs'></div>").appendTo(app.activeView.tabs);
             app.activeView.tabs.tabs("refresh");
             $.when(countlySystemLogs.initialize()).then(function() {
                 var html = "<div class='widget-header include-dateselector'><div class='left'><div style='overflow: auto'><div class='title small'>" + jQuery.i18n.map["consent.export-history"] + "</div></div>" +

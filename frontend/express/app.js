@@ -85,7 +85,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: ""
+    google_maps_api_key: "",
+    offline_mode: false
 });
 
 plugins.setUserConfigs("frontend", {
@@ -845,8 +846,17 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             use_google: configs.use_google || false,
             themeFiles: theme,
             inject_template: req.template,
-            javascripts: []
+            javascripts: [],
+            offline_mode: configs.offline_mode || false
         };
+
+        // google services cannot work when offline mode enable
+        if (toDashboard.offline_mode) {
+            toDashboard.use_google = false;
+        }
+        if (countlyGlobal.config.offline_mode) {
+            countlyGlobal.config.use_google = false;
+        }
 
         var plgns = [].concat(plugins.getPlugins());
         if (plgns.indexOf('push') !== -1) {
@@ -1096,8 +1106,8 @@ app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
         else if (err === "User exists") {
             res.redirect(countlyConfig.path + '/login');
         }
-        else if (err === "Wrong request parameters") {
-            res.redirect(countlyConfig.path + '/setup');
+        else if (err && err.message) {
+            res.redirect(countlyConfig.path + `/setup?error=${JSON.stringify(err)}`);
         }
         else {
             res.status(500).send('Server Error');
@@ -1177,10 +1187,15 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
 });
 
 app.get(countlyConfig.path + '/sdks.js', function(req, res) {
-    var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
-    request(options, function(a, c, b) {
-        res.set('Content-type', 'application/javascript').status(200).send(b);
-    });
+    if (!plugins.getConfig("api").offline_mode) {
+        var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
+        request(options, function(a, c, b) {
+            res.set('Content-type', 'application/javascript').status(200).send(b);
+        });
+    }
+    else {
+        res.status(403).send("Server is in offline mode, this request cannot be completed.");
+    }
 });
 
 app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
@@ -1414,13 +1429,13 @@ app.get(countlyConfig.path + '/render', function(req, res) {
         db: countlyDb,
         multi: false,
         owner: req.session.uid,
+        ttl: 300,
         purpose: "LoginAuthToken",
         callback: function(err2, token) {
             if (err2) {
                 console.log(err2);
                 return res.send(false);
             }
-
             options.token = token;
             render.renderView(options, function(err3) {
                 if (err3) {

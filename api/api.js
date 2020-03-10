@@ -99,7 +99,9 @@ plugins.setConfigs("api", {
     export_limit: 10000,
     prevent_duplicate_requests: true,
     metric_changes: true,
-    reports_regenerate_interval: 3600
+    offline_mode: false,
+    reports_regenerate_interval: 3600,
+    send_test_email: ""
 });
 
 /**
@@ -243,6 +245,7 @@ if (cluster.isMaster) {
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
+        jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
         jobs.job('api:task').replace().schedule('every 5 minutes');
         jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
     }, 10000);
