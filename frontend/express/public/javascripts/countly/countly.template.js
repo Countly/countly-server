@@ -1329,6 +1329,7 @@ var AppRouter = Backbone.Router.extend({
 
             self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
             self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
+            Backbone.history.checkUrl();
         });
 
         this.routesHit = 0; //keep count of number of routes handled by your application
@@ -4043,6 +4044,29 @@ Backbone.history.checkUrl = function() {
         }
     }
 };
+
+var checkGlovbalAdminOnlyPermission = function() {
+    var checkList = [
+        "/manage/users",
+        "/manage/apps",
+    ];
+
+    var existed = false;
+    checkList.forEach(function(item) {
+        if (Backbone.history.getFragment().indexOf(item) > -1) {
+            existed = true;
+        }
+    });
+
+    if (countlyGlobal.member.global_admin !== true && existed === true) {
+
+        window.location.hash = "/";
+        return false;
+    }
+    return true;
+};
+Backbone.history.urlChecks.push(checkGlovbalAdminOnlyPermission);
+
 
 //initial hash check
 (function() {
