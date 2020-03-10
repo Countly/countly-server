@@ -14,7 +14,28 @@
         _usable_metrics = {
             metrics: {},
             custom: {}
+        },
+        _activeFilter =  {
+            "platform": null,
+            "version": null,
+            "fatality": "fatal"
         };
+
+    countlyCrashes.getActiveFilter = function() {
+        return _activeFilter;
+    };
+
+    countlyCrashes.setActiveFilter = function(filter) {
+        _activeFilter = filter;
+    };
+
+    countlyCrashes.resetActiveFilter = function() {
+        _activeFilter = {
+            "platform": null,
+            "version": null,
+            "fatality": "fatal"
+        }
+    };
 
     countlyCrashes.loadList = function(id) {
         $.ajax({
@@ -59,7 +80,21 @@
             "custom": jQuery.i18n.map["crashes.group-custom"]
         };
 
+        var requestParams = {
+            "app_id": countlyCommon.ACTIVE_APP_ID,
+            "method": "crashes",
+            "period": _period,
+            "group": id,
+            "display_loader": !isRefresh
+        };
 
+        if (_activeFilter) {
+            Object.keys(_activeFilter).forEach(function(key){
+                if (_activeFilter[key]) {
+                    requestParams[key] = _activeFilter[key];
+                }
+            });
+        }
 
         _period = countlyCommon.getPeriodForAjax();
         if (id) {
@@ -67,13 +102,7 @@
             return $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "method": "crashes",
-                    "period": _period,
-                    "group": id,
-                    "display_loader": !isRefresh
-                },
+                data: requestParams,
                 dataType: "json",
                 success: function(json) {
                     _groupData = json;
@@ -343,16 +372,27 @@
     countlyCrashes.refresh = function(id) {
         _period = countlyCommon.getPeriodForAjax();
         if (id) {
+
+            var requestParams = {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "crashes",
+                "period": _period,
+                "group": id,
+                "display_loader": false
+            };
+
+            if (_activeFilter) {
+                Object.keys(_activeFilter).forEach(function(key){
+                    if (_activeFilter[key]) {
+                        requestParams[key] = _activeFilter[key];
+                    }
+                });
+            }
+
             return $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "method": "crashes",
-                    "period": _period,
-                    "group": id,
-                    "display_loader": false
-                },
+                data: requestParams,
                 dataType: "json",
                 success: function(json) {
                     _groupData = json;
@@ -423,6 +463,7 @@
             metrics: {},
             custom: {}
         };
+        _activeFilter = {};
     };
 
     countlyCrashes.processMetric = function(data, metric, label) {

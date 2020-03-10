@@ -45,6 +45,9 @@ window.CrashesView = countlyView.extend({
             crru: jQuery.i18n.map["crashes.resolved-users"]
         };
     },
+    destroy: function() {
+        countlyCrashes.resetActiveFilter();
+    },
     showOnGraph: {"crashes-fatal": true, "crashes-nonfatal": true, "crashes-total": true},
     beforeRender: function() {
         this.selectedCrashes = {};
@@ -410,42 +413,70 @@ window.CrashesView = countlyView.extend({
         $(".action-segmentation").addClass("disabled");
         this.refresh();
     },
-    resetFilterBox: function(keepOpen) {
-        
+    refreshFilterInfo: function(keepOpen) {
+
         if (!keepOpen) {
             $("#crashes-selector-graph").removeClass('active');
             $(".crashes-selector-form").hide();
         }
+ 
+        var selectText = [];
 
-        var values = {};
+        var activeFilter = countlyCrashes.getActiveFilter();
 
-        if (values.platform === "") {
-            $("#crashes_filter_platform").clySelectSetSelection("", "");
-            $("#crashes_filter_platform .text").html('<div class="placeholder" data-localize="crashes.filter.select-platform">' + jQuery.i18n.map['crashes.filter.select-platform'] + '</div>');
-        }
-        else {
-            $("#crashes_filter_platform").clySelectSetSelection(values.platform, values.platform);
-        }
+        selectText.push(activeFilter.fatality);
+        selectText.push(activeFilter.os);
+        selectText.push(activeFilter.version);
 
-        if (values.version === "") {
-            $("#crashes_filter_version").clySelectSetSelection("", "");
-            $("#crashes_filter_version .text").html('<div class="placeholder" data-localize="crashes.filter.select-version">' + jQuery.i18n.map['crashes.filter.select-version'] + '</div>');
-        }
-        else {
-            $("#crashes_filter_version").clySelectSetSelection(values.version, values.version);
-        }
-
-        if (values.fatal_type === "") {
-            $("#crashes_filter_fatal_type").clySelectSetSelection("", "");
-            $("#crashes_filter_fatal_type .text").html('<div class="placeholder" data-localize="crashes.filter.select-fatal-type">' + jQuery.i18n.map['crashes.filter.select-fatal-type'] + '</div>');
-        }
-        else {
-            $("#crashes_filter_fatal_type").clySelectSetSelection(values.fatal_type, values.fatal_type);
-        }
+        $("#crashes-selector-graph a").text(selectText.join(", "));
 
     },
-    addScriptsForFilter: function() {
+    loadFilterBoxState: function(){
+        var activeFilter = countlyCrashes.getActiveFilter();
+        var version = activeFilter.version,
+            platform = activeFilter.platform,
+            fatality = activeFilter.fatality;
+
+        if (platform) {
+            $("#crashes_filter_platform").clySelectSetSelection(platform, platform);
+        }
+        else {
+            $("#crashes_filter_platform").clySelectSetSelection(false, jQuery.i18n.map['crashes.filter.all-platforms']);
+        }
+
+        if (version) {
+            $("#crashes_filter_version").clySelectSetSelection(version, version);
+}
+        else {
+            $("#crashes_filter_version").clySelectSetSelection(false, jQuery.i18n.map['crashes.filter.all-versions']);
+        }
+
+        if (fatality) {
+            $("#crashes_filter_fatal_type").clySelectSetSelection(fatality, jQuery.i18n.map['crashes.' + fatality]);
+        }
+        else {
+            $("#crashes_filter_fatal_type").clySelectSetSelection(false, jQuery.i18n.map['crashes.filter.all-fatalities']);
+        }
+    },
+    addScriptsForFilter: function(crashData) {
         var self = this;
+
+        var versionItems = Object.keys(crashData.crashes.app_version).map(function(version){
+            return {name: version, value: version};
+        });
+        var osItems = Object.keys(crashData.crashes.os).map(function(os){
+            return {name: os, value: os};
+        });
+        var fatalItems = ["fatal", "nonfatal"].map(function(fatality){
+            return {name: jQuery.i18n.map["crashes." + fatality], value: fatality};
+        });
+
+        versionItems.unshift({name: "All Versions", value: false});
+        osItems.unshift({name: "All Platforms", value: false});
+
+        $("#crashes_filter_version").clySelectSetItems(versionItems);
+        $("#crashes_filter_platform").clySelectSetItems(osItems);
+        $("#crashes_filter_fatal_type").clySelectSetItems(fatalItems);
 
         $("#crashes-selector-graph").on("click", function() {
             if ($(this).hasClass('active')) {
@@ -459,56 +490,28 @@ window.CrashesView = countlyView.extend({
         });
 
         $(".remove-crashes-filter").on("click", function() {
-            self.resetFilterBox(true);
-            $("#crashes-selector-graph a").text(jQuery.i18n.map['crashes.filter.fatal']);
+            countlyCrashes.resetActiveFilter();
+            self.loadFilterBoxState();
+            self.refreshFilterInfo(true);
+            $("#crashes-selector-graph a").text(jQuery.i18n.map['crashes.fatal']);
             self.refresh();
         });
 
         $(".apply-crashes-filter").on("click", function() {
             $("#crashes-selector-graph").removeClass('active');
             $(".crashes-selector-form").hide();
-            var selectText = [];
 
             var version = $("#crashes_filter_version").clySelectGetSelection();
             var platform = $("#crashes_filter_platform").clySelectGetSelection();
-            var fatalType = $("#crashes_filter_fatal_type").clySelectGetSelection();
+            var fatality = $("#crashes_filter_fatal_type").clySelectGetSelection();
 
-            var have_filter = false;
-            //platform
-            if (platform && platform !== "All Platforms" && platform !== "") {
-                selectText.push($("#crashes_filter_platform").find(".select-inner .text").html());
-                have_filter = true;
-            }
-            else {
-                selectText.push("All Platforms");
-            }
-
-            //version
-            if (version && version !== "All Versions" && version !== "") {
-                selectText.push(jQuery.i18n.map['version_history.version'] + " " + $("#crashes_filter_version").find(".select-inner .text").html());
-                have_filter = true;
-            }
-            else {
-                selectText.push(jQuery.i18n.map['version_history.version']);
-            }
-
-            //fatal type
-            if (fatalType && fatalType !== "Fatal" && fatalType !== "") {
-                selectText.push($("#crashes_filter_fatal_type").find(".select-inner .text").html());
-                have_filter = true;
-            }
-            else {
-                selectText.push(jQuery.i18n.map['crashes.filter.fatal']);
-            }
-
-            if (have_filter) {
-                $("#crashes-selector-graph a").text(selectText.join(", "));
-            }
-            else {
-                $("#crashes-selector-graph a").text(jQuery.i18n.map['crashes.filter.fatal']);
-            }
+            countlyCrashes.setActiveFilter({
+                version: version,
+                platform: platform,
+                fatality: fatality
+            });
+            self.refreshFilterInfo(false);
             self.refresh();
-        
         });
     },
     renderCommon: function(isRefresh) {
@@ -645,8 +648,9 @@ window.CrashesView = countlyView.extend({
             chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
             $(this.el).html(this.template(this.templateData));
             self.switchMetric();
-            self.addScriptsForFilter();
-            // self.resetFilterBox();
+            self.addScriptsForFilter(crashData);
+            self.refreshFilterInfo();
+            self.loadFilterBoxState();
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });

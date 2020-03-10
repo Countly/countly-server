@@ -766,6 +766,7 @@ plugins.setConfigs("crashes", {
                                 result.crashes.news = meta.isnew || 0;
                                 result.crashes.renewed = meta.reoccurred || 0;
                                 result.crashes.os = meta.os || {};
+                                result.crashes.app_version = meta.app_version || {};
                                 result.loss = meta.loss || 0;
 
                                 var max = "0:0";
