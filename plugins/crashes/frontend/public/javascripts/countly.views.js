@@ -424,9 +424,9 @@ window.CrashesView = countlyView.extend({
 
         var activeFilter = countlyCrashes.getActiveFilter();
 
-        selectText.push(activeFilter.fatality);
-        selectText.push(activeFilter.os);
-        selectText.push(activeFilter.version);
+        selectText.push(jQuery.i18n.map['crashes.' + activeFilter.fatality] || jQuery.i18n.map['crashes.filter.all-fatalities']);
+        selectText.push(activeFilter.platform || jQuery.i18n.map['crashes.filter.all-platforms']);
+        selectText.push(activeFilter.version || jQuery.i18n.map['crashes.filter.all-versions']);
 
         $("#crashes-selector-graph a").text(selectText.join(", "));
 
@@ -471,8 +471,8 @@ window.CrashesView = countlyView.extend({
             return {name: jQuery.i18n.map["crashes." + fatality], value: fatality};
         });
 
-        versionItems.unshift({name: "All Versions", value: false});
-        osItems.unshift({name: "All Platforms", value: false});
+        versionItems.unshift({name: jQuery.i18n.map['crashes.filter.all-versions'], value: false});
+        osItems.unshift({name: jQuery.i18n.map['crashes.filter.all-platforms'], value: false});
 
         $("#crashes_filter_version").clySelectSetItems(versionItems);
         $("#crashes_filter_platform").clySelectSetItems(osItems);
@@ -493,7 +493,6 @@ window.CrashesView = countlyView.extend({
             countlyCrashes.resetActiveFilter();
             self.loadFilterBoxState();
             self.refreshFilterInfo(true);
-            $("#crashes-selector-graph a").text(jQuery.i18n.map['crashes.fatal']);
             self.refresh();
         });
 
