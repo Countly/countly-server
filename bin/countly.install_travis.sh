@@ -66,6 +66,11 @@ node --version
 npm --version
 (  npm install npm@6.4.1 -g; npm --version; npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
 
+GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
+if [[ "$GLIBC_VERSION" != "2.25" ]]; then
+    sudo npm install argon2 --build-from-source
+fi
+
 #install mongodb
 #bash $DIR/scripts/mongodb.install.sh
 

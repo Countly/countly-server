@@ -33,8 +33,11 @@ rm -rf "$DIR/../node_modules"
 bash "$CUR/scripts/remove_moved_files.sh"
 
 #upgrade plugins
-(cd "$DIR/../" && sudo npm install --unsafe-perm)
-(cd "$DIR/../" && sudo npm install argon2 --build-from-source)
+(cd "$DIR/.." && sudo npm install --unsafe-perm)
+GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
+if [[ "$GLIBC_VERSION" != "2.25" ]]; then
+    (cd "$DIR/.." && sudo npm install argon2 --build-from-source)
+fi
 countly plugin upgrade push
 (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
 countly plugin upgrade attribution
