@@ -37,6 +37,13 @@
         }
     };
 
+    countlyCrashes.getVersionName = function(version) {
+        if (!version) {
+            return false;
+        }
+        return version.replace(/:/g, ".");
+    }
+
     var extendRequestWithFilter = function(requestParams) {
         if (_activeFilter) {
             if (_activeFilter.version) {
@@ -465,7 +472,7 @@
             metrics: {},
             custom: {}
         };
-        _activeFilter = {};
+        countlyCrashes.resetActiveFilter();
     };
 
     countlyCrashes.processMetric = function(data, metric, label) {

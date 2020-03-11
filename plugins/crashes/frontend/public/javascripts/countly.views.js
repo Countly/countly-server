@@ -426,7 +426,7 @@ window.CrashesView = countlyView.extend({
 
         selectText.push(jQuery.i18n.map['crashes.' + activeFilter.fatality] || jQuery.i18n.map['crashes.filter.all-fatalities']);
         selectText.push(activeFilter.platform || jQuery.i18n.map['crashes.filter.all-platforms']);
-        selectText.push(activeFilter.version || jQuery.i18n.map['crashes.filter.all-versions']);
+        selectText.push(countlyCrashes.getVersionName(activeFilter.version) || jQuery.i18n.map['crashes.filter.all-versions']);
 
         $("#crashes-selector-graph a").text(selectText.join(", "));
 
@@ -445,7 +445,7 @@ window.CrashesView = countlyView.extend({
         }
 
         if (version) {
-            $("#crashes_filter_version").clySelectSetSelection(version, version);
+            $("#crashes_filter_version").clySelectSetSelection(version, countlyCrashes.getVersionName(version));
 }
         else {
             $("#crashes_filter_version").clySelectSetSelection(false, jQuery.i18n.map['crashes.filter.all-versions']);
@@ -462,7 +462,7 @@ window.CrashesView = countlyView.extend({
         var self = this;
 
         var versionItems = Object.keys(crashData.crashes.app_version).map(function(version){
-            return {name: version, value: version};
+            return {name: countlyCrashes.getVersionName(version), value: version};
         });
         var osItems = Object.keys(crashData.crashes.os).map(function(os){
             return {name: os, value: os};
