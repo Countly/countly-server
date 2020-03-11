@@ -404,6 +404,12 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
         }
         //store last merged uid for reference
         newAppUserP.merged_uid = oldAppUser.uid;
+        if (typeof newAppUserP.merges === "undefined") {
+            newAppUserP.merges = 1;
+        }
+        if (typeof oldAppUser.merges !== "undefined") {
+            newAppUserP.merges += oldAppUser.merges;
+        }
         //update new user
         common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function() {
             //delete old user

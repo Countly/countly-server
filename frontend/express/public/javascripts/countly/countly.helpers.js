@@ -361,7 +361,7 @@
             self.cancel = [clFn];
         };
 
-        $("#model-continue").live('click', function() {
+        $(document).on('click', "#model-continue", function() {
             var breakStatus = false;
             for (var i = 0; i < self.continue.length; i++) {
                 var call = self.continue[i].bind(this);
@@ -380,7 +380,7 @@
             }
         });
 
-        $("#model-cancel").live('click', function() {
+        $(document).on('click', "#model-cancel", function() {
             var breakStatus = false;
             for (var i = 0; i < self.cancel.length; i++) {
                 var call = self.cancel[i].bind(this);
@@ -753,7 +753,7 @@
             data.limit = hardLimit;
             data.skip = page * hardLimit;
 
-            var url = exportByAPI ? "/o/export/request" : "/o/export/db";
+            var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
                 if (CountlyHelpers.isJSON(v)) {
@@ -888,8 +888,8 @@
             data.type = type;
             data.data = JSON.stringify(getExportData(dtable, type));
             data.filename = getFileName(type);
-            var url = "/o/export/data";
 
+            var url = countlyCommon.API_URL + "/o/export/data";
             var form = $('<form method="POST" action="' + url + '">');
 
             $.each(data, function(k, v) {
@@ -2647,7 +2647,7 @@
             }
 
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
-            platformVersionTotal = _.compact(platformVersionTotal);
+            platformVersionTotal = _.without(platformVersionTotal, false, null, "", undefined, NaN);
 
             var platformVersionNames = _.pluck(oSVersionData.chartData, metric_pd || _name);
 
@@ -2949,7 +2949,7 @@
             }
         });
 
-        $("#dialog-ok, #dialog-cancel, #dialog-continue").live('click', function() {
+        $(document).on('click', "#dialog-ok, #dialog-cancel, #dialog-continue", function() {
             $(this).parents(".dialog:visible").fadeOut().remove();
             if (!$('.dialog:visible').length) {
                 $("#overlay").hide();

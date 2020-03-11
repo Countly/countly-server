@@ -25,7 +25,7 @@ RUN useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     apt-get update && \
     apt-get -y install \
         # standard
-        build-essential libkrb5-dev git sqlite3 wget \
+        build-essential libkrb5-dev git sqlite3 wget sudo \
         # nginx
         nginx \
         # puppeteer

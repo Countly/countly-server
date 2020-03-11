@@ -6,6 +6,7 @@
 /** @lends module:api/utils/taskmanager */
 var taskmanager = {};
 var common = require("./common.js");
+var countlyFs = require("./countlyFs.js");
 var crypto = require("crypto");
 var request = require("request");
 const log = require('./log.js')('core:taskmanager');
@@ -227,6 +228,13 @@ taskmanager.createTask = function(options, callback) {
 */
 taskmanager.saveResult = function(options, data, callback) {
     options.db = options.db || common.db;
+    var update = {
+        end: new Date().getTime(),
+        status: "completed",
+        hasData: true,
+        data: JSON.stringify(data || {}),
+    };
+
     if (options.errored) {
         var message = "";
         if (options.errormsg) {
@@ -235,23 +243,35 @@ taskmanager.saveResult = function(options, data, callback) {
         if (message.message) {
             message = message.message;
         }
+        update.status = "errored";
+        update.errormsg = message;
+    }
 
+    options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
         options.db.collection("long_tasks").update({_id: options.id}, {
-            $set: {
-                end: new Date().getTime(),
-                status: "errored",
-                hasData: true,
-                data: JSON.stringify(data || {}),
-                errormsg: message
-            }
+            $set: update
         }, {'upsert': false}, function(err, res) {
             if (options.subtask && !err) {
                 var updateObj = {$set: {}};
-                updateObj.$set["subtasks." + options.id + ".status"] = "errored";
+                updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
                 updateObj.$set["subtasks." + options.id + ".hasData"] = true;
                 updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
 
-                options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, callback);
+                options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
+            }
+
+            //document too large for update or it was already previous stored in gridfs
+            if ((err && err.code === 17419) || (task && task.gridfs)) {
+                //let's store it in gridfs
+                update.data = {};
+                update.gridfs = true;
+                options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, function() {
+                    countlyFs.gridfs.saveData("task_results", options.id, JSON.stringify(data || {}), {id: options.id}, function(err2, res2) {
+                        if (callback) {
+                            callback(err2, res2);
+                        }
+                    });
+                });
             }
             else {
                 if (callback) {
@@ -259,32 +279,7 @@ taskmanager.saveResult = function(options, data, callback) {
                 }
             }
         });
-    }
-    else {
-        options.db.collection("long_tasks").update({_id: options.id}, {
-            $set: {
-                end: new Date().getTime(),
-                status: "completed",
-                hasData: true,
-                data: JSON.stringify(data || {})
-            }
-        }, {'upsert': false}, function(err, res) {
-            if (options.subtask && !err) {
-                var updateObj = {$set: {}};
-                updateObj.$set["subtasks." + options.id + ".status"] = "completed";
-                updateObj.$set["subtasks." + options.id + ".hasData"] = true;
-                updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
-                options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, callback);
-            }
-            else {
-                if (callback) {
-                    callback(err, res);
-                }
-            }
-        });
-
-
-    }
+    });
 };
 
 /**
@@ -310,19 +305,19 @@ taskmanager.nameResult = function(options, data, callback) {
 */
 taskmanager.getResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne({_id: options.id}, callback);
+    options.db.collection("long_tasks").findOne({_id: options.id}, getResult(callback, options));
 };
 
 /**
 * Get specific task result
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
-* @param {string} options.id - id of the task result
+* @param {string} options.query - query for the task result
 * @param {funciton} callback - callback for the result
 */
 taskmanager.getResultByQuery = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne(options.query, callback);
+    options.db.collection("long_tasks").findOne(options.query, getResult(callback, options));
 };
 
 /**
@@ -339,8 +334,10 @@ taskmanager.editTask = function(options, callback) {
         if (!err) {
             try {
                 var req = JSON.parse(data.request);
-                req.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
-                req.json.period_desc = options.data.period_desc;
+                if (options.data.period_desc && options.data.period_desc !== "" && options.data.period_desc !== "false") {
+                    req.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
+                    req.json.period_desc = options.data.period_desc;
+                }
                 options.data.request = JSON.stringify(req);
                 options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
             }
@@ -531,7 +528,24 @@ taskmanager.getTableQueryResult = async function(options, callback) {
 */
 taskmanager.deleteResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").remove({$or: [{_id: options.id}, {subtask: options.id}]}, callback);
+    options.db.collection("long_tasks").findOne({_id: options.id}, function(err, task) {
+        if (err || !task) {
+            return callback(err);
+        }
+        if (task.gridfs) {
+            countlyFs.gridfs.deleteFile("task_results", options.id, {id: options.id}, function() {});
+        }
+        options.db.collection("long_tasks").remove({_id: options.id}, callback);
+        if (task.taskgroup) {
+            options.db.collection("long_tasks").find({subtask: options.id}, {_id: 1}).toArray(function(err2, tasks) {
+                if (tasks && tasks.length) {
+                    for (var i = 0; i < tasks.length; i++) {
+                        taskmanager.deleteResult({id: tasks[i]._id, db: options.db}, function() {});
+                    }
+                }
+            });
+        }
+    });
 };
 
 /**
@@ -657,4 +671,42 @@ taskmanager.rerunTask = function(options, callback) {
         }
     });
 };
+
+/**
+ *  Create a callback for getting result, including checking gridfs
+ *  @param {function} callback - callback for the result
+ *  @param {object} options - options object
+ *  @returns {function} callback to use for db query
+ */
+function getResult(callback, options) {
+    return function(err, data) {
+        if (!err) {
+            if (data && options && options.subtask_key && data.taskgroup === true) {
+                taskmanager.getResultByQuery({db: options.db, query: {subtask: data._id, subtask_key: options.subtask_key}}, getResult(function(err2, subtask) {
+                    if (!subtask) {
+                        taskmanager.rerunTask({db: options.db, id: data._id}, function() {});
+                    }
+                    callback(err2, subtask);
+                }));
+            }
+            else if (data && data.gridfs) {
+                countlyFs.gridfs.getData("task_results", data._id + "", {id: data._id}, function(err2, largeData) {
+                    if (!err2) {
+                        data.data = largeData;
+                        callback(null, data);
+                    }
+                    else {
+                        callback(err2, data);
+                    }
+                });
+            }
+            else {
+                callback(err, data);
+            }
+        }
+        else {
+            callback(err, data);
+        }
+    };
+}
 module.exports = taskmanager;

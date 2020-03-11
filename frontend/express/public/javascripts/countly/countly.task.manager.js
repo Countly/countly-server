@@ -60,8 +60,78 @@
         });
     };
 
+
+
+    countlyTaskManager.fetchSubtaskResult = function(id, options, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/tasks/task",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "task_id": id,
+                "display_loader": false,
+                "subtask_key": options.subtask_key
+            },
+            dataType: "json",
+            success: function(json) {
+                if (json.data) {
+                    json.data = JSON.parse(json.data);
+                }
+                if (json.request) {
+                    json.request = JSON.parse(json.request);
+                }
+                if (json.subtask) {
+                    if (!_data[json.subtask]) {
+                        _data[json.subtask] = {taskgroup: true, subtasks: {}};
+                    }
+                    _data[json.subtask].subtasks[json.subtask_key] = json._id;
+                    _data[json._id] = json;
+                }
+                else {
+                    _data[id] = json;
+                }
+                if (callback) {
+                    callback(json);
+                }
+            },
+            error: function() {
+                if (callback) {
+                    callback(false);
+                }
+            }
+        });
+    };
+
     countlyTaskManager.getResult = function(id) {
+        if (typeof id === 'object') {
+            if (id.subtask_key && id.id) {
+                if (_data[id.id] && _data[id.id].taskgroup === true) {
+                    if (_data[id.id].subtasks[id.subtask_key] && _data[_data[id.id].subtasks[id.subtask_key]]) {
+                        return _data[_data[id.id].subtasks[id.subtask_key]];
+                    }
+                    else {
+                        return null;
+                    }
+                }
+                else {
+                    return _data[id.id];
+                }
+            }
+        }
         return _data[id];
+    };
+
+    countlyTaskManager.getSubtaskId = function(options) {
+        if (options && options.subtask_key && options.id) {
+            if (_data[options.id] && _data[options.id].taskgroup === true) {
+                if (_data[options.id].subtasks[options.subtask_key]) {
+                    return _data[options.id].subtasks[options.subtask_key];
+                }
+            }
+            else {
+                return options.id;
+            }
+        }
     };
 
     countlyTaskManager.getTask = function(id) {

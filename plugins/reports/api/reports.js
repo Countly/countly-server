@@ -102,25 +102,30 @@ var metrics = {
          * @param {func} cb - callback function
          */
         function processUniverse(cb) {
-            if (versionInfo.title.indexOf("Countly") > -1) {
-                var options = {
-                    uri: 'http://count.ly/email-news.txt',
-                    method: 'GET',
-                    timeout: 1000
-                };
+            if (!plugins.getConfig("api").offline_mode) {
+                if (versionInfo.title.indexOf("Countly") > -1) {
+                    var options = {
+                        uri: 'http://count.ly/email-news.txt',
+                        method: 'GET',
+                        timeout: 1000
+                    };
 
-                request(options, function(error, response, body) {
-                    if (!error) {
-                        try {
-                            var arr = JSON.parse(body);
-                            report.universe = arr[Math.floor(Math.random() * arr.length)];
+                    request(options, function(error, response, body) {
+                        if (!error) {
+                            try {
+                                var arr = JSON.parse(body);
+                                report.universe = arr[Math.floor(Math.random() * arr.length)];
+                            }
+                            catch (ex) {
+                                console.log(ex);
+                            }
                         }
-                        catch (ex) {
-                            console.log(ex);
-                        }
-                    }
+                        cb(null);
+                    });
+                }
+                else {
                     cb(null);
-                });
+                }
             }
             else {
                 cb(null);
@@ -136,13 +141,13 @@ var metrics = {
 
             async.parallel(parallelTasks, function(err, data) {
                 /**
-                 * iterate app 
+                 * iterate app
                  * @param {string} app_id -  id of app record in db.
                  * @param {func} done - callback function
                  */
                 function appIterator(app_id, done) {
                     /**
-                     * metricIterator curry function 
+                     * metricIterator curry function
                      * @param {obj} params - params injected in inner func
                      * @return {func} metricIterator - function for iterartion
                      */
@@ -507,9 +512,9 @@ var metrics = {
     };
 
     /**
-    * set metrics  in collection 
+    * set metrics  in collection
     * @param {object} metricsObj - metrics data
-    * @param {object} events - event data 
+    * @param {object} events - event data
     * @return {object} collections - collections names
     */
     function metricsToCollections(metricsObj, events) {
@@ -542,9 +547,9 @@ var metrics = {
     }
 
     /**
-    * get session data 
+    * get session data
     * @param {object} _sessionDb - session original data
-    * @param {object} totalUserOverrideObj - user data 
+    * @param {object} totalUserOverrideObj - user data
     * @param {object} previousTotalUserOverrideObj - user data for previous period
     * @return {object} dataArr - session statstics contains serveral metrics.
     */
@@ -790,7 +795,7 @@ var metrics = {
     }
 
     /**
-    * get crash data 
+    * get crash data
     * @param {object} _crashTimeline - timeline object
     * @return {object} dataArr - crash data with several dimension statistics
     */

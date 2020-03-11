@@ -9,7 +9,7 @@
 #dbviewer .left-side ul li a.selected {font-weight: bold; padding-bottom: 3px;padding-top:3px;}
 #dbviewer .left-side .ui-accordion .ui-accordion-content {padding: 10px;}
 #dbviewer .left-side .ui-state-active,
-#dbviewer .left-side .ui-accordion .ui-accordion-header { border: none; border-bottom: 1px solid #d0d0d0; color: #424242; font-size: 11px; padding: 10px 4px; background-color: #f7f7f7; text-align: center; background-image: none; border-radius: 0; }
+#dbviewer .left-side .ui-accordion .ui-accordion-header { border: none; border-bottom: 1px solid #d0d0d0; color: #424242; font-size: 11px; padding: 10px 4px; background-color: #f7f7f7; text-align: center; background-image: none; border-radius: 0; margin: 0px;}
 #dbviewer .right-side { border-radius:2px; margin-left: 300px; padding: 10px 15px; border-left: 1px solid #ddd; }
 #dbviewer .right-side > p { font-size:13px; color:#464646; }
 #dbviewer .right-side p.breadcrumbs { display: inline-block; margin-bottom: 20px; font-size: 15px; }

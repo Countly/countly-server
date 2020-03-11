@@ -678,6 +678,18 @@
 
                 if (_period === "month" && !bucket) {
                     tickObj = countlyCommon.getTickObj("monthly");
+                    if (tickObj.labelCn === 1) {
+                        for (var kk = 0; kk < dataPoints.length; kk++) {
+                            dataPoints[kk].data = dataPoints[kk].data.slice(0, 1);
+                        }
+                        graphProperties.series.points.radius = 4;
+                        overrideBucket = true;//to get the dots added
+                    }
+                    else if (tickObj.labelCn === 2) {
+                        for (var kkk = 0; kkk < dataPoints.length; kkk++) {
+                            dataPoints[kkk].data = dataPoints[kkk].data.slice(0, 2);
+                        }
+                    }
                 }
                 else {
                     tickObj = countlyCommon.getTickObj(bucket, overrideBucket);
@@ -697,6 +709,46 @@
                 graphProperties.xaxis.ticks = tickObj.ticks;
 
                 graphTicks = tickObj.tickTexts;
+                //set dashed line for not finished yet
+
+                if (countlyCommon.periodObj.periodContainsToday === true) {
+                    var settings = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID];
+                    var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: settings.timezone }));
+                    for (var z = 0; z < dataPoints.length; z++) {
+                        if (dataPoints[z].mode !== "ghost" && dataPoints[z].mode !== "previous") {
+                            var bDate = new Date();
+                            if (_period === "hour") {
+                                if (bDate.getDate() === tzDate.getDate()) {
+                                    dataPoints[z].dashAfter = tzDate.getHours() - 1;
+                                }
+                                else if (bDate.getDate() > tzDate.getDate()) {
+                                    dataPoints[z].dashed = true; //all dashed because app lives still in yesterday
+                                }
+                                //for last - none dashed - because app lives in tomorrow(so don't do anything for this case)
+                            }
+                            else if (_period === "day") { //days in this month
+                                var c = countlyCommon.periodObj.currentPeriodArr.length;
+                                dataPoints[z].dashAfter = c - 2;
+                            }
+                            else if (_period === "month" && bDate.getMonth() <= 2 && (!bucket || bucket === "monthly")) {
+                                dataPoints[z].dashed = true;
+                            }
+                            else {
+                                if (bucket === "hourly") {
+                                    dataPoints[z].dashAfter = graphTicks.length - (24 - tzDate.getHours() + 1);
+                                }
+                                else {
+                                    dataPoints[z].dashAfter = graphTicks.length - 2;
+                                }
+                            }
+
+                            if (typeof dataPoints[z].dashAfter !== 'undefined' && dataPoints[z].dashAfter <= 0) {
+                                delete dataPoints[z].dashAfter;
+                                dataPoints[z].dashed = true; //dash whole line
+                            }
+                        }
+                    }
+                }
 
                 var graphObj = $(container).data("plot"),
                     keyEventCounter = "A",
@@ -707,7 +759,7 @@
                     countlyCommon.deepObjectExtend(graphProperties, options);
                 }
 
-                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
+                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().grid.show && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
                     if (overrideBucket) {
                         graphObj.getOptions().series.points.radius = 4;
@@ -856,7 +908,7 @@
                                     var app = countlyGlobal.apps[noteId] || {};
                                     titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
                                     "<div class='note-content'>" + notes[0].note + "</div>" +
-                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType + "</span> </div>" +
+                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + (jQuery.i18n.map["notes.note-" + notes[0].noteType] || notes[0].noteType) + "</span> </div>" +
                                         "</div>";
                                 }
                                 else {
@@ -926,10 +978,13 @@
                             if (series.mode === "ghost") {
                                 series.label = jQuery.i18n.map["common.previous-period"];
                             }
-
+                            var opacity = "1.0";
                             //add lines over color block for dashed 
-                            if (series.dashed) {
+                            if (series.dashed && series.previous) {
                                 addMe = '<svg style="width: 12px; height: 12px; position:absolute; top:0; left:0;"><line stroke-dasharray="2, 2"  x1="0" y1="100%" x2="100%" y2="0" style="stroke:rgb(255,255,255);stroke-width:30"/></svg>';
+                            }
+                            if (series.alpha) {
+                                opacity = series.alpha + "";
                             }
                             if (formattedValue) {
                                 formattedValue = parseFloat(formattedValue).toFixed(2).replace(/[.,]00$/, "");
@@ -939,7 +994,7 @@
                             }
 
                             tooltipHTML += "<div class='inner'>";
-                            tooltipHTML += "<div class='color' style='position:relative; background-color: " + series.color + "'>" + addMe + "</div>";
+                            tooltipHTML += "<div class='color' style='position:relative; background-color: " + series.color + "; opacity:" + opacity + ";'>" + addMe + "</div>";
                             tooltipHTML += "<div class='series'>" + series.label + "</div>";
                             tooltipHTML += "<div class='value'>" + formattedValue + "</div>";
                             tooltipHTML += "</div>";
@@ -1678,19 +1733,24 @@
                 data;
             for (var i = 0; i < chartData.length; i++) {
                 data = chartData[i];
-                if (data[metric] && !uniqueNames[data[metric]]) {
-                    uniqueNames[data[metric]] = data;
+                var newName = (data[metric] + "").trim();
+                if (newName === "") {
+                    newName = jQuery.i18n.map["common.unknown"];
+                }
+                data[metric] = newName;
+                if (newName && !uniqueNames[newName]) {
+                    uniqueNames[newName] = data;
                 }
                 else {
                     for (var key in data) {
                         if (typeof data[key] === "string") {
-                            uniqueNames[data[metric]][key] = data[key];
+                            uniqueNames[newName][key] = data[key];
                         }
                         else if (typeof data[key] === "number") {
-                            if (!uniqueNames[data[metric]][key]) {
-                                uniqueNames[data[metric]][key] = 0;
+                            if (!uniqueNames[newName][key]) {
+                                uniqueNames[newName][key] = 0;
                             }
-                            uniqueNames[data[metric]][key] += data[key];
+                            uniqueNames[newName][key] += data[key];
                         }
                     }
                 }
@@ -2388,6 +2448,7 @@
                 tickTexts = _.compact(tickTexts);
             }
 
+            var labelCn = ticks.length;
             if (ticks.length <= 2) {
                 limitAdjustment = 0.02;
                 var tmpTicks = [],
@@ -2431,7 +2492,8 @@
                 min: 0 - limitAdjustment,
                 max: (limitAdjustment) ? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
                 tickTexts: tickTexts,
-                ticks: _.compact(ticks)
+                ticks: _.compact(ticks),
+                labelCn: labelCn
             };
         };
 
@@ -3896,6 +3958,9 @@
                 return obj;
             }
             else {
+                if (typeof obj[is[0]] === "undefined" && value !== undefined) {
+                    obj[is[0]] = {};
+                }
                 return countlyCommon.dot(obj[is[0]], is.slice(1), value);
             }
         };

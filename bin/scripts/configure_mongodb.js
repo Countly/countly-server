@@ -3,7 +3,7 @@ var fs = require("fs");
 
 var myArgs = process.argv.slice(2);
 if (myArgs.length && fs.existsSync(myArgs[0])) {
-    // Load yaml file using yaml.load 
+    // Load yaml file using yaml.load
     var ob = yaml.load(myArgs[0]);
 
 

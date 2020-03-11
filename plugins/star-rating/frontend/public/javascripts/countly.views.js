@@ -1796,6 +1796,14 @@ window.starView = countlyView.extend({
                     $("#save-widget").addClass("disabled");
                 });
                 $("#save-widget").addClass('disabled');
+
+                $('.tooltip').on("hover", function() {
+                    $(this).prev().css({"visibility": "visible"});
+                });
+
+                $('.tooltip').on("mouseout", function() {
+                    $(this).prev().css({"visibility": "hidden"});
+                });
             });
             $("body").on("click", ".edit-widget", function() {
                 // set drawer type as edit
@@ -1900,7 +1908,7 @@ window.starView = countlyView.extend({
             });
             $('.feedback-create-side-header-slice').on('click', function() {
                 if (store.get('drawer-type') === 'create') {
-                    if ((parseInt($(this).data('step')) - parseInt(self.step)) === 1) {
+                    if ((parseInt($(this).data('step')) < parseInt(self.step))) {
                         self.step = $(this).data('step');
                         self.renderFeedbackDrawer();
                     }

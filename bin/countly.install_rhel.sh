@@ -33,7 +33,7 @@ else
 fi
 
 #install nodejs
-curl -sL https://rpm.nodesource.com/setup_8.x | bash -
+curl -sL https://rpm.nodesource.com/setup_10.x | bash -
 yum install -y nodejs
 
 set +e
@@ -87,6 +87,11 @@ fi
 
 #install grunt & npm modules
 ( cd "$DIR/.." ;  sudo npm install npm@6.4.1 -g; npm --version;  sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
+
+GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
+if [[ "$GLIBC_VERSION" != "2.25" ]]; then
+    (cd "$DIR/.." && sudo npm install argon2 --build-from-source)
+fi
 
 #install mongodb
 bash "$DIR/scripts/mongodb.install.sh"

@@ -84,7 +84,7 @@
 
     var line = [];
 
-    function drawLine(points, ctx, height, fill, seriesColor,dashed) {
+    function drawLine(points, ctx, height, fill, seriesColor,options) {
         var c = $.color.parse(seriesColor);
 
         c.a = typeof fill == "number" ? fill : .3;
@@ -93,17 +93,38 @@
 
         ctx.beginPath();
         ctx.moveTo(points[0][0], points[0][1]);
-        if(dashed) {
-            ctx.setLineDash([4, 4]);
+        var dashed = false;
+        var plength = points.length;
+        
+        var dashAfter = plength;
+        if(options) {
+            dashed = options.dashed;
+            if(dashed === true){
+                ctx.setLineDash([4, 4]);
+            }
+    
+            dashAfter = options.dashAfter || plength;
+            
+            if(options.alpha){
+                ctx.globalAlpha = options.alpha;
+            }
         }
 
-        var plength = points.length;
-
-        for (var i = 0; i < plength; i++) {
+        for (var i = 0; i < dashAfter && i<plength; i++) {
             ctx[points[i][3]].apply(ctx, points[i][2]);
         }
 
         ctx.stroke();
+        
+        if(dashAfter && dashAfter!= plength){
+            ctx.setLineDash([4, 4]);
+            for (var i = dashAfter; i < plength; i++) {
+                ctx[points[i][3]].apply(ctx, points[i][2]);
+            }
+            
+            ctx.stroke();
+            ctx.setLineDash([0, 0]);
+        }
 
         ctx.lineWidth = 0;
         ctx.lineTo(points[plength - 1][0], height);
@@ -115,6 +136,7 @@
             ctx.fillStyle = c;
             ctx.fill();
         }
+        ctx.globalAlpha = 1.0;
     }
 
     /**
@@ -202,7 +224,7 @@
 
         queue(ctx, 'quadratic', pts.slice(len - 2, len), [cp[2 * len - 10], cp[2 * len - 9], pts[len - 4], pts[len - 3]]);
 
-        drawLine(line, ctx, plot.height() + 10, series.splines.fill, series.color,series.dashed);
+        drawLine(line, ctx, plot.height() + 10, series.splines.fill, series.color,{alpha: series.alpha, dashed:series.dashed,dashAfter:series.dashAfter});
 
         ctx.restore();
     }

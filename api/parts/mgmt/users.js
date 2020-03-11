@@ -425,6 +425,10 @@ usersApi.updateUser = async function(params) {
                         killAllSessionForUser(updatedMember._id);
                     }
 
+                    if (updatedMember.email) {
+                        //remove password reset e-mail
+                        common.db.collection('password_reset').remove({ "user_id": common.db.ObjectID(updatedMember._id + "")}, {multi: true}, function() {});
+                    }
                     common.returnMessage(params, 200, 'Success');
                 }
                 else {

@@ -19,7 +19,13 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties build-essential git sqlite3 unzip shellcheck
+apt-get -y install build-essential git sqlite3 unzip shellcheck
+
+if apt-cache pkgnames | grep -q python-software-properties; then
+    apt-get -y install python-software-properties
+else
+    apt-get -y install python3-software-properties
+fi
 
 if ! (command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
@@ -27,7 +33,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_8.x | bash -
+wget -qO- https://deb.nodesource.com/setup_10.x | bash -
 
 #update g++ to 4.8
 add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -56,8 +62,14 @@ apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 #apt-get -y install sendmail
 
 #install grunt & npm modules
+node --version
 npm --version
 (  npm install npm@6.4.1 -g; npm --version; npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
+
+GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
+if [[ "$GLIBC_VERSION" != "2.25" ]]; then
+    sudo npm install argon2 --build-from-source
+fi
 
 #install mongodb
 #bash $DIR/scripts/mongodb.install.sh
