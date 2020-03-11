@@ -103,12 +103,12 @@ var pluginOb = {},
                 params.qstring.crash._browser = agent.browser.name;
             }
 
-            if (!params.qstring.metrics._device) {
+            if (!params.qstring.crash._device) {
                 if (typeof agent.device.model !== "undefined") {
-                    params.qstring.metrics._device = agent.device.model;
+                    params.qstring.crash._device = agent.device.model;
                 }
                 else {
-                    params.qstring.metrics._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
+                    params.qstring.crash._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
                 }
             }
         }
