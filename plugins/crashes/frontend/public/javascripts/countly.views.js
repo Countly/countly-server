@@ -484,6 +484,7 @@ window.CrashesView = countlyView.extend({
                 $("#crashes-filter").hide();
             }
             else {
+                self.loadFilterBoxState();
                 $(this).addClass('active');
                 $("#crashes-filter").show();
             }
@@ -512,6 +513,9 @@ window.CrashesView = countlyView.extend({
             self.refreshFilterInfo(false);
             self.refresh();
         });
+
+        self.refreshFilterInfo();
+        self.loadFilterBoxState();
     },
     renderCommon: function(isRefresh) {
         var crashData = countlyCrashes.getData();
@@ -648,8 +652,6 @@ window.CrashesView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             self.switchMetric();
             self.addScriptsForFilter(crashData);
-            self.refreshFilterInfo();
-            self.loadFilterBoxState();
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });

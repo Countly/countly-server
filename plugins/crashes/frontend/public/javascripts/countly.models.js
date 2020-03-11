@@ -37,6 +37,20 @@
         }
     };
 
+    var extendRequestWithFilter = function(requestParams) {
+        if (_activeFilter) {
+            if (_activeFilter.version) {
+                requestParams.app_version = _activeFilter.version;
+            }
+            if (_activeFilter.platform) {
+                requestParams.os = _activeFilter.platform;
+            }
+            if (_activeFilter.fatality) {
+                requestParams.nonfatal = _activeFilter.fatality === 'nonfatal';
+            }
+        }
+    }
+
     countlyCrashes.loadList = function(id) {
         $.ajax({
             type: "GET",
@@ -136,13 +150,8 @@
                 "display_loader": !isRefresh
             }
 
-            if (_activeFilter) {
-                Object.keys(_activeFilter).forEach(function(key){
-                    if (_activeFilter[key]) {
-                        requestParams[key] = _activeFilter[key];
-                    }
-                });
-            }
+            extendRequestWithFilter(requestParams);
+
             return $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -417,13 +426,8 @@
                 "display_loader": false
             };
 
-            if (_activeFilter) {
-                Object.keys(_activeFilter).forEach(function(key){
-                    if (_activeFilter[key]) {
-                        requestParams[key] = _activeFilter[key];
-                    }
-                });
-            }
+            extendRequestWithFilter(requestParams);
+
             return $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
