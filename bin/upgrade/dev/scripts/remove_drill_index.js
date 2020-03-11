@@ -10,6 +10,7 @@ db.collections(function(error, results) {
     if (error || !results) {
         db.close();
         console.log("Error occured:", error);
+        return;
     }
     results = results.filter(collection => collection && collection.collectionName && collection.collectionName.startsWith("drill_events"));
     async.eachSeries(results, function(collection, done) {
