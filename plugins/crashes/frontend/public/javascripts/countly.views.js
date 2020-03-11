@@ -47,6 +47,8 @@ window.CrashesView = countlyView.extend({
     },
     destroy: function() {
         countlyCrashes.resetActiveFilter();
+        $('body').unbind('mouseup', self.filterBoxCloseCallback);
+        $('body').unbind('keydown', self.filterBoxEscapeCallback);
     },
     showOnGraph: {"crashes-fatal": true, "crashes-nonfatal": true, "crashes-total": true},
     beforeRender: function() {
@@ -516,6 +518,29 @@ window.CrashesView = countlyView.extend({
 
         self.refreshFilterInfo();
         self.loadFilterBoxState();
+
+        var onFilterBox = false;
+
+        $(".filter-selector-wrapper").hover(function() {
+            onFilterBox = true;
+        }, function() {
+            onFilterBox = false;
+        });
+
+        self.filterBoxCloseCallback = function() {
+            if (!onFilterBox) {
+                self.refreshFilterInfo(false);
+            }
+        }
+
+        self.filterBoxEscapeCallback = function(e) {
+            if (e.keyCode === 27) {
+                self.refreshFilterInfo(false);
+            }
+        }
+
+        $("body").keydown(self.filterBoxEscapeCallback);
+        $('body').mouseup(self.filterBoxCloseCallback);
     },
     renderCommon: function(isRefresh) {
         var crashData = countlyCrashes.getData();
