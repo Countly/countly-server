@@ -15,7 +15,7 @@
             metrics: {},
             custom: {}
         },
-        _activeFilter =  {
+        _activeFilter = {
             "platform": null,
             "version": null,
             "fatality": "fatal"
@@ -34,7 +34,7 @@
             "platform": null,
             "version": null,
             "fatality": "fatal"
-        }
+        };
     };
 
     countlyCrashes.getVersionName = function(version) {
@@ -42,7 +42,7 @@
             return false;
         }
         return version.replace(/:/g, ".");
-    }
+    };
 
     var extendRequestWithFilter = function(requestParams) {
         if (_activeFilter) {
@@ -56,7 +56,7 @@
                 requestParams.nonfatal = _activeFilter.fatality === 'nonfatal';
             }
         }
-    }
+    };
 
     countlyCrashes.loadList = function(id) {
         $.ajax({
@@ -155,7 +155,7 @@
                 "method": "crashes",
                 "graph": 1,
                 "display_loader": !isRefresh
-            }
+            };
 
             extendRequestWithFilter(requestParams);
 

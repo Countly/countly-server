@@ -421,7 +421,7 @@ window.CrashesView = countlyView.extend({
             $("#crashes-selector-graph").removeClass('active');
             $(".crashes-selector-form").hide();
         }
- 
+
         var selectText = [];
 
         var activeFilter = countlyCrashes.getActiveFilter();
@@ -433,7 +433,7 @@ window.CrashesView = countlyView.extend({
         $("#crashes-selector-graph a").text(selectText.join(", "));
 
     },
-    loadFilterBoxState: function(){
+    loadFilterBoxState: function() {
         var activeFilter = countlyCrashes.getActiveFilter();
         var version = activeFilter.version,
             platform = activeFilter.platform,
@@ -448,7 +448,7 @@ window.CrashesView = countlyView.extend({
 
         if (version) {
             $("#crashes_filter_version").clySelectSetSelection(version, countlyCrashes.getVersionName(version));
-}
+        }
         else {
             $("#crashes_filter_version").clySelectSetSelection(false, jQuery.i18n.map['crashes.filter.all-versions']);
         }
@@ -463,13 +463,13 @@ window.CrashesView = countlyView.extend({
     addScriptsForFilter: function(crashData) {
         var self = this;
 
-        var versionItems = Object.keys(crashData.crashes.app_version).map(function(version){
+        var versionItems = Object.keys(crashData.crashes.app_version).map(function(version) {
             return {name: countlyCrashes.getVersionName(version), value: version};
         });
-        var osItems = Object.keys(crashData.crashes.os).map(function(os){
+        var osItems = Object.keys(crashData.crashes.os).map(function(os) {
             return {name: os, value: os};
         });
-        var fatalItems = ["fatal", "nonfatal"].map(function(fatality){
+        var fatalItems = ["fatal", "nonfatal"].map(function(fatality) {
             return {name: jQuery.i18n.map["crashes." + fatality], value: fatality};
         });
 
@@ -531,13 +531,13 @@ window.CrashesView = countlyView.extend({
             if (!onFilterBox) {
                 self.refreshFilterInfo(false);
             }
-        }
+        };
 
         self.filterBoxEscapeCallback = function(e) {
             if (e.keyCode === 27) {
                 self.refreshFilterInfo(false);
             }
-        }
+        };
 
         $("body").keydown(self.filterBoxEscapeCallback);
         $('body').mouseup(self.filterBoxCloseCallback);
