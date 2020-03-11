@@ -448,27 +448,33 @@ var pluginManager = function pluginManager() {
             //should we create a promise for this dispatch
             if (params && params.params && params.params.promises) {
                 params.params.promises.push(new Promise(function(resolve) {
-                    /**
-                    * Resolved promise handler
-                    * @param {object} err - error if any
-                    * @param {object} data - data passed to be resolved
-                    **/
-                    function resolver(err, data) {
+                    Promise.allSettled(promises).then(function(results) {
+                        results = results.map(function(result) {
+                            if (result.isRejected()) {
+                                console.log(result.reason());
+                            }
+                            else {
+                                return result.value();
+                            }
+                        });
                         resolve();
                         if (callback) {
-                            callback(err, data);
+                            callback(null, results);
                         }
-                    }
-                    Promise.allSettled(promises).then(resolver.bind(null, null)).catch(function(error) {
-                        console.log(error);
-                        resolver(error);
                     });
                 }));
             }
             else if (callback) {
-                Promise.allSettled(promises).then(callback.bind(null, null)).catch(function(error) {
-                    console.log(error);
-                    callback(error);
+                Promise.allSettled(promises).then(function(results) {
+                    results = results.map(function(result) {
+                        if (result.isRejected()) {
+                            console.log(result.reason());
+                        }
+                        else {
+                            return result.value();
+                        }
+                    });
+                    callback(null, results);
                 });
             }
         }
