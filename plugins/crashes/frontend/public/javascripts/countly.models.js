@@ -14,7 +14,49 @@
         _usable_metrics = {
             metrics: {},
             custom: {}
+        },
+        _activeFilter = {
+            "platform": null,
+            "version": null,
+            "fatality": "fatal"
         };
+
+    countlyCrashes.getActiveFilter = function() {
+        return _activeFilter;
+    };
+
+    countlyCrashes.setActiveFilter = function(filter) {
+        _activeFilter = filter;
+    };
+
+    countlyCrashes.resetActiveFilter = function() {
+        _activeFilter = {
+            "platform": null,
+            "version": null,
+            "fatality": "fatal"
+        };
+    };
+
+    countlyCrashes.getVersionName = function(version) {
+        if (!version) {
+            return false;
+        }
+        return version.replace(/:/g, ".");
+    };
+
+    var extendRequestWithFilter = function(requestParams) {
+        if (_activeFilter) {
+            if (_activeFilter.version) {
+                requestParams.app_version = _activeFilter.version;
+            }
+            if (_activeFilter.platform) {
+                requestParams.os = _activeFilter.platform;
+            }
+            if (_activeFilter.fatality) {
+                requestParams.nonfatal = _activeFilter.fatality === 'nonfatal';
+            }
+        }
+    };
 
     countlyCrashes.loadList = function(id) {
         $.ajax({
@@ -58,8 +100,6 @@
             "metrics": jQuery.i18n.map["crashes.group-metrics"],
             "custom": jQuery.i18n.map["crashes.group-custom"]
         };
-
-
 
         _period = countlyCommon.getPeriodForAjax();
         if (id) {
@@ -109,16 +149,20 @@
             });
         }
         else {
+            var requestParams = {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "period": _period,
+                "method": "crashes",
+                "graph": 1,
+                "display_loader": !isRefresh
+            };
+
+            extendRequestWithFilter(requestParams);
+
             return $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "period": _period,
-                    "method": "crashes",
-                    "graph": 1,
-                    "display_loader": !isRefresh
-                },
+                data: requestParams,
                 dataType: "json",
                 success: function(json) {
                     _crashData = json;
@@ -343,6 +387,7 @@
     countlyCrashes.refresh = function(id) {
         _period = countlyCommon.getPeriodForAjax();
         if (id) {
+
             return $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -380,16 +425,20 @@
             });
         }
         else {
+            var requestParams = {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "period": _period,
+                "method": "crashes",
+                "graph": 1,
+                "display_loader": false
+            };
+
+            extendRequestWithFilter(requestParams);
+
             return $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "period": _period,
-                    "method": "crashes",
-                    "graph": 1,
-                    "display_loader": false
-                },
+                data: requestParams,
                 dataType: "json",
                 success: function(json) {
                     _crashData = json;
@@ -423,6 +472,7 @@
             metrics: {},
             custom: {}
         };
+        countlyCrashes.resetActiveFilter();
     };
 
     countlyCrashes.processMetric = function(data, metric, label) {

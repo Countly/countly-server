@@ -45,6 +45,11 @@ window.CrashesView = countlyView.extend({
             crru: jQuery.i18n.map["crashes.resolved-users"]
         };
     },
+    destroy: function() {
+        countlyCrashes.resetActiveFilter();
+        $('body').unbind('mouseup', self.filterBoxCloseCallback);
+        $('body').unbind('keydown', self.filterBoxEscapeCallback);
+    },
     showOnGraph: {"crashes-fatal": true, "crashes-nonfatal": true, "crashes-total": true},
     beforeRender: function() {
         this.selectedCrashes = {};
@@ -410,6 +415,133 @@ window.CrashesView = countlyView.extend({
         $(".action-segmentation").addClass("disabled");
         this.refresh();
     },
+    refreshFilterInfo: function(keepOpen) {
+
+        if (!keepOpen) {
+            $("#crashes-selector-graph").removeClass('active');
+            $(".crashes-selector-form").hide();
+        }
+
+        var selectText = [];
+
+        var activeFilter = countlyCrashes.getActiveFilter();
+
+        selectText.push(jQuery.i18n.map['crashes.' + activeFilter.fatality] || jQuery.i18n.map['crashes.filter.all-fatalities']);
+        selectText.push(activeFilter.platform || jQuery.i18n.map['crashes.filter.all-platforms']);
+        selectText.push(countlyCrashes.getVersionName(activeFilter.version) || jQuery.i18n.map['crashes.filter.all-versions']);
+
+        $("#crashes-selector-graph a").text(selectText.join(", "));
+
+    },
+    loadFilterBoxState: function() {
+        var activeFilter = countlyCrashes.getActiveFilter();
+        var version = activeFilter.version,
+            platform = activeFilter.platform,
+            fatality = activeFilter.fatality;
+
+        if (platform) {
+            $("#crashes_filter_platform").clySelectSetSelection(platform, platform);
+        }
+        else {
+            $("#crashes_filter_platform").clySelectSetSelection(false, jQuery.i18n.map['crashes.filter.all-platforms']);
+        }
+
+        if (version) {
+            $("#crashes_filter_version").clySelectSetSelection(version, countlyCrashes.getVersionName(version));
+        }
+        else {
+            $("#crashes_filter_version").clySelectSetSelection(false, jQuery.i18n.map['crashes.filter.all-versions']);
+        }
+
+        if (fatality) {
+            $("#crashes_filter_fatal_type").clySelectSetSelection(fatality, jQuery.i18n.map['crashes.' + fatality]);
+        }
+        else {
+            $("#crashes_filter_fatal_type").clySelectSetSelection(false, jQuery.i18n.map['crashes.filter.all-fatalities']);
+        }
+    },
+    addScriptsForFilter: function(crashData) {
+        var self = this;
+
+        var versionItems = Object.keys(crashData.crashes.app_version).map(function(version) {
+            return {name: countlyCrashes.getVersionName(version), value: version};
+        });
+        var osItems = Object.keys(crashData.crashes.os).map(function(os) {
+            return {name: os, value: os};
+        });
+        var fatalItems = ["fatal", "nonfatal"].map(function(fatality) {
+            return {name: jQuery.i18n.map["crashes." + fatality], value: fatality};
+        });
+
+        versionItems.unshift({name: jQuery.i18n.map['crashes.filter.all-versions'], value: false});
+        osItems.unshift({name: jQuery.i18n.map['crashes.filter.all-platforms'], value: false});
+
+        $("#crashes_filter_version").clySelectSetItems(versionItems);
+        $("#crashes_filter_platform").clySelectSetItems(osItems);
+        $("#crashes_filter_fatal_type").clySelectSetItems(fatalItems);
+
+        $("#crashes-selector-graph").on("click", function() {
+            if ($(this).hasClass('active')) {
+                $(this).removeClass('active');
+                $("#crashes-filter").hide();
+            }
+            else {
+                self.loadFilterBoxState();
+                $(this).addClass('active');
+                $("#crashes-filter").show();
+            }
+        });
+
+        $(".remove-crashes-filter").on("click", function() {
+            countlyCrashes.resetActiveFilter();
+            self.loadFilterBoxState();
+            self.refreshFilterInfo(true);
+            self.refresh();
+        });
+
+        $(".apply-crashes-filter").on("click", function() {
+            $("#crashes-selector-graph").removeClass('active');
+            $(".crashes-selector-form").hide();
+
+            var version = $("#crashes_filter_version").clySelectGetSelection();
+            var platform = $("#crashes_filter_platform").clySelectGetSelection();
+            var fatality = $("#crashes_filter_fatal_type").clySelectGetSelection();
+
+            countlyCrashes.setActiveFilter({
+                version: version,
+                platform: platform,
+                fatality: fatality
+            });
+            self.refreshFilterInfo(false);
+            self.refresh();
+        });
+
+        self.refreshFilterInfo();
+        self.loadFilterBoxState();
+
+        var onFilterBox = false;
+
+        $(".filter-selector-wrapper").hover(function() {
+            onFilterBox = true;
+        }, function() {
+            onFilterBox = false;
+        });
+
+        self.filterBoxCloseCallback = function() {
+            if (!onFilterBox) {
+                self.refreshFilterInfo(false);
+            }
+        };
+
+        self.filterBoxEscapeCallback = function(e) {
+            if (e.keyCode === 27) {
+                self.refreshFilterInfo(false);
+            }
+        };
+
+        $("body").keydown(self.filterBoxEscapeCallback);
+        $('body').mouseup(self.filterBoxCloseCallback);
+    },
     renderCommon: function(isRefresh) {
         var crashData = countlyCrashes.getData();
         var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric]);
@@ -544,6 +676,7 @@ window.CrashesView = countlyView.extend({
             chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
             $(this.el).html(this.template(this.templateData));
             self.switchMetric();
+            self.addScriptsForFilter(crashData);
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });

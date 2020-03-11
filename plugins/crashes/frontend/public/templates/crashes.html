@@ -1,7 +1,80 @@
 	<div class="widget crashoveral">
 		<div class="widget-header">
 			<div class="left">
-				<div class="title">{{page-title}}</div>
+                <div style="overflow: auto;">
+                    <div class="title small">{{page-title}}</div>
+                </div>
+                <div class='filter-selector-wrapper'>
+                    <div id="crashes-selector-graph" class='crashes-filter-title'>
+                        <a data-localize="crashes.filter.fatal"></a>
+                        <div style="display: table-cell; vertical-align:middle; position: relative; float:left; width:30px;">
+                            <span class="down ion-chevron-down"></span>
+                            <span class="up ion-chevron-up"></span>
+                        </div>
+                    </div>
+                    <div id="crashes-filter" class="crashes-selector-form">
+                        <table>
+                            <tr>
+                                <td data-localize="platforms.table.platform"></td>
+                                <td>
+                                    <div class="cly-select" id="crashes_filter_platform">
+                                        <div class="select-inner">
+                                            <div class="text-container">
+                                                <div class="text"><div class="placeholder" data-localize="crashes.filter.select-platform"></div></div>
+                                            </div>
+                                            <div class="right combo"></div>
+                                        </div>
+                                        <div class="select-items square">
+                                            <div class="platform-list">
+    
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td data-localize="app-versions.table.app-version"></td>
+                                <td>
+                                    <div class="cly-select" id="crashes_filter_version">
+                                        <div class="select-inner">
+                                            <div class="text-container">
+                                                <div class="text"><div class="placeholder" data-localize="crashes.filter.select-version"></div></div>
+                                            </div>
+                                            <div class="right combo"></div>
+                                        </div>
+                                        <div class="select-items square">
+                                            <div class="version-list">
+    
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td data-localize="crashes.fatality"></td>
+                                <td>
+                                    <div class="cly-select" id="crashes_filter_fatal_type">
+                                        <div class="select-inner">
+                                            <div class="text-container">
+                                                <div class="text"><div class="placeholder" data-localize="crashes.filter.select-fatal-type"></div></div>
+                                            </div>
+                                            <div class="right combo"></div>
+                                        </div>
+                                        <div class="select-items square">
+                                            <div class="widget-list">
+    
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                        </table>
+                        <button class="icon-button green apply-crashes-filter" data-localize="common.apply"></button>
+                        <div class="icon-button light remove-crashes-filter" data-localize="crashes.filter.reset-filters">Remove me</div>
+                       
+                    </div>
+                </div>
 			</div>
 			{{> date-selector }}
 		</div>
