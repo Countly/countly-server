@@ -454,7 +454,6 @@
                     if (_crashData.crashes.highest_app === "") {
                         _crashData.crashes.highest_app = "None";
                     }
-
                     countlyCommon.extendDbObj(_crashTimeline, json.data);
                 }
             });
@@ -499,7 +498,7 @@
         return ret;
     };
 
-    countlyCrashes.getChartData = function(metric, name, fields) {
+    countlyCrashes.getChartData = function(metric, name) {
         var chartData = [];
         var dataProps = [];
         var sessionData, Crashes;
@@ -507,34 +506,53 @@
 
         if (metric === "cr-session") {
             //get crashes graph
-            if (fields && fields["crashes-total"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.total_overall"], color: countlyCommon.GRAPH_COLORS[0] });
-                dataProps.push({ name: "cr" });
-            }
 
-            if (fields && fields["crashes-fatal"] === true) {
+            if (_activeFilter.fatality === "fatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: '#DDDDDD', mode: "ghost" });
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcrf",
+                    func: function(dataObj) {
+                        return dataObj.crf;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "crf" });
             }
-
-            if (fields && fields["crashes-nonfatal"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[2] });
+            else if (_activeFilter.fatality === "nonfatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: '#DDDDDD', mode: "ghost" });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcrnf",
+                    func: function(dataObj) {
+                        return dataObj.crnf;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "crnf" });
             }
 
             Crashes = countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
             chartData = [
-                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: countlyCommon.GRAPH_COLORS[3] }
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#DDDDDD', mode: "ghost" },
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: countlyCommon.GRAPH_COLORS[1] }
             ],
             dataProps = [
+                {
+                    name: "pt",
+                    func: function(dataObj) {
+                        return dataObj.t;
+                    },
+                    period: "previous"
+                },
                 { name: "t" }
             ];
 
             sessionData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
             for (z = 0; z < Crashes.chartDP.length; z = z + 1) {
-                for (p = 0; p < sessionData.chartDP[0].data.length; p++) {
-                    if (sessionData.chartDP[0].data[p][1] !== 0) {
-                        Crashes.chartDP[z].data[p][1] = Math.round(Math.min(Crashes.chartDP[z].data[p][1] / sessionData.chartDP[0].data[p][1], 1) * 100) / 100;
+                for (p = 0; p < sessionData.chartDP[z].data.length; p++) {
+                    if (sessionData.chartDP[z].data[p][1] !== 0) {
+                        Crashes.chartDP[z].data[p][1] = Math.round(Math.min(Crashes.chartDP[z].data[p][1] / sessionData.chartDP[z].data[p][1], 1) * 100) / 100;
                     }
                 }
             }
@@ -543,34 +561,52 @@
         }
         else if (metric === "crses") {
             //get crashes graph
-            if (fields && fields["crashes-total"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.total_overall"], color: countlyCommon.GRAPH_COLORS[0] });
-                dataProps.push({ name: "crses" });
-            }
-
-            if (fields && fields["crashes-fatal"] === true) {
+            if (_activeFilter.fatality === "fatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: '#DDDDDD', mode: "ghost" });
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcrfses",
+                    func: function(dataObj) {
+                        return dataObj.crfses;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "crfses" });
             }
-
-            if (fields && fields["crashes-nonfatal"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[2] });
+            else if (_activeFilter.fatality === "nonfatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: '#DDDDDD', mode: "ghost" });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcrnfses",
+                    func: function(dataObj) {
+                        return dataObj.crnfses;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "crnfses" });
             }
 
             Crashes = countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
             chartData = [
-                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#333933' }
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#DDDDDD', mode: "ghost" },
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: countlyCommon.GRAPH_COLORS[1] }
             ],
             dataProps = [
-                { name: "t" },
+                {
+                    name: "pt",
+                    func: function(dataObj) {
+                        return dataObj.t;
+                    },
+                    period: "previous"
+                },
+                { name: "t" }
             ];
 
             sessionData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
             for (z = 0; z < Crashes.chartDP.length; z++) {
-                for (p = 0; p < sessionData.chartDP[0].data.length; p++) {
-                    if (sessionData.chartDP[0].data[p][1] !== 0) {
-                        Crashes.chartDP[z].data[p][1] = Math.round(Math.max(100 - Crashes.chartDP[z].data[p][1] / sessionData.chartDP[0].data[p][1] * 100, 0) * 100) / 100;
+                for (p = 0; p < sessionData.chartDP[z].data.length; p++) {
+                    if (sessionData.chartDP[z].data[p][1] !== 0) {
+                        Crashes.chartDP[z].data[p][1] = Math.round(Math.min(Crashes.chartDP[z].data[p][1] / sessionData.chartDP[z].data[p][1], 1) * 10000) / 100;
                     }
                     else {
                         Crashes.chartDP[z].data[p][1] = 100;
@@ -581,35 +617,53 @@
         }
         else if (metric === "crau") {
             //get crashes graph
-            if (fields && fields["crashes-total"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.total_overall"], color: countlyCommon.GRAPH_COLORS[0] });
-                dataProps.push({ name: "crau" });
-            }
-
-            if (fields && fields["crashes-fatal"] === true) {
+            if (_activeFilter.fatality === "fatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: '#DDDDDD', mode: "ghost" });
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcrauf",
+                    func: function(dataObj) {
+                        return dataObj.crauf;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "crauf" });
             }
-
-            if (fields && fields["crashes-nonfatal"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[2] });
+            else if (_activeFilter.fatality === "nonfatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: '#DDDDDD', mode: "ghost" });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcraunf",
+                    func: function(dataObj) {
+                        return dataObj.craunf;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "craunf" });
             }
 
             Crashes = countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
             chartData = [
-                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#333933' }
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#DDDDDD', mode: "ghost" },
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: countlyCommon.GRAPH_COLORS[1] }
             ],
             dataProps = [
-                { name: "u" }
+                {
+                    name: "pt",
+                    func: function(dataObj) {
+                        return dataObj.t;
+                    },
+                    period: "previous"
+                },
+                { name: "t" }
             ];
 
             sessionData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
 
             for (z = 0; z < Crashes.chartDP.length; z++) {
-                for (p = 0; p < sessionData.chartDP[0].data.length; p++) {
-                    if (sessionData.chartDP[0].data[p][1] !== 0) {
-                        Crashes.chartDP[z].data[p][1] = Math.round(Math.max(100 - Crashes.chartDP[z].data[p][1] / sessionData.chartDP[0].data[p][1] * 100, 0) * 100) / 100;
+                for (p = 0; p < sessionData.chartDP[z].data.length; p++) {
+                    if (sessionData.chartDP[z].data[p][1] !== 0) {
+                        Crashes.chartDP[z].data[p][1] = Math.round(Math.min(Crashes.chartDP[z].data[p][1] / sessionData.chartDP[z].data[p][1], 1) * 10000) / 100;
                     }
                     else {
                         Crashes.chartDP[z].data[p][1] = 100;
@@ -620,18 +674,28 @@
         }
         else if (metric === "cr") {
             //get crashes graph
-            if (fields && fields["crashes-total"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.total_overall"], color: countlyCommon.GRAPH_COLORS[0] });
-                dataProps.push({ name: "cr" });
-            }
-
-            if (fields && fields["crashes-fatal"] === true) {
+            if (_activeFilter.fatality === "fatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: '#DDDDDD', mode: "ghost" });
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcrf",
+                    func: function(dataObj) {
+                        return dataObj.crf;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "crf" });
             }
-
-            if (fields && fields["crashes-nonfatal"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[2] });
+            else if (_activeFilter.fatality === "nonfatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: '#DDDDDD', mode: "ghost" });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcrnf",
+                    func: function(dataObj) {
+                        return dataObj.crnf;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "crnf" });
             }
 
@@ -639,18 +703,28 @@
         }
         else if (metric === "cru") {
             //get crashes graph
-            if (fields && fields["crashes-total"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.total_overall"], color: countlyCommon.GRAPH_COLORS[0] });
-                dataProps.push({ name: "cru" });
-            }
-
-            if (fields && fields["crashes-fatal"] === true) {
+            if (_activeFilter.fatality === "fatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: '#DDDDDD', mode: "ghost" });
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcruf",
+                    func: function(dataObj) {
+                        return dataObj.cruf;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "cruf" });
             }
-
-            if (fields && fields["crashes-nonfatal"] === true) {
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[2] });
+            else if (_activeFilter.fatality === "nonfatal") {
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: '#DDDDDD', mode: "ghost" });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                dataProps.push({
+                    name: "pcrunf",
+                    func: function(dataObj) {
+                        return dataObj.crunf;
+                    },
+                    period: "previous"
+                });
                 dataProps.push({ name: "crunf" });
             }
 
@@ -891,59 +965,70 @@
         var data = countlyCommon.getDashboardData(_crashTimeline, ["cr", "crnf", "crf", "cru", "cruf", "crunf", "crru", "crau", "crauf", "craunf", "crses", "crfses", "crnfses"], ["cru", "crau", "cruf", "crunf", "crauf", "craunf"], null, countlyCrashes.clearObject);
         var sessions = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u: "users"}, countlySession.clearObject);
 
-        data.crt = {total: 0, "trend-total": "u", "prev-total": 0, trend: "u", change: 'NA', "total-fatal": 0, "prev-total-fatal": 0, "trend-fatal": "u", "total-nonfatal": 0, "prev-total-nonfatal": 0, "trend-nonfatal": "u"};
+        data.crtf = {total: 0, "trend-total": "u", "prev-total": 0, trend: "u", change: 'NA', "total-fatal": 0, "prev-total-fatal": 0, "trend-fatal": "u", "total-nonfatal": 0, "prev-total-nonfatal": 0, "trend-nonfatal": "u"};
+        data.crtnf = {total: 0, "trend-total": "u", "prev-total": 0, trend: "u", change: 'NA', "total-fatal": 0, "prev-total-fatal": 0, "trend-fatal": "u", "total-nonfatal": 0, "prev-total-nonfatal": 0, "trend-nonfatal": "u"};
 
 
         if (sessions.t.total !== 0) {
-            data.crt.total = Math.min(data.cr.total / sessions.t.total, 1);
-            data.crt["total-fatal"] = Math.min(data.crf.total / sessions.t.total, 1);
-            data.crt["total-nonfatal"] = Math.min(data.crnf.total / sessions.t.total, 1);
+            data.crtf.total = Math.min(data.crf.total / sessions.t.total, 1);
+            data.crtnf.total = Math.min(data.crnf.total / sessions.t.total, 1);
         }
         if (sessions.t["prev-total"] !== 0) {
-            data.crt["prev-total"] = Math.min(data.cr["prev-total"] / sessions.t["prev-total"], 1);
-            data.crt["prev-total-fatal"] = Math.min(data.crf["prev-total"] / sessions.t["prev-total"], 1);
-            data.crt["prev-total-nonfatal"] = Math.min(data.crnf["prev-total"] / sessions.t["prev-total"], 1);
+            data.crtf["prev-total"] = Math.min(data.crf["prev-total"] / sessions.t["prev-total"], 1);
+            data.crtnf["prev-total"] = Math.min(data.crnf["prev-total"] / sessions.t["prev-total"], 1);
         }
 
-        data.crt["trend-fatal"] = "u";
-        data.crt["trend-nonfatal"] = "u";
-        data.crt["trend-total"] = "u";
+        data.crtf["trend-total"] = "u";
+        data.crtnf["trend-total"] = "u";
 
-        if (data.crt["total-fatal"] < data.crt["prev-total-fatal"]) {
-            data.crt["trend-fatal"] = "d";
+        if (data.crtf.total < data.crtf["prev-total"]) {
+            data.crtf["trend-total"] = "d";
         }
-        if (data.crt["total-fatal"] < data.crt["prev-total-fatal"]) {
-            data.crt["trend-nonfatal"] = "d";
-        }
-        if (data.crt.total < data.crt["prev-total"]) {
-            data.crt["trend-total"] = "d";
+        if (data.crtnf.total < data.crtnf["prev-total"]) {
+            data.crtnf["trend-total"] = "d";
         }
 
-        if (data.crt.total !== 0 && data.crt["prev-total"] !== 0) {
-            data.crt.change = Math.round(Math.max(100 - data.crt["prev-total"] * 100 / data.crt.total, 0) * 100) / 100;
-            if (data.crt.change < 0) {
-                data.crt.trend = "d";
+        if (data.crtf.total !== 0 && data.crtf["prev-total"] !== 0) {
+            data.crtf.change = Math.round(Math.max(100 - data.crtf["prev-total"] * 100 / data.crtf.total, 0) * 100) / 100;
+            if (data.crtf.change < 0) {
+                data.crtf.trend = "d";
             }
-            data.crt.change = data.crt.change + "%";
+            data.crtf.change = data.crtf.change + "%";
         }
         else {
-            if (data.crt.total !== 0) {
-                data.crt.change = "∞";
+            if (data.crtf.total !== 0) {
+                data.crtf.change = "∞";
             }
-            else if (data.crt["prev-total"] !== 0) {
-                data.crt.trend = "d";
-                data.crt.change = "-∞";
+            else if (data.crtf["prev-total"] !== 0) {
+                data.crtf.trend = "d";
+                data.crtf.change = "-∞";
             }
         }
-        data.crt.total = parseFloat(data.crt.total.toFixed(3));
-        data.crt["total-fatal"] = parseFloat(data.crt["total-fatal"].toFixed(2));
-        data.crt["total-nonfatal"] = parseFloat(data.crt["total-nonfatal"].toFixed(2));
+
+        if (data.crtnf.total !== 0 && data.crtnf["prev-total"] !== 0) {
+            data.crtnf.change = Math.round(Math.max(100 - data.crtnf["prev-total"] * 100 / data.crtnf.total, 0) * 100) / 100;
+            if (data.crtnf.change < 0) {
+                data.crtnf.trend = "d";
+            }
+            data.crtnf.change = data.crtnf.change + "%";
+        }
+        else {
+            if (data.crtnf.total !== 0) {
+                data.crtnf.change = "∞";
+            }
+            else if (data.crtnf["prev-total"] !== 0) {
+                data.crtnf.trend = "d";
+                data.crtnf.change = "-∞";
+            }
+        }
+        data.crtf.total = parseFloat(data.crtf.total.toFixed(2));
+        data.crtnf.total = parseFloat(data.crtnf.total.toFixed(2));
 
         //calculare crash free users and sessions
-        generateDashboardMetric(data, sessions, "crau", "u");
+        //generateDashboardMetric(data, sessions, "crau", "u");
         generateDashboardMetric(data, sessions, "crauf", "u");
         generateDashboardMetric(data, sessions, "craunf", "u");
-        generateDashboardMetric(data, sessions, "crses", "t");
+        //generateDashboardMetric(data, sessions, "crses", "t");
         generateDashboardMetric(data, sessions, "crfses", "t");
         generateDashboardMetric(data, sessions, "crnfses", "t");
 
@@ -1007,8 +1092,8 @@
      *  @param {string} ses - session metric name
      */
     function generateDashboardMetric(data, sessions, crash, ses) {
-        data[crash].total = sessions[ses].total ? Math.round(Math.max(100 - data[crash].total / sessions[ses].total * 100, 0) * 100) / 100 : 100;
-        data[crash]["prev-total"] = sessions[ses]["prev-total"] ? (100 - Math.round((data[crash]["prev-total"] / sessions[ses]["prev-total"]) * 10000) / 100) : 100;
+        data[crash].total = sessions[ses].total ? Math.round(Math.min(data[crash].total / sessions[ses].total, 1) * 10000) / 100 : 100;
+        data[crash]["prev-total"] = sessions[ses]["prev-total"] ? Math.round(Math.min(data[crash]["prev-total"] / sessions[ses]["prev-total"], 1) * 10000) / 100 : 100;
 
         data[crash].trend = "u";
         if (data[crash].total < data[crash]["prev-total"]) {
@@ -1016,7 +1101,7 @@
         }
 
         if (data[crash].total !== 0 && data[crash]["prev-total"] !== 0) {
-            data[crash].change = Math.round(Math.max(100 - data[crash]["prev-total"] * 100 / data[crash].total, 0) * 100) / 100;
+            data[crash].change = (((data[crash].total - data[crash]["prev-total"]) / data[crash]["prev-total"]) * 100).toFixed(1);
             if (data[crash].change < 0) {
                 data[crash].trend = "d";
             }

@@ -101,7 +101,7 @@ plugins.setConfigs("crashes", {
                         if (crash && crash.is_resolved && crash.resolved_version) {
                             if (common.versionCompare(latest_version, crash.resolved_version.replace(/\./g, ":")) > 0) {
                                 //record resolved user timeline
-                                common.recordCustomMetric(params, "crashdata", params.app_id, ["crru"]);
+                                //common.recordCustomMetric(params, "crashdata", params.app_id, ["crru"]);
 
                                 //update crash stats
                                 common.db.collection('app_crashusers' + params.app_id).remove({"group": hash, uid: uid}, function() {});
@@ -112,7 +112,11 @@ plugins.setConfigs("crashes", {
                                 if (!crash.nonfatal) {
                                     mod.fatal = -1;
                                 }
-                                common.db.collection('app_crashusers' + params.app_id).findAndModify({"group": 0, uid: uid}, {}, {$inc: mod}, {upsert: true, new: true}, function() {
+                                common.db.collection('app_crashusers' + params.app_id).findAndModify({"group": 0, uid: uid}, {}, {$inc: mod}, {upsert: true, new: true}, function(crashUserErr, res) {
+                                    res = res && res.ok ? res.value : null;
+                                    if (res && res.crashes <= 0) {
+                                        common.db.collection('app_crashusers' + params.app_id).remove({"group": 0, uid: uid}, function() {});
+                                    }
                                     done(null, true);
                                 });
                             }
@@ -183,27 +187,51 @@ plugins.setConfigs("crashes", {
 
     //post process session
     plugins.register("/session/post", function(ob) {
-        return new Promise(function(resolve) {
-            var params = ob.params;
-            var dbAppUser = ob.dbAppUser;
-            if (dbAppUser.hadCrash) {
-                //record crashed session
-                var metrics = ["crses"];
-                if (dbAppUser.hadFatalCrash) {
-                    metrics.push("crfses");
-                }
+        var params = ob.params;
+        var dbAppUser = ob.dbAppUser;
 
-                if (dbAppUser.hadNonfatalCrash) {
-                    metrics.push("crnfses");
-                }
-                common.recordCustomMetric(params, "crashdata", params.app_id, metrics);
-                common.updateAppUser(params, {$set: {hadCrash: false, hadFatalCrash: false, hadNonfatalCrash: false}});
-                resolve();
+        //check if it is not user's first session
+        if (dbAppUser.ls) {
+            //record crash free session
+            var metrics = [];
+            var update = {};
+            if (!dbAppUser.hadFatalCrash) {
+                metrics.push("crfses");
+                metrics.push("crauf");
+                update.hadAnyFatalCrash = params.time.timestamp;
             }
             else {
-                resolve();
+                update.hadFatalCrash = false;
             }
-        });
+
+            if (metrics.length) {
+                common.recordCustomMetric(params, "crashdata", params.app_id, metrics, 1, null, ["crauf"], dbAppUser.hadAnyFatalCrash);
+                common.recordCustomMetric(params, "crashdata", dbAppUser.p + "**" + dbAppUser.av + "**" + params.app_id, metrics, 1, null, ["crauf"], dbAppUser.hadAnyFatalCrash);
+                common.recordCustomMetric(params, "crashdata", dbAppUser.p + "**any**" + params.app_id, metrics, 1, null, ["crauf"], dbAppUser.hadAnyFatalCrash);
+                common.recordCustomMetric(params, "crashdata", "any**" + dbAppUser.av + "**" + params.app_id, metrics, 1, null, ["crauf"], dbAppUser.hadAnyFatalCrash);
+            }
+
+            var userMetrics = [];
+            if (!dbAppUser.hadNonfatalCrash) {
+                userMetrics.push("craunf");
+                userMetrics.push("crnfses");
+                update.hadAnyNonfatalCrash = params.time.timestamp;
+            }
+            else {
+                update.hadNonfatalCrash = false;
+            }
+
+            if (userMetrics.length) {
+                common.recordCustomMetric(params, "crashdata", params.app_id, userMetrics, 1, null, ["craunf"], dbAppUser.hadAnyNonfatalCrash);
+                common.recordCustomMetric(params, "crashdata", dbAppUser.p + "**" + dbAppUser.av + "**" + params.app_id, userMetrics, 1, null, ["craunf"], dbAppUser.hadAnyNonfatalCrash);
+                common.recordCustomMetric(params, "crashdata", dbAppUser.p + "**any**" + params.app_id, userMetrics, 1, null, ["craunf"], dbAppUser.hadAnyNonfatalCrash);
+                common.recordCustomMetric(params, "crashdata", "any**" + dbAppUser.av + "**" + params.app_id, userMetrics, 1, null, ["craunf"], dbAppUser.hadAnyNonfatalCrash);
+            }
+
+            if (Object.keys(update).length) {
+                common.updateAppUser(params, {$set: update});
+            }
+        }
     });
 
     //write api call
@@ -333,17 +361,17 @@ plugins.setConfigs("crashes", {
                                 report.uid = dbAppUser.uid;
                                 report.ts = params.time.timestamp;
                                 var updateUser = {};
-                                if (!dbAppUser.hadCrash) {
-                                    updateUser.hadCrash = "true";
-                                }
-
-                                if (!dbAppUser.hadCrash) {
-                                    if (!report.nonfatal) {
+                                if (!report.nonfatal) {
+                                    if (!dbAppUser.hadFatalCrash) {
                                         updateUser.hadFatalCrash = "true";
                                     }
-                                    else {
+                                    updateUser.hadAnyFatalCrash = report.ts;
+                                }
+                                else if (report.nonfatal) {
+                                    if (!dbAppUser.hadNonfatalCrash) {
                                         updateUser.hadNonfatalCrash = "true";
                                     }
+                                    updateUser.hadAnyNonfatalCrash = report.ts;
                                 }
 
                                 if (Object.keys(updateUser).length) {
@@ -555,7 +583,7 @@ plugins.setConfigs("crashes", {
                                                     crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
                                                     var isNew = (!crashGroup || crashGroup.reports === 1) ? true : false;
 
-                                                    var metrics = ["cr", "cru"];
+                                                    var metrics = [];
 
                                                     if (report.nonfatal) {
                                                         metrics.push("crnf");
@@ -567,6 +595,9 @@ plugins.setConfigs("crashes", {
                                                     }
 
                                                     common.recordCustomMetric(params, "crashdata", params.app_id, metrics, 1, null, ["cru", "crunf", "cruf"], lastTs);
+                                                    common.recordCustomMetric(params, "crashdata", report.os + "**" + report.app_version.replace(/\./g, ":") + "**" + params.app_id, metrics, 1, null, ["cru", "crunf", "cruf"], lastTs);
+                                                    common.recordCustomMetric(params, "crashdata", report.os + "**any**" + params.app_id, metrics, 1, null, ["cru", "crunf", "cruf"], lastTs);
+                                                    common.recordCustomMetric(params, "crashdata", "any**" + report.app_version.replace(/\./g, ":") + "**" + params.app_id, metrics, 1, null, ["cru", "crunf", "cruf"], lastTs);
 
                                                     var group = {};
                                                     if (!isNew) {
@@ -589,17 +620,6 @@ plugins.setConfigs("crashes", {
                                                     groupInc.reports = 1;
                                                     if (!userAll || !userAll.crashes) {
                                                         groupInc.users = 1;
-                                                    }
-
-                                                    if (!userAll || typeof userAll.crashes !== "undefined") {
-                                                        var metricsUser = ["crau"];
-                                                        if (!report.nonfatal) {
-                                                            metricsUser.push("crauf");
-                                                        }
-                                                        else {
-                                                            metricsUser.push("craunf");
-                                                        }
-                                                        common.recordCustomMetric(params, "crashdata", params.app_id, metricsUser, 1, null, metricsUser, userAll && userAll.lastTs);
                                                     }
 
                                                     if (!report.nonfatal && (!userAll || !userAll.fatal)) {
@@ -637,7 +657,7 @@ plugins.setConfigs("crashes", {
                                                 if (group) {
                                                     lastTs = group.lastTs;
                                                 }
-                                                var update = {$set: {group: 0, 'uid': report.uid, lastTs: params.time.timestamp}};
+                                                var update = {$set: {group: 0, 'uid': report.uid}};
                                                 if (!user || !user.reports) {
                                                     var inc = {crashes: 1};
                                                     if (!report.nonfatal) {
@@ -786,7 +806,17 @@ plugins.setConfigs("crashes", {
                                     }
                                 }
                             }
-                            fetch.getTimeObj("crashdata", params, {unique: ["cru", "crau", "crauf", "craunf", "cruf", "crunf"]/*, levels:{daily:["cr","crnf","cru","crf", "crru"], monthly:["cr","crnf","cru","crf", "crru"]}*/}, function(data) {
+                            var options = {unique: ["cru", "crau", "crauf", "craunf", "cruf", "crunf"]/*, levels:{daily:["cr","crnf","cru","crf", "crru"], monthly:["cr","crnf","cru","crf", "crru"]}*/};
+
+                            if (params.qstring.os || params.qstring.app_version) {
+                                var props = [];
+                                props.push(params.qstring.os || "any");
+                                props.push(params.qstring.app_version || "any");
+                                props.push(params.app_id);
+                                options.id = props.join("**");
+
+                            }
+                            fetch.getTimeObj("crashdata", params, options, function(data) {
                                 result.data = data;
                                 common.returnOutput(params, result);
                             });

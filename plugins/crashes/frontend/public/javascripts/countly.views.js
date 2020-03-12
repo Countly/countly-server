@@ -283,8 +283,6 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-
-
         $('.crashes tbody ').on("click", "tr", function() {
             var id = $(this).attr("id");
             if (id) {
@@ -546,41 +544,42 @@ window.CrashesView = countlyView.extend({
         var crashData = countlyCrashes.getData();
         var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric]);
         var dashboard = countlyCrashes.getDashboardData();
+        var filterSelector = countlyCrashes.getActiveFilter();
         this.templateData = {
             "page-title": jQuery.i18n.map["crashes.title"],
             "no-data": jQuery.i18n.map["common.bar.no-data"],
             "usage": [
                 {
                     "title": jQuery.i18n.map["crashes.total"],
-                    "data": dashboard.usage.cr,
+                    "data": (filterSelector.fatality === "fatal") ? dashboard.usage.crf : dashboard.usage.crnf,
                     "id": "crash-cr",
                     "inverse": "inverse-trend",
                     "help": "crashes.help-total"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.unique"],
-                    "data": dashboard.usage.cru,
+                    "data": (filterSelector.fatality === "fatal") ? dashboard.usage.cruf : dashboard.usage.crunf,
                     "id": "crash-cru",
                     "inverse": "inverse-trend",
                     "help": "crashes.help-unique"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.free-users"],
-                    "data": dashboard.usage.crau,
+                    "data": (filterSelector.fatality === "fatal") ? dashboard.usage.crauf : dashboard.usage.craunf,
                     "id": "crash-crau",
                     "inverse": "",
                     "help": "crashes.help-free-users"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.free-sessions"],
-                    "data": dashboard.usage.crses,
+                    "data": (filterSelector.fatality === "fatal") ? dashboard.usage.crfses : dashboard.usage.crnfses,
                     "id": "crash-crses",
                     "inverse": "",
                     "help": "crashes.help-free-sessions"
                 },
                 {//toal crashes pes session
                     "title": jQuery.i18n.map["crashes.total-per-session"],
-                    "data": dashboard.usage.crt,
+                    "data": (filterSelector.fatality === "fatal") ? dashboard.usage.crtf : dashboard.usage.crtnf,
                     "id": "crash-cr-session",
                     "inverse": "inverse-trend",
                     "help": "crashes.help-session"
