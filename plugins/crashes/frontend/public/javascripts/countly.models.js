@@ -384,6 +384,41 @@
         });
     };
 
+    countlyCrashes.reload = function() {
+        var requestParams = {
+            "app_id": countlyCommon.ACTIVE_APP_ID,
+            "period": _period,
+            "method": "crashes",
+            "graph": 1,
+            "display_loader": false
+        };
+
+        extendRequestWithFilter(requestParams);
+
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: requestParams,
+            dataType: "json",
+            success: function(json) {
+                _crashData = json;
+                _crashTimeline = json.data;
+                if (_crashData.crashes.latest_version === "") {
+                    _crashData.crashes.latest_version = "None";
+                }
+                if (_crashData.crashes.error === "") {
+                    _crashData.crashes.error = "None";
+                }
+                if (_crashData.crashes.os === "") {
+                    _crashData.crashes.os = "None";
+                }
+                if (_crashData.crashes.highest_app === "") {
+                    _crashData.crashes.highest_app = "None";
+                }
+            }
+        });
+    };
+
     countlyCrashes.refresh = function(id) {
         _period = countlyCommon.getPeriodForAjax();
         if (id) {
@@ -429,6 +464,7 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "period": _period,
                 "method": "crashes",
+                "action": "refresh",
                 "graph": 1,
                 "display_loader": false
             };

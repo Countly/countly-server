@@ -504,6 +504,7 @@ window.CrashesView = countlyView.extend({
             var version = $("#crashes_filter_version").clySelectGetSelection();
             var platform = $("#crashes_filter_platform").clySelectGetSelection();
             var fatality = $("#crashes_filter_fatal_type").clySelectGetSelection();
+            var oldFilter = countlyCrashes.getActiveFilter();
 
             countlyCrashes.setActiveFilter({
                 version: version,
@@ -511,7 +512,12 @@ window.CrashesView = countlyView.extend({
                 fatality: fatality
             });
             self.refreshFilterInfo(false);
-            self.refresh();
+            if (oldFilter.version !== version || oldFilter.platform !== platform) {
+                self.redraw(true);
+            }
+            else {
+                self.redraw();
+            }
         });
 
         self.refreshFilterInfo();
@@ -591,7 +597,7 @@ window.CrashesView = countlyView.extend({
                     "help":"crashes.help-resolved-users"
                 }*/
             ],
-            "chart-select": [
+            /*"chart-select": [
                 {
                     title: jQuery.i18n.map["crashes.total_overall"],
                     trend: dashboard.usage.cr['trend-total'],
@@ -610,7 +616,7 @@ window.CrashesView = countlyView.extend({
                     total: dashboard.usage.crnf.total,
                     myclass: "crashes-nonfatal"
                 },
-            ],
+            ],*/
             "big-numbers": {
                 "items": [
                     {
@@ -847,6 +853,29 @@ window.CrashesView = countlyView.extend({
         }
 
     },
+    redraw: function(needsRequest) {
+        var self = this;
+        if (needsRequest) {
+            $.when(countlyCrashes.reload()).then(function() {
+                self.renderCommon(true);
+                var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
+                countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+                var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                $(".crashoveral .dashboard").replaceWith(newPage.find(".dashboard"));
+                $("#crash-" + self.curMetric).parents(".big-numbers").addClass("active");
+                self.pageScripts();
+            });
+        }
+        else {
+            self.renderCommon(true);
+            var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
+            countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(".crashoveral .dashboard").replaceWith(newPage.find(".dashboard"));
+            $("#crash-" + self.curMetric).parents(".big-numbers").addClass("active");
+            self.pageScripts();
+        }
+    },
     refresh: function() {
         var self = this;
         if (this.loaded) {
@@ -865,24 +894,6 @@ window.CrashesView = countlyView.extend({
                 $("#data-selector").replaceWith(newPage.find("#data-selector"));
 
                 $("#crash-" + self.curMetric).parents(".big-numbers").addClass("active");
-                $(".widget-content .inner").click(function() {
-                    $(".big-numbers").removeClass("active");
-                    $(".big-numbers .select").removeClass("selected");
-                    $(this).parent(".big-numbers").addClass("active");
-                    $(this).find('.select').addClass("selected");
-                });
-                $(".big-numbers .inner").click(function() {
-                    var elID = $(this).find('.select').attr("id");
-
-                    if (elID) {
-                        if (self.curMetric === elID.replace("crash-", "")) {
-                            return true;
-                        }
-
-                        self.curMetric = elID.replace("crash-", "");
-                        self.switchMetric();
-                    }
-                });
 
                 self.dtable.fnDraw(false);
 
@@ -957,69 +968,22 @@ window.CrashesView = countlyView.extend({
     },
     pageScripts: function() {
         var self = this;
+        $(".big-numbers .inner").off("click").on("click", function() {
+            var elID = $(this).find('.select').attr("id");
 
-        var dashboard = countlyCrashes.getDashboardData();
-        var total, fatal, nfatal;
-        $("#data-selector").show();
-        if (this.curMetric === "cr-session") {
-            total = $("#data-selector .big-numbers:nth-child(1)");
-            total.find(".number").text(dashboard.usage.crt.total);
-            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crt['trend-total']).html(dashboard.usage.crt['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            fatal = $("#data-selector .big-numbers:nth-child(2)");
-            fatal.find(".number").text(dashboard.usage.crt['total-fatal']);
-            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crt['trend-fatal']).html(dashboard.usage.crt['trend-fatal'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            nfatal = $("#data-selector .big-numbers:nth-child(3)");
-            nfatal.find(".number").text(dashboard.usage.crt['total-nonfatal']);
-            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crt['trend-nonfatal']).html(dashboard.usage.crt['trend-nonfatal'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-        }
-        else if (this.curMetric === "crses") {
-            total = $("#data-selector .big-numbers:nth-child(1)");
-            total.find(".number").text(dashboard.usage.crses.total);
-            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crses['trend-total']).html(dashboard.usage.crses['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            fatal = $("#data-selector .big-numbers:nth-child(2)");
-            fatal.find(".number").text(dashboard.usage.crfses.total);
-            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crfses['trend-total']).html(dashboard.usage.crfses['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            nfatal = $("#data-selector .big-numbers:nth-child(3)");
-            nfatal.find(".number").text(dashboard.usage.crnfses.total);
-            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crnfses['trend-total']).html(dashboard.usage.crnfses['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-        }
-        else if (this.curMetric === "crau") {
-            total = $("#data-selector .big-numbers:nth-child(1)");
-            total.find(".number").text(dashboard.usage.crau.total);
-            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crau['trend-total']).html(dashboard.usage.crau['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            fatal = $("#data-selector .big-numbers:nth-child(2)");
-            fatal.find(".number").text(dashboard.usage.crauf.total);
-            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crauf['trend-total']).html(dashboard.usage.crauf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            nfatal = $("#data-selector .big-numbers:nth-child(3)");
-            nfatal.find(".number").text(dashboard.usage.craunf.total);
-            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.craunf['trend-total']).html(dashboard.usage.craunf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-        }
-        else if (this.curMetric === "cr") {
-            total = $("#data-selector .big-numbers:nth-child(1)");
-            total.find(".number").text(dashboard.usage.cr.total);
-            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.cr['trend-total']).html(dashboard.usage.cr['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            fatal = $("#data-selector .big-numbers:nth-child(2)");
-            fatal.find(".number").text(dashboard.usage.crf.total);
-            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crf['trend-total']).html(dashboard.usage.crf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            nfatal = $("#data-selector .big-numbers:nth-child(3)");
-            nfatal.find(".number").text(dashboard.usage.crnf.total);
-            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crnf['trend-total']).html(dashboard.usage.crnf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-        }
-        else if (this.curMetric === "cru") {
-            total = $("#data-selector .big-numbers:nth-child(1)");
-            total.find(".number").text(dashboard.usage.cru.total);
-            total.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.cru['trend-total']).html(dashboard.usage.cru['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            fatal = $("#data-selector .big-numbers:nth-child(2)");
-            fatal.find(".number").text(dashboard.usage.cruf.total);
-            fatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.cruf['trend-total']).html(dashboard.usage.cruf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-            nfatal = $("#data-selector .big-numbers:nth-child(3)");
-            nfatal.find(".number").text(dashboard.usage.crunf.total);
-            nfatal.find(".trend").removeClass("d").removeClass("u").addClass(dashboard.usage.crunf['trend-total']).html(dashboard.usage.crunf['trend-total'] === "u" ? "<i class='material-icons'>trending_up</i>" : "<i class='material-icons'>trending_down</i>");
-        }
-        else {
-            $("#data-selector").hide();
-        }
+            if (elID) {
+                if (self.curMetric === elID.replace("crash-", "")) {
+                    return true;
+                }
 
+                self.curMetric = elID.replace("crash-", "");
+                self.switchMetric();
+            }
+            $(".big-numbers").removeClass("active");
+            $(".big-numbers .select").removeClass("selected");
+            $(this).parent(".big-numbers").addClass("active");
+            $(this).find('.select').addClass("selected");
+        });
         $(".crashes-show-switch").unbind("click");
         $(".crashes-show-switch").removeClass("selected");
         for (var i in this.showOnGraph) {
