@@ -1664,7 +1664,6 @@
     CountlyHelpers.addColumnSelector = function(dtable, config, tableName) {
         config = config || {};
         config.disabled = config.disabled || {};
-        config.visible;
 
         var haveConfigVisible = false;
         if (!config.visible) {
