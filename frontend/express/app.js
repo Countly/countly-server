@@ -727,7 +727,7 @@ app.get(countlyConfig.path + '/session', function(req, res, next) {
                     if (req.session.uid) {
                         if (Date.now() > req.session.expires) {
                         //logout user
-
+                            res.send("logout");
                         }
                         else {
                         //extend session
