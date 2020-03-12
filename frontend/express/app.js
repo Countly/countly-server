@@ -713,21 +713,39 @@ app.get(countlyConfig.path + '/configs', function(req, res) {
 });
 
 app.get(countlyConfig.path + '/session', function(req, res, next) {
-    if (req.session.uid) {
-        if (Date.now() > req.session.expires) {
-            //logout user
-            res.send("logout");
-        }
-        else {
-            //extend session
-            if (req.query.check_session) {
-                res.send("success");
+    if (req.session.auth_token) {
+        authorize.verify_return({
+            db: countlyDb,
+            token: req.session.auth_token,
+            req_path: "",
+            callback: function(valid) {
+                if (!valid) {
+                //logout user
+                    res.send("logout");
+                }
+                else {
+                    if (req.session.uid) {
+                        if (Date.now() > req.session.expires) {
+                        //logout user
+                            res.send("logout");
+                        }
+                        else {
+                        //extend session
+                            if (req.query.check_session) {
+                                res.send("success");
+                            }
+                            else {
+                                extendSession(req, res, next);
+                                res.send("success");
+                            }
+                        }
+                    }
+                    else {
+                        res.send("login");
+                    }
+                }
             }
-            else {
-                extendSession(req, res, next);
-                res.send("success");
-            }
-        }
+        });
     }
     else {
         res.send("login");
