@@ -118,7 +118,7 @@ window.ViewsView = countlyView.extend({
                     sType: "string",
                     "sTitle": jQuery.i18n.map["views.table.view"],
                     "sClass": "break",
-                    "columnSelectorIndex":"view"
+                    "columnSelectorIndex": "view"
                 },
                 {
                     "mData": function(row) {
@@ -134,7 +134,7 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["common.table.total-users"],
-                    "columnSelectorIndex":"uvalue"
+                    "columnSelectorIndex": "uvalue"
                 },
                 {
                     "mData": "n",
@@ -143,7 +143,7 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["common.table.new-users"],
-                    "columnSelectorIndex":"new-users"
+                    "columnSelectorIndex": "new-users"
                 },
                 {
                     "mData": "t",
@@ -152,7 +152,7 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d);
                     },
                     "sTitle": jQuery.i18n.map["views.total-visits"],
-                    "columnSelectorIndex":"total-visits"
+                    "columnSelectorIndex": "total-visits"
                 },
                 {
                     "mData": function(row, type) {
@@ -167,7 +167,7 @@ window.ViewsView = countlyView.extend({
                     },
                     sType: "numeric",
                     "sTitle": jQuery.i18n.map["views.avg-duration"],
-                    "columnSelectorIndex":"avg-duration"
+                    "columnSelectorIndex": "avg-duration"
                 },
                 {
                     "mData": "s",
@@ -176,7 +176,7 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["views.starts"],
-                    "columnSelectorIndex":"starts"
+                    "columnSelectorIndex": "starts"
                 },
                 {
                     "mData": "e",
@@ -185,7 +185,7 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["views.exits"],
-                    "columnSelectorIndex":"exits"
+                    "columnSelectorIndex": "exits"
                 },
                 {
                     "mData": "b",
@@ -194,7 +194,7 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["views.bounces"],
-                    "columnSelectorIndex":"bounces"
+                    "columnSelectorIndex": "bounces"
                 }
             ];
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type !== "mobile") {
@@ -216,7 +216,7 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d) + "%";
                     },
                     "sTitle": jQuery.i18n.map["views.scrolling-avg"],
-                    "columnSelectorIndex":"scrolling-avg"
+                    "columnSelectorIndex": "scrolling-avg"
                 });
             }
             self.haveActionColumn = false;
@@ -249,7 +249,7 @@ window.ViewsView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["views.action-map"],
                         "sClass": "shrink center",
                         bSortable: false,
-                        "columnSelectorIndex":"action-map"
+                        "columnSelectorIndex": "action-map"
                     });
                 }
             }
@@ -302,7 +302,7 @@ window.ViewsView = countlyView.extend({
                 },
                 "fnInitComplete": function(oSettings, json) {
                     $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
-                    CountlyHelpers.addColumnSelector(this, { "disabled": {"view": true,"action-map":true}}, "viewsTable");
+                    CountlyHelpers.addColumnSelector(this, { "disabled": {"view": true, "action-map": true}}, "viewsTable");
                 },
                 "fnServerParams": function(aoData) {
                     aoData.push({"name": "period", "value": countlyCommon.getPeriodForAjax()});

@@ -1677,7 +1677,7 @@
         var settings = store.get(tableName + "VisibleDataTableColumns");
         var settingsOld = store.get(tableName + "HiddenDataTableColumns") ;
         var saveSettings = false;
-        var tableCols = dtable.fnSettings().aoColumns;
+        var tableCols = dtable.fnSettings().aoColumns || [];
         var maxCol = config.maxCol || tableCols.length;
         var colIndex = 0;
 
@@ -1692,7 +1692,7 @@
             }
             for (var z in settingsOld) {
                 var i = parseInt(z, 10);
-                if (tableCols && tableCols[i] && tableCols[i].columnSelectorIndex) {
+                if (tableCols[i] && tableCols[i].columnSelectorIndex) {
                     dd[tableCols[i].columnSelectorIndex] = false;
                 }
             }
