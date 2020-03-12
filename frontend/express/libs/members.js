@@ -505,6 +505,8 @@ membersUtility.logout = function(req, res) {
         if (req.session.auth_token) {
             membersUtility.db.collection("auth_tokens").remove({_id: req.session.auth_token});
             req.session.auth_token = null;
+            //louout also other users logged in with same credentials
+            killOtherSessionsForUser(req.session.uid, null, null, membersUtility.db);
         }
         membersUtility.clearReqAndRes(req, res);
     }
