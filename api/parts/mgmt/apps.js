@@ -158,7 +158,7 @@ appsApi.getAppsDetails = function(params) {
 *  @return {object} return promise object;
 **/
 const iconUpload = function(params) {
-    const appId = params.app_id || params.qstring.args.app_id;
+    const appId = params.app_id || common.sanitizeFilename(params.qstring.args.app_id);
     if (params.files && params.files.app_image) {
         const tmp_path = params.files.app_image.path,
             target_path = __dirname + '/../../../frontend/express/public/appimages/' + appId + ".png",
