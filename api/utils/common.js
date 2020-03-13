@@ -2297,7 +2297,8 @@ common.sanitizeFilename = (filename, replacement = "") => {
     return filename
         .replace(/[\x00-\x1f\x80-\x9f]+/g, replacement)
         .replace(/[\/\?<>\\:\*\|"]/g, replacement)
-        .replace(/^\.{1,2}$/, replacement);
+        .replace(/^\.{1,2}$/, replacement)
+        .replace(/^\.+/, replacement);
 };
 
 module.exports = common
