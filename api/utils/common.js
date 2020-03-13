@@ -2285,9 +2285,9 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
 
 /**
  * Sanitizes a filename to prevent directory traversals and such.
- * @param {string} filename -
- * @param {string} replacement -
- * @returns {string} sanitizedFilename -
+ * @param {string} filename - filename to sanitize
+ * @param {string} replacement - string to replace characters to be removed
+ * @returns {string} sanitizedFilename - sanitized filename
  */
 common.sanitizeFilename = (filename, replacement = "") => {
     if (typeof filename !== "string") {
@@ -2301,4 +2301,4 @@ common.sanitizeFilename = (filename, replacement = "") => {
         .replace(/^\.+/, replacement);
 };
 
-module.exports = common
+module.exports = common;
