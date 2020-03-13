@@ -2283,4 +2283,22 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
     }
 };
 
+/**
+ * Sanitizes a filename to prevent directory traversals and such.
+ * @param {string} filename - filename to sanitize
+ * @param {string} replacement - string to replace characters to be removed
+ * @returns {string} sanitizedFilename - sanitized filename
+ */
+common.sanitizeFilename = (filename, replacement = "") => {
+    if (typeof filename !== "string") {
+        return "";
+    }
+
+    return filename
+        .replace(/[\x00-\x1f\x80-\x9f]+/g, replacement)
+        .replace(/[\/\?<>\\:\*\|"]/g, replacement)
+        .replace(/^\.{1,2}$/, replacement)
+        .replace(/^\.+/, replacement);
+};
+
 module.exports = common;
