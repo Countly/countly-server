@@ -1270,6 +1270,8 @@ app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
         return true;
     }
 
+    req.body.app_image_id = common.sanitizeFilename(req.body.app_image_id);
+
     var tmp_path = req.files.app_image.path,
         target_path = __dirname + '/public/appimages/' + req.body.app_image_id + ".png",
         type = req.files.app_image.type;
@@ -1303,6 +1305,8 @@ app.post(countlyConfig.path + '/member/icon', function(req, res, next) {
         res.end();
         return true;
     }
+
+    req.body.member_image_id = common.sanitizeFilename(req.body.member_image_id);
 
     var tmp_path = req.files.member_image.path,
         target_path = __dirname + '/public/memberimages/' + req.body.member_image_id + ".png",

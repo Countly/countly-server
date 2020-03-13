@@ -163,6 +163,7 @@ const iconUpload = function(params) {
         const tmp_path = params.files.app_image.path,
             target_path = __dirname + '/../../../frontend/express/public/appimages/' + appId + ".png",
             type = params.files.app_image.type;
+
         if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
             fs.unlink(tmp_path, function() {});
             log.d("Invalid file type");
