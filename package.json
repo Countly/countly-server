@@ -32,7 +32,7 @@
     "bluebird": "3.7.2",
     "body-parser": "1.19.0",
     "bunyan": "1.8.12",
-    "colors": "^1.2.4",
+    "colors": "^1.4.0",
     "connect-flash": "0.1.1",
     "connect-mongoskin": "github:ar2rsawseen/connect-mongoskin",
     "cookie-parser": "1.4.4",
