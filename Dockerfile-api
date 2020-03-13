@@ -1,52 +1,58 @@
-FROM node:8.16-jessie
+FROM node:10.19-jessie
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
 # Enterprise Edition:
 #ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing
 
+EXPOSE 3001
+HEALTHCHECK --start-period=60s CMD curl --fail http://localhost:3001/o/ping || exit 1
+
 USER root
 
 # Core dependencies
 ## Tini
-ENV TINI_VERSION v0.18.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-RUN chmod +x /tini
+ENV COUNTLY_CONTAINER="api" \
+	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
+	COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
+	TINI_VERSION="0.18.0"
 
-ENTRYPOINT ["/tini", "-v", "--"]
-
-RUN apt-get update && apt-get -y install sendmail sqlite3
-
-# Required by push plugin
-RUN git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 && \
-	cd /tmp/nghttp2 && \
-	git checkout tags/v1.30.0 && \
-	export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install
-
-# Setup Countly
-ENV COUNTLY_CONTAINER="api"
-ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
-ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0"
-
-## The files
-RUN mkdir /opt/countly && chown 1001:0 /opt/countly
-USER 1001:0
 WORKDIR /opt/countly
-COPY --chown=1001:0 . .
-HEALTHCHECK --start-period=60s CMD curl --fail http://localhost:3001/o/ping || exit 1
+COPY . .
 
-## API runtime dependencies
-RUN cp -n api/config.sample.js api/config.js && \
-	cp -n frontend/express/config.sample.js frontend/express/config.js && \
+RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
+	dpkg -i /tmp/tini.deb && \
+	git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 --single-branch --branch=v1.30.0 --depth=1 && \
+	(cd /tmp/nghttp2; \
+	 export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install) && \
+	\
+	# modify standard distribution
+	apt-get update && apt-get install -y sqlite3 && \
+	./bin/docker/modify.sh && \
+	\
+	# preinstall
+	cp -n ./api/config.sample.js ./api/config.js && \
+	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
 	HOME=/tmp npm install && \
-	./bin/docker/preinstall.sh
-
-USER root
-
-RUN ./bin/docker/modify.sh && \
-	chown -R 1001:0 /opt/countly && \
+	./bin/docker/preinstall.sh && \
+	bash /opt/countly/bin/scripts/detect.init.sh && \
+	\
+	# cleanup & chown
+	npm remove -y mocha nyc should supertest && \
 	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
 	apt-get autoremove -y && \
-	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+	apt-get -y install gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+	rm -rf /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
+	\
+	# temporary to remove npm bug message
+	mkdir /.npm && chown -R 1001:0 /.npm && \
+	\
+	chown -R 1001:0 /opt/countly && \
+	chmod -R g=u /opt/countly
+
 
 USER 1001:0
+
+ENTRYPOINT ["/usr/bin/tini", "-v", "--"]
+
 CMD ["/opt/countly/bin/docker/cmd.sh"]

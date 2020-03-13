@@ -74,10 +74,7 @@ if [[ "$GLIBC_VERSION" != "2.25" ]]; then
 fi
 
 #install mongodb
-if [ "$INSIDE_DOCKER_NOMONGO" != "1" ]
-then
-    bash "$DIR/scripts/mongodb.install.sh"
-fi
+bash "$DIR/scripts/mongodb.install.sh"
 
 bash "$DIR/scripts/detect.init.sh"
 
