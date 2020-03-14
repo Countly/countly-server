@@ -398,6 +398,7 @@ function wrapCallback(params, callback, callbackParam, func) {
 
 /**
 * Get events collections with replaced app names
+* A helper function for db access check
 * @param {object} app - application object
 * @param {function} cb - callback method
 **/
@@ -422,6 +423,7 @@ function getEvents(app, cb) {
 
 /**
 * Get views collections with replaced app names
+* A helper function for db access check
 * @param {object} app - application object
 * @param {function} cb - callback method
 **/
@@ -439,6 +441,7 @@ function getViews(app, cb) {
 }
 /**
 * Get events data
+* A helper function for db access check
 * @param {object} params - {@link params} object
 * @param {array} apps - array with each element being app document
 * @param {function} callback - callback method
@@ -540,7 +543,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
     }
     else {
         for (let i = 0; i < apps.length; i++) {
-            if (collection.indexOf(apps[i], collection.length - apps[i].length) !== -1) {
+            if (apps[i].length > 0 && collection.indexOf(apps[i], collection.length - apps[i].length) !== -1) {
                 return callback(true);
             }
         }
