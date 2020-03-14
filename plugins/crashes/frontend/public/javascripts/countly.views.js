@@ -569,6 +569,13 @@ window.CrashesView = countlyView.extend({
                     "inverse": "inverse-trend",
                     "help": "crashes.help-unique"
                 },
+                {//toal crashes pes session
+                    "title": jQuery.i18n.map["crashes.total-per-session"],
+                    "data": (filterSelector.fatality === "fatal") ? dashboard.usage.crtf : dashboard.usage.crtnf,
+                    "id": "crash-cr-session",
+                    "inverse": "inverse-trend",
+                    "help": "crashes.help-session"
+                },
                 {
                     "title": jQuery.i18n.map["crashes.free-users"],
                     "data": (filterSelector.fatality === "fatal") ? dashboard.usage.crauf : dashboard.usage.craunf,
@@ -582,14 +589,8 @@ window.CrashesView = countlyView.extend({
                     "id": "crash-crses",
                     "inverse": "",
                     "help": "crashes.help-free-sessions"
-                },
-                {//toal crashes pes session
-                    "title": jQuery.i18n.map["crashes.total-per-session"],
-                    "data": (filterSelector.fatality === "fatal") ? dashboard.usage.crtf : dashboard.usage.crtnf,
-                    "id": "crash-cr-session",
-                    "inverse": "inverse-trend",
-                    "help": "crashes.help-session"
-                }/*,
+                }
+                /*,
                 {
                     "title":jQuery.i18n.map["crashes.resolved-users"],
                     "data":dashboard.usage['crru'],

@@ -599,7 +599,7 @@
             //get crashes graph
             if (_activeFilter.fatality === "fatal") {
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: '#DDDDDD', mode: "ghost" });
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[0] });
                 dataProps.push({
                     name: "pcrfses",
                     func: function(dataObj) {
@@ -611,7 +611,7 @@
             }
             else if (_activeFilter.fatality === "nonfatal") {
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: '#DDDDDD', mode: "ghost" });
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[0] });
                 dataProps.push({
                     name: "pcrnfses",
                     func: function(dataObj) {
@@ -655,7 +655,7 @@
             //get crashes graph
             if (_activeFilter.fatality === "fatal") {
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: '#DDDDDD', mode: "ghost" });
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: countlyCommon.GRAPH_COLORS[0] });
                 dataProps.push({
                     name: "pcrauf",
                     func: function(dataObj) {
@@ -667,7 +667,7 @@
             }
             else if (_activeFilter.fatality === "nonfatal") {
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: '#DDDDDD', mode: "ghost" });
-                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[1] });
+                chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: countlyCommon.GRAPH_COLORS[0] });
                 dataProps.push({
                     name: "pcraunf",
                     func: function(dataObj) {
