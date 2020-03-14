@@ -47,11 +47,11 @@ const OVERRIDES = {
 /**
  * Digs one level down in config document
  * 
- * @param  {[type]} config [description]
- * @param  {[type]} over   [description]
- * @param  {[type]} name   [description]
- * @param  {[type]} value  [description]
- * @return {[type]}        [description]
+ * @param  {object} config - config to traverse
+ * @param  {object} over   - override object
+ * @param  {string} name   - name of config to override
+ * @param  {varies} value  - value to set to config
+ * @return {object} recursive config modification
  */
 function dig(config, over, name, value) {
     let comps = name.split('_');

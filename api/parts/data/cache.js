@@ -14,11 +14,11 @@ const CENTRAL = 'cache', OP = {INIT: 'i', PURGE: 'p', READ: 'r', WRITE: 'w', UPD
 // job removal from cache: {o: 0, k: 'ObjectId', g: 'jobs'}
 
 /**
- * asd
- * @param  {[type]} obj   [description]
- * @param  {[type]} is    [description]
- * @param  {[type]} value [description]
- * @return {[type]}       [description]
+ * Get value in nested object
+ * @param  {object} obj         - object to checl
+ * @param  {string|array} is    - keys for nested value
+ * @param  {any} value          - if provided acts as setter setting this value in nested object
+ * @return {varies} returns value in provided key in nested object
  */
 const dot = function(obj, is, value) {
     if (typeof is === 'string') {
