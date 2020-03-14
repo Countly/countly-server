@@ -105,6 +105,26 @@ tracker.enable = function() {
     }
 };
 
+/**
+* Enable tracking for dashboard process
+**/
+tracker.enableDashboard = function() {
+    Countly.init({
+        app_key: server,
+        url: url,
+        app_version: versionInfo.version,
+        storage_path: "../../../.sdk/",
+        interval: 60000,
+        fail_timeout: 600,
+        session_update: 120,
+        debug: (logger.getLevel("tracker:server") === "debug")
+    });
+    isEnabled = true;
+    if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
+        Countly.track_errors();
+    }
+};
+
 
 /**
 * Report server level event
