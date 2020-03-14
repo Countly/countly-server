@@ -97,46 +97,48 @@ var common = require('../../../api/utils/common.js'),
             }
 
             if (dbs[dbNameOnParam]) {
-                var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, project);
-                if (Object.keys(sort).length > 0) {
-                    cursor.sort(sort);
-                }
-                cursor.count(function(err, total) {
-                    var stream = cursor.skip(skip).limit(limit).stream({
-                        transform: function(doc) {
-                            return JSON.stringify(objectIdCheck(doc));
+                dbs[dbNameOnParam].onOpened(function() {
+                    var cursor = dbs[dbNameOnParam]._native.collection(params.qstring.collection).find(filter, project);
+                    if (Object.keys(sort).length > 0) {
+                        cursor.sort(sort);
+                    }
+                    cursor.count(function(err, total) {
+                        var stream = cursor.skip(skip).limit(limit).stream({
+                            transform: function(doc) {
+                                return JSON.stringify(objectIdCheck(doc));
+                            }
+                        });
+                        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
+                        var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
+                        var parts;
+                        for (let i = 0; i < add_headers.length; i++) {
+                            if (add_headers[i] && add_headers[i].length) {
+                                parts = add_headers[i].split(/:(.+)?/);
+                                if (parts.length === 3) {
+                                    headers[parts[0]] = parts[1];
+                                }
+                            }
+                        }
+                        if (params.res.writeHead) {
+                            params.res.writeHead(200, headers);
+                            params.res.write('{"limit":' + limit + ', "start":' + (skip + 1) + ', "end":' + Math.min(skip + limit, total) + ', "total":' + total + ', "pages":' + Math.ceil(total / limit) + ', "curPage":' + Math.ceil((skip + 1) / limit) + ', "collections":[');
+                            var first = false;
+                            stream.on('data', function(doc) {
+                                if (!first) {
+                                    first = true;
+                                    params.res.write(doc);
+                                }
+                                else {
+                                    params.res.write("," + doc);
+                                }
+                            });
+
+                            stream.once('end', function() {
+                                params.res.write("]}");
+                                params.res.end();
+                            });
                         }
                     });
-                    var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
-                    var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
-                    var parts;
-                    for (let i = 0; i < add_headers.length; i++) {
-                        if (add_headers[i] && add_headers[i].length) {
-                            parts = add_headers[i].split(/:(.+)?/);
-                            if (parts.length === 3) {
-                                headers[parts[0]] = parts[1];
-                            }
-                        }
-                    }
-                    if (params.res.writeHead) {
-                        params.res.writeHead(200, headers);
-                        params.res.write('{"limit":' + limit + ', "start":' + (skip + 1) + ', "end":' + Math.min(skip + limit, total) + ', "total":' + total + ', "pages":' + Math.ceil(total / limit) + ', "curPage":' + Math.ceil((skip + 1) / limit) + ', "collections":[');
-                        var first = false;
-                        stream.on('data', function(doc) {
-                            if (!first) {
-                                first = true;
-                                params.res.write(doc);
-                            }
-                            else {
-                                params.res.write("," + doc);
-                            }
-                        });
-
-                        stream.once('end', function() {
-                            params.res.write("]}");
-                            params.res.end();
-                        });
-                    }
                 });
             }
         }
