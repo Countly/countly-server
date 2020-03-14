@@ -179,20 +179,25 @@ function collectServerData() {
     if (common.db.build && common.db.build.version) {
         Countly.userData.set("db_version", common.db.build.version);
     }
-    getDomain(function(err, domain) {
-        if (!err) {
-            Countly.userData.set("domain", domain);
-            Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
+    common.db.command({ serverStatus: 1 }, function(errCmd, res) {
+        if (res && res.storageEngine && res.storageEngine.name) {
+            Countly.userData.set("db_engine", res.storageEngine.name);
         }
-        getDistro(function(err2, distro) {
-            if (!err2) {
-                Countly.userData.set("distro", distro);
+        getDomain(function(err, domain) {
+            if (!err) {
+                Countly.userData.set("domain", domain);
+                Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
             }
-            getHosting(function(err3, hosting) {
-                if (!err3) {
-                    Countly.userData.set("hosting", hosting);
+            getDistro(function(err2, distro) {
+                if (!err2) {
+                    Countly.userData.set("distro", distro);
                 }
-                Countly.userData.save();
+                getHosting(function(err3, hosting) {
+                    if (!err3) {
+                        Countly.userData.set("hosting", hosting);
+                    }
+                    Countly.userData.save();
+                });
             });
         });
     });
