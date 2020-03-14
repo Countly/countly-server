@@ -1555,7 +1555,7 @@ const processRequest = (params) => {
                                 });
                             }
                             else {
-                                common.returnMessage(params, 401,  'User does not have access right for this collection');
+                                common.returnMessage(params, 401, 'User does not have access right for this collection');
                             }
                         });
                     }, params);
