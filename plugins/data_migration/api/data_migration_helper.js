@@ -192,7 +192,13 @@ module.exports = function(my_db) {
                     }
                     else {
                         if (res) {
-                            plugins.dispatch("/systemlogs", {params: {req: JSON.parse(res.myreq)}, user: {_id: res.userid, email: res.email}, action: "export_" + status, data: {app_ids: res.apps, status: status, message: reason}});
+                            try {
+                                res.myreq = JSON.parse(res.myreq);
+                            }
+                            catch (SyntaxError) {
+                                res.myreq = "";
+                            }
+                            plugins.dispatch("/systemlogs", {params: {req: res.myreq}, user: {_id: res.userid, email: res.email}, action: "export_" + status, data: {app_ids: res.apps, status: status, message: reason}});
                         }
                     }
                 });
@@ -617,6 +623,11 @@ module.exports = function(my_db) {
                     countlyFs.getStream("appimages", imagepath, {id: data.appid + ".png"}, function(err1, stream) {
                         if (!err1 && stream) {
                             var wstream = fs.createWriteStream(data.image_folder + '/' + data.appid + '.png');
+
+                            wstream.on('error', function(errw) {
+                                log.e("Couldn't copy file: " + errw);
+                            });
+
                             stream.pipe(wstream);
                             stream.on('end', () => {
                                 resolve("Icon copied: " + data.appid + '.png');
