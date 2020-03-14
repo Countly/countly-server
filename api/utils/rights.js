@@ -4,7 +4,10 @@
 */
 var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
-    Promise = require("bluebird");
+    Promise = require("bluebird"),
+    async = require('async'),
+    crypto = require('crypto');
+
 var authorize = require('./authorizer.js'); //for token validations
 
 //check token and return owner id if token valid
@@ -392,3 +395,160 @@ function wrapCallback(params, callback, callbackParam, func) {
     }
     return promise;
 }
+
+/**
+* Get events data
+* A helper function for db access check
+* @param {object} params - {@link params} object
+* @param {array} apps - array with each element being app document
+* @param {function} callback - callback method
+**/
+function dbLoadEventsData(params, apps, callback) {
+
+    /**
+    * Get events collections with replaced app names
+    * A helper function for db access check
+    * @param {object} app - application object
+    * @param {function} cb - callback method
+    **/
+    function getEvents(app, cb) {
+        var result = {};
+        common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, events) {
+            if (!err && events && events.list) {
+                for (let i = 0; i < events.list.length; i++) {
+                    result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
+                }
+            }
+            result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_session)";
+            result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_crash)";
+            result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_view)";
+            result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_action)";
+            result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_action)";
+            result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_open)";
+            result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_sent)";
+            cb(null, result);
+        });
+    }
+
+    /**
+    * Get views collections with replaced app names
+    * A helper function for db access check
+    * @param {object} app - application object
+    * @param {function} cb - callback method
+    **/
+    function getViews(app, cb) {
+        var result = {};
+        common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
+            if (!err && viewDoc && viewDoc.segments) {
+                for (var segkey in viewDoc.segments) {
+                    result["app_viewdata" + crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
+                }
+            }
+            result["app_viewdata" + crypto.createHash('sha1').update("" + app._id).digest('hex')] = "(" + app.name + ": no-segment)";
+            cb(null, result);
+        });
+    }
+
+    if (params.member.eventList) {
+        callback(null, params.member.eventList, params.member.viewList);
+    }
+    else {
+        async.map(apps, getEvents, function(err, events) {
+            var eventList = {};
+            for (let i = 0; i < events.length; i++) {
+                for (var j in events[i]) {
+                    eventList[j] = events[i][j];
+                }
+            }
+            params.member.eventList = eventList;
+            async.map(apps, getViews, function(err1, views) {
+                var viewList = {};
+                for (let i = 0; i < views.length; i++) {
+                    for (let z in views[i]) {
+                        viewList[z] = views[i][z];
+                    }
+                }
+                params.member.viewList = viewList;
+                callback(err, eventList, viewList);
+            });
+        });
+    }
+}
+exports.dbLoadEventsData = dbLoadEventsData;
+
+/**
+* Check user has access to collection
+* @param {object} params - {@link params} object
+* @param {string} collection - collection will be checked for access
+* @param {function} callback - callback method includes boolean variable as argument  
+* @returns {function} returns callback
+**/
+exports.dbUserHasAccessToCollection = function(params, collection, callback) {
+    if (params.member.global_admin && !params.qstring.app_id) {
+        //global admin without app_id restriction just has access to everything
+        return callback(true);
+    }
+
+    var apps = [];
+    if (params.qstring.app_id) {
+        //if app_id was provided, we need to check if user has access for this app_id
+        // is user_of array contain current app_id?
+        var isUserOf = params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1;
+        var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
+        if (params.member.global_admin || isUserOf && !isRestricted) {
+            apps = [params.qstring.app_id];
+        }
+    }
+    else {
+        //use whatever user has permission for
+        apps = params.member.user_of || [];
+        // also check for app based restrictions
+        if (params.member.app_restrict) {
+            for (var app_id in params.member.app_restrict) {
+                if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
+                    apps.splice(apps.indexOf(app_id), 1);
+                }
+            }
+        }
+    }
+    var appList = [];
+    if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
+        for (let i = 0; i < apps.length; i++) {
+            if (apps[i].length) {
+                appList.push({_id: apps[i]});
+            }
+        }
+        dbLoadEventsData(params, appList, function(err, eventList/*, viewList*/) {
+            for (let i in eventList) {
+                if (collection.indexOf(i, collection.length - i.length) !== -1) {
+                    return callback(true);
+                }
+            }
+            return callback(false);
+        });
+    }
+    else if (collection.indexOf("app_viewdata") === 0) {
+        for (let i = 0; i < apps.length; i++) {
+            if (apps[i].length) {
+                appList.push({_id: apps[i]});
+            }
+        }
+
+        dbLoadEventsData(params, appList, function(err, eventList, viewList) {
+            for (let i in viewList) {
+                if (collection.indexOf(i, collection.length - i.length) !== -1) {
+                    return callback(true);
+                }
+            }
+            return callback(false);
+        });
+    }
+    else {
+        for (let i = 0; i < apps.length; i++) {
+            if (apps[i].length > 0 && collection.indexOf(apps[i], collection.length - apps[i].length) !== -1) {
+                return callback(true);
+            }
+        }
+        return callback(false);
+    }
+};

@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin} = require('./rights.js');
+const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection} = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -1538,17 +1538,25 @@ const processRequest = (params) => {
                                 params.qstring.sort = null;
                             }
                         }
-                        countlyApi.data.exports.fromDatabase({
-                            db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
-                            params: params,
-                            collection: params.qstring.collection,
-                            query: params.qstring.query,
-                            projection: params.qstring.projection,
-                            sort: params.qstring.sort,
-                            limit: params.qstring.limit,
-                            skip: params.qstring.skip,
-                            type: params.qstring.type,
-                            filename: params.qstring.filename
+
+                        dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
+                            if (hasAccess) {
+                                countlyApi.data.exports.fromDatabase({
+                                    db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
+                                    params: params,
+                                    collection: params.qstring.collection,
+                                    query: params.qstring.query,
+                                    projection: params.qstring.projection,
+                                    sort: params.qstring.sort,
+                                    limit: params.qstring.limit,
+                                    skip: params.qstring.skip,
+                                    type: params.qstring.type,
+                                    filename: params.qstring.filename
+                                });
+                            }
+                            else {
+                                common.returnMessage(params, 401, 'User does not have access right for this collection');
+                            }
                         });
                     }, params);
                     break;
