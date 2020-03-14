@@ -1354,7 +1354,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                     }
                 ], { allowDiskUse: true }, function(error, appUsersDbResult) {
 
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
+                    if (appUsersDbResult && plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
 
                         var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
 

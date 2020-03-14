@@ -872,6 +872,7 @@ plugins.setConfigs("crashes", {
                                         for (let i = 0; i < groups.length; i++) {
                                             groups[i].name = (groups[i].name + "").split("\n")[0].trim();
                                             res.forEach((eachCrash)=>{
+                                                groups[i].groups = groups[i].groups || [];
                                                 if (groups[i].groups.indexOf(eachCrash.group) !== -1) {
                                                     eachCrash.group = groups[i].name;
                                                 }

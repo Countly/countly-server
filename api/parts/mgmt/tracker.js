@@ -174,7 +174,9 @@ function collectServerStats() { // eslint-disable-line no-unused-vars
 **/
 function collectServerData() {
     var cpus = os.cpus();
-    Countly.userData.set("cores", cpus.length);
+    if (cpus && cpus.length) {
+        Countly.userData.set("cores", cpus.length);
+    }
     Countly.userData.set("nodejs_version", process.version);
     if (common.db.build && common.db.build.version) {
         Countly.userData.set("db_version", common.db.build.version);
