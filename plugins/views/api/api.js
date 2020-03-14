@@ -1067,7 +1067,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     plugins.register("/o/actions", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        if (common.drillDb && params.qstring.view) {
+        if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
                 common.db.collection('apps').findOne({'key': params.qstring.app_key}, function(err1, app) {
                     if (!app) {
@@ -1173,20 +1173,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (user.lv) {
                         var segmentation = {name: user.lv.replace(/^\$/, "").replace(/\./g, "&#46;"), exit: 1};
                         common.db.collection('app_viewsmeta' + params.app_id).findAndModify({'view': segmentation.name}, {}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
-                            common.db.collection('app_userviews' + params.app_id).findOne({'_id': user.uid}, function(err2, view2) {
-                                var LastTime = 0;
-                                if (view2 && view2[view.value._id]) {
-                                    LastTime = view2[view.value._id].ts;
-                                }
-                                if (ob.end_session || LastTime && params.time.timestamp - LastTime < 60) {
-                                    if (parseInt(user.vc) === 1) {
-                                        segmentation.bounce = 1;
+                            if (err) {
+                                log.e(err);
+                            }
+                            if (view && view.value) {
+                                common.db.collection('app_userviews' + params.app_id).findOne({'_id': user.uid}, function(err2, view2) {
+                                    var LastTime = 0;
+                                    if (view2 && view2[view.value._id]) {
+                                        LastTime = view2[view.value._id].ts;
                                     }
-                                    params.viewsNamingMap = params.viewsNamingMap || {};
-                                    params.viewsNamingMap[segmentation.name] = view.value._id;
-                                    recordMetrics(params, {"viewAlias": view.value._id, key: "[CLY]_view", segmentation: segmentation}, user);
-                                }
-                            });
+                                    if (ob.end_session || LastTime && params.time.timestamp - LastTime < 60) {
+                                        if (parseInt(user.vc) === 1) {
+                                            segmentation.bounce = 1;
+                                        }
+                                        params.viewsNamingMap = params.viewsNamingMap || {};
+                                        params.viewsNamingMap[segmentation.name] = view.value._id;
+                                        recordMetrics(params, {"viewAlias": view.value._id, key: "[CLY]_view", segmentation: segmentation}, user);
+                                    }
+                                });
+                            }
                         });
                     }
                     common.updateAppUser(params, {$set: {vc: 0}});
