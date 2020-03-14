@@ -11,7 +11,7 @@ var pluginOb = {},
             common.db.collection("apps").update({_id: params.app._id}, {$set: {sdk_version: params.qstring.sdk_version}});
         }
 
-        var agent = parser(params.req.headers['user-agent'], (params.qstring.metrics) ? params.qstring.metrics._ua : undefined);
+        var agent = parser((params.qstring.metrics && params.qstring.metrics._ua) ? params.qstring.metrics._ua : params.req.headers['user-agent']);
         var data = { os: agent.os.name, os_version: agent.os.version };
 
         if (data.os === "Mac OS") {
