@@ -397,49 +397,6 @@ function wrapCallback(params, callback, callbackParam, func) {
 }
 
 /**
-* Get events collections with replaced app names
-* A helper function for db access check
-* @param {object} app - application object
-* @param {function} cb - callback method
-**/
-function getEvents(app, cb) {
-    var result = {};
-    common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, events) {
-        if (!err && events && events.list) {
-            for (let i = 0; i < events.list.length; i++) {
-                result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
-            }
-        }
-        result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_session)";
-        result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_crash)";
-        result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_view)";
-        result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_action)";
-        result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_action)";
-        result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_open)";
-        result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_sent)";
-        cb(null, result);
-    });
-}
-
-/**
-* Get views collections with replaced app names
-* A helper function for db access check
-* @param {object} app - application object
-* @param {function} cb - callback method
-**/
-function getViews(app, cb) {
-    var result = {};
-    common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
-        if (!err && viewDoc && viewDoc.segments) {
-            for (var segkey in viewDoc.segments) {
-                result["app_viewdata" + crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
-            }
-        }
-        result["app_viewdata" + crypto.createHash('sha1').update("" + app._id).digest('hex')] = "(" + app.name + ": no-segment)";
-        cb(null, result);
-    });
-}
-/**
 * Get events data
 * A helper function for db access check
 * @param {object} params - {@link params} object
@@ -447,6 +404,51 @@ function getViews(app, cb) {
 * @param {function} callback - callback method
 **/
 function dbLoadEventsData(params, apps, callback) {
+
+    /**
+    * Get events collections with replaced app names
+    * A helper function for db access check
+    * @param {object} app - application object
+    * @param {function} cb - callback method
+    **/
+    function getEvents(app, cb) {
+        var result = {};
+        common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, events) {
+            if (!err && events && events.list) {
+                for (let i = 0; i < events.list.length; i++) {
+                    result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
+                }
+            }
+            result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_session)";
+            result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_crash)";
+            result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_view)";
+            result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_action)";
+            result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_action)";
+            result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_open)";
+            result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_sent)";
+            cb(null, result);
+        });
+    }
+
+    /**
+    * Get views collections with replaced app names
+    * A helper function for db access check
+    * @param {object} app - application object
+    * @param {function} cb - callback method
+    **/
+    function getViews(app, cb) {
+        var result = {};
+        common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
+            if (!err && viewDoc && viewDoc.segments) {
+                for (var segkey in viewDoc.segments) {
+                    result["app_viewdata" + crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
+                }
+            }
+            result["app_viewdata" + crypto.createHash('sha1').update("" + app._id).digest('hex')] = "(" + app.name + ": no-segment)";
+            cb(null, result);
+        });
+    }
+
     if (params.member.eventList) {
         callback(null, params.member.eventList, params.member.viewList);
     }
@@ -516,7 +518,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
                 appList.push({_id: apps[i]});
             }
         }
-        dbLoadEventsData(appList, function(err, eventList/*, viewList*/) {
+        dbLoadEventsData(params, appList, function(err, eventList/*, viewList*/) {
             for (let i in eventList) {
                 if (collection.indexOf(i, collection.length - i.length) !== -1) {
                     return callback(true);
@@ -532,7 +534,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
             }
         }
 
-        dbLoadEventsData(appList, function(err, eventList, viewList) {
+        dbLoadEventsData(params, appList, function(err, eventList, viewList) {
             for (let i in viewList) {
                 if (collection.indexOf(i, collection.length - i.length) !== -1) {
                     return callback(true);
