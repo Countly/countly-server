@@ -1,40 +1,47 @@
-/**
-* This module is meant for handling bruteforce prevention
-* @module frontend/express/libs/preventBruteforce
-*/
+const preventBruteforce = {};
 
-/** @lends frontend/express/libs/preventBruteforce */
-var prevent = {};
+// database connection
+preventBruteforce.db = null;
 
-//countly database connection
-prevent.db = null;
-//mail service
-prevent.mail = null;
-//allowed fails
-prevent.fails = 3;
-//first wait time after reaching fail amount
-prevent.wait = 5 * 60;
-//paths to prevent
-prevent.paths = [];
+// mail service
+preventBruteforce.mail = null;
 
-prevent.defaultPrevent = function(req, res, next) {
-    if (req.method.toLowerCase() === 'post' && prevent.paths.indexOf(req.path) !== -1) {
-        var username = req.body.username;
-        if (username) {
-            prevent.isBlocked(username, function(isBlocked, fails, err) {
+// block after N fails
+preventBruteforce.fails = 3;
+
+// wait for N seconds until removing the block
+preventBruteforce.wait = 5 * 60;
+
+// map paths to names that can span multiple paths
+preventBruteforce.pathIdentifiers = {};
+
+// map paths to functions that extract identifiers from requests i.e. (req) => {ip: req.ip}
+preventBruteforce.userIdentifiers = {};
+
+// map path identifiers to functions that are executed when users are blocked e.g. send a mail
+preventBruteforce.blockHooks = {};
+
+preventBruteforce.middleware = function(req, res, next) {
+    const path = req.path;
+
+    if (req.method.toLowerCase() === "post" && path in preventBruteforce.pathIdentifiers) {
+        const uid = path in preventBruteforce.userIdentifiers ? preventBruteforce.userIdentifiers[path](req) : req.ip,
+              pid = preventBruteforce.pathIdentifiers[path];
+
+        if (pid) {
+            preventBruteforce.isBlocked(pid, uid, function(isBlocked, fails, err) {
                 req.session.fails = fails;
+
                 if (isBlocked) {
                     if (err) {
-                        res.status(500).send('Server Error');
+                        res.status(500).send("Server Error");
                     }
                     else {
-                        //blocking user
-                        prevent.db.collection("members").findOne({ username: username}, function(err2, member) {
-                            if (member) {
-                                prevent.mail.sendTimeBanWarning(member, prevent.db);
-                            }
-                        });
-                        res.redirect(req.path + '?message=login.blocked');
+                        if (path in preventBruteforce.blockHooks) {
+                            preventBruteforce.blockHooks[pid](uid, req, res);
+                        }
+
+                        res.redirect(path + "?message=login.blocked");
                     }
                 }
                 else {
@@ -51,14 +58,14 @@ prevent.defaultPrevent = function(req, res, next) {
     }
 };
 
-prevent.isBlocked = function(id, callback) {
-    prevent.db.collection("failed_logins").findOne({_id: id}, function(err, result) {
+preventBruteforce.isBlocked = function(pid, uid, callback) {
+    preventBruteforce.db.collection("failed_logins").findOne({_id: JSON.stringify([pid, uid])}, function(err, result) {
         result = result || {fails: 0};
+
         if (err) {
             callback(true, result.fails, err);
         }
-        else if (result.fails > 0 && result.fails % prevent.fails === 0 && getTimestamp() < (((result.fails / prevent.fails) * prevent.wait) + result.lastFail)) {
-            //blocking user
+        else if (result.fails > 0 && (result.fails % preventBruteforce.fails) === 0 && getTimestamp() < (((result.fails / preventBruteforce.fails) * preventBruteforce.wait) + result.lastFail)) {
             callback(true, result.fails);
         }
         else {
@@ -67,14 +74,16 @@ prevent.isBlocked = function(id, callback) {
     });
 };
 
-prevent.reset = function(id, callback) {
+preventBruteforce.reset = function(pid, uid, callback) {
     callback = callback || function() {};
-    prevent.db.collection("failed_logins").remove({_id: id}, callback);
+
+    preventBruteforce.db.collection("failed_logins").remove({_id: JSON.stringify([pid, uid])}, callback);
 };
 
-prevent.fail = function(id, callback) {
+preventBruteforce.fail = function(pid, uid, callback) {
     callback = callback || function() {};
-    prevent.db.collection("failed_logins").update({_id: id}, {$inc: {fails: 1}, $set: {lastFail: getTimestamp()}}, {upsert: true}, callback);
+
+    preventBruteforce.db.collection("failed_logins").update({_id: JSON.stringify([pid, uid])}, {$inc: {fails: 1}, $set: {lastFail: getTimestamp()}}, {upsert: true}, callback);
 };
 
 /**
@@ -85,4 +94,4 @@ function getTimestamp() {
     return Math.floor(new Date().getTime() / 1000);
 }
 
-module.exports = prevent;
+module.exports = preventBruteforce;
