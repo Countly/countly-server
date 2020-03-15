@@ -37,7 +37,7 @@ var versionInfo = require('./version.info'),
     // countlyStats = require('../../api/parts/data/stats.js'),
     countlyFs = require('../../api/utils/countlyFs.js'),
     common = require('../../api/utils/common.js'),
-    bruteforce = require('./libs/preventBruteforce.js'),
+    rateLimiter = require('./libs/rateLimiter.js'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
@@ -588,8 +588,8 @@ app.use(function(req, res, next) {
         var securityConf = plugins.getConfig("security");
         app.dashboard_headers = securityConf.dashboard_additional_headers;
         add_headers(req, res);
-        bruteforce.fails = Number.isInteger(securityConf.login_tries) ? securityConf.login_tries : 3;
-        bruteforce.wait = securityConf.login_wait || 5 * 60;
+        rateLimiter.fails = Number.isInteger(securityConf.login_tries) ? securityConf.login_tries : 3;
+        rateLimiter.wait = securityConf.login_wait || 5 * 60;
 
         curTheme = plugins.getConfig("frontend", req.session && req.session.settings).theme;
         app.loadThemeFiles(req.cookies.theme || curTheme, function(themeFiles) {
@@ -654,11 +654,25 @@ app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
 
 
 //prevent bruteforce attacks
-bruteforce.db = countlyDb;
-bruteforce.mail = countlyMail;
-bruteforce.paths.push(countlyConfig.path + "/login");
-bruteforce.paths.push(countlyConfig.path + "/mobile/login");
-app.use(bruteforce.defaultPrevent);
+rateLimiter.db = countlyDb;
+rateLimiter.mail = countlyMail;
+
+for (let path of ["/login", "/mobile/login"]) {
+    const absPath = countlyConfig.path + path
+    rateLimiter.collections[absPath] = "failed_logins";
+    rateLimiter.identifiers[absPath] = function(req) {
+        return {username: req.body.username}
+    };
+    rateLimiter.blockHooks[absPath] = function(id, req, res) {
+        rateLimiter.db.collection("members").findOne(id, function(err, member) {
+            if (member) {
+                rateLimiter.mail.sendTimeBanWarning(member, rateLimiter.db);
+            }
+        });
+    };
+}
+
+app.use(rateLimiter.middleware);
 
 plugins.loadAppPlugins(app, countlyDb, express);
 
@@ -1141,13 +1155,13 @@ app.post(countlyConfig.path + '/login', function(req, res/*, next*/) {
             }
             else {
                 res.redirect(countlyConfig.path + '/dashboard');
-                bruteforce.reset(req.body.username);
+                rateLimiter.reset(req.path, {username: req.body.username});
             }
         }
         else {
             res.redirect(countlyConfig.path + '/login?message=login.result');
             if (req.body.username) {
-                bruteforce.fail(req.body.username);
+                rateLimiter.fail(req.path, {username: req.body.username});
             }
         }
     });
@@ -1165,7 +1179,7 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
     }
     var user = basicAuth(req);
     if (user && user.name && user.pass) {
-        bruteforce.isBlocked(user.name, function(isBlocked, fails, err) {
+        rateLimiter.isBlocked(countlyConfig.path + '/login', user.name, function(isBlocked, fails, err) {
             if (isBlocked) {
                 if (err) {
                     res.status(500).send('Server Error');
@@ -1184,14 +1198,14 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
                         }
                         else {
                             plugins.callMethod("apikeySuccessful", {req: req, res: res, next: next, data: {username: member.username}});
-                            bruteforce.reset(user.name);
+                            rateLimiter.reset(countlyConfig.path + "/login", {username: user.name});
                             countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                             res.status(200).send(member.api_key);
                         }
                     }
                     else {
                         plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: user.name}});
-                        bruteforce.fail(user.name);
+                        rateLimiter.fail(countlyConfig.path + "/login", {username: user.name});
                         unauthorized(res);
                     }
                 });
@@ -1228,14 +1242,14 @@ app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
                 }
                 else {
                     plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
-                    bruteforce.reset(req.body.username);
+                    rateLimiter.reset(req.path, {username: req.body.username});
                     countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                     res.render('mobile/key', { "key": member.api_key || -1 });
                 }
             }
             else {
                 plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
-                bruteforce.fail(req.body.username);
+                rateLimiter.fail(req.path, {username: req.body.username});
                 res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
             }
         });
@@ -1470,7 +1484,7 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
     membersUtility.loginWithToken(req, function(member) {
         if (member) {
             var serverSideRendering = req.query.ssr || false;
-            bruteforce.reset(member.username);
+            rateLimiter.reset(countlyConfig.path + "/login", {username: member.username});
             var options = "";
             if (serverSideRendering) {
                 options += "ssr=" + serverSideRendering;
