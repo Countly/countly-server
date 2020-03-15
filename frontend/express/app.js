@@ -658,7 +658,7 @@ rateLimiter.db = countlyDb;
 rateLimiter.mail = countlyMail;
 
 for (let path of ["/login", "/mobile/login"]) {
-    const absPath = countlyConfig.path + path
+    const absPath = countlyConfig.path + path;
     rateLimiter.collections[absPath] = "failed_logins";
     rateLimiter.identifiers[absPath] = function(req) {
         return {username: req.body.username}
@@ -671,6 +671,8 @@ for (let path of ["/login", "/mobile/login"]) {
         });
     };
 }
+
+rateLimiter.collections[countlyConfig.path + "/forgot"] = "forgot_tries"
 
 app.use(rateLimiter.middleware);
 
@@ -1118,6 +1120,7 @@ app.post(countlyConfig.path + '/forgot', function(req, res/*, next*/) {
     if (req.body.email) {
         if (countlyCommon.validateEmail(req.body.email)) {
             membersUtility.forgot(req, function(/*member*/) {
+                rateLimiter.fail(req.path, {ip: req.ip});
                 res.redirect(countlyConfig.path + '/forgot?message=forgot.result');
             });
         }
