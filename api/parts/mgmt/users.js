@@ -241,7 +241,7 @@ usersApi.createUser = function(params) {
     * Creates user document with hashed password
     **/
     async function createUser() {
-        var passwordNoHash = newMember.password;
+        //var passwordNoHash = newMember.password;
         var secret = countlyConfig.passwordSecret || "";
 
         newMember.password = await common.argon2Hash(newMember.password + secret);
@@ -259,7 +259,14 @@ usersApi.createUser = function(params) {
 
                 member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
                 common.db.collection('members').update({ '_id': member[0]._id }, { $set: { api_key: member[0].api_key } }, function() { });
-                mail.sendToNewMember(member[0], passwordNoHash);
+
+
+                var timestamp = Math.round(new Date().getTime() / 1000),
+                    prid = sha512Hash(member[0].username + member[0].full_name, timestamp);
+                common.db.collection('password_reset').insert({"prid": prid, "user_id": member[0]._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
+                    mail.sendToNewMemberLink(member[0], prid);
+                });
+
                 plugins.dispatch("/i/users/create", {
                     params: params,
                     data: member[0]
