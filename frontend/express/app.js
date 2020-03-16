@@ -37,7 +37,7 @@ var versionInfo = require('./version.info'),
     // countlyStats = require('../../api/parts/data/stats.js'),
     countlyFs = require('../../api/utils/countlyFs.js'),
     common = require('../../api/utils/common.js'),
-    bruteforce = require('./libs/preventBruteforce.js'),
+    preventBruteforce = require('./libs/preventBruteforce.js'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
@@ -588,8 +588,8 @@ app.use(function(req, res, next) {
         var securityConf = plugins.getConfig("security");
         app.dashboard_headers = securityConf.dashboard_additional_headers;
         add_headers(req, res);
-        bruteforce.fails = Number.isInteger(securityConf.login_tries) ? securityConf.login_tries : 3;
-        bruteforce.wait = securityConf.login_wait || 5 * 60;
+        preventBruteforce.fails = Number.isInteger(securityConf.login_tries) ? securityConf.login_tries : 3;
+        preventBruteforce.wait = securityConf.login_wait || 5 * 60;
 
         curTheme = plugins.getConfig("frontend", req.session && req.session.settings).theme;
         app.loadThemeFiles(req.cookies.theme || curTheme, function(themeFiles) {
@@ -654,11 +654,26 @@ app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
 
 
 //prevent bruteforce attacks
-bruteforce.db = countlyDb;
-bruteforce.mail = countlyMail;
-bruteforce.paths.push(countlyConfig.path + "/login");
-bruteforce.paths.push(countlyConfig.path + "/mobile/login");
-app.use(bruteforce.defaultPrevent);
+preventBruteforce.db = countlyDb;
+preventBruteforce.mail = countlyMail;
+
+for (let pathPart of ["/login", "/mobile/login"]) {
+    const absPath = countlyConfig.path + pathPart;
+    preventBruteforce.pathIdentifiers[absPath] = "login";
+    preventBruteforce.userIdentifiers[absPath] = (req) => req.body.username;
+}
+
+preventBruteforce.blockHooks.login = function(uid, req, res) { // eslint-disable-line no-unused-vars
+    preventBruteforce.db.collection("members").findOne({username: uid}, function(err, member) {
+        if (member) {
+            preventBruteforce.mail.sendTimeBanWarning(member, preventBruteforce.db);
+        }
+    });
+};
+
+preventBruteforce.pathIdentifiers[countlyConfig.path + "/forgot"] = "forgot";
+
+app.use(preventBruteforce.middleware);
 
 plugins.loadAppPlugins(app, countlyDb, express);
 
@@ -1104,6 +1119,7 @@ app.post(countlyConfig.path + '/forgot', function(req, res/*, next*/) {
     if (req.body.email) {
         if (countlyCommon.validateEmail(req.body.email)) {
             membersUtility.forgot(req, function(/*member*/) {
+                preventBruteforce.fail("forgot", req.ip);
                 res.redirect(countlyConfig.path + '/forgot?message=forgot.result');
             });
         }
@@ -1141,13 +1157,13 @@ app.post(countlyConfig.path + '/login', function(req, res/*, next*/) {
             }
             else {
                 res.redirect(countlyConfig.path + '/dashboard');
-                bruteforce.reset(req.body.username);
+                preventBruteforce.reset("login", req.body.username);
             }
         }
         else {
             res.redirect(countlyConfig.path + '/login?message=login.result');
             if (req.body.username) {
-                bruteforce.fail(req.body.username);
+                preventBruteforce.fail("login", req.body.username);
             }
         }
     });
@@ -1165,7 +1181,7 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
     }
     var user = basicAuth(req);
     if (user && user.name && user.pass) {
-        bruteforce.isBlocked(user.name, function(isBlocked, fails, err) {
+        preventBruteforce.isBlocked("login", user.name, function(isBlocked, fails, err) {
             if (isBlocked) {
                 if (err) {
                     res.status(500).send('Server Error');
@@ -1184,14 +1200,14 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
                         }
                         else {
                             plugins.callMethod("apikeySuccessful", {req: req, res: res, next: next, data: {username: member.username}});
-                            bruteforce.reset(user.name);
+                            preventBruteforce.reset("login", user.name);
                             countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                             res.status(200).send(member.api_key);
                         }
                     }
                     else {
                         plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: user.name}});
-                        bruteforce.fail(user.name);
+                        preventBruteforce.fail("login", user.name);
                         unauthorized(res);
                     }
                 });
@@ -1228,14 +1244,14 @@ app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
                 }
                 else {
                     plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
-                    bruteforce.reset(req.body.username);
+                    preventBruteforce.reset("login", req.body.username);
                     countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                     res.render('mobile/key', { "key": member.api_key || -1 });
                 }
             }
             else {
                 plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
-                bruteforce.fail(req.body.username);
+                preventBruteforce.fail("login", req.body.username);
                 res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
             }
         });
@@ -1474,7 +1490,7 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
     membersUtility.loginWithToken(req, function(member) {
         if (member) {
             var serverSideRendering = req.query.ssr || false;
-            bruteforce.reset(member.username);
+            preventBruteforce.reset("login", member.username);
             var options = "";
             if (serverSideRendering) {
                 options += "ssr=" + serverSideRendering;
