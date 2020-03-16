@@ -25,8 +25,8 @@ preventBruteforce.middleware = function(req, res, next) {
     const path = req.path;
 
     if (req.method.toLowerCase() === "post" && path in preventBruteforce.pathIdentifiers) {
-        const uid = path in preventBruteforce.userIdentifiers ? preventBruteforce.userIdentifiers[path](req) : req.ip,
-              pid = preventBruteforce.pathIdentifiers[path];
+        const uid = path in preventBruteforce.userIdentifiers ? preventBruteforce.userIdentifiers[path](req) : req.ip;
+        const pid = preventBruteforce.pathIdentifiers[path];
 
         if (pid) {
             preventBruteforce.isBlocked(pid, uid, function(isBlocked, fails, err) {

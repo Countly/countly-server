@@ -657,13 +657,13 @@ app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
 preventBruteforce.db = countlyDb;
 preventBruteforce.mail = countlyMail;
 
-for (let path of ["/login", "/mobile/login"]) {
-    const absPath = countlyConfig.path + path;
+for (let pathPart of ["/login", "/mobile/login"]) {
+    const absPath = countlyConfig.path + pathPart;
     preventBruteforce.pathIdentifiers[absPath] = "login";
     preventBruteforce.userIdentifiers[absPath] = (req) => req.body.username;
 }
 
-preventBruteforce.blockHooks["login"] = function(uid, req, res) {
+preventBruteforce.blockHooks.login = function(uid, req, res) { // eslint-disable-line no-unused-vars
     preventBruteforce.db.collection("members").findOne({username: uid}, function(err, member) {
         if (member) {
             preventBruteforce.mail.sendTimeBanWarning(member, preventBruteforce.db);
@@ -671,7 +671,7 @@ preventBruteforce.blockHooks["login"] = function(uid, req, res) {
     });
 };
 
-preventBruteforce.pathIdentifiers[countlyConfig.path + "/forgot"] = "forgot"
+preventBruteforce.pathIdentifiers[countlyConfig.path + "/forgot"] = "forgot";
 
 app.use(preventBruteforce.middleware);
 
