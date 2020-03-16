@@ -112,7 +112,7 @@ countly_upgrade (){
     then
         INOFFLINEMODE=$(countly config 'api.offline_mode' | awk -F'= ' '{print $2}')
 
-        if [ $INOFFLINEMODE == "false" ]
+        if [ "$INOFFLINEMODE" == "false" ]
         then
             (cd $DIR/../..;
             echo "Installing dependencies...";
