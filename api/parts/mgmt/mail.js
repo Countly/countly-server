@@ -110,7 +110,8 @@ mail.sendLocalizedMessage = function(lang, to, subject, message, callback) {
  * @return {string} newString new string escaped html code
  */
 mail.escapedHTMLString = function(s) {
-    const newString = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    var ss = s || "";
+    const newString = ss.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     return newString;
 };
 
@@ -131,6 +132,21 @@ mail.sendToNewMember = function(member, memberPassword) {
 };
 
 /**
+* Email to send to new members
+* @param {object} member - member document
+* @param {string} prid - id for password reset link
+**/
+mail.sendToNewMemberLink = function(member, prid) {
+    member.lang = member.lang || "en";
+    mail.lookup(function(err, host) {
+        localize.getProperties(member.lang, function(err2, properties) {
+            var message = localize.format(properties["mail.new-member-prid"], mail.escapedHTMLString(mail.getUserFirstName(member)), host, mail.escapedHTMLString(member.username), prid);
+            mail.sendMessage(member.email, properties["mail.new-member-subject"], message);
+        });
+    });
+};
+
+/**
 * Email to send to members where global admin updated their password
 * @param {object} member - member document
 * @param {string} memberPassword - OTP for member to authorize
@@ -140,7 +156,7 @@ mail.sendToUpdatedMember = function(member, memberPassword) {
     const password = mail.escapedHTMLString(memberPassword);
     mail.lookup(function(err, host) {
         localize.getProperties(member.lang, function(err2, properties) {
-            var message = localize.format(properties["mail.password-change"], mail.getUserFirstName(member), host, member.username, password);
+            var message = localize.format(properties["mail.password-change"], mail.escapedHTMLString(mail.getUserFirstName(member)), host, mail.escapedHTMLString(member.username), password);
             mail.sendMessage(member.email, properties["mail.password-change-subject"], message);
         });
     });
@@ -155,7 +171,7 @@ mail.sendPasswordResetInfo = function(member, prid) {
     member.lang = member.lang || "en";
     mail.lookup(function(err, host) {
         localize.getProperties(member.lang, function(err2, properties) {
-            var message = localize.format(properties["mail.password-reset"], mail.getUserFirstName(member), host, prid);
+            var message = localize.format(properties["mail.password-reset"], mail.escapedHTMLString(mail.getUserFirstName(member)), host, prid);
             mail.sendMessage(member.email, properties["mail.password-reset-subject"], message);
         });
     });
@@ -173,7 +189,7 @@ mail.sendTimeBanWarning = function(member, db) {
             mail.lookup(function(err2, host) {
                 localize.getProperties(member.lang, function(err3, properties) {
                     var subject = localize.format(properties['mail.time-ban-subject'], versionInfo.title || "Countly");
-                    var message = localize.format(properties["mail.time-ban"], mail.getUserFirstName(member), host, token);
+                    var message = localize.format(properties["mail.time-ban"], mail.escapedHTMLString(mail.getUserFirstName(member)), host, token);
                     mail.sendMessage(member.email, subject, message);
                 });
             });
@@ -191,7 +207,7 @@ mail.sendAutomatedMessageError = function(member, link) {
         member.lang = member.lang || 'en';
         link = host + '/' + link;
         localize.getProperties(member.lang, function(err2, properties) {
-            let message = localize.format(properties['mail.autopush-error'], mail.getUserFirstName(member), link);
+            let message = localize.format(properties['mail.autopush-error'], mail.escapedHTMLString(mail.getUserFirstName(member)), link);
             mail.sendMessage(member.email, properties['mail.autopush-error-subject'], message);
         });
     });
