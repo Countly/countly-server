@@ -6,7 +6,8 @@ var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
     Promise = require("bluebird"),
     async = require('async'),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    log = require('./log.js')('core:rights');
 
 var authorize = require('./authorizer.js'); //for token validations
 
@@ -519,6 +520,10 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
             }
         }
         dbLoadEventsData(params, appList, function(err, eventList/*, viewList*/) {
+            if (err) {
+                log.e("[rights.js].dbUserHasAccessToCollection() failed at dbLoadEventsData (events) callback.", err);
+                return callback(false);
+            }
             for (let i in eventList) {
                 if (collection.indexOf(i, collection.length - i.length) !== -1) {
                     return callback(true);
@@ -535,6 +540,10 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
         }
 
         dbLoadEventsData(params, appList, function(err, eventList, viewList) {
+            if (err) {
+                log.e("[rights.js].dbUserHasAccessToCollection() failed at dbLoadEventsData (app_viewdata) callback.", err);
+                return callback(false);
+            }
             for (let i in viewList) {
                 if (collection.indexOf(i, collection.length - i.length) !== -1) {
                     return callback(true);
