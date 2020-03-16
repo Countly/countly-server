@@ -179,7 +179,7 @@ window.CrashesView = countlyView.extend({
                         tagDivs += "<div class='tag not-viewed' title='" + jQuery.i18n.map["crashes.not-viewed"] + "'><i class='fa fa-eye-slash'></i></div>";
                         tagDivs += "<div class='tag re-occurred' title='" + jQuery.i18n.map["crashes.re-occurred"] + "'><i class='fa fa-refresh'></i></div>";
 
-                        return "<div class='truncated'>" + row.name + "</div>" + tagDivs;
+                        return "<div class='truncated'>" + row.name + "</div>" + "<div class='first-line'>" + self.getFirstErrorLine(row) + "</div>" + tagDivs;
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["crashes.error"]
@@ -402,6 +402,18 @@ window.CrashesView = countlyView.extend({
                 }
             }
         });
+    },
+    getFirstErrorLine: function(row) {
+        var rLineNumbers = /^\d+\s*/gim;
+        var lines = row.error.split('\n');
+        var line = row.name;
+        for (var i = 0; i < lines.length; i++) {
+            line = lines[i].trim().replace(rLineNumbers, "");
+            if (line.length && row.name.trim().replace(rLineNumbers, "") !== line) {
+                break;
+            }
+        }
+        return line;
     },
     resetSelection: function(flash) {
         if (flash) {

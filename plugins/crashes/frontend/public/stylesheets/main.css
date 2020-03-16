@@ -6,6 +6,7 @@
 .crash-reports tbody tr {cursor: pointer;}
 
 .truncated {overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height: 15px;}
+.first-crash-line {overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height: 15px; font-size: 11px; color: #8e8e8e;}
 #crash-numbers-container .widget-footer {border-top-left-radius:7px; border-top-right-radius:7px; border-top: 1px solid #c2c2c2; border-bottom-left-radius:0px; border-bottom-right-radius:0px;}
 #crash-big-numbers th{text-align: center; text-transform: uppercase; font-family:Ubuntu,Helvetica,sans-serif;}
 #crash-big-numbers td{background-color: #fff; text-align: center; font-family:Oswald; font-size: 27px; padding: 20px 5px; word-wrap: break-word;}
