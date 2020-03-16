@@ -876,13 +876,15 @@
 
                             if (o.top <= 40) {
                                 o.top = 40;
-                            } else if (o.top >= (graphHeight + 30)) {
+                            }
+                            else if (o.top >= (graphHeight + 30)) {
                                 o.top = graphHeight + 30;
                             }
 
                             if (o.left <= 15) {
                                 o.left = 15;
-                            } else if (o.left >= (graphWidth - 15)) {
+                            }
+                            else if (o.left >= (graphWidth - 15)) {
                                 o.left = (graphWidth - 15);
                             }
 
@@ -955,7 +957,7 @@
                             }
                         }
                     }
-                }
+                };
 
                 drawLabels();
 
@@ -1133,14 +1135,14 @@
                             amount: 1.5,
                             center: {left: plot.width() / 2, top: plot.height()}
                         });
-                        zoomContainer.data("zoom", zoomContainer.data("zoom") * 1.5)
+                        zoomContainer.data("zoom", zoomContainer.data("zoom") * 1.5);
                     });
 
-                    zoomTarget.off("plotzoom").on("plotzoom", function(e) {
+                    zoomTarget.off("plotzoom").on("plotzoom", function() {
                         drawLabels();
                     });
 
-                    zoomTarget.off("plotpan").on("plotpan", function(e) {
+                    zoomTarget.off("plotpan").on("plotpan", function() {
                         drawLabels();
                     });
                 }
