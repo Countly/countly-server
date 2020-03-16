@@ -539,7 +539,7 @@ const processRequest = (params) => {
                     break;
                 case 'update':
                     if (paths[4] === 'plugins') {
-                        validateUserForWriteAPI(countlyApi.mgmt.apps.updateAppPlugins, params);
+                        validateUserForDataWriteAPI(params, countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
                         validateUserForWriteAPI(countlyApi.mgmt.apps.updateApp, params);
