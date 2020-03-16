@@ -24,6 +24,19 @@ var trace = {
         }
         return stack;
     },
+    processPLCrashThreads: function(data) {
+        var findCrash = /^Thread\s\d+\sCrashed:/gim;
+        var rLineNumbers = /^\d+\s*/gim;
+        var parts = data.split(findCrash);
+        var stack = [];
+        for (var i = 1; i < parts.length; i++) {
+            parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+            parts[i] = parts[i].replace(/\t/g, "");
+            parts[i] = parts[i].trim();
+            stack.push((parts[i].split("\n")[0] + "").replace(rLineNumbers, ""));
+        }
+        return stack;
+    },
     /**
     * Process crash
     * @param {object} crash - Crash object
@@ -48,6 +61,12 @@ var trace = {
                     callback(crash._error);
                 }
             });
+        }
+        else if (crash._plcrash) {
+            crash._binary_crash_dump = crash._error;
+            var stack = trace.processPLCrashThreads(crash._error);
+            crash._name = stack[0];
+            callback(stack.join("\n"));
         }
         else {
             crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
@@ -118,8 +137,8 @@ var trace = {
     */
     postprocessCrash: function(crash) {
         var parts, threads, thread, stack, new_stack;
+        var rLineNumbers = /^\s*\d+\s+/gim;
         if (crash.native_cpp) {
-            var rLineNumbers = /^\s*\d+\s+/gim;
             parts = crash.error.split("\n\n");
             threads = [];
             for (let i = 0; i < parts.length; i++) {
@@ -172,6 +191,93 @@ var trace = {
                             thread.crashed = true;
                         }
                         threads.push(thread);
+                    }
+                }
+                crash.oldthreads = threads;
+                crash.olderror = crash.olderror || threads[0].error;
+            }
+        }
+        else if (crash.plcrash) {
+            parts = crash.error.split("\n\n");
+            threads = [];
+            var noThread = true;
+            for (let i = 0; i < parts.length; i++) {
+                if (parts[i].indexOf("Thread") === 0) {
+                    noThread = false;
+                    parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+                    parts[i] = parts[i].replace(/\t/g, "");
+                    thread = {};
+                    thread.id = threads.length;
+                    stack = parts[i].split("\n");
+                    thread.name = stack.shift().trim();
+                    new_stack = [];
+                    for (let j = 0; j < stack.length; j++) {
+                        if (rLineNumbers.test(stack[j])) {
+                            new_stack.push(stack[j]);
+                        }
+                    }
+                    thread.error = new_stack.join("\n");
+                    if (thread.name.indexOf("Crashed:") !== -1) {
+                        thread.name = thread.name.replace("Crashed:", "");
+                        crash.error = thread.error.replace(rLineNumbers, "");
+                        thread.crashed = true;
+                    }
+                    threads.push(thread);
+                }
+                else if (noThread) {
+                    if (threads.length === 0) {
+                        threads.push({
+                            id: 0,
+                            name: "Info",
+                            error: ""
+                        });
+                    }
+                    parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+                    parts[i] = parts[i].replace(/\t/g, "");
+                    threads[0].error += parts[i] + "\n\n";
+                }
+            }
+            crash.threads = threads;
+            crash.error = crash.error || threads[0].error;
+
+            if (crash.olderror) {
+                parts = crash.olderror.split("\n\n");
+                threads = [];
+                noThread = true;
+                for (let i = 0; i < parts.length; i++) {
+                    if (parts[i].indexOf("Thread") === 0) {
+                        noThread = false;
+                        parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+                        parts[i] = parts[i].replace(/\t/g, "");
+                        thread = {};
+                        thread.id = threads.length;
+                        stack = parts[i].split("\n");
+                        thread.name = stack.shift().trim();
+                        new_stack = [];
+                        for (let j = 0; j < stack.length; j++) {
+                            if (rLineNumbers.test(stack[j])) {
+                                new_stack.push(stack[j]);
+                            }
+                        }
+                        thread.error = new_stack.join("\n");
+                        if (thread.name.indexOf("Crashed:") !== -1) {
+                            thread.name = thread.name.replace("Crashed:", "");
+                            crash.olderror = thread.error.replace(rLineNumbers, "");
+                            thread.crashed = true;
+                        }
+                        threads.push(thread);
+                    }
+                    else if (noThread) {
+                        if (threads.length === 0) {
+                            threads.push({
+                                id: 0,
+                                name: "Info",
+                                error: ""
+                            });
+                        }
+                        parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+                        parts[i] = parts[i].replace(/\t/g, "");
+                        threads[0].error += parts[i] + "\n\n";
                     }
                 }
                 crash.oldthreads = threads;

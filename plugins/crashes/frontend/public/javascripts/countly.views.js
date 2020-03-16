@@ -179,7 +179,7 @@ window.CrashesView = countlyView.extend({
                         tagDivs += "<div class='tag not-viewed' title='" + jQuery.i18n.map["crashes.not-viewed"] + "'><i class='fa fa-eye-slash'></i></div>";
                         tagDivs += "<div class='tag re-occurred' title='" + jQuery.i18n.map["crashes.re-occurred"] + "'><i class='fa fa-refresh'></i></div>";
 
-                        return "<div class='truncated'>" + row.name + "</div>" + "<div class='first-line'>" + self.getFirstErrorLine(row) + "</div>" + tagDivs;
+                        return "<div class='truncated'>" + row.name + "</div>" + "<div class='first-crash-line'>" + self.getFirstErrorLine(row) + "</div>" + tagDivs;
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["crashes.error"]

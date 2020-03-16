@@ -296,6 +296,7 @@ plugins.setConfigs("crashes", {
                     "executable_name",
                     "load_address",
                     "native_cpp",
+                    "plcrash",
                     "binary_crash_dump",
                     "unprocessed",
 
@@ -474,6 +475,10 @@ plugins.setConfigs("crashes", {
 
                                                 if (report.native_cpp) {
                                                     groupSet.native_cpp = true;
+                                                }
+
+                                                if (report.plcrash) {
+                                                    groupSet.plcrash = true;
                                                 }
 
                                                 groupInc.reports = 1;
@@ -892,7 +897,7 @@ plugins.setConfigs("crashes", {
                     });
                     common.db.collection('app_crashgroups' + params.app_id).estimatedDocumentCount(function(crashGroupsErr, total) {
                         total--;
-                        var cursor = common.db.collection('app_crashgroups' + params.app_id).find(filter, {uid: 1, is_new: 1, is_renewed: 1, is_hidden: 1, os: 1, not_os_specific: 1, name: 1, error: 1, users: 1, lastTs: 1, reports: 1, latest_version: 1, is_resolved: 1, resolved_version: 1, nonfatal: 1, session: 1, is_resolving: 1});
+                        var cursor = common.db.collection('app_crashgroups' + params.app_id).find(filter, {uid: 1, is_new: 1, is_renewed: 1, is_hidden: 1, os: 1, not_os_specific: 1, name: 1, error: 1, users: 1, lastTs: 1, reports: 1, latest_version: 1, is_resolved: 1, resolved_version: 1, nonfatal: 1, session: 1, is_resolving: 1, native_cpp: 1, plcrash: 1});
                         cursor.count(function(errCursor, count) {
                             if (params.qstring.iDisplayStart && params.qstring.iDisplayStart !== 0) {
                                 cursor.skip(parseInt(params.qstring.iDisplayStart));
@@ -908,6 +913,14 @@ plugins.setConfigs("crashes", {
 
                             cursor.toArray(function(cursorErr, res) {
                                 res = res || [];
+                                if (res && res.length) {
+                                    res.forEach(function(crash) {
+                                        trace.postprocessCrash(crash);
+                                        delete crash.threads;
+                                        delete crash.oldthreads;
+                                        delete crash.olderror;
+                                    });
+                                }
                                 common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: Math.max(total, 0), iTotalDisplayRecords: count, aaData: res});
                             });
                         });
