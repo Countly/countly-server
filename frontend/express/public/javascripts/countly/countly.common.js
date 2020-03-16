@@ -664,7 +664,7 @@
                 graphProperties.yaxis.tickDecimals = myTickDecimals;
                 if (myMinTickSize < 1) {
                     graphProperties.yaxis.tickFormatter = function(number) {
-                        return "0." + (Math.round(number * 1000) / 1000).toString();
+                        return (Math.round(number * 1000) / 1000).toString();
                     };
                 }
                 graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
