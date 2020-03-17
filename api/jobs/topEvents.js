@@ -55,8 +55,8 @@ class TopEventsJob extends job.Job {
      */
     async getEventsCount(params) {
         const {collectionNameEvents, ob, data, event} = params;
-        return await new Promise(resolve=>{
-            countlyApi.data.fetch.getTimeObjForEvents(collectionNameEvents, ob, (doc)=> {
+        return await new Promise((resolve) => {
+            countlyApi.data.fetch.getTimeObjForEvents(collectionNameEvents, ob, (doc) => {
                 countlyEvents.setDb(doc || {});
                 const countProp = countlyEvents.getNumber("c");
                 data[event] = {};
@@ -109,8 +109,8 @@ class TopEventsJob extends job.Job {
      */
     async getAllApps() {
         try {
-            const getAllApps = await new Promise((res, rej)=> common.db.collection("apps").find({}, {_id: 1, timezone: 1}).toArray((err, apps)=> err ? rej(err) : res(apps)));
-            await Promise.all(getAllApps.map(app => this.getAppEvents(app)));
+            const getAllApps = await new Promise((res, rej) => common.db.collection("apps").find({}, {_id: 1, timezone: 1}).toArray((err, apps) => err ? rej(err) : res(apps)));
+            await Promise.all(getAllApps.map((app) => this.getAppEvents(app)));
         }
         catch (error) {
             log.e("TopEvents Job has a error: ", error);
@@ -127,7 +127,7 @@ class TopEventsJob extends job.Job {
         const encodedData = this.encodeEvents(data);
         const timeSecond = this.timeSecond();
         const currentPeriood = this.mutatePeriod(period);
-        await new Promise((res, rej)=> common.db.collection(TopEventsJob.COLLECTION_NAME).insert({app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData}, (error, records) => !error && records ? res(records) : rej(error)));
+        await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).insert({app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData}, (error, records) => !error && records ? res(records) : rej(error)));
     }
 
     /**
@@ -136,10 +136,10 @@ class TopEventsJob extends job.Job {
      * @param {Object} app - saveAppEvents object
      */
     async getAppEvents(app) {
-        const getEvents = await new Promise((res, rej)=> common.db.collection("events").findOne({_id: app._id}, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
+        const getEvents = await new Promise((res, rej) => common.db.collection("events").findOne({_id: app._id}, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
         if (getEvents && 'list' in getEvents) {
             const eventMap = this.eventsFilter(getEvents.list);
-            await new Promise((res, rej)=> common.db.collection(TopEventsJob.COLLECTION_NAME).remove({app_id: app._id}, (error, result) => error ? rej(error) : res(result)));
+            await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).remove({app_id: app._id}, (error, result) => error ? rej(error) : res(result)));
             if (eventMap && eventMap instanceof Array && eventMap.length >= TopEventsJob.TOTAL_EVENT_COUNT) {
                 for (const period of TopEventsJob.PERIODS) {
                     const data = {};
