@@ -83,7 +83,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/visualization/flot/jquery.flot.navigate.js',
                     'frontend/express/public/javascripts/visualization/gauge.min.js',
                     'frontend/express/public/javascripts/visualization/d3/d3.min.js',
-                    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js'
+                    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js',
+                    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.x.axis.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.visualization.concat.js'
             },
