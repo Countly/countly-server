@@ -77,8 +77,17 @@
 }
 
 #configs-title-bar.expand { width:300px; box-shadow: 0 5px 18px 0 #a5a5a5, 0 0 0 1px #d0d0d0; z-index:1; }
-#configs-title-bar .nav-search input { transition:width 200ms; }
-#configs-title-bar.expand .nav-search input { width:278px; transition:width 200ms; }
+#configs-title-bar .nav-search input {
+    transition:width 200ms;
+    -webkit-appearance: textfield;
+    height: 30px;
+    width: 100%;
+    padding-right: 20px;
+}
+#configs-title-bar.expand .nav-search input {
+    /*width:278px;*/
+    transition:width 200ms;
+}
 
 #configs-title-container {
     max-height: 490px;

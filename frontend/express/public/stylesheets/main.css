@@ -445,8 +445,17 @@ table { border-collapse: collapse; }
 
 #app-management-bar.expand { width:300px; box-shadow: 0 5px 18px 0 #a5a5a5, 0 0 0 1px #d0d0d0; }
 #app-management-bar.expand .app-container .name { width:245px; transition:width 200ms; }
-#app-management-bar .nav-search input { transition:width 200ms; }
-#app-management-bar.expand .nav-search input { width:278px; transition:width 200ms; }
+#app-management-bar .nav-search input {
+    transition:width 200ms;
+    -webkit-appearance: textfield;
+    width: 100%;
+    height: 30px;
+    padding-right: 20px;
+}
+#app-management-bar.expand .nav-search input {
+    /*width:278px;*/
+    transition:width 200ms;
+}
 
 #management-app-container { max-height: 450px; }
 #manage-new-app { display: none; }
@@ -1116,12 +1125,22 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 /* EVENTS */
 #event-nav { transition:width 200ms; overflow:hidden; z-index:3; width:180px; position:fixed; left:242px; top:79px; text-align:right; background-color:#efefef; max-height:580px; box-sizing:border-box; box-shadow: 0 0 0 1px #d0d0d0; border-radius:2px;}
 #event-nav .nav-search { border-bottom:none; border-top:1px solid #d0d0d0; }
-#event-nav .nav-search input { width:158px; transition:width 200ms; }
+
 #event-nav-head { background-color:#ececec; position:relative; height:27px; padding:15px 20px 15px 15px; color:#636363; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; }
 #event-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:4px; }
 
 #event-nav.expand { width:300px; box-shadow: 0 5px 18px 0 #a5a5a5, 0 0 0 1px #d0d0d0; transition:width 200ms; }
-#event-nav.expand .nav-search input { width:278px; transition:width 200ms; }
+#event-nav .nav-search input {
+    transition:width 200ms;
+    -webkit-appearance: textfield;
+    height: 30px;
+    width: 100%;
+    padding-right: 20px;
+}
+#event-nav.expand .nav-search input {
+    /*width:278px;*/
+     transition:width 200ms;
+}
 #event-nav.expand .name { width:271px; }
 
 .event-container { position:relative; cursor:pointer; height:28px; padding:4px 12px; overflow:hidden; border-top: 1px solid #D0D0D0; }
