@@ -2290,11 +2290,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
  * @returns {string} sanitizedFilename - sanitized filename
  */
 common.sanitizeFilename = (filename, replacement = "") => {
-    if (typeof filename !== "string") {
-        return "";
-    }
-
-    return filename
+    return (filename + "")
         .replace(/[\x00-\x1f\x80-\x9f]+/g, replacement)
         .replace(/[\/\?<>\\:\*\|"]/g, replacement)
         .replace(/^\.{1,2}$/, replacement)
