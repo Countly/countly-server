@@ -484,10 +484,12 @@ window.starView = countlyView.extend({
                 for (var rating in result[year][month][day]) {
                     if (this.matchPlatformVersion(rating)) {
                         var rank = (rating.split("**"))[2];
-                        this.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
-                        var times = result[year][month][day][rating].c;
-                        while (times--) {
-                            ratingArray.push(parseInt(rank));
+                        if (this.cumulativeData[rank - 1]) {
+                            this.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
+                            var times = result[year][month][day][rating].c;
+                            while (times--) {
+                                ratingArray.push(parseInt(rank));
+                            }
                         }
                     }
                 }
