@@ -63,9 +63,49 @@ var trace = {
             });
         }
         else if (crash._plcrash) {
-            crash._binary_crash_dump = crash._error;
-            var stack = trace.processPLCrashThreads(crash._error);
+            let stack = trace.processPLCrashThreads(crash._error);
             crash._name = stack[0];
+            let lines = crash._error.replace(/\r\n|\r|\n/g, "\n").split("\n");
+            let parsingBinaryList = false;
+            try {
+                for (let line = 0; line < lines.length; line++) {
+                    if (lines[line].startsWith("Process:")) {
+                        crash.executable_name = lines[line].split(":").pop().split("[")[0].trim();
+                    }
+                    else if (lines[line].startsWith("Version:")) {
+                        crash.app_version = lines[line].split(":").pop().split("(")[0].trim();
+                    }
+                    else if (lines[line].startsWith("Hardware Model:")) {
+                        crash.device = lines[line].split(":").pop().trim();
+                    }
+                    else if (lines[line].startsWith("OS Version:")) {
+                        crash.os_version = lines[line].split(":").pop().split("(")[0].trim().split(" ").pop();
+                    }
+                    else if (lines[line].startsWith("Binary Images:")) {
+                        crash.binary_images = {};
+                        parsingBinaryList = true;
+                    }
+                    else if (lines[line] === "") {
+                        parsingBinaryList = false;
+                    }
+                    else if (parsingBinaryList) {
+                        let parts = lines[line].trim().replace(/\s\s+/g, ' ').split(" ");
+                        if (parts.length === 7) {
+                            if (!crash.architecture) {
+                                crash.architecture = parts[4];
+                            }
+                            crash.binary_images[parts[3].replace(/(^\+)/mg, '')] = {la: parts[0], id: parts[5].replace(/(^<|>$)/mg, '').toUpperCase()};
+                        }
+                        else {
+                            console.log("Incorrect binary line", lines[line]);
+                        }
+                    }
+                }
+                crash.binary_images = JSON.stringify(crash.binary_images);
+            }
+            catch (ex) {
+                console.log("Problem parsing PLCrashReport", crash);
+            }
             callback(stack.join("\n"));
         }
         else {
