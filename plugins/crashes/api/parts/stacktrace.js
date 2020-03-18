@@ -94,7 +94,7 @@ var trace = {
                             if (!crash.architecture) {
                                 crash.architecture = parts[4];
                             }
-                            crash.binary_images[parts[3].replace(/(^\+)/mg, '')] = {la: parts[0], id: parts[5].replace(/(^<|>$)/mg, '').toUpperCase()};
+                            crash.binary_images[parts[3].replace(/(^\+)/mg, '')] = {la: parts[0], id: parts[5].replace(/(^<|>$)/mg, '').toUpperCase().replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5")};
                         }
                         else {
                             console.log("Incorrect binary line", lines[line]);
