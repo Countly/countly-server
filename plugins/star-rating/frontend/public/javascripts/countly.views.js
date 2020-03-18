@@ -1,4 +1,4 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, Handlebars, path1*/
+/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, Handlebars, path1, addDrill, countlySegmentation*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
@@ -1138,6 +1138,10 @@ window.starView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+
+            if (typeof addDrill !== "undefined") {
+                $("#content .widget:first-child .widget-header>.left .title").after(addDrill("sg.rating", null, "[CLY]_star_rating"));
+            }
             this.ratingFilter = {"comments": {'platform': "", "version": "", "rating": "", "widget": ""}, "ratings": {'platform': "", "version": "", "widget": ""}};
             self.renderCommentsTable();
             self.addScriptsForFilter(); //add filter scripts
@@ -2197,6 +2201,54 @@ app.route("/analytics/star-rating/:tab", 'star', function(tab) {
     }
     this.renderWhenReady(this.starView);
 });
+
+app.addPageScript("/drill#", function() {
+    var drillClone;
+    var self = app.drillView;
+    var record_star_rating = countlyGlobal.record_star_rating;
+
+    if (countlyGlobal.apps && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill && typeof countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_star_rating !== "undefined") {
+        record_star_rating = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_star_rating;
+    }
+
+    if (record_star_rating) {
+        $("#drill-types").append('<div id="drill-type-star-rating" class="item"><div class="inner"><span class="icon star-rating"><i class="material-icons">star_half</i></span><span class="text">' + jQuery.i18n.map["internal-events.[CLY]_star_rating"] + '</span></div></div>');
+        $("#drill-type-star-rating").on("click", function() {
+            if ($(this).hasClass("active")) {
+                return true;
+            }
+
+            $("#drill-types").find(".item").removeClass("active");
+            $(this).addClass("active");
+            $("#event-selector").hide();
+
+            $("#drill-no-event").fadeOut();
+            $("#segmentation-start").fadeOut().remove();
+
+            self.graphType = "line";
+            self.graphVal = "times";
+            self.filterObj = {};
+            self.byVal = "";
+            self.drillChartDP = {};
+            self.drillChartData = {};
+            self.activeSegmentForTable = "";
+            countlySegmentation.reset();
+
+            $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+
+            $.when(countlySegmentation.initialize("[CLY]_star_rating")).then(function() {
+                $("#drill").replaceWith(drillClone.clone(true));
+                self.adjustFilters();
+                self.draw(true, false);
+            });
+        });
+    }
+
+    setTimeout(function() {
+        drillClone = $("#drill").clone(true);
+    }, 0);
+});
+
 $(document).ready(function() {
     app.addMenu("reach", {code: "star-rating", url: "#/analytics/star-rating", text: "star.menu-title", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
 });
