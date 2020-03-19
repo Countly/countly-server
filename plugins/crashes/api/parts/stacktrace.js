@@ -73,7 +73,9 @@ var trace = {
                         crash._executable_name = lines[line].split(":").pop().split("[")[0].trim();
                     }
                     else if (lines[line].startsWith("Version:")) {
-                        crash._app_version = lines[line].split(":").pop().split("(")[0].trim();
+                        let parts = lines[line].split(":").pop().split("(");
+                        crash._app_version = parts[0].trim();
+                        crash._app_build = (parts[1] + "").split(")")[0].trim();
                     }
                     else if (lines[line].startsWith("Hardware Model:")) {
                         crash._device = lines[line].split(":").pop().trim();
