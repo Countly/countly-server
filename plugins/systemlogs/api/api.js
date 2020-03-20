@@ -61,7 +61,21 @@ var pluginOb = {},
                                 console.log(err3);
                             }
                             res = res || [];
-                            common.returnOutput(paramsNew, {sEcho: paramsNew.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: count, aaData: res});
+                            if (params.qstring.export) {
+                                for (var i = 0; i < res.length; i++) {
+                                    var info = res[i].i;
+                                    delete res[i].i;
+                                    delete res[i].cd;
+                                    delete res[i]._id;
+                                    if (info._id) {
+                                        res[i].subject_id = info.app_id || info.user_id || info.campaign_id || info.crash_id || info.appuser_id || info._id;
+                                    }
+                                    if (info.name) {
+                                        res[i].name = info.name;
+                                    }
+                                }
+                            }
+                            common.returnOutput(paramsNew, {sEcho: paramsNew.qstring.sEcho, iTotalRecords: Math.max(total, 0), iTotalDisplayRecords: count, aaData: res});
                         });
                     });
                 });
@@ -229,7 +243,7 @@ var pluginOb = {},
                     }
                     else {
                         var keys00 = Object.keys(after[keys[i]]) || [];
-                        var keys02 = Object.keys(before[keys[i]]) || [];
+                        var keys02 = Object.keys(before[keys[i]] || {}) || [];
 
                         if (keys00.length === 0 && keys02.length !== 0) {
                             databefore[keys[i]] = before[keys[i]];
@@ -306,6 +320,10 @@ var pluginOb = {},
         if (before && after) {
             if (typeof before._id !== "undefined") {
                 before._id += "";
+                data._id = before._id;
+                if (typeof before.name !== "undefined") {
+                    data.name = before.name;
+                }
             }
             if (typeof after._id !== "undefined") {
                 after._id += "";

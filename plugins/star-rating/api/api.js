@@ -2,7 +2,8 @@ var exported = {},
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    {validateUserForWrite} = require('../../../api/utils/rights.js');
 
 const widgetProperties = {
     popup_header_text: {
@@ -129,7 +130,6 @@ const widgetPropertyPreprocessors = {
     plugins.internalOmitSegments["[CLY]_star_rating"] = ["email", "comment", "widget_id", "contactMe"];
     var createFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        var validateUserForWrite = ob.validateUserForWriteAPI;
 
         for (let key in widgetPropertyPreprocessors) {
             ob.params.qstring[key] = widgetPropertyPreprocessors[key](ob.params.qstring[key]);
@@ -142,7 +142,7 @@ const widgetPropertyPreprocessors = {
         }
         var widget = validatedArgs.obj;
 
-        validateUserForWrite(function(params) {
+        validateUserForWrite(obParams, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Successfully created " + result.insertedIds[0]);
@@ -154,13 +154,12 @@ const widgetPropertyPreprocessors = {
                     return false;
                 }
             });
-        }, obParams);
+        });
         return true;
     };
     var removeFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        var validateUserForWrite = ob.validateUserForWriteAPI;
-        validateUserForWrite(function(params) {
+        validateUserForWrite(obParams, function(params) {
             var widgetId = params.qstring.widget_id;
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
@@ -203,13 +202,12 @@ const widgetPropertyPreprocessors = {
                     return false;
                 }
             });
-        }, obParams);
+        });
         return true;
     };
     var editFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        var validateUserForWrite = ob.validateUserForWriteAPI;
-        validateUserForWrite(function(params) {
+        validateUserForWrite(obParams, function(params) {
             let widgetId;
 
             try {
@@ -246,7 +244,7 @@ const widgetPropertyPreprocessors = {
                     return false;
                 }
             });
-        }, obParams);
+        });
         return true;
     };
     var removeWidgetData = function(widgetId, app, callback) {
@@ -625,7 +623,9 @@ const widgetPropertyPreprocessors = {
     });
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
-        common.db.collection('feedback_widgets').drop(function() {});
+        common.db.collection('feedback_widgets').remove({
+            "app_id": appId
+        });
         common.db.collection('feedback' + appId).drop(function() {});
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) {
@@ -669,7 +669,9 @@ const widgetPropertyPreprocessors = {
     });
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
-        common.db.collection('feedback_widgets').drop(function() {});
+        common.db.collection('feedback_widgets').remove({
+            "app_id": appId
+        });
         common.db.collection('feedback' + appId).drop(function() {
             common.db.collection('feedback' + appId).ensureIndex({
                 "uid": 1

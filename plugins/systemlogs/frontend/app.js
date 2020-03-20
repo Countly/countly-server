@@ -119,41 +119,96 @@ var exported = {},
             recordAction(ob.req, ob.user, ob.action, ob.data);
         }
     };
+
     /**
      * Function to compare changes
-     * @param  {Object} data - The data object
-     * @param  {Array} before - before data
-     * @param  {Array} after - after data
+     * @param  {Object} data - data object
+     * @param  {Object} before - before values
+     * @param  {Object} after - after values
      */
     function compareChanges(data, before, after) {
-        for (var i in after) {
-            if (typeof after[i] === "object" && after[i] && before[i]) {
-                if (Array.isArray(after[i]) && JSON.stringify(after[i]) !== JSON.stringify(before[i])) {
-                    data.before[i] = before[i];
-                    data.after[i] = after[i];
+        if (before && after) {
+            if (typeof before._id !== "undefined") {
+                before._id += "";
+                data._id = before._id;
+                if (typeof before.name !== "undefined") {
+                    data.name = before.name;
                 }
-                else {
-                    for (var propName in after[i]) {
-                        if (after[i][propName] !== before[i][propName]) {
-                            if (!data.before[i]) {
-                                data.before[i] = {};
-                            }
-                            if (!data.after[i]) {
-                                data.after[i] = {};
-                            }
+            }
+            if (typeof after._id !== "undefined") {
+                after._id += "";
+            }
+            compareChangesInside(data.after, data.before, before, after, Object.keys(after) || [], Object.keys(before) || []);
+        }
+    }
 
-                            data.before[i][propName] = before[i][propName];
-                            data.after[i][propName] = after[i][propName];
+    /**
+     * recursive function to compare changes
+     * @param  {Object} dataafter - after data values
+     * @param  {Object} databefore - before data values
+     * @param  {Object} before - before
+     * @param  {Object} after - after
+     * @param  {Array} keys - keys for after object
+     * @param  {Array} keys2 - keys for before object
+     */
+    function compareChangesInside(dataafter, databefore, before, after, keys, keys2) {
+        for (let i = 0; i < keys2.length; i++) {
+            if (keys.indexOf(keys2[i]) === -1) {
+                keys.push(keys2[i]);
+            }
+        }
+        for (let i = 0; i < keys.length; i++) {
+            if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
+                if (typeof after[keys[i]] === "object") {
+                    if (Array.isArray(after[keys[i]])) {
+                        if (JSON.stringify(after[keys[i]]) !== JSON.stringify(before[keys[i]])) {
+                            databefore[keys[i]] = before[keys[i]];
+                            dataafter[keys[i]] = after[keys[i]];
+                        }
+                    }
+                    else {
+                        var keys00 = Object.keys(after[keys[i]]) || [];
+                        var keys02 = Object.keys(before[keys[i]] || {}) || [];
+
+                        if (keys00.length === 0 && keys02.length !== 0) {
+                            databefore[keys[i]] = before[keys[i]];
+                            dataafter[keys[i]] = after[keys[i]];
+                        }
+                        else if (keys02.length === 0 && keys00.length !== 0) {
+                            databefore[keys[i]] = before[keys[i]];
+                            dataafter[keys[i]] = after[keys[i]];
+                        }
+                        else {
+                            if (!databefore[keys[i]]) {
+                                databefore[keys[i]] = {};
+                            }
+                            if (!dataafter[keys[i]]) {
+                                dataafter[keys[i]] = {};
+                            }
+                            compareChangesInside(dataafter[keys[i]], databefore[keys[i]], before[keys[i]], after[keys[i]], keys00, keys02);
+                            if (typeof dataafter[keys[i]] === "object" && typeof databefore[keys[i]] === "object" && (Object.keys(dataafter[keys[i]])).length === 0 && (Object.keys(databefore[keys[i]])).length === 0) {
+                                delete databefore[keys[i]];
+                                delete dataafter[keys[i]];
+                            }
                         }
                     }
                 }
+                else {
+                    if (after[keys[i]] !== before[keys[i]]) {
+                        databefore[keys[i]] = before[keys[i]];
+                        dataafter[keys[i]] = after[keys[i]];
+                    }
+                }
             }
-            else if (after[i] !== before[i]) {
-                data.before[i] = before[i];
-                data.after[i] = after[i];
+            else {
+                if (typeof after[keys[i]] !== 'undefined') {
+                    dataafter[keys[i]] = after[keys[i]];
+                    databefore[keys[i]] = {};
+                }
             }
         }
     }
+
     /**
      * Function to record action
      * @param  {Object} req - The request object

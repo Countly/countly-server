@@ -119,3 +119,27 @@
         </div>
     </div>
 {{/with}}
+
+{{#with rate}}
+    <h4 data-localize="mgmt-plugins.push.rate" />
+    <div class="mgmt-plugins-row">
+         <div> 
+            <label for="rate.rate" data-localize="mgmt-plugins.push.rate.rate" /> 
+            <span data-localize="mgmt-plugins.push.rate.help" />
+        </div>
+        <div>
+            <br />
+            <input type="number" name="rate.rate" value="{{rate}}" />
+        </div>
+    </div>
+    <div class="mgmt-plugins-row">
+         <div> 
+            <label for="rate.period" data-localize="mgmt-plugins.push.rate.period" /> 
+            <span data-localize="mgmt-plugins.push.rate.period.help" />
+        </div>
+        <div>
+            <br />
+            <input type="number" name="rate.period" value="{{period}}" />
+        </div>
+    </div>
+{{/with}}

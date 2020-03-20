@@ -76,11 +76,11 @@ describe('Testing Web', function() {
                     user.should.have.property("_id");
                     user.should.have.property("uid", '1');
                     user.should.have.property("did", DEVICE_ID);
-                    user.should.have.property("brw", 'Chrome Mobile');
-                    user.should.have.property("brwv", '[chrome mobile]_30:0:0');
+                    user.should.have.property("brw", 'Android Browser');
+                    user.should.have.property("brwv", '[android browser]_4:0');
                     user.should.have.property("d", 'Nexus 5');
                     user.should.have.property("p", 'Android');
-                    user.should.have.property("pv", 'a4:4:0');
+                    user.should.have.property("pv", 'a4:4');
                     done();
                 });
         });
@@ -122,8 +122,8 @@ describe('Testing Web', function() {
                     user.should.have.property("_id");
                     user.should.have.property("uid", '2');
                     user.should.have.property("did", DEVICE_ID + "2");
-                    user.should.have.property("brw", 'Chrome Mobile iOS');
-                    user.should.have.property("brwv", '[chrome mobile ios]_19:0:1084');
+                    user.should.have.property("brw", 'Chrome Mobile');
+                    user.should.have.property("brwv", '[chrome mobile]_19:0:1084:60');
                     user.should.have.property("d", 'iPhone');
                     user.should.have.property("p", 'iOS');
                     user.should.have.property("pv", 'i5:1:1');

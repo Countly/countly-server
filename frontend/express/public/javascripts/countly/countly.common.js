@@ -10,7 +10,7 @@
     var CommonConstructor = function() {
         // Private Properties
         var countlyCommon = this;
-        var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
+        var _period = (store.get("countly_date")) ? store.get("countly_date") : countlyCommon.DEFAULT_PERIOD || "30days";
         var _persistentSettings;
         var htmlEncodeOptions = {
             "whiteList": {"a": ["href", "class", "target"], "ul": [], "li": [], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
@@ -664,7 +664,7 @@
                 graphProperties.yaxis.tickDecimals = myTickDecimals;
                 if (myMinTickSize < 1) {
                     graphProperties.yaxis.tickFormatter = function(number) {
-                        return "0." + (Math.round(number * 1000) / 1000).toString();
+                        return (Math.round(number * 1000) / 1000).toString();
                     };
                 }
                 graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
@@ -678,6 +678,18 @@
 
                 if (_period === "month" && !bucket) {
                     tickObj = countlyCommon.getTickObj("monthly");
+                    if (tickObj.labelCn === 1) {
+                        for (var kk = 0; kk < dataPoints.length; kk++) {
+                            dataPoints[kk].data = dataPoints[kk].data.slice(0, 1);
+                        }
+                        graphProperties.series.points.radius = 4;
+                        overrideBucket = true;//to get the dots added
+                    }
+                    else if (tickObj.labelCn === 2) {
+                        for (var kkk = 0; kkk < dataPoints.length; kkk++) {
+                            dataPoints[kkk].data = dataPoints[kkk].data.slice(0, 2);
+                        }
+                    }
                 }
                 else {
                     tickObj = countlyCommon.getTickObj(bucket, overrideBucket);
@@ -697,17 +709,67 @@
                 graphProperties.xaxis.ticks = tickObj.ticks;
 
                 graphTicks = tickObj.tickTexts;
+                //set dashed line for not finished yet
+
+                if (countlyCommon.periodObj.periodContainsToday === true) {
+                    var settings = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID];
+                    var tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: settings.timezone }));
+                    for (var z = 0; z < dataPoints.length; z++) {
+                        if (dataPoints[z].mode !== "ghost" && dataPoints[z].mode !== "previous") {
+                            var bDate = new Date();
+                            if (_period === "hour") {
+                                if (bDate.getDate() === tzDate.getDate()) {
+                                    dataPoints[z].dashAfter = tzDate.getHours() - 1;
+                                }
+                                else if (bDate.getDate() > tzDate.getDate()) {
+                                    dataPoints[z].dashed = true; //all dashed because app lives still in yesterday
+                                }
+                                //for last - none dashed - because app lives in tomorrow(so don't do anything for this case)
+                            }
+                            else if (_period === "day") { //days in this month
+                                var c = countlyCommon.periodObj.currentPeriodArr.length;
+                                dataPoints[z].dashAfter = c - 2;
+                            }
+                            else if (_period === "month" && bDate.getMonth() <= 2 && (!bucket || bucket === "monthly")) {
+                                dataPoints[z].dashed = true;
+                            }
+                            else {
+                                if (bucket === "hourly") {
+                                    dataPoints[z].dashAfter = graphTicks.length - (24 - tzDate.getHours() + 1);
+                                }
+                                else {
+                                    dataPoints[z].dashAfter = graphTicks.length - 2;
+                                }
+                            }
+
+                            if (typeof dataPoints[z].dashAfter !== 'undefined' && dataPoints[z].dashAfter <= 0) {
+                                delete dataPoints[z].dashAfter;
+                                dataPoints[z].dashed = true; //dash whole line
+                            }
+                        }
+                    }
+                }
 
                 var graphObj = $(container).data("plot"),
                     keyEventCounter = "A",
                     keyEvents = [];
                     //keyEventsIndex = 0;
 
+                if (!(options && _.isObject(options) && options.disableCountlyZoom)) {
+                    countlyCommon.deepObjectExtend(graphProperties, {
+                        series: {lines: {show: true}, splines: {show: false}},
+                        zoom: {active: true},
+                        pan: {interactive: true, active: true, mode: "smartLock", frameRate: 120},
+                        xaxis: {zoomRange: false, panRange: false},
+                        yaxis: {showZeroTick: true, ticks: 5}
+                    });
+                }
+
                 if (options && _.isObject(options)) {
                     countlyCommon.deepObjectExtend(graphProperties, options);
                 }
 
-                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
+                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().grid.show && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
                     if (overrideBucket) {
                         graphObj.getOptions().series.points.radius = 4;
@@ -795,98 +857,109 @@
                     keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
                 }
 
-                var graphWidth = graphObj.width();
+                var drawLabels = function() {
+                    var graphWidth = graphObj.width(),
+                        graphHeight = graphObj.height();
 
-                $(container).find(".graph-key-event-label").remove();
-                $(container).find(".graph-note-label").remove();
+                    $(container).find(".graph-key-event-label").remove();
+                    $(container).find(".graph-note-label").remove();
 
-                for (k = 0; k < keyEvents.length; k++) {
-                    var bgColor = graphObj.getData()[k].color;
+                    for (k = 0; k < keyEvents.length; k++) {
+                        var bgColor = graphObj.getData()[k].color;
 
-                    if (!keyEvents[k]) {
-                        continue;
-                    }
-
-                    for (var l = 0; l < keyEvents[k].length; l++) {
-                        var o = graphObj.pointOffset({ x: keyEvents[k][l].data[0], y: keyEvents[k][l].data[1] });
-
-                        if (o.left <= 15) {
-                            o.left = 15;
+                        if (!keyEvents[k]) {
+                            continue;
                         }
 
-                        if (o.left >= (graphWidth - 15)) {
-                            o.left = (graphWidth - 15);
+                        for (var l = 0; l < keyEvents[k].length; l++) {
+                            var o = graphObj.pointOffset({ x: keyEvents[k][l].data[0], y: keyEvents[k][l].data[1] });
+
+                            if (o.top <= 40) {
+                                o.top = 40;
+                            }
+                            else if (o.top >= (graphHeight + 30)) {
+                                o.top = graphHeight + 30;
+                            }
+
+                            if (o.left <= 15) {
+                                o.left = 15;
+                            }
+                            else if (o.left >= (graphWidth - 15)) {
+                                o.left = (graphWidth - 15);
+                            }
+
+                            var keyEventLabel = $('<div class="graph-key-event-label">').text(keyEvents[k][l].code);
+
+                            keyEventLabel.attr({
+                                "title": keyEvents[k][l].desc,
+                                "data-points": "[" + keyEvents[k][l].data + "]"
+                            }).css({
+                                "position": 'absolute',
+                                "left": o.left,
+                                "top": o.top - 33,
+                                "display": 'none',
+                                "background-color": bgColor
+                            }).appendTo(graphObj.getPlaceholder()).show();
+
+                            $(".tipsy").remove();
+                            keyEventLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true });
                         }
-
-                        var keyEventLabel = $('<div class="graph-key-event-label">').text(keyEvents[k][l].code);
-
-                        keyEventLabel.attr({
-                            "title": keyEvents[k][l].desc,
-                            "data-points": "[" + keyEvents[k][l].data + "]"
-                        }).css({
-                            "position": 'absolute',
-                            "left": o.left,
-                            "top": o.top - 33,
-                            "display": 'none',
-                            "background-color": bgColor
-                        }).appendTo(graphObj.getPlaceholder()).show();
-
-                        $(".tipsy").remove();
-                        keyEventLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true });
                     }
-                }
 
-                // Add note labels to the graph
-                if (appIdsForNotes && !(countlyGlobal && countlyGlobal.ssr) && !(bucket === "hourly" && dataPoints[0].data.length > 24) && bucket !== "weekly") {
-                    var noteDateIds = countlyCommon.getNoteDateIds(bucket),
-                        frontData = graphObj.getData()[graphObj.getData().length - 1],
-                        startIndex = (!frontData.data[1] && frontData.data[1] !== 0) ? 1 : 0;
-                    for (k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
-                        if (frontData.data[l]) {
-                            var graphPoint = graphObj.pointOffset({ x: frontData.data[l][0], y: frontData.data[l][1] });
-                            var notes = countlyCommon.getNotesForDateId(noteDateIds[k], appIdsForNotes);
-                            var colors = ["#79a3e9", "#70bbb8", "#e2bc33", "#a786cd", "#dd6b67", "#ece176"];
+                    // Add note labels to the graph
+                    if (appIdsForNotes && !(countlyGlobal && countlyGlobal.ssr) && !(bucket === "hourly" && dataPoints[0].data.length > 24) && bucket !== "weekly") {
+                        var noteDateIds = countlyCommon.getNoteDateIds(bucket),
+                            frontData = graphObj.getData()[graphObj.getData().length - 1],
+                            startIndex = (!frontData.data[1] && frontData.data[1] !== 0) ? 1 : 0;
+                        for (k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
+                            if (frontData.data[l]) {
+                                var graphPoint = graphObj.pointOffset({ x: frontData.data[l][0], y: frontData.data[l][1] });
+                                var notes = countlyCommon.getNotesForDateId(noteDateIds[k], appIdsForNotes);
+                                var colors = ["#79a3e9", "#70bbb8", "#e2bc33", "#a786cd", "#dd6b67", "#ece176"];
 
-                            if (notes.length) {
-                                var labelColor = colors[notes[0].color - 1];
-                                var titleDom = '';
-                                if (notes.length === 1) {
-                                    var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
-                                    var noteId = notes[0].app_id;
-                                    var app = countlyGlobal.apps[noteId] || {};
-                                    titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
-                                    "<div class='note-content'>" + notes[0].note + "</div>" +
-                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType + "</span> </div>" +
-                                        "</div>";
-                                }
-                                else {
-                                    var noteDateFormat = "D MMM, YYYY";
-                                    if (countlyCommon.getPeriod() === "month") {
-                                        noteDateFormat = "MMM YYYY";
+                                if (notes.length) {
+                                    var labelColor = colors[notes[0].color - 1];
+                                    var titleDom = '';
+                                    if (notes.length === 1) {
+                                        var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
+                                        var noteId = notes[0].app_id;
+                                        var app = countlyGlobal.apps[noteId] || {};
+                                        titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
+                                        "<div class='note-content'>" + notes[0].note + "</div>" +
+                                        "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + (jQuery.i18n.map["notes.note-" + notes[0].noteType] || notes[0].noteType) + "</span> </div>" +
+                                            "</div>";
                                     }
-                                    noteTime = moment(notes[0].ts).format(noteDateFormat);
-                                    titleDom = "<div><div class='note-header'><div class='note-title'>" + noteTime + "</div></div>" +
-                                        "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + "," + JSON.stringify(appIdsForNotes) + ")'  class='notes-view-link'>View Notes (" + notes.length + ")</span></div>" +
-                                        "</div>";
-                                }
-                                var graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor + ';"><div class="fa fa-align-left" ></div></div>');
-                                graphNoteLabel.attr({
-                                    "title": titleDom,
-                                    "data-points": "[" + frontData.data[l] + "]"
-                                }).css({
-                                    "position": 'absolute',
-                                    "left": graphPoint.left,
-                                    "top": graphPoint.top - 53,
-                                    "display": 'none',
-                                    "border-color": frontData.color
-                                }).appendTo(graphObj.getPlaceholder()).show();
+                                    else {
+                                        var noteDateFormat = "D MMM, YYYY";
+                                        if (countlyCommon.getPeriod() === "month") {
+                                            noteDateFormat = "MMM YYYY";
+                                        }
+                                        noteTime = moment(notes[0].ts).format(noteDateFormat);
+                                        titleDom = "<div><div class='note-header'><div class='note-title'>" + noteTime + "</div></div>" +
+                                            "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + "," + JSON.stringify(appIdsForNotes) + ")'  class='notes-view-link'>View Notes (" + notes.length + ")</span></div>" +
+                                            "</div>";
+                                    }
+                                    var graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor + ';"><div class="fa fa-align-left" ></div></div>');
+                                    graphNoteLabel.attr({
+                                        "title": titleDom,
+                                        "data-points": "[" + frontData.data[l] + "]"
+                                    }).css({
+                                        "position": 'absolute',
+                                        "left": graphPoint.left,
+                                        "top": graphPoint.top - 53,
+                                        "display": 'none',
+                                        "border-color": frontData.color
+                                    }).appendTo(graphObj.getPlaceholder()).show();
 
-                                $(".tipsy").remove();
-                                graphNoteLabel.tipsy({cssClass: 'tipsy-for-note', gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
+                                    $(".tipsy").remove();
+                                    graphNoteLabel.tipsy({cssClass: 'tipsy-for-note', gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
+                                }
                             }
                         }
                     }
-                }
+                };
+
+                drawLabels();
 
                 $(container).on("mouseout", function() {
                     graphObj.unlockCrosshair();
@@ -926,10 +999,13 @@
                             if (series.mode === "ghost") {
                                 series.label = jQuery.i18n.map["common.previous-period"];
                             }
-
+                            var opacity = "1.0";
                             //add lines over color block for dashed 
-                            if (series.dashed) {
+                            if (series.dashed && series.previous) {
                                 addMe = '<svg style="width: 12px; height: 12px; position:absolute; top:0; left:0;"><line stroke-dasharray="2, 2"  x1="0" y1="100%" x2="100%" y2="0" style="stroke:rgb(255,255,255);stroke-width:30"/></svg>';
+                            }
+                            if (series.alpha) {
+                                opacity = series.alpha + "";
                             }
                             if (formattedValue) {
                                 formattedValue = parseFloat(formattedValue).toFixed(2).replace(/[.,]00$/, "");
@@ -939,7 +1015,7 @@
                             }
 
                             tooltipHTML += "<div class='inner'>";
-                            tooltipHTML += "<div class='color' style='position:relative; background-color: " + series.color + "'>" + addMe + "</div>";
+                            tooltipHTML += "<div class='color' style='position:relative; background-color: " + series.color + "; opacity:" + opacity + ";'>" + addMe + "</div>";
                             tooltipHTML += "<div class='series'>" + series.label + "</div>";
                             tooltipHTML += "<div class='value'>" + formattedValue + "</div>";
                             tooltipHTML += "</div>";
@@ -998,6 +1074,78 @@
 
                     showCrosshairTooltip(j, pos, pointFound);
                 });
+
+                if (!(options && _.isObject(options) && options.disableCountlyZoom)) {
+                    var zoomTarget = $(container),
+                        zoomContainer = $(container).parent();
+
+                    zoomContainer.find(".zoom").remove();
+                    zoomContainer.prepend("<div class=\"zoom\"><div class=\"zoom-button zoom-out\"></div><div class=\"zoom-button zoom-reset\"></div><div class=\"zoom-button zoom-in\"></div></div>");
+                    zoomTarget.addClass("pannable");
+                    zoomContainer.data("zoom", zoomContainer.data("zoom") || 1);
+
+                    zoomContainer.find(".zoom-in").tooltipster({
+                        theme: "tooltipster-borderless",
+                        content: $.i18n.map["common.zoom-in"]
+                    });
+
+                    zoomContainer.find(".zoom-out").tooltipster({
+                        theme: "tooltipster-borderless",
+                        content: $.i18n.map["common.zoom-out"]
+                    });
+
+                    zoomContainer.find(".zoom-reset").tooltipster({
+                        theme: "tooltipster-borderless",
+                        content: {},
+                        functionFormat: function() {
+                            return $.i18n.prop("common.zoom-reset", Math.round(zoomContainer.data("zoom") * 100));
+                        }
+                    });
+
+                    zoomContainer.find(".zoom-out").off("click").on("click", function() {
+                        var plot = zoomTarget.data("plot");
+                        plot.zoomOut({
+                            amount: 1.5,
+                            center: {left: plot.width() / 2, top: plot.height()}
+                        });
+
+                        zoomContainer.data("zoom", zoomContainer.data("zoom") / 1.5);
+                    });
+
+                    zoomContainer.find(".zoom-reset").off("click").on("click", function() {
+                        var plot = zoomTarget.data("plot");
+
+                        plot.zoomOut({
+                            amount: zoomContainer.data("zoom"),
+                            center: {left: plot.width() / 2, top: plot.height()}
+                        });
+
+                        zoomContainer.data("zoom", 1);
+
+                        var yaxis = plot.getAxes().yaxis;
+                        var panOffset = yaxis.p2c(0) - yaxis.box.height + yaxis.box.width + 2;
+                        if (Math.abs(panOffset) > 10) {
+                            plot.pan({top: panOffset});
+                        }
+                    });
+
+                    zoomContainer.find(".zoom-in").off("click").on("click", function() {
+                        var plot = zoomTarget.data("plot");
+                        plot.zoom({
+                            amount: 1.5,
+                            center: {left: plot.width() / 2, top: plot.height()}
+                        });
+                        zoomContainer.data("zoom", zoomContainer.data("zoom") * 1.5);
+                    });
+
+                    zoomTarget.off("plotzoom").on("plotzoom", function() {
+                        drawLabels();
+                    });
+
+                    zoomTarget.off("plotpan").on("plotpan", function() {
+                        drawLabels();
+                    });
+                }
             }, dataPoints, container, bucket);
         };
 
@@ -1678,19 +1826,24 @@
                 data;
             for (var i = 0; i < chartData.length; i++) {
                 data = chartData[i];
-                if (data[metric] && !uniqueNames[data[metric]]) {
-                    uniqueNames[data[metric]] = data;
+                var newName = (data[metric] + "").trim();
+                if (newName === "") {
+                    newName = jQuery.i18n.map["common.unknown"];
+                }
+                data[metric] = newName;
+                if (newName && !uniqueNames[newName]) {
+                    uniqueNames[newName] = data;
                 }
                 else {
                     for (var key in data) {
                         if (typeof data[key] === "string") {
-                            uniqueNames[data[metric]][key] = data[key];
+                            uniqueNames[newName][key] = data[key];
                         }
                         else if (typeof data[key] === "number") {
-                            if (!uniqueNames[data[metric]][key]) {
-                                uniqueNames[data[metric]][key] = 0;
+                            if (!uniqueNames[newName][key]) {
+                                uniqueNames[newName][key] = 0;
                             }
-                            uniqueNames[data[metric]][key] += data[key];
+                            uniqueNames[newName][key] += data[key];
                         }
                     }
                 }
@@ -2388,6 +2541,7 @@
                 tickTexts = _.compact(tickTexts);
             }
 
+            var labelCn = ticks.length;
             if (ticks.length <= 2) {
                 limitAdjustment = 0.02;
                 var tmpTicks = [],
@@ -2431,7 +2585,8 @@
                 min: 0 - limitAdjustment,
                 max: (limitAdjustment) ? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
                 tickTexts: tickTexts,
-                ticks: _.compact(ticks)
+                ticks: _.compact(ticks),
+                labelCn: labelCn
             };
         };
 
@@ -3896,6 +4051,9 @@
                 return obj;
             }
             else {
+                if (typeof obj[is[0]] === "undefined" && value !== undefined) {
+                    obj[is[0]] = {};
+                }
                 return countlyCommon.dot(obj[is[0]], is.slice(1), value);
             }
         };

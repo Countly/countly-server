@@ -4,8 +4,8 @@
 #consent-view .ui-tabs .ui-tabs-panel{padding:0;}
 #consent-view .ui-tabs .ui-tabs-nav li a{background-color: transparent;  color: #666; padding: 0px 0px 6px 0px;  font-size:15px}
 #consent-view .ui-tabs.ui-widget-content .ui-tabs-nav > .ui-state-default {border-top: none;}
-#consent-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected {border-top: none; border-bottom: none !important; background-color:transparent;}
-#consent-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected a{color:#333; border-bottom: 2px solid #19cc63 !important;}
+#consent-view .ui-tabs .ui-tabs-nav li.ui-tabs-active {border-top: none; border-bottom: none !important; background-color:transparent;}
+#consent-view .ui-tabs .ui-tabs-nav li.ui-tabs-active a{color:#333; border-bottom: 2px solid #19cc63 !important;}
 #consent-view .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
 #consent-view .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
 #consent-view #d-table-history_wrapper {margin:0px;}

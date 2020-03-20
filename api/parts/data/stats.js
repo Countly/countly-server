@@ -221,10 +221,10 @@ function getTotalMsgSent(callback, apps) {
 function getUserCountForApp(app, callback) {
     countlyDb.collection("app_users" + app._id).estimatedDocumentCount(function(err, count) {
         if (err || !count) {
-            callback(0);
+            callback(null, 0);
         }
         else {
-            callback(err, count);
+            callback(null, count);
         }
     });
 }
@@ -255,7 +255,7 @@ function getCrashGroupsForApp(app, callback) {
             callback(null, 0);
         }
         else {
-            callback(err, count);
+            callback(null, count);
         }
     });
 }

@@ -6,6 +6,7 @@
 .crash-reports tbody tr {cursor: pointer;}
 
 .truncated {overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height: 15px;}
+.first-crash-line {overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height: 15px; font-size: 11px; color: #8e8e8e;}
 #crash-numbers-container .widget-footer {border-top-left-radius:7px; border-top-right-radius:7px; border-top: 1px solid #c2c2c2; border-bottom-left-radius:0px; border-bottom-right-radius:0px;}
 #crash-big-numbers th{text-align: center; text-transform: uppercase; font-family:Ubuntu,Helvetica,sans-serif;}
 #crash-big-numbers td{background-color: #fff; text-align: center; font-family:Oswald; font-size: 27px; padding: 20px 5px; word-wrap: break-word;}
@@ -260,4 +261,83 @@ td.details table tr.header, td.details table tr.header:hover {
 
 .crash-detail-subrow table tbody tr td:last-child {
 	border-right: 1px solid #ebebeb;
+}
+
+
+.crashes-filter-title  .up,.crashes-filter-title  .down {font-size: 9px; line-height:9px;  color: #717171; opacity: 0.8; margin-left:6px;}
+.crashes-filter-title  span.up {display:none;}
+.crashes-filter-title.active  span.up {display:inline;}
+.crashes-filter-title.active  span.down {display:none;}
+.crashes-filter-title {
+    padding: 6px 9px 0px 3px;
+    padding-right: 25px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #444;
+    font-weight: normal;
+    font: 13px Ubuntu,Helvetica,sans-serif;
+    cursor:pointer;
+    position:relative;
+}
+.crashes-filter-title a {
+    display: inline-block;
+    max-width: calc(100% - 30px);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    float:left;
+}
+.crashes-filter-title:hover {
+    color:#2FA732;
+}
+.crashes-filter-title:hover span{
+    color:#2FA732;
+}
+
+/*-------------*/
+
+.crashes-selector-form table {width:100%;}
+.crashes-selector-form table tr td {padding:5px 0px;}
+.crashes-selector-form table tr td:first-child {text-align:right; width:50px; white-space: nowrap; padding-right:10px;}
+.crashes-selector-form .cly-select { background-color:#FDFDFD; width:100%;}
+.crashes-selector-form .cly-select .select-items{width: 100%;}
+.crashes-selector-form .cly-select .placeholder {color: #D0D0D0;}
+
+.crashes-selector-form {
+    box-shadow: 0 3px 7px rgba(0,0,0,.08);
+    width: 350px;
+    background-color: #fff;
+    position: absolute;
+    left: 10px;
+    top: 55px;
+    z-index: 100;
+    border: 1px solid #D0D0D0;
+    border-radius: 2px;
+    display: none;
+    padding: 18px 22px 20px 20px;
+}
+
+
+/*-----*/
+
+
+.apply-crashes-filter {
+    float:right;
+    outline: none;
+    border: none;
+    border-radius: 2px;
+    margin-top: 5px;
+    margin-right: -2px;
+}
+
+
+.remove-crashes-filter {
+    cursor:pointer;
+    float:right;
+    outline: none;
+    border: none;
+    box-shadow:none;
+    margin-top: 5px;
+    background-color:#ffffff;
+
 }

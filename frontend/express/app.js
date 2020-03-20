@@ -37,7 +37,7 @@ var versionInfo = require('./version.info'),
     // countlyStats = require('../../api/parts/data/stats.js'),
     countlyFs = require('../../api/utils/countlyFs.js'),
     common = require('../../api/utils/common.js'),
-    bruteforce = require('./libs/preventBruteforce.js'),
+    preventBruteforce = require('./libs/preventBruteforce.js'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
@@ -85,7 +85,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: ""
+    google_maps_api_key: "",
+    offline_mode: false
 });
 
 plugins.setUserConfigs("frontend", {
@@ -107,7 +108,7 @@ plugins.setConfigs("security", {
     password_expiration: 0,
     password_rotation: 3,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500
 });
@@ -587,8 +588,8 @@ app.use(function(req, res, next) {
         var securityConf = plugins.getConfig("security");
         app.dashboard_headers = securityConf.dashboard_additional_headers;
         add_headers(req, res);
-        bruteforce.fails = Number.isInteger(securityConf.login_tries) ? securityConf.login_tries : 3;
-        bruteforce.wait = securityConf.login_wait || 5 * 60;
+        preventBruteforce.fails = Number.isInteger(securityConf.login_tries) ? securityConf.login_tries : 3;
+        preventBruteforce.wait = securityConf.login_wait || 5 * 60;
 
         curTheme = plugins.getConfig("frontend", req.session && req.session.settings).theme;
         app.loadThemeFiles(req.cookies.theme || curTheme, function(themeFiles) {
@@ -653,11 +654,26 @@ app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
 
 
 //prevent bruteforce attacks
-bruteforce.db = countlyDb;
-bruteforce.mail = countlyMail;
-bruteforce.paths.push(countlyConfig.path + "/login");
-bruteforce.paths.push(countlyConfig.path + "/mobile/login");
-app.use(bruteforce.defaultPrevent);
+preventBruteforce.db = countlyDb;
+preventBruteforce.mail = countlyMail;
+
+for (let pathPart of ["/login", "/mobile/login"]) {
+    const absPath = countlyConfig.path + pathPart;
+    preventBruteforce.pathIdentifiers[absPath] = "login";
+    preventBruteforce.userIdentifiers[absPath] = (req) => req.body.username;
+}
+
+preventBruteforce.blockHooks.login = function(uid, req, res) { // eslint-disable-line no-unused-vars
+    preventBruteforce.db.collection("members").findOne({username: uid}, function(err, member) {
+        if (member) {
+            preventBruteforce.mail.sendTimeBanWarning(member, preventBruteforce.db);
+        }
+    });
+};
+
+preventBruteforce.pathIdentifiers[countlyConfig.path + "/forgot"] = "forgot";
+
+app.use(preventBruteforce.middleware);
 
 plugins.loadAppPlugins(app, countlyDb, express);
 
@@ -712,21 +728,39 @@ app.get(countlyConfig.path + '/configs', function(req, res) {
 });
 
 app.get(countlyConfig.path + '/session', function(req, res, next) {
-    if (req.session.uid) {
-        if (Date.now() > req.session.expires) {
-            //logout user
-            res.send("logout");
-        }
-        else {
-            //extend session
-            if (req.query.check_session) {
-                res.send("success");
+    if (req.session.auth_token) {
+        authorize.verify_return({
+            db: countlyDb,
+            token: req.session.auth_token,
+            req_path: "",
+            callback: function(valid) {
+                if (!valid) {
+                //logout user
+                    res.send("logout");
+                }
+                else {
+                    if (req.session.uid) {
+                        if (Date.now() > req.session.expires) {
+                        //logout user
+                            res.send("logout");
+                        }
+                        else {
+                        //extend session
+                            if (req.query.check_session) {
+                                res.send("success");
+                            }
+                            else {
+                                extendSession(req, res, next);
+                                res.send("success");
+                            }
+                        }
+                    }
+                    else {
+                        res.send("login");
+                    }
+                }
             }
-            else {
-                extendSession(req, res, next);
-                res.send("success");
-            }
-        }
+        });
     }
     else {
         res.send("login");
@@ -845,8 +879,17 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             use_google: configs.use_google || false,
             themeFiles: theme,
             inject_template: req.template,
-            javascripts: []
+            javascripts: [],
+            offline_mode: configs.offline_mode || false
         };
+
+        // google services cannot work when offline mode enable
+        if (toDashboard.offline_mode) {
+            toDashboard.use_google = false;
+        }
+        if (countlyGlobal.config.offline_mode) {
+            countlyGlobal.config.use_google = false;
+        }
 
         var plgns = [].concat(plugins.getPlugins());
         if (plgns.indexOf('push') !== -1) {
@@ -1040,7 +1083,7 @@ app.get(countlyConfig.path + '/reset/:prid', function(req, res) {
                     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                     res.header('Expires', '0');
                     res.header('Pragma', 'no-cache');
-                    res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", password_min: req.query.password_min || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+                    res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", password_min: req.query.password_min || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template });
                 }
             }
             else {
@@ -1076,6 +1119,7 @@ app.post(countlyConfig.path + '/forgot', function(req, res/*, next*/) {
     if (req.body.email) {
         if (countlyCommon.validateEmail(req.body.email)) {
             membersUtility.forgot(req, function(/*member*/) {
+                preventBruteforce.fail("forgot", req.ip);
                 res.redirect(countlyConfig.path + '/forgot?message=forgot.result');
             });
         }
@@ -1096,8 +1140,8 @@ app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
         else if (err === "User exists") {
             res.redirect(countlyConfig.path + '/login');
         }
-        else if (err === "Wrong request parameters") {
-            res.redirect(countlyConfig.path + '/setup');
+        else if (err && err.message) {
+            res.redirect(countlyConfig.path + `/setup?error=${JSON.stringify(err)}`);
         }
         else {
             res.status(500).send('Server Error');
@@ -1113,13 +1157,13 @@ app.post(countlyConfig.path + '/login', function(req, res/*, next*/) {
             }
             else {
                 res.redirect(countlyConfig.path + '/dashboard');
-                bruteforce.reset(req.body.username);
+                preventBruteforce.reset("login", req.body.username);
             }
         }
         else {
             res.redirect(countlyConfig.path + '/login?message=login.result');
             if (req.body.username) {
-                bruteforce.fail(req.body.username);
+                preventBruteforce.fail("login", req.body.username);
             }
         }
     });
@@ -1137,7 +1181,7 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
     }
     var user = basicAuth(req);
     if (user && user.name && user.pass) {
-        bruteforce.isBlocked(user.name, function(isBlocked, fails, err) {
+        preventBruteforce.isBlocked("login", user.name, function(isBlocked, fails, err) {
             if (isBlocked) {
                 if (err) {
                     res.status(500).send('Server Error');
@@ -1156,14 +1200,14 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
                         }
                         else {
                             plugins.callMethod("apikeySuccessful", {req: req, res: res, next: next, data: {username: member.username}});
-                            bruteforce.reset(user.name);
+                            preventBruteforce.reset("login", user.name);
                             countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                             res.status(200).send(member.api_key);
                         }
                     }
                     else {
                         plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: user.name}});
-                        bruteforce.fail(user.name);
+                        preventBruteforce.fail("login", user.name);
                         unauthorized(res);
                     }
                 });
@@ -1177,10 +1221,15 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
 });
 
 app.get(countlyConfig.path + '/sdks.js', function(req, res) {
-    var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
-    request(options, function(a, c, b) {
-        res.set('Content-type', 'application/javascript').status(200).send(b);
-    });
+    if (!plugins.getConfig("api").offline_mode) {
+        var options = {uri: "http://code.count.ly/js/sdks.js", method: "GET", timeout: 4E3};
+        request(options, function(a, c, b) {
+            res.set('Content-type', 'application/javascript').status(200).send(b);
+        });
+    }
+    else {
+        res.status(403).send("Server is in offline mode, this request cannot be completed.");
+    }
 });
 
 app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
@@ -1195,14 +1244,14 @@ app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
                 }
                 else {
                     plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
-                    bruteforce.reset(req.body.username);
+                    preventBruteforce.reset("login", req.body.username);
                     countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                     res.render('mobile/key', { "key": member.api_key || -1 });
                 }
             }
             else {
                 plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
-                bruteforce.fail(req.body.username);
+                preventBruteforce.fail("login", req.body.username);
                 res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
             }
         });
@@ -1237,6 +1286,8 @@ app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
         return true;
     }
 
+    req.body.app_image_id = common.sanitizeFilename(req.body.app_image_id);
+
     var tmp_path = req.files.app_image.path,
         target_path = __dirname + '/public/appimages/' + req.body.app_image_id + ".png",
         type = req.files.app_image.type;
@@ -1270,6 +1321,8 @@ app.post(countlyConfig.path + '/member/icon', function(req, res, next) {
         res.end();
         return true;
     }
+
+    req.body.member_image_id = common.sanitizeFilename(req.body.member_image_id);
 
     var tmp_path = req.files.member_image.path,
         target_path = __dirname + '/public/memberimages/' + req.body.member_image_id + ".png",
@@ -1414,13 +1467,13 @@ app.get(countlyConfig.path + '/render', function(req, res) {
         db: countlyDb,
         multi: false,
         owner: req.session.uid,
+        ttl: 300,
         purpose: "LoginAuthToken",
         callback: function(err2, token) {
             if (err2) {
                 console.log(err2);
                 return res.send(false);
             }
-
             options.token = token;
             render.renderView(options, function(err3) {
                 if (err3) {
@@ -1437,7 +1490,7 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
     membersUtility.loginWithToken(req, function(member) {
         if (member) {
             var serverSideRendering = req.query.ssr || false;
-            bruteforce.reset(member.username);
+            preventBruteforce.reset("login", member.username);
             var options = "";
             if (serverSideRendering) {
                 options += "ssr=" + serverSideRendering;

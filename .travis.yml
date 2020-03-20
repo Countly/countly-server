@@ -1,10 +1,10 @@
 language: nodejs
-dist: trusty
-node_js: "12"
+dist: bionic
+node_js: "10"
 env:
   global:
   - MONGODB=4.0.12
-  - secure: ZXdUMP+8Nk9Kd5nX31D/DIB1t2xlJd+T4W7umWjwpy+KPA9d1W1OhUG6V2Gpv3PsJf+UtMosgZsywcLFVG4l/WcjAhs3c9pegW5ZRYAEfVjkk7aHhWQGvj5DID8iAAxs91Mm8LwJ43o68x+XN6746zArPqcVzQltDunJ0G3gfh8=
+  - secure: f2KyTV9GmGnmrMYkUnXIiRD384Fcl3nw5wDBvT6F3ucC3ZdaEw8mfKbMQjKJLgaBb90PnVz72y1tuSt5A4bHetU4kh3Vgb3NyRkJ0md+Pi6Ox+ivI2Zjvv06Xq/Mw2VrBOTHe81z6BntYq8imY7O455s089jMcEvQ052Q/NqSHE=
 branches:
   except:
   - gh-pages
@@ -20,6 +20,9 @@ before_script:
 - nodejs --version
 - ${PWD}/mongodb-linux-x86_64-${MONGODB}/bin/mongod --version
 - cat ${PWD}/mongod.log
+- sudo rm -rf ./node_modules
+- sudo npm install --unsafe-perm
+- sudo countly restart
 script:
 - countly shellcheck
 - sudo npm test

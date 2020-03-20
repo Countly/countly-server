@@ -42,6 +42,10 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
             help: c.a && c.a && c.a.key && c.a.key.length > 50 ? t : '',
             ehelp: c.a && c.a && c.a.key && c.a.key.length < 50 ? t : ''
         };
+        this.templateData.rate = {
+            rate: c.rate && c.rate.rate || '',
+            period: c.rate && c.rate.period || ''
+        };
     },
 
     onChange: function(name, value) {

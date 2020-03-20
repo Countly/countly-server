@@ -1,3 +1,190 @@
+## Version 20.03
+
+**Fixes**
+* [2fa] added white labeling to 2fa qr codes
+* [2fa] adding 2FA check to password reset
+* [2fa] let users retry if they input an incorrect auth code
+* [UI] Safari input[type="search"] fixes
+* [UI] add google map api key configuration reminder
+* [UI] cly-select disabled styling
+* [UI] event duration formatted in all places
+* [UI] fixed fonts rendering on Windows
+* [UI] fixed selectize performance issue
+* [UI] fixed single data point not visible
+* [UI] hide menu category if no menu items available
+* [UI] use arrow keys to handle navigation on dropdowns
+* [api] fixed api side aggregated data user correction in some cases
+* [api] fixed escaping filenames in headers
+* [api] respect city settings when it comes to user 
+* [core] fixes running countly in sub directory
+* [core] improve countly user password change experience
+* [crashes] double dots on y axis for crash/session ratio
+* [crashes] make sure minidump_stackwalk binary has proper permissions
+* [data-migration] correctly export push credentials and import them
+* [dbviewer] add link to all links instead of javascript view change
+* [dbviewer] aggregation optimization and long tasks
+* [dbviewer] making query to none existing database results in 504 timeout
+* [export] CSV export injection prevention
+* [export] do not convert timestamps to date values
+* [export] fix problems with SSL configuration
+* [frontend] fixed app version sorting in the table
+* [frontend] fixed css for User Loyalty bug
+* [frontend] properly merge aggregated metrics to fix multiple empty and unknown keys
+* [push] Fixing multi-select overflow
+* [push] Fixing race when 2 jobs compete for 1 resource
+* [push] Prevent multiple dashboard requests when refresh is faster than the request itself
+* [push] Return validation errors in response
+* [push] Validating _id length on certain endpoints
+* [push] notification not found error disambiguation
+* [push] prevent overflow of app title in create message
+* [reportmanager] fixed report completed reminder
+* [reports] fixed Incorrect email report colors
+* [security] add api key schema checking
+* [security] additional sanitiztion for uploaded file names
+* [security] command line fixes
+* [security] deleting pasword reset requests when changin email in settings
+* [security] escaping user provided values in all emails
+* [security] global collection access management
+* [security] invalidate old sessions after Password Reset
+* [security] kill other sessions for same user on logout
+* [security] password recovery bruteforce prevention
+* [security] prevent injection from localiztion key
+* [security] proper setup page validation
+* [security] sending activation link instead of password
+* [security] updated jquery and jquery ui to latest versions
+* [slipping-aways] fixed calculating period bug
+* [star-rating] design fixes
+* [star-rating] fixed deleting widgets on app delete
+* [star-rating] removed web oriented settings from other app types from feedback drawer
+* [star-rating] sticker z-index fixed
+* [star-rating] textarea and email input overflow problem fixed
+* [tokens] fixed for not taking token without endpoint restriction
+* [tokens] reusing tokens when possible instead of creating multiple tokens
+* [topevents] bug fix on some periods app change
+* [views] action map should use new way to get URL
+* [views] fixed displaying scroll % for dynamic height pages
+* [views] fixed issue with incorrect results when searching by views name and sorting by any other column
+* [web] updated UA parser recognizing new browsers as IE based on chromium
+
+**Enterprise fixes**
+* [UI] added missing localizations
+* [ab-testing] hide administration buttons from users
+* [attribution] additional checks on form creation
+* [attribution] hash collision mitigation
+* [attribution] ignore bots for clicks
+* [block] convert event segments to proper type before checking
+* [cohorts] correct total count based on app_users collection
+* [cohorts] fix calculating aggregated users on new year change
+* [cohorts] fixed editing cohort reseting user query
+* [cohorts] fixed reseting cohorts statuses on restart
+* [cohorts] handle refresh action for aggregated data
+* [cohorts] move to separate process not to affect data ingestion
+* [cohorts] optimize aggregated data output by omiting 0
+* [concurrent-users] loadConfig before mail.lookup
+* [concurrent_users] ensure TTL and max indexes
+* [concurrent_users] removed broken css
+* [crash_symbolication] added file type check on api side for symbol upload process
+* [crash_symbolication] enter press event link to ajaxSubmit method
+* [crash_symbolication] fix undefined values in build list
+* [crash_symboliction] fix symbolication log type and android native command
+* [drill] event context specific indexes
+* [drill] treat numbers as potential floats
+* [flows] cache event indices
+* [funnels] fixed using cohorts as segmentation in OR steps
+* [groups] add systemlogs
+* [remote-config] add systemlogs
+* [restrict] restrict access to manage menu
+* [restrict] updated API/view corelation
+* [revenue] overview widget not refresh on date change
+* [users] fixed column selection bugs
+* [users] format custom property as date only if it is withing 5 years period from now
+* [whitelabel] active menu item doesn't work for bg
+
+**New Features**
+* [2fa] encrypt 2fa secrets in db
+* [UI] dashed line for unfinished periods in graphs
+* [UI] new date picker
+* [active_users] displays MAU, WAU, DAU in Users section
+* [api] record user's device orientation
+* [config] add buttong to test sending email
+* [core] offline mode config for closed network servers
+* [crashes] add first crash line to crash name in table
+* [crashes] new crash metrics
+* [crashes] revised graph UI
+* [crashes] support for PL Crash reports
+* [dbviewer] correctly display ObjectId objects in DBViewer
+* [dbviewer] display indexes of collections
+* [frontend] config for default period selected on dashboard
+* [frontend] zooming controls for graphs
+* [populator] populate feedback data
+* [push] rate limiting push sending
+* [reports] job for clearing old autogenerates reports
+* [server-stats] add 3 month period for datapoints
+* [star-rating] added custom theme support for feedback popup
+* [star-rating] display tooltips on emojis
+* [systemlogs] display id of document changed on first level
+* [tokens] job for clearing old unused tokens
+* [views] allow changing display name for views
+
+**New Enterprise Features**
+* [UI] change URL on applied query in all views
+* [cohorts] new UI with overview and user metrics
+* [cohorts] new bars dashboard widget
+* [cohorts] support for OR steps
+* [crash_symbolication] UI for missing symbols
+* [crash_symbolication] add PL crash support
+* [drill] add doesn't contain operator
+* [drill] config to disable recording big lists
+* [drill] preaggregated reports for slower queries
+* [drill] reverse big list searching
+* [drill] updated UI for query creation first
+* [flows] add report manger support for slow queries
+* [flows] apply event exclusion run time
+* [formulas] add cohorts user numbers
+* [formulas] add session duration to formulas
+* [formulas] add widget number for custom dashboards
+* [funnels] new UI with overview
+* [funnels] parallel step processing for faster responses
+* [funnels] show time spent between steps
+* [funnels] support for OR steps
+* [slipping-away] allow segmenting Slipping away users for EE
+* [star-rating] added to drill and cohorts/funnels steps
+* [users] display more mtea info on user profile page
+* [users] recording and displaying nested objects
+
+**Development related**
+* [UI] create global solution in CountlyHelper for creating and managing drawers
+* [api] added local module to resolve relative path from Countly root path
+* [api] more events for db operations and indexes
+* [api] use promise all settled for plugin events
+* [cmd] allow calling nodejs scripts directly as commands (without shell wrapper)
+* [cmd] command line for systemlogs export
+* [config] Allowing specifying external overrides for configextender
+* [config] improved nginx SSL settings
+* [config] move Allow origin header to config
+* [core] allow simple SMTP mailer to be set from config
+* [core] allow universal env variable to configure both api & frontend
+* [core] make app creation 1 step process
+* [core] no need to load js files in javascript directory anymore, they are loaded automatically
+* [core] update for moment construtor warning
+* [db] add log rotation to mongodb in default installation script
+* [db] removed unused drill index
+* [dep] nodejs version 10
+* [drill] get rid of old meta method
+* [drill] move extend drill view to separate file, to make drill.view.js more readable
+* [drill] record last session id
+* [frontend] added category menu management methods
+* [frontend] i18n do not download properties for locale en, as it is default locale
+* [frontend] log renderCommon failure
+* [frontend] updated os mapping
+* [jobs] cancel all jobs with “schedule” on replace instead of nearest ones
+* [package] move grunt and other required libs to dependencies
+* [render] close headless browser incase of errors
+* [scripts] shellcheck for scripts
+* [taskmanager] fallback to gridfs for storing larger data sets
+* [taskmanager] support for sub tasks
+* [vagrant] use 8080 port
+
 ## Version 19.08.1
 
 **Fixes**

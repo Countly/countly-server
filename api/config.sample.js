@@ -116,7 +116,7 @@ var countlyConfig = {
     */
     fileStorage: "fs",
     /**
-    *Specifies after how long time configurations are reloded from data base. Default value is 10000 (10 seconds)
+    * Specifies after how long time configurations are reloded from data base. Default value is 10000 (10 seconds)
     * @type {integer} [default=10000]
     **/
     reloadConfigAfter: 10000,
@@ -150,8 +150,5 @@ var countlyConfig = {
     }
     */
 };
-
-// Set your host IP or domain to be used in the emails sent
-// countlyConfig.host = "YOUR_IP_OR_DOMAIN";
 
 module.exports = require('./configextender')('API', countlyConfig, process.env);

@@ -1,5 +1,6 @@
 var plugins = require('../../pluginManager.js'),
-    common = require('../../../api/utils/common.js');
+    common = require('../../../api/utils/common.js'),
+    udp;
 
 (function() {
 
@@ -66,6 +67,15 @@ var plugins = require('../../pluginManager.js'),
     });
 
     /**
+    * Register to /i/server-stats/update-data-points
+    * @param {{appId: string, sessionCount: number, eventCount: number}} ob - data points params
+    **/
+    plugins.register("/server-stats/update-data-points", function(ob) {
+        const {appId, sessionCount, eventCount} = ob;
+        updateDataPoints(appId, sessionCount, eventCount);
+    });
+
+    /**
     * Saves session and event count information to server_stats_data_points
     * collection in countly database
 
@@ -110,6 +120,7 @@ var plugins = require('../../pluginManager.js'),
             function() {}
         );
     }
+    udp = updateDataPoints;
 
     /**
     * Update data-point object with new events and sessions counts
@@ -180,7 +191,7 @@ var plugins = require('../../pluginManager.js'),
     });
 
     /**
-     *  Get's datapoint data from database and outputs it to browser 
+     *  Get's datapoint data from database and outputs it to browser
      *  @param {params} params - params object
      *  @param {object} filter - to filter documents
      *  @param {array} periodsToFetch - array with periods
@@ -197,6 +208,11 @@ var plugins = require('../../pluginManager.js'),
                 "data-points": 0
             };
             toReturn["all-apps"]["6_months"] = {
+                "events": 0,
+                "sessions": 0,
+                "data-points": 0
+            };
+            toReturn["all-apps"]["3_months"] = {
                 "events": 0,
                 "sessions": 0,
                 "data-points": 0
@@ -240,6 +256,13 @@ var plugins = require('../../pluginManager.js'),
                             "data-points": 0
                         };
                     }
+                    if (!toReturn[dataPerApp[i].a]["3_months"]) {
+                        toReturn[dataPerApp[i].a]["3_months"] = {
+                            "events": 0,
+                            "sessions": 0,
+                            "data-points": 0
+                        };
+                    }
 
                     if (dataPerApp[i].m === periodsToFetch[j]) {
                         toReturn[dataPerApp[i].a][formattedDate] = increaseDataPoints(toReturn[dataPerApp[i].a][formattedDate], dataPerApp[i]);
@@ -248,6 +271,11 @@ var plugins = require('../../pluginManager.js'),
                         if (j > 5) {
                             toReturn["all-apps"]["6_months"] = increaseDataPoints(toReturn["all-apps"]["6_months"], dataPerApp[i]);
                             toReturn[dataPerApp[i].a]["6_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["6_months"], dataPerApp[i]);
+                        }
+                        // only last 3 months
+                        if (j > 8) {
+                            toReturn[dataPerApp[i].a]["3_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["3_months"], dataPerApp[i]);
+                            toReturn["all-apps"]["3_months"] = increaseDataPoints(toReturn["all-apps"]["3_months"], dataPerApp[i]);
                         }
                         toReturn[dataPerApp[i].a]["12_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["12_months"], dataPerApp[i]);
                         toReturn["all-apps"]["12_months"] = increaseDataPoints(toReturn["all-apps"]["12_months"], dataPerApp[i]);
@@ -261,4 +289,4 @@ var plugins = require('../../pluginManager.js'),
 
 }());
 
-module.exports = {};
+module.exports = {updateDataPoints: udp};

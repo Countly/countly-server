@@ -148,7 +148,7 @@ function processProperty(pre, prop, res, query, updates, type, app_id, existingV
 }
 
 function processCollection(col, done) {
-    var c = col.s.name;
+    var c = col.collectionName;
     //find all meta docs
     db.collection(c).find({"_id": {"$regex": "meta.*"}}).toArray(function(err, res) {
         if (err) {
@@ -273,7 +273,7 @@ setTimeout(function() {
             }
             else {
                 var events = results.filter(function(col) {
-                    return reg.test(col.s.name);
+                    return reg.test(col.collectionName);
                 });
                 async.eachSeries(events, processCollection, function() {
                     console.log("Finished processing drill meta data");
