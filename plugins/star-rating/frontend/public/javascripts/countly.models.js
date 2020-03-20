@@ -22,7 +22,10 @@
         "target_page",
         "target_pages",
         "hide_sticker",
-        "is_active"
+        "is_active",
+        "trigger_size",
+        "comment_enable",
+        "contact_enable"
     ];
 
     var widgetJSONProperties = [

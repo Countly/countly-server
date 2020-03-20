@@ -100,11 +100,11 @@
                                     </div>
                                 </td>
                             </tr>
-                            
+
                         </table>
                         <button class="icon-button green apply-star-rating-filter" data-localize="common.apply"></button>
                         <div class="icon-button light remove-star-rating-filter" data-localize="star.reset-filters">Remove me</div>
-                       
+
                     </div>
                 </div>
             </div>
@@ -275,11 +275,11 @@
                                         </div>
                                     </td>
                                 </tr>
-                                
+
                             </table>
                             <button class="icon-button green apply-star-rating-filter" data-localize="common.apply"></button>
                             <div class="icon-button light remove-star-rating-filter" data-localize="star.reset-filters">Remove me</div>
-                           
+
                         </div>
                 </div>
             </div>
@@ -315,11 +315,11 @@
     <div class="details create-feedback-widget-drawer-detail" style="height:100%;overflow-y:auto">
         <div class="feedback-preview-side">
             <div class="feedback-preview-title" data-localize="feedback.popup-preview">
-            </div>  
+            </div>
             <div class="feedback-preview-body" id="feedback-preview-step-2">
                 <div id="window-preview">
                     <img src="star-rating/images/star-rating/browser.svg" id="window-preview-img">
-                    <div id="feedback-sticker-on-window" class="mleft"><svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> Feedback</div>
+                    <div id="feedback-sticker-on-window" class="mright-m"><svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> Feedback</div>
                 </div>
             </div>
             <div class="feedback-preview-body flip-container" id="feedback-preview-step-1">
@@ -334,50 +334,768 @@
                             <img title="Bad" class="grow rating-emotion" data-score="2" src="star-rating/images/star-rating/1_gray.svg">
                          </span>
                          <span class="emotion">
-                            <img title="Okay" class="grow rating-emotion" data-score="3" src="star-rating/images/star-rating/2_gray.svg">
+                            <img title="Okay" class="grow rating-emotion" data-score="3" src="star-rat<div class="feedback-modal" id="feedback-web-integration">
+    <div class="feedback-modal-header">
+        <center>Add Countly user feedback plugin to your app</center>
+        <i class="feedback-modal-closer ion-ios-close-empty"></i>
+    </div>
+    <div class="feedback-modal-body">
+        Countly user feedback feature needs Countly web SDK to be inserted in your web site.<br>
+        In order for user feedback widget to appear, you also need to add: <br> <br>
+        <div class="feedback-code-highlighter">Countly.q.<span class="feedback-blue">push</span>(['<span
+            class="feedback-orange">enable_feedback</span>',{'<span class="feedback-purple">widgets</span>':['<span
+            class="feedback-orange" id="widgets-array"></span>']}]);<span class="feedback-green feedback-copy-code"
+                                                                          data-clipboard-text="Countly.q.push(['enable_feedback'])">Copy code</span>
+        </div>
+        <br> in this JS code snippet. <br> <br>
+
+        Please go to <a class="feedback-popup-link" target="_new"
+                        href="https://resources.count.ly/docs/countly-sdk-for-web">this page</a>, copy the code snippet
+        above and insert this one line. <br> <br>
+        After you are done, please refresh your web page to see the widget call to action button.
+    </div>
+                      </div>
+                        <div class="feedback-modal" id="feedback-mobile-integration">
+                            <div class="feedback-modal-header">
+                                <center>Add Countly user feedback plugin to your app</center>
+                                <i class="feedback-modal-closer ion-ios-close-empty"></i>
+                            </div>
+                            <div class="feedback-modal-body">
+                                Countly user feedback feature needs Countly iOS/Android SDK to be inserted in your mobile app.<br>
+                                Please go to <a class="feedback-popup-link" target="_new"
+                                                href="https://resources.count.ly/docs/ratings-and-feedback#section-mobile-integration">this
+                                page</a> for more information.<br> <br>
+                            </div>
+                        </div>
+                        <div class="star-rating-tab">
+                            <div data-target="ratings" id="ratings-tab" class="star-rating-tab-item star-rating-tab-item-active"
+                                 data-localize="feedback.ratings"></div>
+                            <div data-target="comments" id="comments-tab" class="star-rating-tab-item" data-localize="feedback.comments"></div>
+                            <div data-target="widgets" id="widgets-tab" class="star-rating-tab-item" data-localize="feedback.widgets"></div>
+                            <div class="float-cleaner"></div>
+                        </div>
+                        <div class="feedback-fields" id="feedback-ratings-tab">
+                            <div class="widget"
+                                 style="position:relative; border-bottom-left-radius:0; border-bottom-right-radius:0; margin-bottom:0;">
+                                <div class="widget-header">
+                                    <div class="left">
+                                        <div style="overflow: auto;">
+                                            <div class="title small">{{page-title}}</div>
+                                        </div>
+                                        <div class='filter-selector-wrapper'>
+                                            <div id="rating-selector-graph" class='star-rating-filter-title'>
+                                                <a data-localize="star.all-ratings"></a>
+                                                <div style="display: table-cell; vertical-align:middle; position: relative; float:left; width:30px;">
+                                                    <span class="down ion-chevron-down"></span>
+                                                    <span class="up ion-chevron-up"></span>
+                                                </div>
+                                            </div>
+                                            <div id="star-rating-rating-filter" class="star-rating-selector-form">
+                                                <table>
+                                                    <tr>
+                                                        <td data-localize="platforms.table.platform"></td>
+                                                        <td>
+                                                            <div class="cly-select" id="ratings_platform_ratings">
+                                                                <div class="select-inner">
+                                                                    <div class="text-container">
+                                                                        <div class="text">
+                                                                            <div class="placeholder"
+                                                                                 data-localize="feedback.select-platform"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="right combo"></div>
+                                                                </div>
+                                                                <div class="select-items square">
+                                                                    <div class="platform-list">
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td data-localize="app-versions.table.app-version"></td>
+                                                        <td>
+                                                            <div class="cly-select" id="ratings_version_ratings">
+                                                                <div class="select-inner">
+                                                                    <div class="text-container">
+                                                                        <div class="text">
+                                                                            <div class="placeholder"
+                                                                                 data-localize="feedback.select-version"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="right combo"></div>
+                                                                </div>
+                                                                <div class="select-items square">
+                                                                    <div class="version-list">
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td data-localize="feedback.widget"></td>
+                                                        <td>
+                                                            <div class="cly-select" id="ratings_widget_ratings">
+                                                                <div class="select-inner">
+                                                                    <div class="text-container">
+                                                                        <div class="text">
+                                                                            <div class="placeholder"
+                                                                                 data-localize="feedback.select-widget"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="right combo"></div>
+                                                                </div>
+                                                                <div class="select-items square">
+                                                                    <div class="widget-list">
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+
+                                                </table>
+                                                <button class="icon-button green apply-star-rating-filter"
+                                                        data-localize="common.apply"></button>
+                                                <div class="icon-button light remove-star-rating-filter" data-localize="star.reset-filters">
+                                                    Remove me
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{> date-selector }}
+                                </div>
+                            </div>
+                            <div class="widget-content">
+                                <div id="graph-select-container">
+                                    <div class="big-numbers top two-columns help-zone-vs" data-help-localize="" id="cumulative">
+                                        <div class="inner" style="height: 40px;">
+                                            <div class="select selected large" id="cumulative-tab">
+                                                <div class="title" data-localize="star.cumulative"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="big-numbers top two-columns help-zone-vs" data-help-localize="" id="time-series">
+                                        <div class="inner" style="height: 40px;">
+                                            <div class="select large" id="view-metric-u">
+                                                <div class="title" data-localize="star.time-series"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px; height:300px;"></div>
+                            </div>
+                            <div class="widget-footer feedback-big-numbers-v2 big-numbers-v2"
+                                 style="overflow:visible; box-shadow:none; position:relative;">
+                                <div id="big-numbers-container" class="star-selection">
+                                    <div class="big-numbers check selected" style="width: 20%;" id="star1" id="star-bar">
+                                        <div class="inner">
+                                            <div class="color"></div>
+                                            <div class="select" data-localize="star.one-star"></div>
+                                        </div>
+                                    </div>
+                                    <div class="big-numbers check selected" style="width: 20%;" id="star2">
+                                        <div class="inner">
+                                            <div class="color"></div>
+                                            <div class="select" data-localize="star.two-star"></div>
+                                        </div>
+                                    </div>
+                                    <div class="big-numbers check selected" style="width: 20%;" id="star3">
+                                        <div class="inner">
+                                            <div class="color"></div>
+                                            <div class="select" data-localize="star.three-star"></div>
+                                        </div>
+                                    </div>
+                                    <div class="big-numbers check selected" style="width: 20%;" id="star4">
+                                        <div class="inner">
+                                            <div class="color"></div>
+                                            <div class="select" data-localize="star.four-star"></div>
+                                        </div>
+                                    </div>
+                                    <div class="big-numbers check selected" style="width: 20%;" id="star5">
+                                        <div class="inner">
+                                            <div class="color"></div>
+                                            <div class="select" data-localize="star.five-star"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="widget-group" style="margin-top: 25px; margin-bottom: 25px;">
+                                <div id="big-numbers-container" class="crash-style crash-widgets">
+                                    <div class="big-numbers top widgets two-columns help-zone-vs">
+                                        <div class="inner">
+                                            <div class="title" data-localize="star.total-ratings"></div>
+                                            <div class="number">
+                                                <span class="value" id="total-rating">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="big-numbers top widgets two-columns help-zone-vs">
+                                        <div class="inner">
+                                            <div class="title" data-localize="star.median-rating"></div>
+                                            <div class="number">
+                                                <span class="value" id="median-rating">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="d-table" id="tableOne"></table>
+                            <table class="d-table" id="tableTwo"></table>
+                        </div>
+                        <div class="feedback-fields" id="feedback-comments-tab">
+                            <div class="widget"
+                                 style="position:relative; border-bottom-left-radius:0; border-bottom-right-radius:0; margin-bottom:0;">
+                                <div class="widget-header">
+                                    <div class="left">
+                                        <div style="overflow: auto;">
+                                            <div class="title small" data-localize="feedback.comments"></div>
+                                        </div>
+                                        <div class='filter-selector-wrapper'>
+                                            <div id="rating-selector" class='star-rating-filter-title'>
+                                                <a data-localize="star.all-ratings"></a>
+                                                <div style="display: table-cell; vertical-align:middle; position: relative; float:left; width:30px;">
+                                                    <span class="down ion-chevron-down"></span>
+                                                    <span class="up ion-chevron-up"></span>
+                                                </div>
+                                            </div>
+                                            <div id="star-rating-comment-filter" class="star-rating-selector-form">
+                                                <table>
+                                                    <tr>
+                                                        <td data-localize="star.rating"></td>
+                                                        <td>
+                                                            <div class="cly-select" id="ratings_rating_comments">
+                                                                <div class="select-inner">
+                                                                    <div class="text-container">
+                                                                        <div class="text">
+                                                                            <div class="placeholder"
+                                                                                 data-localize="feedback.select-rating"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="right combo"></div>
+                                                                </div>
+                                                                <div class="select-items square">
+                                                                    <div class="rating-list">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td data-localize="platforms.table.platform"></td>
+                                                        <td>
+                                                            <div class="cly-select" id="ratings_platform_comments">
+                                                                <div class="select-inner">
+                                                                    <div class="text-container">
+                                                                        <div class="text">
+                                                                            <div class="placeholder"
+                                                                                 data-localize="feedback.select-platform"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="right combo"></div>
+                                                                </div>
+                                                                <div class="select-items square">
+                                                                    <div class="platform-list">
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td data-localize="app-versions.table.app-version"></td>
+                                                        <td>
+                                                            <div class="cly-select" id="ratings_version_comments">
+                                                                <div class="select-inner">
+                                                                    <div class="text-container">
+                                                                        <div class="text">
+                                                                            <div class="placeholder"
+                                                                                 data-localize="feedback.select-version"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="right combo"></div>
+                                                                </div>
+                                                                <div class="select-items square">
+                                                                    <div class="version-list">
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td data-localize="feedback.widget"></td>
+                                                        <td>
+                                                            <div class="cly-select" id="ratings_widget_comments">
+                                                                <div class="select-inner">
+                                                                    <div class="text-container">
+                                                                        <div class="text">
+                                                                            <div class="placeholder"
+                                                                                 data-localize="feedback.select-widget"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="right combo"></div>
+                                                                </div>
+                                                                <div class="select-items square">
+                                                                    <div class="widget-list">
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+
+                                                </table>
+                                                <button class="icon-button green apply-star-rating-filter"
+                                                        data-localize="common.apply"></button>
+                                                <div class="icon-button light remove-star-rating-filter" data-localize="star.reset-filters">
+                                                    Remove me
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="widget-content" id="comments-widget-content">
+                                    <table class="d-table" id="tableThree"></table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="feedback-fields" id="feedback-widgets-tab">
+                            <div class="widget"
+                                 style="position:relative; border-bottom-left-radius:0; border-bottom-right-radius:0; margin-bottom:0;">
+                                <div class="widget-header">
+                                    <div class="left">
+                                        <div style="overflow: auto;">
+                                            <div class="title large" data-localize="feedback.widgets"></div>
+                                        </div>
+                                    </div>
+                                    <div class="right">
+                                        <button class="icon-button green" id="create-feedback-widget-button"
+                                                data-localize="feedback.add-new-widget"></button>
+                                    </div>
+                                </div>
+                                <div class="widget-content" id="comments-widget-content">
+                                    <table class="d-table" id="tableFour"></table>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="create-feedback-widget-drawer" class="cly-drawer feedback-drawer">
+                            <div class="title countly-feedback-widget-title"
+                                 style="position: fixed; width: 100%;top: 0px; box-sizing:border-box">
+                                <span id="feedback-drawer-title" data-localize="feedback.add-widget"></span>
+                                <div class="close"><i class="ion-ios-close-empty"></i></div>
+                            </div>
+                            <div class="details create-feedback-widget-drawer-detail" style="height:100%;overflow-y:auto">
+                                <div class="feedback-preview-side">
+                                    <div class="feedback-preview-title" data-localize="feedback.popup-preview">
+                                    </div>
+                                    <div class="feedback-preview-body" id="feedback-preview-step-2">
+                                        <div id="window-preview">
+                                            <img src="star-rating/images/star-rating/browser.svg" id="window-preview-img">
+                                            <div id="feedback-sticker-on-window" class="mright-m">
+                                                <svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin"
+                                                     class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg"
+                                                     viewBox="0 0 496 512">
+                                                    <path id="path1" fill="white"
+                                                          d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path>
+                                                </svg>
+                                                Feedback
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="feedback-preview-body flip-container" id="feedback-preview-step-1">
+                                        <div class="flipper">
+                                            <div class="modal-content feedback-front">
+                                                <div class="emotions-area">
+                                                    <p id="question-area">What is your opinion <br>of this page?</p>
+                                                    <div class="emotion-first tooltip-wrapper">
+                                                        <span class="tooltip-text left-m8">Terrible</span>
+                                                        <img class="grow rating-emotion tooltip" data-score="1"
+                                                             src="star-rating/images/star-rating/0_gray.svg">
+                                                    </div>
+                                                    <div class="emotion tooltip-wrapper">
+                                                        <span class="tooltip-text left-m4">Bad</span>
+                                                        <img class="grow rating-emotion tooltip" data-score="2"
+                                                             src="star-rating/images/star-rating/1_gray.svg">
+                                                    </div>
+                                                    <div class="emotion tooltip-wrapper">
+                                                        <span class="tooltip-text left-m4">Okay</span>
+                                                        <img class="grow rating-emotion tooltip" data-score="3"
+                                                             src="star-rating/images/star-rating/2_gray.svg">
+                                                    </div>
+                                                    <div class="emotion tooltip-wrapper">
+                                                        <span class="tooltip-text left-m4">Nice</span>
+                                                        <img class="grow rating-emotion tooltip" data-score="4"
+                                                             src="star-rating/images/star-rating/3_gray.svg">
+                                                    </div>
+                                                    <div class="emotion tooltip-wrapper">
+                                                        <span class="tooltip-text left-m4">Great</span>
+                                                        <img class="grow rating-emotion tooltip" data-score="5"
+                                                             src="star-rating/images/star-rating/4_gray.svg">
+                                                    </div>
+                                                </div>
+                                                <div class="comment-area">
+                                                    <div id="optional-comment-checkbox" class="input-wrapper">
+                                                        <label class="countly-feedback-checkbox-container">
+                                                            <input id="countly-feedback-show-comment" data-state="0" type="checkbox">
+                                                            <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green"></span>
+                                                            <span id="countly-feedback-comment-title"
+                                                                  data-localize="feedback.popup-comment-callout"></span>
+                                                        </label>
+                                                        <textarea id="countly-feedback-comment-textarea"></textarea>
+                                                    </div>
+                                                    <div id="optional-contact-checkbox" class="input-wrapper">
+                                                        <label class="countly-feedback-checkbox-container">
+                                                            <input id="countly-feedback-show-email" data-state="0" type="checkbox">
+                                                            <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green"></span>
+                                                            <span id="countly-feedback-email-title"
+                                                                  data-localize="feedback.popup-email-callout"></span>
+                                                        </label>
+                                                        <input type="text" id="contact-me-email">
+                                                    </div>
+                                                </div>
+                                                <div class="buttons-area">
+                                                    <button disabled id="feedback-submit-button" class="icon-button green send-button"
+                                                            data-localize="feedback.popup-button-callout"></button>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <img src="star-rating/images/star-rating/powered-by-countly.svg" id="powered-by-countly">
+                                                </div>
+                                            </div>
+                                            <div class="success-modal-content feedback-back">
+                                                <div class="success-icon-area">
+                                                    <i class="fa fa-check fa-2x"></i>
+                                                </div>
+                                                <div class="success-emotions-area">
+                                                    <p id="question-area">Thank you.<br>We received your message.</p>
+                                                </div>
+                                                <div class="buttons-area-on-success">
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <img src="star-rating/images/star-rating/powered-by-countly.svg" id="powered-by-countly">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="feedback-preview-footer">
+                <span class="feedback-modal-select-left feedback-first-modal-select-item  feedback-modal-active-left"
+                      id="popup-modal" data-type="1" data-localize="feedback.feedback-popup"></span>
+                                        <span id="thanks-modal" class="feedback-modal-select-right" data-type="-1"
+                                              data-localize="feedback.thank-you-page"></span>
+                                    </div>
+                                </div>
+                                <div class="feedback-create-side">
+                                    <div id="feedback-create-side-header">
+                <span data-step="1" class="feedback-create-side-header-slice  feedback-active-step"
+                      id="feedback-step1-title">
+                    <span class="feedback-step-title" id="not-completed-1">1</span>
+                    <span class="feedback-step-title" id="completed-1"><i class="fa fa-check"></i></span>
+                    <span class="feedback-step-desc" data-localize="feedback.popup-appearance"></span>
+                </span>
+                                        <span data-step="2" class="feedback-create-side-header-slice" id="feedback-step2-title">
+                    <span class="feedback-step-title" id="not-completed-2">2</span>
+                    <span class="feedback-step-title" id="completed-2"><i class="fa fa-check"></i></span>
+                    <span class="feedback-step-desc" data-localize="feedback.trigger-button-appearance"></span>
+                </span>
+                                        <span data-step="3" class="feedback-create-side-header-slice" id="feedback-step3-title">
+                    <span class="feedback-step-title" id="not-completed-3">3</span>
+                    <span class="feedback-step-title" id="completed-3"><i class="fa fa-check"></i></span>
+                    <span class="feedback-step-desc" data-localize="feedback.devices-targeting"></span>
+                </span>
+                                    </div>
+                                    <div class="feedback-create-step-view" id="feedback-create-step-1">
+                                        <div class="feedback-drawer-form-input feedback-drawer-first-form-input">
+                                            <label for="feedback-popup-header-text" data-localize="feedback.header-text-title"></label>
+                                            <div id="counter-for-feedback-popup-header-text" class="indicator-in-counter">0/45</div>
+                                            <div class="float-cleaner"></div>
+                                            <div class="text-input-with-counter">
+                                                <input type="text" autocomplete="off" class="text-input-in-counter"
+                                                       placeholder="What's your opinion about this page?" id="feedback-popup-header-text">
+                                                <div class="float-cleaner"></div>
+                                            </div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input">
+                                            <div>
+                                                <label class="countly-feedback-checkbox-container">
+                                                    <input id="countly-feedback-set-comment-enable" data-state="1" type="checkbox">
+                                                    <div class="feedback-drawer-checkbox-left-side">
+                                <span id="set-comment-enable-checkbox"
+                                      class="countly-feedback-set-active-checkbox fa fa-check-square countly-feedback-check-green"></span>
+                                                    </div>
+                                                    <div class="feedback-drawer-checkbox-right-side">
+                                <span class="countly-feedback-checkbox-title"
+                                      data-localize="feedback.comment-callout-title"></span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <div id="counter-for-feedback-popup-comment-text" class="indicator-in-counter">0/25</div>
+                                            <div class="float-cleaner"></div>
+                                            <div id="comment-callout-input" class="text-input-with-counter">
+                                                <input type="text" autocomplete="off" placeholder="For example: Add comment"
+                                                       id="feedback-popup-comment-text" class="text-input-in-counter">
+                                                <div class="float-cleaner"></div>
+                                            </div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input">
+                                            <div>
+                                                <label class="countly-feedback-checkbox-container">
+                                                    <input id="countly-feedback-set-contact-enable" data-state="1" type="checkbox">
+                                                    <div class="feedback-drawer-checkbox-left-side">
+                                <span id="set-contact-enable-checkbox"
+                                      class="countly-feedback-set-active-checkbox fa fa-check-square countly-feedback-check-green"></span>
+                                                    </div>
+                                                    <div class="feedback-drawer-checkbox-right-side">
+                                <span class="countly-feedback-checkbox-title"
+                                      data-localize="feedback.email-callout-title"></span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <div id="counter-for-feedback-popup-email-text" class="indicator-in-counter">0/35</div>
+                                            <div class="float-cleaner"></div>
+                                            <div id="contact-callout-input" class="text-input-with-counter">
+                                                <input type="text" autocomplete="off" placeholder="For example: Contact me by e-mail"
+                                                       id="feedback-popup-email-text" class="text-input-in-counter">
+                                                <div class="float-cleaner"></div>
+                                            </div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input">
+                                            <label for="feedback-popup-header-text" id="feedback-button-callout"
+                                                   data-localize="feedback.button-callout-title"></label>
+                                            <div id="counter-for-feedback-popup-button-text" class="indicator-in-counter">0/35</div>
+                                            <div class="float-cleaner"></div>
+                                            <div class="text-input-with-counter">
+                                                <input type="text" autocomplete="off" placeholder="Submit Feedback"
+                                                       id="feedback-popup-button-text" class="text-input-in-counter">
+                                                <div class="float-cleaner"></div>
+                                            </div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input">
+                                            <label for="feedback-popup-header-text" data-localize="feedback.thanks-message-title"></label>
+                                            <div id="counter-for-feedback-popup-thanks-text" class="indicator-in-counter">0/45</div>
+                                            <div class="float-cleaner"></div>
+                                            <div class="text-input-with-counter">
+                                                <input type="text" autocomplete="off" placeholder="Thank you. We received your message."
+                                                       id="feedback-popup-thanks-text" class="text-input-in-counter">
+                                                <div class="float-cleaner"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="feedback-create-step-view" id="feedback-create-step-2">
+                                        <div id="button-size-title-style">
+                                            <label data-localize="feedback.trigger-size-title"></label>
+                                        </div>
+                                        <div class="feedback-drawer-form-input position-select-wrapper-first ">
+                                            <div id="s-size-box" class="first-size-box size-box" data-size="small">
+                                                <div class="position-text" data-localize="feedback.sticker-size-small"></div>
+                                            </div>
+                                            <div id="m-size-box" class="size-box active-size-box" data-size="medium">
+                                                <div class="position-text" data-localize="feedback.sticker-size-medium"></div>
+                                            </div>
+                                            <div id="l-size-box" class="size-box" data-size="large">
+                                                <div class="position-text" data-localize="feedback.sticker-size-large"></div>
+                                            </div>
+                                            <div class="float-cleaner"></div>
+                                        </div>
+                                        <br>
+                                        <div class="step-title-without-margin">
+                                            <label data-localize="feedback.position-on-the-page"></label>
+                                        </div>
+                                        <div class="feedback-drawer-form-input position-select-wrapper-first ">
+                                            <div id="mright-pos-box" class="first-position-box position-box" data-pos="mright">
+                                                <img src="star-rating/images/star-rating/middle-right.svg" class="position-box-img">
+                                                <div class="position-text" data-localize="feedback.middle-right"></div>
+                                            </div>
+                                            <div id="mleft-pos-box" class="position-box" data-pos="mleft">
+                                                <img src="star-rating/images/star-rating/middle-left.svg" class="position-box-img">
+                                                <div class="position-text" data-localize="feedback.middle-left"></div>
+                                            </div>
+                                            <div id="bleft-pos-box" class="position-box" data-pos="bleft">
+                                                <img src="star-rating/images/star-rating/bottom-left.svg" class="position-box-img">
+                                                <div class="position-text" data-localize="feedback.bottom-left"></div>
+                                            </div>
+                                            <div id="bright-pos-box" class="position-box" data-pos="bright">
+                                                <img src="star-rating/images/star-rating/bottom-right.svg" class="position-box-img">
+                                                <div class="position-text" data-localize="feedback.bottom-right"></div>
+                                            </div>
+                                            <div class="float-cleaner"></div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input position-select-wrapper">
+                                            <label data-localize="feedback.button-color"></label>
+                                            <br>
+                                            <div class='mycolorpicker'>
+                                                <div class="pickpanel" id="feedback_color_preview_1"
+                                                     style="background-color:#{{data.prebcolor.hex}}; background-color:{{data.prebcolor.rgba}};"></div>
+                                                <input id="feedback-button-color" class="button-color-input colorpicker" name="prebcolor"
+                                                       value="{{data.prebcolor.hex}}" type="text" spellcheck="false">
+                                                <input id="prebcolor_alpha" class="my_alpha" name="prebcolor_alpha"
+                                                       value="{{data.prebcolor.alpha}}" type="hidden">
+                                                <input id="prebcolor_rgba" class="my_rgba" name="prebcolor_rgba" value="{{data.prebcolor.rgba}}"
+                                                       type="hidden">
+                                            </div>
+                                            <div class="float-cleaner"></div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input position-select-wrapper">
+                                            <label data-localize="feedback.font-color"></label>
+                                            <br>
+                                            <div class='mycolorpicker'>
+                                                <div class="pickpanel" id="feedback_color_preview_2"
+                                                     style=" background-color:#{{data.prebcolor.hex}}; background-color:{{data.prebcolor.rgba}};"></div>
+                                                <input id="feedback-font-color" class="button-color-input colorpicker" name="prebcolor"
+                                                       value="{{data.prebcolor.hex}}" type="text" spellcheck="false">
+                                                <input id="prebcolor_alpha_" class="my_alpha" name="prebcolor_alpha"
+                                                       value="{{data.prebcolor.alpha}}" type="hidden">
+                                                <input id="prebcolor_rgba_" class="my_rgba" name="prebcolor_rgba"
+                                                       value="{{data.prebcolor.rgba}}" type="hidden">
+                                            </div>
+                                            <div class="float-cleaner"></div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input" id="feedback-trigger-input-with-counter">
+                                            <label for="feedback-trigger-text" data-localize="feedback.trigger-text"></label>
+                                            <div id="counter-for-feedback-trigger-text" class="indicator-in-counter">0/20</div>
+                                            <div class="float-cleaner"></div>
+                                            <div class="text-input-with-counter">
+                                                <input type="text" placeholder="Feedback" id="feedback-trigger-text"
+                                                       class="text-input-in-counter">
+                                                <div class="float-cleaner"></div>
+                                            </div>
+                                        </div>
+                                        <div class="float-cleaner"></div>
+                                        <div class="checkbox-on-drawer">
+                                            <label class="countly-feedback-checkbox-container">
+                                                <input id="countly-feedback-set-sticker-invisible" data-state="0" type="checkbox">
+                                                <div class="feedback-drawer-checkbox-left-side">
+                            <span id="set-feedback-invisible-checkbox"
+                                  class="countly-feedback-set-active-checkbox fa fa-square-o countly-feedback-check-green"></span>
+                                                </div>
+                                                <div class="feedback-drawer-checkbox-right-side">
+                            <span class="countly-feedback-checkbox-title" id="cf-email-text"
+                                  data-localize="feedback.hide-sticker">&nbsp;  &nbsp;</span>
+                                                    <i class="ion-information-circled show-tooltip"
+                                                       title="Hide sticker if you don’t want to show it by default, and open it programmatically. If you are in doubt, leave it unclicked."></i>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="float-cleaner"></div>
+                                    </div>
+                                    <div class="feedback-create-step-view" id="feedback-create-step-3">
+                                        <div class="step-title">
+                                            <label data-localize="feedback.select-device-types"></label>
+                                        </div>
+                                        <div class="feedback-drawer-form-input position-select-wrapper">
+                                            <div class="first-device-box active-position-box device-box" data-target="desktop">
+                                                <img src="star-rating/images/star-rating/desktop.svg" class="position-box-img">
+                                                <div class="device-text" id="first-device-text"><i class="ion-checkmark-circled"
+                                                                                                   id="desktop-device-checked"
+                                                                                                   style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Desktop</span>
+                                                </div>
+                                            </div>
+                                            <div class="device-box active-position-box" data-target="tablet">
+                                                <img src="star-rating/images/star-rating/tablet.svg" class="position-box-img">
+                                                <div class="device-text"><i class="ion-checkmark-circled" id="tablet-device-checked"
+                                                                            style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Tablet</span>
+                                                </div>
+                                            </div>
+                                            <div class="device-box active-position-box" data-target="phone">
+                                                <img src="star-rating/images/star-rating/mobile.svg" class="position-box-img">
+                                                <div class="device-text"><i class="ion-checkmark-circled" id="phone-device-checked"
+                                                                            style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Phone</span>
+                                                </div>
+                                            </div>
+                                            <div class="float-cleaner"></div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input position-select-wrapper">
+                                            <label data-localize="feedback.where-to-collect-feedback"></label>
+                                            <div id="feedback-collect-selector" class="checks">
+                                                <div id="all-pages" class="check selected">
+                                                    <div class="box"></div>
+                                                    <div class="text" data-localize="feedback.all-pages"></div>
+                                                </div>
+                                                <div id="selected-pages" class="check">
+                                                    <div class="box"></div>
+                                                    <div class="text" data-localize="feedback.selected-pages"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="feedback-drawer-form-input feedback-page-selectors" id="page-select-wrapper">
+                                            <label data-localize="feedback.type-pages"></label>
+                                            <input type="text" id="feedback-page-selector">
+                                        </div>
+                                        <div class="float-cleaner"></div>
+                                        <div class="checkbox-on-drawer">
+                                            <label class="countly-feedback-checkbox-container">
+                                                <input id="countly-feedback-set-feedback-active" data-state="0" type="checkbox">
+                                                <div class="feedback-drawer-checkbox-left-side">
+                            <span id="set-feedback-checkbox"
+                                  class="countly-feedback-set-active-checkbox fa fa-square-o countly-feedback-check-green"></span>
+                                                </div>
+                                                <div class="feedback-drawer-checkbox-right-side">
+                            <span data-localize="feedback.set-feedback-active" class="countly-feedback-checkbox-title"
+                                  id="cf-email-text">&nbsp; </span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="feedback-create-side-footer">
+                                        <div class="right">
+                                            <button class="icon-button" id="countly-feedback-back-step"
+                                                    data-localize="feedback.previous-step"></button>
+                                            <button class="icon-button green" id="countly-feedback-next-step"
+                                                    data-localize="feedback.next-step"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="float-cleaner"></div>
+                            </div>
+                        </div>
+                        ing/images/star-rating/2_gray.svg">
                          </span>
                          <span class="emotion">
                             <img title="Nice" class="grow rating-emotion" data-score="4" src="star-rating/images/star-rating/3_gray.svg">
                          </span>
                          <span class="emotion">
                             <img title="Great" class="grow rating-emotion" data-score="5" src="star-rating/images/star-rating/4_gray.svg">
-                         </span> 
+                         </span>
                       </div>
                       <div class="comment-area">
-                         <div class="input-wrapper"> 
-                            <label class="countly-feedback-checkbox-container"> 
-                               <input id="countly-feedback-show-comment" data-state="0" type="checkbox"> 
-                               <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green"></span> 
-                               <span id="countly-feedback-comment-title" data-localize="feedback.popup-comment-callout"></span> 
-                            </label> 
-                            <textarea id="countly-feedback-comment-textarea"></textarea> 
+                         <div class="input-wrapper">
+                            <label class="countly-feedback-checkbox-container">
+                               <input id="countly-feedback-show-comment" data-state="0" type="checkbox">
+                               <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green"></span>
+                               <span id="countly-feedback-comment-title" data-localize="feedback.popup-comment-callout"></span>
+                            </label>
+                            <textarea id="countly-feedback-comment-textarea"></textarea>
                          </div>
                          <div class="input-wrapper">
-                            <label class="countly-feedback-checkbox-container"> 
-                               <input id="countly-feedback-show-email" data-state="0" type="checkbox"> 
-                               <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green"></span> 
+                            <label class="countly-feedback-checkbox-container">
+                               <input id="countly-feedback-show-email" data-state="0" type="checkbox">
+                               <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green"></span>
                                <span id="countly-feedback-email-title" data-localize="feedback.popup-email-callout"></span>
-                            </label> 
-                            <input type="text" id="contact-me-email"> 
+                            </label>
+                            <input type="text" id="contact-me-email">
                          </div>
                       </div>
                       <div class="buttons-area">
-                         <button disabled id="feedback-submit-button" class="icon-button green send-button" data-localize="feedback.popup-button-callout"></button> 
+                         <button disabled id="feedback-submit-button" class="icon-button green send-button" data-localize="feedback.popup-button-callout"></button>
                       </div>
                       <div class="modal-footer">
                         <img src="star-rating/images/star-rating/powered-by-countly.svg" id="powered-by-countly">
                       </div>
                     </div>
                     <div class="success-modal-content feedback-back">
-                        <div class="success-icon-area"> 
-                         <i class="fa fa-check fa-2x"></i> 
+                        <div class="success-icon-area">
+                         <i class="fa fa-check fa-2x"></i>
                         </div>
                         <div class="success-emotions-area">
                          <p id="question-area">Thank you.<br>We received your message.</p>
                         </div>
-                        <div class="buttons-area-on-success"> 
+                        <div class="buttons-area-on-success">
                         </div>
-                        <div class="modal-footer"> 
+                        <div class="modal-footer">
                             <img src="star-rating/images/star-rating/powered-by-countly.svg" id="powered-by-countly">
                         </div>
                     </div>
@@ -509,16 +1227,16 @@
                 </div>
                 <div class="float-cleaner"></div>
                 <div class="checkbox-on-drawer">
-                    <label class="countly-feedback-checkbox-container"> 
+                    <label class="countly-feedback-checkbox-container">
                        <input id="countly-feedback-set-sticker-invisible" data-state="0" type="checkbox">
                        <div class="feedback-drawer-checkbox-left-side">
-                           <span id="set-feedback-invisible-checkbox" class="countly-feedback-set-active-checkbox fa fa-square-o countly-feedback-check-green"></span> 
+                           <span id="set-feedback-invisible-checkbox" class="countly-feedback-set-active-checkbox fa fa-square-o countly-feedback-check-green"></span>
                        </div>
                        <div class="feedback-drawer-checkbox-right-side">
                            <span class="countly-feedback-checkbox-title" id="cf-email-text" data-localize="feedback.hide-sticker">&nbsp;  &nbsp;</span>
                            <i class="ion-information-circled show-tooltip" title="Hide sticker if you don’t want to show it by default, and open it programmatically. If you are in doubt, leave it unclicked."></i>
                        </div>
-                    </label> 
+                    </label>
                 </div>
                 <div class="float-cleaner"></div>
             </div>
@@ -560,15 +1278,15 @@
                 </div>
                 <div class="float-cleaner"></div>
                 <div class="checkbox-on-drawer">
-                    <label class="countly-feedback-checkbox-container"> 
+                    <label class="countly-feedback-checkbox-container">
                        <input id="countly-feedback-set-feedback-active" data-state="0" type="checkbox">
                        <div class="feedback-drawer-checkbox-left-side">
-                           <span id="set-feedback-checkbox" class="countly-feedback-set-active-checkbox fa fa-square-o countly-feedback-check-green"></span> 
+                           <span id="set-feedback-checkbox" class="countly-feedback-set-active-checkbox fa fa-square-o countly-feedback-check-green"></span>
                        </div>
                        <div class="feedback-drawer-checkbox-right-side">
                            <span  data-localize="feedback.set-feedback-active" class="countly-feedback-checkbox-title" id="cf-email-text">&nbsp; </span>
                        </div>
-                    </label> 
+                    </label>
                 </div>
             </div>
             <div id="feedback-create-side-footer">
@@ -577,7 +1295,7 @@
                     <button class="icon-button green" id="countly-feedback-next-step" data-localize="feedback.next-step"></button>
                 </div>
             </div>
-        </div>    
-        <div class="float-cleaner"></div>    
+        </div>
+        <div class="float-cleaner"></div>
     </div>
 </div>

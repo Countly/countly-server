@@ -18,7 +18,19 @@ window.starView = countlyView.extend({
     platform: '',
     version: '',
     rating: '',
-    ratingFilter: {"comments": {'platform': "", "version": "", "rating": "", "widget": ""}, "ratings": {'platform': "", "version": "", "widget": ""}},
+    ratingFilter: {
+        "comments": {
+            'platform': "",
+            "version": "",
+            "rating": "",
+            "widget": ""
+        },
+        "ratings": {
+            'platform': "",
+            "version": "",
+            "widget": ""
+        }
+    },
     localizeStars: ["star.one-star", "star.two-star", "star.three-star", "star.four-star", "star.five-star"],
     cache: {},
     step: 1,
@@ -33,6 +45,7 @@ window.starView = countlyView.extend({
         trigger_position: 'mright',
         trigger_bg_color: '#13B94D',
         trigger_font_color: '#ffffff',
+        trigger_size: 'm',
         trigger_button_text: jQuery.i18n.map['feedback.trigger-button-text'],
         target_devices: {
             phone: false,
@@ -43,7 +56,9 @@ window.starView = countlyView.extend({
         target_pages: ["/"],
         target_page: 'selected',
         is_active: true,
-        hide_sticker: false
+        hide_sticker: false,
+        comment_enable: true,
+        contact_enable: true
     },
     currentModal: 'popup',
     cumulativeData: {},
@@ -193,7 +208,12 @@ window.starView = countlyView.extend({
 
         $(".remove-star-rating-filter").on("click", function() {
             if (self._tab === "comments") {
-                self.ratingFilter.comments = {'platform': "", "version": "", "rating": "", "widget": ""};
+                self.ratingFilter.comments = {
+                    'platform': "",
+                    "version": "",
+                    "rating": "",
+                    "widget": ""
+                };
                 self.resetFilterBox(true);
                 $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
                 $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function() {
@@ -201,7 +221,11 @@ window.starView = countlyView.extend({
                 });
             }
             else {
-                self.ratingFilter.ratings = {'platform': "", "version": "", "widget": ""};
+                self.ratingFilter.ratings = {
+                    'platform': "",
+                    "version": "",
+                    "widget": ""
+                };
                 self.resetFilterBox(true);
                 $("#rating-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
                 self.refresh();
@@ -214,7 +238,11 @@ window.starView = countlyView.extend({
             $(".star-rating-selector-form").hide();
             var selectText = [];
 
-            self.ratingFilter[self._tab] = {'platform': "", "version": "", "widget": ""};
+            self.ratingFilter[self._tab] = {
+                'platform': "",
+                "version": "",
+                "widget": ""
+            };
             var rating = $("#ratings_rating_" + self._tab).clySelectGetSelection();
             var version = $("#ratings_version_" + self._tab).clySelectGetSelection();
             var platform = $("#ratings_platform_" + self._tab).clySelectGetSelection();
@@ -711,7 +739,8 @@ window.starView = countlyView.extend({
                 "mRender": function(d) {
                     return countlyCommon.formatNumber(d);
                 }
-            }, ];
+            }];
+
             $('#tableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": this.templateData.timeSeriesData,
                 "aoColumns": columnsDefine
@@ -948,7 +977,11 @@ window.starView = countlyView.extend({
                             td = JSON.parse(row.target_devices);
                         }
                         catch (jsonParseError) {
-                            td = {phone: true, desktop: true, tablet: true};
+                            td = {
+                                phone: true,
+                                desktop: true,
+                                tablet: true
+                            };
                         }
                     }
                     else {
@@ -973,14 +1006,14 @@ window.starView = countlyView.extend({
                     }
                     else {
                         return "<div class='feedback-options-item options-item'>"
-                        + "<div class='edit' data-id='" + row._id + "'></div>"
-                        + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
-                        + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
-                        + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
-                        + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>"
-                        + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>"
-                        + "</div>"
-                         + "</div>";
+                            + "<div class='edit' data-id='" + row._id + "'></div>"
+                            + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
+                            + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
+                            + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
+                            + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>"
+                            + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>"
+                            + "</div>"
+                            + "</div>";
                     }
                 },
                 "bSortable": false,
@@ -1125,6 +1158,15 @@ window.starView = countlyView.extend({
         new ClipboardJS('.copy-widget-id');
         new ClipboardJS('.feedback-copy-code');
 
+        tippy('.rating-emotion', {
+            theme: 'honeybee',
+            delay: 100,
+            arrow: true,
+            arrowType: 'round',
+            duration: 250,
+            animation: 'scale'
+        });
+
         var processColorString = function(string) {
             if (/^([0-9a-f]{3}){1,2}$/i.test(string)) {
                 return "#" + string;
@@ -1136,7 +1178,19 @@ window.starView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            this.ratingFilter = {"comments": {'platform': "", "version": "", "rating": "", "widget": ""}, "ratings": {'platform': "", "version": "", "widget": ""}};
+            this.ratingFilter = {
+                "comments": {
+                    'platform': "",
+                    "version": "",
+                    "rating": "",
+                    "widget": ""
+                },
+                "ratings": {
+                    'platform': "",
+                    "version": "",
+                    "widget": ""
+                }
+            };
             self.renderCommentsTable();
             self.addScriptsForFilter(); //add filter scripts
             if (!self.feedbackWidgetTableIsRendered) {
@@ -1175,17 +1229,10 @@ window.starView = countlyView.extend({
             $('body').off("click", ".options-item .show-instructions").on("click", ".options-item .show-instructions", function() {
                 $('#overlay').fadeIn();
                 $('#widgets-array').html($(this).data('id'));
-                if (countlyGlobal.apps[store.get('countly_active_app')].type === "web") {
-                    $('#feedback-web-integration').css({
-                        "display": "block"
-                    });
-                    $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + $(this).data('id') + "']}]);");
-                }
-                else {
-                    $('#feedback-mobile-integration').css({
-                        "display": "block"
-                    });
-                }
+                $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + $(this).data('id') + "']}]);");
+                $('.feedback-modal').css({
+                    "display": "block"
+                });
                 var id = $(this).data('id');
                 $('.edit-menu').splice(0, $('.edit-menu').length).forEach(function(menu) {
                     if (id !== menu.id) {
@@ -1489,7 +1536,10 @@ window.starView = countlyView.extend({
                     if (!result) {
                         return true;
                     }
-                }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["feedback.yes-delete-widget"]], {title: jQuery.i18n.map["feedback.delete-a-widget"], image: "delete-an-app"});
+                }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["feedback.yes-delete-widget"]], {
+                    title: jQuery.i18n.map["feedback.delete-a-widget"],
+                    image: "delete-an-app"
+                });
             });
             $('body').off("click", ".copy-widget-id").on("click", ".copy-widget-id", function() {
                 $('.edit-menu').css({
@@ -1571,6 +1621,37 @@ window.starView = countlyView.extend({
                     self.updateViews();
                 }
             });
+            $('.size-box').on('click', function() {
+                var sizes = [];
+                var counter = 0;
+                for (var key in $('.size-box')) {
+                    if (counter < 3) {
+                        sizes.push($('.size-box')[key]);
+                        counter++;
+                    }
+                }
+                sizes.forEach(function(el) {
+                    $(el).removeClass('active-size-box');
+                });
+                $(this).addClass('active-size-box');
+                switch ($(this).data('size')) {
+                case 'small':
+                    self.feedbackWidget.trigger_size = 's';
+                    $('#feedback-sticker-on-window').removeClass();
+                    $('#feedback-sticker-on-window').addClass(self.feedbackWidget.trigger_position + '-s');
+                    break;
+                case 'medium':
+                    self.feedbackWidget.trigger_size = 'm';
+                    $('#feedback-sticker-on-window').removeClass();
+                    $('#feedback-sticker-on-window').addClass(self.feedbackWidget.trigger_position + '-m');
+                    break;
+                case 'large':
+                    self.feedbackWidget.trigger_size = 'l';
+                    $('#feedback-sticker-on-window').removeClass();
+                    $('#feedback-sticker-on-window').addClass(self.feedbackWidget.trigger_position + '-l');
+                    break;
+                }
+            });
             $('.position-box').on('click', function() {
                 var boxes = [];
                 var counter = 0;
@@ -1584,12 +1665,11 @@ window.starView = countlyView.extend({
                     $(el).removeClass('active-position-box');
                 });
                 $(this).addClass('active-position-box');
+
                 switch ($(this).data('pos')) {
                 case 'mleft':
-                    $('#feedback-sticker-on-window').removeClass('bleft');
-                    $('#feedback-sticker-on-window').removeClass('bright');
-                    $('#feedback-sticker-on-window').removeClass('mright');
-                    $('#feedback-sticker-on-window').addClass('mleft');
+                    $('#feedback-sticker-on-window').removeClass();
+                    $('#feedback-sticker-on-window').addClass('mleft-' + (self.feedbackWidget.trigger_size || 'm'));
                     $('#feedback-sticker-on-window').css({
                         "border-top-left-radius": "0px",
                         "border-top-right-radius": "2px",
@@ -1599,10 +1679,8 @@ window.starView = countlyView.extend({
                     self.feedbackWidget.trigger_position = 'mleft';
                     break;
                 case 'mright':
-                    $('#feedback-sticker-on-window').removeClass('bleft');
-                    $('#feedback-sticker-on-window').removeClass('mleft');
-                    $('#feedback-sticker-on-window').removeClass('bright');
-                    $('#feedback-sticker-on-window').addClass('mright');
+                    $('#feedback-sticker-on-window').removeClass();
+                    $('#feedback-sticker-on-window').addClass('mright-' + (self.feedbackWidget.trigger_size || 'm'));
                     $('#feedback-sticker-on-window').css({
                         "border-top-left-radius": "2px",
                         "border-top-right-radius": "0px",
@@ -1612,10 +1690,8 @@ window.starView = countlyView.extend({
                     self.feedbackWidget.trigger_position = 'mright';
                     break;
                 case 'bleft':
-                    $('#feedback-sticker-on-window').removeClass('bright');
-                    $('#feedback-sticker-on-window').removeClass('mleft');
-                    $('#feedback-sticker-on-window').removeClass('mright');
-                    $('#feedback-sticker-on-window').addClass('bleft');
+                    $('#feedback-sticker-on-window').removeClass();
+                    $('#feedback-sticker-on-window').addClass('bleft-' + (self.feedbackWidget.trigger_size || 'm'));
                     self.feedbackWidget.trigger_position = 'bleft';
                     $('#feedback-sticker-on-window').css({
                         "border-top-left-radius": "2px",
@@ -1625,10 +1701,8 @@ window.starView = countlyView.extend({
                     });
                     break;
                 case 'bright':
-                    $('#feedback-sticker-on-window').removeClass('bleft');
-                    $('#feedback-sticker-on-window').removeClass('mleft');
-                    $('#feedback-sticker-on-window').removeClass('mright');
-                    $('#feedback-sticker-on-window').addClass('bright');
+                    $('#feedback-sticker-on-window').removeClass();
+                    $('#feedback-sticker-on-window').addClass('bright-' + (self.feedbackWidget.trigger_size || 'm'));
                     self.feedbackWidget.trigger_position = 'bright';
                     $('#feedback-sticker-on-window').css({
                         "border-top-left-radius": "2px",
@@ -1666,6 +1740,9 @@ window.starView = countlyView.extend({
                 $("#counter-for-feedback-popup-button-text").html($("#feedback-popup-button-text").val().length + "/35");
                 $("#counter-for-feedback-popup-thanks-text").html($("#feedback-popup-thanks-text").val().length + "/45");
 
+                // add related place and size class to sticker preview
+                $("#feedback-sticker-on-window").removeClass().addClass(self.feedbackWidget.trigger_position + '-' + self.feedbackWidget.trigger_size);
+
                 $("#question-area").html(self.feedbackWidget.popup_header_text);
                 $("#countly-feedback-comment-title").html(self.feedbackWidget.popup_comment_callout);
                 $("#countly-feedback-email-title").html(self.feedbackWidget.popup_email_callout);
@@ -1677,23 +1754,18 @@ window.starView = countlyView.extend({
                     $(element).removeClass("active-position-box");
                     if (self.feedbackWidget.target_devices[$(element).data("target")]) {
                         $(element).addClass("active-position-box");
+                        $("#" + $(element).data("target") + "-device-checked").css({"opacity": 1});
                     }
                 });
 
-                $(".position-box:lt(4)").each(function(index, element) {
-                    if ($(element).data("pos") === self.feedbackWidget.trigger_position) {
-                        $(element).addClass("active-position-box");
-                    }
-                    else {
-                        $(element).removeClass("active-position-box");
-                    }
-                });
+                // highlight active position box
+                $('.position-box').removeClass('active-position-box');
+                $('#' + self.feedbackWidget.trigger_position + '-pos-box').addClass('active-position-box');
 
-                $("#feedback-sticker-on-window").removeClass("mleft");
-                $("#feedback-sticker-on-window").removeClass("mright");
-                $("#feedback-sticker-on-window").removeClass("bleft");
-                $("#feedback-sticker-on-window").removeClass("bright");
-                $("#feedback-sticker-on-window").addClass(self.feedbackWidget.trigger_position);
+                // highlight active size box
+                $('.size-box').removeClass('active-size-box');
+                $('#' + self.feedbackWidget.trigger_size + '-size-box').addClass('active-size-box');
+
 
                 $("#feedback_color_preview_1").css({
                     "background-color": processColorString(self.feedbackWidget.trigger_bg_color)
@@ -1748,17 +1820,6 @@ window.starView = countlyView.extend({
             };
 
             $("#create-feedback-widget-button").on("click", function() {
-                if (countlyGlobal.apps[store.get('countly_active_app')].type !== "web") {
-                    // set it as final step
-                    self.step = 3;
-                    $('#countly-feedback-next-step').text(jQuery.i18n.map['feedback.complete']);
-                    $('#feedback-step1-title').css({'width': '50%', 'margin-left': '25%', 'float': 'left'});
-                    $('.feedback-step-desc').css({'color': 'black'});
-                    $('#feedback-step1-title').removeClass('feedback-active-step');
-                    $('#feedback-step2-title').hide();
-                    $('#feedback-step3-title').hide();
-                    $('.feedback-step-title').hide();
-                }
                 store.set('drawer-type', 'create');
                 $('#feedback-drawer-title').html(jQuery.i18n.map['feedback.add-widget']);
                 self.feedbackWidget._id = "";
@@ -1768,6 +1829,7 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.popup_button_callout = jQuery.i18n.map["feedback.popup-button-callout"];
                 self.feedbackWidget.popup_thanks_message = jQuery.i18n.map["feedback.popup-thanks-message"];
                 self.feedbackWidget.trigger_position = 'mright';
+                self.feedbackWidget.trigger_size = 'm';
                 self.feedbackWidget.trigger_bg_color = '13B94D';
                 self.feedbackWidget.trigger_font_color = 'FFFFFF';
                 self.feedbackWidget.trigger_button_text = jQuery.i18n.map["feedback.trigger-button-text"];
@@ -1796,6 +1858,14 @@ window.starView = countlyView.extend({
                     $("#save-widget").addClass("disabled");
                 });
                 $("#save-widget").addClass('disabled');
+
+                $('.tooltip').on("hover", function() {
+                    $(this).prev().css({"visibility": "visible"});
+                });
+
+                $('.tooltip').on("mouseout", function() {
+                    $(this).prev().css({"visibility": "hidden"});
+                });
             });
             $("body").on("click", ".edit-widget", function() {
                 // set drawer type as edit
@@ -1805,13 +1875,11 @@ window.starView = countlyView.extend({
                 // get current widget data from server
                 starRatingPlugin.requestSingleWidget($(this).data('id'), function(widget) {
                     self.feedbackWidget = widget;
-                    $('#feedback-sticker-on-window').html();
-                    // set is widget show sticker currently?
+                    renderFeedbackWidgetModal(false);
                 });
                 $("#feedback-create-step-1").show();
                 $(".cly-drawer").removeClass("open editing");
                 $("#create-feedback-widget-drawer").addClass("open");
-                renderFeedbackWidgetModal(false);
                 $(".cly-drawer").find(".close").off("click").on("click", function() {
                     $(this).parents(".cly-drawer").removeClass("open");
                     $("#save-widget").removeClass("disabled");
@@ -1898,9 +1966,45 @@ window.starView = countlyView.extend({
                     self.feedbackWidget.hide_sticker = true;
                 }
             });
+            $('#countly-feedback-set-comment-enable').on('click', function() {
+                if ($('#countly-feedback-set-comment-enable').data('state') === 1) {
+                    $('#set-comment-enable-checkbox').removeClass('fa-check-square');
+                    $('#set-comment-enable-checkbox').addClass('fa-square-o');
+                    $('#countly-feedback-set-comment-enable').data('state', 0);
+                    self.feedbackWidget.comment_enable = false;
+                    $('#comment-callout-input').hide();
+                    $('#optional-comment-checkbox').hide();
+                }
+                else {
+                    $('#set-comment-enable-checkbox').addClass('fa-check-square');
+                    $('#set-comment-enable-checkbox').removeClass('fa-square-o');
+                    $('#countly-feedback-set-comment-enable').data('state', 1);
+                    self.feedbackWidget.comment_enable = true;
+                    $('#comment-callout-input').show();
+                    $('#optional-comment-checkbox').show();
+                }
+            });
+            $('#countly-feedback-set-contact-enable').on('click', function() {
+                if ($('#countly-feedback-set-contact-enable').data('state') === 1) {
+                    $('#set-contact-enable-checkbox').removeClass('fa-check-square');
+                    $('#set-contact-enable-checkbox').addClass('fa-square-o');
+                    $('#countly-feedback-set-contact-enable').data('state', 0);
+                    self.feedbackWidget.contact_enable = false;
+                    $('#contact-callout-input').hide();
+                    $('#optional-contact-checkbox').hide();
+                }
+                else {
+                    $('#set-contact-enable-checkbox').addClass('fa-check-square');
+                    $('#set-contact-enable-checkbox').removeClass('fa-square-o');
+                    $('#countly-feedback-set-contact-enable').data('state', 1);
+                    self.feedbackWidget.contact_enable = true;
+                    $('#contact-callout-input').show();
+                    $('#optional-contact-checkbox').show();
+                }
+            });
             $('.feedback-create-side-header-slice').on('click', function() {
                 if (store.get('drawer-type') === 'create') {
-                    if ((parseInt($(this).data('step')) - parseInt(self.step)) === 1) {
+                    if ((parseInt($(this).data('step')) < parseInt(self.step))) {
                         self.step = $(this).data('step');
                         self.renderFeedbackDrawer();
                     }
@@ -1954,16 +2058,9 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.successfully-created'],
                                     message: jQuery.i18n.map['feedback.successfully-created-message']
                                 });
-                                if (countlyGlobal.apps[store.get('countly_active_app')].type === "web") {
-                                    $('#feedback-web-integration').css({
-                                        "display": "block"
-                                    });
-                                }
-                                else {
-                                    $('#feedback-mobile-integration').css({
-                                        "display": "block"
-                                    });
-                                }
+                                $('.feedback-modal').css({
+                                    "display": "block"
+                                });
                                 self.renderFeedbacksTable(true);
                             }
                             else {
@@ -2188,5 +2285,11 @@ app.route("/analytics/star-rating/:tab", 'star', function(tab) {
     this.renderWhenReady(this.starView);
 });
 $(document).ready(function() {
-    app.addMenu("reach", {code: "star-rating", url: "#/analytics/star-rating", text: "star.menu-title", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+    app.addMenu("reach", {
+        code: "star-rating",
+        url: "#/analytics/star-rating",
+        text: "star.menu-title",
+        icon: '<div class="logo ion-android-star-half"></div>',
+        priority: 20
+    });
 });
