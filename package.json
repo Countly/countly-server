@@ -70,7 +70,7 @@
     "mongodb": "3.5.5",
     "mongoskin": "github:ar2rsawseen/node-mongoskin",
     "nginx-conf": "1.5.0",
-    "nodemailer": "6.4.5",
+    "nodemailer": "6.4.6",
     "nodemailer-sendmail-transport": "1.0.2",
     "nodemailer-smtp-pool": "2.8.3",
     "nodemailer-smtp-transport": "2.7.4",
