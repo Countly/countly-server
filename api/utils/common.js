@@ -1089,8 +1089,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
     }
     //set provided in configuration headers
     var headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json; charset=utf-8'
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
@@ -1156,8 +1155,7 @@ common.returnOutput = function(params, output, noescape, heads) {
     }
     //set provided in configuration headers
     var headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': 'application/json; charset=utf-8'
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
@@ -2283,6 +2281,20 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
     else {
         return false;
     }
+};
+
+/**
+ * Sanitizes a filename to prevent directory traversals and such.
+ * @param {string} filename - filename to sanitize
+ * @param {string} replacement - string to replace characters to be removed
+ * @returns {string} sanitizedFilename - sanitized filename
+ */
+common.sanitizeFilename = (filename, replacement = "") => {
+    return (filename + "")
+        .replace(/[\x00-\x1f\x80-\x9f]+/g, replacement)
+        .replace(/[\/\?<>\\:\*\|"]/g, replacement)
+        .replace(/^\.{1,2}$/, replacement)
+        .replace(/^\.+/, replacement);
 };
 
 module.exports = common;

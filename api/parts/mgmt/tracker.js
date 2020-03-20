@@ -20,7 +20,9 @@ var tracker = {},
     asyncjs = require('async'),
     server = "e0693b48a5513cb60c112c21aede3cab809d52d0",
     app = "386012020c7bf7fcb2f1edf215f1801d6146913f",
-    url = "https://stats.count.ly";
+    url = "https://stats.count.ly",
+    plugins = require('../../../plugins/pluginManager.js'),
+    offlineMode = plugins.getConfig("api").offline_mode;
 
 
 //update configs
@@ -34,37 +36,39 @@ if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
     url_check = "https://count.ly/configurations/ee/tracking";
 }
 
-request(url_check, function(err, response, body) {
-    if (typeof body === "string") {
-        try {
-            body = JSON.parse(body);
-        }
-        catch (ex) {
-            body = null;
-        }
-    }
-    if (body) {
-        if (countlyConfigOrig.web.use_intercom && typeof body.intercom !== "undefined") {
-            countlyConfig.web.use_intercom = body.intercom;
-        }
-        if (typeof countlyConfigOrig.web.track === "undefined" && typeof body.stats !== "undefined") {
-            if (body.stats) {
-                countlyConfig.web.track = null;
+if (!offlineMode) {
+    request(url_check, function(err, response, body) {
+        if (typeof body === "string") {
+            try {
+                body = JSON.parse(body);
             }
-            else {
-                countlyConfig.web.track = "none";
+            catch (ex) {
+                body = null;
             }
         }
-        if (typeof countlyConfigOrig.web.server_track === "undefined" && typeof body.server !== "undefined") {
-            if (body.server) {
-                countlyConfig.web.server_track = null;
+        if (body) {
+            if (countlyConfigOrig.web.use_intercom && typeof body.intercom !== "undefined") {
+                countlyConfig.web.use_intercom = body.intercom;
             }
-            else {
-                countlyConfig.web.server_track = "none";
+            if (typeof countlyConfigOrig.web.track === "undefined" && typeof body.stats !== "undefined") {
+                if (body.stats) {
+                    countlyConfig.web.track = null;
+                }
+                else {
+                    countlyConfig.web.track = "none";
+                }
+            }
+            if (typeof countlyConfigOrig.web.server_track === "undefined" && typeof body.server !== "undefined") {
+                if (body.server) {
+                    countlyConfig.web.server_track = null;
+                }
+                else {
+                    countlyConfig.web.server_track = "none";
+                }
             }
         }
-    }
-});
+    });
+}
 
 var isEnabled = false;
 
@@ -98,6 +102,26 @@ tracker.enable = function() {
                 });
             }
         }, 1000);
+    }
+};
+
+/**
+* Enable tracking for dashboard process
+**/
+tracker.enableDashboard = function() {
+    Countly.init({
+        app_key: server,
+        url: url,
+        app_version: versionInfo.version,
+        storage_path: "../../../.sdk/",
+        interval: 60000,
+        fail_timeout: 600,
+        session_update: 120,
+        debug: (logger.getLevel("tracker:server") === "debug")
+    });
+    isEnabled = true;
+    if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
+        Countly.track_errors();
     }
 };
 
@@ -170,25 +194,32 @@ function collectServerStats() { // eslint-disable-line no-unused-vars
 **/
 function collectServerData() {
     var cpus = os.cpus();
-    Countly.userData.set("cores", cpus.length);
+    if (cpus && cpus.length) {
+        Countly.userData.set("cores", cpus.length);
+    }
     Countly.userData.set("nodejs_version", process.version);
     if (common.db.build && common.db.build.version) {
         Countly.userData.set("db_version", common.db.build.version);
     }
-    getDomain(function(err, domain) {
-        if (!err) {
-            Countly.userData.set("domain", domain);
-            Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
+    common.db.command({ serverStatus: 1 }, function(errCmd, res) {
+        if (res && res.storageEngine && res.storageEngine.name) {
+            Countly.userData.set("db_engine", res.storageEngine.name);
         }
-        getDistro(function(err2, distro) {
-            if (!err2) {
-                Countly.userData.set("distro", distro);
+        getDomain(function(err, domain) {
+            if (!err) {
+                Countly.userData.set("domain", domain);
+                Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
             }
-            getHosting(function(err3, hosting) {
-                if (!err3) {
-                    Countly.userData.set("hosting", hosting);
+            getDistro(function(err2, distro) {
+                if (!err2) {
+                    Countly.userData.set("distro", distro);
                 }
-                Countly.userData.save();
+                getHosting(function(err3, hosting) {
+                    if (!err3) {
+                        Countly.userData.set("hosting", hosting);
+                    }
+                    Countly.userData.save();
+                });
             });
         });
     });
@@ -232,7 +263,7 @@ function getHosting(callback) {
                     done(true);
                 }
                 else {
-                    done(false);
+                    done();
                 }
             });
         }, function() {
@@ -278,7 +309,7 @@ function getDistro(callback) {
                         done(true);
                     }
                     else {
-                        done(false);
+                        done(null);
                     }
                 });
             }, function() {

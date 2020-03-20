@@ -1,5 +1,36 @@
 .routename-star .left-m4 {
-    left: -4px;
+     left: -4px;
+}
+.routename-star .left-m8 {
+     left: -8px;
+}
+.routename-star .tooltip-text {
+     visibility: hidden;
+     position: absolute;
+     top: -25px;
+     left: -6px;
+     font-size: 13px;
+     width: 60px;
+     background-color: black;
+     padding: 3px 1px;
+     border-radius: 4px;
+     color: white;
+}
+
+.routename-star .tooltip-wrapper {
+     position: relative;
+     text-align: center;
+}
+
+.mycolorpicker button{
+    float:left;
+     padding:0;
+     border-radius:0;
+     width: 25px;
+     height:25px;
+     background:none;
+     margin-left:-27px;
+
 }
 
 .routename-star .left-m8 {
@@ -1818,6 +1849,229 @@
 .routename-star #feedback-collect-selector {
     width: 420px;
     margin-top: 10px;
+}
+
+.routename-star #countly-feedback {
+     border-top-left-radius: 2px;
+     border-bottom-left-radius: 2px;
+     position: absolute;
+     top: 45%;
+     right: 0;
+     width: 22px;
+     height: auto;
+     writing-mode: tb-rl;
+     background-color: #13b94d;
+     color: white;
+     cursor: pointer;
+     font-family: ‘Lato’, sans-serif;
+     padding-top: 10px;
+     padding-bottom: 10px;
+}
+
+.routename-star .countly-feedback-modal-header {
+     text-align: center;
+     font-family: 'Lato', sans-serif;
+}
+.routename-star .countly-feedback-modal-header > img {
+     width: 140px;
+     height: 40px;
+}
+.routename-star .success-emotions-area {
+     text-align: center;
+     font-family: 'Lato', sans-serif;
+     font-size:15px;
+     margin-bottom:50px;
+}
+.routename-star .countly-feedback-arrow_box {
+     position: relative;
+     background: #000000;
+     border: 4px solid #000000;
+}
+.routename-star .countly-feedback-arrow_box:after, .routename-star .countly-feedback-arrow_box:before {
+     top: 100%;
+     left: 50%;
+     border: solid transparent;
+     content: " ";
+     height: 0;
+     width: 0;
+     position: absolute;
+     pointer-events: none;
+}
+.routename-star .countly-feedback-arrow_box:after {
+     border-color: rgba(0, 0, 0, 0);
+     border-top-color: #000000;
+     border-width: 30px;
+     margin-left: -30px;
+}
+.routename-star .countly-feedback-arrow_box:before {
+     border-color: rgba(0, 0, 0, 0);
+     border-top-color: #000000;
+     border-width: 36px;
+     margin-left: -36px;
+}
+.routename-star label {
+     font-size: 13px;
+}
+.routename-star .emotion > img:hover {
+     opacity: 1;
+}
+.routename-star .countly-feedback-checkbox-container {
+     display: block;
+     position: relative;
+     cursor: pointer;
+     font-size: 13px;
+     -webkit-user-select: none;
+     -moz-user-select: none;
+     -ms-user-select: none;
+     user-select: none;
+}
+.routename-star .countly-feedback-checkbox-container input {
+     position: absolute;
+     opacity: 0;
+     cursor: pointer;
+     border-radius:2px;
+}
+.routename-star .dbviewer-custom-checkbox-checkmark {
+     position: absolute;
+     top: 0;
+     left: 0;
+     height: 11px;
+     width: 11px;
+     border-radius:3px;
+     border:1px solid #636363;
+}
+.routename-star .countly-feedback-close-icon {
+     cursor: pointer;
+     font-size: lighter;
+     color:silver;
+}
+.routename-star .emotion, .routename-star .emotion-first {
+     /* width: 77.5px; */
+     display: inline-block;
+}
+.routename-star .emotions-area, .routename-star .contact-me-area {
+     text-align: center;
+     font-family: 'Lato', sans-serif;
+     font-size:15px;
+     height: 161px;
+}
+.routename-star .buttons-area-on-success {
+     margin-top: 35px;
+     font-family: 'Lato', sans-serif;
+     font-size:15px;
+     text-align: center;
+     width: 70%;
+     margin-left: 15%;
+}
+.routename-star .contact-me-area > .input-area {
+     font-size:13px;
+}
+.routename-star .input-area {
+     margin-top: 10px;
+}
+.routename-star #contact-me-email {
+     width: 100%;
+     outline: none;
+     border:1px solid #DBDBDB;
+     height: 30px;
+     margin-top: 10px;
+     line-height: 20px;
+     padding-left: 2px;
+     font-size:13px;
+     display: none;
+     border-radius: 3px;
+}
+.routename-star #countly-feedback-comment-textarea {
+     width: 100%;
+     height: 60px;
+     margin-top: 10px;
+     resize: none;
+     border:1px solid #DBDBDB;
+     outline: none;
+     font-size:13px;
+     border-radius: 3px;
+     display: none;
+}
+.routename-star #continue-button {
+     background-color: #13b94d;
+     color:white;
+     font-family: 'Lato', sans-serif;
+     font-size: 13px;
+     padding: 20px 30px 20px 30px;
+     border:none;
+     border-radius: 3px;
+     cursor: pointer;
+     margin-right: 10px;
+}
+.routename-star #countly-feedback-close-icon {
+     right: 15px;
+     top: 15px;
+     cursor: pointer;
+     text-decoration: none;
+     text-align: center;
+     width: 32px;
+     height:3px, padding: 0;
+     color: #d6d6d6;
+     font-style: normal;
+     font-size: 32px;
+     font-family: Arial,Baskerville,monospace;
+     line-height: 32px;
+     position: absolute;
+}
+.routename-star .fa-check {
+     color:#13b94d;
+}
+.routename-star .fa-check-square {
+     color: #32B630;
+}
+.routename-star .icon-area > i {
+     color:#32B630;
+}
+.routename-star .success-icon-area {
+     margin-top:50px;
+     text-align: center;
+}
+.routename-star .icon-area {
+     text-align: center;
+     margin-top: 10px;
+}
+.routename-star .success-modal {
+     display: none;
+     z-index: 999;
+}
+.routename-star .countly-feedback-verification-fail {
+     border:1px solid #a82f2f !important;
+}
+.routename-star #send-button:hover {
+     background-color: #59C358;
+}
+.routename-star .grow {
+     transition: all .2s ease-in-out;
+}
+.routename-star .grow:hover {
+     transform: scale(1.15) !important;
+}
+.routename-star .tippy-popper {
+     font-family: 'Lato';
+}
+.routename-star .flip-container {
+     perspective: 1000px;
+     transform-style: preserve-3d;
+}
+.routename-star .flipper {
+     transition: 0.6s;
+     transform-style: preserve-3d;
+     position: relative;
+}
+.routename-star .feedback-front, .routename-star .feedback-back {
+     backface-visibility: hidden;
+     transition: 0.6s;
+     transform-style: preserve-3d;
+     margin-top: 15px;
+     position: absolute;
+     top: 0;
+     left: 0;
+     display: block;
 }
 
 .routename-star .cf-intable-button {

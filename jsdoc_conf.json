@@ -33,13 +33,13 @@
         "disqus": "",
         "menu":{
             "App Server":{
-                "href":"/docs/app/index.html"
+                "href":"../app/index.html"
             },
             "API Server":{
-                "href":"/docs/api/index.html"
+                "href":"../api/index.html"
             },
             "Browser side":{
-                "href":"/docs/browser/index.html"
+                "href":"../browser/index.html"
             }
         }
     }

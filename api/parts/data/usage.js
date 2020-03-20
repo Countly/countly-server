@@ -136,6 +136,10 @@ function updateLoc(params, optout, loc) {
     params.user.region = loc.region;
     params.user.city = loc.city;
 
+    if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false) {
+        params.user.city = loc.city = 'Unknown';
+    }
+
     if (!params.app_user || params.app_user[common.dbUserMap.country_code] !== loc.country) {
         update.$set = {[common.dbUserMap.country_code]: loc.country};
     }
@@ -336,7 +340,7 @@ usage.setLocation = function(params) {
 usage.setUserLocation = function(params, loc) {
     params.user.country = loc.country;
     params.user.region = loc.region;
-    params.user.city = loc.city;
+    params.user.city = plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false ? undefined : loc.city;
 };
 
 /**
@@ -1017,7 +1021,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
         common.db.collection(metaToFetch[id].coll).findOne({'_id': metaToFetch[id].id}, {meta_v2: 1}, function(err, metaDoc) {
             var retObj = metaDoc || {};
             retObj.coll = metaToFetch[id].coll;
-            callback(false, retObj);
+            callback(null, retObj);
         });
     }
 

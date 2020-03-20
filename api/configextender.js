@@ -47,11 +47,11 @@ const OVERRIDES = {
 /**
  * Digs one level down in config document
  * 
- * @param  {[type]} config [description]
- * @param  {[type]} over   [description]
- * @param  {[type]} name   [description]
- * @param  {[type]} value  [description]
- * @return {[type]}        [description]
+ * @param  {object} config - config to traverse
+ * @param  {object} over   - override object
+ * @param  {string} name   - name of config to override
+ * @param  {varies} value  - value to set to config
+ * @return {object} recursive config modification
  */
 function dig(config, over, name, value) {
     let comps = name.split('_');
@@ -125,7 +125,7 @@ function dig(config, over, name, value) {
     return true;
 }
 
-module.exports = function(mode, config, opts) {
+module.exports = function(mode, config, opts, over) {
     // back compatibility
     if (typeof mode === 'object') {
         config = mode;
@@ -133,7 +133,7 @@ module.exports = function(mode, config, opts) {
         opts = process.env;
     }
 
-    if (['API', 'FRONTEND'].indexOf(mode) === -1) {
+    if (['API', 'FRONTEND'].indexOf(mode) === -1 && mode.indexOf('PLUGIN') !== 0) {
         throw new Error('Invalid config mode ' + mode);
     }
 
@@ -141,7 +141,7 @@ module.exports = function(mode, config, opts) {
 
     Object.keys(opts).filter(n => n.indexOf(`COUNTLY_CONFIG_${mode}_`) === 0 || n.indexOf(`COUNTLY_CONFIG__`) === 0).forEach(n => {
         let comps = n.split('_').slice(3);
-        dig(config, OVERRIDES, comps.join('_'), parser(opts[n]));
+        dig(config, Object.assign(JSON.parse(JSON.stringify(OVERRIDES)), over || {}), comps.join('_'), parser(opts[n]));
     });
 
     return config;

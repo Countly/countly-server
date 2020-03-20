@@ -20,7 +20,7 @@
     "website"
   ],
   "dependencies": {
-    "useragent": "^2.1.9"
+    "ua-parser-js": "0.7.21"
   },
   "private": true
 }

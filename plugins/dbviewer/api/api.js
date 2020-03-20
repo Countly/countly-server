@@ -1,10 +1,10 @@
 var common = require('../../../api/utils/common.js'),
     async = require('async'),
-    crypto = require('crypto'),
     plugins = require('../../pluginManager.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
+    {dbUserHasAccessToCollection, dbLoadEventsData} = require('../../../api/utils/rights.js'),
     exported = {};
 
 (function() {
@@ -97,117 +97,47 @@ var common = require('../../../api/utils/common.js'),
             }
 
             if (dbs[dbNameOnParam]) {
-                var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, project);
-                if (Object.keys(sort).length > 0) {
-                    cursor.sort(sort);
-                }
-                cursor.count(function(err, total) {
-                    var stream = cursor.skip(skip).limit(limit).stream({
-                        transform: function(doc) {
-                            return JSON.stringify(objectIdCheck(doc));
-                        }
-                    });
-                    var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
-                    var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
-                    var parts;
-                    for (let i = 0; i < add_headers.length; i++) {
-                        if (add_headers[i] && add_headers[i].length) {
-                            parts = add_headers[i].split(/:(.+)?/);
-                            if (parts.length === 3) {
-                                headers[parts[0]] = parts[1];
-                            }
-                        }
+                dbs[dbNameOnParam].onOpened(function() {
+                    var cursor = dbs[dbNameOnParam]._native.collection(params.qstring.collection).find(filter, project);
+                    if (Object.keys(sort).length > 0) {
+                        cursor.sort(sort);
                     }
-                    if (params.res.writeHead) {
-                        params.res.writeHead(200, headers);
-                        params.res.write('{"limit":' + limit + ', "start":' + (skip + 1) + ', "end":' + Math.min(skip + limit, total) + ', "total":' + total + ', "pages":' + Math.ceil(total / limit) + ', "curPage":' + Math.ceil((skip + 1) / limit) + ', "collections":[');
-                        var first = false;
-                        stream.on('data', function(doc) {
-                            if (!first) {
-                                first = true;
-                                params.res.write(doc);
-                            }
-                            else {
-                                params.res.write("," + doc);
+                    cursor.count(function(err, total) {
+                        var stream = cursor.skip(skip).limit(limit).stream({
+                            transform: function(doc) {
+                                return JSON.stringify(objectIdCheck(doc));
                             }
                         });
-
-                        stream.once('end', function() {
-                            params.res.write("]}");
-                            params.res.end();
-                        });
-                    }
-                });
-            }
-        }
-        /**
-        * Get events collections with replaced app names
-        * @param {object} app - application object
-        * @param {function} cb - callback method
-        **/
-        function getEvents(app, cb) {
-            var result = {};
-            common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, events) {
-                if (!err && events && events.list) {
-                    for (let i = 0; i < events.list.length; i++) {
-                        result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
-                    }
-                }
-                result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_session)";
-                result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_crash)";
-                result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_view)";
-                result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_action)";
-                result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_action)";
-                result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_open)";
-                result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_sent)";
-                cb(null, result);
-            });
-        }
-
-        /**
-        * Get views collections with replaced app names
-        * @param {object} app - application object
-        * @param {function} cb - callback method
-        **/
-        function getViews(app, cb) {
-            var result = {};
-            common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
-                if (!err && viewDoc && viewDoc.segments) {
-                    for (var segkey in viewDoc.segments) {
-                        result["app_viewdata" + crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
-                    }
-                }
-                result["app_viewdata" + crypto.createHash('sha1').update("" + app._id).digest('hex')] = "(" + app.name + ": no-segment)";
-                cb(null, result);
-            });
-        }
-        /**
-        * Get events data
-        * @param {array} apps - array with each element being app document
-        * @param {function} callback - callback method
-        **/
-        function dbLoadEventsData(apps, callback) {
-            if (params.member.eventList) {
-                callback(null, params.member.eventList, params.member.viewList);
-            }
-            else {
-                async.map(apps, getEvents, function(err, events) {
-                    var eventList = {};
-                    for (let i = 0; i < events.length; i++) {
-                        for (var j in events[i]) {
-                            eventList[j] = events[i][j];
-                        }
-                    }
-                    params.member.eventList = eventList;
-                    async.map(apps, getViews, function(err1, views) {
-                        var viewList = {};
-                        for (let i = 0; i < views.length; i++) {
-                            for (let z in views[i]) {
-                                viewList[z] = views[i][z];
+                        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
+                        var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
+                        var parts;
+                        for (let i = 0; i < add_headers.length; i++) {
+                            if (add_headers[i] && add_headers[i].length) {
+                                parts = add_headers[i].split(/:(.+)?/);
+                                if (parts.length === 3) {
+                                    headers[parts[0]] = parts[1];
+                                }
                             }
                         }
-                        params.member.viewList = viewList;
-                        callback(err, eventList, viewList);
+                        if (params.res.writeHead) {
+                            params.res.writeHead(200, headers);
+                            params.res.write('{"limit":' + limit + ', "start":' + (skip + 1) + ', "end":' + Math.min(skip + limit, total) + ', "total":' + total + ', "pages":' + Math.ceil(total / limit) + ', "curPage":' + Math.ceil((skip + 1) / limit) + ', "collections":[');
+                            var first = false;
+                            stream.on('data', function(doc) {
+                                if (!first) {
+                                    first = true;
+                                    params.res.write(doc);
+                                }
+                                else {
+                                    params.res.write("," + doc);
+                                }
+                            });
+
+                            stream.once('end', function() {
+                                params.res.write("]}");
+                                params.res.end();
+                            });
+                        }
                     });
                 });
             }
@@ -222,7 +152,7 @@ var common = require('../../../api/utils/common.js'),
                 lookup[apps[i]._id + ""] = apps[i].name;
             }
 
-            dbLoadEventsData(apps, function(err, eventList, viewList) {
+            dbLoadEventsData(params, apps, function(err, eventList, viewList) {
                 async.map(Object.keys(dbs), getCollections, function(error, results) {
                     if (error) {
                         console.error(error);
@@ -243,21 +173,21 @@ var common = require('../../../api/utils/common.js'),
                     if (dbs[name]) {
                         dbs[name].collections(function(error, results) {
                             var db = {name: name, collections: {}};
-                            async.map(results, function(col, done) {
-                                if (col.s.name.indexOf("system.indexes") === -1 && col.s.name.indexOf("sessions_") === -1) {
-                                    dbUserHassAccessToCollection(col.s.name, function(hasAccess) {
+                            async.each(results, function(col, done) {
+                                if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
+                                    dbUserHasAccessToCollection(params, col.collectionName, function(hasAccess) {
                                         if (hasAccess) {
-                                            ob = parseCollectionName(col.s.name, lookup, eventList, viewList);
+                                            ob = parseCollectionName(col.collectionName, lookup, eventList, viewList);
                                             db.collections[ob.pretty] = ob.name;
                                         }
-                                        done(false, true);
+                                        done();
                                     });
                                 }
                                 else {
-                                    done(false, true);
+                                    done();
                                 }
-                            }, function(mapError) {
-                                callback(mapError, db);
+                            }, function(asyncError) {
+                                callback(asyncError, db);
                             });
                         });
                     }
@@ -267,81 +197,6 @@ var common = require('../../../api/utils/common.js'),
                 }
             });
 
-        }
-        /**
-        * Check user has access to collection
-        * @param {string} collection - collection will be checked for access
-        * @param {function} callback - callback method includes boolean variable as argument  
-        * @returns {function} returns callback
-        **/
-        function dbUserHassAccessToCollection(collection, callback) {
-            if (params.member.global_admin && !params.qstring.app_id) {
-                //global admin without app_id restriction just has access to everything
-                return callback(true);
-            }
-
-            var apps = [];
-            if (params.qstring.app_id) {
-                //if app_id was provided, we need to check if user has access for this app_id
-                // is user_of array contain current app_id?
-                var isUserOf = params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1;
-                var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
-                if (params.member.global_admin || isUserOf && !isRestricted) {
-                    apps = [params.qstring.app_id];
-                }
-            }
-            else {
-                //use whatever user has permission for
-                apps = params.member.user_of || [];
-                // also check for app based restrictions
-                if (params.member.app_restrict) {
-                    for (var app_id in params.member.app_restrict) {
-                        if (params.member.app_restrict[app_id].indexOf("#/manage/db") !== -1 && apps.indexOf(app_id) !== -1) {
-                            apps.splice(apps.indexOf(app_id), 1);
-                        }
-                    }
-                }
-            }
-            var appList = [];
-            if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
-                for (let i = 0; i < apps.length; i++) {
-                    if (apps[i].length) {
-                        appList.push({_id: apps[i]});
-                    }
-                }
-                dbLoadEventsData(appList, function(err, eventList/*, viewList*/) {
-                    for (let i in eventList) {
-                        if (collection.indexOf(i, collection.length - i.length) !== -1) {
-                            return callback(true);
-                        }
-                    }
-                    return callback(false);
-                });
-            }
-            else if (collection.indexOf("app_viewdata") === 0) {
-                for (let i = 0; i < apps.length; i++) {
-                    if (apps[i].length) {
-                        appList.push({_id: apps[i]});
-                    }
-                }
-
-                dbLoadEventsData(appList, function(err, eventList, viewList) {
-                    for (let i in viewList) {
-                        if (collection.indexOf(i, collection.length - i.length) !== -1) {
-                            return callback(true);
-                        }
-                    }
-                    return callback(false);
-                });
-            }
-            else {
-                for (let i = 0; i < apps.length; i++) {
-                    if (collection.indexOf(apps[i], collection.length - apps[i].length) !== -1) {
-                        return callback(true);
-                    }
-                }
-                return callback(false);
-            }
         }
 
         /**
@@ -404,13 +259,19 @@ var common = require('../../../api/utils/common.js'),
             // conditions
             var isContainDb = params.qstring.dbs || params.qstring.db;
             var isContainCollection = params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1;
+
+            if (isContainDb && (typeof dbs[params.qstring.db]) === "undefined" && typeof dbs[params.qstring.dbs] === "undefined") {
+                common.returnMessage(params, 404, 'Database not found.');
+                return true;
+            }
+
             // handle index request
             if (isContainDb && params.qstring.collection && params.qstring.action === 'get_indexes') {
                 if (params.member.global_admin) {
                     getIndexes();
                 }
                 else {
-                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
+                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             getIndexes();
                         }
@@ -426,7 +287,7 @@ var common = require('../../../api/utils/common.js'),
                     dbGetDocument();
                 }
                 else {
-                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
+                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             dbGetDocument();
                         }
@@ -449,7 +310,7 @@ var common = require('../../../api/utils/common.js'),
                     }
                 }
                 else {
-                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
+                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             try {
                                 let aggregation = JSON.parse(params.qstring.aggregation);
@@ -472,7 +333,7 @@ var common = require('../../../api/utils/common.js'),
                     dbGetCollection();
                 }
                 else {
-                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
+                    dbUserHasAccessToCollection(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             dbGetCollection();
                         }

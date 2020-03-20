@@ -13,12 +13,12 @@ module.exports = function(grunt) {
             },
             dom: {
                 src: [
-                    'frontend/express/public/javascripts/dom/jquery/jquery-1.8.3.min.js',
+                    'frontend/express/public/javascripts/dom/jquery/jquery.js',
                     'frontend/express/public/javascripts/dom/jquery.form.js',
                     'frontend/express/public/javascripts/dom/tipsy/jquery.tipsy.js',
                     'frontend/express/public/javascripts/dom/jquery.noisy.min.js',
                     'frontend/express/public/javascripts/dom/jquery.sticky.headers.js',
-                    'frontend/express/public/javascripts/dom/jqueryui/jquery-ui-1.8.22.custom.min.js',
+                    'frontend/express/public/javascripts/dom/jqueryui/jquery-ui.js',
                     'frontend/express/public/javascripts/dom/jqueryui/jquery-ui-i18n.js',
                     'frontend/express/public/javascripts/dom/slimScroll.min.js',
                     'frontend/express/public/javascripts/dom/jquery.easing.1.3.js',
@@ -83,7 +83,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/visualization/flot/jquery.flot.navigate.js',
                     'frontend/express/public/javascripts/visualization/gauge.min.js',
                     'frontend/express/public/javascripts/visualization/d3/d3.min.js',
-                    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js'
+                    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js',
+                    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.x.axis.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.visualization.concat.js'
             },

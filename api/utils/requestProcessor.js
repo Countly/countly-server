@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin} = require('./rights.js');
+const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection} = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -539,7 +539,7 @@ const processRequest = (params) => {
                     break;
                 case 'update':
                     if (paths[4] === 'plugins') {
-                        validateUserForWriteAPI(countlyApi.mgmt.apps.updateAppPlugins, params);
+                        validateUserForDataWriteAPI(params, countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
                         validateUserForWriteAPI(countlyApi.mgmt.apps.updateApp, params);
@@ -922,101 +922,111 @@ const processRequest = (params) => {
                         catch (SyntaxError) {
                             idss = [];
                         }
-                        var app_id = params.qstring.app_id;
-                        var updateThese = {"$unset": {}};
-                        for (let i = 0; i < idss.length; i++) {
 
-                            if (idss[i].indexOf('.') !== -1) {
-                                updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
-                                updateThese.$unset["segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
-                                updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
-                            }
-                            else {
-                                updateThese.$unset["map." + idss[i]] = 1;
-                                updateThese.$unset["segments." + idss[i]] = 1;
-                                updateThese.$unset["omitted_segments." + idss[i]] = 1;
-                            }
+                        if (!Array.isArray(idss)) {
+                            idss = [];
                         }
 
-                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
-                            if (err) {
-                                common.returnMessage(params, 400, err);
-                            }
-                            if (!event) {
-                                common.returnMessage(params, 400, "Could not find event");
-                                return;
-                            }
-                            //fix overview
-                            if (event.overview && event.overview.length) {
-                                for (let i = 0; i < idss.length; i++) {
-                                    for (let j = 0; j < event.overview.length; j++) {
-                                        if (event.overview[j].eventKey === idss[i]) {
-                                            event.overview.splice(j, 1);
-                                            j = j - 1;
-                                        }
-                                    }
-                                }
-                                if (!updateThese.$set) {
-                                    updateThese.$set = {};
-                                }
-                                updateThese.$set.overview = event.overview;
-                            }
+                        var app_id = params.qstring.app_id;
+                        var updateThese = {"$unset": {}};
+                        if (idss.length > 0) {
+                            for (let i = 0; i < idss.length; i++) {
 
-                            //remove from list
-                            if (typeof event.list !== 'undefined' && Array.isArray(event.list) && event.list.length > 0) {
-                                for (let i = 0; i < idss.length; i++) {
-                                    let index = event.list.indexOf(idss[i]);
-                                    if (index > -1) {
-                                        event.list.splice(index, 1);
-                                        i = i - 1;
-                                    }
-                                }
-                                if (!updateThese.$set) {
-                                    updateThese.$set = {};
-                                }
-                                updateThese.$set.list = event.list;
-                            }
-                            //remove from order
-                            if (typeof event.order !== 'undefined' && Array.isArray(event.order) && event.order.length > 0) {
-                                for (let i = 0; i < idss.length; i++) {
-                                    let index = event.order.indexOf(idss[i]);
-                                    if (index > -1) {
-                                        event.order.splice(index, 1);
-                                        i = i - 1;
-                                    }
-                                }
-                                if (!updateThese.$set) {
-                                    updateThese.$set = {};
-                                }
-                                updateThese.$set.order = event.order;
-                            }
-
-                            common.db.collection('events').update({"_id": common.db.ObjectID(app_id)}, updateThese, function(err2) {
-                                if (err2) {
-                                    console.log(err2);
-                                    common.returnMessage(params, 400, err);
+                                if (idss[i].indexOf('.') !== -1) {
+                                    updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
+                                    updateThese.$unset["segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
+                                    updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
                                 }
                                 else {
-                                    for (let i = 0; i < idss.length; i++) {
-                                        var collectionNameWoPrefix = common.crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
-                                        common.db.collection("events" + collectionNameWoPrefix).drop(function() {});
-                                        plugins.dispatch("/i/event/delete", {
-                                            event_key: idss[i],
-                                            appId: app_id
-                                        });
-                                    }
-                                    plugins.dispatch("/systemlogs", {
-                                        params: params,
-                                        action: "event_deleted",
-                                        data: {
-                                            events: idss,
-                                            appID: app_id
-                                        }
-                                    });
-                                    common.returnMessage(params, 200, 'Success');
+                                    updateThese.$unset["map." + idss[i]] = 1;
+                                    updateThese.$unset["segments." + idss[i]] = 1;
+                                    updateThese.$unset["omitted_segments." + idss[i]] = 1;
                                 }
+                            }
+
+                            common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                if (!event) {
+                                    common.returnMessage(params, 400, "Could not find event");
+                                    return;
+                                }
+                                //fix overview
+                                if (event.overview && event.overview.length) {
+                                    for (let i = 0; i < idss.length; i++) {
+                                        for (let j = 0; j < event.overview.length; j++) {
+                                            if (event.overview[j].eventKey === idss[i]) {
+                                                event.overview.splice(j, 1);
+                                                j = j - 1;
+                                            }
+                                        }
+                                    }
+                                    if (!updateThese.$set) {
+                                        updateThese.$set = {};
+                                    }
+                                    updateThese.$set.overview = event.overview;
+                                }
+
+                                //remove from list
+                                if (typeof event.list !== 'undefined' && Array.isArray(event.list) && event.list.length > 0) {
+                                    for (let i = 0; i < idss.length; i++) {
+                                        let index = event.list.indexOf(idss[i]);
+                                        if (index > -1) {
+                                            event.list.splice(index, 1);
+                                            i = i - 1;
+                                        }
+                                    }
+                                    if (!updateThese.$set) {
+                                        updateThese.$set = {};
+                                    }
+                                    updateThese.$set.list = event.list;
+                                }
+                                //remove from order
+                                if (typeof event.order !== 'undefined' && Array.isArray(event.order) && event.order.length > 0) {
+                                    for (let i = 0; i < idss.length; i++) {
+                                        let index = event.order.indexOf(idss[i]);
+                                        if (index > -1) {
+                                            event.order.splice(index, 1);
+                                            i = i - 1;
+                                        }
+                                    }
+                                    if (!updateThese.$set) {
+                                        updateThese.$set = {};
+                                    }
+                                    updateThese.$set.order = event.order;
+                                }
+
+                                common.db.collection('events').update({"_id": common.db.ObjectID(app_id)}, updateThese, function(err2) {
+                                    if (err2) {
+                                        console.log(err2);
+                                        common.returnMessage(params, 400, err);
+                                    }
+                                    else {
+                                        for (let i = 0; i < idss.length; i++) {
+                                            var collectionNameWoPrefix = common.crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
+                                            common.db.collection("events" + collectionNameWoPrefix).drop(function() {});
+                                            plugins.dispatch("/i/event/delete", {
+                                                event_key: idss[i],
+                                                appId: app_id
+                                            });
+                                        }
+                                        plugins.dispatch("/systemlogs", {
+                                            params: params,
+                                            action: "event_deleted",
+                                            data: {
+                                                events: idss,
+                                                appID: app_id
+                                            }
+                                        });
+                                        common.returnMessage(params, 200, 'Success');
+                                    }
+                                });
                             });
-                        });
+                        }
+                        else {
+                            common.returnMessage(params, 400, "Missing events to delete");
+                        }
                     });
                     break;
                 }
@@ -1039,6 +1049,9 @@ const processRequest = (params) => {
                                 idss = JSON.parse(params.qstring.events);
                             }
                             catch (SyntaxError) {
+                                idss = [];
+                            }
+                            if (!Array.isArray(idss)) {
                                 idss = [];
                             }
 
@@ -1415,7 +1428,8 @@ const processRequest = (params) => {
                         }
                         taskmanager.getResult({
                             db: common.db,
-                            id: params.qstring.task_id
+                            id: params.qstring.task_id,
+                            subtask_key: params.qstring.subtask_key
                         }, (err, res) => {
                             if (res) {
                                 common.returnOutput(params, res);
@@ -1537,17 +1551,25 @@ const processRequest = (params) => {
                                 params.qstring.sort = null;
                             }
                         }
-                        countlyApi.data.exports.fromDatabase({
-                            db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
-                            params: params,
-                            collection: params.qstring.collection,
-                            query: params.qstring.query,
-                            projection: params.qstring.projection,
-                            sort: params.qstring.sort,
-                            limit: params.qstring.limit,
-                            skip: params.qstring.skip,
-                            type: params.qstring.type,
-                            filename: params.qstring.filename
+
+                        dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
+                            if (hasAccess) {
+                                countlyApi.data.exports.fromDatabase({
+                                    db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
+                                    params: params,
+                                    collection: params.qstring.collection,
+                                    query: params.qstring.query,
+                                    projection: params.qstring.projection,
+                                    sort: params.qstring.sort,
+                                    limit: params.qstring.limit,
+                                    skip: params.qstring.skip,
+                                    type: params.qstring.type,
+                                    filename: params.qstring.filename
+                                });
+                            }
+                            else {
+                                common.returnMessage(params, 401, 'User does not have access right for this collection');
+                            }
                         });
                     }, params);
                     break;

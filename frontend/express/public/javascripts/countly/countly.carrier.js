@@ -9,7 +9,24 @@
         return _carrierCodeMap[code] ? _carrierCodeMap[code] : code;
     }
 
+    /** Function gets list of carrier codes
+    * @param {string} value  - carrier name
+    * @returns{array} list if carrier id's
+    */
+    function getCodesFromName(value) {
+        var codes = [];
+        if (_carrierCodeMap) {
+            for (var p in _carrierCodeMap) {
+                if (_carrierCodeMap[p].indexOf(value) > -1) {
+                    codes.push(p);
+                }
+            }
+        }
+        return codes;
+    }
     window.countlyCarrier = window.countlyCarrier || {};
     window.countlyCarrier.getCarrierCodeName = getCarrierCodeName;
+    window.countlyCarrier.getCodesFromName = getCodesFromName;
+
     CountlyHelpers.createMetricModel(window.countlyCarrier, {name: "carriers", estOverrideMetric: "carriers"}, jQuery, getCarrierCodeName);
 }());

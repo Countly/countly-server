@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery*/
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal*/
 
 (function() {
     window.countlyViews = window.countlyViews || {};
@@ -17,7 +17,8 @@
         _tableData = [],
         _selectedViews = [],
         _graphDataObj = {},
-        _viewsCount = 0;
+        _viewsCount = 0,
+        _viewsNames = {};
 
     //graphData['appID'][]
     //Public Methods
@@ -102,6 +103,74 @@
             return true;
         }
     };
+
+    countlyViews.loadList = function(id) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": id,
+                "action": "listNames",
+                "method": "views",
+                "list": 1,
+                "preventRequestAbort": true
+            },
+            dataType: "json",
+            success: function(json) {
+                _viewsNames = {};
+                if (json && json.length > 0) {
+                    for (var i = 0; i < json.length; i++) {
+                        _viewsNames[json[i].view] = json[i].display || json[i].view;
+                    }
+                }
+            }
+        });
+    };
+
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
+        countlyViews.loadList(countlyCommon.ACTIVE_APP_ID);
+    }
+
+
+    /** Function gets view display name if it is set.
+    * @param {string} id  - view
+    * @returns {string}  - view name
+    */
+    countlyViews.getViewName = function(id) {
+        if (_viewsNames[id]) {
+            return _viewsNames[id];
+        }
+        return id;
+    };
+
+    /** Reverse function. Returns 'view' value from display name
+    * @param {string} name  - display name
+    * @returns {string}  - view value
+    */
+    countlyViews.getViewView = function(name) {
+        for (var p in _viewsNames) {
+            if (_viewsNames[p] === name) {
+                return p;
+            }
+        }
+        return name;
+    };
+
+
+    /** Function gets list of 'view' values from display names. Useful when searching in names
+    * @param {string} name  - view display name
+    * @returns {array} list if view values
+    */
+    countlyViews.getCodesFromName = function(name) {
+        var list = [];
+        for (var p in _viewsNames) {
+            if (_viewsNames[p].startsWith(name)) {
+                list.push(p);
+            }
+        }
+        return list;
+    };
+
     countlyViews.loadViewCount = function() {
         return $.when($.ajax({
             type: "GET",
@@ -448,10 +517,33 @@
         return getRange().indexOf(value);
     };
 
+    countlyViews.renameViews = function(data, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + '/views',
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "rename_views",
+                "data": JSON.stringify(data)
+            },
+            dataType: "json",
+            success: function(json) {
+                countlyViews.loadList(countlyCommon.ACTIVE_APP_ID); //reload views list
+                if (typeof callback === "function") {
+                    callback(json);
+                }
+            },
+            error: function() {
+                if (typeof callback === "function") {
+                    callback(false);
+                }
+            }
+        });
+    };
     countlyViews.deleteView = function(view, callback) {
         return $.ajax({
             type: "POST",
-            url: countlyCommon.API_PARTS.data.w + '/delete_view',
+            url: countlyCommon.API_PARTS.data.w + '/views',
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "delete_view",
@@ -459,7 +551,18 @@
             },
             dataType: "json",
             success: function(json) {
-                callback && callback(json);
+                countlyViews.loadList(countlyCommon.ACTIVE_APP_ID); //reload views list
+                if (json && json.result) {
+                    json = json.result;
+                }
+                if (typeof callback === "function") {
+                    callback(json);
+                }
+            },
+            error: function() {
+                if (typeof callback === "function") {
+                    callback(false);
+                }
             }
         });
     };

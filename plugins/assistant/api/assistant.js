@@ -138,7 +138,7 @@ const _ = require('underscore');
 
                     return targetElemArray.includes(api_key);
                 };
-
+                notifs = notifs || [];
                 notifs = notifs.filter(filterTargetUser);
 
                 //get global saved notifications for this app
@@ -525,6 +525,7 @@ const _ = require('underscore');
 
         //get a list of all apps
         countlyDb.collection('apps').find({}, {}).toArray(function(err_apps_data, result_apps_data) {
+            result_apps_data = result_apps_data || [];
             const totalAppCount = result_apps_data.length;
             log.i("Total count of apps here: [%j]", totalAppCount);
 

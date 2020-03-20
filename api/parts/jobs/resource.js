@@ -343,8 +343,8 @@ class ResourceFaçade extends ResourceInterface {
     **/
     close() {
         if (this.isOpen) {
-            log.w('Closing underlying resource %s from façade', this.id);
-            log.w('Stack %j', new Error().stack);
+            log.i('Closing underlying resource %s from façade', this.id);
+            log.i('Stack %j', new Error().stack);
             return new Promise((resolve, reject) => {
                 setTimeout(reject.bind(null, JOB.ERROR.TIMEOUT), RESOURCE_CMD_TIMEOUT);
                 this.channel.once(CMD.CLOSED, () => {
@@ -381,7 +381,7 @@ class ResourceFaçade extends ResourceInterface {
             return Promise.resolve();
         }
         else {
-            log.w('Opening underlying resource %s from façade', this.id);
+            log.i('Opening underlying resource %s from façade', this.id);
             return new Promise((resolve, reject) => {
                 let to = setTimeout(() => {
                     reject(JOB.ERROR.TIMEOUT);
@@ -424,7 +424,7 @@ class ResourceFaçade extends ResourceInterface {
     **/
     resolve() {
         if (this._resolve) {
-            log.w('[façade]: Resolving %s', this.job.channel);
+            log.i('[façade]: Resolving %s', this.job.channel);
             this._resolve.apply(this, arguments);
             this.job.releaseResource(this).then(() => {
                 log.i('[façade]: Released resource for %s', this.job.channel);
@@ -436,7 +436,7 @@ class ResourceFaçade extends ResourceInterface {
             this._resolve = this._reject = this.job.resource = null;
         }
         else {
-            log.w('ResourceFaçade %s already returned, nothing to resolve', this.id);
+            log.i('ResourceFaçade %s already returned, nothing to resolve', this.id);
         }
     }
 
@@ -446,7 +446,7 @@ class ResourceFaçade extends ResourceInterface {
     **/
     reject(error) {
         if (this._reject) {
-            log.w('[façade]: Rejecting %s', this.job.channel);
+            log.i('[façade]: Rejecting %s', this.job.channel);
             this._reject.apply(this, arguments);
             this.job.releaseResource(this).then(() => {
                 log.i('[façade]: Released resource for %s', this.job.channel);
@@ -458,7 +458,7 @@ class ResourceFaçade extends ResourceInterface {
             this._resolve = this._reject = this.job.resource = null;
         }
         else {
-            log.w('ResourceFaçade %s already returned, nothing to reject with %j', this.id, error);
+            log.i('ResourceFaçade %s already returned, nothing to reject with %j', this.id, error);
         }
     }
 }

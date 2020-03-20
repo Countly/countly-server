@@ -1354,7 +1354,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                     }
                 ], { allowDiskUse: true }, function(error, appUsersDbResult) {
 
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
+                    if (appUsersDbResult && plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
 
                         var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
 
@@ -1478,6 +1478,10 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options.unique = common.dbMap.unique;
     }
 
+    if (!Array.isArray(options.unique)) {
+        options.unique = [options.unique];
+    }
+
     if (typeof options.id === "undefined") {
         options.id = params.app_id;
     }
@@ -1507,15 +1511,18 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             fetchFromMonth.m = 1;
         }
         else {
-            fetchFromZero["d." + options.unique] = 1;
-            fetchFromZero["d." + params.time.month + "." + options.unique] = 1;
             fetchFromZero.meta = 1;
             fetchFromZero.meta_v2 = 1;
             fetchFromZero.m = 1;
-
-            fetchFromMonth["d.w" + params.time.weekly + "." + options.unique] = 1;
-            fetchFromMonth["d." + params.time.day] = 1;
             fetchFromMonth.m = 1;
+            fetchFromMonth["d." + params.time.day] = 1;
+
+            for (let i = 0; i < options.unique.length; i++) {
+                fetchFromZero["d." + options.unique[i]] = 1;
+                fetchFromZero["d." + params.time.month + "." + options.unique[i]] = 1;
+                fetchFromMonth["d.w" + params.time.weekly + "." + options.unique[i]] = 1;
+            }
+
 
             if (collection === 'users') {
                 fetchFromZero["d." + common.dbMap.frequency] = 1;

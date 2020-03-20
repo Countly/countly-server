@@ -1,6 +1,6 @@
 const job = require("../parts/jobs/job.js");
-const async = require("async");
 const crypto = require("crypto");
+const Promise = require("bluebird");
 const countlyApi = {
     data: {
         fetch: require("../parts/data/fetch.js"),
@@ -10,18 +10,28 @@ const countlyApi = {
 };
 const countlyEvents = countlyApi.data.lib.load("event");
 const countlyCommon = countlyApi.data.common;
+const common = require('../utils/common.js');
+const log = require('../utils/log.js')('job:topEvents');
 
 /** Class for job of top events widget **/
 class TopEventsJob extends job.Job {
 
     /**
+     * TopEvents initialize function
+     */
+    init() {
+        this.getAllApps();
+    }
+
+    /**
      * Events collections.
-     * @param {string} eventName - event name.
-     * @param {ObjectId} appId - app id.
+     * @param {Object} params - event, id.
      * @return {string} event collection.
      */
-    eventsCollentions(eventName, appId) {
-        return "events" + crypto.createHash("sha1").update(eventName + appId).digest("hex");
+    eventsCollentions(params) {
+        const {event, id} = params;
+        const eventName = `${event}${id}`;
+        return `events${crypto.createHash("sha1").update(eventName).digest("hex")}`;
     }
 
     /**
@@ -34,23 +44,27 @@ class TopEventsJob extends job.Job {
     }
 
     /**
+     * async
      * Get events count.
-     * @param {string} colName - event collection name.
-     * @param {Object} ob - it contains all necessary info.
-     * @param {Object} data - dummy event data.
-     * @param {string} event - event name.
-     * @param {function} doneCallback - callback.
-     * @returns {Object} topEvents data.
+     * @param {Object} params - getEventsCount object
+     * @param {String} params.collectionNameEvents - event collection name
+     * @param {Object} params.ob - it contains all necessary info
+     * @param {string} params.event - event name
+     * @param {Object} params.data - dummy event data
+     * @returns {Promise.<boolean>} true.
      */
-    getEventsCount(colName, ob, data, event, doneCallback) {
-        return countlyApi.data.fetch.getTimeObjForEvents(colName, ob, (doc)=> {
-            countlyEvents.setDb(doc || {});
-            const countProp = countlyEvents.getNumber("c");
-            data[event] = {};
-            data[event].data = {
-                count: countProp
-            };
-            doneCallback();
+    async getEventsCount(params) {
+        const {collectionNameEvents, ob, data, event} = params;
+        return await new Promise((resolve) => {
+            countlyApi.data.fetch.getTimeObjForEvents(collectionNameEvents, ob, (doc) => {
+                countlyEvents.setDb(doc || {});
+                const countProp = countlyEvents.getNumber("c");
+                data[event] = {};
+                data[event].data = {
+                    count: countProp
+                };
+                resolve(true);
+            });
         });
     }
 
@@ -69,50 +83,86 @@ class TopEventsJob extends job.Job {
     }
 
     /**
+     * timeSecond function
+     * @return {Number} - timesecond
+     */
+    timeSecond() {
+        return Math.round(new Date().getTime() / 1000);
+    }
+
+    /**
+     * mutatePeriod function
+     * @param {String} period - 30days, hour
+     * @return {String} - period
+     */
+    mutatePeriod(period) {
+        if (period === "hour") {
+            period = "today";
+        }
+        return period;
+    }
+
+    /**
+     * async
+     * That initialize function for TopEvents Job but Its main purpose is to get all the Apps.
+     * The errors of all functions will be caught here.
+     */
+    async getAllApps() {
+        try {
+            const getAllApps = await new Promise((res, rej) => common.db.collection("apps").find({}, {_id: 1, timezone: 1}).toArray((err, apps) => err ? rej(err) : res(apps)));
+            await Promise.all(getAllApps.map((app) => this.getAppEvents(app)));
+        }
+        catch (error) {
+            log.e("TopEvents Job has a error: ", error);
+        }
+    }
+
+    /**
+     * async
+     * saveAppEvents function
+     * @param {Object} params - saveAppEvents object
+     */
+    async saveAppEvents(params) {
+        const {data, period, app: {_id}} = params;
+        const encodedData = this.encodeEvents(data);
+        const timeSecond = this.timeSecond();
+        const currentPeriood = this.mutatePeriod(period);
+        await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).insert({app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData}, (error, records) => !error && records ? res(records) : rej(error)));
+    }
+
+    /**
+     * async
+     * getAppEvents function
+     * @param {Object} app - saveAppEvents object
+     */
+    async getAppEvents(app) {
+        const getEvents = await new Promise((res, rej) => common.db.collection("events").findOne({_id: app._id}, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
+        if (getEvents && 'list' in getEvents) {
+            const eventMap = this.eventsFilter(getEvents.list);
+            await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).remove({app_id: app._id}, (error, result) => error ? rej(error) : res(result)));
+            if (eventMap && eventMap instanceof Array && eventMap.length >= TopEventsJob.TOTAL_EVENT_COUNT) {
+                for (const period of TopEventsJob.PERIODS) {
+                    const data = {};
+                    const ob = { app_id: app._id, appTimezone: app.timezone, qstring: { period: period } };
+                    for (const event of eventMap) {
+                        const collectionNameEvents = this.eventsCollentions({event, id: app._id});
+                        await this.getEventsCount({collectionNameEvents, ob, data, event});
+                    }
+                    await this.saveAppEvents({app, data, period});
+                }
+            }
+        }
+
+    }
+
+
+    /**
      * Run the job
      * @param {Db} db connection
      * @param {done} done callback
      */
     run(db, done) {
-        db.collection("apps").find({}, {_id: 1, timezone: 1}).toArray((errorApps, resultApps)=> {
-            async.eachSeries(resultApps, (givenApps, resultEachCallback) => {
-                const {_id, timezone} = givenApps;
-                db.collection("events").findOne({_id}, (errorEvents, result) =>{
-                    if (result && 'list' in result) {
-                        const eventMap = this.eventsFilter(result.list);
-                        if (eventMap && eventMap instanceof Array && eventMap.length >= TopEventsJob.TOTAL_EVENT_COUNT) {
-                            db.collection(TopEventsJob.COLLENTION_NAME).remove({app_id: _id});
-                            async.eachSeries(TopEventsJob.PERIODS, (givenPeriod, eachCallback) => {
-                                const data = {};
-                                const ob = { app_id: _id, appTimezone: timezone, qstring: { period: givenPeriod } };
-                                async.each(eventMap, (event, doneEventMap) => {
-                                    const collectionNameEvents = this.eventsCollentions(event, _id);
-                                    this.getEventsCount(collectionNameEvents, ob, data, event, doneEventMap);
-                                }, () => {
-                                    const encodedData = this.encodeEvents(data);
-                                    const ts = Math.round(new Date().getTime() / 1000);
-                                    const period = givenPeriod === "hour" ? "today" : givenPeriod;
-                                    db.collection(TopEventsJob.COLLENTION_NAME).insert({app_id: _id, ts, period, data: encodedData}, (error, records) => {
-                                        if (!error && records) {
-                                            eachCallback();
-                                        }
-                                    });
-                                });
-                            }, ()=>{
-                                resultEachCallback();
-                            });
-                        }
-                        else {
-                            db.collection(TopEventsJob.COLLENTION_NAME).remove({app_id: _id});
-                            resultEachCallback();
-                        }
-                    }
-                    else {
-                        resultEachCallback();
-                    }
-                });
-            });
-        });
+        this.init();
         done();
     }
 }
@@ -127,7 +177,7 @@ TopEventsJob.TOTAL_EVENT_COUNT = 5;
  * TopEvents collection name.
  * @property {string}
  */
-TopEventsJob.COLLENTION_NAME = "top_events";
+TopEventsJob.COLLECTION_NAME = "top_events";
 
 /**
  * Events periods.

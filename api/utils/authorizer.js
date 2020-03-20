@@ -20,6 +20,7 @@ const log = require('./log.js')('core:authorizer');
 * @param {string} options.owner - id of the user who created this token
 * @param {string} options.app - list of the apps for which token was created
 * @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)
+* @param {string} options.tryReuse - if true - tries to find not expired token with same parameters. If not founds cretes new token. If found - updates token expiration time to new one and returns token.
 * @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
 */
 authorizer.save = function(options) {
@@ -49,20 +50,65 @@ authorizer.save = function(options) {
                 }
             }
             else if (member) {
-                options.db.collection("auth_tokens").insert({
-                    _id: options.token,
-                    ttl: options.ttl,
-                    ends: options.ttl + Math.round(Date.now() / 1000),
-                    multi: options.multi,
-                    owner: options.owner,
-                    app: options.app,
-                    endpoint: options.endpoint,
-                    purpose: options.purpose
-                }, function(err1) {
-                    if (typeof options.callback === "function") {
-                        options.callback(err1, options.token);
+                authorizer.clearExpiredTokens(options);
+                if (options.tryReuse === true) {
+                    var rules = {"multi": options.multi, "endpoint": options.endpoint, "app": options.app, "owner": options.owner, "purpose": options.purpose};
+                    if (options.purpose === "LoggedInAuth") {
+                        //Login token, allow switching from expiring to not expiring(and other way around)
+                        //If there is changes to session expiration - this will allow to treat those tokens as same token.
+                        rules.$or = [{"ttl": 0}, {"ttl": {"$gt": 0}, "ends": {$gt: Math.round(Date.now() / 1000)}}];
                     }
-                });
+                    else {
+                        if (options.ttl > 0) {
+                            rules.ttl = {$gt: 0};
+                            rules.ends = {$gt: Math.round(Date.now() / 1000)};
+                        }
+                        else {
+                            rules.ttl = options.ttl;
+                        }
+                    }
+
+
+                    var setObj = {ttl: options.ttl};
+                    setObj.ends = options.ttl + Math.round(Date.now() / 1000);
+                    options.db.collection("auth_tokens").findAndModify(rules, {}, {$set: setObj}, function(err_token, token) {
+                        if (token && token.value) {
+                            options.callback(err_token, token.value._id);
+                        }
+                        else {
+                            options.db.collection("auth_tokens").insert({
+                                _id: options.token,
+                                ttl: options.ttl,
+                                ends: options.ttl + Math.round(Date.now() / 1000),
+                                multi: options.multi,
+                                owner: options.owner,
+                                app: options.app,
+                                endpoint: options.endpoint,
+                                purpose: options.purpose
+                            }, function(err1) {
+                                if (typeof options.callback === "function") {
+                                    options.callback(err1, options.token);
+                                }
+                            });
+                        }
+                    });
+                }
+                else {
+                    options.db.collection("auth_tokens").insert({
+                        _id: options.token,
+                        ttl: options.ttl,
+                        ends: options.ttl + Math.round(Date.now() / 1000),
+                        multi: options.multi,
+                        owner: options.owner,
+                        app: options.app,
+                        endpoint: options.endpoint,
+                        purpose: options.purpose
+                    }, function(err1) {
+                        if (typeof options.callback === "function") {
+                            options.callback(err1, options.token);
+                        }
+                    });
+                }
             }
             else {
                 if (typeof options.callback === "function") {
@@ -94,6 +140,12 @@ authorizer.read = function(options) {
         options.token = options.token + "";
         options.db.collection("auth_tokens").findOne({_id: options.token}, options.callback);
     }
+};
+
+
+authorizer.clearExpiredTokens = function(options) {
+    var ends = Math.round(Date.now() / 1000);
+    options.db.collection("auth_tokens").remove({ttl: {$gt: 0}, ends: {$lt: ends}});
 };
 
 /**
