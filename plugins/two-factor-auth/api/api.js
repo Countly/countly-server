@@ -1,6 +1,6 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
-    GA = require("otplib/authenticator"),
+    {authenticator: GA} = require("otplib"),
     log = common.log('two-factor-auth:api'),
     utils = require("../../../api/utils/utils.js"),
     plugins = require('../../pluginManager.js');
@@ -8,10 +8,6 @@ var plugin = {},
 plugins.setConfigs("two-factor-auth", {
     globally_enabled: false
 });
-
-GA.options = {
-    crypto: require("crypto")
-};
 
 plugins.register("/i/two-factor-auth", function(ob) {
     var config = plugins.getConfig("two-factor-auth");

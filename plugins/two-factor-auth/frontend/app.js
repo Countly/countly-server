@@ -1,5 +1,5 @@
 var pluginObject = {},
-    GA = require("otplib/authenticator"),
+    {authenticator: GA} = require("otplib"),
     URL = require('url').URL,
     qrcode = require("qrcode"),
     countlyConfig = require('../../../frontend/express/config'),
@@ -8,10 +8,6 @@ var pluginObject = {},
     members = require("../../../frontend/express/libs/members.js"),
     versionInfo = require("../../../frontend/express/version.info"),
     languages = require('../../../frontend/express/locale.conf');
-
-GA.options = {
-    crypto: require("crypto")
-};
 
 /**
  @param {string} username - user identifier
