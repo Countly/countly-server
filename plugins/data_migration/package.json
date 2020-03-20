@@ -19,8 +19,5 @@
     "plugins",
     "migration"
   ],
-  "dependencies": {
-    "fs-extra": "^7.0.1"
-  },
   "private": true
 }
