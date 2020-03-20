@@ -40,62 +40,118 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
     });
 
-    plugins.register("/i/delete_view", function(ob) {
+    plugins.register("/i/views", function(ob) {
         var appId = ob.params.qstring.app_id;
-        var viewName = "";
-        var viewUrl = "";
-        var viewid = ob.params.qstring.view_id;
-
         var validateUserForDataWriteAPI = ob.validateUserForDataWriteAPI;
-        //var encodedUrl = common.db.encode(url);
         return new Promise(function(resolve) {
             validateUserForDataWriteAPI(ob.params, function(params) {
-                const deleteDocs = [];
-                common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err1, viewInfo) {
-                    if (viewInfo) {
-                        common.db.collection("app_viewsmeta" + appId).findOne({'_id': common.db.ObjectID(viewid)}, {}, function(err, viewrecord) {
-                            if (viewrecord && viewrecord.view) {
-                                viewName = viewrecord.view;
-                                viewUrl = viewrecord.view;
+                if (ob.params.qstring.method === "rename_views") {
+                    if (ob.params.qstring.data) {
+                        var haveUpdate = false;
+                        var data = [];
+                        try {
+                            data = JSON.parse(ob.params.qstring.data);
+                        }
+                        catch (SyntaxError) {
+                            log.e('Parsing data failed: ', ob.params.qstring.data);
+                            common.returnMessage(params, 400, 'Invalid request parameter: data');
+                            resolve();
+                            return;
+                        }
+                        common.db.onOpened(function() {
+                            const bulk = common.db._native.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
+                            for (var k = 0; k < data.length; k++) {
+                                if (data[k].value !== "") {
+                                    bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
+                                }
+                                else {
+                                    bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$unset: {"display": true}});
+                                }
+                                haveUpdate = true;
                             }
 
-                            if (viewrecord && viewrecord.url && viewrecord.url !== "") {
-                                viewUrl = viewrecord.url;
+                            if (haveUpdate) {
+                                bulk.execute(function(err/*, updateResult*/) {
+                                    if (err) {
+                                        log.e(err);
+                                        common.returnMessage(params, 400, err);
+                                        resolve();
+                                    }
+                                    else {
+                                        common.returnMessage(params, 200, 'Success');
+                                        resolve();
+                                    }
+                                });
                             }
-                            //remove all data collections
-                            for (let segKey in viewInfo.segments) {
-                                var colName2 = "app_viewdata" + crypto.createHash('sha1').update(segKey + appId).digest('hex');
-                                common.db.collection(colName2).remove({"vw": common.db.ObjectID(viewid)});
-                            }
-                            var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
-                            common.db.collection(colName).remove({"vw": common.db.ObjectID(viewid)});
-
-                            //remove from userviews
-                            common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
-                            //remove from meta
-                            common.db.collection("app_viewsmeta" + appId).remove({'_id': common.db.ObjectID(viewid)});
-                            if (common.drillDb) {
-                                deleteDocs.push(common.drillDb.collection(
-                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
-                                ).remove({"sg.name": viewName}));
-                                deleteDocs.push(common.drillDb.collection(
-                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
-                                ).remove({"sg.view": viewUrl}));
-                            }
-                            /** */
-                            Promise.all(deleteDocs).then(function() {
+                            else {
+                                common.returnMessage(params, 400, 'Nothing to update');
                                 resolve();
-                                common.returnOutput(params, {result: true});
-                                plugins.dispatch("/systemlogs", { params: ob.params, action: "view_deleted", data: viewrecord });
-                            });
+                            }
                         });
                     }
                     else {
+                        common.returnMessage(params, 400, 'Missing request parameter: data');
                         resolve();
-                        common.returnOutput(params, {result: false});
                     }
-                });
-            }, ob.params);
+                }
+                else if (ob.params.qstring.method === "delete_view") {
+                    var viewName = "";
+                    var viewUrl = "";
+                    var viewid = ob.params.qstring.view_id;
+                    const deleteDocs = [];
+                    common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err1, viewInfo) {
+                        if (err1) {
+                            log.e(err1);
+                        }
+                        if (viewInfo) {
+                            common.db.collection("app_viewsmeta" + appId).findOne({'_id': common.db.ObjectID(viewid)}, {}, function(err, viewrecord) {
+                                if (viewrecord && viewrecord.view) {
+                                    viewName = viewrecord.view;
+                                    viewUrl = viewrecord.view;
+                                }
+
+                                if (viewrecord && viewrecord.url && viewrecord.url !== "") {
+                                    viewUrl = viewrecord.url;
+                                }
+                                //remove all data collections
+                                for (let segKey in viewInfo.segments) {
+                                    var colName2 = "app_viewdata" + crypto.createHash('sha1').update(segKey + appId).digest('hex');
+                                    common.db.collection(colName2).remove({"vw": common.db.ObjectID(viewid)});
+                                }
+                                var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
+                                common.db.collection(colName).remove({"vw": common.db.ObjectID(viewid)});
+
+                                //remove from userviews
+                                common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
+                                //remove from meta
+                                common.db.collection("app_viewsmeta" + appId).remove({'_id': common.db.ObjectID(viewid)});
+                                if (common.drillDb) {
+                                    deleteDocs.push(common.drillDb.collection(
+                                        "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
+                                    ).remove({"sg.name": viewName}));
+                                    deleteDocs.push(common.drillDb.collection(
+                                        "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
+                                    ).remove({"sg.view": viewUrl}));
+                                }
+                                /** */
+                                Promise.all(deleteDocs).then(function() {
+                                    resolve();
+                                    common.returnOutput(params, {result: true});
+                                    plugins.dispatch("/systemlogs", { params: ob.params, action: "view_deleted", data: viewrecord });
+                                });
+                            });
+                        }
+                        else {
+                            resolve();
+                            common.returnOutput(params, {result: false});
+                        }
+                    });
+                }
+                else {
+                    common.returnMessage(params, 400, 'Invalid method. Must be one of:delete_view,rename_views ');
+                    resolve();
+                }
+            });
         });
     });
 
@@ -507,13 +563,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (params.qstring.method === "views") {
             validateUserForDataReadAPI(params, function() {
                 var colName = "";
+                var sortby;
+                var startPos = 0;
+                var dataLength = 0;
+                var sortcol = "";
+                var query = [];
                 if (params.qstring.action === 'getTable') {
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
                     var columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'scr'];
-                    var sortby = {$sort: {"t": -1}};
-                    var sortcol = "t";
-                    var startPos = 0;
-                    var dataLength = 0;
+                    sortby = {$sort: {"t": -1}};
+                    sortcol = "t";
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                         sortby.$sort = {};
                         sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];
@@ -536,10 +595,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         }
                         else if (sortcol === "name") {
                             if (params.qstring.sSortDir_0 === "asc") {
-                                sortby.$sort.view = 1;
+                                sortby.$sort.sortcol = 1;
                             }
                             else {
-                                sortby.$sort.view = -1;
+                                sortby.$sort.sortcol = -1;
                             }
                         }
                         else {
@@ -562,11 +621,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                     var selOptions = {app_id: params.qstring.app_id, startPos: startPos, dataLength: dataLength, sortby: sortby, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr"]}};
 
-                    if (sortcol === 'name' || params.qstring.sSearch) {
+                    if (sortcol === 'name' || (params.qstring.sSearch && params.qstring.sSearch !== "")) {
                         selOptions.count_query = {};
-                        var query = [];
-                        if (params.qstring.sSearch) {
-                            query = [{$match: {"view": {$regex: params.qstring.sSearch}}}];
+
+                        query = [{$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
+                        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
+                            query = [{$match: {"sortcol": {$regex: params.qstring.sSearch}}}];
                             selOptions.count_query = {"view": {$regex: params.qstring.sSearch}};
                         }
                         if (sortcol === 'name') {
@@ -574,7 +634,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             query.push({$skip: startPos});
 
                         }
-                        if (dataLength !== 0) {
+                        if (dataLength !== 0 && sortcol === 'name') {
                             query.push({$limit: dataLength});
                         }
                         common.db.collection("app_viewsmeta" + params.qstring.app_id).aggregate(query, {allowDiskUse: true}, function(err1, res) {
@@ -600,12 +660,17 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         for (var p = 0; p < values.length; p++) {
                                             data[z][values[p]] = data[z][values[p]] || 0;
                                         }
-                                        if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].view) {
-                                            data[z].view = data[z].view_meta[0].view;
-                                        }
+                                        if (data[z].view_meta && data[z].view_meta[0]) {
+                                            if (data[z].view_meta[0].view) {
+                                                data[z].view = data[z].view_meta[0].view;
+                                            }
+                                            if (data[z].view_meta[0].url) {
+                                                data[z].url = data[z].view_meta[0].url;
+                                            }
 
-                                        if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].url) {
-                                            data[z].url = data[z].view_meta[0].url;
+                                            if (data[z].view_meta[0].sortcol) {
+                                                data[z].display = data[z].view_meta[0].sortcol;
+                                            }
                                         }
                                     }
                                     common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total || data.length, iTotalDisplayRecords: total || data.length, aaData: data});
@@ -626,17 +691,74 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 for (var p = 0; p < values.length; p++) {
                                     data[z][values[p]] = data[z][values[p]] || 0;
                                 }
-                                if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].view) {
-                                    data[z].view = data[z].view_meta[0].view;
-                                }
+                                if (data[z].view_meta && data[z].view_meta[0]) {
+                                    if (data[z].view_meta[0].view) {
+                                        data[z].view = data[z].view_meta[0].view;
+                                    }
+                                    if (data[z].view_meta[0].url) {
+                                        data[z].url = data[z].view_meta[0].url;
+                                    }
 
-                                if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].url) {
-                                    data[z].url = data[z].view_meta[0].url;
+                                    if (data[z].view_meta[0].sortcol) {
+                                        data[z].display = data[z].view_meta[0].sortcol;
+                                    }
                                 }
                             }
                             common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total || data.length, iTotalDisplayRecords: total || data.length, aaData: data});
                         });
                     }
+                }
+                else if (params.qstring.action === 'getTableNames') {
+                    sortby = {$sort: {"sortcol": -1}};
+                    sortcol = "sortcol";
+                    var total = 100;
+                    if (params.qstring.iDisplayStart && parseInt(params.qstring.iDisplayStart, 10) !== 0) {
+                        startPos = parseInt(params.qstring.iDisplayStart, 10);
+                    }
+                    if (params.qstring.iDisplayLength && parseInt(params.qstring.iDisplayLength, 10) !== -1) {
+                        dataLength = parseInt(params.qstring.iDisplayLength, 10);
+                    }
+                    query = [{$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
+
+                    if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
+                        if (parseInt(params.qstring.iSortCol_0, 10) === 1) {
+                            sortcol = "view";
+                            sortby = {$sort: {"view": -1}};
+                        }
+                        if (params.qstring.sSortDir_0 === "asc") {
+                            sortby.$sort[sortcol] = 1;
+                        }
+                        else {
+                            sortby.$sort[sortcol] = -1;
+                        }
+                    }
+                    if (params.qstring.sSearch && params.qstring.sSearch !== "") {
+                        query.push({$match: {"sortcol": {$regex: params.qstring.sSearch}}});
+                    }
+                    query.push(sortby);
+                    var facetLine = [];
+                    facetLine.push({$skip: startPos});
+                    if (dataLength !== 0) {
+                        facetLine.push({$limit: dataLength});
+                    }
+
+                    query.push({$facet: {data: facetLine, count: [{$count: 'count'}]}});
+                    common.db.collection("app_viewsmeta" + params.qstring.app_id).aggregate(query, {allowDiskUse: true}, function(err1, res) {
+                        if (err1) {
+                            log.e(err1);
+                        }
+                        var data = [];
+                        total = 0;
+                        if (res && res[0]) {
+                            data = res[0].data;
+                            if (res[0].count && res[0].count[0]) {
+                                total = res[0].count[0].count || 0;
+                            }
+                        }
+
+
+                        common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total || data.length, iTotalDisplayRecords: total || data.length, aaData: data});
+                    });
                 }
                 else if (params.qstring.action === "get_view_count") {
                     if (params.app_id && params.app_id !== "") {
@@ -945,7 +1067,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     plugins.register("/o/actions", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        if (common.drillDb && params.qstring.view) {
+        if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
                 common.db.collection('apps').findOne({'key': params.qstring.app_key}, function(err1, app) {
                     if (!app) {
@@ -1051,20 +1173,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (user.lv) {
                         var segmentation = {name: user.lv.replace(/^\$/, "").replace(/\./g, "&#46;"), exit: 1};
                         common.db.collection('app_viewsmeta' + params.app_id).findAndModify({'view': segmentation.name}, {}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
-                            common.db.collection('app_userviews' + params.app_id).findOne({'_id': user.uid}, function(err2, view2) {
-                                var LastTime = 0;
-                                if (view2 && view2[view.value._id]) {
-                                    LastTime = view2[view.value._id].ts;
-                                }
-                                if (ob.end_session || LastTime && params.time.timestamp - LastTime < 60) {
-                                    if (parseInt(user.vc) === 1) {
-                                        segmentation.bounce = 1;
+                            if (err) {
+                                log.e(err);
+                            }
+                            if (view && view.value) {
+                                common.db.collection('app_userviews' + params.app_id).findOne({'_id': user.uid}, function(err2, view2) {
+                                    var LastTime = 0;
+                                    if (view2 && view2[view.value._id]) {
+                                        LastTime = view2[view.value._id].ts;
                                     }
-                                    params.viewsNamingMap = params.viewsNamingMap || {};
-                                    params.viewsNamingMap[segmentation.name] = view.value._id;
-                                    recordMetrics(params, {"viewAlias": view.value._id, key: "[CLY]_view", segmentation: segmentation}, user);
-                                }
-                            });
+                                    if (ob.end_session || LastTime && params.time.timestamp - LastTime < 60) {
+                                        if (parseInt(user.vc) === 1) {
+                                            segmentation.bounce = 1;
+                                        }
+                                        params.viewsNamingMap = params.viewsNamingMap || {};
+                                        params.viewsNamingMap[segmentation.name] = view.value._id;
+                                        recordMetrics(params, {"viewAlias": view.value._id, key: "[CLY]_view", segmentation: segmentation}, user);
+                                    }
+                                });
+                            }
                         });
                     }
                     common.updateAppUser(params, {$set: {vc: 0}});

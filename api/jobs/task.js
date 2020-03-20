@@ -65,22 +65,23 @@ class MonitorJob extends job.Job {
             }).toArray(function(err, tasks) {
                 log.d('Running Task Monitor Job ....');
                 log.d("job info:", self._json, tasks);
-                const filteredTasks = tasks.filter(tasksFilter);
-                filteredTasks.forEach((task) => {
-                    return Promise.coroutine(function *() { // eslint-disable-line require-yield
-                        try {
-                            taskmanager.rerunTask({
-                                db: common.db,
-                                id: task._id,
-                                autoUpdate: true
-                            }, () => {});
-                        }
-                        catch (e) {
-                            log.e(e, e.stack);
-                        }
-                    })();
-                });
-
+                if (tasks) {
+                    const filteredTasks = tasks.filter(tasksFilter);
+                    filteredTasks.forEach((task) => {
+                        return Promise.coroutine(function *() { // eslint-disable-line require-yield
+                            try {
+                                taskmanager.rerunTask({
+                                    db: common.db,
+                                    id: task._id,
+                                    autoUpdate: true
+                                }, () => {});
+                            }
+                            catch (e) {
+                                log.e(e, e.stack);
+                            }
+                        })();
+                    });
+                }
                 done();
             });
         });

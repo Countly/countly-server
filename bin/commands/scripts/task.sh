@@ -10,6 +10,6 @@ then
     usage ;
 else
     (cd "$DIR/../../.." ;
-    grunt "$1";
+    "$DIR/../../../node_modules/grunt/bin/grunt" "$1";
     )
 fi

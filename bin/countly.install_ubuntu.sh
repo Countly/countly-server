@@ -31,7 +31,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_8.x | bash -
+wget -qO- https://deb.nodesource.com/setup_10.x | bash -
 
 #update once more after adding new repos
 apt-get update
@@ -68,11 +68,13 @@ apt-get -y install sendmail
 #install grunt & npm modules
 ( cd "$DIR/.." ;  sudo npm install npm@6.4.1 -g; npm --version; sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm)
 
-#install mongodb
-if [ "$INSIDE_DOCKER_NOMONGO" != "1" ]
-then
-    bash "$DIR/scripts/mongodb.install.sh"
+GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
+if [[ "$GLIBC_VERSION" != "2.25" ]]; then
+    (cd "$DIR/.." && sudo npm install argon2 --build-from-source)
 fi
+
+#install mongodb
+bash "$DIR/scripts/mongodb.install.sh"
 
 bash "$DIR/scripts/detect.init.sh"
 

@@ -24,7 +24,9 @@ function verifyMetrics(ob, correct) {
             correct["meta"][i].sort();
         }
     }
-    ob.should.have.property("meta").eql(correct.meta);
+    if (correct.meta) {
+        ob.should.have.property("meta").eql(correct.meta);
+    }
     for (var i in ob) {
         if (i != "meta") {
             ob.should.have.property(i).and.not.eql({});
@@ -57,6 +59,130 @@ function verifyMetrics(ob, correct) {
     }
 }
 
+var testNumber = 0;
+function verifyCrashMetrics(users, crashes, loss, metrics) {
+    testNumber++;
+    describe('Check crash metrics #' + testNumber, function() {
+        it('should have 1 crash', function(done) {
+            request
+                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property("users", users);
+                    ob.should.have.property("crashes", crashes);
+                    ob.should.have.property("loss", loss);
+                    ob.should.have.property("data");
+                    verifyMetrics(ob.data, metrics[0]);
+                    done();
+                });
+        });
+    });
+
+    describe('Check crash metrics #' + testNumber + ' Android', function() {
+        it('should have 1 crash', function(done) {
+            request
+                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1&os=Android")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property("users", users);
+                    ob.should.have.property("crashes", crashes);
+                    ob.should.have.property("loss", loss);
+                    ob.should.have.property("data");
+                    verifyMetrics(ob.data, metrics[1]);
+                    done();
+                });
+        });
+    });
+
+    describe('Check crash metrics #' + testNumber + ' iOS', function() {
+        it('should have 1 crash', function(done) {
+            request
+                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1&os=iOS")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property("users", users);
+                    ob.should.have.property("crashes", crashes);
+                    ob.should.have.property("loss", loss);
+                    ob.should.have.property("data");
+                    verifyMetrics(ob.data, metrics[2]);
+                    done();
+                });
+        });
+    });
+
+    describe('Check crash metrics #' + testNumber + ' version 1.1', function() {
+        it('should have 1 crash', function(done) {
+            request
+                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1&app_version=1:1")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property("users", users);
+                    ob.should.have.property("crashes", crashes);
+                    ob.should.have.property("loss", loss);
+                    ob.should.have.property("data");
+                    verifyMetrics(ob.data, metrics[3]);
+                    done();
+                });
+        });
+    });
+
+    describe('Check crash metrics #' + testNumber + ' version 1.2', function() {
+        it('should have 1 crash', function(done) {
+            request
+                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1&app_version=1:2")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property("users", users);
+                    ob.should.have.property("crashes", crashes);
+                    ob.should.have.property("loss", loss);
+                    ob.should.have.property("data");
+                    verifyMetrics(ob.data, metrics[4]);
+                    done();
+                });
+        });
+    });
+
+    describe('Check crash metrics #' + testNumber + ' Android version 1.2', function() {
+        it('should have 1 crash', function(done) {
+            request
+                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1&os=Android&app_version=1:2")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property("users", users);
+                    ob.should.have.property("crashes", crashes);
+                    ob.should.have.property("loss", loss);
+                    ob.should.have.property("data");
+                    verifyMetrics(ob.data, metrics[5]);
+                    done();
+                });
+        });
+    });
+}
+
 describe('Testing Crashes', function() {
 //{"users":{"total":0,"affected":0,"fatal":0,"nonfatal":0},"crashes":{"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{},"highest_app":""},"loss":0,"groups":[],"data":{}}
 
@@ -74,7 +200,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("users", {"total": 0, "affected": 0, "fatal": 0, "nonfatal": 0});
-                    ob.should.have.property("crashes", {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {}, "highest_app": ""});
+                    ob.should.have.property("crashes", {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {}, "highest_app": "", "app_version": {}});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data", {});
                     done();
@@ -85,7 +211,7 @@ describe('Testing Crashes', function() {
     describe('Create user', function() {
         it('should success', function(done) {
             request
-                .get('/i?device_id=' + DEVICE_ID + '1&app_key=' + APP_KEY + "&begin_session=1")
+                .get('/i?device_id=' + DEVICE_ID + '1&app_key=' + APP_KEY + '&begin_session=1&metrics={"_app_version":"1.1","_os":"Android"}')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -146,25 +272,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #1', function() {
-        it('should have 1 crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 1, "affected": 1, "fatal": 0, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 1, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 1, "news": 1, "renewed": 0, "os": {"Android": 1}, "highest_app": "1.1"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 1, crnf: 1, cru: 1});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 1, "affected": 1, "fatal": 0, "nonfatal": 1},
+        {"total": 1, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 1, "news": 1, "renewed": 0, "os": {"Android": 1}, "highest_app": "1.1", "app_version": {"1:1": 1}},
+        0,
+        [
+            {meta: {}, crnf: 1, crunf: 1},
+            {meta: {}, crnf: 1, crunf: 1},
+            {},
+            {meta: {}, crnf: 1, crunf: 1},
+            {},
+            {},
+        ]);
 
     describe('Check crash data', function() {
         it('should have 1 crash', function(done) {
@@ -274,7 +393,7 @@ describe('Testing Crashes', function() {
     describe('Create user', function() {
         it('should success', function(done) {
             request
-                .get('/i?device_id=' + DEVICE_ID + '2&app_key=' + APP_KEY + "&begin_session=1")
+                .get('/i?device_id=' + DEVICE_ID + '2&app_key=' + APP_KEY + '&begin_session=1&metrics={"_app_version":"1.1","_os":"Android"}')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -335,25 +454,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #2', function() {
-        it('should have 1 crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 2, "affected": 2, "fatal": 0, "nonfatal": 2});
-                    ob.should.have.property("crashes", {"total": 2, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 2, "news": 0, "renewed": 0, "os": {"Android": 2}, "highest_app": "1.1"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 2, crnf: 2, cru: 1});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 2, "affected": 2, "fatal": 0, "nonfatal": 2},
+        {"total": 2, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 2, "news": 0, "renewed": 0, "os": {"Android": 2}, "highest_app": "1.1", "app_version": {"1:1": 2}},
+        0,
+        [
+            {meta: {}, crnf: 2, crunf: 1},
+            {meta: {}, crnf: 2, crunf: 1},
+            {},
+            {meta: {}, crnf: 2, crunf: 1},
+            {},
+            {},
+        ]);
 
     describe('Check crash data', function() {
         it('should have 1 crash', function(done) {
@@ -491,7 +603,7 @@ describe('Testing Crashes', function() {
     describe('Create another session for user', function() {
         it('should success', function(done) {
             request
-                .get('/i?device_id=' + DEVICE_ID + '2&app_key=' + APP_KEY + "&begin_session=1")
+                .get('/i?device_id=' + DEVICE_ID + '2&app_key=' + APP_KEY + '&begin_session=1&metrics={"_app_version":"1.2"}')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -499,7 +611,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -552,25 +664,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #3', function() {
-        it('should have 1 crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 2, "affected": 2, "fatal": 0, "nonfatal": 2});
-                    ob.should.have.property("crashes", {"total": 3, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 3}, "highest_app": "1.2"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 3, crnf: 3, cru: 1});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 2, "affected": 2, "fatal": 0, "nonfatal": 2},
+        {"total": 3, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 3}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 1}},
+        0,
+        [
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crauf: 1},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 1},
+            {meta: {}, crnf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should have 1 crash', function(done) {
@@ -728,25 +833,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #4', function() {
-        it('should have 2 crashes', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 2, "affected": 2, "fatal": 1, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 4, "unique": 2, "resolved": 0, "unresolved": 2, "fatal": 1, "nonfatal": 3, "news": 1, "renewed": 0, "os": {"Android": 4}, "highest_app": "1.2"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 4, crnf: 3, crf: 1, cru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 2, "affected": 2, "fatal": 1, "nonfatal": 1},
+        {"total": 4, "unique": 2, "resolved": 0, "unresolved": 2, "fatal": 1, "nonfatal": 3, "news": 1, "renewed": 0, "os": {"Android": 4}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 2}},
+        0,
+        [
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should have 2 crashes', function(done) {
@@ -907,7 +1005,7 @@ describe('Testing Crashes', function() {
                 "facebook": "3.5"
             };
             request
-                .get('/i?device_id=' + DEVICE_ID + '3&app_key=' + APP_KEY + "&begin_session=1&crash=" + JSON.stringify(crash))
+                .get('/i?device_id=' + DEVICE_ID + '3&app_key=' + APP_KEY + '&begin_session=1&metrics={"_app_version":"1.1","_os":"Android"}&crash=' + JSON.stringify(crash))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -920,25 +1018,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #5', function() {
-        it('should have 3 crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 5, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 3, "news": 1, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 5, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 3, "news": 1, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 3}},
+        0,
+        [
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should have 3 crash', function(done) {
@@ -1613,25 +1704,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #6', function() {
-        it('should be resolved', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 3}},
+        0,
+        [
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash details', function() {
         it('should be resolved', function(done) {
@@ -1700,25 +1784,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #7', function() {
-        it('should no user change', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3, crru: 1});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 3}},
+        0,
+        [
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash details', function() {
         it('should have 1 user less', function(done) {
@@ -1787,25 +1864,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #8', function() {
-        it('should have 1 user less', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 2, "fatal": 2, "nonfatal": 0});
-                    ob.should.have.property("crashes", {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 5, crnf: 3, crf: 2, cru: 3, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 2, "fatal": 2, "nonfatal": 0},
+        {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 3}},
+        0,
+        [
+            {meta: {}, crnf: 3, crunf: 1, crfses: 2, crf: 2, cruf: 2, crauf: 2},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 2, crauf: 2},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash details', function() {
         it('should have no users affected', function(done) {
@@ -1922,25 +1992,19 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #9', function() {
-        it('should be reoccurred', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 6, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 4, "news": 0, "renewed": 1, "os": {"Android": 5, "Windows Phone": 1}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 6, crnf: 4, crf: 2, cru: 3, crru: 2});
-                    done();
-                });
-        });
-    });
+
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 6, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 4, "news": 0, "renewed": 1, "os": {"Android": 5, "Windows Phone": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 1}},
+        0,
+        [
+            {meta: {}, crnf: 4, crunf: 1, crfses: 3, crf: 2, cruf: 2, crauf: 2, crnfses: 1},
+            {meta: {}, crnf: 4, crunf: 1, crf: 1, cruf: 1, crfses: 3, crauf: 2, crnfses: 1},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash details', function() {
         it('should be resolved', function(done) {
@@ -2073,25 +2137,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #10', function() {
-        it('should be reoccurred', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 7, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 1, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 7, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 1, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 2}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash details', function() {
         it('should be resolved', function(done) {
@@ -2163,25 +2220,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #11', function() {
-        it('should be reoccurred', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 7, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 7, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 2}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash details', function() {
         it('should be resolved', function(done) {
@@ -2252,25 +2302,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #12', function() {
-        it('should be reoccurred', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 7, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 7, crnf: 5, crf: 2, cru: 3, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 7, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 2}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash details', function() {
         it('should be resolved', function(done) {
@@ -2393,25 +2436,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #13', function() {
-        it('should have new crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 8, "unique": 4, "resolved": 0, "unresolved": 4, "fatal": 3, "nonfatal": 5, "news": 1, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1, "iOS": 1}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 8, crnf: 5, crf: 3, cru: 4, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 8, "unique": 4, "resolved": 0, "unresolved": 4, "fatal": 3, "nonfatal": 5, "news": 1, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1, "iOS": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 3}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 3, cruf: 3, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should have new crash', function(done) {
@@ -2569,25 +2605,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #14', function() {
-        it('should be the same crash as previous', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 9, "unique": 4, "resolved": 0, "unresolved": 4, "fatal": 4, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1, "iOS": 2}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 9, "unique": 4, "resolved": 0, "unresolved": 4, "fatal": 4, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1, "iOS": 2}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 4}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crf: 2, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should be the same crash as previous', function(done) {
@@ -2692,25 +2721,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #15', function() {
-        it('should not have first crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 8, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 3, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 5, "Windows Phone": 1, "iOS": 2}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 8, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 3, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 5, "Windows Phone": 1, "iOS": 2}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 2, "1:3": 4}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crf: 2, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should not have first crash', function(done) {
@@ -2792,25 +2814,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #16', function() {
-        it('should not have second crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1});
-                    ob.should.have.property("crashes", {"total": 7, "unique": 2, "resolved": 0, "unresolved": 2, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 5, "Windows Phone": 0, "iOS": 2}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 3, "fatal": 2, "nonfatal": 1},
+        {"total": 7, "unique": 2, "resolved": 0, "unresolved": 2, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 5, "Windows Phone": 0, "iOS": 2}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 1, "1:3": 4}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crf: 2, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should not have second crash', function(done) {
@@ -2879,25 +2894,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #17', function() {
-        it('should not have third crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 2, "fatal": 2, "nonfatal": 0});
-                    ob.should.have.property("crashes", {"total": 2, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 2, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 2}, "highest_app": "1.3"});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 2, "fatal": 2, "nonfatal": 0},
+        {"total": 2, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 2, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 2}, "highest_app": "1.3", "app_version": {"1:1": 0, "1:2": 0, "1:3": 2}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crf: 2, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should not have third crash', function(done) {
@@ -2949,25 +2957,18 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check crash metrics #18', function() {
-        it('should not have fourth crash', function(done) {
-            request
-                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("users", {"total": 3, "affected": 0, "fatal": 0, "nonfatal": 0});
-                    ob.should.have.property("crashes", {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 0}, "highest_app": ""});
-                    ob.should.have.property("loss", 0);
-                    ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, cr: 9, crnf: 5, crf: 4, cru: 4, crru: 2});
-                    done();
-                });
-        });
-    });
+    verifyCrashMetrics(
+        {"total": 3, "affected": 0, "fatal": 0, "nonfatal": 0},
+        {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 0}, "highest_app": "", "app_version": {"1:1": 0, "1:2": 0, "1:3": 0}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crf: 2, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+        ]);
 
     describe('Check crash data', function() {
         it('should not have fourth crash', function(done) {
@@ -2982,6 +2983,71 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("iTotalRecords", 0);
                     ob.should.have.property("iTotalDisplayRecords", 0);
                     ob.should.have.property("aaData").with.lengthOf(0);
+                    done();
+                });
+        });
+    });
+
+    describe('Create user new user', function() {
+        it('should success', function(done) {
+            request
+                .get('/i?device_id=' + DEVICE_ID + '4&app_key=' + APP_KEY + '&begin_session=1&metrics={"_os":"Android","_app_version":"1.2"}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                });
+        });
+    });
+
+    describe('Make crash free session and user', function() {
+        it('should success', function(done) {
+            request
+                .get('/i?device_id=' + DEVICE_ID + '4&app_key=' + APP_KEY + "&begin_session=1")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                });
+        });
+    });
+
+    verifyCrashMetrics(
+        {"total": 4, "affected": 0, "fatal": 0, "nonfatal": 0},
+        {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 0}, "highest_app": "", "app_version": {"1:1": 0, "1:2": 0, "1:3": 0}},
+        0,
+        [
+            {meta: {}, crnf: 5, crunf: 1, crfses: 6, crf: 4, cruf: 3, crauf: 3, crnfses: 3, craunf: 1},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 6, crauf: 3, crnfses: 3, craunf: 1},
+            {meta: {}, crf: 2, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, crfses: 1, crauf: 1, crnfses: 1, craunf: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1, crnfses: 1, craunf: 1},
+        ]);
+
+    describe('Check crash metrics #19', function() {
+        it('should have crash free user', function(done) {
+            request
+                .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&graph=1")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property("users", {"total": 4, "affected": 0, "fatal": 0, "nonfatal": 0});
+                    ob.should.have.property("crashes", {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 0}, "highest_app": "", "app_version": {"1:1": 0, "1:2": 0, "1:3": 0}});
+                    ob.should.have.property("loss", 0);
+                    ob.should.have.property("data");
+                    verifyMetrics(ob.data, {meta: {}, crnf: 5, crunf: 1, crfses: 6, crf: 4, cruf: 3, crauf: 3, crnfses: 3, craunf: 1});
                     done();
                 });
         });
@@ -3015,7 +3081,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("users", {"total": 0, "affected": 0, "fatal": 0, "nonfatal": 0});
-                    ob.should.have.property("crashes", {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {}, "highest_app": ""});
+                    ob.should.have.property("crashes", {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {}, "highest_app": "", "app_version": {}});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data", {});
                     done();

@@ -17,6 +17,9 @@ module.exports = function(my_db) {
     if (my_db) {
         db = my_db;
     }
+    if (!db) {
+        db = common.db;
+    }
     var params = "";
 
     var my_logpath = "";
@@ -189,7 +192,13 @@ module.exports = function(my_db) {
                     }
                     else {
                         if (res) {
-                            plugins.dispatch("/systemlogs", {params: {req: JSON.parse(res.myreq)}, user: {_id: res.userid, email: res.email}, action: "export_" + status, data: {app_ids: res.apps, status: status, message: reason}});
+                            try {
+                                res.myreq = JSON.parse(res.myreq);
+                            }
+                            catch (SyntaxError) {
+                                res.myreq = "";
+                            }
+                            plugins.dispatch("/systemlogs", {params: {req: res.myreq}, user: {_id: res.userid, email: res.email}, action: "export_" + status, data: {app_ids: res.apps, status: status, message: reason}});
                         }
                     }
                 });
@@ -349,11 +358,12 @@ module.exports = function(my_db) {
                 const out = fs.openSync(my_logpath, 'a');
                 const err = fs.openSync(my_logpath, 'a');
                 starr = [ 'ignore', out, err ];
-                log_me(my_logpath, "running command " + my_command, false);
+                log_me(my_logpath, "running command " + my_command + " " + my_args.join(" "), false);
             }
             var child = spawn(my_command, my_args, {shell: false, cwd: __dirname, detached: false, stdio: starr}, function(error) {
                 if (error) {
-                    return reject(Error('error:' + JSON.stringify(error)));
+                    reject(Error('error:' + JSON.stringify(error)));
+                    return;
                 }
             });
 
@@ -418,7 +428,7 @@ module.exports = function(my_db) {
                 var cid = [];
                 if (res && res.plugins && res.plugins.push) {
                     if (res.plugins.push.a && res.plugins.push.a._id) {
-                        cid.push('ObjectId(' + res.plugins.push.a._id + ')');
+                        cid.push('ObjectId("' + res.plugins.push.a._id + '")');
                     }
 
                     if (res.plugins.push.i && res.plugins.push.i._id) {
@@ -426,7 +436,7 @@ module.exports = function(my_db) {
                     }
                 }
                 if (cid.length > 0) {
-                    resolve([{cmd: 'mongodump', args: [...data.dbargs, '--collection', 'credentials', '-q', '{ _id: {$in:[' + cid.join() + ']}}', '--out', data.my_folder]}]);
+                    resolve([{cmd: 'mongodump', args: [...data.dbargs, '--collection', 'credentials', '-q', '{ _id: {$in:[' + cid.join(',') + ']}}', '--out', data.my_folder]}]);
                 }
                 else {
                     resolve([]);
@@ -518,7 +528,7 @@ module.exports = function(my_db) {
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'crash_share', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'feedback_widgets', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'notes', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'messages', '-q', '{ apps: "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'messages', '-q', '{ apps: ObjectId("' + appid + '")}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohortdata', '-q', '{ a: "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohorts', '-q', '{ app_id: "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'server_stats_data_points', '-q', '{ a: "' + appid + '"}', '--out', my_folder]});
@@ -613,6 +623,11 @@ module.exports = function(my_db) {
                     countlyFs.getStream("appimages", imagepath, {id: data.appid + ".png"}, function(err1, stream) {
                         if (!err1 && stream) {
                             var wstream = fs.createWriteStream(data.image_folder + '/' + data.appid + '.png');
+
+                            wstream.on('error', function(errw) {
+                                log.e("Couldn't copy file: " + errw);
+                            });
+
                             stream.pipe(wstream);
                             stream.on('end', () => {
                                 resolve("Icon copied: " + data.appid + '.png');
@@ -934,12 +949,12 @@ module.exports = function(my_db) {
         return new Promise(function(resolve, reject) {
             var basefolder = folder;
             folder = fix_my_path(folder);
+            var mydata = {};
             if (folder === false) {
                 reject(Error('Bad Archive'));
             }
 
             try {
-                var mydata = {};
                 try {
                     var data = fs.readFileSync(folder + '/info.json');
                     mydata = JSON.parse(data);
@@ -980,10 +995,51 @@ module.exports = function(my_db) {
                 log_me(logpath, 'Scripts generated sucessfully', false);
                 my_logpath = logpath;
                 Promise.each(myscripts, function(command) {
-                    run_command(command.cmd, command.args);
+                    return run_command(command.cmd, command.args);
                 }).then(
                     function() {
-                        resolve();
+                        //update messages 
+                        if (mydata && mydata.app_ids) {
+                            log_me(logpath, 'Updating records in messages collection', false);
+                            var imported_ids = mydata.app_ids.split(',');
+                            var objectIDS = [];
+                            for (let z = 0; z < imported_ids.length; z++) {
+                                if (imported_ids[z] !== "") {
+                                    objectIDS.push(common.db.ObjectID(imported_ids[z]));
+                                }
+                            }
+                            common.db.collection('messages').find({"apps": {"$in": objectIDS}}).toArray(function(err1, list) {
+                                if (err1) {
+                                    log_me(logpath, err1, false);
+                                }
+                                for (let z = 0; z < list.length; z++) {
+                                    if (list[z].auto === true) {
+                                        if ((list[z].result.status & 2) > 0) {
+                                            list[z].result.status = list[z].result.status & ~2;
+                                            common.db.collection('messages').update({_id: list[z]._id}, { $set: {'result.status': list[z].result.status}}, function(err/*, res*/) {
+                                                if (err) {
+                                                    log_me(logpath, err, false);
+                                                }
+                                            });
+                                        }
+                                    }
+                                    else if (list[z].auto !== true) {
+                                        if ((list[z].result.status & 2) > 0) {
+                                            list[z].result.status = list[z].result.status & ~2 | 16 | 1024;
+                                            common.db.collection('messages').update({_id: list[z]._id}, { $set: {'result.error': 'Already scheduled messages are not migrated and will be sent from your old server', 'result.status': list[z].result.status}}, function(err/*, res*/) {
+                                                if (err) {
+                                                    log_me(logpath, err, false);
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                                resolve();
+                            });
+                        }
+                        else {
+                            resolve();
+                        }
                     },
                     function(err) {
                         reject(Error(err.message));
@@ -1173,7 +1229,7 @@ module.exports = function(my_db) {
                                 exp_count = scripts.length;
                                 resolve(exportid);
                                 Promise.each(scripts, function(command) {
-                                    run_command(command.cmd, command.args);
+                                    return run_command(command.cmd, command.args);
                                 }).then(
                                     function() {
                                         log_me(my_logpath, "Files generated sucessfully", false);

@@ -1,3 +1,27 @@
+.left-m4 {
+     left: -4px;
+}
+.left-m8 {
+     left: -8px;
+}
+.tooltip-text {
+     visibility: hidden;
+     position: absolute;
+     top: -25px;
+     left: -6px;
+     font-size: 13px;
+     width: 60px;
+     background-color: black;
+     padding: 3px 1px;
+     border-radius: 4px;
+     color: white;
+}
+
+.tooltip-wrapper {
+     position: relative;
+     text-align: center;
+}
+
 .mycolorpicker button{
     float:left;
      padding:0;
@@ -979,7 +1003,8 @@
      color:silver;
 }
  .emotion, .emotion-first {
-     width: 77.5px;
+     /* width: 77.5px; */
+     display: inline-block;
 }
  .emotions-area, .contact-me-area {
      text-align: center;

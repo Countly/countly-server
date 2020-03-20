@@ -305,7 +305,7 @@ taskmanager.nameResult = function(options, data, callback) {
 */
 taskmanager.getResult = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne({_id: options.id}, getResult(callback));
+    options.db.collection("long_tasks").findOne({_id: options.id}, getResult(callback, options));
 };
 
 /**
@@ -317,7 +317,7 @@ taskmanager.getResult = function(options, callback) {
 */
 taskmanager.getResultByQuery = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").findOne(options.query, getResult(callback));
+    options.db.collection("long_tasks").findOne(options.query, getResult(callback, options));
 };
 
 /**
@@ -334,8 +334,10 @@ taskmanager.editTask = function(options, callback) {
         if (!err) {
             try {
                 var req = JSON.parse(data.request);
-                req.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
-                req.json.period_desc = options.data.period_desc;
+                if (options.data.period_desc && options.data.period_desc !== "" && options.data.period_desc !== "false") {
+                    req.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
+                    req.json.period_desc = options.data.period_desc;
+                }
                 options.data.request = JSON.stringify(req);
                 options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
             }
@@ -673,12 +675,21 @@ taskmanager.rerunTask = function(options, callback) {
 /**
  *  Create a callback for getting result, including checking gridfs
  *  @param {function} callback - callback for the result
+ *  @param {object} options - options object
  *  @returns {function} callback to use for db query
  */
-function getResult(callback) {
+function getResult(callback, options) {
     return function(err, data) {
         if (!err) {
-            if (data && data.gridfs) {
+            if (data && options && options.subtask_key && data.taskgroup === true) {
+                taskmanager.getResultByQuery({db: options.db, query: {subtask: data._id, subtask_key: options.subtask_key}}, getResult(function(err2, subtask) {
+                    if (!subtask) {
+                        taskmanager.rerunTask({db: options.db, id: data._id}, function() {});
+                    }
+                    callback(err2, subtask);
+                }));
+            }
+            else if (data && data.gridfs) {
                 countlyFs.gridfs.getData("task_results", data._id + "", {id: data._id}, function(err2, largeData) {
                     if (!err2) {
                         data.data = largeData;

@@ -271,7 +271,8 @@
                 "Gruntfile.js",
                 "bin/**/*.js",
                 "extend/**/*.js",
-                "plugins/*/*.js"
+                "plugins/*/*.js",
+                "plugins/*/scripts/*.js"
             ],
             "excludedFiles": "plugins/*/tests.js",
             "env": {

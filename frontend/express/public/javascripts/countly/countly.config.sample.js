@@ -67,5 +67,10 @@
     * @type {boolean} 
     */
     countlyCommon.APP_NAMESPACE = true;
+    /**
+    * Default time period selected on dashboard until user changes it
+    * @type {string} 
+    */
+    countlyCommon.DEFAULT_PERIOD = "30days";
 
 }(CommonConstructor));

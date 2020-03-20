@@ -24,7 +24,7 @@ fs.mkdir(dir, function() {
         }
         else {
             results.forEach(function(col) {
-                var c = col.s.name;
+                var c = col.collectionName;
                 if (reg.test(c)) {
                     params.collection = c;
                     params.out = path.join(dir, c + ".json");

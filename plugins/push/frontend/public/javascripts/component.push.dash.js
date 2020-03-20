@@ -126,7 +126,7 @@ window.component('push.dash', function (dash) {
                 sAjaxSource: countlyCommon.API_PARTS.data.r + '/pushes/all?app_id=' + countlyCommon.ACTIVE_APP_ID,
                 fnServerData: function (sSource, aoData, fnCallback) {
                     $.ajax({
-                        dataType: 'jsonp',
+                        dataType: 'json',
                         type: 'POST',
                         url: sSource,
                         data: aoData,
