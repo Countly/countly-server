@@ -31,6 +31,7 @@ rm -rf "$DIR/../node_modules"
 
 #run upgrade scripts
 bash "$CUR/scripts/remove_moved_files.sh"
+bash "$CUR/../19.08/scripts/remove_chrome_cache.sh"
 
 #upgrade plugins
 (cd "$DIR/.." && sudo npm install --unsafe-perm)

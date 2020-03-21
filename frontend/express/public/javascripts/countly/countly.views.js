@@ -4938,6 +4938,7 @@ window.EventsOverviewView = countlyView.extend({
         var self = this;
         self.totalEventCount = 5;
         countlyEvent.getTopEventData30Day(function(dd) {
+            self.getTopEventData30Day = false;
             if (dd) {
                 self.getTopEventData30Day = dd.data;
                 var fromDate = parseInt(dd.ts);
@@ -4955,10 +4956,11 @@ window.EventsOverviewView = countlyView.extend({
                     dd.data[index].arrow_class = element.arrow_class;
                     dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
                 }
-                self.refresh(true);
             }
+            self.refresh(true);
         });
         countlyEvent.getTopEventDataDaily(function(dd) {
+            self.getTopEventDataDaily = false;
             if (dd) {
                 self.getTopEventDataDaily = dd.data;
                 for (var index = 0; index < dd.data.length; index++) {
@@ -4969,8 +4971,8 @@ window.EventsOverviewView = countlyView.extend({
                     dd.data[index].arrow_class = element.arrow_class;
                     dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
                 }
-                self.refresh(true);
             }
+            self.refresh(true);
         });
     },
     dateChanged: function() {

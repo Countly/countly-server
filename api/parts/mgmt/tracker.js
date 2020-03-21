@@ -102,6 +102,10 @@ tracker.enable = function() {
                 });
             }
         }, 1000);
+        //report app start trace
+        if (Countly.report_app_start) {
+            Countly.report_app_start();
+        }
     }
 };
 

@@ -1124,6 +1124,11 @@ $(document).ready(function() {
         return ((x < y) ? 1 : ((x > y) ? -1 : 0));
     };
 
+    app.addAppSwitchCallback(function(appId) {
+        if (app._isFirstLoad !== true) {
+            countlyViews.loadList(appId);
+        }
+    });
     app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
     app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
 

@@ -23,11 +23,11 @@
             }
         };
     </script>
-    <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css" />
-    <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css" />
-	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css" />
-	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css?<%= countlyVersion %>" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css?<%= countlyVersion %>" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css?<%= countlyVersion %>" />
+	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css?<%= countlyVersion %>" />
+	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css?<%= countlyVersion %>" />
     <% if (production) { %>
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/plugins.min.css?<%= countlyVersion %>&<%= pluginsSHA %>" />
@@ -36,70 +36,70 @@
     	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
     <% } else { %>
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
-        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css" />
-        <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css" />
-        <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css" />
-        <link rel="stylesheet" href="<%- cdn %>stylesheets/jsoneditor/codemirror.css" />
-        <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css" />
-        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css" />
-        <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css" />
-        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/drop/drop-theme-countly.min.css" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/jsoneditor/codemirror.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/dom/drop/drop-theme-countly.min.css?<%= countlyVersion %>" />
 		<% if (plugins) { %>
 			<% for(var i=0, l=plugins.length; i<l; i++) {%>
 		<link rel="stylesheet" href="<%- cdn %><%= plugins[i] %>/stylesheets/main.css?<%= countlyVersion %>" />
 			<% } %>
 		<% } %>
 	    <!-- DEVELOPMENT -->
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery/jquery.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.form.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/tipsy/jquery.tipsy.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.noisy.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.sticky.headers.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/slimScroll.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.easing.1.3.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfills.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/prefixfree.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment-with-locales.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jstz.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/store+json2.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.idle-timer.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/initialAvatar.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.amaran.min.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.titlealert.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.hoverIntent.minified.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/dropzone.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.xss.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/tether.min.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/drop.min.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/codemirror.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/javascript.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/json2.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/jsonlint.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/minify.json.js"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/jsoneditor.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/Sortable.min.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vuedraggable.umd.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery/jquery.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.form.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/tipsy/jquery.tipsy.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.noisy.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.sticky.headers.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-i18n.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/slimScroll.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.easing.1.3.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfills.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/prefixfree.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment-with-locales.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jstz.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/store+json2.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.idle-timer.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/initialAvatar.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.amaran.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.titlealert.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.hoverIntent.minified.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/dropzone.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.xss.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/tether.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/drop.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/codemirror.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/javascript.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/json2.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/jsonlint.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/minify.json.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/jsoneditor.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/Sortable.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
 
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
         <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
-    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+    <link href='<%= themeFiles.css[i]%>?<%= countlyVersion %>' rel='stylesheet' type='text/css'>
         <% } %>
     <% } %>
     <script type="text/javascript">
@@ -2352,21 +2352,22 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.plugins.js?<%= countlyVersion %>&<%= pluginsSHA %>"></script>
     <% } else { %>
 	    <!-- DEVELOPMENT -->
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/textcounter.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/jquery.peity.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/jquery.sparkline.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.tickrotor.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.pie.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.resize.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.stack.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.spline.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.crosshair.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.orderBars.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.navigate.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/gauge.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.min.js"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/textcounter.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/jquery.peity.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/jquery.sparkline.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.tickrotor.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.pie.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.resize.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.stack.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.spline.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.crosshair.js"?<%= countlyVersion %>></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.orderBars.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.navigate.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/gauge.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.x.axis.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.analytics.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.common.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
@@ -2398,7 +2399,7 @@
 
     <% if (themeFiles && themeFiles.js) { %>
         <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
-    		<script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+    		<script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>?<%= countlyVersion %>"></script>
         <% } %>
     <% } %>
 
@@ -2406,7 +2407,7 @@
     <% if (!offline_mode) { %>
         <% if (!track || track == "GA" && member['global_admin'] || track == "noneGA" && !member['global_admin']) { %>
             <!--Countly script-->
-            <script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js'></script>
+            <script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js?<%= countlyVersion %>'></script>
             <script type='text/javascript'>
 
             //initializing countly with params
@@ -2475,6 +2476,38 @@
 
             //track javascript errors
             Countly.track_errors();
+            
+            if (Countly.report_trace && window.performance && window.performance.timing) {
+                $(window).on( "load", function(){
+                    setTimeout(function(){
+                        var trace = {
+                            type: "device",
+                            name: Countly.getViewName(),
+                            stz: window.performance.timing.navigationStart,
+                            etz: window.performance.timing.domContentLoadedEventEnd,
+                            apm_metrics: {}
+                        };
+                        if (window.performance.timing.domLoading && window.performance.timing.navigationStart) {
+                            trace.apm_metrics.first_paint = window.performance.timing.domLoading - window.performance.timing.navigationStart;
+                        }
+                        if (window.performance.timing.domContentLoadedEventStart && window.performance.timing.navigationStart) {
+                            trace.apm_metrics.first_contentful_paint = window.performance.timing.domContentLoadedEventStart - window.performance.timing.navigationStart;
+                        }
+                        if (window.performance.timing.domInteractive && window.performance.timing.navigationStart) {
+                            trace.apm_metrics.dom_interactive = window.performance.timing.domInteractive - window.performance.timing.navigationStart;
+                        }
+                        if (window.performance.timing.domContentLoadedEventEnd && window.performance.timing.domContentLoadedEventStart) {
+                            trace.apm_metrics.dom_content_loaded_event_end = window.performance.timing.domContentLoadedEventEnd - window.performance.timing.domContentLoadedEventStart;
+                        }
+                        if (window.performance.timing.loadEventEnd && window.performance.timing.loadEventStart) {
+                            trace.apm_metrics.load_event_end = window.performance.timing.loadEventEnd - window.performance.timing.loadEventStart;
+                        }
+                        if (Object.keys(trace.apm_metrics).length) {
+                            Countly.report_trace(trace);
+                        }
+                    },1);
+                });
+            }
 
             Countly.user_details({
                 "name": countlyGlobal["member"]["full_name"] || "",

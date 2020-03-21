@@ -53,19 +53,19 @@ authorizer.save = function(options) {
                 authorizer.clearExpiredTokens(options);
                 if (options.tryReuse === true) {
                     var rules = {"multi": options.multi, "endpoint": options.endpoint, "app": options.app, "owner": options.owner, "purpose": options.purpose};
-                    if (options.ttl > 0) {
-                        rules.ttl = {$gt: 0};
-                        rules.ends = {$gt: Math.round(Date.now() / 1000)};
-                    }
-                    else {
-                        rules.ttl = options.ttl;
-                    }
-
                     if (options.purpose === "LoggedInAuth") {
                         //Login token, allow switching from expiring to not expiring(and other way around)
                         //If there is changes to session expiration - this will allow to treat those tokens as same token.
-                        rules = {};
                         rules.$or = [{"ttl": 0}, {"ttl": {"$gt": 0}, "ends": {$gt: Math.round(Date.now() / 1000)}}];
+                    }
+                    else {
+                        if (options.ttl > 0) {
+                            rules.ttl = {$gt: 0};
+                            rules.ends = {$gt: Math.round(Date.now() / 1000)};
+                        }
+                        else {
+                            rules.ttl = options.ttl;
+                        }
                     }
 
 
