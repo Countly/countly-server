@@ -224,6 +224,9 @@ var plugins = require('../../pluginManager.js'),
         return new Promise((resolve, reject) => {
             const filter = { m: { $in: date_range.split(",") } };
             common.db.collection(collectionName).find(filter).toArray((error, results) => {
+                if (error) {
+                    return reject(error);
+                }
                 let dataPoints = Array(DAYS).fill(null).map(() => Array(TIME_RANGE).fill(0));
                 for (let pointNumber = 0; pointNumber < results.length; pointNumber++) {
                     const currentPoint = results[pointNumber];
@@ -233,14 +236,13 @@ var plugins = require('../../pluginManager.js'),
                             let mockMatrixColumn = dataPoints[property];
                             const currentMatrixRow = days[property];
                             for (let index = 0; index < mockMatrixColumn.length; index++) {
-                                const time = currentMatrixRow[index].dp;
-                                mockMatrixColumn[index] += time;
+                                if (currentMatrixRow[index] && currentMatrixRow[index].dp) {
+                                    const time = currentMatrixRow[index].dp;
+                                    mockMatrixColumn[index] += time;
+                                }
                             }
                         }
                     }
-                }
-                if (error) {
-                    reject(error);
                 }
                 resolve(dataPoints);
             });
