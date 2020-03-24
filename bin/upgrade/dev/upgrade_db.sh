@@ -8,6 +8,7 @@ CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ "$1" != "combined" ]; then
     #upgrade plugins
     countly plugin enable active_users
+    countly plugin enable performance-monitoring
 fi
 
 #run upgrade scripts

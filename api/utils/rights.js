@@ -420,13 +420,16 @@ function dbLoadEventsData(params, apps, callback) {
                     result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
                 }
             }
-            result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_session)";
-            result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_crash)";
-            result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_view)";
-            result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_action)";
-            result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_action)";
-            result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_open)";
-            result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_sent)";
+            if (plugins.internalDrillEvents) {
+                for (let i = 0; i < plugins.internalDrillEvents.length; i++) {
+                    result[crypto.createHash('sha1').update(plugins.internalDrillEvents[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + plugins.internalDrillEvents[i] + ")";
+                }
+            }
+            if (plugins.internalEvents) {
+                for (let i = 0; i < plugins.internalEvents.length; i++) {
+                    result[crypto.createHash('sha1').update(plugins.internalEvents[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + plugins.internalEvents[i] + ")";
+                }
+            }
             cb(null, result);
         });
     }

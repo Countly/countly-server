@@ -1949,8 +1949,8 @@ window.CrashgroupView = countlyView.extend({
             $(".threads-list code").each(function() {
                 var code = $(this);
                 if (!code.hasClass("short_code")) {
-                    var id = parseInt(code.closest(".thread").attr("data-id"));
-                    if (id) {
+                    var id = code.closest(".thread").attr("data-id");
+                    if (typeof id !== "undefined") {
                         opened_threads.push(id);
                     }
                 }

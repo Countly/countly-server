@@ -370,6 +370,49 @@
             return logs.join("\n");
         };
 
+        this.getTrace = function() {
+            var trace = {};
+            trace.stz = getRandomInt(this.startTs, this.endTs);
+            trace.etz = getRandomInt(trace.stz, this.endTs);
+            var rand = Math.random();
+            if (rand < 0.3) {
+                trace.type = "device";
+                trace.apm_metrics = {};
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                    trace.name = segments["[CLY]_view"].name[getRandomInt(0, segments["[CLY]_view"].name.length - 1)];
+                    trace.apm_metrics.first_paint = getRandomInt(0, 100);
+                    trace.apm_metrics.first_contentful_paint = getRandomInt(0, 500);
+                    trace.apm_metrics.dom_interactive = getRandomInt(0, 1000);
+                    trace.apm_metrics.dom_content_loaded_event_end = getRandomInt(0, 300);
+                    trace.apm_metrics.load_event_end = getRandomInt(0, 500);
+                    trace.apm_metrics.first_input_delay = getRandomInt(0, 500);
+                }
+                else {
+                    var device_traces = ["app_start", "app_in_background", "app_in_foreground"];
+                    trace.name = device_traces[getRandomInt(0, device_traces.length - 1)];
+                    trace.apm_metrics.duration = getRandomInt(0, 5000);
+                }
+            }
+            else if (rand < 0.6) {
+                trace.type = "device";
+                trace.name = segments["[CLY]_view"].name[getRandomInt(0, segments["[CLY]_view"].name.length - 1)];
+                trace.apm_metrics = {};
+                trace.apm_metrics.slow_rendering_frames = getRandomInt(0, 100);
+                trace.apm_metrics.frozen_frames = getRandomInt(0, 100);
+            }
+            else {
+                trace.type = "network";
+                trace.name = this.getProp("_source");
+                trace.apm_metrics = {
+                    response_time: getRandomInt(0, 5000),
+                    response_payload_size: getRandomInt(0, 5000000),
+                    request_payload_size: getRandomInt(0, 5000000),
+                    response_code: (Math.random() > 0.5) ? getRandomInt(400, 500) : 200
+                };
+            }
+            return trace;
+        };
+
         this.getEvent = function(id) {
             this.stats.e++;
             if (!id) {
@@ -546,7 +589,7 @@
                 this.isRegistered = true;
                 this.stats.u++;
                 events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
-                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events};
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.5) {
                     this.hasPush = true;
                     this.stats.p++;
@@ -560,7 +603,7 @@
             }
             else {
                 events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
-                req = {timestamp: this.ts, begin_session: 1, events: events};
+                req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
             }
             if (this.iap.length && Math.random() > 0.5) {
                 req.events = req.events.concat(this.getEvent(this.iap[getRandomInt(0, this.iap.length - 1)]));
@@ -588,7 +631,7 @@
                 this.stats.x++;
                 this.stats.d += 30;
                 var events = this.getEvent("[CLY]_view").concat(this.getEvents(2));
-                req = {timestamp: this.ts, session_duration: 30, events: events};
+                req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.8) {
                     this.timer = setTimeout(function() {
                         that.extendSession();
@@ -615,7 +658,7 @@
             if (this.hasSession) {
                 this.hasSession = false;
                 var events = this.getEvents(2).concat(this.getEvent("Logout"));
-                this.request({timestamp: this.ts, end_session: 1, events: events});
+                this.request({timestamp: this.ts, end_session: 1, events: events, apm: this.getTrace()});
             }
         };
 
