@@ -267,6 +267,9 @@ window.LoggerView = countlyView.extend({
             else if (this.filter === "logger-consent") {
                 filter.types = "consent";
             }
+            else if (this.filter === "logger-apm") {
+                filter.types = "apm";
+            }
             else {
                 //THIS ELSE REPRESENTS ALL THOSE CASES WHEN THE LOG SOURCE IS SOME EXTERNAL PLUGIN
                 //AND YOU WANT TO THE FILTER THE LOGS BY THAT PLUGIN

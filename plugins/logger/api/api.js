@@ -131,8 +131,36 @@ var exported = {},
                     if (!res._app_version) {
                         problems.push("Crash missing _app_version property");
                     }
-                    if (!res._os && params.app.type !== "web") {
+                    if (!res._os && !res._not_os_specific) {
                         problems.push("Crash missing _os property");
+                    }
+                }
+            }
+            
+            if (params.qstring.apm) {
+                types.apm = params.qstring.apm;
+                if (types.apm && typeof types.apm === "object") {
+                    types.apm = JSON.stringify(types.apm);
+                }
+                var res;
+                try {
+                    res = JSON.parse(types.apm);
+                }
+                catch (ex) {
+                    problems.push("Could not parse apm");
+                }
+                if (res) {
+                    if (!(res.type === "network" || res.type === "device")) {
+                        problems.push("APM only supports trace types network or device");
+                    }
+                    if (!(res.name && res.name.length)) {
+                        problems.push("APM requires trace name");
+                    }
+                    if (!(typeof (res.apm_metrics) === "object" && !Array.isArray(res.apm_metrics))) {
+                        problems.push("APM requires apm_metrics object");
+                    }
+                    if (res.apm_attr && !(typeof (res.apm_attr) === "object" && !Array.isArray(res.apm_attr))) {
+                        problems.push("APM requires apm_attr to be object if provided");
                     }
                 }
             }
