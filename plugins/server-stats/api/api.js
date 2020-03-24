@@ -111,7 +111,8 @@ var plugins = require('../../pluginManager.js'),
                 },
                 $inc: {
                     e: eventCount,
-                    s: sessionCount
+                    s: sessionCount,
+                    [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
                 }
             },
             {
