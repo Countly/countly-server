@@ -775,6 +775,18 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         common.returnMessage(params, 400, "Missing request parameter: app_id");
                     }
                 }
+                else if (params.qstring.action === "listNames") {
+                    common.db.collection("app_viewsmeta" + params.qstring.app_id).estimatedDocumentCount(function(errCount, totalCn) {
+                        if (!errCount && totalCn && totalCn < 10000) {
+                            common.db.collection("app_viewsmeta" + params.qstring.app_id).find({}, {view: 1, display: 1}).toArray(function(err, res) {
+                                common.returnOutput(params, res || []);
+                            });
+                        }
+                        else {
+                            common.returnOutput(params, []);
+                        }
+                    });
+                }
                 else {
                     var retData = {};
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
