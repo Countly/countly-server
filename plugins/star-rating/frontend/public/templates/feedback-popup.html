@@ -1,350 +1,374 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>
-            Countly Feedback Popup
-        </title>
-        <link href="./star-rating/stylesheets/countly-feedback.css" rel="stylesheet"/>
-        <link href="stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
-        <% if (themeFiles && themeFiles.css) { %>
-            <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
-        <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
-            <% } %>
-        <% } %>
-        <meta content="width=device-width, initial-scale=1" name="viewport">
-        </meta>
-    </head>
-    <body>
-        <div class="rating-loader-wrapper">
-            <img src="star-rating/images/star-rating/loader.svg" class="rating-loader"/>
-        </div>
-        <div class="modal-content">
-            <div class="emotions-area">
-                <p id="question-area">
-                    What is your opinion
-                    <br>
-                        of this page?
-                    </br>
-                </p>
-                <span class="emotion-first">
-                    <img class="grow rating-emotion" data-score="1" src="star-rating/images/star-rating/0_gray.svg" title="Very dissatisfied">
+<head>
+    <title>
+        Countly Feedback Popup
+    </title>
+    <link href="./star-rating/stylesheets/countly-feedback.css" rel="stylesheet"/>
+    <link href="stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
+    <% if (themeFiles && themeFiles.css) { %>
+    <% for(var i=0, l=themeFiles.css.length; i < l; i++) {%>
+    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+    <% } %>
+    <% } %>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    </meta>
+</head>
+<body>
+<div class="rating-loader-wrapper">
+    <img src="star-rating/images/star-rating/loader.svg" class="rating-loader"/>
+</div>
+<div class="modal-content">
+    <div class="emotions-area">
+        <p id="question-area">
+            What is your opinion
+            <br>
+            of this page?
+            </br>
+        </p>
+        <span class="emotion-first">
+                    <img class="grow rating-emotion" data-score="1" src="star-rating/images/star-rating/0_gray.svg"
+                         title="Very dissatisfied">
                     </img>
                 </span>
-                <span class="emotion">
-                    <img class="grow rating-emotion" data-score="2" src="star-rating/images/star-rating/1_gray.svg" title="Somewhat dissatisfied">
+        <span class="emotion">
+                    <img class="grow rating-emotion" data-score="2" src="star-rating/images/star-rating/1_gray.svg"
+                         title="Somewhat dissatisfied">
                     </img>
                 </span>
-                <span class="emotion">
-                    <img class="grow rating-emotion" data-score="3" src="star-rating/images/star-rating/2_gray.svg" title="Neither satisfied nor dissatisfied">
+        <span class="emotion">
+                    <img class="grow rating-emotion" data-score="3" src="star-rating/images/star-rating/2_gray.svg"
+                         title="Neither satisfied nor dissatisfied">
                     </img>
                 </span>
-                <span class="emotion">
-                    <img class="grow rating-emotion" data-score="4" src="star-rating/images/star-rating/3_gray.svg" title="Somewhat satisfied">
+        <span class="emotion">
+                    <img class="grow rating-emotion" data-score="4" src="star-rating/images/star-rating/3_gray.svg"
+                         title="Somewhat satisfied">
                     </img>
                 </span>
-                <span class="emotion">
-                    <img class="grow rating-emotion" data-score="5" src="star-rating/images/star-rating/4_gray.svg" title="Very satisfied">
+        <span class="emotion">
+                    <img class="grow rating-emotion" data-score="5" src="star-rating/images/star-rating/4_gray.svg"
+                         title="Very satisfied">
                     </img>
                 </span>
-            </div>
-            <div class="comment-area">
-                <div class="input-wrapper">
-                    <label class="countly-feedback-checkbox-container">
-                        <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
-                            <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green">
+    </div>
+    <div class="comment-area">
+        <div id="comment-section" class="input-wrapper">
+            <label class="countly-feedback-checkbox-container">
+                <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
+                <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green">
                             </span>
-                            <span class="countly-feedback-checkbox-title" id="cf-comment-text">
+                <span class="countly-feedback-checkbox-title" id="cf-comment-text">
                                 Add comment
                             </span>
-                        </input>
-                    </label>
-                    <textarea id="countly-feedback-comment-textarea">
+                </input>
+            </label>
+            <textarea id="countly-feedback-comment-textarea">
                     </textarea>
-                </div>
-                <div class="input-wrapper">
-                    <label class="countly-feedback-checkbox-container">
-                        <input data-state="0" id="countly-feedback-show-email" type="checkbox">
-                            <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green">
+        </div>
+        <div id="contact-section" class="input-wrapper">
+            <label class="countly-feedback-checkbox-container">
+                <input data-state="0" id="countly-feedback-show-email" type="checkbox">
+                <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green">
                             </span>
-                            <span class="countly-feedback-checkbox-title" id="cf-email-text">
+                <span class="countly-feedback-checkbox-title" id="cf-email-text">
                                 Contact me by email
                             </span>
-                        </input>
-                    </label>
-                    <input id="contact-me-email" type="text">
-                    </input>
-                </div>
-            </div>
-            <div class="buttons-area">
-                <button class="disabled-send-button" disabled="" id="cf-submit-button">
-                    Submit Feedback
-                </button>
-            </div>
-            <div class="modal-footer">
-                <a href="https://count.ly" target="_new">
-                    <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
-                    </img>
-                </a>
-            </div>
+                </input>
+            </label>
+            <input id="contact-me-email" type="text">
+            </input>
         </div>
-        <div class="success-modal-content">
-            <div class="success-icon-area">
-                <i class="fa fa-check fa-2x">
-                </i>
-            </div>
-            <div class="success-emotions-area">
-                <p class="question-area" id="thanks-area">
-                    Thank you.
-                    <br>
-                        We received your message.
-                    </br>
-                </p>
-            </div>
-            <div class="buttons-area-on-success">
-            </div>
-            <div class="modal-footer">
-                <a href="https://count.ly" target="_new">
-                    <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
-                    </img>
-                </a>
-            </div>
-        </div>
-        <script src="star-rating/javascripts/tippy.all.min.js">
-        </script>
-        <script src="javascripts/dom/jquery/jquery-1.8.3.min.js">
-        </script>
-        <script>
-            (function() {
-                /*
-                Helper methods which we need
-                */
-                function hasClass(ele, cls) {
-                    return !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
-                }
+    </div>
+    <div class="buttons-area">
+        <button class="disabled-send-button" disabled="" id="cf-submit-button">
+            Submit Feedback
+        </button>
+    </div>
+    <div class="modal-footer">
+        <a href="https://count.ly" target="_new">
+            <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
+            </img>
+        </a>
+    </div>
+</div>
+<div class="success-modal-content">
+    <div class="success-icon-area">
+        <i class="fa fa-check fa-2x">
+        </i>
+    </div>
+    <div class="success-emotions-area">
+        <p class="question-area" id="thanks-area">
+            Thank you.
+            <br>
+            We received your message.
+            </br>
+        </p>
+    </div>
+    <div class="buttons-area-on-success">
+    </div>
+    <div class="modal-footer">
+        <a href="https://count.ly" target="_new">
+            <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
+            </img>
+        </a>
+    </div>
+</div>
+<script src="star-rating/javascripts/tippy.all.min.js">
+</script>
+<script src="javascripts/dom/jquery/jquery-1.8.3.min.js">
+</script>
+<script>
+    (function() {
+        /*
+        Helper methods which we need
+        */
+        function hasClass(ele, cls) {
+            return !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+        }
 
-                function addClass(ele, cls) {
-                    if (!hasClass(ele, cls)) ele.className += " " + cls;
-                }
+        function addClass(ele, cls) {
+            if (!hasClass(ele, cls)) {
+                ele.className += " " + cls;
+            }
+        }
 
-                function removeClass(ele, cls) {
-                    if (hasClass(ele, cls)) {
-                        var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
-                        ele.className = ele.className.replace(reg, ' ');
+        function removeClass(ele, cls) {
+            if (hasClass(ele, cls)) {
+                var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
+                ele.className = ele.className.replace(reg, ' ');
+            }
+        }
+
+        function asyncForeach(array, fn, atEnd) {
+            var at = -1;
+
+            function next(shouldBreak) {
+                if (shouldBreak || ++at == array.length) {
+                    if (atEnd) {
+                        setTimeout(atEnd);
                     }
                 }
-
-                function asyncForeach(array, fn, atEnd) {
-                    var at = -1;
-
-                    function next(shouldBreak) {
-                        if (shouldBreak || ++at == array.length) {
-                            if (atEnd) {
-                                setTimeout(atEnd);
-                            }
-                        } else {
-                            setTimeout(fn, 0, array[at], next);
-                        }
-                    }
-                    next();
+                else {
+                    setTimeout(fn, 0, array[at], next);
                 }
+            }
 
-                function isValidEmail(email) {
-                    return /^.+@.+\..+$/.test(email);
+            next();
+        }
+
+        function isValidEmail(email) {
+            return /^.+@.+\..+$/.test(email);
+        }
+
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) {
+                return null;
+            }
+            if (!results[2]) {
+                return '';
+            }
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+        /*
+          Local variables
+        */
+        var widget_id = getParameterByName('widget_id');
+        var device_id = getParameterByName('device_id');
+        var sdk_version = getParameterByName('sdk_version');
+        var app_key = getParameterByName('app_key');
+        var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
+        var app_version = getParameterByName('app_version');
+        var url = window.location.origin + window.location.pathname;
+        // 9: length of "/feedback"
+        // remove /feedback from url and use remain as url
+        url = url.substr(0, url.length - 9);
+
+        var d = new Date();
+        var h = d.getHours();
+        var dow = d.getDay();
+        /*
+          Get widget configurations for render
+        */
+        $.ajax({
+            "type": "GET",
+            "url": url + "/o/feedback/widget",
+            "data": {
+                "widget_id": widget_id
+            },
+            "success": function(response) {
+                $('.rating-loader-wrapper').fadeOut();
+                $('.modal-content').show();
+                // replace widget specific strings
+                $('#question-area').html(response.popup_header_text);
+                $('#cf-comment-text').html(response.popup_comment_callout);
+                $('#cf-email-text').html(response.popup_email_callout);
+                $('#cf-submit-button').html(response.popup_button_callout);
+                $('#thanks-area').html(response.popup_thanks_message);
+                if (response.comment_enable === "false") {
+                    $('#comment-section').hide();
                 }
-
-                function getParameterByName(name, url) {
-                    if (!url) url = window.location.href;
-                    name = name.replace(/[\[\]]/g, "\\$&");
-                    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-                        results = regex.exec(url);
-                    if (!results) return null;
-                    if (!results[2]) return '';
-                    return decodeURIComponent(results[2].replace(/\+/g, " "));
+                if (response.contact_enable === "false") {
+                    $('#contact-section').hide();
                 }
+            }
+        });
 
-                /*
-                  Local variables
-                */
-                var widget_id = getParameterByName('widget_id');
-                var device_id = getParameterByName('device_id');
-                var sdk_version = getParameterByName('sdk_version');
-                var app_key = getParameterByName('app_key');
-                var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
-                var app_version = getParameterByName('app_version');
-                var url = window.location.origin + window.location.pathname;
-                // 9: length of "/feedback"
-                // remove /feedback from url and use remain as url
-                url = url.substr(0, url.length - 9);
+        var eventObject = {
+            key: "[CLY]_star_rating",
+            count: 1,
+            segmentation: {
+                widget_id: widget_id,
+                contactMe: false,
+                platform: "Web",
+                app_version: 1,
+                platform_version_rate: "",
+                rating: 0,
+                email: "",
+                comment: ""
+            },
+            timestamp: Date.now(),
+            hour: h,
+            dow: dow
+        };
 
-                var d = new Date();
-                var h = d.getHours();
-                var dow = d.getDay();
-                /*
-                  Get widget configurations for render
-                */
-                $.ajax({
-                    "type": "GET",
-                    "url": url + "/o/feedback/widget",
-                    "data": {
-                        "widget_id": widget_id
-                    },
-                    "success": function(response) {
-                        $('.rating-loader-wrapper').fadeOut();
-                        $('.modal-content').show();
-                        // replace widget specific strings
-                        $('#question-area').html(response.popup_header_text);
-                        $('#cf-comment-text').html(response.popup_comment_callout);
-                        $('#cf-email-text').html(response.popup_email_callout);
-                        $('#cf-submit-button').html(response.popup_button_callout);
-                        $('#thanks-area').html(response.popup_thanks_message);
-                    }
-                })
+        /*
+          Inital tippy.js
+        */
+        tippy('.rating-emotion', {
+            theme: 'honeybee',
+            delay: 100,
+            arrow: true,
+            arrowType: 'round',
+            duration: 250,
+            animation: 'scale'
+        });
 
-                var eventObject = {
-                    key: "[CLY]_star_rating",
-                    count: 1,
-                    segmentation: {
-                        widget_id: widget_id,
-                        contactMe: false,
-                        platform: "Web",
-                        app_version: 1,
-                        platform_version_rate: "",
-                        rating: 0,
-                        email: "",
-                        comment: ""
-                    },
-                    timestamp: Date.now(),
-                    hour: h,
-                    dow: dow
-                };
+        document.getElementById('countly-feedback-comment-textarea').value = "";
+        document.getElementById('contact-me-email').value = "";
 
-                /*
-                  Inital tippy.js
-                */
-                tippy('.rating-emotion', {
-                    theme: 'honeybee',
-                    delay: 100,
-                    arrow: true,
-                    arrowType: 'round',
-                    duration: 250,
-                    animation: 'scale'
-                });
+        /*
+          Element variables
+        */
+        var contactMeCheckbox = document.getElementById('contact-me-checkbox');
+        var contactMeEmailInput = document.getElementById('contact-me-email');
+        var modalEmotionImages = document.getElementsByClassName('rating-emotion');
+        var sendButton = document.getElementsByClassName('disabled-send-button')[0];
+        var showCommentCheckbox = document.getElementById('countly-feedback-show-comment');
+        var showEmailCheckbox = document.getElementById('countly-feedback-show-email');
+        var showCommentCheckboxMask = document.getElementsByClassName('countly-feedback-show-comment-checkbox')[0];
+        var showEmailCheckboxMask = document.getElementsByClassName('countly-feedback-show-email-checkbox')[0];
 
-                document.getElementById('countly-feedback-comment-textarea').value = "";
-                document.getElementById('contact-me-email').value = "";
+        /*
+          Event handlers & actions
+        */
+        function hideFeedbackPopup() {
+            document.getElementsByClassName("modal-content")[0].style.display = "none";
+        }
 
-                /*
-                  Element variables
-                */
-                var contactMeCheckbox = document.getElementById('contact-me-checkbox');
-                var contactMeEmailInput = document.getElementById('contact-me-email');
-                var modalEmotionImages = document.getElementsByClassName('rating-emotion');
-                var sendButton = document.getElementsByClassName('disabled-send-button')[0];
-                var showCommentCheckbox = document.getElementById('countly-feedback-show-comment');
-                var showEmailCheckbox = document.getElementById('countly-feedback-show-email');
-                var showCommentCheckboxMask = document.getElementsByClassName('countly-feedback-show-comment-checkbox')[0];
-                var showEmailCheckboxMask = document.getElementsByClassName('countly-feedback-show-email-checkbox')[0];
+        function hideSuccessPopup() {
+            document.getElementsByClassName("success-modal-content")[0].style.display = "none";
+        }
 
-                /*
-                  Event handlers & actions
-                */
-                function hideFeedbackPopup() {
+        function rate(e) {
+            var index = parseInt(e.target.dataset.score) - 1;
+            eventObject["segmentation"].rating = parseInt(modalEmotionImages[index].getAttribute('data-score'));
+            for (var i = 0; i < modalEmotionImages.length; i++) {
+                removeClass(modalEmotionImages[i], 'grow');
+                modalEmotionImages[i].src = 'star-rating/images/star-rating/' + i + '_gray.svg';
+                modalEmotionImages[i].style.transform = "scale(1)";
+                addClass(modalEmotionImages[i], 'grow');
+            }
+            modalEmotionImages[index].src = 'star-rating/images/star-rating/' + index + '_color.svg';
+            modalEmotionImages[index].style.transform = "scale(1.2)";
+            modalEmotionImages[index].classList.remove("grow");
+            removeClass(sendButton, 'disabled-send-button');
+            addClass(sendButton, 'send-button');
+            sendButton.removeAttribute('disabled');
+        }
+
+        function showHideCommentArea() {
+            if (showCommentCheckbox.getAttribute('data-state') == 0) {
+                document.getElementById('countly-feedback-comment-textarea').style.display = "block";
+                showCommentCheckbox.setAttribute('data-state', 1);
+                removeClass(showCommentCheckboxMask, 'fa-square-o');
+                addClass(showCommentCheckboxMask, 'fa-check-square');
+            }
+            else {
+                showCommentCheckbox.setAttribute('data-state', 0);
+                removeClass(showCommentCheckboxMask, 'fa-check-square');
+                addClass(showCommentCheckboxMask, 'fa-square-o');
+                document.getElementById('countly-feedback-comment-textarea').style.display = "none";
+            }
+        }
+
+        function showHideEmailArea() {
+            if (showEmailCheckbox.getAttribute('data-state') == 0) {
+                document.getElementById('contact-me-email').style.display = "block";
+                showEmailCheckbox.setAttribute('data-state', 1);
+                removeClass(showEmailCheckboxMask, 'fa-square-o');
+                addClass(showEmailCheckboxMask, 'fa-check-square');
+            }
+            else {
+                showEmailCheckbox.setAttribute('data-state', 0);
+                document.getElementById('contact-me-email').style.display = "none";
+                removeClass(showEmailCheckboxMask, 'fa-check-square');
+                addClass(showEmailCheckboxMask, 'fa-square-o');
+            }
+        }
+
+        function sendFeedback() {
+            // replace with value from dom
+            eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
+            // make required validations and replace email value from dom
+            if (showEmailCheckbox.getAttribute('data-state') == 1) {
+                if (!isValidEmail(document.getElementById('contact-me-email').value.trim())) {
+                    addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
+                    return;
+                }
+                else {
+                    removeClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
+                    eventObject["segmentation"].email = document.getElementById('contact-me-email').value;
+                    eventObject["segmentation"].contactMe = true;
+                }
+            }
+            $.ajax({
+                "type": "GET",
+                "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
+                "success": function(response) {
+                    document.getElementsByClassName("success-modal-content")[0].style.display = "block";
                     document.getElementsByClassName("modal-content")[0].style.display = "none";
+                },
+                "error": function(e) {
                 }
+            });
+        }
 
-                function hideSuccessPopup() {
-                    document.getElementsByClassName("success-modal-content")[0].style.display = "none";
-                }
-
-                function rate(e) {
-                    var index = parseInt(e.target.dataset.score) - 1;
-                    eventObject["segmentation"].rating = parseInt(modalEmotionImages[index].getAttribute('data-score'));
-                    for (var i = 0; i < modalEmotionImages.length; i++) {
-                        removeClass(modalEmotionImages[i], 'grow');
-                        modalEmotionImages[i].src = 'star-rating/images/star-rating/' + i + '_gray.svg';
-                        modalEmotionImages[i].style.transform = "scale(1)";
-                        addClass(modalEmotionImages[i], 'grow');
-                    }
-                    modalEmotionImages[index].src = 'star-rating/images/star-rating/' + index + '_color.svg';
-                    modalEmotionImages[index].style.transform = "scale(1.2)";
-                    modalEmotionImages[index].classList.remove("grow");
-                    removeClass(sendButton, 'disabled-send-button');
-                    addClass(sendButton, 'send-button');
-                    sendButton.removeAttribute('disabled');
-                }
-
-                function showHideCommentArea() {
-                    if (showCommentCheckbox.getAttribute('data-state') == 0) {
-                        document.getElementById('countly-feedback-comment-textarea').style.display = "block";
-                        showCommentCheckbox.setAttribute('data-state', 1);
-                        removeClass(showCommentCheckboxMask, 'fa-square-o');
-                        addClass(showCommentCheckboxMask, 'fa-check-square');
-                    } else {
-                        showCommentCheckbox.setAttribute('data-state', 0);
-                        removeClass(showCommentCheckboxMask, 'fa-check-square');
-                        addClass(showCommentCheckboxMask, 'fa-square-o');
-                        document.getElementById('countly-feedback-comment-textarea').style.display = "none";
-                    }
-                }
-
-                function showHideEmailArea() {
-                    if (showEmailCheckbox.getAttribute('data-state') == 0) {
-                        document.getElementById('contact-me-email').style.display = "block";
-                        showEmailCheckbox.setAttribute('data-state', 1);
-                        removeClass(showEmailCheckboxMask, 'fa-square-o');
-                        addClass(showEmailCheckboxMask, 'fa-check-square');
-                    } else {
-                        showEmailCheckbox.setAttribute('data-state', 0);
-                        document.getElementById('contact-me-email').style.display = "none";
-                        removeClass(showEmailCheckboxMask, 'fa-check-square');
-                        addClass(showEmailCheckboxMask, 'fa-square-o');
-                    }
-                }
-
-                function sendFeedback() {
-                    // replace with value from dom
-                    eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
-                    // make required validations and replace email value from dom
-                    if (showEmailCheckbox.getAttribute('data-state') == 1) {
-                        if (!isValidEmail(document.getElementById('contact-me-email').value.trim())) {
-                            addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
-                            return;
-                        } else {
-                            removeClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
-                            eventObject["segmentation"].email = document.getElementById('contact-me-email').value;
-                            eventObject["segmentation"].contactMe = true;
-                        }
-                    }
-                    $.ajax({
-                        "type": "GET",
-                        "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
-                        "success": function(response) {
-                            document.getElementsByClassName("success-modal-content")[0].style.display = "block";
-                            document.getElementsByClassName("modal-content")[0].style.display = "none";
-                        },
-                        "error": function(e) {
-                        }
-                    });
-                }
-
-                // event handler for countly feedback show comment area checkbox
-                // show hide comment area
-                $('body').on('change','#countly-feedback-show-comment', showHideCommentArea);
-                // event handler for countly feedback show comment area checkbox
-                // show hide comment area
-                $('body').on('change','#countly-feedback-show-email', showHideEmailArea);
-                // event handler for countly feedback sender
-                // send feedback
-                $('body').on('click','#cf-submit-button', sendFeedback);
-                // event handler for countly feedback emotion img
-                // rate for feedback
-                $('body').on('click','.rating-emotion', rate)
-            })();
-        </script>
-        <% if (themeFiles && themeFiles.js) { %>
-            <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
-        <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
-            <% } %>
-        <% } %>
-    </body>
+        // event handler for countly feedback show comment area checkbox
+        // show hide comment area
+        $('body').on('change', '#countly-feedback-show-comment', showHideCommentArea);
+        // event handler for countly feedback show comment area checkbox
+        // show hide comment area
+        $('body').on('change', '#countly-feedback-show-email', showHideEmailArea);
+        // event handler for countly feedback sender
+        // send feedback
+        $('body').on('click', '#cf-submit-button', sendFeedback);
+        // event handler for countly feedback emotion img
+        // rate for feedback
+        $('body').on('click', '.rating-emotion', rate);
+    })();
+</script>
+<% if (themeFiles && themeFiles.js) { %>
+<% for(var i=0, l=themeFiles.js.length; i < l; i++) {%>
+<script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+<% } %>
+<% } %>
+</body>
 </html>

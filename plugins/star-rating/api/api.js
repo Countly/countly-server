@@ -65,6 +65,18 @@ const widgetProperties = {
     app_id: {
         required: true,
         type: "String"
+    },
+    contact_enable: {
+        required: false,
+        type: "Boolean"
+    },
+    comment_enable: {
+        required: false,
+        type: "Boolean"
+    },
+    trigger_size: {
+        required: false,
+        type: "String"
     }
 };
 
