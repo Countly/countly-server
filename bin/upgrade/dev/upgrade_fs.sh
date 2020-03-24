@@ -16,6 +16,7 @@ fi
 if [ -f /etc/lsb-release ]; then
     sudo dpkg --configure -a
     wget -qO- https://deb.nodesource.com/setup_10.x | bash -
+    apt-get -f -y install
     apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 fi
 
@@ -44,6 +45,7 @@ countly plugin upgrade push
 countly plugin upgrade attribution
 countly plugin upgrade web
 countly plugin enable active_users
+countly plugin enable performance-monitorin
 
 #install dependencies, process files and restart countly
 countly upgrade
