@@ -4,13 +4,10 @@ window.DataPointsView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         self.date_range = this.getDateRange("current");
-
         return $.when($.get(countlyGlobal.path + '/server-stats/templates/data-points.html', function(src) {
             self.template = Handlebars.compile(src);
-        }), countlyDataPoints.initialize()).then(function() {
-            countlyDataPoints.punchCard(self.date_range).then(function() {
-                self.punchCardData = countlyDataPoints.getPunchCardData();
-            });
+        }), countlyDataPoints.initialize(), countlyDataPoints.punchCard(self.date_range)).then(function() {
+            self.punchCardData = countlyDataPoints.getPunchCardData();
         });
     },
     getDateRange: function(period) {
