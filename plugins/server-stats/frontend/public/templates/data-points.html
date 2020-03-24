@@ -1,4 +1,4 @@
-<div class="widget">
+<div id="tod" class="widget">
     <div class="widget-header">
         <div class="left">
             <div class="title">{{page-title}}</div>
@@ -8,6 +8,14 @@
             <div data-period="{{this.period}}" class="button {{#if this.selected}} active {{/if}}">{{this.text}}</div>
             {{/each}}
         </div>
+    </div>
+    <div class="widget-content" style="padding-top: 30px">
+        <center>
+            <span class="tod-chart-title">
+                <span data-localize="server-stats.data-points.punch-card-title"></span>
+            </span>
+                <div id="chart"></div>
+        </center>
     </div>
     <div class="graph-description" style="border-bottom: none; line-height: 17px;" data-localize="server-stats.data-points-description"></div>
 </div>

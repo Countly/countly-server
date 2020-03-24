@@ -191,6 +191,62 @@ var plugins = require('../../pluginManager.js'),
     });
 
     /**
+    * returns punch card data
+    * @returns {boolean} Returns boolean, always true
+    **/
+    plugins.register("/o/server-stats/punch-card", function(ob) {
+        var params = ob.params;
+        ob.validateUserForMgmtReadAPI(function() {
+            punchCard(params.qstring.date_range,).then((response, error) => {
+                if (error) {
+                    console.log("Error while fetching punch card data: ", error.message);
+                    common.returnMessage(params, 400, "Something went wrong");
+                    return false;
+                }
+                common.returnOutput(params, response);
+                return true;
+            });
+        }, params);
+
+        return true;
+    });
+
+    /**
+     * punchCard function
+     * @param {String} date_range - date range
+     * @return {Promise<Array>} - dataPoints
+     */
+    function punchCard(date_range) {
+        const TIME_RANGE = 24;
+        const DAYS = 7;
+        const collectionName = "server_stats_data_points";
+
+        return new Promise((resolve, reject) => {
+            const filter = { m: { $in: date_range.split(",") } };
+            common.db.collection(collectionName).find(filter).toArray((error, results) => {
+                let dataPoints = Array(DAYS).fill(null).map(() => Array(TIME_RANGE).fill(0));
+                for (let pointNumber = 0; pointNumber < results.length; pointNumber++) {
+                    const currentPoint = results[pointNumber];
+                    const days = currentPoint.d;
+                    for (const property in days) {
+                        if (Object.prototype.hasOwnProperty.call(days, property)) {
+                            let mockMatrixColumn = dataPoints[property];
+                            const currentMatrixRow = days[property];
+                            for (let index = 0; index < mockMatrixColumn.length; index++) {
+                                const time = currentMatrixRow[index].dp;
+                                mockMatrixColumn[index] += time;
+                            }
+                        }
+                    }
+                }
+                if (error) {
+                    reject(error);
+                }
+                resolve(dataPoints);
+            });
+        });
+    }
+    /**
      *  Get's datapoint data from database and outputs it to browser
      *  @param {params} params - params object
      *  @param {object} filter - to filter documents
