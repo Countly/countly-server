@@ -543,10 +543,10 @@
                     });
 
 
-                var max = countlyCommon.formatNumber(d.value);
-                var min = countlyCommon.formatNumber(d.minValue);
-                var avg = countlyCommon.formatNumber((parseInt(max) + parseInt(min)) / 2);
-                var contentText = jQuery.i18n.prop('server-stats.data-points.punch-card-tooltip', max, min, avg);
+                var max = d.value;
+                var min = d.minValue;
+                var avg = (max + min) / 2;
+                var contentText = jQuery.i18n.prop('server-stats.data-points.punch-card-tooltip', countlyCommon.formatNumber(max), countlyCommon.formatNumber(min), countlyCommon.formatNumber(avg));
                 $('#mouseOverRectEvent').tooltipster('content', contentText);
             });
         }
