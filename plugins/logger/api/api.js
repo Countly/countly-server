@@ -87,6 +87,9 @@ var exported = {},
                 catch (ex) {
                     problems.push("Could not parse consent");
                 }
+                if (!plugins.isPluginEnabled("compliance-hub")) {
+                    problems.push("Plugin that processes this information is not enabled: compliance-hub");
+                }
             }
             if (params.qstring.events) {
                 types.events = params.qstring.events;
@@ -111,6 +114,9 @@ var exported = {},
                 catch (ex) {
                     problems.push("Could not parse user_details");
                 }
+                if (!plugins.isPluginEnabled("users")) {
+                    problems.push("Plugin that processes this information is not enabled: users");
+                }
             }
             if (params.qstring.crash) {
                 types.crash = params.qstring.crash;
@@ -134,33 +140,39 @@ var exported = {},
                     if (!res._os && !res._not_os_specific) {
                         problems.push("Crash missing _os property");
                     }
+                    if (!plugins.isPluginEnabled("crashes")) {
+                        problems.push("Plugin that processes this information is not enabled: crashes");
+                    }
                 }
             }
-            
+
             if (params.qstring.apm) {
                 types.apm = params.qstring.apm;
                 if (types.apm && typeof types.apm === "object") {
                     types.apm = JSON.stringify(types.apm);
                 }
-                var res;
+                var apm;
                 try {
-                    res = JSON.parse(types.apm);
+                    apm = JSON.parse(types.apm);
                 }
                 catch (ex) {
                     problems.push("Could not parse apm");
                 }
-                if (res) {
-                    if (!(res.type === "network" || res.type === "device")) {
+                if (apm) {
+                    if (!(apm.type === "network" || apm.type === "device")) {
                         problems.push("APM only supports trace types network or device");
                     }
-                    if (!(res.name && res.name.length)) {
+                    if (!(apm.name && apm.name.length)) {
                         problems.push("APM requires trace name");
                     }
-                    if (!(typeof (res.apm_metrics) === "object" && !Array.isArray(res.apm_metrics))) {
+                    if (!(typeof (apm.apm_metrics) === "object" && !Array.isArray(apm.apm_metrics))) {
                         problems.push("APM requires apm_metrics object");
                     }
-                    if (res.apm_attr && !(typeof (res.apm_attr) === "object" && !Array.isArray(res.apm_attr))) {
+                    if (apm.apm_attr && !(typeof (apm.apm_attr) === "object" && !Array.isArray(apm.apm_attr))) {
                         problems.push("APM requires apm_attr to be object if provided");
+                    }
+                    if (!plugins.isPluginEnabled("performance-monitoring")) {
+                        problems.push("Plugin that processes this information is not enabled: performance-monitoring");
                     }
                 }
             }
