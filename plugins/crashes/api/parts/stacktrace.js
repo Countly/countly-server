@@ -67,12 +67,11 @@ var trace = {
             crash._name = stack[0];
             let lines = crash._error.replace(/\r\n|\r|\n/g, "\n").split("\n");
             let parsingBinaryList = false;
+            let firstBinary = true;
+            var binary_check = {};
             try {
                 for (let line = 0; line < lines.length; line++) {
-                    if (lines[line].startsWith("Process:")) {
-                        crash._executable_name = lines[line].split(":").pop().split("[")[0].trim();
-                    }
-                    else if (lines[line].startsWith("Version:")) {
+                    if (lines[line].startsWith("Version:")) {
                         let parts = lines[line].split(":").pop().split("(");
                         crash._app_version = parts[0].trim();
                         crash._app_build = (parts[1] + "").split(")")[0].trim();
@@ -96,11 +95,22 @@ var trace = {
                             if (!crash._architecture) {
                                 crash._architecture = parts[4];
                             }
-                            crash._binary_images[parts[3].replace(/(^\+)/mg, '')] = {la: parts[0], id: parts[5].replace(/(^<|>$)/mg, '').toUpperCase().replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5")};
+                            if (binary_check[parts[3].replace(/(^\+)/mg, '')]) {
+                                crash._binary_images[parts[3].replace(/(^\+)/mg, '')] = {la: parts[0], id: parts[5].replace(/(^<|>$)/mg, '').toUpperCase().replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5")};
+                                if (firstBinary) {
+                                    firstBinary = false;
+                                    crash._executable_name = parts[3].replace(/(^\+)/mg, '');
+                                    crash._build_uuid = parts[5].replace(/(^<|>$)/mg, '').toUpperCase().replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5");
+                                }
+                            }
                         }
                         else {
                             console.log("Incorrect binary line", lines[line]);
                         }
+                    }
+                    else if(/^([0-9]+)(\s+)(.+)(\s+)(.+)$/gm.test(lines[line])){
+                        let parts = lines[line].trim().replace(/\s\s+/g, ' ').split(" ");
+                        binary_check[parts[1]] = true;
                     }
                 }
                 crash._binary_images = JSON.stringify(crash._binary_images);
