@@ -92,7 +92,7 @@
         ], "platforms");
         chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, "os_");
         var platformNames = _.pluck(chartData.chartData, 'os_'),
-            platformTotal = _.pluck(chartData.chartData, 'u'),
+            platformTotal = _.pluck(chartData.chartData, 't'),
             chartData2 = [];
 
         /*var sum = _.reduce(platformTotal, function(memo, num) {
