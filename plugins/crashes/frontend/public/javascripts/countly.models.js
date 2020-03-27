@@ -41,7 +41,7 @@
         if (!version) {
             return false;
         }
-        return version.replace(/:/g, ".");
+        return (version + "").replace(/:/g, ".");
     };
 
     var extendRequestWithFilter = function(requestParams) {
@@ -238,7 +238,7 @@
         countlyCrashes.common(id, "resolve", function(json) {
             if (json) {
                 if (typeof id === "string") {
-                    callback(json[id].replace(/:/g, '.'));
+                    callback((json[id] + "").replace(/:/g, '.'));
                 }
                 else {
                     callback(json);
@@ -523,7 +523,7 @@
             });
             for (var i = 0; i < vals.length; i++) {
                 ret.dp[0].data.push([i, vals[i].val]);
-                var l = vals[i].key.replace(/:/g, '.');
+                var l = (vals[i].key + "").replace(/:/g, '.');
                 if (metric === "device" && countlyDeviceList && countlyDeviceList[l]) {
                     l = countlyDeviceList[l];
                 }

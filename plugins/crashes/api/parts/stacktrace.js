@@ -108,7 +108,7 @@ var trace = {
                             console.log("Incorrect binary line", lines[line]);
                         }
                     }
-                    else if(/^([0-9]+)(\s+)(.+)(\s+)(.+)$/gm.test(lines[line])){
+                    else if (/^([0-9]+)(\s+)(.+)(\s+)(.+)$/gm.test(lines[line])) {
                         let parts = lines[line].trim().replace(/\s\s+/g, ' ').split(" ");
                         binary_check[parts[1]] = true;
                     }
