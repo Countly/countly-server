@@ -605,7 +605,9 @@ window.starView = countlyView.extend({
             da.dp[0].data[i][1] = this.cumulativeData[i - 1].count;
         }
         if (self._tab === 'ratings') {
-            countlyCommon.drawGraph(da, "#dashboard-graph", "bar", {
+            $('#dashboard-graph-time').hide();
+            $('#dashboard-graph-cumulative').show();
+            countlyCommon.drawGraph(da, "#dashboard-graph-cumulative", "bar", {
                 colors: [countlyCommon.GRAPH_COLORS[0]]
             });
         }
@@ -804,7 +806,9 @@ window.starView = countlyView.extend({
             }
         }
         if (self._tab === 'ratings') {
-            return countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);
+            $('#dashboard-graph-time').show();
+            $('#dashboard-graph-cumulative').hide();
+            return countlyCommon.drawTimeGraph(renderData, "#dashboard-graph-time", bucket, overrideBucket);
         }
     },
     renderCommentsTable: function(isRefresh) {
