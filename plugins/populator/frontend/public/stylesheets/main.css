@@ -20,30 +20,30 @@
 #populator > .content p { color: #a2a2a2; font-size: 14px; line-height: 1.5; letter-spacing: 0.3px}
 #populator > .content h1{color: #636363; font-size: 18px;  font-weight: 400; letter-spacing: 0.3px; line-height: 1.4}
 #populator > .content img { width:243px; margin-right:50px; margin-left:50px; }
-#populator > .content .data-populater-form { width: 200px;}
+#populator > .content .data-populater-form { width: 220px;}
 #populator > .content .data-populater-form > div { margin-bottom: 20px }
 #populator > .content label { font-size: 12px; color: #636363; display: block; margin-bottom: 8px;}
-#populator > .content input {  
-    width: 200px; 
+#populator > .content input {
+    width: 220px;
     font-size: 12px;
     color: #636363;
-    background-color: #fdfdfd; 
-    border: 1px solid #d6d6d6; 
-    outline: none; 
-    padding: 7px; 
-    box-sizing: border-box; 
+    background-color: #fdfdfd;
+    border: 1px solid #d6d6d6;
+    outline: none;
+    padding: 7px;
+    box-sizing: border-box;
     border-radius: 2px
 }
-#populator > .content .icon-button { 
-    text-align: center; 
-    font-weight: 400; 
-    font-size:14px; 
-    outline:none; 
-    border:none; 
+#populator > .content .icon-button {
+    text-align: center;
+    font-weight: 400;
+    font-size:14px;
+    outline:none;
+    border:none;
     width: 100%;
 }
 
-.populator_modal {     
+.populator_modal {
     border-width: 0px !important;
     min-width: 600px;
     min-height: 615px;
@@ -68,7 +68,7 @@
 }
 
 #populator-modal-content .stop-container {
-    text-align:center; 
+    text-align:center;
     margin: 15px 0px 40px 0px;
 }
 #populator-modal-content a {
@@ -84,6 +84,43 @@
 }
 #populator-modal-content table > tbody > tr > td:first-child { color: #636363}
 #populator-modal-content table > tbody > tr > td:last-child { text-align:  right; font-weight: 400}
+
+#populator #date-picker {
+    right: -27px;
+}
+
+#populator #date-picker .calendar-container {
+    margin-right: 0;
+}
+
+#populator #date-picker-button {
+    display: flex;
+    flex-direction: row;
+    width: 220px;
+    height: 31px;
+    font-size: 12px;
+    color: #636363;
+    background-color: #fdfdfd;
+    border: 1px solid #d6d6d6;
+    outline: none;
+    margin: 0;
+    padding: 7px;
+    box-sizing: border-box;
+    border-radius: 2px;
+}
+
+#populator #date-picker-button > * {
+    display: block;
+    position: static;
+}
+
+#populator #date-picker-button > #selected-date {
+    margin-left: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: initial;
+}
 
 #populator-locked {
     display: flex;
@@ -121,5 +158,5 @@
 }
 
 #populator-locked > .content > p > a {
-    color: #2FA732; 
+    color: #2FA732;
 }

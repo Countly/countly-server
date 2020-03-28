@@ -16,12 +16,36 @@
 			<div>
 				<div class="data-populater-form">
 					<div>
-						<label data-localize="populator.date-from"></label>
-						<input type="text" id="populate-from" />
-					</div>
-					<div>
-						<label data-localize="populator.date-to"></label>
-						<input type="text" id="populate-to" />
+						<label data-localize="populator.date-range"></label>
+		                <div id="date-selector" class="help-zone-vs">
+                            <div class="calendar" id="date-picker-button">
+                                <i class="material-icons">date_range</i>
+                                <div id="selected-date"></div>
+                            </div>
+			                <div id="date-picker">
+                                <div class="calendar-container">
+                                    <table>
+                                        <tr>
+                                            <td class="calendar-block">
+                                                <div id="date-from" class="calendar"></div>
+                                            </td>
+                                            <td class="calendar-block">
+                                                <div id="date-to" class="calendar"></div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="calendar-block">
+                                                <input type="text" class="calendar-input-field" id="date-from-input"></input><span class="date-input-label" data-localize="common.from"></span>
+                                            </td>
+                                            <td class="calendar-block">
+                                                <input type="text" class="calendar-input-field" id="date-to-input"></input><span class="date-input-label" data-localize="common.to"></span>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+				                </div>
+			                </div>
+		                </div>
 					</div>
 					<div>
 						<label data-localize="populator.maxtime"></label>

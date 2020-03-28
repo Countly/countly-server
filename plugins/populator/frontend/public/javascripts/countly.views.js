@@ -14,12 +14,12 @@ window.PopulatorView = countlyView.extend({
         this.templateData = {
             "page-title": jQuery.i18n.map["populator.plugin-title"]
         };
+
         var now = new Date();
         var fromDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 30);
         var toDate = now;
         var maxTime = 60;
         var maxTimeout;
-
 
         $(this.el).html(this.template(this.templateData));
 
@@ -31,6 +31,22 @@ window.PopulatorView = countlyView.extend({
             $("#populator-locked").hide();
             $("#populator > .content").show();
         }
+
+        setTimeout(function() {
+            $("#populator #date-picker #date-from").datepicker("setDate", "-30d");
+            $("#populator #date-picker #date-to").datepicker("setDate", "+0d");
+        }, 300);
+
+        var populatorDateRangeInterval = setInterval(function updateDateRangeButton() {
+            var fromDate = $("#populator #date-picker #date-from").datepicker("getDate");
+            var toDate = $("#populator #date-picker #date-to").datepicker("getDate");
+
+            if (!updateDateRangeButton.fromDate || updateDateRangeButton.fromDate.getTime() != fromDate.getTime() || !updateDateRangeButton.toDate || updateDateRangeButton.toDate.getTime() != toDate.getTime()) {
+                $("#populator #selected-date").text(moment(fromDate).format("D MMM, YYYY") + " - " + moment(toDate).format("D MMM, YYYY"));
+                updateDateRangeButton.fromDate = fromDate;
+                updateDateRangeButton.toDate = toDate;
+            }
+        }, 500);
 
         $("#start-populate").on('click', function() {
             CountlyHelpers.confirm(jQuery.i18n.map['populator.warning2'], "popStyleGreen", function(result) {
@@ -90,8 +106,8 @@ window.PopulatorView = countlyView.extend({
                     });
                 }, maxTime * 1000);
 
-                fromDate = $("#populate-from").datepicker("getDate") || fromDate;
-                toDate = $("#populate-to").datepicker("getDate") || toDate;
+                fromDate = $("#populator #date-picker #date-from").datepicker("getDate") || fromDate;
+                toDate = $("#populator #date-picker #date-to").datepicker("getDate") || toDate;
                 countlyPopulator.setStartTime(fromDate.getTime() / 1000);
                 countlyPopulator.setEndTime(toDate.getTime() / 1000);
                 countlyPopulator.generateUsers(250);
