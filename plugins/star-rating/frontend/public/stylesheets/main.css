@@ -2535,3 +2535,9 @@
     width: 230px;
     /*margin-left: -20px;*/
 }
+_::-webkit-full-page-media, _:future, :root .mright-s, .mright-m, .mright-l {
+    right: 3px !important;
+}
+.routename-star .widget-header .title.small + #drill-down-for-view {
+    margin-top: 0px !important;
+} 
