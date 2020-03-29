@@ -221,26 +221,26 @@ var plugins = require('../../pluginManager.js'),
         const TIME_RANGE = 24;
         const ROW = 7;
         const COLLECTION_NAME = "server_stats_data_points";
-        return new Promise((resolve, reject)=>{
+        return new Promise((resolve, reject) => {
             const filter = {"m": {$in: date_range.split(',')} };
-            common.db.collection(COLLECTION_NAME).find(filter).toArray((error, results)=>{
+            common.db.collection(COLLECTION_NAME).find(filter).toArray((error, results) => {
                 if (error) {
                     return reject(error);
                 }
-                let matrix = Array(ROW).fill().map(()=>[]);
+                let matrix = Array(ROW).fill().map(() => []);
                 /**
                  * invertMap
                  * @param {*} mtx - mtx
                  * @param {*} fn - fn
                  * @returns{Array} - reduce array
                  */
-                const invertMap = (mtx, fn)=> {
+                const invertMap = (mtx, fn) => {
                     if (mtx.length === 0) {
                         return Array(TIME_RANGE).fill(0);
                     }
                     let kRows = mtx.length,
                         kCols = mtx[0].length;
-                    return [...Array(kCols).keys()].map(colIndex => [...Array(kRows).keys()].map(rowIndex => mtx[rowIndex][colIndex]).reduce(fn));
+                    return [...Array(kCols).keys()].map((colIndex) => [...Array(kRows).keys()].map((rowIndex) => mtx[rowIndex][colIndex]).reduce(fn));
                 };
                 for (let pointNumber = 0; pointNumber < results.length; pointNumber++) {
                     const result = results[pointNumber];
@@ -262,11 +262,11 @@ var plugins = require('../../pluginManager.js'),
                     }
                 }
                 let output = [
-                    {sumValue: matrix.map(mtx => invertMap(mtx, (acc, val) => acc + val)) },
-                    {minValue: matrix.map(mtx => invertMap(mtx, (acc, val) => acc < val ? acc : val)) },
-                    {maxValue: matrix.map(mtx => invertMap(mtx, (acc, val) => acc > val ? acc : val)) },
+                    {sumValue: matrix.map((mtx) => invertMap(mtx, (acc, val) => acc + val)) },
+                    {minValue: matrix.map((mtx) => invertMap(mtx, (acc, val) => acc < val ? acc : val)) },
+                    {maxValue: matrix.map((mtx) => invertMap(mtx, (acc, val) => acc > val ? acc : val)) },
                 ];
-                output.push({avgValue: matrix.map((mtx, mtxIndex) => mtx.length === 0 ? Array(TIME_RANGE).fill(0) : output[0].sumValue[mtxIndex].map(val => val / mtx.length))});
+                output.push({avgValue: matrix.map((mtx, mtxIndex) => mtx.length === 0 ? Array(TIME_RANGE).fill(0) : output[0].sumValue[mtxIndex].map((val) => val / mtx.length))});
                 resolve(output);
             });
         });
