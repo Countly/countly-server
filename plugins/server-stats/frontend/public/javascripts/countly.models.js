@@ -359,7 +359,7 @@
             xLabels.enter().append('text')
                 .attr('y', xLabelHeight)
                 .attr('transform', 'translate(0,-6)')
-                .attr('class', 'tod-xlabel')
+                .attr('class', 'dp-punch-card-xlabel')
                 .style('text-anchor', 'middle')
                 .style('fill', '#777777')
                 .style('fill-opacity', 0);
@@ -390,7 +390,7 @@
                     return d.label;
                 })
                 .attr('x', yLabelWidth)
-                .attr('class', 'tod-ylabel')
+                .attr('class', 'dp-punch-card-ylabel')
                 .style('text-anchor', 'end')
                 .style('fill-opacity', 0);
 
