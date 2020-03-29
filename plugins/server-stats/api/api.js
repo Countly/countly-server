@@ -112,7 +112,7 @@ var plugins = require('../../pluginManager.js'),
                 $inc: {
                     e: eventCount,
                     s: sessionCount,
-                    [`d.${utcMoment.weekday()}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
+                    [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
                 }
             },
             {
