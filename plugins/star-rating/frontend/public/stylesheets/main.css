@@ -1,3 +1,13 @@
+.routename-star #dashboard-graph-time {
+    font-family: Oswald;
+    font-size: 14px;
+    margin: 0 30px;
+}
+.routename-star #dashboard-graph-cumulative {
+    font-family: Oswald;
+    font-size: 14px;
+    margin: 0 30px;
+}
 .routename-star .left-m4 {
      left: -4px;
 }
@@ -89,15 +99,15 @@
 }
 
 .mleft-s > #feedback-sticker-svg, .mright-s > #feedback-sticker-svg, .bright-s > #feedback-sticker-svg, .bleft-s > #feedback-sticker-svg {
-    height: 14px;
+    height: 13px;
     width: 14px;
 }
 .mleft-m > #feedback-sticker-svg, .mright-m > #feedback-sticker-svg, .bright-m > #feedback-sticker-svg, .bleft-m > #feedback-sticker-svg {
-    height: 18px;
+    height: 15px;
     width: 18px;
 }
 .mleft-l > #feedback-sticker-svg, .mright-l > #feedback-sticker-svg, .bright-l > #feedback-sticker-svg, .bleft-l > #feedback-sticker-svg {
-    height: 20px;
+    height: 18px;
     width: 20px;
 }
 
@@ -2524,4 +2534,10 @@
 .routename-star .edit-menu.rating-feedback-menu {
     width: 230px;
     /*margin-left: -20px;*/
+}
+_::-webkit-full-page-media, _:future, :root .mright-s, .mright-m, .mright-l {
+    right: 3px !important;
+}
+.routename-star .widget-header .title.small + #drill-down-for-view {
+    margin-top: 0px !important;
 }
