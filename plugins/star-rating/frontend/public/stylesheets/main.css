@@ -1,12 +1,12 @@
 .routename-star #dashboard-graph-time {
     font-family: Oswald;
     font-size: 14px;
-    margin: 0 30px !important;
+    margin: 0 30px;
 }
 .routename-star #dashboard-graph-cumulative {
     font-family: Oswald;
     font-size: 14px;
-    margin: 0 30px !important;
+    margin: 0 30px;
 }
 .routename-star .left-m4 {
      left: -4px;
