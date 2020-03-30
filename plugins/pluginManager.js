@@ -1172,6 +1172,13 @@ var pluginManager = function pluginManager() {
         if (dbName.indexOf('mongodb://') !== 0) {
             dbName = 'mongodb://' + dbName;
         }
+        if (dbName.indexOf('?') === -1) {
+            dbName = dbName + "?retryWrites=false";
+        }
+        else {
+            dbName = dbName + "&retryWrites=false";
+        }
+        
         var db_name = "countly";
         try {
             db_name = dbName.split("/").pop().split("?")[0];
