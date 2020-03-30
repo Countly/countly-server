@@ -112,7 +112,7 @@ var plugins = require('../../pluginManager.js'),
                 $inc: {
                     e: eventCount,
                     s: sessionCount,
-                    [`d.${utcMoment.weekday()}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
+                    [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
                 }
             },
             {
@@ -219,33 +219,55 @@ var plugins = require('../../pluginManager.js'),
      */
     function punchCard(date_range) {
         const TIME_RANGE = 24;
-        const DAYS = 7;
-        const collectionName = "server_stats_data_points";
-
+        const ROW = 7;
+        const COLLECTION_NAME = "server_stats_data_points";
         return new Promise((resolve, reject) => {
-            const filter = { m: { $in: date_range.split(",") } };
-            common.db.collection(collectionName).find(filter).toArray((error, results) => {
+            const filter = {"m": {$in: date_range.split(',')} };
+            common.db.collection(COLLECTION_NAME).find(filter).toArray((error, results) => {
                 if (error) {
                     return reject(error);
                 }
-                let dataPoints = Array(DAYS).fill(null).map(() => Array(TIME_RANGE).fill(0));
+                let matrix = Array(ROW).fill().map(() => []);
+                /**
+                 * invertMap
+                 * @param {*} mtx - mtx
+                 * @param {*} fn - fn
+                 * @returns{Array} - reduce array
+                 */
+                const invertMap = (mtx, fn) => {
+                    if (mtx.length === 0) {
+                        return Array(TIME_RANGE).fill(0);
+                    }
+                    let kRows = mtx.length,
+                        kCols = mtx[0].length;
+                    return [...Array(kCols).keys()].map((colIndex) => [...Array(kRows).keys()].map((rowIndex) => mtx[rowIndex][colIndex]).reduce(fn));
+                };
                 for (let pointNumber = 0; pointNumber < results.length; pointNumber++) {
-                    const currentPoint = results[pointNumber];
-                    const days = currentPoint.d;
-                    for (const property in days) {
-                        if (Object.prototype.hasOwnProperty.call(days, property)) {
-                            let mockMatrixColumn = dataPoints[property];
-                            const currentMatrixRow = days[property];
-                            for (let index = 0; index < mockMatrixColumn.length; index++) {
-                                if (currentMatrixRow[index] && currentMatrixRow[index].dp) {
-                                    const time = currentMatrixRow[index].dp;
-                                    mockMatrixColumn[index] += time;
-                                }
+                    const result = results[pointNumber];
+                    const splitFormat = result._id.split('_')[1].split(':');
+                    const year = parseInt(splitFormat[0]);
+                    const month = (parseInt(splitFormat[1]) - 1);
+                    const dates = result.d;
+                    for (const date in dates) {
+                        let getWeekDay = common.moment().year(year).month(month).date(date).isoWeekday();
+                        let arr = new Array(TIME_RANGE).fill(0);
+                        let matrixDayColumn = matrix[getWeekDay - 1];
+                        for (let k = 0; k < arr.length; k++) {
+                            if (dates[date] && dates[date][k] && dates[date][k].dp) {
+                                const hourDP = dates[date][k].dp;
+                                arr[k] += hourDP;
                             }
                         }
+                        matrixDayColumn.push(arr);
                     }
                 }
-                resolve(dataPoints);
+                let output = [
+                    {sumValue: matrix.map((mtx) => invertMap(mtx, (acc, val) => acc + val)) },
+                    {minValue: matrix.map((mtx) => invertMap(mtx, (acc, val) => acc < val ? acc : val)) },
+                    {maxValue: matrix.map((mtx) => invertMap(mtx, (acc, val) => acc > val ? acc : val)) },
+                ];
+                output.push({avgValue: matrix.map((mtx, mtxIndex) => mtx.length === 0 ? Array(TIME_RANGE).fill(0) : output[0].sumValue[mtxIndex].map((val) => val / mtx.length))});
+                resolve(output);
             });
         });
     }

@@ -125,8 +125,6 @@
         var borderWidth = 1;
         var duration = 0;
 
-
-
         var chart = d3.select('#chart').append('svg')
             .attr('width', width + margin.left + margin.right)
             .attr('height', height + margin.top + margin.bottom)
@@ -142,7 +140,6 @@
             .style('stroke-width', borderWidth)
             .style('shape-rendering', 'crispEdges');
 
-
         loadPunchCard(dpPunchData);
 
         /**
@@ -150,29 +147,27 @@
          * @param {object} punchCardData | Chart data
          */
         function loadPunchCard(punchCardData) {
-
             var labelsX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
             var labelMapping = {
-                "0": jQuery.i18n.map['times-of-day.sunday'],
-                "1": jQuery.i18n.map['times-of-day.monday'],
-                "2": jQuery.i18n.map['times-of-day.tuesday'],
-                "3": jQuery.i18n.map['times-of-day.wednesday'],
-                "4": jQuery.i18n.map['times-of-day.thursday'],
-                "5": jQuery.i18n.map['times-of-day.friday'],
-                "6": jQuery.i18n.map['times-of-day.saturday']
+                "0": jQuery.i18n.map['times-of-day.monday'],
+                "1": jQuery.i18n.map['times-of-day.tuesday'],
+                "2": jQuery.i18n.map['times-of-day.wednesday'],
+                "3": jQuery.i18n.map['times-of-day.thursday'],
+                "4": jQuery.i18n.map['times-of-day.friday'],
+                "5": jQuery.i18n.map['times-of-day.saturday'],
+                "6": jQuery.i18n.map['times-of-day.sunday'],
             };
-
             var data = [];
-            for (var i = 0; i < punchCardData.length; i++) {
+            for (var i = 0; i < 7; i++) {
                 data.push({
                     label: labelMapping[i],
-                    values: punchCardData[i],
+                    day: i,
+                    values: punchCardData[0].sumValue[i],
+                    averages: punchCardData[3].avgValue[i],
+                    minValues: punchCardData[1].minValue[i],
+                    maxValues: punchCardData[2].maxValue[i],
                 });
             }
-
-            var sunday = data[0];
-            data = data.splice(1, 7);
-            data.push(sunday);
 
             update(data, labelsX);
 
@@ -192,7 +187,6 @@
                 interactive: true,
                 contentAsHTML: true
             });
-
         }
 
         /**
@@ -233,12 +227,10 @@
 
                 return f(d);
             };
-            var minValue = function(d) {
-                return Math.min.apply(Math, d);
-            };
             var c = d3.scale.linear()
                 .domain([d3.min(allValues), d3.max(allValues)])
                 .rangeRound([0, 100]);
+
             var rows = chart.selectAll('.row')
                 .data(data, function(d) {
                     return d.label;
@@ -329,10 +321,11 @@
                 .attr("in", "offsetBlur");
             feMerge.append("feMergeNode")
                 .attr("in", "SourceGraphic");
+
             var dotLabelEnter = dotLabels.enter().append('g')
                 .data(function(d) {
-                    return d.values.map(function(x) {
-                        return {minValue: minValue(d.values), value: x};
+                    return d.values.map(function(x, i) {
+                        return { day: d.day, value: x, maxValue: d.maxValues[i], average: d.averages[i], minValue: d.minValues[i], label: d.label };
                     });
                 })
                 .attr('class', function() {
@@ -513,6 +506,7 @@
             });
 
             dotLabelEnter.on('mouseover', function(d) {
+
                 var selection = d3.select(this);
                 var rectPosition = selection.node().getBoundingClientRect();
                 var svgPosition = d3.select('#tod-chart-area').node().getBoundingClientRect();
@@ -542,11 +536,11 @@
                         return (hoverBoxSize - textWidth) / 2;
                     });
 
+                var max = countlyCommon.formatNumber(d.maxValue);
+                var min = countlyCommon.formatNumber(d.minValue);
+                var avg = countlyCommon.formatNumber(d.average);
+                var contentText = jQuery.i18n.prop('server-stats.data-points.punch-card-tooltip', max, min, avg);
 
-                var max = d.value;
-                var min = d.minValue;
-                var avg = (max + min) / 2;
-                var contentText = jQuery.i18n.prop('server-stats.data-points.punch-card-tooltip', countlyCommon.formatNumber(max), countlyCommon.formatNumber(min), countlyCommon.formatNumber(avg));
                 $('#mouseOverRectEvent').tooltipster('content', contentText);
             });
         }
