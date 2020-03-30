@@ -1178,7 +1178,7 @@ var pluginManager = function pluginManager() {
         else {
             dbName = dbName + "&retryWrites=false";
         }
-        
+
         var db_name = "countly";
         try {
             db_name = dbName.split("/").pop().split("?")[0];
