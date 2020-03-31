@@ -167,7 +167,13 @@ var countlyView = Backbone.View.extend({
                 }
                 else if ((XMLHttpRequest && typeof XMLHttpRequest.status === "undefined") || errorThrown) {
                     // eslint-disable-next-line no-console
-                    console.error("Unknow Error: " + (XMLHttpRequest || XMLHttpRequest.responseText) + "\n" + textStatus + "\n" + errorThrown);
+                    console.error("Unknow Error: ");
+                    if (XMLHttpRequest) {
+                        // eslint-disable-next-line no-console
+                        console.log(XMLHttpRequest.my_set_url + " with " + JSON.stringify(XMLHttpRequest.my_set_data) + "\n" + (XMLHttpRequest.responseText) + "\n");
+                    }
+                    // eslint-disable-next-line no-console
+                    console.error(textStatus + "\n" + errorThrown);
                 }
             })
                 .always(function() {
