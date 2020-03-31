@@ -676,7 +676,7 @@ div.datatablesubrow {display: none;}
     #date-picker .in-range a.ui-state-hover {
         background:#1b2732;
     }
-    
+
     #date-picker .ui-datepicker-title {
         font-size:13px;
     }
@@ -3581,3 +3581,10 @@ color:#E95C6C; transition:color 1s;
 
 #dashboard-export-graph .zoom { margin-top: 18px; }
 #dashboard-purge-graph .zoom { margin-top: 18px; }
+
+.routename-user .zoom { margin-top: -25px; }
+.routename-sessions .zoom { margin-top: -25px; }
+.routename-events .zoom { margin-top: -45px; }
+.routename-revenue .zoom { margin-top: -12px; }
+.routename-attribution .zoom { margin-top: -25px; }
+.routename-compliance .zoom { margin-top: -12px; }

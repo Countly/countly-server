@@ -2057,7 +2057,7 @@ span.emoji-inner {
 }
 
 .routename-messagingDashboardView .zoom {
-    margin: 3% 0 0 40%;
+    margin: 15px 0 0 40%;
     position: absolute;
     z-index: 999;
 }
