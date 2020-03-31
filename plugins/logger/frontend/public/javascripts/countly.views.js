@@ -1,19 +1,14 @@
-/*global countlyView, store, $, countlyLogger, countlyGlobal, Handlebars, countlyCommon, jQuery, moment, app, LoggerView, CountlyHelpers*/
+/*global countlyView, store, $, countlyLogger, T, countlyCommon, jQuery, moment, app, LoggerView, CountlyHelpers*/
 window.LoggerView = countlyView.extend({
     initialize: function() {
         this.filter = (store.get("countly_loggerfilter")) ? store.get("countly_loggerfilter") : "logger-all";
     },
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlyLogger.initialize(this.filterToQuery()), countlyLogger.collection_info()).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/logger/templates/logger.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyLogger.initialize(this.filterToQuery())
-            , countlyLogger.collection_info()).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/logger/templates/logger.html', function(src) {
+            self.template = src;
+        }), countlyLogger.initialize(this.filterToQuery())
+        , countlyLogger.collection_info()).then(function() {});
     },
     renderCommon: function(isRefresh) {
         var data = countlyLogger.getData();

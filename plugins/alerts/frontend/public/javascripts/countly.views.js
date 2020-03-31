@@ -7,7 +7,8 @@
     _,
     jQuery,
     $,
-    app
+    app,
+    T
  */
 
 
@@ -71,13 +72,13 @@ window.AlertsView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         return $.when(
-            $.get(countlyGlobal.path + '/alerts/templates/alert-widget-drawer.html', function(src) {
+            T.get('/alerts/templates/alert-widget-drawer.html', function(src) {
                 Handlebars.registerPartial("alert-widget-drawer", src);
             }),
-            $.get(countlyGlobal.path + '/alerts/templates/alert-types-config-template.html', function(src) {
+            T.get('/alerts/templates/alert-types-config-template.html', function(src) {
                 Handlebars.registerPartial("alert-types-config-template", src);
             }),
-            $.get(countlyGlobal.path + '/alerts/templates/form.html', function(src) {
+            T.get('/alerts/templates/form.html', function(src) {
                 self.template = Handlebars.compile(src);
             }),
             alertsPlugin.requestAlertsList()

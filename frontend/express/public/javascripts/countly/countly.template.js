@@ -104,14 +104,10 @@ var countlyView = Backbone.View.extend({
     * @instance
     * @example
     *beforeRender: function() {
-    *    if(this.template)
-    *       return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
-    *   else{
-    *       var self = this;
-    *       return $.when($.get(countlyGlobal["path"]+'/density/templates/density.html', function(src){
-    *           self.template = Handlebars.compile(src);
-    *       }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
-    *   }
+    *   var self = this;
+    *   return $.when(T.render('/density/templates/density.html', function(src){
+    *       self.template = src;
+    *   }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
     *}
     */
     beforeRender: function() {
@@ -479,15 +475,10 @@ window.countlyManagementView = countlyView.extend({
     },
 
     beforeRender: function() {
-        if (this.template) {
-            return $.when();
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + this.templatePath, function(src) {
-                self.template = Handlebars.compile(src);
-            }));
-        }
+        var self = this;
+        return $.when(T.render(this.templatePath, function(src) {
+            self.template = src;
+        }));
     },
 
     render: function() { //backbone.js view render function
@@ -551,18 +542,51 @@ var initializeOnce = _.once(function() {
 
 var Template = function() {
     this.cached = {};
+    this.raw = {};
 };
+
+/**
+* Template loader for loading static resources over jquery
+* @name T
+* @global
+* @example <caption>Get Handlebar compiled HTML</caption>
+*$.when(T.render('/density/templates/density.html', function(src){
+*    self.template = src;
+*})).then(function () {});
+*
+* @example <caption>Get raw resources</caption>
+*$.when(T.get('/density/templates/density.html', function(src){
+*    self.template = Handlebar.compile(src);
+*})).then(function () {});
+*/
 var T = new Template();
 
 $.extend(Template.prototype, {
     render: function(name, callback) {
         if (T.isCached(name)) {
-            callback(T.cached[name]);
+            if (typeof callback === "function") {
+                callback(T.cached[name]);
+            }
+            return T.cached[name];
         }
         else {
-            $.get(T.urlFor(name), function(raw) {
+            return $.get(T.urlFor(name), function(raw) {
                 T.store(name, raw);
                 T.render(name, callback);
+            });
+        }
+    },
+    get: function(name, callback) {
+        if (T.isCached(name)) {
+            if (typeof callback === "function") {
+                callback(T.raw[name]);
+            }
+            return T.raw[name];
+        }
+        else {
+            return $.get(T.urlFor(name), function(raw) {
+                T.store(name, raw);
+                T.get(name, callback);
             });
         }
     },
@@ -588,11 +612,15 @@ $.extend(Template.prototype, {
         return !!T.cached[name];
     },
     store: function(name, raw) {
+        T.raw[name] = raw;
         T.cached[name] = Handlebars.compile(raw);
     },
     urlFor: function(name) {
         //return "/resources/templates/"+ name + ".handlebars";
-        return name + ".html";
+        if (countlyGlobal.path && countlyGlobal.path.length && name.indexOf(countlyGlobal.path) !== 0) {
+            name = countlyGlobal.path + name;
+        }
+        return name + "?" + countlyGlobal.countlyVersion;
     }
 });
 

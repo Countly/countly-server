@@ -1,19 +1,14 @@
-/*global $, jQuery, countlyCommon, countlyDeviceDetails, countlyGlobal, countlyView, countlyTotalUsers, countlyDensity, Handlebars, app, addDrill, CountlyHelpers, DensityView*/
+/*global $, jQuery, countlyCommon, countlyDeviceDetails, countlyView, countlyTotalUsers, countlyDensity, T, app, addDrill, CountlyHelpers, DensityView*/
 window.DensityView = countlyView.extend({
     initialize: function() {
 
     },
     activePlatform: {},
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/density/templates/density.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/density/templates/density.html', function(src) {
+            self.template = src;
+        }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function() {});
     },
     pageScript: function() {
         var self = this;

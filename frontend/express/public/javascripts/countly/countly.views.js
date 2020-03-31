@@ -3150,20 +3150,15 @@ window.ManageUsersView = countlyView.extend({
                 $(app.manageUsersView).trigger('user-mgmt.render');
     */
     template: null,
-    initialize: function() {
-        var self = this;
-        T.render('templates/users', function(t) {
-            self.template = t;
-        });
-    },
+    initialize: function() {},
     beforeRender: function() {
         if (this.template) {
             return true;
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal.path + '/templates/users.html', function(src) {
-                self.template = Handlebars.compile(src);
+            return $.when(T.render('/templates/users.html', function(src) {
+                self.template = src;
             })).then(function() {});
         }
     },

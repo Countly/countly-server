@@ -1,12 +1,12 @@
-/*global CountlyHelpers, store, EnterpriseView, countlyGlobalEE, countlyView, countlyGlobal, Handlebars, app, $, jQuery*/
+/*global CountlyHelpers, store, EnterpriseView, countlyGlobalEE, countlyView, countlyGlobal, T, app, $, jQuery*/
 
 window.EnterpriseView = countlyView.extend({
     initialize: function() {},
     beforeRender: function() {
         if (!this.template) {
             var self = this;
-            return $.when($.get(countlyGlobal.path + '/enterpriseinfo/templates/info.html', function(src) {
-                self.template = Handlebars.compile(src);
+            return $.when(T.render('/enterpriseinfo/templates/info.html', function(src) {
+                self.template = src;
             })).then(function() {});
         }
     },

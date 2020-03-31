@@ -1,4 +1,4 @@
-/*global $, jQuery, app, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
+/*global $, jQuery, app, countlyView, countlyCommon, T, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
 
 window.MonetizationMetricsView = countlyView.extend({
     templateData: {},
@@ -11,16 +11,11 @@ window.MonetizationMetricsView = countlyView.extend({
 
         var self = this;
 
-        if (self.template && self.bigNumbersTemplate) {
-            return $.when(countlyMonetization.initialize());
-        }
-        else {
-            return $.when($.get(countlyGlobal.path + '/video-intelligence-monetization/templates/metrics.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), $.get(countlyGlobal.path + '/video-intelligence-monetization/templates/bignumbers.html', function(src) {
-                self.bigNumbersTemplate = Handlebars.compile(src);
-            }), countlyMonetization.initialize());
-        }
+        return $.when(T.render('/video-intelligence-monetization/templates/metrics.html', function(src) {
+            self.template = src;
+        }), T.render('/video-intelligence-monetization/templates/bignumbers.html', function(src) {
+            self.bigNumbersTemplate = src;
+        }), countlyMonetization.initialize());
     },
 
     /**
@@ -197,8 +192,8 @@ window.MonetizationIntegrationView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         if (!self.integrationTemplate) {
-            return $.when($.get(countlyGlobal.path + '/video-intelligence-monetization/templates/integration.html', function(src) {
-                self.integrationTemplate = Handlebars.compile(src);
+            return $.when(T.render('/video-intelligence-monetization/templates/integration.html', function(src) {
+                self.integrationTemplate = src;
             })).then(function() {});
         }
     },

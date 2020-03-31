@@ -1,4 +1,4 @@
-/* global app, Handlebars, countlyGlobal, countlyCommon, CountlyHelpers, $ */
+/* global app, T, countlyGlobal, countlyCommon, CountlyHelpers, $ */
 
 $(document).ready(function() {
     // if configuration view exists
@@ -127,8 +127,8 @@ app.addPageScript("/manage/user-settings", function() {
                 setupButton = "#resetup-2fa-link";
             }
 
-            $.get(countlyGlobal.path + '/two-factor-auth/templates/setup2fa_modal.html', function(src) {
-                var setup2FATemplate = Handlebars.compile(src);
+            T.render('/two-factor-auth/templates/setup2fa_modal.html', function(src) {
+                var setup2FATemplate = src;
                 $(setupButton).off("click").on("click", function() {
                     CountlyHelpers.popup(setup2FATemplate(templateData), "setup-2fa-dialog", true);
                     app.localize();

@@ -1,4 +1,4 @@
-/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,Handlebars,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
+/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,T,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
 window.CrashesView = countlyView.extend({
     convertFilter: {
         "sg.crash": {prop: "_id", type: "string"},
@@ -55,15 +55,10 @@ window.CrashesView = countlyView.extend({
         this.selectedCrashes = {};
         this.selectedCrashesIds = [];
         countlySession.initialize();
-        if (this.template) {
-            return $.when(countlyCrashes.initialize()).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/crashes/templates/crashes.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyCrashes.initialize()).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/crashes/templates/crashes.html', function(src) {
+            self.template = src;
+        }), countlyCrashes.initialize()).then(function() {});
     },
     getExportAPI: function(tableID) {
         if (tableID === 'd-table-crashes') {
@@ -1188,15 +1183,10 @@ window.CrashgroupView = countlyView.extend({
     beforeRender: function() {
         this.old = false;
         countlyCrashes.reset();
-        if (this.template) {
-            return $.when(countlyCrashes.initialize(this.id)).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/crashes/templates/crashgroup.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyCrashes.initialize(this.id)).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/crashes/templates/crashgroup.html', function(src) {
+            self.template = src;
+        }), countlyCrashes.initialize(this.id)).then(function() {});
     },
     renderCommon: function(isRefresh) {
         var url = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + countlyGlobal.path + "/crash/";
