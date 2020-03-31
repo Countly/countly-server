@@ -1,4 +1,4 @@
-/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $*/
+/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -538,90 +538,6 @@ var CountlyDrop = Drop.createContext({
 
 var initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() { });
-});
-
-var Template = function() {
-    this.cached = {};
-    this.raw = {};
-};
-
-/**
-* Template loader for loading static resources over jquery
-* @name T
-* @global
-* @example <caption>Get Handlebar compiled HTML</caption>
-*$.when(T.render('/density/templates/density.html', function(src){
-*    self.template = src;
-*})).then(function () {});
-*
-* @example <caption>Get raw resources</caption>
-*$.when(T.get('/density/templates/density.html', function(src){
-*    self.template = Handlebar.compile(src);
-*})).then(function () {});
-*/
-var T = new Template();
-
-$.extend(Template.prototype, {
-    render: function(name, callback) {
-        if (T.isCached(name)) {
-            if (typeof callback === "function") {
-                callback(T.cached[name]);
-            }
-            return T.cached[name];
-        }
-        else {
-            return $.get(T.urlFor(name), function(raw) {
-                T.store(name, raw);
-                T.render(name, callback);
-            });
-        }
-    },
-    get: function(name, callback) {
-        if (T.isCached(name)) {
-            if (typeof callback === "function") {
-                callback(T.raw[name]);
-            }
-            return T.raw[name];
-        }
-        else {
-            return $.get(T.urlFor(name), function(raw) {
-                T.store(name, raw);
-                T.get(name, callback);
-            });
-        }
-    },
-    renderSync: function(name, callback) {
-        if (!T.isCached(name)) {
-            T.fetch(name);
-        }
-        T.render(name, callback);
-    },
-    prefetch: function(name) {
-        $.get(T.urlFor(name), function(raw) {
-            T.store(name, raw);
-        });
-    },
-    fetch: function(name) {
-        // synchronous, for those times when you need it.
-        if (!T.isCached(name)) {
-            var raw = $.ajax({ 'url': T.urlFor(name), 'async': false }).responseText;
-            T.store(name, raw);
-        }
-    },
-    isCached: function(name) {
-        return !!T.cached[name];
-    },
-    store: function(name, raw) {
-        T.raw[name] = raw;
-        T.cached[name] = Handlebars.compile(raw);
-    },
-    urlFor: function(name) {
-        //return "/resources/templates/"+ name + ".handlebars";
-        if (countlyGlobal.path && countlyGlobal.path.length && name.indexOf(countlyGlobal.path) !== 0) {
-            name = countlyGlobal.path + name;
-        }
-        return name + "?" + countlyGlobal.countlyVersion;
-    }
 });
 
 //redefine contains selector for jquery to be case insensitive
