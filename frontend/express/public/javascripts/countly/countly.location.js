@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyLocation, CountlyHelpers, countlySession, google, _, countlyGlobal, Backbone, jQuery, $*/
+/* global countlyCommon, countlyLocation, CountlyHelpers, countlySession, google, _, countlyGlobal, Backbone, jQuery, $, T*/
 (function() {
 
     // Private Properties
@@ -18,11 +18,11 @@
         _countryMap = {};
 
     // Load local country names
-    $.get('localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function(data) {
+    T.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function(data) {
         _countryMap = data;
     });
 
-    $.get('localization/countries/en/region.json', function(data) {
+    T.get('/localization/countries/en/region.json', function(data) {
         _regionMap = data;
     });
 
@@ -174,7 +174,7 @@
 
     countlyLocation.changeLanguage = function() {
         // Load local country names
-        return $.get('localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function(data) {
+        return T.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function(data) {
             _countryMap = data;
         });
     };

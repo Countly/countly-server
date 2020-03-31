@@ -1,4 +1,4 @@
-/*globals $,store,countlyGlobal,_,countlyVersionHistoryManager,Handlebars*/
+/*globals $,store,countlyGlobal,_,countlyVersionHistoryManager,T*/
 $(document).ready(function() {
     whatsNewPopup();
 });
@@ -109,9 +109,9 @@ function whatsNewPopup() {
                     };
 
                     if (!displayParams.disabled) {
-                        $.when($.get(countlyGlobal.path + '/onboarding/templates/whatsnew-popup.html', function(popupHTML) {
+                        $.when(T.render('/onboarding/templates/whatsnew-popup.html', function(popupHTML) {
 
-                            popupTemplate = Handlebars.compile(popupHTML);
+                            popupTemplate = popupHTML;
                             popupTemplate = popupTemplate(popupData);
 
                             // Only show the popup on load for the first time

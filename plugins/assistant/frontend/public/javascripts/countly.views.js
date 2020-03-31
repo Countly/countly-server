@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyGlobal, countlyAssistant, Handlebars, store, Countly, CountlyHelpers, AssistantView, app, $, jQuery*/
+/*global countlyCommon, countlyAssistant, store, Countly, CountlyHelpers, AssistantView, app, $, jQuery, T*/
 window.AssistantView = {
     initialize: function(isRefresh) {
         if ($("#top-bar").find("#assistant-menu").length === 0) {
@@ -16,18 +16,11 @@ window.AssistantView = {
         }
 
         var self = this;
-        if (this.template) {
-            return $.when(countlyAssistant.initialize(isRefresh)).then(function() {
-                self.renderCommon(false);
-            });
-        }
-        else {
-            return $.when($.get(countlyGlobal.path + '/assistant/templates/panel.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyAssistant.initialize()).then(function() {
-                self.renderCommon(false);
-            });
-        }
+        return $.when(T.render('/assistant/templates/panel.html', function(src) {
+            self.template = src;
+        }), countlyAssistant.initialize(isRefresh)).then(function() {
+            self.renderCommon(false);
+        });
     },
     renderCommon: function(isRefresh) {
         var notificationButtonID = "#notification-icon";

@@ -1,19 +1,14 @@
-/*global countlyView,countlyDeviceDetails,countlyAppUsers,countlyDevice,$,countlyConsentManager,countlyGlobal,countlyCommon,moment,CountlyHelpers,jQuery,app,ConsentManagementView,Handlebars,Backbone,countlyUserdata */
+/*global countlyView,countlyDeviceDetails,countlyAppUsers,countlyDevice,$,countlyConsentManager,countlyGlobal,countlyCommon,moment,CountlyHelpers,jQuery,app,ConsentManagementView,T,Backbone,countlyUserdata */
 window.ConsentManagementView = countlyView.extend({
     curSegment: "",
     initialize: function() {},
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlyConsentManager.initialize()).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when(
-                $.get(countlyGlobal.path + '/compliance-hub/templates/compliance.html', function(src) {
-                    self.template = Handlebars.compile(src);
-                }),
-                countlyConsentManager.initialize()).then(function() {});
-        }
+        var self = this;
+        return $.when(
+            T.render('/compliance-hub/templates/compliance.html', function(src) {
+                self.template = src;
+            }),
+            countlyConsentManager.initialize()).then(function() {});
     },
     getExportAPI: function(tableID) {
         var requestPath, apiQueryData;

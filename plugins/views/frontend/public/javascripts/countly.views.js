@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -16,8 +16,8 @@ window.ViewsView = countlyView.extend({
     loaded: false,
     beforeRender: function() {
         var self = this;
-        return $.when($.get(countlyGlobal.path + '/views/templates/views.html', function(src) {
-            self.template = Handlebars.compile(src);
+        return $.when(T.render('/views/templates/views.html', function(src) {
+            self.template = src;
         }), countlyViews.initialize()).then(function() {});
     },
     getProperties: function() {
@@ -589,8 +589,8 @@ window.ViewsView = countlyView.extend({
 window.ViewManageView = countlyView.extend({
     beforeRender: function() {
         var self = this;
-        return $.when($.get(countlyGlobal.path + '/views/templates/manageViews.html', function(src) {
-            self.template = Handlebars.compile(src);
+        return $.when(T.render('/views/templates/manageViews.html', function(src) {
+            self.template = src;
         }), countlyViews.initialize()).then(function() {});
     },
     updatedFields: function() {
@@ -816,8 +816,8 @@ window.ActionMapView = countlyView.extend({
     baseBlur: 1.6,
     beforeRender: function() {
         var self = this;
-        return $.when($.get(countlyGlobal.path + '/views/templates/actionmap.html', function(src) {
-            self.template = Handlebars.compile(src);
+        return $.when(T.render('/views/templates/actionmap.html', function(src) {
+            self.template = src;
         }), countlyViews.loadActionsData(this.view)).then(function() {});
     },
     getData: function(data) {
@@ -1182,8 +1182,8 @@ function initializeViewsWidget() {
     }
 
     $.when(
-        $.get(countlyGlobal.path + '/views/templates/widget.html', function(src) {
-            viewsWidgetTemplate = Handlebars.compile(src);
+        T.render('/views/templates/widget.html', function(src) {
+            viewsWidgetTemplate = src;
         })
     ).then(function() {
 
