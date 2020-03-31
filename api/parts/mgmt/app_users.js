@@ -387,13 +387,26 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             }
             //merge custom user data
             else if (typeof oldAppUser[i] === "object" && oldAppUser[i]) {
-                if (typeof newAppUserP[i] === "undefined") {
-                    newAppUserP[i] = {};
+                if (Array.isArray(oldAppUser[i])) {
+                    if (!Array.isArray(newAppUserP[i])) {
+                        newAppUserP[i] = [];
+                    }
+                    for (let j = 0; j < oldAppUser[i].length; j++) {
+                        //set properties that new user does not have
+                        if (newAppUserP[i].indexOf(oldAppUser[i][j]) === -1) {
+                            newAppUserP[i].push(oldAppUser[i][j]);
+                        }
+                    }
                 }
-                for (var j in oldAppUser[i]) {
-                    //set properties that new user does not have
-                    if (typeof newAppUserP[i][j] === "undefined") {
-                        newAppUserP[i][j] = oldAppUser[i][j];
+                else {
+                    if (typeof newAppUserP[i] === "undefined") {
+                        newAppUserP[i] = {};
+                    }
+                    for (let j in oldAppUser[i]) {
+                        //set properties that new user does not have
+                        if (typeof newAppUserP[i][j] === "undefined") {
+                            newAppUserP[i][j] = oldAppUser[i][j];
+                        }
                     }
                 }
             }
