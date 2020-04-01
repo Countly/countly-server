@@ -232,11 +232,11 @@ countly_mark_version (){
     countly_root ;
     if [ "$1" == "fs" ]
     then
-        UPGRADE=$(nodejs "$DIR/../scripts/mark_version.js" fs "$2" "$DIR"/../../countly_marked_version.json);
+        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" fs "$2");
         echo "$UPGRADE";
     elif [ "$1" == "db" ]
     then
-        UPGRADE=$(nodejs "$DIR/../scripts/mark_version.js" db "$2");
+        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" db "$2");
         echo "$UPGRADE";
     elif [ "$1" == "help" ]
     then
