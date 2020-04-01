@@ -1,18 +1,13 @@
-/*globals jQuery,$,CountlyHelpers,UpdatesView,countlyGlobal,app,countlyView,Handlebars,countlyUpdates */
+/*globals jQuery,$,CountlyHelpers,UpdatesView,countlyGlobal,app,countlyView,T,countlyUpdates */
 window.UpdatesView = countlyView.extend({
     initialize: function() {
 
     },
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlyUpdates.initialize()).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/updates/templates/updates.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyUpdates.initialize()).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/updates/templates/updates.html', function(src) {
+            self.template = src;
+        }), countlyUpdates.initialize()).then(function() {});
     },
     renderCommon: function(isRefresh) {
         this.templateData = {

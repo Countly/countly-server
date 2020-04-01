@@ -1,4 +1,4 @@
-/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $*/
+/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -104,14 +104,10 @@ var countlyView = Backbone.View.extend({
     * @instance
     * @example
     *beforeRender: function() {
-    *    if(this.template)
-    *       return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
-    *   else{
-    *       var self = this;
-    *       return $.when($.get(countlyGlobal["path"]+'/density/templates/density.html', function(src){
-    *           self.template = Handlebars.compile(src);
-    *       }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
-    *   }
+    *   var self = this;
+    *   return $.when(T.render('/density/templates/density.html', function(src){
+    *       self.template = src;
+    *   }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
     *}
     */
     beforeRender: function() {
@@ -167,7 +163,13 @@ var countlyView = Backbone.View.extend({
                 }
                 else if ((XMLHttpRequest && typeof XMLHttpRequest.status === "undefined") || errorThrown) {
                     // eslint-disable-next-line no-console
-                    console.error("Unknow Error: " + (XMLHttpRequest || XMLHttpRequest.responseText) + "\n" + textStatus + "\n" + errorThrown);
+                    console.error("Unknow Error: ");
+                    if (XMLHttpRequest) {
+                        // eslint-disable-next-line no-console
+                        console.log(XMLHttpRequest.my_set_url + " with " + JSON.stringify(XMLHttpRequest.my_set_data) + "\n" + (XMLHttpRequest.responseText) + "\n");
+                    }
+                    // eslint-disable-next-line no-console
+                    console.error(textStatus + "\n" + errorThrown);
                 }
             })
                 .always(function() {
@@ -473,15 +475,10 @@ window.countlyManagementView = countlyView.extend({
     },
 
     beforeRender: function() {
-        if (this.template) {
-            return $.when();
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + this.templatePath, function(src) {
-                self.template = Handlebars.compile(src);
-            }));
-        }
+        var self = this;
+        return $.when(T.render(this.templatePath, function(src) {
+            self.template = src;
+        }));
     },
 
     render: function() { //backbone.js view render function
@@ -541,53 +538,6 @@ var CountlyDrop = Drop.createContext({
 
 var initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() { });
-});
-
-var Template = function() {
-    this.cached = {};
-};
-var T = new Template();
-
-$.extend(Template.prototype, {
-    render: function(name, callback) {
-        if (T.isCached(name)) {
-            callback(T.cached[name]);
-        }
-        else {
-            $.get(T.urlFor(name), function(raw) {
-                T.store(name, raw);
-                T.render(name, callback);
-            });
-        }
-    },
-    renderSync: function(name, callback) {
-        if (!T.isCached(name)) {
-            T.fetch(name);
-        }
-        T.render(name, callback);
-    },
-    prefetch: function(name) {
-        $.get(T.urlFor(name), function(raw) {
-            T.store(name, raw);
-        });
-    },
-    fetch: function(name) {
-        // synchronous, for those times when you need it.
-        if (!T.isCached(name)) {
-            var raw = $.ajax({ 'url': T.urlFor(name), 'async': false }).responseText;
-            T.store(name, raw);
-        }
-    },
-    isCached: function(name) {
-        return !!T.cached[name];
-    },
-    store: function(name, raw) {
-        T.cached[name] = Handlebars.compile(raw);
-    },
-    urlFor: function(name) {
-        //return "/resources/templates/"+ name + ".handlebars";
-        return name + ".html";
-    }
 });
 
 //redefine contains selector for jquery to be case insensitive

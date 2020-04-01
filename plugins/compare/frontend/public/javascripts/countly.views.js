@@ -1,4 +1,4 @@
-/*global $, jQuery, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, Handlebars, CompareView, countlyEventCompare, countlyAppCompare, countlyEvent*/
+/*global $, jQuery, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, T, CompareView, countlyEventCompare, countlyAppCompare, countlyEvent*/
 window.CompareView = countlyView.extend({
     selectedMetric: null,
     selectedAlt: null,
@@ -23,8 +23,8 @@ window.CompareView = countlyView.extend({
         var self = this;
 
         return $.when(
-            $.get(countlyGlobal.path + '/compare/templates/compare.html', function(src) {
-                self.template = Handlebars.compile(src);
+            T.render('/compare/templates/compare.html', function(src) {
+                self.template = src;
             }),
             self.viewHelper.model.initialize(),
             self.viewHelper.beforeRender()

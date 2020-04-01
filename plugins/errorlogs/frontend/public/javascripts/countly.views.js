@@ -1,18 +1,13 @@
-/*globals countlyView,$,countlyErrorLogs,countlyGlobal,Handlebars,jQuery,countlyCommon,CountlyHelpers,app,ErrorLogsView */
+/*globals countlyView,$,countlyErrorLogs,countlyGlobal,T,jQuery,countlyCommon,CountlyHelpers,app,ErrorLogsView */
 window.ErrorLogsView = countlyView.extend({
     initialize: function() {
 
     },
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlyErrorLogs.initialize()).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/errorlogs/templates/logs.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyErrorLogs.initialize()).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/errorlogs/templates/logs.html', function(src) {
+            self.template = src;
+        }), countlyErrorLogs.initialize()).then(function() {});
     },
     renderCommon: function(isRefresh) {
         var data = countlyErrorLogs.getData();

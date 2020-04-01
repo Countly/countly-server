@@ -1,30 +1,24 @@
-/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $*/
+/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $, T*/
 window.DataMigrationView = countlyView.extend({
     //need to provide at least empty initialize function
     //to prevent using default template
     initialize: function() {},
     beforeRender: function() {
-        //then lets initialize our mode
-        if (this.template) {
-            return $.when(countlyDataMigration.initialize()).then(function() {});
-        }
-        else {
-            //else let's fetch our template and initialize our mode in paralel
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/data_migration/templates/default.html', function(src) {
-                //precompiled our template
-                self.template_src = src;
-                self.template = Handlebars.compile(src);
-            }), countlyDataMigration.initialize(), countlyDataMigration.loadExportList(), countlyDataMigration.loadImportList(),
-            $.get(countlyGlobal.path + '/data_migration/templates/export_drawer.html', function(src) {
-                self.export_drawer_template = Handlebars.compile(src);
-            }),
-            $.get(countlyGlobal.path + '/data_migration/templates/import_drawer.html', function(src) {
-                self.import_drawer_template = Handlebars.compile(src);
-            })
+        //else let's fetch our template and initialize our mode in paralel
+        var self = this;
+        return $.when(T.get('/data_migration/templates/default.html', function(src) {
+            //precompiled our template
+            self.template_src = src;
+            self.template = Handlebars.compile(src);
+        }), countlyDataMigration.initialize(), countlyDataMigration.loadExportList(), countlyDataMigration.loadImportList(),
+        T.render('/data_migration/templates/export_drawer.html', function(src) {
+            self.export_drawer_template = src;
+        }),
+        T.render('/data_migration/templates/import_drawer.html', function(src) {
+            self.import_drawer_template = src;
+        })
 
-            ).then(function() {});
-        }
+        ).then(function() {});
     },
     check_ext: function(file) {
         var ee = file.split('.');

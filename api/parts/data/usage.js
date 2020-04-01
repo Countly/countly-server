@@ -521,6 +521,8 @@ usage.getPredefinedMetrics = function(params, userProps) {
         common.processCarrier(params.qstring.metrics);
 
         if (params.qstring.metrics._os && params.qstring.metrics._os_version) {
+            params.qstring.metrics._os += "";
+            params.qstring.metrics._os_version += "";
             if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] && !params.qstring.metrics._os_version.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
                 params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
             }

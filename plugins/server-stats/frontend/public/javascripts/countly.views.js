@@ -1,11 +1,11 @@
-/*global $, jQuery, app, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, DataPointsView, countlyDataPoints, moment*/
+/*global $, jQuery, app, countlyView, countlyCommon, T, CountlyHelpers, DataPointsView, countlyDataPoints, moment*/
 
 window.DataPointsView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         self.date_range = this.getDateRange("current");
-        return $.when($.get(countlyGlobal.path + '/server-stats/templates/data-points.html', function(src) {
-            self.template = Handlebars.compile(src);
+        return $.when(T.render('/server-stats/templates/data-points.html', function(src) {
+            self.template = src;
         }), countlyDataPoints.initialize(), countlyDataPoints.punchCard(self.date_range)).then(function() {
             self.punchCardData = countlyDataPoints.getPunchCardData();
         });

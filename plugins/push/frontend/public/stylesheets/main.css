@@ -2055,3 +2055,9 @@ span.emoji-inner {
 .mgmt-plugins-row .help.error {
     color: #C43132;
 }
+
+.routename-messagingDashboardView .zoom {
+    margin: 15px 0 0 40%;
+    position: absolute;
+    z-index: 999;
+}

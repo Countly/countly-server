@@ -45,7 +45,7 @@ countly plugin upgrade push
 countly plugin upgrade attribution
 countly plugin upgrade web
 countly plugin enable active_users
-countly plugin enable performance-monitorin
+countly plugin enable performance-monitoring
 
 #install dependencies, process files and restart countly
 countly upgrade

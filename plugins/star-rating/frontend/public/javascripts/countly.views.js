@@ -1,4 +1,4 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, Handlebars, path1, addDrill, countlySegmentation*/
+/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
@@ -89,8 +89,9 @@ window.starView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         // will load template, platform and version, periodperiod's rating data
-        return $.when($.get(countlyGlobal.path + '/star-rating/templates/star.html'), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(), starRatingPlugin.requestFeedbackWidgetsData()).done(function(result) {
-            self.template = Handlebars.compile(result[0]);
+        return $.when(T.render('/star-rating/templates/star.html', function(src) {
+            self.template = src;
+        }), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(), starRatingPlugin.requestFeedbackWidgetsData()).done(function() {
             self.templateData.platform_version = starRatingPlugin.getPlatformVersion();
 
             self.templateData.rating = starRatingPlugin.getRatingInPeriod();

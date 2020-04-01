@@ -1,4 +1,4 @@
-/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
+/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, T, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
 window.DBViewerView = countlyView.extend({
     initialize: function() {
         this.dbviewer_selected_app = "all";
@@ -7,15 +7,10 @@ window.DBViewerView = countlyView.extend({
         this.selected_projection = (store.get('dbviewer_projection_values') ? store.get('dbviewer_projection_values') : "");
     },
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlyDBviewer.initialize(this.dbviewer_selected_app)).then(function() { });
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/dbviewer/templates/dbviewer.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function() { });
-        }
+        var self = this;
+        return $.when(T.render('/dbviewer/templates/dbviewer.html', function(src) {
+            self.template = src;
+        }), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function() { });
     },
     syntaxHighlight: function(json) {
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
