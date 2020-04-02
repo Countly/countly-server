@@ -3041,6 +3041,24 @@
         });
     };
 
+    /**
+     * Function to add breadcrumbs
+     * @param  {Array} breadcrumbs - Array of links with name and url
+     * @param  {DOMELement} el - This is the element to which the breadcrumb will be prepended to in the beginning
+     */
+    CountlyHelpers.initBreadcrumbs = function(breadcrumbs, el) {
+        var breadcrumbsEl = $("<div class='cly-breadcrumbs'><ul></ul></div>");
+        for (var i = 0; i < breadcrumbs.length; i++) {
+            var b = breadcrumbs[i];
+            var li = "<li><a href='" + b.url + "'>" + b.name + "</a></li>";
+            $(breadcrumbsEl).find("ul").append(li);
+        }
+
+        el = el ? $(el) : $("#content .widget");
+
+        $(breadcrumbsEl).prependTo(el);
+    };
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");
