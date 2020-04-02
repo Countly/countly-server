@@ -43,7 +43,7 @@ var exported = {},
                 if (!types.change_id) {
                     types.change_id = {};
                 }
-                types.change_id.old_device_id = params.qstring.begin_session;
+                types.change_id.old_device_id = params.qstring.old_device_id;
                 types.change_id.device_id = params.qstring.device_id;
             }
             if (params.old_device_id) {
@@ -51,7 +51,7 @@ var exported = {},
                 if (!types.change_id) {
                     types.change_id = {};
                 }
-                types.change_id.old_device_id = 1;
+                types.change_id.old_device_id = params.old_device_id;
                 types.change_id.device_id = params.qstring.device_id;
                 q = JSON.parse(q);
                 q.old_device_id = params.old_device_id;
