@@ -2468,6 +2468,7 @@ function processUser(params, done, try_times) {
 
                 countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
                     //remove old device ID and retry request
+                    params.old_device_id = params.qstring.old_device_id; //Preserving old device id for logger
                     params.qstring.old_device_id = null;
                     restartFetchRequest(params, done, try_times, function() {
                         return resolve();
