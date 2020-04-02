@@ -4294,6 +4294,46 @@
                 }
             });
         };
+        /**
+        * Compare two versions
+        * @param {String} a, First version
+        * @param {String} b, Second version
+        * @returns {Number} returns -1, 0 or 1 by result of comparing
+        */
+        countlyCommon.compareVersions = function(a, b) {
+            var aParts = a.split('.');
+            var bParts = b.split('.');
+
+            for (var j = 0; j < aParts.length && j < bParts.length; j++) {
+                var aPartNum = parseInt(aParts[j], 10);
+                var bPartNum = parseInt(bParts[j], 10);
+
+                var cmp = Math.sign(aPartNum - bPartNum);
+
+                if (cmp !== 0) {
+                    return cmp;
+                }
+            }
+
+            if (aParts.length === bParts.length) {
+                return 0;
+            }
+
+            var longestArray = aParts;
+            if (bParts.length > longestArray.length) {
+                longestArray = bParts;
+            }
+
+            var continueIndex = Math.min(aParts.length, bParts.length);
+
+            for (var i = continueIndex; i < longestArray.length; i += 1) {
+                if (parseInt(longestArray[i], 10) > 0) {
+                    return longestArray === bParts ? -1 : +1;
+                }
+            }
+
+            return 0;
+        };
     };
 
     window.CommonConstructor = CommonConstructor;

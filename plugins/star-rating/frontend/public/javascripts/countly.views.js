@@ -106,9 +106,10 @@ window.starView = countlyView.extend({
     loadPlatformData: function() {
         var self = this;
         $(".platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="star.all-platforms">' + jQuery.i18n.map['star.all-platforms'] + '</div>');
-        for (var platform in this.templateData.platform_version) {
-            if (platform !== 'undefined') {
-                $(".platform-list").append('<div data-value="' + platform + '" class="platform-option item" data-localize="">' + platform + '</div>');
+        var platforms = Object.keys(this.templateData.platform_version).sort();
+        for (var platform = 0; platform < platforms.length; platform++) {
+            if (platforms[platform] !== 'undefined') {
+                $(".platform-list").append('<div data-value="' + platforms[platform] + '" class="platform-option item" data-localize="">' + platforms[platform] + '</div>');
             }
         }
         $(".platform-option").on("click", function() {
@@ -128,6 +129,7 @@ window.starView = countlyView.extend({
      */
     loadWidgetData: function() {
         $(".widget-list").html('<div data-value="All Widgets" class="widget-option item" data-localize="star.all-widgets">' + jQuery.i18n.map['star.all-widgets'] + '</div>');
+        this.templateData.widget.sort();
         for (var i = 0; i < this.templateData.widget.length; i++) {
             $(".widget-list").append('<div data-value="' + this.templateData.widget[i]._id + '" class="widget-option item" data-localize="">' + this.templateData.widget[i].popup_header_text + '</div>');
         }
@@ -368,14 +370,14 @@ window.starView = countlyView.extend({
 
                 if (bparts[p]) {
                     if (parseInt(aparts[p]) < parseInt(bparts[p])) {
-                        return -1;
+                        return 1;
                     }
                     else if (parseInt(aparts[p]) > parseInt(bparts[p])) {
-                        return 1;
+                        return -1;
                     }
                 }
                 else {
-                    return -1;
+                    return 1;
                 }
             }
             return 0;

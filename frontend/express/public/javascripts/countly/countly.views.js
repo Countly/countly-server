@@ -1634,6 +1634,7 @@ window.AppVersionView = countlyView.extend({
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appVersionData.chartData,
+                "aaSorting": [[ 0, "desc" ]],
                 "aoColumns": [
                     {
                         "mData": "app_versions",

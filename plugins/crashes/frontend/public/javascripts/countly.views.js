@@ -470,8 +470,10 @@ window.CrashesView = countlyView.extend({
 
         var versionItems = Object.keys(crashData.crashes.app_version).map(function(version) {
             return {name: countlyCrashes.getVersionName(version), value: version};
+        }).sort(function(a, b) {
+            return countlyCommon.compareVersions(b.name, a.name);
         });
-        var osItems = Object.keys(crashData.crashes.os).map(function(os) {
+        var osItems = Object.keys(crashData.crashes.os).sort().map(function(os) {
             return {name: os, value: os};
         });
         var fatalItems = ["fatal", "nonfatal"].map(function(fatality) {
