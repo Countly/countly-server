@@ -4,7 +4,7 @@ var exported = {},
 
 (function() {
     var processSDKRequest = function(params) {
-        if (!params.retry_request && !params.log_processed) {
+        if (params.logging_is_allowed) {
             params.log_processed = true;
             var now = Math.round(new Date().getTime() / 1000);
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).timestamp;
@@ -43,8 +43,19 @@ var exported = {},
                 if (!types.change_id) {
                     types.change_id = {};
                 }
-                types.change_id.old_device_id = params.qstring.begin_session;
+                types.change_id.old_device_id = params.qstring.old_device_id;
                 types.change_id.device_id = params.qstring.device_id;
+            }
+            if (params.old_device_id) {
+                //Set for logging by the FETCH API
+                if (!types.change_id) {
+                    types.change_id = {};
+                }
+                types.change_id.old_device_id = params.old_device_id;
+                types.change_id.device_id = params.qstring.device_id;
+                q = JSON.parse(q);
+                q.old_device_id = params.old_device_id;
+                q = JSON.stringify(q);
             }
             if (params.qstring.begin_session) {
                 if (!types.session) {
@@ -222,16 +233,19 @@ var exported = {},
     };
     //write api call
     plugins.register("/sdk", function(ob) {
+        ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
         processSDKRequest(ob.params);
     });
 
     //logging fetch api call
     plugins.register("/o/sdk/log", function(ob) {
+        ob.params.logging_is_allowed = !ob.params.log_processed;
         processSDKRequest(ob.params);
     });
 
     //write api call
     plugins.register("/sdk/cancel", function(ob) {
+        ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
         var params = ob.params;
         if (params.app) {
             processSDKRequest(params);
