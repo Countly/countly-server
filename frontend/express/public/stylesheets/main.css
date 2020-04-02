@@ -3569,7 +3569,7 @@ color:#E95C6C; transition:color 1s;
 
 .zoom { width: 102px; display: flex; margin: 0 auto; margin-top: -18px; }
 .zoom *:before { content: none; position: initial; }
-.zoom .zoom-button { user-select: none; cursor: pointer; padding: 4px 10px 3px 10px; font-size: 14px; font-family: "Ionicons"; position: relative !important; margin: 0; color: #666; background-color: rgba(0, 0, 0, 0.05); border: solid 1px rgba(0, 0, 0, 0.1); }
+.zoom .zoom-button { visibility: hidden; user-select: none; cursor: pointer; padding: 4px 10px 3px 10px; font-size: 14px; font-family: "Ionicons"; position: relative !important; margin: 0; color: #666; background-color: rgba(0, 0, 0, 0.05); border: solid 1px rgba(0, 0, 0, 0.1); }
 .zoom .zoom-button:hover { opacity: 0.7; }
 .zoom .zoom-out { border-radius: 100px 0 0 100px; text-align: right; padding-left: 12px; }
 .zoom .zoom-out:before { content: "\f209"; }
@@ -3578,7 +3578,7 @@ color:#E95C6C; transition:color 1s;
 .zoom .zoom-in { border-radius: 0 100px 100px 0; text-align: left; padding-right: 12px; }
 .zoom .zoom-in:before { content: "\f218"; }
 .graph.pannable { cursor: grab; }
-
+*:hover > .zoom .zoom-button { visibility: visible; }
 #dashboard-export-graph .zoom { margin-top: 18px; }
 #dashboard-purge-graph .zoom { margin-top: 18px; }
 
