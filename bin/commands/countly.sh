@@ -230,20 +230,31 @@ countly_upgrade (){
 
 countly_mark_version (){
     countly_root ;
-    if [ "$1" == "fs" ]
+    if [ "$1" == "fs" ] || [ "$1" == "db" ]
     then
-        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" fs "$2");
-        echo "$UPGRADE";
-    elif [ "$1" == "db" ]
-    then
-        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" db "$2");
+        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" write_"$1" "$2");
         echo "$UPGRADE";
     elif [ "$1" == "help" ]
     then
         echo "countly mark_version usage:"
-        echo "    countly mark_version fs <version> # automatically run all file system upgrade scripts between marked and current versions";
-        echo "    countly mark_version db <version> # automatically run all database upgrade scripts between marked and current versions";
-        echo "    countly mark_version help    # this command";
+        echo "    countly mark_version fs <version> # upgrades fs version";
+        echo "    countly mark_version db <version> # upgrades db version";
+        echo "    countly mark_version help         # this command";
+    fi
+}
+
+countly_compare_version (){
+    countly_root ;
+    if [ "$1" == "fs" ] || [ "$1" == "db" ]
+    then
+        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" compare_"$1" "$2");
+        echo "$UPGRADE";
+    elif [ "$1" == "help" ]
+    then
+        echo "countly compare_version usage:"
+        echo "    countly compare_version fs <version> # compares fs version";
+        echo "    countly compare_version db <version> # compares db version";
+        echo "    countly compare_version help         # this command";
     fi
 }
 
@@ -547,7 +558,7 @@ else
     echo "    countly test    # run countly tests";
     echo "    countly usage   # prints this out, but so as basically everything else does";
     echo "    countly mark_version # updates current version info (for db and fs, separately)"
-    echo "    countly is_newer # compares given version to installed version, returns 1 if installed is new (for db and fs, separately)"
+    echo "    countly compare_version # compares given version to installed version, returns 1 if installed is new (for db and fs, separately)"
     echo "    countly backupfiles path/to/backup # backups countly user/config files";
     echo "    countly backupdb path/to/backup # backups countly database";
     echo "    countly backup path/to/backup # backups countly db and user/config files";

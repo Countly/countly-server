@@ -1,15 +1,50 @@
 const fs = require('fs'),
-    pluginManager = require('../../plugins/pluginManager.js'),
-    countlyDb = pluginManager.dbConnection();
+    pluginManager = require('../../plugins/pluginManager.js');
+
+var countlyDb = null;
 
 const fsMarkedVersionPath = __dirname + "/../../countly_marked_version.json";
 
 function writeMsg(type, msg){
-    process.stdout.write(msg);
+    process.stdout.write(JSON.stringify(msg));
 }
 
-function doMarkFsVersion(targetVersion) {
+function compareVersions(a, b) {
+    var aParts = a.split('.');
+    var bParts = b.split('.');
 
+    for (var i = 0; i < aParts.length && i < bParts.length; i++) {
+        var aPartNum = parseInt(aParts[i], 10);
+        var bPartNum = parseInt(bParts[i], 10);
+
+        const cmp = Math.sign(aPartNum - bPartNum);
+
+        if (cmp !== 0) {
+            return cmp;
+        }
+    }
+
+    if (aParts.length === bParts.length) {
+        return 0;
+    }
+
+    let longestArray = aParts;
+    if (bParts.length > longestArray.length) {
+        longestArray = bParts;
+    }
+
+    const continueIndex = Math.min(aParts.length, bParts.length);
+
+    for (let i = continueIndex; i < longestArray.length; i += 1) {
+        if (parseInt(longestArray[i], 10) > 0) {
+            return longestArray === bParts ? -1 : +1;
+        }
+    }
+
+    return 0;
+}
+
+function readFsVersion(){
     var olderVersions = [];
     var lastVersion = "";
     //read form file(if exist);
@@ -34,6 +69,30 @@ function doMarkFsVersion(targetVersion) {
             writeMsg("error", error);
         }
     }
+    return {
+        olderVersions,
+        lastVersion
+    }
+}
+
+function compareFsVersion(targetVersion){
+    var fsVersion = readFsVersion();
+    var lastVersion = fsVersion.lastVersion;
+
+    if (lastVersion === "") {
+        writeMsg("info", -1);
+        return;
+    }
+    writeMsg("info", compareVersions(lastVersion, targetVersion));
+}
+
+function writeFsVersion(targetVersion) {
+
+    var fsVersion = readFsVersion();
+
+    var olderVersions = fsVersion.olderVersions;
+    var lastVersion = fsVersion.lastVersion;
+
     if (lastVersion === "" || lastVersion !== targetVersion) {
         olderVersions.push({
             version: targetVersion,
@@ -41,18 +100,18 @@ function doMarkFsVersion(targetVersion) {
         });
         try {
             fs.writeFileSync(fsMarkedVersionPath, JSON.stringify(olderVersions));
-            writeMsg("info", "1");
+            writeMsg("info", 1);
         }
         catch (error) {
             writeMsg("error", error);
         }
     }
     else {
-        writeMsg("info", "0");
+        writeMsg("info", 0);
     }
 }
 
-function doMarkDbVersion(targetVersion) {
+function readDbVersion(closeConn, cb) {
     countlyDb.collection('plugins').find({'_id':'version'}).toArray(function(err, versionDocs) {
         if (err) {
             writeMsg("error", err);
@@ -61,19 +120,32 @@ function doMarkDbVersion(targetVersion) {
         }
         var versionDoc = {};
         if (!versionDocs[0]) {
+            versionDoc.version = "";
             versionDoc.history = [];
         }
         else {
             versionDoc = versionDocs[0];
         }
-        var lastVersion = "",
-            olderVersions = versionDoc.history;
-
-        if (olderVersions.length > 0) {
-            lastVersion = olderVersions[olderVersions.length - 1].version
+        if (closeConn) {
+            countlyDb.close();
         }
+        cb(versionDoc);
+    });
+}
 
-        if (lastVersion === "" || lastVersion !== targetVersion) {
+function compareDbVersion(targetVersion){
+    readDbVersion(true, function(versionDoc){
+        if (versionDoc.version === "") {
+            writeMsg("info", -1);
+            return;
+        }
+        writeMsg("info", compareVersions(versionDoc.version, targetVersion));
+    });
+}
+
+function writeDbVersion(targetVersion) {
+    readDbVersion(false, function(versionDoc){
+        if (versionDoc.version === "" || versionDoc.version !== targetVersion) {
             versionDoc.history.push({
                 version: targetVersion,
                 updated: Date.now()
@@ -81,31 +153,41 @@ function doMarkDbVersion(targetVersion) {
             countlyDb.collection('plugins').update({'_id': 'version'}, {
                 $set: {
                     "history": versionDoc.history,
-                    "current": targetVersion
+                    "version": targetVersion
                 }
             }, {'upsert': true}, function() {
-                writeMsg("info", "1");
+                writeMsg("info", 1);
                 countlyDb.close();
             });
         }
         else {
-            writeMsg("info", "0");
+            writeMsg("info", 0);
             countlyDb.close();
         }
     });
 }
 
 var myArgs = process.argv.slice(2),
-    namespace = '',
+    command = '',
     targetVersion = '';
-    
+
 if (myArgs.length === 2) {
-    namespace = myArgs[0];
+    command = myArgs[0];
     targetVersion = myArgs[1];
-    if (namespace === 'fs') {
-        doMarkFsVersion(targetVersion);
-    }
-    else if (namespace === 'db') {
-        doMarkDbVersion(targetVersion);
+    switch(command) {
+    case 'compare_db':
+        countlyDb = pluginManager.dbConnection();
+        compareDbVersion(targetVersion);
+        break;
+    case 'compare_fs':
+        compareFsVersion(targetVersion);
+        break;
+    case 'write_db':
+        countlyDb = pluginManager.dbConnection();
+        writeDbVersion(targetVersion);
+        break;
+    case 'write_fs':
+        writeFsVersion(targetVersion);
+        break;
     }
 }
