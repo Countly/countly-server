@@ -3588,3 +3588,37 @@ color:#E95C6C; transition:color 1s;
 .routename-revenue .zoom { margin-top: -12px; }
 .routename-attribution .zoom { margin-top: -25px; }
 .routename-compliance .zoom { margin-top: -12px; }
+
+.cly-breadcrumbs {
+    padding: 0px 0px 20px 0px;
+}
+
+.cly-breadcrumbs ul {
+    padding: 0px;
+    list-style: none;
+}
+
+.cly-breadcrumbs ul li {
+    display: inline;
+    font-size: 18px;
+}
+
+.cly-breadcrumbs ul li+li:before {
+    padding: 8px;
+    content: "\f125";
+    font-family: 'Ionicons';
+    font-size: 8px;
+    vertical-align: middle;
+    color: #5f5f5f;
+}
+
+.cly-breadcrumbs ul li a {
+    text-decoration: none;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #5f5f5f;
+}
+
+.cly-breadcrumbs ul li a:hover {
+    text-decoration: underline;
+}
