@@ -274,7 +274,7 @@ countly_check(){
         elif [ "$1" == "after" ]
         then
             UPGRADE=$(countly mark_version "$3" "$4");
-            echo "$UPGRADE";
+            # echo "$UPGRADE";
         fi
     fi
 }
