@@ -258,6 +258,27 @@ countly_compare_version (){
     fi
 }
 
+countly_check(){
+
+    if [ "$2" == "upgrade" ]
+    then
+        if [ "$1" == "before" ]
+        then
+            VERSION_DIFF=$(countly compare_version "$3" "$4");
+            if [ "$VERSION_DIFF" == "-1" ]
+            then
+                echo "1" #"continue updating"
+            else
+                echo "0" #"up to date"
+            fi
+        elif [ "$1" == "after" ]
+        then
+            UPGRADE=$(countly mark_version "$3" "$4");
+            echo "$UPGRADE";
+        fi
+    fi
+}
+
 countly_version (){
     echo "$VERSION";
 }
