@@ -369,6 +369,12 @@ class Manager {
                 }
                 return job.schedule(job.scheduleObj, job.strict, next[1].getTime());
             }
+            else if (next && next.length && next[0].getTime() > Date.now()) {
+                return job.schedule(job.scheduleObj, job.strict, next[0].getTime());
+            }
+            else {
+                throw new Error('Later returned bad schedule: ' + JSON.stringify(next) + ' for schedule ' + JSON.stringify(job.scheduleObj) + ' & next ' + nextFrom);
+            }
         }
         return Promise.resolve();
     }
