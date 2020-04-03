@@ -6273,24 +6273,22 @@ window.VersionHistoryView = countlyView.extend({
         //provide template data
         this.templateData = {"page-title": jQuery.i18n.map["version_history.page-title"]};
 
-        var tableData = countlyVersionHistoryManager.getData() || [];
-        if (!Array.isArray(tableData)) {
-            tableData = [];
-        }
-        if (tableData.length === 0) {
-            tableData.push({"version": countlyGlobal.countlyVersion, "updated": Date.now()});
-        }
-        else {
-            tableData[tableData.length - 1].version += (" " + jQuery.i18n.map["version_history.current-version"]);
-        }
+        var tableData = countlyVersionHistoryManager.getData(true) || {fs:[], db:[]};
 
-        var self = this;
-        if (!isRefresh) {
-            //set data
-            $(this.el).html(this.template(this.templateData));
+        function getTable(dataObj) {
 
-            this.dtable = $('#data-table').dataTable($.extend({"searching": false, "paging": false}, $.fn.dataTable.defaults, {
-                "aaData": tableData,
+            if (!Array.isArray(dataObj)) {
+                dataObj = [];
+            }
+            if (dataObj.length === 0) {
+                dataObj.push({"version": countlyGlobal.countlyVersion, "updated": Date.now()});
+            }
+            else {
+                dataObj[dataObj.length - 1].version += (" " + jQuery.i18n.map["version_history.current-version"]);
+            }
+
+            return {
+                "aaData": dataObj,
                 "fnRowCallback": function(nRow, aData) {
                     $(nRow).attr("data-id", aData._id);
                     //$(nRow).attr("data-name", aData.report_name || aData.name || '-');
@@ -6315,8 +6313,17 @@ window.VersionHistoryView = countlyView.extend({
                         "sClass": "break"
                     }
                 ]
-            }));
-            self.dtable.fnSort([ [1, 'desc'] ]);
+            }
+        }
+
+        if (!isRefresh) {
+            //set data
+            $(this.el).html(this.template(this.templateData));
+
+            this.dtableFs = $('#data-table-fs').dataTable($.extend({"searching": false, "paging": false}, $.fn.dataTable.defaults, getTable(tableData.fs)));
+            this.dtableFs.fnSort([ [1, 'desc'] ]);
+            this.dtableDb = $('#data-table-db').dataTable($.extend({"searching": false, "paging": false}, $.fn.dataTable.defaults, getTable(tableData.db)));
+            this.dtableDb.fnSort([ [1, 'desc'] ]);
         }
     }
 });
