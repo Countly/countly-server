@@ -17,6 +17,13 @@
     <script><%- javascript %></script>
 	<link rel="icon" type="image/png" href="<%- cdn %><%- countlyFavicon %>">
     <script type="text/javascript">
+        //no one should really need this
+        window.eval = function(){
+            console.log("eval not available");
+            window.Countly = window.Countly || {};
+            Countly.q = Countly.q || [];
+            Countly.q.push(['log_error', new Error("eval not available")]);
+        };
         window.paceOptions = {
             ajax: {
                 ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", ".intercom", "method=get_events", "display_loader=false"]

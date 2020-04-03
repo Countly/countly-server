@@ -18,7 +18,7 @@ if(unicodeMatches)for(var u=0;u<unicodeMatches.length;u++)value=value.replace(un
 $.i18n.map[name]=value}if("vars"==mode||"both"==mode)if(value=value.replace(/"/g,'\\"'),checkKeyNamespace(name),regPlaceHolder.test(value)){for(var parts=value.split(regPlaceHolder),first=!0,fnArgs="",usedArgs=[],p=0;p<parts.length;p++)!regPlaceHolder.test(parts[p])||0!=usedArgs.length&&-1!=usedArgs.indexOf(parts[p])||(first||(fnArgs+=","),fnArgs+=parts[p].replace(regRepPlaceHolder,"v$1"),usedArgs.push(parts[p]),first=!1)
 parsed+=name+"=function("+fnArgs+"){"
 var fnExpr='"'+value.replace(regRepPlaceHolder,'"+v$1+"')+'"'
-parsed+="return "+fnExpr+";};"}else parsed+=name+'="'+value+'";'}}eval(parsed)}function checkKeyNamespace(key){var regDot=/\./
+parsed+="return "+fnExpr+";};"}else parsed+=name+'="'+value+'";'}}/*eval(parsed)*/}function checkKeyNamespace(key){var regDot=/\./
 if(regDot.test(key))for(var fullname="",names=key.split(/\./),i=0;i<names.length;i++)i>0&&(fullname+="."),fullname+=names[i],eval("typeof "+fullname+' == "undefined"')&&eval(fullname+"={};")}function getFiles(e){return e&&e.constructor==Array?e:[e]}function unescapeUnicode(e){var a=[],r=parseInt(e.substr(2),16)
 r>=0&&r<Math.pow(2,16)&&a.push(r)
 for(var t="",n=0;n<a.length;++n)t+=String.fromCharCode(a[n])

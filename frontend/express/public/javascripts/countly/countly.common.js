@@ -217,9 +217,7 @@
         * @returns {string} decoded string
         */
         countlyCommon.decodeHtml = function(html) {
-            var txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
+            return (html + "").replace(/&amp;/g, '&');
         };
 
 
