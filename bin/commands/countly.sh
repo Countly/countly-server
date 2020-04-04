@@ -273,8 +273,14 @@ countly_check(){
             fi
         elif [ "$1" == "after" ]
         then
-            UPGRADE=$(countly mark_version "$3" "$4");
-            # echo "$UPGRADE";
+            countly mark_version "$3" "$4";
+        fi
+    elif [ "$2" == "install" ]
+    then
+        if [ "$1" == "after" ]
+        then
+            countly mark_version fs "$VERSION";
+            countly mark_version db "$VERSION";
         fi
     fi
 }
