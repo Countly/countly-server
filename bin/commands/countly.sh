@@ -233,7 +233,6 @@ countly_mark_version (){
     if [ "$1" == "fs" ] || [ "$1" == "db" ]
     then
         UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" write_"$1" "$2");
-        echo "$UPGRADE";
     elif [ "$1" == "help" ]
     then
         echo "countly mark_version usage:"

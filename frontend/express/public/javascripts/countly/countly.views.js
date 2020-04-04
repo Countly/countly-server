@@ -6271,7 +6271,10 @@ window.VersionHistoryView = countlyView.extend({
     },
     renderCommon: function(isRefresh) {
         //provide template data
-        this.templateData = {"page-title": jQuery.i18n.map["version_history.page-title"]};
+        this.templateData = {
+            "db-title": jQuery.i18n.map["version_history.page-title"] + " (DB)",
+            "fs-title": jQuery.i18n.map["version_history.page-title"] + " (FS)"
+        };
 
         var tableData = countlyVersionHistoryManager.getData(true) || {fs:[], db:[]};
 
