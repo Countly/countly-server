@@ -111,8 +111,8 @@ function writeFsVersion(targetVersion) {
     }
 }
 
-function readDbVersion(closeConn, cb) {
-    countlyDb.collection('plugins').find({'_id':'version'}).toArray(function(err, versionDocs) {
+function readDbVersion(closeConn, projection, cb) {
+    countlyDb.collection('plugins').find({'_id':'version'}, projection).toArray(function(err, versionDocs) {
         if (err) {
             writeMsg("error", err);
             countlyDb.close();
@@ -134,7 +134,7 @@ function readDbVersion(closeConn, cb) {
 }
 
 function compareDbVersion(targetVersion){
-    readDbVersion(true, function(versionDoc){
+    readDbVersion(true, {"version": 1}, function(versionDoc){
         if (versionDoc.version === "") {
             writeMsg("info", -1);
             return;
@@ -144,7 +144,7 @@ function compareDbVersion(targetVersion){
 }
 
 function writeDbVersion(targetVersion) {
-    readDbVersion(false, function(versionDoc){
+    readDbVersion(false, {"version": 1, 'history': 1, "_id": 1}, function(versionDoc){
         if (versionDoc.version === "" || versionDoc.version !== targetVersion) {
             versionDoc.history.push({
                 version: targetVersion,
