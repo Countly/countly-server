@@ -28,8 +28,6 @@ const templateProperties = {
 
 (function() {
 
-    plugins.internalEvents.push('[CLY]_populator');
-
     const createTemplate = function(ob) {
         const obParams = ob.params;
 
