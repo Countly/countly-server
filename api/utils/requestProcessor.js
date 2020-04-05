@@ -1912,8 +1912,8 @@ const processRequest = (params) => {
             case '/o/countly_version': {
                 validateUser(params, () => {
                     //load previos version info if exist
-                    loadFsVersionMarks(function(errFs, fsValues){
-                        loadDbVersionMarks(function(errDb, dbValues){
+                    loadFsVersionMarks(function(errFs, fsValues) {
+                        loadDbVersionMarks(function(errDb, dbValues) {
                             var response = {};
                             if (errFs) {
                                 response.fs = errFs;
@@ -1928,7 +1928,7 @@ const processRequest = (params) => {
                                 response.db = dbValues;
                             }
                             response.pkg = packageJson.version || "";
-                            var statusCode = (errFs && errDb && errPkg) ? 400 : 200;
+                            var statusCode = (errFs && errDb) ? 400 : 200;
                             common.returnMessage(params, statusCode, response);
                         });
                     });
@@ -2620,7 +2620,12 @@ const restartFetchRequest = (params, done, try_times, cb) => {
     validateAppForFetchAPI(params, done, try_times);
 };
 
-function loadFsVersionMarks(callback){
+/**
+ * Fetches version mark history (filesystem)
+ * @param {function} callback - callback when response is ready
+ * @returns {void} void
+ */
+function loadFsVersionMarks(callback) {
     fs.readFile(path.resolve(__dirname, "./../../countly_marked_version.json"), function(err, data) {
         if (err) {
             callback(err, []);
@@ -2641,8 +2646,13 @@ function loadFsVersionMarks(callback){
     });
 }
 
-function loadDbVersionMarks(callback){
-    common.db.collection('plugins').find({'_id':'version'}, {"history": 1}).toArray(function(err, versionDocs) {
+/**
+ * Fetches version mark history (database)
+ * @param {function} callback - callback when response is ready
+ * @returns {void} void
+ */
+function loadDbVersionMarks(callback) {
+    common.db.collection('plugins').find({'_id': 'version'}, {"history": 1}).toArray(function(err, versionDocs) {
         if (err) {
             console.log(err);
             callback(err, []);

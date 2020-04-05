@@ -2,7 +2,6 @@ const http = require('http');
 const cluster = require('cluster');
 const formidable = require('formidable');
 const os = require('os');
-const fs = require('fs');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
 const jobs = require('./parts/jobs');

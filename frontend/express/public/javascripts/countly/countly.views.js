@@ -6270,14 +6270,21 @@ window.VersionHistoryView = countlyView.extend({
         return $.when(countlyVersionHistoryManager.initialize()).then(function() {});
     },
     renderCommon: function(isRefresh) {
+
+        var tableData = countlyVersionHistoryManager.getData(true) || {fs: [], db: [], pkg: ""};
+
         //provide template data
         this.templateData = {
             "db-title": jQuery.i18n.map["version_history.page-title"] + " (DB)",
-            "fs-title": jQuery.i18n.map["version_history.page-title"] + " (FS)"
+            "fs-title": jQuery.i18n.map["version_history.page-title"] + " (FS)",
+            "package-version": jQuery.i18n.map["version_history.package-version"] + ": " + tableData.pkg
         };
 
-        var tableData = countlyVersionHistoryManager.getData(true) || {fs:[], db:[]};
-
+        /**
+         * Processes version history and returns a DataTable config
+         * @param {object} dataObj Version history array 
+         * @returns {object} DataTable configuration
+         */
         function getTable(dataObj) {
 
             if (!Array.isArray(dataObj)) {
@@ -6316,7 +6323,7 @@ window.VersionHistoryView = countlyView.extend({
                         "sClass": "break"
                     }
                 ]
-            }
+            };
         }
 
         if (!isRefresh) {
