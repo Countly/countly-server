@@ -1138,7 +1138,9 @@ var pluginManager = function pluginManager() {
             socketTimeoutMS: 999999999,
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            auto_reconnect: true
+            auto_reconnect: true,
+            w: 1,
+            readConcern: "available"
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
