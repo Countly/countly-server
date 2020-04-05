@@ -12,6 +12,7 @@ const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
+const packageJson = require('./../../package.json');
 const log = require('./log.js')('core:api');
 const fs = require('fs');
 var countlyFs = require('./countlyFs.js');
@@ -1926,10 +1927,11 @@ const processRequest = (params) => {
                             else {
                                 response.db = dbValues;
                             }
-                            var statusCode = (errFs && errDb) ? 400 : 200;
+                            response.pkg = packageJson.version || "";
+                            var statusCode = (errFs && errDb && errPkg) ? 400 : 200;
                             common.returnMessage(params, statusCode, response);
-                        })
-                    })
+                        });
+                    });
                 });
                 break;
             }
