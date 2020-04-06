@@ -231,6 +231,8 @@ table { border-collapse: collapse; }
 	#dashboard-graph,
     #dashboard-graph-secondary { font-family:Oswald; font-size:14px; margin:0 30px !important; }
     #dashboard-graph .legendLabel,.graph .legendLabel { font-family:Ubuntu !important; font-size:14px !important; }
+    
+    .usparkline, .dsparkline {display: none;}
 
     .graph-no-data { display:none; height:100%; position:relative; }
         .graph-no-data .inner { user-select:none; text-align: center; position: absolute; width: 400px; left: 50%; margin-left: -200px; height: 64px; margin-top: -40px; top: 50%;}
