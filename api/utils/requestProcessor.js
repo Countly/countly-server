@@ -2261,7 +2261,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 params: params,
                 app: app
             }, () => {
-
+                plugins.dispatch("/sdk/log", {params: params});
                 if (!params.cancelRequest) {
                     if (!params.app_user.uid) {
                         //first time we see this user, we need to id him with uid

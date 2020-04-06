@@ -232,7 +232,7 @@ var exported = {},
         }
     };
     //write api call
-    plugins.register("/sdk", function(ob) {
+    plugins.register("/sdk/log", function(ob) {
         ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
         processSDKRequest(ob.params);
     });
