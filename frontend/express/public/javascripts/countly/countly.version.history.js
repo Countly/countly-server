@@ -1,7 +1,7 @@
 /* global countlyCommon, jQuery */
 (function(countlyVersionHistoryManager, $) {
     //we will store our data here
-    var _data = [];
+    var _data = {};
     //Initializing model
     countlyVersionHistoryManager.initialize = function() {
         //returning promise
@@ -17,7 +17,10 @@
         });
     };
     //return data that we have
-    countlyVersionHistoryManager.getData = function() {
-        return _data;
+    countlyVersionHistoryManager.getData = function(detailed) {
+        if (detailed) {
+            return _data;
+        }
+        return _data.fs;
     };
 }(window.countlyVersionHistoryManager = window.countlyVersionHistoryManager || {}, jQuery));

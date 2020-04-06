@@ -12,6 +12,7 @@ const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
+const packageJson = require('./../../package.json');
 const log = require('./log.js')('core:api');
 const fs = require('fs');
 var countlyFs = require('./countlyFs.js');
@@ -1911,23 +1912,25 @@ const processRequest = (params) => {
             case '/o/countly_version': {
                 validateUser(params, () => {
                     //load previos version info if exist
-                    fs.readFile(path.resolve(__dirname, "./../../countly_marked_version.json"), function(err, data) {
-                        if (err) {
-                            common.returnMessage(params, 200, []);
-                        }
-                        else {
-                            var olderVersions = [];
-                            try {
-                                olderVersions = JSON.parse(data);
+                    loadFsVersionMarks(function(errFs, fsValues) {
+                        loadDbVersionMarks(function(errDb, dbValues) {
+                            var response = {};
+                            if (errFs) {
+                                response.fs = errFs;
                             }
-                            catch (SyntaxError) { //unable to parse file
-                                console.log(SyntaxError);
-                                common.returnMessage(params, 400, "Error during reading version history");
+                            else {
+                                response.fs = fsValues;
                             }
-                            if (Array.isArray(olderVersions)) {
-                                common.returnMessage(params, 200, olderVersions);
+                            if (errDb) {
+                                response.db = errDb;
                             }
-                        }
+                            else {
+                                response.db = dbValues;
+                            }
+                            response.pkg = packageJson.version || "";
+                            var statusCode = (errFs && errDb) ? 400 : 200;
+                            common.returnMessage(params, statusCode, response);
+                        });
                     });
                 });
                 break;
@@ -2617,6 +2620,52 @@ const restartFetchRequest = (params, done, try_times, cb) => {
     //retry request
     validateAppForFetchAPI(params, done, try_times);
 };
+
+/**
+ * Fetches version mark history (filesystem)
+ * @param {function} callback - callback when response is ready
+ * @returns {void} void
+ */
+function loadFsVersionMarks(callback) {
+    fs.readFile(path.resolve(__dirname, "./../../countly_marked_version.json"), function(err, data) {
+        if (err) {
+            callback(err, []);
+        }
+        else {
+            var olderVersions = [];
+            try {
+                olderVersions = JSON.parse(data);
+            }
+            catch (parseErr) { //unable to parse file
+                console.log(parseErr);
+                callback(parseErr, []);
+            }
+            if (Array.isArray(olderVersions)) {
+                callback(null, olderVersions);
+            }
+        }
+    });
+}
+
+/**
+ * Fetches version mark history (database)
+ * @param {function} callback - callback when response is ready
+ * @returns {void} void
+ */
+function loadDbVersionMarks(callback) {
+    common.db.collection('plugins').find({'_id': 'version'}, {"history": 1}).toArray(function(err, versionDocs) {
+        if (err) {
+            console.log(err);
+            callback(err, []);
+            return;
+        }
+        var history = [];
+        if (versionDocs[0] && versionDocs[0].history) {
+            history = versionDocs[0].history;
+        }
+        callback(null, history);
+    });
+}
 
 /** @lends module:api/utils/requestProcessor */
 module.exports = {processRequest: processRequest};

@@ -2,14 +2,12 @@ const http = require('http');
 const cluster = require('cluster');
 const formidable = require('formidable');
 const os = require('os');
-const fs = require('fs');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
 const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
-const versionInfo = require('../frontend/express/version.info');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 
@@ -24,46 +22,6 @@ if (cluster.isMaster) {
     t.push("master");
     t.push("node");
     t.push(process.argv[1]);
-    //save current version in file
-    if (versionInfo && versionInfo.version) {
-        var olderVersions = [];
-        var currentVersion = versionInfo.version;
-        var lastVersion = "";
-        //read form file(if exist);
-        if (fs.existsSync(__dirname + "/../countly_marked_version.json")) {
-            try {
-                let data = fs.readFileSync(__dirname + "/../countly_marked_version.json");
-                try {
-                    olderVersions = JSON.parse(data);
-                }
-                catch (SyntaxError) { //unable to parse file
-                    log.e(SyntaxError);
-                }
-                if (Array.isArray(olderVersions)) {
-                    lastVersion = olderVersions[olderVersions.length - 1].version;
-                }
-                else {
-                    olderVersions = [];
-                }
-
-            }
-            catch (error) {
-                log.e(error);
-            }
-        }
-        if (lastVersion === "" || lastVersion !== currentVersion) {
-            olderVersions.push({
-                version: currentVersion,
-                updated: Date.now()
-            });
-            try {
-                fs.writeFileSync(__dirname + "/../countly_marked_version.json", JSON.stringify(olderVersions));
-            }
-            catch (error) {
-                log.e(error);
-            }
-        }
-    }
 }
 else {
     t.push("worker");

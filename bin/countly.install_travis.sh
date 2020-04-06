@@ -121,5 +121,8 @@ bash "$DIR/scripts/countly.install.plugins.sh"
 #compile scripts for production
 cd "$DIR" && grunt dist-all
 
+# after install call
+countly check after install
+
 #finally start countly api and dashboard
 countly start
