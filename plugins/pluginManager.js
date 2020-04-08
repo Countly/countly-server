@@ -32,6 +32,7 @@ var pluginManager = function pluginManager() {
     var configsOnchanges = {};
     var excludeFromUI = {plugins: true};
     var finishedSyncing = true;
+    var expireList = [];
 
     /**
      *  Registered app types
@@ -124,6 +125,22 @@ var pluginManager = function pluginManager() {
             configsOnchanges[namespace] = onchange;
         }
     };
+
+    /**
+     * Add collection to expire list
+     * @param {string} collection - collection name
+     **/
+    this.addCollectionToExpireList = function(collection) {
+        this.expireList.push(collection);
+    };
+
+    /**
+     * Get expire list array
+     * @returns {array} expireList - expireList array that created from plugins
+     **/
+    this.getExpireList = function() {
+        return this.expireList;
+    }
 
     /**
     * Set user level default configurations

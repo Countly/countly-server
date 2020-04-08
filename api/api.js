@@ -101,7 +101,8 @@ plugins.setConfigs("api", {
     metric_changes: true,
     offline_mode: false,
     reports_regenerate_interval: 3600,
-    send_test_email: ""
+    send_test_email: "",
+    data_retention_period: 0
 });
 
 /**
