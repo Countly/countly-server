@@ -25,7 +25,8 @@ class AppExpireJob extends job.Job {
          * @param {object} callback - when procssing finished
          **/
         function clearExpiredData(app, callback) {
-            const EXPIRE_AFTER = parseInt(plugins.getConfig("api", app.plugins, true).data_retention_period);
+            // convert day value to second
+            const EXPIRE_AFTER = parseInt(plugins.getConfig("api", app.plugins, true).data_retention_period) * 86400;
             const INDEX_NAME = "cd_1";
 
             let collections = [];
