@@ -3,7 +3,7 @@
 const job = require('../parts/jobs/job.js'),
     async = require('async'),
     plugins = require('../../plugins/pluginManager.js'),
-    log = require('../utils/log.js')('job:apiExpire'),
+    log = require('../utils/log.js')('job:appExpire'),
     crypto = require('crypto');
 
 
