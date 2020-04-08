@@ -131,7 +131,7 @@ var pluginManager = function pluginManager() {
      * @param {string} collection - collection name
      **/
     this.addCollectionToExpireList = function(collection) {
-        this.expireList.push(collection);
+        expireList.push(collection);
     };
 
     /**
@@ -139,8 +139,8 @@ var pluginManager = function pluginManager() {
      * @returns {array} expireList - expireList array that created from plugins
      **/
     this.getExpireList = function() {
-        return this.expireList;
-    }
+        return expireList;
+    };
 
     /**
     * Set user level default configurations
