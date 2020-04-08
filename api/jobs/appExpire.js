@@ -112,6 +112,8 @@ class AppExpireJob extends job.Job {
                 });
             }
             else {
+                database.close();
+                drillDatabase.close();
                 done(appsErr);
             }
         });
