@@ -3,7 +3,7 @@
 const job = require('../parts/jobs/job.js'),
     async = require('async'),
     plugins = require('../../plugins/pluginManager.js'),
-    log = require('../utils/log.js')('job:userMerge'),
+    log = require('../utils/log.js')('job:apiExpire'),
     crypto = require('crypto');
 
 
@@ -96,8 +96,6 @@ class AppExpireJob extends job.Job {
                     });
                 }
                 async.eachSeries(collections, eventIterator, function() {
-                    database.close();
-                    drillDatabase.close();
                     callback();
                 });
             });
@@ -107,6 +105,8 @@ class AppExpireJob extends job.Job {
             if (!appsErr && apps && apps.length) {
                 async.eachSeries(apps, clearExpiredData, function() {
                     log.d('Clearing data finished ...');
+                    database.close();
+                    drillDatabase.close();
                     done();
                 });
             }
