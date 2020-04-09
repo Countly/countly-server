@@ -566,6 +566,7 @@ window.starView = countlyView.extend({
             "mData": "count",
             "sType": "numeric",
             "sTitle": jQuery.i18n.map["star.number-of-ratings"],
+            "sWidth": "200px",
             "mRender": function(d) {
                 return countlyCommon.formatNumber(d);
             }
