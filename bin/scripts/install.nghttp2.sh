@@ -30,9 +30,9 @@ elif [ -n "$(command -v yum)" ]; then
     fi
 
     yum install -y git make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools
-    wget https://www.openssl.org/source/openssl-1.0.2h.tar.gz
-    tar -zxvf openssl-1.0.2h.tar.gz -C /usr/local/src
-    cd /usr/local/src/openssl-1.0.2h
+    wget https://www.openssl.org/source/openssl-1.1.1f.tar.gz
+    tar -zxvf openssl-1.1.1f.tar.gz -C /usr/local/src
+    cd /usr/local/src/openssl-1.1.1f
     ./config --prefix=/usr
     make depend
     make
