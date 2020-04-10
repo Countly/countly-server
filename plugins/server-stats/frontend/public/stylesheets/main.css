@@ -1,4 +1,8 @@
 #data-points-table .dataTables_wrapper { margin-top: -16px; }
+.widget-dp > .widget-content {
+    border-bottom: none;
+    padding-top: 30px
+}
 #dp-punch-card text {
     cursor: default;
 }
@@ -25,4 +29,7 @@
     text-transform: uppercase;
     font-size: 14px;
     color: #444
+}
+.widget-dp > .graph-description{
+    line-height: 17px;
 }
