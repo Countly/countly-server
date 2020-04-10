@@ -2940,35 +2940,41 @@ var AppRouter = Backbone.Router.extend({
                     $(this).next(".dataTables_filter").find("input").focus();
                 });
 
+                tableWrapper.find(".dataTables_length").show();
+                tableWrapper.find('#dataTables_length_input').bind('change.DT', function(/*e, _oSettings*/) {
+                    //store.set("iDisplayLength", $(this).val());
+                    if ($(this).val() && $(this).val().length > 0) {
+                        var pageSizeSettings = countlyCommon.getPersistentSettings().pageSizeSettings;
+                        if (!pageSizeSettings) {
+                            pageSizeSettings = [];
+                        }
+
+                        var tableId = oSettings.sTableId;
+
+                        if (!tableId) {
+                            return;
+                        }
+
+                        var previosTableStatus = pageSizeSettings.filter(function(item) {
+                            return (item.viewId === app.activeView.cid && item.selector === tableId);
+                        })[0];
+
+                        if (previosTableStatus) {
+                            previosTableStatus.pageSize = parseInt($(this).val());
+                        }
+                        else {
+                            pageSizeSettings.push({
+                                viewId: app.activeView.cid,
+                                selector: tableId,
+                                pageSize: parseInt($(this).val())
+                            });
+                        }
+
+                        countlyCommon.setPersistentSettings({ pageSizeSettings: pageSizeSettings });
+                    }
+                });
                 var exportDrop;
                 if (oSettings.oFeatures.bServerSide) {
-                    tableWrapper.find(".dataTables_length").show();
-                    tableWrapper.find('#dataTables_length_input').bind('change.DT', function(/*e, _oSettings*/) {
-                        //store.set("iDisplayLength", $(this).val());
-                        if ($(this).val() && $(this).val().length > 0) {
-                            var pageSizeSettings = countlyCommon.getPersistentSettings().pageSizeSettings;
-                            if (!pageSizeSettings) {
-                                pageSizeSettings = [];
-                            }
-
-                            var previosTableStatus = pageSizeSettings.filter(function(item) {
-                                return (item.viewId === app.activeView.cid && item.selector === oSettings.sTableId);
-                            })[0];
-
-                            if (previosTableStatus) {
-                                previosTableStatus.pageSize = parseInt($(this).val());
-                            }
-                            else {
-                                pageSizeSettings.push({
-                                    viewId: app.activeView.cid,
-                                    selector: oSettings.sTableId,
-                                    pageSize: parseInt($(this).val())
-                                });
-                            }
-
-                            countlyCommon.setPersistentSettings({ pageSizeSettings: pageSizeSettings });
-                        }
-                    });
                     //slowdown serverside filtering
                     tableWrapper.find('.dataTables_filter input').unbind();
                     var timeout = null;
@@ -3008,7 +3014,7 @@ var AppRouter = Backbone.Router.extend({
                         });
                     }
                     else {
-                        tableWrapper.find(".dataTables_length").hide();
+                        // tableWrapper.find(".dataTables_length").hide();
                         //create export dialog
                         var item = tableWrapper.find('.save-table-data')[0];
                         if (item) {
@@ -3029,7 +3035,7 @@ var AppRouter = Backbone.Router.extend({
                     }
                 }
                 else {
-                    tableWrapper.find(".dataTables_length").hide();
+                    // tableWrapper.find(".dataTables_length").hide();
                     //create export dialog
                     var item2 = tableWrapper.find('.save-table-data')[0];
                     if (item2) {
