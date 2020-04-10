@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -3041,6 +3041,24 @@
         });
     };
 
+    /**
+     * Function to add breadcrumbs
+     * @param  {Array} breadcrumbs - Array of links with name and url
+     * @param  {DOMELement} el - This is the element to which the breadcrumb will be prepended to in the beginning
+     */
+    CountlyHelpers.initBreadcrumbs = function(breadcrumbs, el) {
+        var breadcrumbsEl = $("<div class='cly-breadcrumbs'><ul></ul></div>");
+        for (var i = 0; i < breadcrumbs.length; i++) {
+            var b = breadcrumbs[i];
+            var li = "<li><a href='" + b.url + "'>" + b.name + "</a></li>";
+            $(breadcrumbsEl).find("ul").append(li);
+        }
+
+        el = el ? $(el) : $("#content .widget");
+
+        $(breadcrumbsEl).prependTo(el);
+    };
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");
@@ -3077,3 +3095,87 @@
     });
 
 }(window.CountlyHelpers = window.CountlyHelpers || {}));
+
+var Template = function() {
+    this.cached = {};
+    this.raw = {};
+};
+
+/**
+* Template loader for loading static resources over jquery
+* @name T
+* @global
+* @example <caption>Get Handlebar compiled HTML</caption>
+*$.when(T.render('/density/templates/density.html', function(src){
+*    self.template = src;
+*})).then(function () {});
+*
+* @example <caption>Get raw resources</caption>
+*$.when(T.get('/density/templates/density.html', function(src){
+*    self.template = Handlebar.compile(src);
+*})).then(function () {});
+*/
+var T = new Template();
+
+$.extend(Template.prototype, {
+    render: function(name, callback) {
+        if (T.isCached(name)) {
+            if (typeof callback === "function") {
+                callback(T.cached[name]);
+            }
+            return T.cached[name];
+        }
+        else {
+            return $.get(T.urlFor(name), function(raw) {
+                T.store(name, raw);
+                T.render(name, callback);
+            });
+        }
+    },
+    get: function(name, callback) {
+        if (T.isCached(name)) {
+            if (typeof callback === "function") {
+                callback(T.raw[name]);
+            }
+            return T.raw[name];
+        }
+        else {
+            return $.get(T.urlFor(name), function(raw) {
+                T.store(name, raw);
+                T.get(name, callback);
+            });
+        }
+    },
+    renderSync: function(name, callback) {
+        if (!T.isCached(name)) {
+            T.fetch(name);
+        }
+        T.render(name, callback);
+    },
+    prefetch: function(name) {
+        $.get(T.urlFor(name), function(raw) {
+            T.store(name, raw);
+        });
+    },
+    fetch: function(name) {
+        // synchronous, for those times when you need it.
+        if (!T.isCached(name)) {
+            var raw = $.ajax({ 'url': T.urlFor(name), 'async': false }).responseText;
+            T.store(name, raw);
+        }
+    },
+    isCached: function(name) {
+        return !!T.cached[name];
+    },
+    store: function(name, raw) {
+        T.raw[name] = raw;
+        T.cached[name] = Handlebars.compile(raw);
+    },
+    urlFor: function(name) {
+        //return "/resources/templates/"+ name + ".handlebars";
+        if (countlyGlobal.path && countlyGlobal.path.length && name.indexOf(countlyGlobal.path) !== 0) {
+            name = countlyGlobal.path + name;
+        }
+        return name + "?" + countlyGlobal.countlyVersion;
+    }
+});

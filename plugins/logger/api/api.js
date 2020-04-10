@@ -4,7 +4,7 @@ var exported = {},
 
 (function() {
     var processSDKRequest = function(params) {
-        if (!params.retry_request && !params.log_processed) {
+        if (params.logging_is_allowed) {
             params.log_processed = true;
             var now = Math.round(new Date().getTime() / 1000);
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).timestamp;
@@ -43,8 +43,19 @@ var exported = {},
                 if (!types.change_id) {
                     types.change_id = {};
                 }
-                types.change_id.old_device_id = params.qstring.begin_session;
+                types.change_id.old_device_id = params.qstring.old_device_id;
                 types.change_id.device_id = params.qstring.device_id;
+            }
+            if (params.old_device_id) {
+                //Set for logging by the FETCH API
+                if (!types.change_id) {
+                    types.change_id = {};
+                }
+                types.change_id.old_device_id = params.old_device_id;
+                types.change_id.device_id = params.qstring.device_id;
+                q = JSON.parse(q);
+                q.old_device_id = params.old_device_id;
+                q = JSON.stringify(q);
             }
             if (params.qstring.begin_session) {
                 if (!types.session) {
@@ -87,6 +98,9 @@ var exported = {},
                 catch (ex) {
                     problems.push("Could not parse consent");
                 }
+                if (!plugins.isPluginEnabled("compliance-hub")) {
+                    problems.push("Plugin that processes this information is not enabled: compliance-hub");
+                }
             }
             if (params.qstring.events) {
                 types.events = params.qstring.events;
@@ -111,6 +125,9 @@ var exported = {},
                 catch (ex) {
                     problems.push("Could not parse user_details");
                 }
+                if (!plugins.isPluginEnabled("users")) {
+                    problems.push("Plugin that processes this information is not enabled: users");
+                }
             }
             if (params.qstring.crash) {
                 types.crash = params.qstring.crash;
@@ -131,8 +148,42 @@ var exported = {},
                     if (!res._app_version) {
                         problems.push("Crash missing _app_version property");
                     }
-                    if (!res._os && params.app.type !== "web") {
+                    if (!res._os && !res._not_os_specific) {
                         problems.push("Crash missing _os property");
+                    }
+                    if (!plugins.isPluginEnabled("crashes")) {
+                        problems.push("Plugin that processes this information is not enabled: crashes");
+                    }
+                }
+            }
+
+            if (params.qstring.apm) {
+                types.apm = params.qstring.apm;
+                if (types.apm && typeof types.apm === "object") {
+                    types.apm = JSON.stringify(types.apm);
+                }
+                var apm;
+                try {
+                    apm = JSON.parse(types.apm);
+                }
+                catch (ex) {
+                    problems.push("Could not parse apm");
+                }
+                if (apm) {
+                    if (!(apm.type === "network" || apm.type === "device")) {
+                        problems.push("APM only supports trace types network or device");
+                    }
+                    if (!(apm.name && apm.name.length)) {
+                        problems.push("APM requires trace name");
+                    }
+                    if (!(typeof (apm.apm_metrics) === "object" && !Array.isArray(apm.apm_metrics))) {
+                        problems.push("APM requires apm_metrics object");
+                    }
+                    if (apm.apm_attr && !(typeof (apm.apm_attr) === "object" && !Array.isArray(apm.apm_attr))) {
+                        problems.push("APM requires apm_attr to be object if provided");
+                    }
+                    if (!plugins.isPluginEnabled("performance-monitoring")) {
+                        problems.push("Plugin that processes this information is not enabled: performance-monitoring");
                     }
                 }
             }
@@ -181,17 +232,20 @@ var exported = {},
         }
     };
     //write api call
-    plugins.register("/sdk", function(ob) {
+    plugins.register("/sdk/log", function(ob) {
+        ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
         processSDKRequest(ob.params);
     });
 
     //logging fetch api call
     plugins.register("/o/sdk/log", function(ob) {
+        ob.params.logging_is_allowed = !ob.params.log_processed;
         processSDKRequest(ob.params);
     });
 
     //write api call
     plugins.register("/sdk/cancel", function(ob) {
+        ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
         var params = ob.params;
         if (params.app) {
             processSDKRequest(params);

@@ -42,7 +42,7 @@
 				<h3 id="{{value.name}}-db-selector">{{value.name}}</h3>
 				<div>
 					<div id="dbviewer-collection-input-filter-wrapper">
-						<input type="text" autocomplete="nope" class="dbviewer-collection-filter-input" data-db="{{value.name}}" placeholder="Search for a collection">
+						<input type="text" readonly="readonly" onfocus="javascript: this.removeAttribute('readonly')" class="dbviewer-collection-filter-input" data-db="{{value.name}}" placeholder="Search for a collection">
 						<i class="dbviewer-collection-filter-input-icon fa fa-search"></i>
 					</div>
 					<ul class="dbviewer-collection-list-{{value.name}}">
@@ -105,7 +105,7 @@
 						<div id="dbviewer-projection-area">
 							<input type="text" id="dbviewer-projection" autocomplete="nope">
 						</div>
-						<p id="dbviewer-show-sort-wrapper"> 
+						<p id="dbviewer-show-sort-wrapper">
 							<label class="dbviewer-custom-checkbox-container">
 								<input id="dbviewer-show-sort" type="checkbox">
 								<span class="dbviewer-sort-checkbox fa fa-square-o check-green"></span>
@@ -116,7 +116,7 @@
 							<div class="dbviewer-sort-wrapper">
 								<input type="text" style="width: 75%;display: inline-block !important;" id="dbviewer-sort-select" autocomplete="nope">
 								<div class="dbviewer-sort-property" style="float:right;margin-top:-27px;">
-										<span data-localize="dbviewer.sorting"></span> 
+										<span data-localize="dbviewer.sorting"></span>
 										<span class="dbviewer-sort-type-select dbviewer-sort-active dbviewer-first-sort-item" id="dbviewer-sort-ascend" data-type="1" data-localize="dbviewer.ascending"></span>
 										<span class="dbviewer-sort-type-select" id="dbviewer-sort-descend" data-type="-1" data-localize="dbviewer.descending"></span>
 								</div>
@@ -174,7 +174,7 @@
 					<table class="jh-type-object jh-root" id="dbviewer-collections">
 					{{#eachOfArray data.collections}}
 					<tr>
-						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} 
+						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}}
 							<span class="document-detail-link-wrapper">
 								<span class="dbviewer-view-link" class="jh-type-string">
 									<a data-db="{{../db}}" data-collection="{{../collection}}" data-id="{{value._id}}" href="#/manage/db/{{../db}}/{{../collection}}/{{#clearObjectId value}}{{/clearObjectId}}" class="dbviewer-document-detail">

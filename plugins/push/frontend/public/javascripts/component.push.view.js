@@ -563,6 +563,10 @@ window.component('push.view', function(view) {
                 m('.form-group', [
                     m('h4', t('pu.po.compose.title')),
                     m('.comp-push-view-table', [
+                        ctrl.isView ? m('.comp-push-view-row', [
+                            m('.col-left', 'ID'),
+                            m('.col-right', ctrl.message._id())
+                        ]) : '',
                         m('.comp-push-view-row', [
                             m('.col-left', t('pu.po.tab3.type')),
                             m('.col-right', t('pu.po.tab3.type.' + ctrl.message.type()))

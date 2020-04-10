@@ -1138,7 +1138,9 @@ var pluginManager = function pluginManager() {
             socketTimeoutMS: 999999999,
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            auto_reconnect: true
+            auto_reconnect: true,
+            w: 1,
+            readConcern: "available"
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
@@ -1172,6 +1174,13 @@ var pluginManager = function pluginManager() {
         if (dbName.indexOf('mongodb://') !== 0) {
             dbName = 'mongodb://' + dbName;
         }
+        if (dbName.indexOf('?') === -1) {
+            dbName = dbName + "?retryWrites=false";
+        }
+        else {
+            dbName = dbName + "&retryWrites=false";
+        }
+
         var db_name = "countly";
         try {
             db_name = dbName.split("/").pop().split("?")[0];

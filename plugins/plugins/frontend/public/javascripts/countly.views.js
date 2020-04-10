@@ -1,18 +1,13 @@
-/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView */
+/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView,T */
 window.PluginsView = countlyView.extend({
     initialize: function() {
         this.filter = (store.get("countly_pluginsfilter")) ? store.get("countly_pluginsfilter") : "plugins-all";
     },
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlyPlugins.initialize()).then(function() { });
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/plugins/templates/plugins.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyPlugins.initialize()).then(function() { });
-        }
+        var self = this;
+        return $.when(T.render('/plugins/templates/plugins.html', function(src) {
+            self.template = src;
+        }), countlyPlugins.initialize()).then(function() { });
     },
     renderCommon: function(isRefresh) {
 
@@ -441,26 +436,16 @@ window.ConfigurationsView = countlyView.extend({
         });
     },
     beforeRender: function() {
-        if (this.template) {
-            if (this.userConfig) {
-                return $.when(countlyPlugins.initializeUserConfigs()).then(function() { });
-            }
-            else {
-                return $.when(countlyPlugins.initializeConfigs()).then(function() { });
-            }
+        var self = this;
+        if (this.userConfig) {
+            return $.when(T.render('/plugins/templates/configurations.html', function(src) {
+                self.template = src;
+            }), countlyPlugins.initializeUserConfigs()).then(function() { });
         }
         else {
-            var self = this;
-            if (this.userConfig) {
-                return $.when($.get(countlyGlobal.path + '/plugins/templates/configurations.html', function(src) {
-                    self.template = Handlebars.compile(src);
-                }), countlyPlugins.initializeUserConfigs()).then(function() { });
-            }
-            else {
-                return $.when($.get(countlyGlobal.path + '/plugins/templates/configurations.html', function(src) {
-                    self.template = Handlebars.compile(src);
-                }), countlyPlugins.initializeConfigs()).then(function() { });
-            }
+            return $.when(T.render('/plugins/templates/configurations.html', function(src) {
+                self.template = src;
+            }), countlyPlugins.initializeConfigs()).then(function() { });
         }
     },
     renderCommon: function(isRefresh) {
@@ -1394,7 +1379,7 @@ if (countlyGlobal.member.global_admin) {
     var showInAppManagment = {"api": {"safe": true, "send_test_email": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true}};
 
     if (countlyGlobal.plugins.indexOf("drill") !== -1) {
-        showInAppManagment.drill = {"big_list_limit": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
+        showInAppManagment.drill = {"big_list_limit": true, "record_big_list": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
     }
 
     var configManagementPromise = null;

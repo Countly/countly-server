@@ -1,4 +1,4 @@
-/*global countlyView, CountlyHelpers,countlyGlobal, app, Handlebars, Dropzone, countlyCommon, jQuery, $ */
+/*global countlyView, CountlyHelpers,countlyGlobal, app, T, Dropzone, countlyCommon, jQuery, $ */
 window.PluginUploadView = countlyView.extend({
 
     //need to provide at least empty initialize function
@@ -59,13 +59,13 @@ if (countlyGlobal.member.global_admin) {
 
     app.addPageScript("/manage/plugins", function() {
         $(document).ready(function() { //creates upload form
-            $.when($.get(countlyGlobal.path + '/plugin-upload/templates/drawer.html', function(src) {
+            $.when(T.render('/plugin-upload/templates/drawer.html', function(src) {
                 //create button
                 $(".widget .widget-header .left").after('<a style="float: right; margin-top: 6px;" class="icon-button green" id="show-plugin-upload" data-localize="plugin-upload.add-plugin">' + jQuery.i18n.map["plugin-upload.add-plugin"] + '</a>');
 
                 self.plugin_upload_drawer = CountlyHelpers.createDrawer({
                     id: "plugin-upload-widget-drawer",
-                    template: Handlebars.compile(src),
+                    template: src,
                     title: jQuery.i18n.map["plugin-upload.upload-title"],
                 });
 

@@ -130,6 +130,9 @@ fi
 #compile scripts for production
 cd "$DIR" && grunt dist-all
 
+# after install call
+countly check after install
+
 #finally start countly api and dashboard
 if [ "$INSIDE_DOCKER" != "1" ]
 then

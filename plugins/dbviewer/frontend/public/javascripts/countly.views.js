@@ -1,4 +1,4 @@
-/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
+/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, T, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
 window.DBViewerView = countlyView.extend({
     initialize: function() {
         this.dbviewer_selected_app = "all";
@@ -7,15 +7,10 @@ window.DBViewerView = countlyView.extend({
         this.selected_projection = (store.get('dbviewer_projection_values') ? store.get('dbviewer_projection_values') : "");
     },
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlyDBviewer.initialize(this.dbviewer_selected_app)).then(function() { });
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/dbviewer/templates/dbviewer.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function() { });
-        }
+        var self = this;
+        return $.when(T.render('/dbviewer/templates/dbviewer.html', function(src) {
+            self.template = src;
+        }), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function() { });
     },
     syntaxHighlight: function(json) {
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -87,7 +82,7 @@ window.DBViewerView = countlyView.extend({
                 $('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
             }
         }
-        // set height 
+        // set height
         if ($('#dbviewer').height() < (window.innerHeight - 150)) {
             $('#dbviewer').css({"height": (window.innerHeight - 150) + "px"});
             $('#accordion > div').css({"height": (window.innerHeight - 150) + "px"});
@@ -406,10 +401,10 @@ window.DBViewerView = countlyView.extend({
         var searchText = new RegExp(el.val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
             searchInside = el.parent().next().find(".searchable");
         searchInside.filter(function() {
-            return !(searchText.test($(this).text().toLowerCase()));
+            return !(searchText.test($(this).text().toLowerCase())) && !(searchText.test($(this).data('collection')));
         }).css('display', 'none');
         searchInside.filter(function() {
-            return searchText.test($(this).text().toLowerCase());
+            return searchText.test($(this).text().toLowerCase()) || (searchText.test($(this).data('collection')));
         }).css('display', 'block');
     },
     paginate: function(data) {
@@ -581,7 +576,7 @@ window.DBViewerView = countlyView.extend({
                 self.sort = "{}";
             }
         }
-        // set empty object both properties if different collection which on render progress 
+        // set empty object both properties if different collection which on render progress
         else {
             self.projection = "{}";
             self.sort = "{}";
@@ -698,7 +693,7 @@ window.DBViewerView = countlyView.extend({
             });
             // options array for sorting & projection inputs
             var options = [];
-            // if options are exist and rendering in same collection 
+            // if options are exist and rendering in same collection
             // load options from localStorage
             if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') === self.collection) && store.get('countly_collectionoptions')) {
                 options = JSON.parse(store.get('countly_collectionoptions'));
@@ -807,7 +802,7 @@ window.DBViewerView = countlyView.extend({
                 store.set('dbviewer_sort_value', $(this).data('value'));
             });
 
-            // fill inputs with projection and sort values if in the same collection 
+            // fill inputs with projection and sort values if in the same collection
             if (store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') === self.collection) {
                 if (typeof self.selected_projection !== "object" && self.selected_projection !== "") {
                     self.selected_projection.split(",").forEach(function(tag) {

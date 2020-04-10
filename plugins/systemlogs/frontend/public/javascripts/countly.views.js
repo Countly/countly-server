@@ -1,19 +1,14 @@
-/*global CountlyHelpers, countlySystemLogs, SystemLogsView, countlyAttribution, pathsToSectionNames, countlyCrashes, moment, countlyView, countlyCommon, countlyGlobal, Handlebars, app, $, jQuery*/
+/*global CountlyHelpers, countlySystemLogs, SystemLogsView, countlyAttribution, pathsToSectionNames, countlyCrashes, moment, countlyView, countlyCommon, countlyGlobal, T, app, $, jQuery*/
 
 window.SystemLogsView = countlyView.extend({
     initialize: function() {
 
     },
     beforeRender: function() {
-        if (this.template) {
-            return $.when(countlySystemLogs.initialize()).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/systemlogs/templates/logs.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlySystemLogs.initialize()).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/systemlogs/templates/logs.html', function(src) {
+            self.template = src;
+        }), countlySystemLogs.initialize()).then(function() {});
     },
     getExportAPI: function(tableID) {
         var query, requestPath, apiQueryData;

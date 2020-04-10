@@ -9,6 +9,7 @@
     app,
     $,
     _,
+    T
  */
 
 window.ReportingView = countlyView.extend({
@@ -36,12 +37,12 @@ window.ReportingView = countlyView.extend({
         else {
             var self = this;
             allAjaxCalls.push(
-                $.get(countlyGlobal.path + '/reports/templates/drawer.html', function(src) {
+                T.get('/reports/templates/drawer.html', function(src) {
                     src = (Handlebars.compile(src))({"email-placeholder": jQuery.i18n.map["reports.report-email"]});
                     Handlebars.registerPartial("reports-drawer-template", src);
                 }),
-                $.get(countlyGlobal.path + '/reports/templates/reports.html', function(src) {
-                    self.template = Handlebars.compile(src);
+                T.render('/reports/templates/reports.html', function(src) {
+                    self.template = src;
                 })
             );
             return $.when.apply(null, allAjaxCalls).then(function() {});
@@ -939,7 +940,7 @@ app.addReportsCallbacks("reports", {
         el = el || "body";
         var self = this;
         $.when(
-            $.get(countlyGlobal.path + '/reports/templates/drawer.html', function(src) {
+            T.get('/reports/templates/drawer.html', function(src) {
                 self.reportsDrawer = src;
             }),
             countlyReporting.initialize()

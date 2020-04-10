@@ -157,6 +157,9 @@ cd "$DIR/.." && grunt dist-all
 # disable transparent huge pages
 #countly thp
 
+# after install call
+countly check after install
+
 #finally start countly api and dashboard
 countly start
 

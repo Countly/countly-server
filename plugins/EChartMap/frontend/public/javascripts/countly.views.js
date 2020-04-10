@@ -5,7 +5,7 @@
     store,
     $,
     pinyinUtil,
-    Handlebars,
+    T,
     countlySession,
     countlyCity,
     countlyTotalUsers,
@@ -335,7 +335,7 @@ window.ChinaView = countlyView.extend({
     initialize: function() {
         this.curMap = "map-list-sessions";
         var self = this;
-        $.get(countlyGlobal.path + '/EChartMap/map/chinaCity.json', function(src) {
+        T.get('/EChartMap/map/chinaCity.json', function(src) {
             self.chinaCity = src;
             self.chinaCityAlphabet = {};
             for (var city in self.chinaCity) {
@@ -347,8 +347,8 @@ window.ChinaView = countlyView.extend({
             }
         });
         return $.when(
-            $.get(countlyGlobal.path + '/EChartMap/templates/index.html', function(src) {
-                self.template = Handlebars.compile(src);
+            T.render('/EChartMap/templates/index.html', function(src) {
+                self.template = src;
             })
         ).then(function() {
         });

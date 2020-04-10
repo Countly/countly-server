@@ -1,12 +1,12 @@
-/*global countlyPopulator, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, Handlebars, jQuery, PopulatorView, CountlyHelpers*/
+/*global countlyPopulator, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, T, jQuery, PopulatorView, CountlyHelpers*/
 window.PopulatorView = countlyView.extend({
     initialize: function() {
     },
     beforeRender: function() {
         if (!this.template) {
             var self = this;
-            return $.when($.get(countlyGlobal.path + '/populator/templates/populate.html', function(src) {
-                self.template = Handlebars.compile(src);
+            return $.when(T.render('/populator/templates/populate.html', function(src) {
+                self.template = src;
             })).then(function() {});
         }
     },

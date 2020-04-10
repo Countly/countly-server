@@ -1,4 +1,4 @@
-/*global $,countlyView,countlyGlobal,Handlebars,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
+/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
 
     initialize: function() {
@@ -9,8 +9,8 @@ window.todview = countlyView.extend({
         self.tod_type = "[CLY]_session";
         self.date_range = this.getDateRange('current');
         if (!this.timesOfDayData || !this.template) {
-            return $.when($.get(countlyGlobal.path + '/times-of-day/templates/timesofday.html', function(src) {
-                self.template = Handlebars.compile(src);
+            return $.when(T.render('/times-of-day/templates/timesofday.html', function(src) {
+                self.template = src;
             }), timesOfDayPlugin.fetchAllEvents(), timesOfDayPlugin.fetchTodData(self.tod_type, self.date_range)).then(function() {
                 self.timesOfDayData = timesOfDayPlugin.getTodData();
                 self.eventsList = timesOfDayPlugin.getEventsList();
@@ -317,8 +317,8 @@ function initializeTimesOfDayWidget() {
     ];
 
     $.when(
-        $.get(countlyGlobal.path + '/times-of-day/templates/widget.html', function(src) {
-            todWidgetTemplate = Handlebars.compile(src);
+        T.render('/times-of-day/templates/widget.html', function(src) {
+            todWidgetTemplate = src;
         })
     ).then(function() {
 

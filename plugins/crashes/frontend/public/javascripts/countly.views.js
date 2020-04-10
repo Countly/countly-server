@@ -1,4 +1,4 @@
-/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,Handlebars,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
+/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,T,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
 window.CrashesView = countlyView.extend({
     convertFilter: {
         "sg.crash": {prop: "_id", type: "string"},
@@ -55,15 +55,10 @@ window.CrashesView = countlyView.extend({
         this.selectedCrashes = {};
         this.selectedCrashesIds = [];
         countlySession.initialize();
-        if (this.template) {
-            return $.when(countlyCrashes.initialize()).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/crashes/templates/crashes.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyCrashes.initialize()).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/crashes/templates/crashes.html', function(src) {
+            self.template = src;
+        }), countlyCrashes.initialize()).then(function() {});
     },
     getExportAPI: function(tableID) {
         if (tableID === 'd-table-crashes') {
@@ -156,7 +151,7 @@ window.CrashesView = countlyView.extend({
                             tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolving"] + "</span>" + "</div>";
                         }
                         else if (row.is_resolved) {
-                            tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolved"] + " (" + row.latest_version.replace(/:/g, '.') + ")</span>" + "</div>";
+                            tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolved"] + " (" + (row.latest_version + "").replace(/:/g, '.') + ")</span>" + "</div>";
                         }
                         else {
                             tagDivs += separator + "<div class='tag'>" + "<span style='color:red;'>" + jQuery.i18n.map["crashes.unresolved"] + "</span>" + "</div>";
@@ -227,7 +222,7 @@ window.CrashesView = countlyView.extend({
                 },
                 {
                     "mData": function(row) {
-                        return row.latest_version.replace(/:/g, '.');
+                        return (row.latest_version + "").replace(/:/g, '.');
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["crashes.latest_app"],
@@ -408,8 +403,8 @@ window.CrashesView = countlyView.extend({
         var lines = row.error.split('\n');
         var line = row.name;
         for (var i = 0; i < lines.length; i++) {
-            line = lines[i].trim().replace(rLineNumbers, "");
-            if (line.length && row.name.trim().replace(rLineNumbers, "") !== line) {
+            line = (lines[i] + "").trim().replace(rLineNumbers, "");
+            if (line.length && (row.name + "").trim().replace(rLineNumbers, "") !== line) {
                 break;
             }
         }
@@ -475,8 +470,10 @@ window.CrashesView = countlyView.extend({
 
         var versionItems = Object.keys(crashData.crashes.app_version).map(function(version) {
             return {name: countlyCrashes.getVersionName(version), value: version};
+        }).sort(function(a, b) {
+            return countlyCommon.compareVersions(b.name, a.name);
         });
-        var osItems = Object.keys(crashData.crashes.os).map(function(os) {
+        var osItems = Object.keys(crashData.crashes.os).sort().map(function(os) {
             return {name: os, value: os};
         });
         var fatalItems = ["fatal", "nonfatal"].map(function(fatality) {
@@ -713,10 +710,10 @@ window.CrashesView = countlyView.extend({
             $(".big-numbers .inner").click(function() {
                 var elID = $(this).find('.select').attr("id");
                 if (elID) {
-                    if (self.curMetric === elID.replace("crash-", "")) {
+                    if (self.curMetric === (elID + "").replace("crash-", "")) {
                         return true;
                     }
-                    self.curMetric = elID.replace("crash-", "");
+                    self.curMetric = (elID + "").replace("crash-", "");
                     self.switchMetric();
                 }
             });
@@ -985,11 +982,11 @@ window.CrashesView = countlyView.extend({
             var elID = $(this).find('.select').attr("id");
 
             if (elID) {
-                if (self.curMetric === elID.replace("crash-", "")) {
+                if (self.curMetric === (elID + "").replace("crash-", "")) {
                     return true;
                 }
 
-                self.curMetric = elID.replace("crash-", "");
+                self.curMetric = (elID + "").replace("crash-", "");
                 self.switchMetric();
             }
             $(".big-numbers").removeClass("active");
@@ -1111,7 +1108,7 @@ window.CrashesView = countlyView.extend({
         var self = this;
         var dbFilter = {};
         for (var prop in filterObj) {
-            var filter = (self.convertFilter[prop]) ? self.convertFilter[prop].prop : prop.replace("sg.", "");
+            var filter = (self.convertFilter[prop]) ? self.convertFilter[prop].prop : (prop + "").replace("sg.", "");
             for (var i = 0; i < filterObj[prop].length; i++) {
                 if (_.isObject(filterObj[prop][i])) {
                     dbFilter[filter] = {};
@@ -1172,7 +1169,7 @@ window.CrashesView = countlyView.extend({
     loadAndRefresh: function() {
         var filter = {};
         for (var i in this.filterObj) {
-            filter[i.replace("up.", "")] = this.filterObj[i];
+            filter[(i + "").replace("up.", "")] = this.filterObj[i];
         }
         this._query = filter;
         app.navigate("/crashes/filter/" + JSON.stringify(filter), false);
@@ -1188,15 +1185,10 @@ window.CrashgroupView = countlyView.extend({
     beforeRender: function() {
         this.old = false;
         countlyCrashes.reset();
-        if (this.template) {
-            return $.when(countlyCrashes.initialize(this.id)).then(function() {});
-        }
-        else {
-            var self = this;
-            return $.when($.get(countlyGlobal.path + '/crashes/templates/crashgroup.html', function(src) {
-                self.template = Handlebars.compile(src);
-            }), countlyCrashes.initialize(this.id)).then(function() {});
-        }
+        var self = this;
+        return $.when(T.render('/crashes/templates/crashgroup.html', function(src) {
+            self.template = src;
+        }), countlyCrashes.initialize(this.id)).then(function() {});
     },
     renderCommon: function(isRefresh) {
         var url = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + countlyGlobal.path + "/crash/";
@@ -1204,7 +1196,7 @@ window.CrashgroupView = countlyView.extend({
         if (crashData.url) {
             url += crashData.url;
         }
-        crashData.latest_version = crashData.latest_version.replace(/:/g, '.');
+        crashData.latest_version = (crashData.latest_version + "").replace(/:/g, '.');
 
         if (this.old) {
             crashData.reserved_error = crashData.reserved_error || crashData.error;
@@ -1284,7 +1276,7 @@ window.CrashgroupView = countlyView.extend({
                     },
                     {
                         "title": jQuery.i18n.map["crashes.highest-version"],
-                        "total": crashData.latest_version.replace(/:/g, '.'),
+                        "total": (crashData.latest_version + "").replace(/:/g, '.'),
                         "help": "crashes.help-app-version"
                     }
                 ]
@@ -1476,7 +1468,7 @@ window.CrashgroupView = countlyView.extend({
                         "mData": function(row) {
                             var str = row.os;
                             if (row.os_version) {
-                                str += " " + row.os_version.replace(/:/g, '.');
+                                str += " " + (row.os_version + "").replace(/:/g, '.');
                             } return str;
                         },
                         "sType": "string",
@@ -1495,7 +1487,7 @@ window.CrashgroupView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
-                            return row.app_version.replace(/:/g, '.');
+                            return (row.app_version + "").replace(/:/g, '.');
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["crashes.app_version"]
@@ -1548,7 +1540,7 @@ window.CrashgroupView = countlyView.extend({
             $('.crash-share input[type=checkbox]').change(function() {
                 var opts = {};
                 $('.crash-share input[type=checkbox]').each(function() {
-                    opts[this.id.replace("crash-share-", "")] = ($(this).is(":checked")) ? 1 : 0;
+                    opts[(this.id + "").replace("crash-share-", "")] = ($(this).is(":checked")) ? 1 : 0;
                 });
                 countlyCrashes.modifyShare(crashData._id, opts);
             });
@@ -1949,8 +1941,8 @@ window.CrashgroupView = countlyView.extend({
             $(".threads-list code").each(function() {
                 var code = $(this);
                 if (!code.hasClass("short_code")) {
-                    var id = parseInt(code.closest(".thread").attr("data-id"));
-                    if (id) {
+                    var id = code.closest(".thread").attr("data-id");
+                    if (typeof id !== "undefined") {
                         opened_threads.push(id);
                     }
                 }
@@ -2028,14 +2020,14 @@ window.CrashgroupView = countlyView.extend({
             }
             str += '</tr>' +
                         '<tr>' +
-                        '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + ": " + data.app_version.replace(/:/g, '.');
+                        '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + ": " + (data.app_version + "").replace(/:/g, '.');
             if (data.os === 'iOS') {
                 str += '<br>' + jQuery.i18n.map["crashes.build_id"] + ": " + data.app_build;
             }
             str += '</td>' +
                 '<td class="text-left">' + data.os + ' ';
             if (data.os_version) {
-                str += data.os_version.replace(/:/g, '.') + '<br/>';
+                str += (data.os_version + "").replace(/:/g, '.') + '<br/>';
             }
             if (data.manufacture) {
                 str += data.manufacture;

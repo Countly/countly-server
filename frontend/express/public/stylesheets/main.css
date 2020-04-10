@@ -231,6 +231,8 @@ table { border-collapse: collapse; }
 	#dashboard-graph,
     #dashboard-graph-secondary { font-family:Oswald; font-size:14px; margin:0 30px !important; }
     #dashboard-graph .legendLabel,.graph .legendLabel { font-family:Ubuntu !important; font-size:14px !important; }
+    
+    .usparkline, .dsparkline {display: none;}
 
     .graph-no-data { display:none; height:100%; position:relative; }
         .graph-no-data .inner { user-select:none; text-align: center; position: absolute; width: 400px; left: 50%; margin-left: -200px; height: 64px; margin-top: -40px; top: 50%;}
@@ -676,7 +678,7 @@ div.datatablesubrow {display: none;}
     #date-picker .in-range a.ui-state-hover {
         background:#1b2732;
     }
-    
+
     #date-picker .ui-datepicker-title {
         font-size:13px;
     }
@@ -3569,7 +3571,7 @@ color:#E95C6C; transition:color 1s;
 
 .zoom { width: 102px; display: flex; margin: 0 auto; margin-top: -18px; }
 .zoom *:before { content: none; position: initial; }
-.zoom .zoom-button { user-select: none; cursor: pointer; padding: 4px 10px 3px 10px; font-size: 14px; font-family: "Ionicons"; position: relative !important; margin: 0; color: #666; background-color: rgba(0, 0, 0, 0.05); border: solid 1px rgba(0, 0, 0, 0.1); }
+.zoom .zoom-button { visibility: hidden; user-select: none; cursor: pointer; padding: 4px 10px 3px 10px; font-size: 14px; font-family: "Ionicons"; position: relative !important; margin: 0; color: #666; background-color: rgba(0, 0, 0, 0.05); border: solid 1px rgba(0, 0, 0, 0.1); }
 .zoom .zoom-button:hover { opacity: 0.7; }
 .zoom .zoom-out { border-radius: 100px 0 0 100px; text-align: right; padding-left: 12px; }
 .zoom .zoom-out:before { content: "\f209"; }
@@ -3578,6 +3580,47 @@ color:#E95C6C; transition:color 1s;
 .zoom .zoom-in { border-radius: 0 100px 100px 0; text-align: left; padding-right: 12px; }
 .zoom .zoom-in:before { content: "\f218"; }
 .graph.pannable { cursor: grab; }
-
+*:hover > .zoom .zoom-button { visibility: visible; }
 #dashboard-export-graph .zoom { margin-top: 18px; }
 #dashboard-purge-graph .zoom { margin-top: 18px; }
+
+.routename-user .zoom { margin-top: -25px; }
+.routename-sessions .zoom { margin-top: -25px; }
+.routename-events .zoom { margin-top: -45px; }
+.routename-revenue .zoom { margin-top: -12px; }
+.routename-attribution .zoom { margin-top: -25px; }
+.routename-compliance .zoom { margin-top: -12px; }
+
+.cly-breadcrumbs {
+    padding: 0px 0px 20px 0px;
+}
+
+.cly-breadcrumbs ul {
+    padding: 0px;
+    list-style: none;
+}
+
+.cly-breadcrumbs ul li {
+    display: inline;
+    font-size: 18px;
+}
+
+.cly-breadcrumbs ul li+li:before {
+    padding: 8px;
+    content: "\f125";
+    font-family: 'Ionicons';
+    font-size: 8px;
+    vertical-align: middle;
+    color: #5f5f5f;
+}
+
+.cly-breadcrumbs ul li a {
+    text-decoration: none;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #5f5f5f;
+}
+
+.cly-breadcrumbs ul li a:hover {
+    text-decoration: underline;
+}

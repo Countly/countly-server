@@ -1,5 +1,5 @@
-/* global countlyGlobal, google, _, jQuery*/
-(function(countlyMapHelper, $) {
+/* global countlyGlobal, google, _, jQuery, T*/
+(function(countlyMapHelper) {
 
     // Private Properties
     var _chart,
@@ -17,7 +17,7 @@
         _mapData = [],
         _countryMap = {};
 
-    $.get('localization/countries/en/country.json', function(data) {
+    T.get('/localization/countries/en/country.json', function(data) {
         _countryMap = data;
     });
 
@@ -97,4 +97,4 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-}(window.countlyMapHelper = window.countlyMapHelper || {}, jQuery));
+}(window.countlyMapHelper = window.countlyMapHelper || {}));

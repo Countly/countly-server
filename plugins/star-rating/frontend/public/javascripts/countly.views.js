@@ -1,4 +1,4 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, Handlebars, path1, addDrill, countlySegmentation*/
+/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
@@ -89,8 +89,9 @@ window.starView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         // will load template, platform and version, periodperiod's rating data
-        return $.when($.get(countlyGlobal.path + '/star-rating/templates/star.html'), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(), starRatingPlugin.requestFeedbackWidgetsData()).done(function(result) {
-            self.template = Handlebars.compile(result[0]);
+        return $.when(T.render('/star-rating/templates/star.html', function(src) {
+            self.template = src;
+        }), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(), starRatingPlugin.requestFeedbackWidgetsData()).done(function() {
             self.templateData.platform_version = starRatingPlugin.getPlatformVersion();
 
             self.templateData.rating = starRatingPlugin.getRatingInPeriod();
@@ -105,9 +106,10 @@ window.starView = countlyView.extend({
     loadPlatformData: function() {
         var self = this;
         $(".platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="star.all-platforms">' + jQuery.i18n.map['star.all-platforms'] + '</div>');
-        for (var platform in this.templateData.platform_version) {
-            if (platform !== 'undefined') {
-                $(".platform-list").append('<div data-value="' + platform + '" class="platform-option item" data-localize="">' + platform + '</div>');
+        var platforms = Object.keys(this.templateData.platform_version).sort();
+        for (var platform = 0; platform < platforms.length; platform++) {
+            if (platforms[platform] !== 'undefined') {
+                $(".platform-list").append('<div data-value="' + platforms[platform] + '" class="platform-option item" data-localize="">' + platforms[platform] + '</div>');
             }
         }
         $(".platform-option").on("click", function() {
@@ -127,6 +129,7 @@ window.starView = countlyView.extend({
      */
     loadWidgetData: function() {
         $(".widget-list").html('<div data-value="All Widgets" class="widget-option item" data-localize="star.all-widgets">' + jQuery.i18n.map['star.all-widgets'] + '</div>');
+        this.templateData.widget.sort();
         for (var i = 0; i < this.templateData.widget.length; i++) {
             $(".widget-list").append('<div data-value="' + this.templateData.widget[i]._id + '" class="widget-option item" data-localize="">' + this.templateData.widget[i].popup_header_text + '</div>');
         }
@@ -367,14 +370,14 @@ window.starView = countlyView.extend({
 
                 if (bparts[p]) {
                     if (parseInt(aparts[p]) < parseInt(bparts[p])) {
-                        return -1;
+                        return 1;
                     }
                     else if (parseInt(aparts[p]) > parseInt(bparts[p])) {
-                        return 1;
+                        return -1;
                     }
                 }
                 else {
-                    return -1;
+                    return 1;
                 }
             }
             return 0;
@@ -563,6 +566,7 @@ window.starView = countlyView.extend({
             "mData": "count",
             "sType": "numeric",
             "sTitle": jQuery.i18n.map["star.number-of-ratings"],
+            "sWidth": "200px",
             "mRender": function(d) {
                 return countlyCommon.formatNumber(d);
             }
@@ -605,7 +609,9 @@ window.starView = countlyView.extend({
             da.dp[0].data[i][1] = this.cumulativeData[i - 1].count;
         }
         if (self._tab === 'ratings') {
-            countlyCommon.drawGraph(da, "#dashboard-graph", "bar", {
+            $('#dashboard-graph-time').hide();
+            $('#dashboard-graph-cumulative').show();
+            countlyCommon.drawGraph(da, "#dashboard-graph-cumulative", "bar", {
                 colors: [countlyCommon.GRAPH_COLORS[0]]
             });
         }
@@ -804,7 +810,9 @@ window.starView = countlyView.extend({
             }
         }
         if (self._tab === 'ratings') {
-            return countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);
+            $('#dashboard-graph-time').show();
+            $('#dashboard-graph-cumulative').hide();
+            return countlyCommon.drawTimeGraph(renderData, "#dashboard-graph-time", bucket, overrideBucket);
         }
     },
     renderCommentsTable: function(isRefresh) {
