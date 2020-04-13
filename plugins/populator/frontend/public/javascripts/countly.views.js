@@ -519,7 +519,7 @@ window.PopulatorView = countlyView.extend({
                 maxTime = parseInt($("#populate-maxtime").val()) || maxTime;
                 maxTimeout = setTimeout(function() {
                     countlyPopulator.stopGenerating(function(done) {
-                        $('.close-dialog').trigger('click');
+                        $('.stop-populate').trigger("click");
                     });
                 }, maxTime * 1000);
 
