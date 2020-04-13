@@ -54,7 +54,7 @@ class AppExpireJob extends job.Job {
                 * @param {function} next - iteration callback
                 * */
                 function eventIterator(collection, next) {
-                    console.log("processing", collection);
+                    log.d("processing", collection);
                     drillDatabase.collection(collection).indexes(function(drillIndexErr, indexes) {
                         if (!drillIndexErr && indexes) {
                             let hasIndex = false;
@@ -72,17 +72,20 @@ class AppExpireJob extends job.Job {
                                     break;
                                 }
                             }
-                            if (dropIndex) {
-                                console.log("dropping index", collection);
+                            if (EXPIRE_AFTER === 0 || dropIndex) {
+                                log.d("dropping index", collection);
                                 drillDatabase.collection(collection).dropIndex(INDEX_NAME, function() {
-                                    console.log("creating index", collection);
+                                    log.d("creating index", collection);
+                                    if (EXPIRE_AFTER === 0) {
+                                        next();
+                                    }
                                     drillDatabase.collection(collection).createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
                                         next();
                                     });
                                 });
                             }
                             else if (!hasIndex) {
-                                console.log("creating index", collection);
+                                log.d("creating index", collection);
                                 drillDatabase.collection(collection).createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
                                     next();
                                 });
