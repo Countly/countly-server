@@ -22,10 +22,6 @@ window.PopulatorView = countlyView.extend({
         $("#" + this._tab + "-tab").show();
     },
     updateTemplateSelector: function() {
-        var self = this;
-
-        console.log("update template selector");
-
         countlyPopulator.getTemplates(function(templates) {
             var templateList = [];
 
@@ -166,20 +162,23 @@ window.PopulatorView = countlyView.extend({
 
         if (isEditing) {
             $("#populator-template-discard-changes").show();
-        } else {
+        }
+        else {
             $("#populator-template-discard-changes").hide();
         }
 
         if ($("#populator-template-name").val() === "") {
             $("#populator-template-save").addClass("disabled");
-        } else {
+        }
+        else {
             $("#populator-template-save").removeClass("disabled");
         }
 
         $("#populator-template-name").off("change paste keyup").on("change paste keyup", function() {
             if ($("#populator-template-name").val() === "") {
                 $("#populator-template-save").addClass("disabled");
-            } else {
+            }
+            else {
                 $("#populator-template-save").removeClass("disabled");
             }
         });
@@ -191,14 +190,17 @@ window.PopulatorView = countlyView.extend({
                 $(".populator-custom-user-prop-row:last").after(
                     "<div class=\"populator-custom-user-prop-row\">" +
                         "<input class=\"input populator-custom-user-prop-key\" type=\"text\" class=\"input\" value=\"" + key + "\"/>" +
-                        "<input class=\"input populator-custom-user-prop-values\" type=\"text\" class=\"input\" value=\"" + templateData.up[key].map(function(val) { return val + ""; }).join(", ") + "\"/>" +
+                        "<input class=\"input populator-custom-user-prop-values\" type=\"text\" class=\"input\" value=\"" + templateData.up[key].map(function(val) {
+                        return val + "";
+                    }).join(", ") + "\"/>" +
                         "<div class=\"icon-button remove text-light-gray\"><i class=\"material-icons\">highlight_off</i></div>" +
                     "</div>"
                 );
 
                 app.localize($("#populator-template-drawer"));
             });
-        } else {
+        }
+        else {
             $(".populator-custom-user-prop-row.header-row").hide();
         }
 
@@ -255,7 +257,7 @@ window.PopulatorView = countlyView.extend({
 
         $("#populator-template-add-event").off("click").on("click", function() {
             $("#populator-template-add-event").before(
-                    "<div class=\"populator-event-row\">" +
+                "<div class=\"populator-event-row\">" +
                         "<div class=\"populator-event-key-row\">" +
                             "<div class=\"label\" data-localize=\"populator.event-key\"></div>" +
                             "<input type=\"text\" class=\"input\"/>" +
@@ -313,11 +315,12 @@ window.PopulatorView = countlyView.extend({
             var checkbox = $(e.currentTarget);
 
             if (checkbox.hasClass("fa-check-square")) {
-                checkbox.removeClass("fa-check-square")
-                checkbox.addClass("fa-square-o")
-            } else {
-                checkbox.addClass("fa-check-square")
-                checkbox.removeClass("fa-square-o")
+                checkbox.removeClass("fa-check-square");
+                checkbox.addClass("fa-square-o");
+            }
+            else {
+                checkbox.addClass("fa-check-square");
+                checkbox.removeClass("fa-square-o");
             }
         });
 
@@ -344,7 +347,8 @@ window.PopulatorView = countlyView.extend({
                     self.templateTable.fnUpdate(self.getTemplateData(self.templateId), self.rowInEdit);
                     self.updateTemplateSelector();
                 });
-            } else {
+            }
+            else {
                 countlyPopulator.createTemplate(self.getTemplateData(), function(message) {
                     var messageWords = message.result.split(/\s+/);
                     self.templateTable.fnAddData(self.getTemplateData(messageWords[messageWords.length - 1]));
@@ -365,16 +369,28 @@ window.PopulatorView = countlyView.extend({
     getTemplateData: function(templateId) {
         var templateData = {_id: templateId};
 
+        /**
+         * Tries to parse a string into a boolean or a number value
+         * @param {string} s a user input word
+         * @returns {boolean|number|string} the cast value
+         */
         function dynamicCast(s) {
-            if (["true", "false"].indexOf(s) != -1) {
-                return s == "true";
-            } else if (/^[1-9][0-9]+|0$/.test(s)) {
+            if (["true", "false"].indexOf(s) !== -1) {
+                return s === "true";
+            }
+            else if (/^[1-9][0-9]+|0$/.test(s)) {
                 return parseInt(s);
-            } else {
+            }
+            else {
                 return s + "";
             }
         }
 
+        /**
+         * Tries to parse an array of strings into a homogeneous array of string, number or boolean values
+         * @param {array} arr an array of user input words
+         * @returns {array} array of cast values
+         */
         function processValues(arr) {
             var values = [dynamicCast(arr[0])];
             var lastType = typeof values[0];
@@ -446,7 +462,8 @@ window.PopulatorView = countlyView.extend({
 
         if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
             $("#create-populator-template-button").hide();
-        } else {
+        }
+        else {
             $("#create-populator-template-button").show();
         }
 
@@ -473,12 +490,12 @@ window.PopulatorView = countlyView.extend({
             $("#populator #date-picker #date-to").datepicker("setDate", "+0d");
         }, 250);
 
-        var populatorDateRangeInterval = setInterval(function updateDateRangeButton() {
-            if (app.activeView == self) {
-                var fromDate = $("#populator #date-picker #date-from").datepicker("getDate");
-                var toDate = $("#populator #date-picker #date-to").datepicker("getDate");
+        setInterval(function updateDateRangeButton() {
+            if (app.activeView === self) {
+                fromDate = $("#populator #date-picker #date-from").datepicker("getDate");
+                toDate = $("#populator #date-picker #date-to").datepicker("getDate");
 
-                if (!updateDateRangeButton.fromDate || updateDateRangeButton.fromDate.getTime() != fromDate.getTime() || !updateDateRangeButton.toDate || updateDateRangeButton.toDate.getTime() != toDate.getTime()) {
+                if (!updateDateRangeButton.fromDate || updateDateRangeButton.fromDate.getTime() !== fromDate.getTime() || !updateDateRangeButton.toDate || updateDateRangeButton.toDate.getTime() !== toDate.getTime()) {
                     $("#populator #selected-date").text(moment(fromDate).format("D MMM, YYYY") + " - " + moment(toDate).format("D MMM, YYYY"));
                     updateDateRangeButton.fromDate = fromDate;
                     updateDateRangeButton.toDate = toDate;
@@ -518,7 +535,7 @@ window.PopulatorView = countlyView.extend({
 
                 maxTime = parseInt($("#populate-maxtime").val()) || maxTime;
                 maxTimeout = setTimeout(function() {
-                    countlyPopulator.stopGenerating(function(done) {
+                    countlyPopulator.stopGenerating(function() {
                         $('.stop-populate').trigger("click");
                     });
                 }, maxTime * 1000);

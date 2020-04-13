@@ -171,7 +171,7 @@
                 "Checkout - Payment": {},
                 "Checkout": {
                     "segments": {"Delivery Type": ["Standard", "Express"], "Items": ["1", "2-5", "6-10", "10+"]},
-                    "sum": [50,10000],
+                    "sum": [50, 10000],
                     "dur": [60, 600]
                 },
                 "Settings Changed": {
@@ -196,7 +196,7 @@
                 },
                 "Purchase": {
                     "segments": {"Item": ["Level Pass", "Lucky Item", "Item Storage Upgrade"]},
-                    "sum": [1,100]
+                    "sum": [1, 100]
                 },
                 "Share Score": {
                     "segments": {"To": ["Facebook", "Twitter", "Instagram"]}
@@ -205,7 +205,7 @@
             }
         }
     ];
-    var currentTemplate = undefined;
+    var currentTemplate = undefined; // eslint-disable-line no-unused-vars
     /**
      * Generate random int between passed range
      * @param {number} min - min value of range
@@ -226,6 +226,7 @@
     /**
      * Create user properties with Facebook Login, Twitter Login,
      * Twitter Login name and Has Apple Watch Os properties
+     * @param {object} templateUp user properties template, if available
      * @returns {object} returns user properties
      **/
     function getUserProperties(templateUp) {
@@ -275,6 +276,7 @@
     }
     /**
      * Generate a user with random properties and actions
+     * @param {object} templateUp user properties template, if available
      **/
     function getUser(templateUp) {
         this.getId = function() {
@@ -404,28 +406,28 @@
             }
             else if (this.platform === "iOS") {
                 errors = ["CoreFoundation                  0x182e3adb0 __exceptionPreprocess + 124",
-                          "libobjc.A.dylib                 0x18249ff80 objc_exception_throw + 56",
-                          "CoreFoundation                  0x182d1b098 -[__NSArrayI objectAtIndex:] + 196",
-                          "CountlyTestApp-iOS              0x100046988 0x100030000 + 92552",
-                          "CountlyTestApp-iOS              0x100044340 0x100030000 + 82752",
-                          "UIKit                           0x187fd0be8 -[UIApplication sendAction:to:from:forEvent:] + 100",
-                          "UIKit                           0x187fd0b64 -[UIControl sendAction:to:forEvent:] + 80",
-                          "UIKit                           0x187fb8870 -[UIControl _sendActionsForEvents:withEvent:] + 436",
-                          "UIKit                           0x187fd0454 -[UIControl touchesEnded:withEvent:] + 572",
-                          "UIKit                           0x187f88c0c _UIGestureRecognizerUpdate + 8988",
-                          "UIKit                           0x187fc9610 -[UIWindow _sendGesturesForEvent:] + 1132",
-                          "UIKit                           0x187fc8c0c -[UIWindow sendEvent:] + 764",
-                          "UIKit                           0x187f9904c -[UIApplication sendEvent:] + 248",
-                          "UIKit                           0x187f97628 _UIApplicationHandleEventQueue + 6568",
-                          "CoreFoundation                  0x182df109c __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 24",
-                          "CoreFoundation                  0x182df0b30 __CFRunLoopDoSources0 + 540",
-                          "CoreFoundation                  0x182dee830 __CFRunLoopRun + 724",
-                          "CoreFoundation                  0x182d18c50 CFRunLoopRunSpecific + 384",
-                          "GraphicsServices                0x184600088 GSEventRunModal + 180",
-                          "UIKit                           0x188002088 UIApplicationMain + 204",
-                          "CountlyTestApp-iOS              0x10004342c 0x100030000 + 78892",
-                          "libdyld.dylib                   0x1828b68b8 start + 4"
-                         ];
+                    "libobjc.A.dylib                 0x18249ff80 objc_exception_throw + 56",
+                    "CoreFoundation                  0x182d1b098 -[__NSArrayI objectAtIndex:] + 196",
+                    "CountlyTestApp-iOS              0x100046988 0x100030000 + 92552",
+                    "CountlyTestApp-iOS              0x100044340 0x100030000 + 82752",
+                    "UIKit                           0x187fd0be8 -[UIApplication sendAction:to:from:forEvent:] + 100",
+                    "UIKit                           0x187fd0b64 -[UIControl sendAction:to:forEvent:] + 80",
+                    "UIKit                           0x187fb8870 -[UIControl _sendActionsForEvents:withEvent:] + 436",
+                    "UIKit                           0x187fd0454 -[UIControl touchesEnded:withEvent:] + 572",
+                    "UIKit                           0x187f88c0c _UIGestureRecognizerUpdate + 8988",
+                    "UIKit                           0x187fc9610 -[UIWindow _sendGesturesForEvent:] + 1132",
+                    "UIKit                           0x187fc8c0c -[UIWindow sendEvent:] + 764",
+                    "UIKit                           0x187f9904c -[UIApplication sendEvent:] + 248",
+                    "UIKit                           0x187f97628 _UIApplicationHandleEventQueue + 6568",
+                    "CoreFoundation                  0x182df109c __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 24",
+                    "CoreFoundation                  0x182df0b30 __CFRunLoopDoSources0 + 540",
+                    "CoreFoundation                  0x182dee830 __CFRunLoopRun + 724",
+                    "CoreFoundation                  0x182d18c50 CFRunLoopRunSpecific + 384",
+                    "GraphicsServices                0x184600088 GSEventRunModal + 180",
+                    "UIKit                           0x188002088 UIApplicationMain + 204",
+                    "CountlyTestApp-iOS              0x10004342c 0x100030000 + 78892",
+                    "libdyld.dylib                   0x1828b68b8 start + 4"
+                ];
                 error = "";
                 stacks = getRandomInt(9, 19);
                 for (var stackIndex2 = 0; stackIndex2 < stacks; stackIndex2++) {
@@ -1019,6 +1021,10 @@
         }
 
         var campaignsIndex = 0;
+
+        /**
+         * Recursively generates all the campaigns in the global variable
+         **/
         function recursiveCallback() {
             if (campaignsIndex < campaigns.length) {
                 createCampaign(campaigns[campaignsIndex].id, campaigns[campaignsIndex].name, campaigns[campaignsIndex].cost, campaigns[campaignsIndex].type, recursiveCallback);
@@ -1041,6 +1047,7 @@
      * @param {date} ts - date as timestamp
      * @param {number} userCount - users count will be generated
      * @param {array} ids - ids array
+     * @param {object} templateUp user properties template, if available
      * @param {callback} callback - callback function
      **/
     function generateRetentionUser(ts, userCount, ids, templateUp, callback) {
@@ -1105,6 +1112,7 @@
 
     /**
      * Generate retentions
+     * @param {object} templateUp user properties template, if available
      * @param {callback} callback - callback function
      **/
     function generateRetention(templateUp, callback) {
@@ -1158,6 +1166,11 @@
         }
     }
 
+    /**
+     * Serializes a template object members for API use
+     * @param {object} template a template object
+     * @returns {object} an API-safe template object
+     **/
     function serializeTemplate(template) {
         if (template && template.up && !_.isString(template.up)) {
             delete template.up[""]; // delete user properties without keys
@@ -1178,7 +1191,7 @@
                     delete event.segments[""];
                 }
 
-                if (event.segments && event.segments.length == 0) {
+                if (event.segments && event.segments.length === 0) {
                     delete event.segments;
                 }
 
@@ -1301,7 +1314,6 @@
     };
 
     countlyPopulator.stopGenerating = function(callback) {
-        console.log("stop", callback, stopCallback);
         stopCallback = callback;
         generating = false;
 
@@ -1375,15 +1387,13 @@
 
         var template = this.currentTemplate || {};
 
-        console.log("ensurejobs", template, typeof countlyCohorts !== "undefined");
-
         if (typeof countlyCohorts !== "undefined") {
             if (template && template.events && Object.keys(template.events).length > 0) {
                 var firstEventKey = Object.keys(template.events)[0];
 
                 if (template && template.up && Object.keys(template.up).length > 0) {
                     var firstUserProperty = Object.keys(template.up)[0];
-                    var firstUserPropertyValue = JSON.stringify(template.up[firstUserProperty][0])
+                    var firstUserPropertyValue = JSON.stringify(template.up[firstUserProperty][0]);
 
                     countlyCohorts.add({
                         cohort_name: firstUserProperty + " = " + firstUserPropertyValue + " users who performed " + firstEventKey,
@@ -1505,18 +1515,21 @@
     };
 
     countlyPopulator.getTemplate = function(templateId, callback) {
-        var foundDefault = defaultTemplates.find(template => template._id == templateId);
+        var foundDefault = defaultTemplates.find(function(template) {
+            return template._id === templateId;
+        });
 
         if (typeof foundDefault !== "undefined") {
             callback(foundDefault);
-        } else {
+        }
+        else {
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/populator/templates",
                 data: {template_id: templateId},
                 success: callback,
-                error: function(xhr) {
-                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-fetch-template", templateId), type: "error"})
+                error: function() {
+                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-fetch-template", templateId), type: "error"});
                 }
             });
         }
@@ -1530,8 +1543,8 @@
             success: function(templates) {
                 callback(templates.concat(defaultTemplates));
             },
-            error: function(xhr) {
-                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-templates"], type: "error"})
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-fetch-templates"], type: "error"});
             }
         });
     };
@@ -1542,8 +1555,8 @@
             url: countlyCommon.API_URL + "/i/populator/templates/create",
             data: serializeTemplate(template),
             success: callback || function() {},
-            error: function(xhr) {
-                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-create-template"], type: "error"})
+            error: function() {
+                CountlyHelpers.notify({message: $.i18n.map["populator.failed-to-create-template"], type: "error"});
             }
         });
     };
@@ -1551,36 +1564,42 @@
     countlyPopulator.editTemplate = function(templateId, newTemplate, callback) {
         newTemplate.template_id = templateId;
 
-        var foundDefault = defaultTemplates.find(template => template._id == templateId);
+        var foundDefault = defaultTemplates.find(function(template) {
+            return template._id === templateId;
+        });
 
         if (typeof foundDefault !== "undefined") {
-            console.log("this should never happen");
-        } else {
+            // this should never happen
+        }
+        else {
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/i/populator/templates/edit",
                 data: serializeTemplate(newTemplate),
                 success: callback || function() {},
-                error: function(xhr) {
-                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-edit-template", templateId), type: "error"})
+                error: function() {
+                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-edit-template", templateId), type: "error"});
                 }
             });
         }
     };
 
     countlyPopulator.removeTemplate = function(templateId, callback) {
-        var foundDefault = defaultTemplates.find(template => template._id == templateId);
+        var foundDefault = defaultTemplates.find(function(template) {
+            return template._id === templateId;
+        });
 
         if (typeof foundDefault !== "undefined") {
-            console.log("this should never happen");
-        } else {
+            // this should never happen
+        }
+        else {
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/i/populator/templates/remove",
                 data: {template_id: templateId},
                 success: callback,
-                error: function(xhr) {
-                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-remove-template", templateId), type: "error"})
+                error: function() {
+                    CountlyHelpers.notify({message: $.i18n.prop("populator.failed-to-remove-template", templateId), type: "error"});
                 }
             });
         }

@@ -235,10 +235,11 @@ const templateProperties = {
                     return false;
                 }
                 else if (query._id) {
-                    if (docs.length == 1) {
+                    if (docs.length === 1) {
                         common.returnOutput(obParams, docs.length > 0 ? docs[0] : null);
                         return true;
-                    } else {
+                    }
+                    else {
                         common.returnMessage(obParams, 404, "Could not find template with id \"" + query._id + "\"");
                         return false;
                     }
