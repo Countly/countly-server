@@ -205,7 +205,7 @@
             }
         }
     ];
-    var currentTemplate = undefined; // eslint-disable-line no-unused-vars
+
     /**
      * Generate random int between passed range
      * @param {number} min - min value of range
@@ -553,7 +553,7 @@
             }
             else if (eventTemplate && eventTemplate.segments) {
                 event.segmentation = {};
-                Object.keys(eventTemplate && eventTemplate.segments || {}).forEach(function(key) {
+                Object.keys(eventTemplate.segments).forEach(function(key) {
                     var values = eventTemplate.segments[key];
 
                     event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
@@ -1391,7 +1391,7 @@
             if (template && template.events && Object.keys(template.events).length > 0) {
                 var firstEventKey = Object.keys(template.events)[0];
 
-                if (template && template.up && Object.keys(template.up).length > 0) {
+                if (template.up && Object.keys(template.up).length > 0) {
                     var firstUserProperty = Object.keys(template.up)[0];
                     var firstUserPropertyValue = JSON.stringify(template.up[firstUserProperty][0]);
 
@@ -1432,7 +1432,7 @@
                     });
                 }
 
-                if (template && template.events && Object.keys(template.events).length > 1) {
+                if (Object.keys(template.events).length > 1) {
                     var secondEventKey = Object.keys(template.events)[1];
 
                     countlyCohorts.add({
