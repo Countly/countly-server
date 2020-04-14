@@ -314,6 +314,28 @@
             return obj;
         };
 
+        /* Checks if current graph type matches the one being drawn */
+        countlyCommon.checkGraphType = function(type, settings) {
+            var eType = "line";
+            if (settings && settings.series && settings.series.bars && settings.series.bars.show === true) {
+                if (settings.series.stack === true) {
+                    eType = "bar";
+                }
+                else {
+                    eType = "seperate-bar";
+                }
+            }
+            else if (settings && settings.series && settings.series.pie && settings.series.pie.show === true) {
+                eType = "pie";
+            }
+
+            if (type === eType) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
         /**
         * Draws a graph with the given dataPoints to container. Used for drawing bar and pie charts.
         * @param {object} dataPoints - data poitns to draw on graph
@@ -769,7 +791,8 @@
                     countlyCommon.deepObjectExtend(graphProperties, options);
                 }
 
-                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().grid.show && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
+
+                if (graphObj && countlyCommon.checkGraphType("line", graphObj.getOptions()) && graphObj.getOptions().series && graphObj.getOptions().grid.show && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
                     if (overrideBucket) {
                         graphObj.getOptions().series.points.radius = 4;
