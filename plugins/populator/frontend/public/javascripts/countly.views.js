@@ -104,7 +104,7 @@ window.PopulatorView = countlyView.extend({
             }));
 
             var templateList = [];
-            templates.forEach(function(template) {
+            (templates || []).forEach(function(template) {
                 templateList.push({name: template.name, value: template._id});
             });
 
@@ -220,7 +220,7 @@ window.PopulatorView = countlyView.extend({
                             "<div class=\"label populator-event-segmentation-values\" data-localize=\"populator.segmentation-values\"></div>" +
                         "</div>";
 
-            if (event && event.segments && Object.keys(event.segments).length > 0) {
+            if (event.segments && Object.keys(event.segments).length > 0) {
                 Object.keys(event.segments).forEach(function(segmentationKey) {
                     row +=
                         "<div class=\"populator-event-segmentation-row\">" +
@@ -236,7 +236,7 @@ window.PopulatorView = countlyView.extend({
             row += "<div class=\"populator-event-property populator-template-event-sum\"><div class=\"fa check-green " + (event.sum ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.sum-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.sum-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input sum-start\" value=\"" + (event.sum && event.sum[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input sum-end\" value=\"" + (event.sum && event.sum[1] || "") + "\"/></div></div></div>";
 
             $("#populator-template-add-event").before(row);
-            if (!(event && event.segments && Object.keys(event.segments).length > 0)) {
+            if (!(event.segments && Object.keys(event.segments).length > 0)) {
                 $("#populator-template-drawer .populator-event-row:last .populator-event-segmentation-table .header-row").hide();
             }
         });

@@ -1175,7 +1175,7 @@
         if (template && template.up && !_.isString(template.up)) {
             delete template.up[""]; // delete user properties without keys
 
-            if (template.up === {}) {
+            if (Object.keys(template.up).length === 0) {
                 delete template.up;
             }
             else {
@@ -1195,7 +1195,7 @@
                     delete event.segments;
                 }
 
-                if (event === {}) {
+                if (Object.keys(event).length === 0) {
                     delete template.events[key];
                 }
                 else {
