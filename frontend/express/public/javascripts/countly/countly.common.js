@@ -1146,8 +1146,8 @@
                         zoomContainer.data("zoom", 1);
 
                         var yaxis = plot.getAxes().yaxis;
-                        var panOffset = yaxis.p2c(0) - yaxis.box.height + yaxis.box.width + 2;
-                        if (Math.abs(panOffset) > 10) {
+                        var panOffset = yaxis.p2c(0) - yaxis.box.height + yaxis.box.width;
+                        if (Math.abs(panOffset) > 5) {
                             plot.pan({top: panOffset});
                         }
                     });
