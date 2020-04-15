@@ -777,7 +777,8 @@
                     keyEvents = [];
                     //keyEventsIndex = 0;
 
-                if (!(options && _.isObject(options) && options.disableCountlyZoom)) {
+
+                if (!(options && _.isObject(options) && $(container).parents("#dashboard-data").length > 0)) {
                     countlyCommon.deepObjectExtend(graphProperties, {
                         series: {lines: {show: true}, splines: {show: false}},
                         zoom: {active: true},
@@ -790,7 +791,6 @@
                 if (options && _.isObject(options)) {
                     countlyCommon.deepObjectExtend(graphProperties, options);
                 }
-
 
                 if (graphObj && countlyCommon.checkGraphType("line", graphObj.getOptions()) && graphObj.getOptions().series && graphObj.getOptions().grid.show && graphObj.getOptions().series.splines && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
@@ -1098,7 +1098,8 @@
                     showCrosshairTooltip(j, pos, pointFound);
                 });
 
-                if (!(options && _.isObject(options) && options.disableCountlyZoom)) {
+
+                if (!(options && _.isObject(options) && $(container).parents("#dashboard-data").length > 0)) {
                     var zoomTarget = $(container),
                         zoomContainer = $(container).parent();
 
