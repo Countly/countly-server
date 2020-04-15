@@ -5,16 +5,11 @@
     var _data = {};
     var _collection_info = {};
     //Public Methods
-    countlyLogger.initialize = function(filter) {
-        var query = {};
-        if (filter) {
-            if (filter.types) {
-                query["t." + filter.types] = {$exists: true};
-            }
-            else if (filter.source) {
-                query.src = filter.source;
-            }
+    countlyLogger.initialize = function(query) {
+        if (!query) {
+            return;
         }
+
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,

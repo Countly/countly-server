@@ -5,11 +5,54 @@ window.LoggerView = countlyView.extend({
     },
     beforeRender: function() {
         var self = this;
+        this.defaultLogItems();
+
         return $.when(T.render('/logger/templates/logger.html', function(src) {
             self.template = src;
         }), countlyLogger.initialize(this.filterToQuery())
         , countlyLogger.collection_info()).then(function() {});
     },
+
+    defaultLogItems: function() {
+        this.loggerItems = [
+            {
+                name: jQuery.i18n.map["logger.all"],
+                value: "logger-all",
+                type: ""
+            },
+            {
+                name: jQuery.i18n.map["logger.session"],
+                value: "logger-session",
+                type: "session"
+            },
+            {
+                name: jQuery.i18n.map["logger.event"],
+                value: "logger-event",
+                type: "events"
+            },
+            {
+                name: jQuery.i18n.map["logger.metric"],
+                value: "logger-metric",
+                type: "metrics"
+            },
+            {
+                name: jQuery.i18n.map["consent.title"],
+                value: "logger-consent",
+                type: "consent"
+            },
+            {
+                name: jQuery.i18n.map["logger.user-details"],
+                value: "logger-user",
+                type: "user_details"
+            },
+            {
+                name: jQuery.i18n.map["logger.crashes"],
+                value: "logger-crash",
+                type: "crash"
+            }
+        ];
+    },
+
     renderCommon: function(isRefresh) {
         var data = countlyLogger.getData();
         var collectoin_info = countlyLogger.getCollectionInfo();
@@ -21,7 +64,6 @@ window.LoggerView = countlyView.extend({
         var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            $("#" + this.filter).addClass("selected").addClass("active");
 
             this.dtable = $('#logger-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data,
@@ -115,18 +157,19 @@ window.LoggerView = countlyView.extend({
                             if (typeof row.t === "object") {
                                 var ob = {};
                                 if (self.filter && self.filter !== "logger-all") {
-                                    var filterToQuery = self.filterToQuery();
-                                    var value = "";
-                                    if (filterToQuery.types) {
-                                        //LOG SOURCE IS LOGGER ITSELF
-                                        //HENCE THE DATA FOR THE FILTER IS STORED IN THE TYPES
-                                        value = row.t[filterToQuery.types];
-                                    }
-                                    else if (filterToQuery.source) {
-                                        //LOG SOURCE IS A PLUGIN
-                                        //HENCE IN THIS CASE SHOW THE RESPONSE SENT BY THE PLUGIN IN INFORMATION
+                                    var selectedLog = (self.loggerItems.filter(function(o) {
+                                        return o.value === self.filter;
+                                    })[0]) || {};
+
+                                    var value = row.t[selectedLog.type];
+
+                                    if (!value && selectedLog.value === "logger-remote-config") {
+                                        //This is a backward compatibility check for remote config
+                                        //Remove this after 6 months approx from 16-04-2020
+                                        //There is one more check below, remove that too
                                         value = row.res;
                                     }
+
                                     if (typeof value === "string") {
                                         try {
                                             ob = JSON.parse(countlyCommon.decodeHtml(value));
@@ -215,6 +258,7 @@ window.LoggerView = countlyView.extend({
             this.dtable.stickyTableHeaders();
             this.dtable.fnSort([ [2, 'desc'] ]);
             CountlyHelpers.expandRows(this.dtable, this.requestInfo);
+            this.refreshLoggerDropdown();
         }
     },
     refresh: function() {
@@ -231,51 +275,41 @@ window.LoggerView = countlyView.extend({
             });
         }
     },
-    filterLog: function(filter) {
-        this.filter = filter;
-        store.set("countly_loggerfilter", filter);
-        $("#" + this.filter).addClass("selected").addClass("active");
-        this.refresh();
-    },
     filterToQuery: function() {
-        if (this.filter) {
-            var filter = {};
+        var self = this;
+        var query = {};
 
-            if (this.filter === "logger-all") {
-                //No filter
-            }
-            else if (this.filter === "logger-event") {
-                filter.types = "events";
-            }
-            else if (this.filter === "logger-session") {
-                filter.types = "session";
-            }
-            else if (this.filter === "logger-metric") {
-                filter.types = "metrics";
-            }
-            else if (this.filter === "logger-user") {
-                filter.types = "user_details";
-            }
-            else if (this.filter === "logger-crash") {
-                filter.types = "crash";
-            }
-            else if (this.filter === "logger-consent") {
-                filter.types = "consent";
-            }
-            else if (this.filter === "logger-apm") {
-                filter.types = "apm";
-            }
-            else {
-                //THIS ELSE REPRESENTS ALL THOSE CASES WHEN THE LOG SOURCE IS SOME EXTERNAL PLUGIN
-                //AND YOU WANT TO THE FILTER THE LOGS BY THAT PLUGIN
-                var source = this.filter.replace("logger-", "");
-                if (source) {
-                    filter.source = source;
-                }
-            }
-
-            return filter;
+        if (!this.filter) {
+            return;
         }
+
+        var selectedLog = this.loggerItems.filter(function(o) {
+            return o.value === self.filter;
+        });
+
+        if (!selectedLog.length) {
+            return;
+        }
+
+        selectedLog = selectedLog[0];
+
+        if (selectedLog.value !== "logger-all") {
+            query["t." + selectedLog.type] = {$exists: true};
+        }
+
+        if (selectedLog.value === "logger-remote-config") {
+            //This is a backward compatibility check for remote config
+            //Remove this after 6 months approx from 16-04-2020
+            //There is one more check above, remove that too
+            var lookt = {};
+            var looksrc = {};
+            lookt["t.rc"] = {$exists: true};
+            looksrc.src = "remote-config";
+
+            query = { "$or": [ lookt, looksrc] };
+        }
+
+        return query;
     },
     requestInfo: function(d) {
         // `d` is the original data object for the row
@@ -297,6 +331,24 @@ window.LoggerView = countlyView.extend({
         }
         return str;
     },
+    refreshLoggerDropdown: function() {
+        var self = this;
+        $("#logger-selector").clySelectSetItems(this.loggerItems);
+
+        var currentLogItem = (this.loggerItems.filter(function(o) {
+            return o.value === self.filter;
+        })[0]) || {};
+
+        $("#logger-selector").clySelectSetSelection(currentLogItem.value, currentLogItem.name);
+
+        $("#logger-selector").off("cly-select-change").on("cly-select-change", function(e, selected) {
+            if (selected) {
+                self.filter = selected;
+                store.set("countly_loggerfilter", selected);
+                self.refresh();
+            }
+        });
+    }
 });
 
 //register views
@@ -304,17 +356,6 @@ app.loggerView = new LoggerView();
 
 app.route('/manage/logger', 'logger', function() {
     this.renderWhenReady(this.loggerView);
-});
-app.addPageScript("/manage/logger", function() {
-    $("#logger-selector").on("click", ">.button", function() {
-        if ($(this).hasClass("selected")) {
-            return true;
-        }
-
-        $(".logger-selector").removeClass("selected").removeClass("active");
-        var filter = $(this).attr("id");
-        app.activeView.filterLog(filter);
-    });
 });
 
 $(document).ready(function() {
