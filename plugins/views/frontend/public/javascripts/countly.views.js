@@ -1403,7 +1403,7 @@ function initializeViewsWidget() {
             interactive: true,
             contentAsHTML: true,
             functionInit: function(instance, helper) {
-                instance.content(getTooltipText($(helper.origin).parents(placeHolder.find("views table tr td:first-child"))));
+                instance.content(getTooltipText($(helper.origin)));
             }
         });
         /**
@@ -1412,7 +1412,7 @@ function initializeViewsWidget() {
          * @returns {String} tooltipStr - Tool tip text string
          */
         function getTooltipText(jqueryEl) {
-            var viewName = jqueryEl.find("td:first-child").data("view-name");
+            var viewName = $(jqueryEl).data("view-name");
             var tooltipStr = "<div id='views-tip'>";
 
             tooltipStr += viewName;
