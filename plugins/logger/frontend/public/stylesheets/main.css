@@ -34,3 +34,15 @@
     color: #B94A48;
     padding-left: 0px;
 }
+
+#logger-selector {
+    padding-top: 6px;
+    float: right;
+    width: auto;
+    outline: none;
+}
+
+#logger-selector .select-items {
+    width: 130px;
+    right: 0px;
+}
