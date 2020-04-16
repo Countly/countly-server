@@ -2232,9 +2232,9 @@ app.addPageScript("/users/#", function() {
         var userDetails = countlyUserdata.getUserdetails();
         $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>" + jQuery.i18n.map["userdata.crashes"] + "</div></div></div><table  data-view='crashesView' id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
         app.activeView.shouldLoadCrashes = false;
-        app.activeView.tabs.on("tabsshow", function(event, ui) {
-            if (ui && ui.panel) {
-                var tab = ($(ui.panel).attr("id") + "").replace("usertab-", "");
+        app.activeView.tabs.on("tabsactivate", function(event, ui) {
+            if (ui && ui.newPanel) {
+                var tab = ($(ui.newPanel).attr("id") + "").replace("usertab-", "");
                 if (tab === "crashes" && !app.activeView.shouldLoadCrashes) {
                     app.activeView.shouldLoadCrashes = true;
                     if (app.activeView.dtablecrashes) {

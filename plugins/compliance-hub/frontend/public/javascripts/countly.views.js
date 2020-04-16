@@ -665,9 +665,9 @@ app.addPageScript("/users/#", function() {
         $("#usertab-consent").append("<div class='widget-header'><div class='left'><div class='title'>" + jQuery.i18n.map["userdata.consents"] + "</div></div></div><table id='d-table-consents' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0' data-view='consentManagementView'></table>");
 
         app.activeView.shouldLoadConsents = false;
-        app.activeView.tabs.on("tabsshow", function(event, ui) {
-            if (ui && ui.panel) {
-                var tab = ($(ui.panel).attr("id") + "").replace("usertab-", "");
+        app.activeView.tabs.on("tabsactivate", function(event, ui) {
+            if (ui && ui.newPanel) {
+                var tab = ($(ui.newPanel).attr("id") + "").replace("usertab-", "");
                 if (tab === "consent" && !app.activeView.shouldLoadConsents) {
                     app.activeView.shouldLoadConsents = true;
                     if (app.activeView.dtableconsents) {
