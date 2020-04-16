@@ -231,7 +231,7 @@ table { border-collapse: collapse; }
 	#dashboard-graph,
     #dashboard-graph-secondary { font-family:Oswald; font-size:14px; margin:0 30px !important; }
     #dashboard-graph .legendLabel,.graph .legendLabel { font-family:Ubuntu !important; font-size:14px !important; }
-    
+
     .usparkline, .dsparkline {display: none;}
 
     .graph-no-data { display:none; height:100%; position:relative; }
@@ -3586,7 +3586,8 @@ color:#E95C6C; transition:color 1s;
 
 .routename-user .zoom { margin-top: -25px; }
 .routename-sessions .zoom { margin-top: -25px; }
-.routename-events .zoom { margin-top: -45px; }
+.routename-events #event-main .events-general-description:empty ~ .widget-content > .zoom { margin-top: -45px }
+.routename-events #event-main .events-general-description ~ .widget-content > .zoom { margin-top: -10px }
 .routename-revenue .zoom { margin-top: -12px; }
 .routename-attribution .zoom { margin-top: -25px; }
 .routename-compliance .zoom { margin-top: -12px; }
