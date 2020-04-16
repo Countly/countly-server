@@ -275,7 +275,7 @@ appsApi.createApp = async function(params) {
                 "ls": 1
             }, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true, unique: true }, function() {});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
             common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
                 expireAfterSeconds: 60 * 60 * 3,
                 background: true
