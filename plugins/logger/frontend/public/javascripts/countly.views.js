@@ -1,4 +1,4 @@
-/*global countlyView, store, $, countlyLogger, T, countlyCommon, jQuery, moment, app, LoggerView, CountlyHelpers*/
+/*global countlyView, store, $, countlyLogger, T, countlyCommon, countlyGlobal, jQuery, moment, app, LoggerView, CountlyHelpers*/
 window.LoggerView = countlyView.extend({
     initialize: function() {
         this.filter = (store.get("countly_loggerfilter")) ? store.get("countly_loggerfilter") : "logger-all";
@@ -258,7 +258,7 @@ window.LoggerView = countlyView.extend({
             this.dtable.stickyTableHeaders();
             this.dtable.fnSort([ [2, 'desc'] ]);
             CountlyHelpers.expandRows(this.dtable, this.requestInfo);
-            this.refreshLoggerDropdown();
+            this.refreshLoggerDropdown(this.filter);
         }
     },
     refresh: function() {
@@ -331,23 +331,34 @@ window.LoggerView = countlyView.extend({
         }
         return str;
     },
-    refreshLoggerDropdown: function() {
+    refreshLoggerDropdown: function(filter) {
         var self = this;
         $("#logger-selector").clySelectSetItems(this.loggerItems);
 
-        var currentLogItem = (this.loggerItems.filter(function(o) {
+        var currentLogItem = this.loggerItems.filter(function(o) {
             return o.value === self.filter;
-        })[0]) || {};
-
-        $("#logger-selector").clySelectSetSelection(currentLogItem.value, currentLogItem.name);
+        });
 
         $("#logger-selector").off("cly-select-change").on("cly-select-change", function(e, selected) {
-            if (selected) {
-                self.filter = selected;
-                store.set("countly_loggerfilter", selected);
-                self.refresh();
-            }
+            self.filter = selected;
+            store.set("countly_loggerfilter", selected);
+            self.refresh();
         });
+
+        if (!currentLogItem.length) {
+            var plugin = self.filter.replace("logger-", "");
+            if (countlyGlobal.plugins.indexOf(plugin) < 0) {
+                //The plugin is not present so set the logger-all as default item
+                currentLogItem = [self.loggerItems[0]];
+                filter = currentLogItem[0].value;
+            }
+        }
+
+        if (currentLogItem.length && (currentLogItem[0].value === filter)) {
+            //This check avoids setting the same filter multiple times when called by the plugins
+            currentLogItem = currentLogItem[0];
+            $("#logger-selector").clySelectSetSelection(currentLogItem.value, currentLogItem.name);
+        }
     }
 });
 
