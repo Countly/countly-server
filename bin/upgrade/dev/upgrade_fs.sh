@@ -2,7 +2,7 @@
 
 echo "Running filesystem modifications"
 
-VER="DEV"
+VER="20.04"
 
 CONTINUE="$(countly check before upgrade fs "$VER")"
 

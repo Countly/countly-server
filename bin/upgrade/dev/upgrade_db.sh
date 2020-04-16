@@ -2,7 +2,7 @@
 
 echo "Running database modifications"
 
-VER="DEV"
+VER="20.04"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 
