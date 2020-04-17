@@ -1057,7 +1057,9 @@ app.addPageScript("/drill#", function() {
             $.when(countlySegmentation.initialize(currEvent)).then(function() {
                 $("#drill").replaceWith(drillClone.clone(true));
                 self.adjustFilters();
-                self.draw(true, false);
+                if (!self.keepQueryTillExec) {
+                    self.draw(true, false);
+                }
             });
         });
         setTimeout(function() {

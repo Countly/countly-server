@@ -2337,7 +2337,9 @@ app.addPageScript("/drill#", function() {
             $.when(countlySegmentation.initialize("[CLY]_star_rating")).then(function() {
                 $("#drill").replaceWith(drillClone.clone(true));
                 self.adjustFilters();
-                self.draw(true, false);
+                if (!self.keepQueryTillExec) {
+                    self.draw(true, false);
+                }
             });
         });
     }
