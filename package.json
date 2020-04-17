@@ -45,7 +45,7 @@
     "errorhandler": "1.5.1",
     "express": "4.17.1",
     "express-rate-limit": "5.1.1",
-    "express-session": "1.17.0",
+    "express-session": "1.17.1",
     "external-ip": "2.1.1",
     "formidable": "1.2.2",
     "fs-extra": "^9.0.0",
