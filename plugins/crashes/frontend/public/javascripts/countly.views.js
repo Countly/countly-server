@@ -501,6 +501,20 @@ window.CrashesView = countlyView.extend({
 
         $(".remove-crashes-filter").on("click", function() {
             countlyCrashes.resetActiveFilter();
+            var oldFilter = countlyCrashes.getActiveFilter();
+            
+            self.filterObj = self.filterObj || {};
+            if (oldFilter.version) {
+                self.filterObj["app_version." + oldFilter.version] = {"$exists":true};
+            }
+            
+            if (oldFilter.platform) {
+                self.filterObj["os"] = {"$in":[oldFilter.platform]};
+            }
+            
+            if (oldFilter.fatality) {
+                self.filterObj["nonfatal"] = {"$eq":oldFilter.fatality === "nonfatal"};
+            }
             self.loadFilterBoxState();
             self.refreshFilterInfo(true);
             self.refresh();
@@ -520,6 +534,21 @@ window.CrashesView = countlyView.extend({
                 platform: platform,
                 fatality: fatality
             });
+            
+            self.filterObj = self.filterObj || {};
+            if (version) {
+                self.filterObj["app_version." + version] = {"$exists":true};
+            }
+            
+            if (platform) {
+                self.filterObj["os"] = {"$in":[platform]};
+            }
+            
+            if (fatality) {
+                self.filterObj["nonfatal"] = {"$eq":fatality === "nonfatal"};
+            }
+            
+            
             self.refreshFilterInfo(false);
             if (oldFilter.version !== version || oldFilter.platform !== platform) {
                 self.redraw(true);
@@ -527,6 +556,8 @@ window.CrashesView = countlyView.extend({
             else {
                 self.redraw();
             }
+            self.buildQuery();
+            self.loadAndRefresh();
         });
 
         self.refreshFilterInfo();
@@ -721,120 +752,7 @@ window.CrashesView = countlyView.extend({
                 self.byDisabled = true;
                 $.when(countlySegmentation.initialize("[CLY]_crash")).then(function() {
                     self.initDrill();
-                    setTimeout(function() {
-                        self.filterBlockClone = $("#filter-view").clone(true);
-                        if (self._filter) {
-                            $("#filter-view").show();
-                            $(".filter-view-container").show();
-                            self.adjustFilters();
-                            var lookup = {};
-                            for (var i in self.convertFilter) {
-                                lookup[self.convertFilter[i].prop] = i;
-                            }
-                            var filter = self._query;
-                            var inputs = [];
-                            var subs = {};
-                            for (var n in filter) {
-                                inputs.push(n);
-                                subs[n] = [];
-                                for (var j in filter[n]) {
-                                    if (filter[n][j].length) {
-                                        for (var k = 0; k < filter[n][j].length; k++) {
-                                            subs[n].push([j, filter[n][j][k]]);
-                                        }
-                                    }
-                                    else {
-                                        subs[n].push([j, filter[n][j]]);
-                                    }
-                                }
-                            }
-                            var setInput = function(cur, sub, total) {
-                                sub = sub || 0;
-                                if (inputs[cur]) {
-                                    var filterType = subs[inputs[cur]][sub][0];
-                                    if (filterType === "$in" || filterType === "$eq") {
-                                        filterType = "=";
-                                    }
-                                    else if (filterType === "$nin" || filterType === "$ne") {
-                                        filterType = "!=";
-                                    }
-                                    else if (filterType === "$exists") {
-                                        if (subs[inputs[cur]][sub][0]) {
-                                            filterType = "=";
-                                        }
-                                        else {
-                                            filterType = "!=";
-                                        }
-                                    }
-
-                                    var val = subs[inputs[cur]][sub][1];
-                                    var el = $(".query:nth-child(" + (total) + ")");
-                                    el.find(".filter-name").trigger("click");
-                                    el.find(".filter-type").trigger("click");
-                                    var name = inputs[cur];
-                                    if (lookup[name]) {
-                                        name = lookup[name];
-                                    }
-                                    else if (name.indexOf(".") !== -1) {
-                                        var parts = name.split(".");
-                                        if (lookup[parts[0]]) {
-                                            name = lookup[parts[0]];
-                                            val = parts[1];
-                                        }
-                                    }
-                                    $(el).data("query_value", val + ""); //saves value as attribute for selected query
-                                    el.find(".filter-name").find(".select-items .item[data-value='" + name + "']").trigger("click");
-                                    el.find(".filter-type").find(".select-items .item[data-value='" + filterType + "']").trigger("click");
-                                    setTimeout(function() {
-                                        el.find(".filter-value").not(".hidden").trigger("click");
-                                        if (el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").length) {
-                                            el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").trigger("click");
-                                        }
-                                        else if (_.isNumber(val) && (val + "").length === 10) {
-                                            el.find(".filter-value.date").find("input").val(countlyCommon.formatDate(moment(val * 1000), "DD MMMM, YYYY"));
-                                            el.find(".filter-value.date").find("input").data("timestamp", val);
-                                        }
-                                        else {
-                                            el.find(".filter-value").not(".hidden").find("input").val(val);
-                                        }
-
-                                        if (subs[inputs[cur]].length === sub + 1) {
-                                            cur++;
-                                            sub = 0;
-                                        }
-                                        else {
-                                            sub++;
-                                        }
-                                        total++;
-                                        if (inputs[cur]) {
-                                            $("#filter-add-container").trigger("click");
-                                            if (sub > 0) {
-                                                setTimeout(function() {
-                                                    el = $(".query:nth-child(" + (total) + ")");
-                                                    el.find(".and-or").find(".select-items .item[data-value='OR']").trigger("click");
-                                                    setInput(cur, sub, total);
-                                                }, 500);
-                                            }
-                                            else {
-                                                setInput(cur, sub, total);
-                                            }
-                                        }
-                                        else {
-                                            setTimeout(function() {
-                                                $("#apply-filter").removeClass("disabled");
-                                                $("#no-filter").hide();
-                                                var filterData = self.getFilterObjAndByVal();
-                                                $("#current-filter").show().find(".text").text(filterData.bookmarkText);
-                                                $("#connector-container").show();
-                                            }, 500);
-                                        }
-                                    }, 500);
-                                }
-                            };
-                            setInput(0, 0, 1);
-                        }
-                    }, 0);
-
+                    self.buildQuery();
                     self.processData();
                 });
             }
@@ -844,6 +762,34 @@ window.CrashesView = countlyView.extend({
             }
 
             self.pageScripts();
+            
+            //load data from query into filter
+            if (self._filter) {
+                var oldFilter = countlyCrashes.getActiveFilter();
+                var uiFilter = {version: null, platform: null, fatality: "fatal"};
+                for (var key in self._query) {
+                    if (key === "os" && self._query[key] && self._query[key].$in && self._query[key].$in[0]) {
+                        uiFilter.platform = self._query[key].$in[0];
+                    }
+                    else if (key === "nonfatal" && self._query[key]) {
+                        uiFilter.fatality = self._query[key].$eq ? "nonfatal" : "fatal";
+                    }
+                    else if (key.indexOf("app_version.") === 0) {
+                        uiFilter.version = (key + "").split(".").pop();
+                    }
+                }
+                
+                countlyCrashes.setActiveFilter(uiFilter);
+                if (oldFilter.version !== uiFilter.version || oldFilter.platform !== uiFilter.platform) {
+                    self.redraw(true);
+                }
+                else {
+                    self.redraw();
+                }
+            }
+    
+            self.refreshFilterInfo();
+            self.loadFilterBoxState();
 
             $('.action-segmentation').attr('data-tooltip-content', "#action-segmentation-tooltip");
 
@@ -862,6 +808,122 @@ window.CrashesView = countlyView.extend({
             });
         }
 
+    },
+    buildQuery : function() {
+        var self = this;
+        setTimeout(function() {
+            self.filterBlockClone = $("#filter-view").clone(true);
+            if (self._filter) {
+                $("#filter-view").show();
+                $(".filter-view-container").show();
+                self.adjustFilters();
+                var lookup = {};
+                for (var i in self.convertFilter) {
+                    lookup[self.convertFilter[i].prop] = i;
+                }
+                var filter = self._query;
+                var inputs = [];
+                var subs = {};
+                for (var n in filter) {
+                    inputs.push(n);
+                    subs[n] = [];
+                    for (var j in filter[n]) {
+                        if (filter[n][j].length) {
+                            for (var k = 0; k < filter[n][j].length; k++) {
+                                subs[n].push([j, filter[n][j][k]]);
+                            }
+                        }
+                        else {
+                            subs[n].push([j, filter[n][j]]);
+                        }
+                    }
+                }
+                var setInput = function(cur, sub, total) {
+                    sub = sub || 0;
+                    if (inputs[cur]) {
+                        var filterType = subs[inputs[cur]][sub][0];
+                        if (filterType === "$in" || filterType === "$eq") {
+                            filterType = "=";
+                        }
+                        else if (filterType === "$nin" || filterType === "$ne") {
+                            filterType = "!=";
+                        }
+                        else if (filterType === "$exists") {
+                            if (subs[inputs[cur]][sub][0]) {
+                                filterType = "=";
+                            }
+                            else {
+                                filterType = "!=";
+                            }
+                        }
+
+                        var val = subs[inputs[cur]][sub][1];
+                        var el = $(".query:nth-child(" + (total) + ")");
+                        el.find(".filter-name").trigger("click");
+                        el.find(".filter-type").trigger("click");
+                        var name = inputs[cur];
+                        if (lookup[name]) {
+                            name = lookup[name];
+                        }
+                        else if (name.indexOf(".") !== -1) {
+                            var parts = name.split(".");
+                            if (lookup[parts[0]]) {
+                                name = lookup[parts[0]];
+                                val = parts[1];
+                            }
+                        }
+                        $(el).data("query_value", val + ""); //saves value as attribute for selected query
+                        el.find(".filter-name").find(".select-items .item[data-value='" + name + "']").trigger("click");
+                        el.find(".filter-type").find(".select-items .item[data-value='" + filterType + "']").trigger("click");
+                        setTimeout(function() {
+                            el.find(".filter-value").not(".hidden").trigger("click");
+                            if (el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").length) {
+                                el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").trigger("click");
+                            }
+                            else if (_.isNumber(val) && (val + "").length === 10) {
+                                el.find(".filter-value.date").find("input").val(countlyCommon.formatDate(moment(val * 1000), "DD MMMM, YYYY"));
+                                el.find(".filter-value.date").find("input").data("timestamp", val);
+                            }
+                            else {
+                                el.find(".filter-value").not(".hidden").find("input").val(val);
+                            }
+
+                            if (subs[inputs[cur]].length === sub + 1) {
+                                cur++;
+                                sub = 0;
+                            }
+                            else {
+                                sub++;
+                            }
+                            total++;
+                            if (inputs[cur]) {
+                                $("#filter-add-container").trigger("click");
+                                if (sub > 0) {
+                                    setTimeout(function() {
+                                        el = $(".query:nth-child(" + (total) + ")");
+                                        el.find(".and-or").find(".select-items .item[data-value='OR']").trigger("click");
+                                        setInput(cur, sub, total);
+                                    }, 500);
+                                }
+                                else {
+                                    setInput(cur, sub, total);
+                                }
+                            }
+                            else {
+                                setTimeout(function() {
+                                    $("#apply-filter").removeClass("disabled");
+                                    $("#no-filter").hide();
+                                    var filterData = self.getFilterObjAndByVal();
+                                    $("#current-filter").show().find(".text").text(filterData.bookmarkText);
+                                    $("#connector-container").show();
+                                }, 500);
+                            }
+                        }, 500);
+                    }
+                };
+                setInput(0, 0, 1);
+            }
+        }, 0);
     },
     redraw: function(needsRequest) {
         var self = this;
