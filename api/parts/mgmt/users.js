@@ -110,7 +110,7 @@ usersApi.getAllUsers = function(params) {
             var membersObj = {};
 
             for (let i = 0; i < members.length; i++) {
-                const result = failedLogins.find(x => (x._id === members[i].username)) || { fails: 0 };
+                const result = failedLogins.find(x => (x._id === JSON.stringify(["login", members[i].username]))) || { fails: 0 };
 
                 if (result.fails > 0 && result.fails % bruteforceFails === 0 && Math.floor(new Date().getTime() / 1000) < (((result.fails / bruteforceFails) * bruteforceWait) + result.lastFail)) {
                     members[i].blocked = true;
@@ -156,7 +156,7 @@ usersApi.resetTimeBan = function(params) {
         return false;
     }
 
-    common.db.collection('failed_logins').remove({_id: params.qstring.username}, (err) => {
+    common.db.collection('failed_logins').remove({_id: JSON.stringify(["login", params.qstring.username])}, (err) => {
         if (err) {
             common.returnMessage(params, 500, 'Remove from collection failed.');
             return false;
