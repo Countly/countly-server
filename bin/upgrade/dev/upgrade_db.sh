@@ -24,6 +24,7 @@ then
     nodejs "$CUR/scripts/clearOldTokens.js"
     nodejs "$CUR/scripts/remove_drill_index.js"
     nodejs "$CUR/../18.01/scripts/delete_drill_meta.js"
+    nodejs "$CUR/scripts/fix_nxret.js"
 
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"

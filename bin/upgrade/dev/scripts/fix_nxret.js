@@ -19,6 +19,7 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
     else {
         printMessage("error", "Error at app fetch. Stopped. ", appsErr);
         countlyDb.close();
+        return;
     }
 
     function upgrade(app, done) {
@@ -26,6 +27,7 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
         printMessage("log", "(" + app.name + ") Fixing...");
         var cursor = countlyDb.collection('app_nxret' + app._id).find({$expr: {$ne: ["$_id", "$uid"] } });
         var requests = [];
+        var nDocs = 0;
         var bulkWritePromises = [];
 
         cursor.forEach(function(nxret) {
@@ -41,6 +43,8 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 bulkWritePromises.push(getBulkWritePromise(requests));
                 requests = [];
             }
+            nDocs++;
+
         }, function(err) {
             if (err) {
                 printMessage("error", "cursor.forEach stopped execution: ", err);
@@ -99,7 +103,7 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
             }
             else {
-                printMessage("log", "(" + app.name + ")", "/", "nInserted =", nInserted, "/", "nRemoved =", nRemoved);
+                printMessage("log", "(" + app.name + ")", "nDocs =", nDocs,  "/", "nInserted =", nInserted, "/", "nRemoved =", nRemoved);
                 printMessage("log", "(" + app.name + ")", "Successful.", "\n");
             }
             return done();
