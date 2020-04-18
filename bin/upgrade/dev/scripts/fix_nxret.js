@@ -10,9 +10,18 @@ printMessage("log", "Started...");
 
 countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
+    var hasAnyErrors = false;
+
     if (!appsErr && apps) {
         asyncjs.eachSeries(apps, upgrade, function() {
-            printMessage("log", "Finished.");
+            if (hasAnyErrors) {
+                printMessage("error", "-------------------------------------------------");
+                printMessage("error", "Finished with ERRORS. Please check previous logs.");
+                printMessage("error", "-------------------------------------------------");
+            }
+            else {
+                printMessage("log", "Finished.");
+            }
             countlyDb.close();
         });
     }
@@ -63,6 +72,7 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 requests = [];
             }
             Promise.all(bulkWritePromises).then(finalizeApp).catch(function(err) {
+                hasAnyErrors = true;
                 printMessage("error", err);
                 printMessage("error", "----------------------------------------------");
                 printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
@@ -106,6 +116,7 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
             });
 
             if (hasError) {
+                hasAnyErrors = true;
                 printMessage("error", "----------------------------------------------");
                 printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
             }
@@ -118,7 +129,8 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                     printMessage("log", "(" + app.name + ")", "Successful.", "\n");
                 }
                 else {
-                    printMessage("error", "(" + app.name + ")", "processed doesn't match with inserted/removed.", "\n");
+                    hasAnyErrors = true;
+                    printMessage("error", "(" + app.name + ")", "ERROR: processed doesn't match with inserted/removed.", "\n");
                 }
             }
             return done();
