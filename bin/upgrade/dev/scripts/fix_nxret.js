@@ -23,7 +23,6 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
     }
 
     function upgrade(app, done) {
-
         printMessage("log", "(" + app.name + ") Fixing...");
         var cursor = countlyDb.collection('app_nxret' + app._id).find({$expr: {$ne: ["$_id", "$uid"] } });
         var requests = [];
@@ -55,7 +54,6 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 }
                 nProcessed++;
             }
-
         }, function(err) {
             if (err) {
                 printMessage("error", "cursor.forEach stopped execution: ", err);
@@ -64,7 +62,12 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 bulkWritePromises.push(getBulkWritePromise(requests));
                 requests = [];
             }
-            Promise.all(bulkWritePromises).catch(finalizeApp).then(finalizeApp);
+            Promise.all(bulkWritePromises).then(finalizeApp).catch(function(err) {
+                printMessage("error", err);
+                printMessage("error", "----------------------------------------------");
+                printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
+                return done();
+            });
         });
 
         function getBulkWritePromise(reqArr) {
@@ -118,7 +121,12 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 if (nProcessed > 0) {
                     printMessage("log", "(" + app.name + ")", "inserted =", nInserted, "/", "removed =", nRemoved);
                 }
-                printMessage("log", "(" + app.name + ")", "Successful.", "\n");
+                if (nProcessed === nInserted && nProcessed === nRemoved) {
+                    printMessage("log", "(" + app.name + ")", "Successful.", "\n");
+                }
+                else {
+                    printMessage("error", "(" + app.name + ")", "processed doesn't match with inserted/removed.", "\n");
+                }
             }
             return done();
         }
