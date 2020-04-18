@@ -27,23 +27,34 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
         printMessage("log", "(" + app.name + ") Fixing...");
         var cursor = countlyDb.collection('app_nxret' + app._id).find({$expr: {$ne: ["$_id", "$uid"] } });
         var requests = [];
-        var nDocs = 0;
+        var nProcessed = 0;
+        var nSkipped = 0;
         var bulkWritePromises = [];
 
         cursor.forEach(function(nxret) {
-            var oldId = nxret._id;
-            nxret._id = nxret.uid;
-            requests.push({
-                insertOne: { "document": nxret }
-            });
-            requests.push({
-                deleteOne: { "filter": { _id: oldId } }
-            });
-            if (requests.length === 1000) {
-                bulkWritePromises.push(getBulkWritePromise(requests));
-                requests = [];
+            if (nxret.uid === null || nxret.uid === undefined) {
+                printMessage("log", "(" + app.name + ") Skipping a doc with empty uid");
+                nSkipped++;
             }
-            nDocs++;
+            else if (nxret._id === nxret.uid) {
+                printMessage("log", "(" + app.name + ") Skipping a doc whose _id = uid");
+                nSkipped++;
+            }
+            else {
+                var oldId = nxret._id;
+                nxret._id = nxret.uid;
+                requests.push({
+                    insertOne: { "document": nxret }
+                });
+                requests.push({
+                    deleteOne: { "filter": { _id: oldId } }
+                });
+                if (requests.length === 1000) {
+                    bulkWritePromises.push(getBulkWritePromise(requests));
+                    requests = [];
+                }
+                nProcessed++;
+            }
 
         }, function(err) {
             if (err) {
@@ -103,7 +114,10 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
             }
             else {
-                printMessage("log", "(" + app.name + ")", "nDocs =", nDocs,  "/", "nInserted =", nInserted, "/", "nRemoved =", nRemoved);
+                printMessage("log", "(" + app.name + ")", "processed =", nProcessed, "/", "skipped =", nSkipped);
+                if (nProcessed > 0) {
+                    printMessage("log", "(" + app.name + ")", "inserted =", nInserted, "/", "removed =", nRemoved);
+                }
                 printMessage("log", "(" + app.name + ")", "Successful.", "\n");
             }
             return done();
