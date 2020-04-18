@@ -95,9 +95,6 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 var nInserted = 0;
                 var nRemoved = 0;
                 responses.forEach(function(response) {
-                    if (!response) {
-                        return;
-                    }
                     hasError = hasError || response.err;
                     if (response.result) {
                         if (response.result.nInserted) {
