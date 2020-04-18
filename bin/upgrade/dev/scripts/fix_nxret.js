@@ -91,24 +91,20 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
         function finalizeApp(responses) {
             var hasError = false;
-            if (Array.isArray(responses)) {
-                var nInserted = 0;
-                var nRemoved = 0;
-                responses.forEach(function(response) {
-                    hasError = hasError || response.err;
-                    if (response.result) {
-                        if (response.result.nInserted) {
-                            nInserted += response.result.nInserted;
-                        }
-                        if (response.result.nRemoved) {
-                            nRemoved += response.result.nRemoved;
-                        }
+            var nInserted = 0;
+            var nRemoved = 0;
+            responses.forEach(function(response) {
+                hasError = hasError || response.err;
+                if (response.result) {
+                    if (response.result.nInserted) {
+                        nInserted += response.result.nInserted;
                     }
-                });
-            }
-            else {
-                hasError = true;
-            }
+                    if (response.result.nRemoved) {
+                        nRemoved += response.result.nRemoved;
+                    }
+                }
+            });
+
             if (hasError) {
                 printMessage("error", "----------------------------------------------");
                 printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
