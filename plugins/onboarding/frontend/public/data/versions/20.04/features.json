@@ -1,0 +1,74 @@
+[
+  {
+    "image": "1-performance-monitoring.png",
+    "title": "Brand new: Performance monitoring",
+    "text": "Keep track of your applications' backend API requests, perform code level profiling with your own custom performance metrics and measure your application start and page load times. Find out performance issues within your application and fix them for a better customer experience.",
+    "showIn": "EE"
+  },
+  {
+    "image": "2-cohorts-ui.png",
+    "title": "Extract the full power out of your cohorts",
+    "text": "A fresh and powerful new design for the cohorts UI. Explore changes in your cohorts in the overview section, dive into individual cohort details to visualize cohort changes over time & explore common metrics of users in a cohort. Compare in app behaviour of customers in different cohorts to understand and serve them better.",
+    "showIn": "EE"
+  },
+  {
+    "image": "3-formula-filtering-parameters.png",
+    "title": "Fine tune your formulas",
+    "text": "Session duration and users in a cohort can now be used as parameters in your formulas. Furthermore, each parameter in your formulas can now be filtered using default/custom user properties and event segments for sharper fine tuning & detailed analysis.",
+    "showIn": "EE"
+  },
+  {
+    "image": "4-funnel-steps.png",
+    "title": "Multi logic in funnels, cohorts and A/B testing goals",
+    "text": "Using the new OR operator you can create funnels, cohorts and A/B testing goals that have a larger scope. For instance, first step of a funnel can now be constructed using 3 separate custom events, or a single cohort can group users based on whether they triggered an event or the other.",
+    "showIn": "EE"
+  },
+  {
+    "image": "5-funnels.png",
+    "title": "It's all about the customer journey",
+    "text": "New overview in funnels is designed to give you a faster visibility into conversion rates of your customers. Additionally, you can now view time in between steps for each of your funnels which will enable you to optimize steps that take longer for customers to pass through.",
+    "showIn": "EE"
+  },
+  {
+    "image": "6-new_and-improved-widgets.png",
+    "title": "Meet your new dashboard widgets",
+    "text": "Your dashboards are now a lot more powerful thanks to our new and improved widgets. Display multiple cohorts on a bar chart, visualise changes over time for multiple cohorts, use the number widget for your formulas, compare & contrast previous period data in your drill & formulas widgets.",
+    "showIn": "EE"
+  },
+  {
+    "image": "8-crashfree-sessions.png",
+    "title": "Keep your users and their sessions crash free",
+    "text": "We have made quite a few optimizations in crash analytics including two new, very important metrics in overview: Crash free users and crash free sessions. These metrics will let you stay on top of your overall customer experience and address problems before they start to impact your business.",
+    "showIn": "All"
+  },
+  {
+    "image": "7-mau_dau_wau.png",
+    "title": "MAU, WAU, DAU: Easier than ever",
+    "text": "Monthly, weekly and daily active user visualisation is now available under Analytics → Users. MAU, WAU and DAU is also displayed on a 30 day time series graph so that you can stay on top of your active user trends.",
+    "showIn": "All"
+  },
+  {
+    "image": "10-data-populator.png",
+    "title": "Templates in data populator",
+    "text": "We have added templating concept to the data populator. It comes with 5 default templates for banking, healthcare, navigation, ecommerce & gaming and you can create your own templates to populate data that is relevant for your use case.",
+    "showIn": "All"
+  },
+  {
+    "image": "9-zooming-for-time-series.png",
+    "title": "A better perspective into time series",
+    "text": "Sometimes it is crucial to explore the data from a different perspective. All time series graphs throughout your dashboard now have zoom controls, so that you can zoom in & out and pan your graphs to get to the level of detail you need.",
+    "showIn": "All"
+  },
+  {
+    "image": "11-view-name-change.png",
+    "title": "Give your views meaning",
+    "text": "Your page or screen view names are not always easy to understand, especially for non-technical people looking at the reports. Using the display name configuration option in Analytics → Views, you can now customize names for all your views.",
+    "showIn": "All"
+  },
+  {
+    "image": "12-feedback.png",
+    "title": "More options for your feedback widgets",
+    "text": "We have added a few extra configuration options for your feedback widgets. Add comment and Contact me via e-mail options can now be toggled for each widget. You can also choose from 3 different widget trigger button sizes to find the perfect fit for your application.",
+    "showIn": "All"
+  }
+]
