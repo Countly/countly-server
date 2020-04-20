@@ -502,18 +502,18 @@ window.CrashesView = countlyView.extend({
         $(".remove-crashes-filter").on("click", function() {
             countlyCrashes.resetActiveFilter();
             var oldFilter = countlyCrashes.getActiveFilter();
-            
+
             self.filterObj = self.filterObj || {};
             if (oldFilter.version) {
-                self.filterObj["app_version." + oldFilter.version] = {"$exists":true};
+                self.filterObj["app_version." + oldFilter.version] = {"$exists": true};
             }
-            
+
             if (oldFilter.platform) {
-                self.filterObj["os"] = {"$in":[oldFilter.platform]};
+                self.filterObj.os = {"$in": [oldFilter.platform]};
             }
-            
+
             if (oldFilter.fatality) {
-                self.filterObj["nonfatal"] = {"$eq":oldFilter.fatality === "nonfatal"};
+                self.filterObj.nonfatal = {"$eq": oldFilter.fatality === "nonfatal"};
             }
             self.loadFilterBoxState();
             self.refreshFilterInfo(true);
@@ -534,21 +534,21 @@ window.CrashesView = countlyView.extend({
                 platform: platform,
                 fatality: fatality
             });
-            
+
             self.filterObj = self.filterObj || {};
             if (version) {
-                self.filterObj["app_version." + version] = {"$exists":true};
+                self.filterObj["app_version." + version] = {"$exists": true};
             }
-            
+
             if (platform) {
-                self.filterObj["os"] = {"$in":[platform]};
+                self.filterObj.os = {"$in": [platform]};
             }
-            
+
             if (fatality) {
-                self.filterObj["nonfatal"] = {"$eq":fatality === "nonfatal"};
+                self.filterObj.nonfatal = {"$eq": fatality === "nonfatal"};
             }
-            
-            
+
+
             self.refreshFilterInfo(false);
             if (oldFilter.version !== version || oldFilter.platform !== platform) {
                 self.redraw(true);
@@ -762,7 +762,7 @@ window.CrashesView = countlyView.extend({
             }
 
             self.pageScripts();
-            
+
             //load data from query into filter
             if (self._filter) {
                 var oldFilter = countlyCrashes.getActiveFilter();
@@ -778,7 +778,7 @@ window.CrashesView = countlyView.extend({
                         uiFilter.version = (key + "").split(".").pop();
                     }
                 }
-                
+
                 countlyCrashes.setActiveFilter(uiFilter);
                 if (oldFilter.version !== uiFilter.version || oldFilter.platform !== uiFilter.platform) {
                     self.redraw(true);
@@ -787,7 +787,7 @@ window.CrashesView = countlyView.extend({
                     self.redraw();
                 }
             }
-    
+
             self.refreshFilterInfo();
             self.loadFilterBoxState();
 
@@ -809,7 +809,7 @@ window.CrashesView = countlyView.extend({
         }
 
     },
-    buildQuery : function() {
+    buildQuery: function() {
         var self = this;
         setTimeout(function() {
             self.filterBlockClone = $("#filter-view").clone(true);
