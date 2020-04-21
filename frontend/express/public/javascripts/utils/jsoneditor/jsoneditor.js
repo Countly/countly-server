@@ -39,7 +39,13 @@ var _JSONEditor = function(element, json, statusEl){
         }
 
         try {
-            jsonlint.parse(json);
+            var j = jsonlint.parse(json);
+
+            if(typeof(j) === "number" ||
+               typeof(j) === "boolean") {
+                throw new Error(true);
+            }
+
             if(statusEl.validElement) {
                 statusEl.validElement.show();
             }
