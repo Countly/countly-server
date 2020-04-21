@@ -5659,6 +5659,7 @@ window.DownloadView = countlyView.extend({
         countlyTaskManager.fetchResult(this.task_id, function(res) {
             var myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-title"] + '</h1>';
             if (res && res.data) {
+                res.data = res.data.replace(new RegExp("&quot;", 'g'), "");
                 self.link = countlyCommon.API_PARTS.data.r + "/app_users/download/" + res.data + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
                 window.location = self.link;
 
