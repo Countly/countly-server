@@ -485,7 +485,7 @@ window.PopulatorView = countlyView.extend({
             self.renderTab();
         });
 
-        setInitialDateValues = false;
+        var setInitialDateValues = false;
 
         setInterval(function updateDateRangeButton() {
             if (app.activeView === self) {
