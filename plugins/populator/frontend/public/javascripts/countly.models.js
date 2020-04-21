@@ -565,6 +565,10 @@
 
 
         this.getEvents = function(count, templateEvents) {
+            if (!_.isObject(templateEvents) || Object.keys(templateEvents).length === 0) {
+                return [];
+            }
+
             var events = [];
             var eventKeys = Object.keys(templateEvents || {});
 

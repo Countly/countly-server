@@ -501,7 +501,20 @@ window.PopulatorView = countlyView.extend({
             }
         }, 500);
 
+        $("#start-populate").addClass("disabled");
+        $(".populator-template-name.cly-select").on("cly-select-change", function() {
+            $("#start-populate").removeClass("disabled");
+        });
+
         $("#start-populate").on('click', function() {
+            if ($("#start-populate").hasClass("disabled")) {
+                CountlyHelpers.notify({
+                    message: jQuery.i18n.map["populator.select-a-template-first"],
+                    type: "error"
+                });
+                return;
+            }
+
             CountlyHelpers.confirm(jQuery.i18n.map['populator.warning2'], "popStyleGreen", function(result) {
                 if (!result) {
                     return true;
