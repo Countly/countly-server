@@ -537,6 +537,11 @@ window.CrashesView = countlyView.extend({
 
             self.filterObj = self.filterObj || {};
             if (version) {
+                for (var i in self.filterObj) {
+                    if (i.indexOf("app_version.") === 0) {
+                        delete self.filterObj[i];
+                    }
+                }
                 self.filterObj["app_version." + version] = {"$exists": true};
             }
 
@@ -816,6 +821,7 @@ window.CrashesView = countlyView.extend({
             if (self._filter) {
                 $("#filter-view").show();
                 $(".filter-view-container").show();
+                $("#filter-blocks").empty();
                 self.adjustFilters();
                 var lookup = {};
                 for (var i in self.convertFilter) {

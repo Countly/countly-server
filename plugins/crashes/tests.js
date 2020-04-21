@@ -277,10 +277,10 @@ describe('Testing Crashes', function() {
         {"total": 1, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 1, "news": 1, "renewed": 0, "os": {"Android": 1}, "highest_app": "1.1", "app_version": {"1:1": 1}},
         0,
         [
-            {meta: {}, crnf: 1, crunf: 1},
-            {meta: {}, crnf: 1, crunf: 1},
+            {meta: {}, crnf: 1, crunf: 1, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crunf: 1, cr_s: 1, cr_u: 1},
             {},
-            {meta: {}, crnf: 1, crunf: 1},
+            {meta: {}, crnf: 1, crunf: 1, cr_s: 1, cr_u: 1},
             {},
             {},
         ]);
@@ -459,10 +459,10 @@ describe('Testing Crashes', function() {
         {"total": 2, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 2, "news": 0, "renewed": 0, "os": {"Android": 2}, "highest_app": "1.1", "app_version": {"1:1": 2}},
         0,
         [
-            {meta: {}, crnf: 2, crunf: 1},
-            {meta: {}, crnf: 2, crunf: 1},
+            {meta: {}, crnf: 2, crunf: 1, cr_s: 2, cr_u: 2},
+            {meta: {}, crnf: 2, crunf: 1, cr_s: 2, cr_u: 2},
             {},
-            {meta: {}, crnf: 2, crunf: 1},
+            {meta: {}, crnf: 2, crunf: 1, cr_s: 2, cr_u: 2},
             {},
             {},
         ]);
@@ -669,12 +669,12 @@ describe('Testing Crashes', function() {
         {"total": 3, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 0, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 3}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 1}},
         0,
         [
-            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crauf: 1},
-            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crauf: 1, cr_s: 3, cr_u: 2},
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crauf: 1, cr_s: 3, cr_u: 2},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
-            {meta: {}, crnf: 1},
-            {meta: {}, crnf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1, cr_s: 2, cr_u: 2},
+            {meta: {}, crnf: 1, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -838,12 +838,12 @@ describe('Testing Crashes', function() {
         {"total": 4, "unique": 2, "resolved": 0, "unresolved": 2, "fatal": 1, "nonfatal": 3, "news": 1, "renewed": 0, "os": {"Android": 4}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 2}},
         0,
         [
-            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
-            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1, cr_s: 3, cr_u: 2},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1, cr_s: 3, cr_u: 2},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1, cr_s: 2, cr_u: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -1023,12 +1023,12 @@ describe('Testing Crashes', function() {
         {"total": 5, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 3, "news": 1, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 3}},
         0,
         [
-            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1},
-            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1, cr_s: 4, cr_u: 3},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1, cr_s: 4, cr_u: 3},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -1709,12 +1709,12 @@ describe('Testing Crashes', function() {
         {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 3}},
         0,
         [
-            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1},
-            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1, cr_s: 4, cr_u: 3},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1, cr_s: 4, cr_u: 3},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash details', function() {
@@ -1789,12 +1789,12 @@ describe('Testing Crashes', function() {
         {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 3}},
         0,
         [
-            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1},
-            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1},
+            {meta: {}, crnf: 3, crunf: 1, crfses: 1, crf: 2, cruf: 2, crauf: 1, cr_s: 5, cr_u: 3},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1, cr_s: 5, cr_u: 3},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 1, crauf: 1, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash details', function() {
@@ -1869,12 +1869,12 @@ describe('Testing Crashes', function() {
         {"total": 5, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 3, "news": 0, "renewed": 0, "os": {"Android": 4, "Windows Phone": 1}, "highest_app": "1.2", "app_version": {"1:1": 2, "1:2": 3}},
         0,
         [
-            {meta: {}, crnf: 3, crunf: 1, crfses: 2, crf: 2, cruf: 2, crauf: 2},
-            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 2, crauf: 2},
+            {meta: {}, crnf: 3, crunf: 1, crfses: 2, crf: 2, cruf: 2, crauf: 2, cr_s: 6, cr_u: 3},
+            {meta: {}, crnf: 3, crunf: 1, crf: 1, cruf: 1, crfses: 2, crauf: 2, cr_s: 6, cr_u: 3},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash details', function() {
@@ -1998,12 +1998,12 @@ describe('Testing Crashes', function() {
         {"total": 6, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 4, "news": 0, "renewed": 1, "os": {"Android": 5, "Windows Phone": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 1}},
         0,
         [
-            {meta: {}, crnf: 4, crunf: 1, crfses: 3, crf: 2, cruf: 2, crauf: 2, crnfses: 1},
-            {meta: {}, crnf: 4, crunf: 1, crf: 1, cruf: 1, crfses: 3, crauf: 2, crnfses: 1},
+            {meta: {}, crnf: 4, crunf: 1, crfses: 3, crf: 2, cruf: 2, crauf: 2, crnfses: 1, cr_s: 7, cr_u: 3},
+            {meta: {}, crnf: 4, crunf: 1, crf: 1, cruf: 1, crfses: 3, crauf: 2, crnfses: 1, cr_s: 7, cr_u: 3},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash details', function() {
@@ -2142,12 +2142,12 @@ describe('Testing Crashes', function() {
         {"total": 7, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 1, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 2}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash details', function() {
@@ -2225,12 +2225,12 @@ describe('Testing Crashes', function() {
         {"total": 7, "unique": 3, "resolved": 1, "unresolved": 2, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 2}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash details', function() {
@@ -2307,12 +2307,12 @@ describe('Testing Crashes', function() {
         {"total": 7, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 2}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 2, cruf: 2, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash details', function() {
@@ -2441,12 +2441,12 @@ describe('Testing Crashes', function() {
         {"total": 8, "unique": 4, "resolved": 0, "unresolved": 4, "fatal": 3, "nonfatal": 5, "news": 1, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1, "iOS": 1}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 3}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 3, cruf: 3, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 3, cruf: 3, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {meta: {}, crf: 1, cruf: 1},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -2610,12 +2610,12 @@ describe('Testing Crashes', function() {
         {"total": 9, "unique": 4, "resolved": 0, "unresolved": 4, "fatal": 4, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 6, "Windows Phone": 1, "iOS": 2}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 3, "1:3": 4}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {meta: {}, crf: 2, cruf: 1},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -2726,12 +2726,12 @@ describe('Testing Crashes', function() {
         {"total": 8, "unique": 3, "resolved": 0, "unresolved": 3, "fatal": 3, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 5, "Windows Phone": 1, "iOS": 2}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 2, "1:3": 4}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {meta: {}, crf: 2, cruf: 1},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -2819,12 +2819,12 @@ describe('Testing Crashes', function() {
         {"total": 7, "unique": 2, "resolved": 0, "unresolved": 2, "fatal": 2, "nonfatal": 5, "news": 0, "renewed": 0, "os": {"Android": 5, "Windows Phone": 0, "iOS": 2}, "highest_app": "1.3", "app_version": {"1:1": 2, "1:2": 1, "1:3": 4}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {meta: {}, crf: 2, cruf: 1},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -2899,12 +2899,12 @@ describe('Testing Crashes', function() {
         {"total": 2, "unique": 1, "resolved": 0, "unresolved": 1, "fatal": 2, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 2}, "highest_app": "1.3", "app_version": {"1:1": 0, "1:2": 0, "1:3": 2}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {meta: {}, crf: 2, cruf: 1},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -2962,12 +2962,12 @@ describe('Testing Crashes', function() {
         {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 0}, "highest_app": "", "app_version": {"1:1": 0, "1:2": 0, "1:3": 0}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 5, crf: 4, cruf: 3, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 5, crauf: 2, crnfses: 2, cr_s: 9, cr_u: 3},
             {meta: {}, crf: 2, cruf: 1},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, cr_s: 1, cr_u: 1},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, cr_s: 1, cr_u: 1},
         ]);
 
     describe('Check crash data', function() {
@@ -3025,12 +3025,12 @@ describe('Testing Crashes', function() {
         {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 0}, "highest_app": "", "app_version": {"1:1": 0, "1:2": 0, "1:3": 0}},
         0,
         [
-            {meta: {}, crnf: 5, crunf: 1, crfses: 6, crf: 4, cruf: 3, crauf: 3, crnfses: 3, craunf: 1},
-            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 6, crauf: 3, crnfses: 3, craunf: 1},
+            {meta: {}, crnf: 5, crunf: 1, crfses: 6, crf: 4, cruf: 3, crauf: 3, crnfses: 3, craunf: 1, cr_s: 11, cr_u: 4},
+            {meta: {}, crnf: 5, crunf: 1, crf: 1, cruf: 1, crfses: 6, crauf: 3, crnfses: 3, craunf: 1, cr_s: 11, cr_u: 4},
             {meta: {}, crf: 2, cruf: 1},
-            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2},
-            {meta: {}, crnf: 1, crf: 2, cruf: 2, crfses: 1, crauf: 1, crnfses: 1, craunf: 1},
-            {meta: {}, crnf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1, crnfses: 1, craunf: 1},
+            {meta: {}, crnf: 2, crunf: 1, crfses: 2, crauf: 2, cr_s: 3, cr_u: 3},
+            {meta: {}, crnf: 1, crf: 2, cruf: 2, crfses: 1, crauf: 1, crnfses: 1, craunf: 1, cr_s: 3, cr_u: 2},
+            {meta: {}, crnf: 1, crf: 1, cruf: 1, crfses: 1, crauf: 1, crnfses: 1, craunf: 1, cr_s: 3, cr_u: 2},
         ]);
 
     describe('Check crash metrics #19', function() {
@@ -3047,7 +3047,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("crashes", {"total": 0, "unique": 0, "resolved": 0, "unresolved": 0, "fatal": 0, "nonfatal": 0, "news": 0, "renewed": 0, "os": {"Android": 0, "Windows Phone": 0, "iOS": 0}, "highest_app": "", "app_version": {"1:1": 0, "1:2": 0, "1:3": 0}});
                     ob.should.have.property("loss", 0);
                     ob.should.have.property("data");
-                    verifyMetrics(ob.data, {meta: {}, crnf: 5, crunf: 1, crfses: 6, crf: 4, cruf: 3, crauf: 3, crnfses: 3, craunf: 1});
+                    verifyMetrics(ob.data, {meta: {}, crnf: 5, crunf: 1, crfses: 6, crf: 4, cruf: 3, crauf: 3, crnfses: 3, craunf: 1, cr_s: 11, cr_u: 4});
                     done();
                 });
         });
