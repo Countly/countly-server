@@ -485,21 +485,19 @@ window.PopulatorView = countlyView.extend({
             self.renderTab();
         });
 
-        setTimeout(function() {
-            $("#populator #date-picker #date-from").datepicker("setDate", "-30d");
-            $("#populator #date-picker #date-to").datepicker("setDate", "+0d");
-        }, 250);
+        setInitialDateValues = false;
 
         setInterval(function updateDateRangeButton() {
             if (app.activeView === self) {
-                fromDate = $("#populator #date-picker #date-from").datepicker("getDate");
-                toDate = $("#populator #date-picker #date-to").datepicker("getDate");
-
-                if (!updateDateRangeButton.fromDate || updateDateRangeButton.fromDate.getTime() !== fromDate.getTime() || !updateDateRangeButton.toDate || updateDateRangeButton.toDate.getTime() !== toDate.getTime()) {
-                    $("#populator #selected-date").text(moment(fromDate).format("D MMM, YYYY") + " - " + moment(toDate).format("D MMM, YYYY"));
-                    updateDateRangeButton.fromDate = fromDate;
-                    updateDateRangeButton.toDate = toDate;
+                if (!setInitialDateValues) {
+                    $("#populator #date-picker #date-from").datepicker("setDate", fromDate);
+                    $("#populator #date-picker #date-to").datepicker("setDate", toDate);
+                    setInitialDateValues = true;
                 }
+
+                fromDate = $("#populator #date-picker #date-from").datepicker("getDate") || fromDate;
+                toDate = $("#populator #date-picker #date-to").datepicker("getDate") || toDate;
+                $("#populator #selected-date").text(moment(fromDate).format("D MMM, YYYY") + " - " + moment(toDate).format("D MMM, YYYY"));
             }
         }, 500);
 
