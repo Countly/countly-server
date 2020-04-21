@@ -157,35 +157,12 @@ var exported = {},
                 }
             }
 
-            if (params.qstring.apm) {
-                types.apm = params.qstring.apm;
-                if (types.apm && typeof types.apm === "object") {
-                    types.apm = JSON.stringify(types.apm);
-                }
-                var apm;
-                try {
-                    apm = JSON.parse(types.apm);
-                }
-                catch (ex) {
-                    problems.push("Could not parse apm");
-                }
-                if (apm) {
-                    if (!(apm.type === "network" || apm.type === "device")) {
-                        problems.push("APM only supports trace types network or device");
-                    }
-                    if (!(apm.name && apm.name.length)) {
-                        problems.push("APM requires trace name");
-                    }
-                    if (!(typeof (apm.apm_metrics) === "object" && !Array.isArray(apm.apm_metrics))) {
-                        problems.push("APM requires apm_metrics object");
-                    }
-                    if (apm.apm_attr && !(typeof (apm.apm_attr) === "object" && !Array.isArray(apm.apm_attr))) {
-                        problems.push("APM requires apm_attr to be object if provided");
-                    }
-                    if (!plugins.isPluginEnabled("performance-monitoring")) {
-                        problems.push("Plugin that processes this information is not enabled: performance-monitoring");
-                    }
-                }
+            if (params.qstring.apm && !plugins.isPluginEnabled("performance-monitoring")) {
+                problems.push("Plugin that processes this information is not enabled: performance-monitoring");
+            }
+
+            if ((params.qstring.method === "fetch_remote_config") && !plugins.isPluginEnabled("remote-config")) {
+                problems.push("Plugin that processes this information is not enabled: remote-config");
             }
 
             if (params.app.type !== "web" && params.qstring.sdk_name === "javascript_native_web") {

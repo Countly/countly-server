@@ -231,7 +231,7 @@ table { border-collapse: collapse; }
 	#dashboard-graph,
     #dashboard-graph-secondary { font-family:Oswald; font-size:14px; margin:0 30px !important; }
     #dashboard-graph .legendLabel,.graph .legendLabel { font-family:Ubuntu !important; font-size:14px !important; }
-    
+
     .usparkline, .dsparkline {display: none;}
 
     .graph-no-data { display:none; height:100%; position:relative; }
@@ -1719,7 +1719,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown .menu .search { position: relative; }
 #top-bar .dropdown .menu .search:after { font-family: 'Font Awesome 5 Free'; font-weight: 900;  content: "\f002"; position: absolute; top: 11px; font-size: 11px; color: #cacaca; right: 10px; }
 #top-bar .dropdown .menu .search input { width: 100%; box-sizing: border-box; position: relative; padding-right: 32px; margin: 0; }
-#top-bar .dropdown .menu .list { max-height: 310px; overflow: auto; }
+#top-bar .dropdown .menu .list { max-height: 350px; overflow: auto; }
 #top-bar .dropdown .menu .list .item { display: block; cursor: pointer; border-bottom: 1px solid #d0d0d0; text-align: left; padding:10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #top-bar .dropdown .menu .list #user-menu .item div{ display:inline; }
 #top-bar .dropdown .menu .list .item:last-child { border-bottom: none; }
@@ -3586,7 +3586,8 @@ color:#E95C6C; transition:color 1s;
 
 .routename-user .zoom { margin-top: -25px; }
 .routename-sessions .zoom { margin-top: -25px; }
-.routename-events .zoom { margin-top: -45px; }
+.routename-events #event-main .events-general-description:empty ~ .widget-content > .zoom { margin-top: -45px }
+.routename-events #event-main .events-general-description ~ .widget-content > .zoom { margin-top: -10px }
 .routename-revenue .zoom { margin-top: -12px; }
 .routename-attribution .zoom { margin-top: -25px; }
 .routename-compliance .zoom { margin-top: -12px; }

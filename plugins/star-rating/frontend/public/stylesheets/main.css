@@ -1,7 +1,12 @@
 .routename-star .zoom {
-    margin: 5% 0 0 35%;
+    left: calc(50% - 51px);
+    top: 15%;
+    margin: 0px;
     position: absolute;
     z-index: 999;
+}
+.routename-star .widget-content {
+    position: relative;
 }
 .routename-star #dashboard-graph-time {
     font-family: Oswald;

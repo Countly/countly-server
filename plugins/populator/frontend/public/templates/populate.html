@@ -1,97 +1,210 @@
-<div class="widget">
-	<div class="widget-header">
-		<div class="left">
-			<div class="title">{{page-title}}</div>
-		</div>
-	</div>
-	<div id="populator" class="widget-content">
-		<div class="content">
-			<div>
-				<h1 data-localize="populator.sub-title"></h1>
-				<p data-localize="populator.description"></p>
-			</div>
-			<div>
-				<img src="images/dashboard/dialog/populate-data.svg" />
-			</div>
-			<div>
-				<div class="data-populater-form">
-					<div>
-						<label data-localize="populator.date-from"></label>
-						<input type="text" id="populate-from" />
-					</div>
-					<div>
-						<label data-localize="populator.date-to"></label>
-						<input type="text" id="populate-to" />
-					</div>
-					<div>
-						<label data-localize="populator.maxtime"></label>
-						<input type="text" id="populate-maxtime" value="60" />
-					</div>
-					<div>
-						<button id="start-populate" class="icon-button green" data-localize="populator.start"></button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-    <div id="populator-locked" style="display:none">
-        <div class="content">
-            <h3 data-localize="populator.locked-title"></h3>
-            <p data-localize="populator.locked-description"></p>
+<div class="populator-tab-switcher">
+    <div class="populator-tab-item" data-target="populator" data-localize="populator.populator-tab-title"></div>
+    <div class="populator-tab-item" data-target="templates" data-localize="populator.templates-tab-title"></div>
+    <div class="float-cleaner"></div>
+</div>
+<div id="templates-tab" class="populator-tab-view">
+    <div class="widget">
+	    <div class="widget-header">
+		    <div class="left">
+			    <div class="title" data-localize="populator.templates-view-title"></div>
+		    </div>
+            <div class="right">
+                <button class="icon-button green" id="create-populator-template-button" data-localize="populator.create-new-template"></button>
+            </div>
+	    </div>
+	    <div id="populator-templates" class="widget-content">
+            <table class="d-table" id="populator-templates-table"></table>
         </div>
-        <img id="populator-lock" src="images/dashboard/lock-image.svg"/>
     </div>
-	<div id="populator-modal" style="display:none">
-		<div id="populator-modal-content">
-			<div id="dialog-cancel" class="close-dialog" style="display: none" />
-			<h3 data-localize="populator.generating"></h3>
-			<div id="populate-bar" class="populate-bar"><div></div></div>
-			<div class="stop-container">
-				<a href="#" id="stop-populate" class="stop-populate" data-localize="populator.stop"></a>
-			</div>
-			<table cellpadding="10">
-				<tr>
-					<td><span data-localize="populator.bulk"></span>:</td>
-					<td><span class="populate-stats-br">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.users"></span>:</td>
-					<td><span class="populate-stats-u">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.push-users"></span>:</td>
-					<td><span class="populate-stats-p">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.events"></span>:</td>
-					<td><span class="populate-stats-e">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.purchases"></span>:</td>
-					<td><span class="populate-stats-b">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.sessions"></span>:</td>
-					<td><span class="populate-stats-s">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.extends"></span>:</td>
-					<td><span class="populate-stats-x">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.duration"></span>:</td>
-					<td><span class="populate-stats-d">0</span>s</td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.crashes"></span>:</td>
-					<td><span class="populate-stats-c">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.requests"></span>:</td>
-					<td><span class="populate-stats-r">0</span></td>
-				</tr>
-			</table>
+</div>
+<div id="populator-tab" class="populator-tab-view">
+    <div class="widget">
+	    <div class="widget-header">
+		    <div class="left">
+			    <div class="title" data-localize="populator.plugin-title"></div>
+		    </div>
+	    </div>
+	    <div id="populator" class="widget-content">
+		    <div class="content">
+			    <div>
+				    <h1 data-localize="populator.sub-title"></h1>
+				    <p data-localize="populator.description"></p>
+			    </div>
+			    <div>
+				    <img src="images/dashboard/dialog/populate-data.svg" />
+			    </div>
+			    <div>
+				    <div class="data-populater-form">
+					    <div>
+						    <label data-localize="populator.app-template"></label>
+                            <div class="populator-template-name cly-select cly-select-keynav centered text-align-left" tabindex="0">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text" data-localize="populator.select-template"></div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 100%;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+					    <div>
+						    <label data-localize="populator.date-range"></label>
+		                    <div id="date-selector" class="help-zone-vs">
+                                <div class="calendar" id="date-picker-button">
+                                    <i class="material-icons">date_range</i>
+                                    <div id="selected-date"></div>
+                                </div>
+		                    </div>
+			                <div id="date-picker">
+                                <div class="calendar-container">
+                                    <table>
+                                        <tr>
+                                            <td class="calendar-block">
+                                                <div id="date-from" class="calendar"></div>
+                                            </td>
+                                            <td class="calendar-block">
+                                                <div id="date-to" class="calendar"></div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="calendar-block">
+                                                <input type="text" class="calendar-input-field" id="date-from-input"></input><span class="date-input-label" data-localize="common.from"></span>
+                                            </td>
+                                            <td class="calendar-block">
+                                                <input type="text" class="calendar-input-field" id="date-to-input"></input><span class="date-input-label" data-localize="common.to"></span>
+                                            </td>
+                                        </tr>
+                                    </table>
 
-		</div>
-	</div>
+				                </div>
+			                </div>
+					    </div>
+					    <div>
+						    <label data-localize="populator.maxtime"></label>
+						    <input type="text" id="populate-maxtime" value="60" />
+					    </div>
+					    <div>
+						    <button id="start-populate" class="icon-button green" data-localize="populator.start"></button>
+					    </div>
+                    </div>
+                </div>
+            </div>
+            <div id="populator-locked" style="display:none">
+                <div class="content">
+                    <h3 data-localize="populator.locked-title"></h3>
+                    <p data-localize="populator.locked-description"></p>
+                </div>
+                <img id="populator-lock" src="images/dashboard/lock-image.svg"/>
+            </div>
+        </div>
+        <div id="populator-modal" style="display:none">
+	        <div id="populator-modal-content">
+		        <div id="dialog-cancel" class="close-dialog" style="display: none" />
+		        <h3 data-localize="populator.generating"></h3>
+		        <div id="populate-bar" class="populate-bar"><div></div></div>
+		        <div class="stop-container">
+			        <a href="#" id="stop-populate" class="stop-populate" data-localize="populator.stop"></a>
+		        </div>
+		        <table cellpadding="10">
+			        <tr>
+				        <td><span data-localize="populator.bulk"></span>:</td>
+				        <td><span class="populate-stats-br">0</span></td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.users"></span>:</td>
+				        <td><span class="populate-stats-u">0</span></td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.push-users"></span>:</td>
+				        <td><span class="populate-stats-p">0</span></td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.events"></span>:</td>
+				        <td><span class="populate-stats-e">0</span></td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.purchases"></span>:</td>
+				        <td><span class="populate-stats-b">0</span></td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.sessions"></span>:</td>
+				        <td><span class="populate-stats-s">0</span></td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.extends"></span>:</td>
+				        <td><span class="populate-stats-x">0</span></td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.duration"></span>:</td>
+				        <td><span class="populate-stats-d">0</span>s</td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.crashes"></span>:</td>
+				        <td><span class="populate-stats-c">0</span></td>
+			        </tr>
+			        <tr>
+				        <td><span data-localize="populator.requests"></span>:</td>
+				        <td><span class="populate-stats-r">0</span></td>
+			        </tr>
+		        </table>
+	        </div>
+        </div>
+    </div>
+</div>
+<div id="populator-template-drawer" class="cly-drawer">
+    <div class="title">
+        <span id="drawer-title"></span>
+        <div class="close">
+            <i class="ion-ios-close-empty"></i>
+        </div>
+    </div>
+    <div class="details">
+        <div class="section">
+            <div class="label" data-localize="populator.template-name"></div>
+            <input id="populator-template-name" type="text" class="input" data-localize="populator.template-name-placeholder"/>
+        </div>
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading" data-localize="populator.custom-user-props"></div>
+                <div class="panel-body">
+                    <div class="populator-custom-user-prop-row header-row">
+                        <div class="label populator-custom-user-prop-key" data-localize="populator.user-prop-key"></div>
+                        <div class="label populator-custom-user-prop-values" data-localize="populator.user-prop-values"></div>
+                    </div>
+                    <div id="populator-add-custom-user-prop" class="text-link" data-localize="populator.add-custom-user-prop">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading" data-localize="populator.events"></div>
+                <div id="populator-template-events" class="panel-body">
+                    <div class="populator-event-row">
+                        <div class="populator-event-key-row">
+                            <div class="label" data-localize="populator.event-key"></div>
+                            <input type="text" class="input"/>
+                            <div class="populator-template-remove-event text-link" data-localize="populator.remove-event"></div>
+                        </div>
+                        <div class="populator-event-segmentation-table">
+                            <div class="populator-event-segmentation-row header-row">
+                                <div class="label populator-event-segmentation-key" data-localize="populator.segmentation-key"></div>
+                                <div class="label populator-event-segmentation-values" data-localize="populator.segmentation-values"></div>
+                            </div>
+                        </div>
+                        <div class="populator-event-add-segmentation text-link" data-localize="populator.add-segmentation"></div>
+                    </div>
+                    <div id="populator-template-add-event" class="icon-button green" data-localize="populator.add-event"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="buttons">
+        <div id="populator-template-discard-changes" class="icon-button" data-localize="populator.discard-changes"></div>
+        <div id="populator-template-save" class="icon-button green" data-localize="populator.save-template"></div>
+    </div>
 </div>

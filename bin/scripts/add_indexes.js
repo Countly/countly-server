@@ -27,7 +27,7 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
             () => countlyDb.collection('app_users' + app._id).ensureIndex({"sc": 1}, { background: true }, cb),
             () => countlyDb.collection('app_users' + app._id).ensureIndex({"lac": 1, "ls": 1}, { background: true }, cb),
             () => countlyDb.collection('app_users' + app._id).ensureIndex({"tsd": 1}, { background: true }, cb),
-            () => countlyDb.collection('app_users' + app._id).ensureIndex({"did": 1}, { background: true, unique: true }, cb),
+            () => countlyDb.collection('app_users' + app._id).ensureIndex({"did": 1}, { background: true }, cb),
             () => countlyDb.collection('app_user_merges' + app._id).ensureIndex({cd: 1}, {expireAfterSeconds: 60 * 60 * 3, background: true}, cb),
             () => countlyDb.collection('metric_changes' + app._id).ensureIndex({ts: -1}, { background: true }, cb),
             () => countlyDb.collection('metric_changes' + app._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, cb),

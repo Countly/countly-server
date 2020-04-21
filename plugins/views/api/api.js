@@ -1748,7 +1748,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         dati[z].u = dati[z].uvalue || dati[z].u;
                         dati[z].views = dati[z]._id;
                         if (dati[z].view_meta && dati[z].view_meta[0] && dati[z].view_meta[0].view) {
-                            dati[z].views = dati[z].view_meta[0].view;
+                            dati[z].views = dati[z].view_meta[0].display || dati[z].view_meta[0].view;
                         }
                     }
                     if (dati) {

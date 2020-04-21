@@ -197,59 +197,63 @@
                                 <i class="ion-gear-a icon"></i>
                                 <div data-localize="sidebar.settings"></div>
                             </a>
-                            <% if (!countlyType) { %>
-                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
-                                <a target="_new" href="<%= feedbackLink %>" class="item" data-priority="20">
-                                    <i class="ion-android-textsms icon"></i>
-                                    <div data-localize="common.feedback-and-support"></div>
-                                </a>
-                                <% } %>
-                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
-                                <a class="item activate_intercom"  data-priority="20">
-                                    <i class="ion-android-textsms icon"></i>
-                                    <div data-localize="common.feedback-and-support"></div>
-                                </a>
-                                <% } %>
-                                <% if (typeof documentationLink === "string") { %>
-                                    <a class="item" href="<%= documentationLink %>" target="_blank" data-priority="30">
-                                        <i class="ion-android-document icon"></i>
-                                        <div data-localize="common.documentation"></div>
-                                    </a>
-                                <% } %>
-                                <% if (typeof documentationLink === "boolean" && documentationLink) { %>
-                                    <a class="item" href="http://resources.count.ly" target="_blank" data-priority="40">
-                                        <i class="ion-android-document icon"></i>
-                                        <div data-localize="common.documentation"></div>
-                                    </a>
-                                <% } %>
-                            <% } else { %>
-                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
-                                <a target="_new" href="<% feedbackLink %>" class="item" data-priority="20">
-                                    <i class="ion-android-textsms icon"></i>
-                                    <div data-localize="common.provide-feedback"></div>
-                                </a>
-                                <% } %>
-                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
-                                <a class="item activate_intercom" data-priority="30">
-                                    <i class="ion-android-textsms icon"></i>
-                                    <div data-localize="common.provide-feedback"></div>
-                                </a>
-                                <% } %>
-                                <a class="item" href="http://community.count.ly/" target="_blank" data-priority="40">
-                                    <i class="ion-help-buoy icon"></i>
-                                    <div data-localize="common.support"></div>
-                                </a>
-                                <% if (documentationLink) { %>
-                                    <a class="item" href="http://resources.count.ly/" target="_blank" data-priority="50">
-                                        <i class="ion-android-document icon"></i>
-                                        <div data-localize="common.documentation"></div>
-                                    </a>
-                                <% } %>
-                            <% } %>
-                            <a href="#/manage/token_manager" class="item" data-priority="60">
+                            <a href="#/manage/token_manager" class="item" data-priority="11">
                                 <i class="ion-key icon"></i>
                                 <div data-localize="token_manager.page-title"></div>
                             </a>
+
+                            <% if (typeof helpCenterLink === "string") { %>
+                            <a class="item" href="<%= helpCenterLink %>" target="_blank" data-priority="19">
+                                <i class="ion-help-buoy icon"></i>
+                                <div data-localize="common.help-center"></div>
+                            </a>
+                            <% } %>
+                            <% if (typeof helpCenterLink === "boolean" && helpCenterLink) { %>
+                            <a class="item" href="https://support.count.ly" target="_blank" data-priority="19">
+                                <i class="ion-help-buoy icon"></i>
+                                <div data-localize="common.help-center"></div>
+                            </a>
+                            <% } %>
+
+                            <% if (typeof documentationLink === "string") { %>
+                            <a class="item" href="<%= documentationLink %>" target="_blank" data-priority="20">
+                                <i class="ion-android-document icon"></i>
+                                <div data-localize="common.documentation"></div>
+                            </a>
+                            <% } %>
+                            <% if (typeof documentationLink === "boolean" && documentationLink) { %>
+                            <a class="item" href="https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base" target="_blank" data-priority="20">
+                                <i class="ion-android-document icon"></i>
+                                <div data-localize="common.documentation"></div>
+                            </a>
+                            <% } %>
+
+                            <% if(intercom && (typeof feedbackLink === "string")) { %>
+                            <a target="_new" href="<%= feedbackLink %>" class="item" data-priority="30">
+                                <i class="ion-ios-star icon"></i>
+                                <div data-localize="common.provide-feedback"></div>
+                            </a>
+                            <% } %>
+                            <% if(intercom && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
+                            <a class="item activate_intercom"  data-priority="30">
+                                <i class="ion-ios-star icon"></i>
+                                <div data-localize="common.provide-feedback"></div>
+                            </a>
+                            <% } %>
+
+                            <% if (typeof featureRequestLink === "string") { %>
+                            <a class="item" href="<%= featureRequestLink %>" target="_blank" data-priority="40">
+                                <i class="ion-android-textsms icon"></i>
+                                <div data-localize="common.feature-request"></div>
+                            </a>
+                            <% } %>
+                            <% if (typeof featureRequestLink === "boolean" && featureRequestLink) { %>
+                            <a class="item" href="https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests" target="_blank" data-priority="40">
+                                <i class="ion-android-textsms icon"></i>
+                                <div data-localize="common.feature-request"></div>
+                            </a>
+                            <% } %>
+
                             <a id="user-logout" class="item" href="#" data-priority="1000000000">
                                 <i class="ion-android-exit icon"></i>
                                 <div data-localize="sidebar.logout"></div>

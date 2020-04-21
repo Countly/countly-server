@@ -1,7 +1,7 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateUserForWrite} = require('../../../api/utils/rights.js');
+    {validateUser, validateGlobalAdmin} = require('../../../api/utils/rights.js');
 
 const templateProperties = {
     name: {
@@ -61,7 +61,7 @@ const templateProperties = {
 
         template.isDefault = template.isDefault === 'true' ? true : false;
 
-        validateUserForWrite(obParams, function(params) {
+        validateGlobalAdmin(obParams, function(params) {
             common.db.collection('populator_templates').insert(template, function(insertTemplateErr, result) {
                 if (!insertTemplateErr) {
                     common.returnMessage(ob.params, 201, 'Successfully created ' + result.insertedIds[0]);
@@ -79,7 +79,7 @@ const templateProperties = {
 
     const removeTemplate = function(ob) {
         const obParams = ob.params;
-        validateUserForWrite(obParams, function(params) {
+        validateGlobalAdmin(obParams, function(params) {
             let templateId;
 
             try {
@@ -107,7 +107,7 @@ const templateProperties = {
 
     const editTemplate = function(ob) {
         const obParams = ob.params;
-        validateUserForWrite(obParams, function(params) {
+        validateGlobalAdmin(obParams, function(params) {
             let templateId;
 
             try {
@@ -123,15 +123,35 @@ const templateProperties = {
                 return false;
             }
 
-            const changes = validatedArgs.obj;
-            // log who changed this
-            changes.lastEditedBy = params.member._id;
-            changes.isDefault = changes.isDefault === 'true' ? true : false;
+            const newTemplate = validatedArgs.obj;
 
-            common.db.collection('populator_templates').findAndModify({"_id": templateId}, {}, {$set: changes}, function(updateTemplateErr, template) {
+            if (newTemplate.up) {
+                try {
+                    newTemplate.up = JSON.parse(newTemplate.up);
+                }
+                catch (e) {
+                    common.returnMessage(obParams, 400, "Invalid type for up.");
+                    return false;
+                }
+            }
+
+            if (newTemplate.events) {
+                try {
+                    newTemplate.events = JSON.parse(newTemplate.events);
+                }
+                catch (e) {
+                    common.returnMessage(obParams, 400, "Invalid type for events.");
+                    return false;
+                }
+            }
+
+            newTemplate.lastEditedBy = params.member.full_name;
+            newTemplate.isDefault = newTemplate.isDefault === 'true' ? true : false;
+
+            common.db.collection('populator_templates').replaceOne({_id: templateId}, newTemplate, {}, function(updateTemplateErr, template) {
                 if (!updateTemplateErr && template) {
                     common.returnMessage(params, 200, 'Success');
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_edited", data: {before: template, update: changes}});
+                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_edited", data: {before: template, update: newTemplate}});
                     return true;
                 }
                 else if (updateTemplateErr) {
@@ -198,9 +218,8 @@ const templateProperties = {
         const obParams = ob.params;
         const query = {};
 
-        const validateUserForRead = ob.validateUserForDataReadAPI;
-        validateUserForRead(obParams, function() {
-            if (obParams.qstring._id) {
+        validateUser(obParams, function() {
+            if (obParams.qstring.template_id) {
                 try {
                     query._id = common.db.ObjectID(obParams.qstring.template_id);
                 }
@@ -211,13 +230,23 @@ const templateProperties = {
             }
 
             common.db.collection('populator_templates').find(query).toArray(function(err, docs) {
-                if (!err) {
-                    common.returnOutput(obParams, docs);
-                    return true;
-                }
-                else {
+                if (err) {
                     common.returnMessage(obParams, 500, err.message);
                     return false;
+                }
+                else if (query._id) {
+                    if (docs.length === 1) {
+                        common.returnOutput(obParams, docs.length > 0 ? docs[0] : null);
+                        return true;
+                    }
+                    else {
+                        common.returnMessage(obParams, 404, "Could not find template with id \"" + query._id + "\"");
+                        return false;
+                    }
+                }
+                else {
+                    common.returnOutput(obParams, docs);
+                    return true;
                 }
             });
         });

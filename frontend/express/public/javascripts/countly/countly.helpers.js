@@ -508,6 +508,9 @@
         $('#custom-color-styles').remove();
         // overview bars
         var barStyles = '<style id="custom-color-styles">';
+        barStyles += '.dashboard-summary .item.light .bar .bar-inner:nth-child(1) { background-color: ' + countlyCommon.GRAPH_COLORS[0] + '}';
+        barStyles += '.dashboard-summary .item.light .bar .bar-inner:nth-child(2) { background-color: ' + countlyCommon.GRAPH_COLORS[1] + '}';
+        barStyles += '.dashboard-summary .item.light .bar .bar-inner:nth-child(3) { background-color: ' + countlyCommon.GRAPH_COLORS[2] + '}';
         barStyles += '.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[0] + ';}';
         barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[1] + ';}';
         barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[2] + ';}';

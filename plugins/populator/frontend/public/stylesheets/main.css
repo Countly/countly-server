@@ -5,7 +5,7 @@
 #populator .right-side { margin-left: 380px; padding: 0;}
 #populator .right-side .widget-content { border:none; padding:0 25px; }
 #populator .right-side .widget-header { border-top:none; }
-#populator #date-selector {float: none; clear: both; display: inline; }
+#populator #date-selector {float: none; clear: both; overflow: auto;}
 #populator .icon-button{padding:10px; margin: 0 auto; float: none;}
 #populate-explain{cursor: pointer; text-align: center; color:#9e9e9e; font-size: 18px; position: absolute; top:20px; right:34px;}
 #populate-bar {margin: 5px;  border-radius: 4px; position:relative; height: 30px; background-color: #ececec}
@@ -20,30 +20,30 @@
 #populator > .content p { color: #a2a2a2; font-size: 14px; line-height: 1.5; letter-spacing: 0.3px}
 #populator > .content h1{color: #636363; font-size: 18px;  font-weight: 400; letter-spacing: 0.3px; line-height: 1.4}
 #populator > .content img { width:243px; margin-right:50px; margin-left:50px; }
-#populator > .content .data-populater-form { width: 200px;}
+#populator > .content .data-populater-form { width: 220px;}
 #populator > .content .data-populater-form > div { margin-bottom: 20px }
 #populator > .content label { font-size: 12px; color: #636363; display: block; margin-bottom: 8px;}
-#populator > .content input {  
-    width: 200px; 
+#populator > .content input {
+    width: 220px;
     font-size: 12px;
     color: #636363;
-    background-color: #fdfdfd; 
-    border: 1px solid #d6d6d6; 
-    outline: none; 
-    padding: 7px; 
-    box-sizing: border-box; 
+    background-color: #fdfdfd;
+    border: 1px solid #d6d6d6;
+    outline: none;
+    padding: 7px;
+    box-sizing: border-box;
     border-radius: 2px
 }
-#populator > .content .icon-button { 
-    text-align: center; 
-    font-weight: 400; 
-    font-size:14px; 
-    outline:none; 
-    border:none; 
+#populator > .content .icon-button {
+    text-align: center;
+    font-weight: 400;
+    font-size:14px;
+    outline:none;
+    border:none;
     width: 100%;
 }
 
-.populator_modal {     
+.populator_modal {
     border-width: 0px !important;
     min-width: 600px;
     min-height: 615px;
@@ -68,7 +68,7 @@
 }
 
 #populator-modal-content .stop-container {
-    text-align:center; 
+    text-align:center;
     margin: 15px 0px 40px 0px;
 }
 #populator-modal-content a {
@@ -84,6 +84,361 @@
 }
 #populator-modal-content table > tbody > tr > td:first-child { color: #636363}
 #populator-modal-content table > tbody > tr > td:last-child { text-align:  right; font-weight: 400}
+
+.populator-template-name.cly-select {
+    width: 220px;
+    height: 31px;
+}
+
+.populator-template-name.cly-select .text {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    color: #838383;
+}
+
+.populator-template-name.cly-select .select-items {
+    width: 220px;
+}
+
+#populator #date-picker {
+    right: initial;
+    top: initial;
+    margin-left: -478px;
+}
+
+#populator #date-picker .calendar-container {
+    margin-right: 0;
+}
+
+#populator #date-picker-button {
+    display: flex;
+    flex-direction: row;
+    width: 220px;
+    height: 31px;
+    font-size: 12px;
+    color: #636363;
+    background-color: #fdfdfd;
+    border: 1px solid #d6d6d6;
+    outline: none;
+    margin: 0;
+    padding: 7px;
+    box-sizing: border-box;
+    border-radius: 2px;
+    align-items: center;
+}
+
+#populator #date-picker-button > * {
+    display: block;
+    position: static;
+}
+
+#populator #date-picker-button > #selected-date {
+    margin-left: 8px;
+    overflow: auto;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: initial;
+}
+
+.populator-tab-switcher {
+    clear: both;
+    padding-left: 12px;
+}
+
+.populator-tab-item {
+    float: left;
+    padding-bottom: 5px;
+    margin-right: 30px;
+    font-size: 15px;
+    margin-bottom: 25px;
+    margin-top: 10px;
+    color: #666;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.populator-tab-item.active {
+    color: black;
+    border-bottom: 2px solid #2FA732;
+}
+
+#templates-tab .widget-content {
+    border: 0;
+}
+
+#populator-templates .dataTables_wrapper {
+    margin: 0;
+}
+
+#populator-templates .dataTable-top {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+#create-populator-template-button {
+    outline: none;
+    border: none;
+    border-radius: 2px;
+    margin-top: 5px;
+}
+
+#populator-template-drawer {
+    width: 800px;
+    transform: translateX(800px);
+    transition: transform 0.3s;
+}
+
+#populator-template-drawer.open {
+    transform: translateX(0);
+    transition: transform 0.3s;
+}
+
+#populator-template-drawer .remove.icon-button {
+    width: 32px;
+    height: 24px;
+    padding: 0;
+    margin: 3px -5px 3px 15px;
+}
+
+#populator-template-drawer .buttons {
+    text-align: right;
+}
+
+#populator-template-drawer input {
+    height: 30px;
+}
+
+#populator-template-drawer .text-link {
+    cursor: pointer;
+    font-size: 12px;
+    color: #e5851a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none; 
+}
+
+#populator-template-drawer .buttons > * {
+    display: inline-block;
+    width: 120px;
+}
+
+#populator-template-drawer .buttons > *:not(.green) {
+    color: #666;
+}
+
+#populator-template-drawer .header-row {
+    height: 20px;
+    margin-bottom: 2px;
+}
+
+.populator-event-key-row, .populator-event-segmentation-row, .populator-custom-user-prop-row {
+    display: flex;
+    flex-direction: row;
+    height: 30px;
+    margin-bottom: 10px;
+}
+
+.populator-event-key-row {
+    margin-bottom: 20px;
+}
+
+.populator-event-key-row .label {
+    width: 60px;
+    margin-top: 8px;
+    margin-right: 8px;
+}
+
+#populator-template-drawer .populator-event-key-row .input {
+    width: 300px;
+}
+
+#populator-template-drawer .populator-custom-user-prop-row > .label {
+    margin-bottom: 0;
+}
+
+#populator-template-drawer .populator-custom-user-prop-key {
+    width: 120px;
+}
+
+.populator-custom-user-prop-values {
+    margin-left: 15px;
+    flex-grow: 1;
+}
+
+#populator-template-drawer .event-property-inputs .input {
+    box-sizing: border-box;
+    border-radius: 2px;
+    border: 1px solid #d6d6d6;
+    outline: none;
+    padding: 7px;
+    font-size: 12px;
+    height: 30px;
+}
+
+#populator-template-drawer .check-green:hover {
+    cursor: pointer;
+}
+
+#populator-template-events {
+    padding: 0;
+}
+
+.populator-event-row {
+    padding: 20px;
+}
+
+.populator-event-row {
+    border-bottom: dotted 1px #D0D0D0;
+}
+
+#populator-template-drawer .populator-template-remove-event {
+    color: #d63e40;
+    margin: 8px 0px 8px auto
+}
+
+.populator-event-segmentation-table {
+    margin-top: 10px;
+}
+
+#populator-template-drawer .populator-event-segmentation-row > .label {
+    margin-bottom: 0;
+}
+
+#populator-template-drawer .populator-event-segmentation-key {
+    width: 120px;
+}
+
+.populator-event-segmentation-values {
+    margin-left: 15px;
+    flex-grow: 1;
+}
+
+.populator-template-options-item .edit-icon {
+    display: block;
+    right: 10px;
+    top: 0;
+    font-size: 17px;
+    cursor: pointer;
+    color: #a7a7a7;
+    background-color: rgba(255, 255, 255, 0.03);
+    transition: background-color 1s;
+    padding-top: 17px;
+    padding-left: 17px;
+    width: 34px;
+    height: 34px;
+}
+
+.populator-template-options-item {
+    width: 51px;
+    margin-left: auto;
+}
+
+.populator-template-options-item .edit-icon::before {
+    font-size: 20px;
+    font-family: 'Ionicons';
+    content: "\f396";
+}
+
+.populator-template-options-item .edit-menu {
+    margin: -16px -176px;
+    display: none;
+    float: left;
+    z-index: 10;
+    position: absolute;
+    font-size: 13px;
+    white-space: nowrap;
+    background-color: #fff;
+    border-radius: 2px;
+    width: 210px;
+    padding: 10px 0 10px 0;
+    border: 1px solid #d0d0d0;
+}
+
+.populator-template-options-item .edit-menu .item {
+    cursor: pointer;
+    padding: 8px 20px;
+    font-size: 24px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+    color: #474747;
+}
+
+.populator-template-options-item .edit-menu .item:hover {
+    background-color: #f3f3f3;
+}
+
+.populator-template-options-item .edit-menu .item > i {
+    padding-right: 8px;
+}
+
+.populator-template-options-item .edit-menu::before {
+    border: 4px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #FFF;
+    right: 7px;
+    top: -8px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.populator-template-options-item .edit-menu::after {
+    border: 5px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #d0d0d0;
+    right: 6px;
+    top: -10px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+#populator-template-add-event {
+    width: 66px;
+    margin: 20px;
+    float: none;
+}
+
+.populator-event-property {
+    display: flex;
+    event-direction: row;
+    align-items: flex-start;
+}
+
+.populator-event-property {
+    margin: 20px 20px 0px 20px;
+}
+
+.populator-event-property .content {
+    margin: 0 10px;
+}
+
+#populator-template-drawer .populator-event-property .content input {
+    width: 60px;
+    margin-top: 10px;
+}
+
+.populator-event-property .content span {
+    margin: 0 10px;
+}
+
+.populator-event-property .help-title {
+    color: #636363;
+}
+
+.populator-event-property .help-subtitle {
+    color: #b8b8b8;
+    margin-top: 4px;
+}
 
 #populator-locked {
     display: flex;
@@ -121,5 +476,5 @@
 }
 
 #populator-locked > .content > p > a {
-    color: #2FA732; 
+    color: #2FA732;
 }
