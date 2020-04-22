@@ -28,7 +28,7 @@ class WriteHandler {
             this.nDocsWithDups++;
         }
         this.nDocs++;
-        var stats = this.candidates.map(function(doc){
+        var ranking = this.candidates.map(function(doc){
             var str = JSON.stringify(doc);
             return {
                 "doc": doc, 
@@ -38,10 +38,10 @@ class WriteHandler {
                 "len": str.length
             }
         });
-        stats.sort(function(a, b) {
+        ranking.sort(function(a, b) {
             return a.fs - b.fs || b.len - a.len;
         });
-        var winningItem = stats[0];
+        var winningItem = ranking[0];
         winningItem.doc._id = winningItem.doc.uid;
         var self = this;
         
@@ -50,7 +50,7 @@ class WriteHandler {
         });
         self.nInsertRequests++;
 
-        stats.forEach(function(item){
+        ranking.forEach(function(item){
             requests.push({
                 deleteOne: { "filter": { _id: item.removeId }}
             });
@@ -70,7 +70,7 @@ class WriteHandler {
             this.candidates.push(newDoc);
             return [];
         }
-        if (this.current !== newDoc.uid){
+        if (this.currentUid !== newDoc.uid){
             // uid changed, flush
             var requests = this.flush();
             this.currentUid = newDoc.uid;
@@ -109,7 +109,7 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
     function upgrade(app, done) {
         printMessage("log", "(" + app.name + ") Fixing...");
-        var cursor = countlyDb.collection('app_nxret' + app._id).find({$expr: {$ne: ["$_id", "$uid"] } }).sort({uid: -1});
+        var cursor = countlyDb.collection('app_nxret' + app._id).find({$expr: {$ne: ["$_id", "$uid"] } }).sort({uid: 1});
         var requests = [];
         var nScanned = 0;
         var nSkipped = 0;
@@ -200,10 +200,10 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
             }
             else {
                 printMessage("log", "(" + app.name + ")", "scanned =", nScanned, "/", "skipped =", nSkipped);
+                printMessage("log", "(" + app.name + ")", "uids with dup =", writeHandler.nDocsWithDups, "/", "total unique uids =", writeHandler.nDocs);
                 if (nScanned > 0) {
                     printMessage("log", "(" + app.name + ")", "insert reqs=", writeHandler.nInsertRequests, "/", "remove reqs =", writeHandler.nRemoveRequests);
                     printMessage("log", "(" + app.name + ")", "inserted =", nInserted, "/", "removed =", nRemoved);
-                    printMessage("log", "(" + app.name + ")", "docs with dup =", writeHandler.nDocsWithDups, "/", "docs =", writeHandler.nDocs);
                 }
                 if (writeHandler.nInsertRequests === nInserted && writeHandler.nRemoveRequests === nRemoved) {
                     printMessage("log", "(" + app.name + ")", "Successful.", "\n");
