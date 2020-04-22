@@ -18,10 +18,12 @@ class WriteHandler {
         this.nInsertRequests = 0;
         this.nRemoveRequests = 0;
         this.nAlreadyFixed = 0;
+        this.nFalseFixed = 0;
     }
 
     flush() {
         var requests = [];
+        var self = this;
         if (this.candidates.length === 0) {
             return [];
         }
@@ -41,13 +43,23 @@ class WriteHandler {
             };
         });
         ranking.sort(function(a, b) {
-            return b.fixed - a.fixed || a.fs - b.fs || b.len - a.len;
+            return a.fs - b.fs || b.len - a.len;
         });
         var winningItem = ranking[0];
-        winningItem.doc._id = winningItem.doc.uid;
-        var self = this;
 
+        var fixedDocs = ranking.filter(function(item) {
+            return item.fixed === 1;
+        });
+
+        if (fixedDocs.length > 0 && fixedDocs[0] !== winningItem) {
+            requests.push({
+                deleteOne: { "filter": { _id: fixedDocs[0].removeId }}
+            });
+            self.nRemoveRequests++;
+            self.nFalseFixed++;
+        }
         if (winningItem.fixed !== 1) {
+            winningItem.doc._id = winningItem.doc.uid;
             requests.push({
                 insertOne: { "document": winningItem.doc }
             });
@@ -207,7 +219,7 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 printMessage("log", "(" + app.name + ")", "scanned =", nScanned, "/", "skipped =", nSkipped);
                 if (nScanned > 0) {
                     printMessage("log", "(" + app.name + ")", "uids with dup =", writeHandler.nDocsWithDups, "/", "total unique uids =", writeHandler.nDocs);
-                    printMessage("log", "(" + app.name + ")", "uids already fixed =", writeHandler.nAlreadyFixed);
+                    printMessage("log", "(" + app.name + ")", "uids fixed before / correct =", writeHandler.nAlreadyFixed, "/", "incorrect =", writeHandler.nFalseFixed);
                     printMessage("log", "(" + app.name + ")", "insert reqs =", writeHandler.nInsertRequests, "/", "remove reqs =", writeHandler.nRemoveRequests);
                     printMessage("log", "(" + app.name + ")", "inserted =", nInserted, "/", "removed =", nRemoved);
                 }
