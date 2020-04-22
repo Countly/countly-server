@@ -25,20 +25,20 @@ class WriteHandler {
         if (this.candidates.length === 0) {
             return [];
         }
-        if (this.candidates.length>1){
+        if (this.candidates.length > 1) {
             this.nDocsWithDups++;
         }
         this.nDocs++;
-        var ranking = this.candidates.map(function(doc){
+        var ranking = this.candidates.map(function(doc) {
             var str = JSON.stringify(doc);
             return {
                 "fs": parseInt(doc.fs),
                 "len": str.length,
                 "fixed": doc._id === doc.uid ? 1 : 0,
-                "doc": doc, 
+                "doc": doc,
                 "removeId": doc._id,
                 "str": str
-            }
+            };
         });
         ranking.sort(function(a, b) {
             return b.fixed - a.fixed || a.fs - b.fs || b.len - a.len;
@@ -46,7 +46,7 @@ class WriteHandler {
         var winningItem = ranking[0];
         winningItem.doc._id = winningItem.doc.uid;
         var self = this;
-        
+
         if (winningItem.fixed !== 1) {
             requests.push({
                 insertOne: { "document": winningItem.doc }
@@ -57,7 +57,7 @@ class WriteHandler {
             self.nAlreadyFixed++;
         }
 
-        ranking.forEach(function(item){
+        ranking.forEach(function(item) {
             if (item.fixed !== 1) {
                 requests.push({
                     deleteOne: { "filter": { _id: item.removeId }}
@@ -79,7 +79,7 @@ class WriteHandler {
             this.candidates.push(newDoc);
             return [];
         }
-        if (this.currentUid !== newDoc.uid){
+        if (this.currentUid !== newDoc.uid) {
             // uid changed, flush
             var requests = this.flush();
             this.currentUid = newDoc.uid;
