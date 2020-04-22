@@ -776,38 +776,38 @@ class Job extends EventEmitter {
             this._save({
                 status: STATUS.RUNNING,
                 started: this._json.started
-            });
+            }).then(() => {
+                try {
+                    let promise = this.run(
+                        this.db(),
+                        (err) => {
+                            log.d('%s: done running: error %j', this.id, err);
+                            if (!this.isCompleted) {
+                                this._finish(err).then(
+                                    err ? reject.bind(null, err) : resolve,
+                                    err ? reject.bind(null, err) : reject
+                                );
+                            }
+                        },
+                        () => {});
 
-            try {
-                let promise = this.run(
-                    this.db(),
-                    (err) => {
-                        log.d('%s: done running: error %j', this.id, err);
-                        if (!this.isCompleted) {
-                            this._finish(err).then(
-                                err ? reject.bind(null, err) : resolve,
-                                err ? reject.bind(null, err) : reject
-                            );
-                        }
-                    },
-                    () => {});
-
-                if (promise && promise instanceof Promise) {
-                    promise.then(() => {
-                        log.d('%s: done running', this.id);
-                        this._finish().then(resolve, resolve);
-                    }, (err) => {
-                        log.d('%s: done running: error %j', this.id, err);
-                        if (!this.isCompleted) {
-                            this._finish(err).then(reject.bind(null, err), reject.bind(null, err));
-                        }
-                    });
+                    if (promise && promise instanceof Promise) {
+                        promise.then(() => {
+                            log.d('%s: done running', this.id);
+                            this._finish().then(resolve, resolve);
+                        }, (err) => {
+                            log.d('%s: done running: error %j', this.id, err);
+                            if (!this.isCompleted) {
+                                this._finish(err).then(reject.bind(null, err), reject.bind(null, err));
+                            }
+                        });
+                    }
                 }
-            }
-            catch (e) {
-                log.e('[%s] caught error when running: %j / %j', this.channel, e, e.stack);
-                this._finish(e).then(reject.bind(null, e), reject.bind(null, e));
-            }
+                catch (e) {
+                    log.e('[%s] caught error when running: %j / %j', this.channel, e, e.stack);
+                    this._finish(e).then(reject.bind(null, e), reject.bind(null, e));
+                }
+            }, reject);
         });
     }
 
