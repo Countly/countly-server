@@ -8,6 +8,82 @@ function printMessage(messageType, ...message) {
 
 printMessage("log", "Started...");
 
+class WriteHandler {
+
+    constructor() {
+        this.currentUid = null;
+        this.candidates = [];
+        this.nDocsWithDups = 0;
+        this.nDocs = 0;
+        this.nInsertRequests = 0;
+        this.nRemoveRequests = 0;
+    }
+
+    flush() {
+        var requests = [];
+        if (this.candidates.length === 0) {
+            return [];
+        }
+        if (this.candidates.length>1){
+            this.nDocsWithDups++;
+        }
+        this.nDocs++;
+        var stats = this.candidates.map(function(doc){
+            var str = JSON.stringify(doc);
+            return {
+                "doc": doc, 
+                "removeId": doc._id,
+                "fs": parseInt(doc.fs),
+                "str": str,
+                "len": str.length
+            }
+        });
+        stats.sort(function(a, b) {
+            return a.fs - b.fs || b.len - a.len;
+        });
+        var winningItem = stats[0];
+        winningItem.doc._id = winningItem.doc.uid;
+        var self = this;
+        
+        requests.push({
+            insertOne: { "document": winningItem.doc }
+        });
+        self.nInsertRequests++;
+
+        stats.forEach(function(item){
+            requests.push({
+                deleteOne: { "filter": { _id: item.removeId }}
+            });
+            self.nRemoveRequests++;
+        });
+        return requests;
+    }
+
+    process(newDoc) {
+        if (this.currentUid === null) {
+            this.currentUid = newDoc.uid;
+            this.candidates.push(newDoc);
+            return [];
+        }
+        if (this.currentUid === newDoc.uid) {
+            // a duplicate of prevDoc
+            this.candidates.push(newDoc);
+            return [];
+        }
+        if (this.current !== newDoc.uid){
+            // uid changed, flush
+            var requests = this.flush();
+            this.currentUid = newDoc.uid;
+            this.candidates = [newDoc];
+            return requests;
+        }
+    }
+
+    end() {
+        return this.flush();
+    }
+}
+
 countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
     var hasAnyErrors = false;
@@ -33,11 +109,13 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
     function upgrade(app, done) {
         printMessage("log", "(" + app.name + ") Fixing...");
-        var cursor = countlyDb.collection('app_nxret' + app._id).find({$expr: {$ne: ["$_id", "$uid"] } });
+        var cursor = countlyDb.collection('app_nxret' + app._id).find({$expr: {$ne: ["$_id", "$uid"] } }).sort({uid: -1});
         var requests = [];
-        var nProcessed = 0;
+        var nScanned = 0;
         var nSkipped = 0;
         var bulkWritePromises = [];
+
+        var writeHandler = new WriteHandler();
 
         cursor.forEach(function(nxret) {
             if (nxret.uid === null || nxret.uid === undefined) {
@@ -49,24 +127,24 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 nSkipped++;
             }
             else {
-                var oldId = nxret._id;
-                nxret._id = nxret.uid;
-                requests.push({
-                    insertOne: { "document": nxret }
+                var newRequests = writeHandler.process(nxret);
+                newRequests.forEach(function(nReq) {
+                    requests.push(nReq);
                 });
-                requests.push({
-                    deleteOne: { "filter": { _id: oldId } }
-                });
-                if (requests.length === 1000) {
+                if (requests.length >= 1000) {
                     bulkWritePromises.push(getBulkWritePromise(requests));
                     requests = [];
                 }
-                nProcessed++;
+                nScanned++;
             }
         }, function(err) {
             if (err) {
                 printMessage("error", "cursor.forEach stopped execution: ", err);
             }
+            var newRequests = writeHandler.end();
+            newRequests.forEach(function(nReq) {
+                requests.push(nReq);
+            });
             if (requests.length > 0) {
                 bulkWritePromises.push(getBulkWritePromise(requests));
                 requests = [];
@@ -121,16 +199,18 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
             }
             else {
-                printMessage("log", "(" + app.name + ")", "processed =", nProcessed, "/", "skipped =", nSkipped);
-                if (nProcessed > 0) {
+                printMessage("log", "(" + app.name + ")", "scanned =", nScanned, "/", "skipped =", nSkipped);
+                if (nScanned > 0) {
+                    printMessage("log", "(" + app.name + ")", "insert reqs=", writeHandler.nInsertRequests, "/", "remove reqs =", writeHandler.nRemoveRequests);
                     printMessage("log", "(" + app.name + ")", "inserted =", nInserted, "/", "removed =", nRemoved);
+                    printMessage("log", "(" + app.name + ")", "docs with dup =", writeHandler.nDocsWithDups, "/", "docs =", writeHandler.nDocs);
                 }
-                if (nProcessed === nInserted && nProcessed === nRemoved) {
+                if (writeHandler.nInsertRequests === nInserted && writeHandler.nRemoveRequests === nRemoved) {
                     printMessage("log", "(" + app.name + ")", "Successful.", "\n");
                 }
                 else {
                     hasAnyErrors = true;
-                    printMessage("error", "(" + app.name + ")", "ERROR: processed doesn't match with inserted/removed.", "\n");
+                    printMessage("error", "(" + app.name + ")", "ERROR: # of requests doesn't match with inserted/removed.", "\n");
                 }
             }
             return done();
