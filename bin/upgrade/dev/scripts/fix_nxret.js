@@ -223,12 +223,18 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                     printMessage("log", "(" + app.name + ")", "insert reqs =", writeHandler.nInsertRequests, "/", "remove reqs =", writeHandler.nRemoveRequests);
                     printMessage("log", "(" + app.name + ")", "inserted =", nInserted, "/", "removed =", nRemoved);
                 }
-                if (writeHandler.nInsertRequests === nInserted && writeHandler.nRemoveRequests === nRemoved) {
-                    printMessage("log", "(" + app.name + ")", "Successful.", "\n");
-                }
-                else {
+                var nExpectedInsert = writeHandler.nDocs - writeHandler.nAlreadyFixed;
+                var nExpectedRemove = nScanned - writeHandler.nAlreadyFixed;
+                if (writeHandler.nInsertRequests !== nInserted || writeHandler.nRemoveRequests !== nRemoved) {
                     hasAnyErrors = true;
                     printMessage("error", "(" + app.name + ")", "ERROR: # of requests doesn't match with inserted/removed.", "\n");
+                }
+                else if (nExpectedRemove !== nRemoved || nExpectedInsert !== nInserted) {
+                    hasAnyErrors = true;
+                    printMessage("error", "(" + app.name + ")", "ERROR: Expected insert or expected remove doesn't match with inserted/removed", "\n");
+                }
+                else {
+                    printMessage("log", "(" + app.name + ")", "Successful.", "\n");
                 }
             }
             return done();
