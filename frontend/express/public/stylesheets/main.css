@@ -3591,6 +3591,7 @@ color:#E95C6C; transition:color 1s;
 .routename-revenue .zoom { margin-top: -12px; }
 .routename-attribution .zoom { margin-top: -25px; }
 .routename-compliance .zoom { margin-top: -12px; }
+.routename-messagingDashboardView .zoom { left: calc(50% - 51px); position: absolute; z-index: 999; top: 7%;}
 
 .cly-breadcrumbs {
     padding: 0px 0px 20px 0px;
