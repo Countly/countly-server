@@ -51,7 +51,7 @@ class WriteHandler {
             return item.fixed === 1;
         });
 
-        if (fixedDocs.length > 0 && fixedDocs[0] !== winningItem) {
+        if (ranking.length > 1 && fixedDocs.length > 0 && fixedDocs[0] !== winningItem) {
             requests.push({
                 deleteOne: { "filter": { _id: fixedDocs[0].removeId }}
             });
