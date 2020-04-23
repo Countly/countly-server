@@ -8,6 +8,103 @@ function printMessage(messageType, ...message) {
 
 printMessage("log", "Started...");
 
+class WriteHandler {
+
+    constructor() {
+        this.currentUid = null;
+        this.candidates = [];
+        this.nDocsWithDups = 0;
+        this.nDocs = 0;
+        this.nInsertRequests = 0;
+        this.nRemoveRequests = 0;
+        this.nAlreadyFixed = 0;
+        this.nFalseFixed = 0;
+    }
+
+    flush() {
+        var requests = [];
+        var self = this;
+        if (this.candidates.length === 0) {
+            return [];
+        }
+        if (this.candidates.length > 1) {
+            this.nDocsWithDups++;
+        }
+        this.nDocs++;
+        var ranking = this.candidates.map(function(doc) {
+            var str = JSON.stringify(doc);
+            return {
+                "fs": parseInt(doc.fs),
+                "len": str.length,
+                "fixed": doc._id === doc.uid ? 1 : 0,
+                "doc": doc,
+                "removeId": doc._id,
+                "str": str
+            };
+        });
+        ranking.sort(function(a, b) {
+            return a.fs - b.fs || b.len - a.len;
+        });
+        var winningItem = ranking[0];
+
+        var fixedDocs = ranking.filter(function(item) {
+            return item.fixed === 1;
+        });
+
+        if (ranking.length > 1 && fixedDocs.length > 0 && fixedDocs[0] !== winningItem) {
+            requests.push({
+                deleteOne: { "filter": { _id: fixedDocs[0].removeId }}
+            });
+            self.nRemoveRequests++;
+            self.nFalseFixed++;
+        }
+        if (winningItem.fixed !== 1) {
+            winningItem.doc._id = winningItem.doc.uid;
+            requests.push({
+                insertOne: { "document": winningItem.doc }
+            });
+            self.nInsertRequests++;
+        }
+        else {
+            self.nAlreadyFixed++;
+        }
+
+        ranking.forEach(function(item) {
+            if (item.fixed !== 1) {
+                requests.push({
+                    deleteOne: { "filter": { _id: item.removeId }}
+                });
+                self.nRemoveRequests++;
+            }
+        });
+        return requests;
+    }
+
+    process(newDoc) {
+        if (this.currentUid === null) {
+            this.currentUid = newDoc.uid;
+            this.candidates.push(newDoc);
+            return [];
+        }
+        if (this.currentUid === newDoc.uid) {
+            // a duplicate of prevDoc
+            this.candidates.push(newDoc);
+            return [];
+        }
+        if (this.currentUid !== newDoc.uid) {
+            // uid changed, flush
+            var requests = this.flush();
+            this.currentUid = newDoc.uid;
+            this.candidates = [newDoc];
+            return requests;
+        }
+    }
+
+    end() {
+        return this.flush();
+    }
+}
+
 countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
     var hasAnyErrors = false;
@@ -33,40 +130,38 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
     function upgrade(app, done) {
         printMessage("log", "(" + app.name + ") Fixing...");
-        var cursor = countlyDb.collection('app_nxret' + app._id).find({$expr: {$ne: ["$_id", "$uid"] } });
+        var cursor = countlyDb.collection('app_nxret' + app._id).find({}).sort({uid: 1});
         var requests = [];
-        var nProcessed = 0;
+        var nScanned = 0;
         var nSkipped = 0;
         var bulkWritePromises = [];
+
+        var writeHandler = new WriteHandler();
 
         cursor.forEach(function(nxret) {
             if (nxret.uid === null || nxret.uid === undefined) {
                 printMessage("log", "(" + app.name + ") Skipping a doc with empty uid");
                 nSkipped++;
             }
-            else if (nxret._id === nxret.uid) {
-                printMessage("log", "(" + app.name + ") Skipping a doc whose _id = uid");
-                nSkipped++;
-            }
             else {
-                var oldId = nxret._id;
-                nxret._id = nxret.uid;
-                requests.push({
-                    insertOne: { "document": nxret }
+                var newRequests = writeHandler.process(nxret);
+                newRequests.forEach(function(nReq) {
+                    requests.push(nReq);
                 });
-                requests.push({
-                    deleteOne: { "filter": { _id: oldId } }
-                });
-                if (requests.length === 1000) {
+                if (requests.length >= 1000) {
                     bulkWritePromises.push(getBulkWritePromise(requests));
                     requests = [];
                 }
-                nProcessed++;
+                nScanned++;
             }
         }, function(err) {
             if (err) {
                 printMessage("error", "cursor.forEach stopped execution: ", err);
             }
+            var newRequests = writeHandler.end();
+            newRequests.forEach(function(nReq) {
+                requests.push(nReq);
+            });
             if (requests.length > 0) {
                 bulkWritePromises.push(getBulkWritePromise(requests));
                 requests = [];
@@ -121,16 +216,25 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                 printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
             }
             else {
-                printMessage("log", "(" + app.name + ")", "processed =", nProcessed, "/", "skipped =", nSkipped);
-                if (nProcessed > 0) {
+                printMessage("log", "(" + app.name + ")", "scanned =", nScanned, "/", "skipped =", nSkipped);
+                if (nScanned > 0) {
+                    printMessage("log", "(" + app.name + ")", "uids with dup =", writeHandler.nDocsWithDups, "/", "total unique uids =", writeHandler.nDocs);
+                    printMessage("log", "(" + app.name + ")", "uids fixed before / correct =", writeHandler.nAlreadyFixed, "/", "incorrect =", writeHandler.nFalseFixed);
+                    printMessage("log", "(" + app.name + ")", "insert reqs =", writeHandler.nInsertRequests, "/", "remove reqs =", writeHandler.nRemoveRequests);
                     printMessage("log", "(" + app.name + ")", "inserted =", nInserted, "/", "removed =", nRemoved);
                 }
-                if (nProcessed === nInserted && nProcessed === nRemoved) {
-                    printMessage("log", "(" + app.name + ")", "Successful.", "\n");
+                var nExpectedInsert = writeHandler.nDocs - writeHandler.nAlreadyFixed;
+                var nExpectedRemove = nScanned - writeHandler.nAlreadyFixed;
+                if (writeHandler.nInsertRequests !== nInserted || writeHandler.nRemoveRequests !== nRemoved) {
+                    hasAnyErrors = true;
+                    printMessage("error", "(" + app.name + ")", "ERROR: # of requests doesn't match with inserted/removed.", "\n");
+                }
+                else if (nExpectedRemove !== nRemoved || nExpectedInsert !== nInserted) {
+                    hasAnyErrors = true;
+                    printMessage("error", "(" + app.name + ")", "ERROR: Expected insert or expected remove doesn't match with inserted/removed", "\n");
                 }
                 else {
-                    hasAnyErrors = true;
-                    printMessage("error", "(" + app.name + ")", "ERROR: processed doesn't match with inserted/removed.", "\n");
+                    printMessage("log", "(" + app.name + ")", "Successful.", "\n");
                 }
             }
             return done();
