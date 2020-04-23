@@ -35,6 +35,9 @@ then
 
     #remove previous dependencies, as they need to be rebuild for new nodejs version
     rm -rf "$DIR/../node_modules"
+    
+    #remove previous package-lock.json
+    rm -rf "$DIR/../package-lock.json"
 
     #run upgrade scripts
     bash "$CUR/scripts/remove_moved_files.sh"
