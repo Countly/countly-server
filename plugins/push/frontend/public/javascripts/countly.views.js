@@ -353,7 +353,11 @@ $(document).ready(function() {
     }
 
     $('body').on('click', '.tab-buttons > div', function() {
-        if ($(this).next().length === 1) $('.widget-content').addClass('hide-zoom');
-        else $('.widget-content').removeClass('hide-zoom');
+        if ($(this).next().length === 1) {
+            $('.widget-content').addClass('hide-zoom');
+        }
+        else {
+            $('.widget-content').removeClass('hide-zoom');
+        }
     });
 });
