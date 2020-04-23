@@ -3580,7 +3580,7 @@ color:#E95C6C; transition:color 1s;
 .zoom .zoom-in { border-radius: 0 100px 100px 0; text-align: left; padding-right: 12px; }
 .zoom .zoom-in:before { content: "\f218"; }
 .graph.pannable { cursor: grab; }
-*:hover > .zoom .zoom-button { visibility: visible; }
+*:not(.hide-zoom):hover > .zoom .zoom-button { visibility: visible; }
 #dashboard-export-graph .zoom { margin-top: 18px; }
 #dashboard-purge-graph .zoom { margin-top: 18px; }
 
