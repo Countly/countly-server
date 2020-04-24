@@ -278,7 +278,7 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-        $('.crashes tbody ').on("click", "tr", function() {
+        $('.crashes tbody ').off("click", "tr").on("click", "tr", function() {
             var id = $(this).attr("id");
             if (id) {
                 var link = "#/crashes/" + id ;
@@ -286,7 +286,7 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-        $('.crashes tbody ').on("click", "td:first-child", function(e) {
+        $('.crashes tbody ').off("click", "td:first-child").on("click", "td:first-child", function(e) {
             e.cancelBubble = true; // IE Stop propagation
             if (e.stopPropagation) {
                 e.stopPropagation();
@@ -316,10 +316,10 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-        $(".filter-segmentation").on("cly-select-change", function(e, val) {
+        $(".filter-segmentation").off("cly-select-change").on("cly-select-change", function(e, val) {
             self.filterCrashes(val);
         });
-        $(".action-segmentation").on("cly-select-change", function(e, val) {
+        $(".action-segmentation").off("cly-select-change").on("cly-select-change", function(e, val) {
             if (val !== "") {
                 $(".action-segmentation").clySelectSetSelection("", jQuery.i18n.map["crashes.make-action"]);
                 if (val === "crash-resolve") {
@@ -487,7 +487,7 @@ window.CrashesView = countlyView.extend({
         $("#crashes_filter_platform").clySelectSetItems(osItems);
         $("#crashes_filter_fatal_type").clySelectSetItems(fatalItems);
 
-        $("#crashes-selector-graph").on("click", function() {
+        $("#crashes-selector-graph").off("click").on("click", function() {
             if ($(this).hasClass('active')) {
                 $(this).removeClass('active');
                 $("#crashes-filter").hide();
@@ -499,7 +499,7 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-        $(".remove-crashes-filter").on("click", function() {
+        $(".remove-crashes-filter").off("click").on("click", function() {
             countlyCrashes.resetActiveFilter();
             var oldFilter = countlyCrashes.getActiveFilter();
 
@@ -520,7 +520,7 @@ window.CrashesView = countlyView.extend({
             self.refresh();
         });
 
-        $(".apply-crashes-filter").on("click", function() {
+        $(".apply-crashes-filter").off("click").on("click", function() {
             $("#crashes-selector-graph").removeClass('active');
             $(".crashes-selector-form").hide();
 
@@ -728,7 +728,7 @@ window.CrashesView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             self.switchMetric();
             self.addScriptsForFilter(crashData);
-            $("#total-user-estimate-ind").on("click", function() {
+            $("#total-user-estimate-ind").off("click").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });
 
@@ -1070,7 +1070,7 @@ window.CrashesView = countlyView.extend({
             }
         }
 
-        $(".crashes-show-switch").on("click", function() {
+        $(".crashes-show-switch").off("click").on("click", function() {
             if ($(this).hasClass("selected")) {
                 self.showOnGraph[$(this).data("type")] = false;
             }
@@ -1509,7 +1509,7 @@ window.CrashgroupView = countlyView.extend({
                     $(".crash-comment-count").show();
                 }
             }
-            $(".segmentation-option").on("click", function() {
+            $(".segmentation-option").off("click").on("click", function() {
                 self.switchMetric($(this).data("value"));
             });
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -1564,7 +1564,7 @@ window.CrashgroupView = countlyView.extend({
             }));
             this.dtable.stickyTableHeaders();
 
-            /*$('.crash-reports tbody').on("click", "tr", function (){
+            /*$('.crash-reports tbody').off("click", "tr").on("click", "tr", function (){
                 var id = $(this).attr("id");
                 if(id)
                     window.location.hash = window.location.hash.toString()+"/"+id;
@@ -1646,7 +1646,7 @@ window.CrashgroupView = countlyView.extend({
                     $(".flot-text").hide().show(0);
                 }
             });
-            this.tabs.on("tabsactivate", function(event, ui) {
+            this.tabs.off("tabsactivate").on("tabsactivate", function(event, ui) {
                 if (ui && ui.newPanel) {
                     var id = $(ui.newPanel).attr("id") + "";
                     if (id === "notes") {
@@ -1680,7 +1680,7 @@ window.CrashgroupView = countlyView.extend({
                     }
                 });
             });
-            $("#notes").on("click", ".crash-comment-edit", function() {
+            $("#notes").off("click", ".crash-comment-edit").on("click", ".crash-comment-edit", function() {
                 var container = $(this).parents(".comment");
                 if (!container.find("#comment_edit").length) {
                     var comment_id = $(this).data("id");
@@ -1709,7 +1709,7 @@ window.CrashgroupView = countlyView.extend({
                     });
                 }
             });
-            $("#notes").on("click", ".crash-comment-delete", function() {
+            $("#notes").off("click", ".crash-comment-delete").on("click", ".crash-comment-delete", function() {
                 var ob = {};
                 ob.comment_id = $(this).data("id");
                 CountlyHelpers.confirm(jQuery.i18n.map["crashes.confirm-comment-delete"], "red", function(result) {
@@ -1728,7 +1728,7 @@ window.CrashgroupView = countlyView.extend({
                 });
             });
 
-            $("#expand-crash").on("click", function() {
+            $("#expand-crash").off("click").on("click", function() {
                 $(this).toggleClass("active");
                 $("#expandable").toggleClass("collapsed");
             });
@@ -1744,7 +1744,7 @@ window.CrashgroupView = countlyView.extend({
                 $("#expand-crash").show();
             }
 
-            $("#threads").on("click", ".expand-row-icon", function() {
+            $("#threads").off("click", ".expand-row-icon").on("click", ".expand-row-icon", function() {
                 var el = $(this);
                 if (el.hasClass("expand-row-icon")) {
                     var thread = el.closest(".thread");
@@ -1764,7 +1764,7 @@ window.CrashgroupView = countlyView.extend({
                 }
             });
 
-            $("#expand-thread").on("click", function() {
+            $("#expand-thread").off("click").on("click", function() {
                 $(this).toggleClass("active");
                 $("#expandable_thread").toggleClass("collapsed");
             });
@@ -1905,7 +1905,7 @@ window.CrashgroupView = countlyView.extend({
                 $(this).closest(".error-details-menu").find(".cly-button-menu-trigger").removeClass("active");
             });
 
-            $(".routename-crashgroup").on("click", ".error-download-stracktrace", function() {
+            $(".routename-crashgroup").off("click", ".error-download-stracktrace").on("click", ".error-download-stracktrace", function() {
                 var menu = $(this).closest(".error-details-menu");
                 menu.find(".cly-button-menu-trigger").toggleClass("active");
                 var id = menu.attr("data-id");
@@ -1915,7 +1915,7 @@ window.CrashgroupView = countlyView.extend({
                 }
             });
 
-            $(".routename-crashgroup").on("click", ".error-download-binary", function() {
+            $(".routename-crashgroup").off("click", ".error-download-binary").on("click", ".error-download-binary", function() {
                 var menu = $(this).closest(".error-details-menu");
                 menu.find(".cly-button-menu-trigger").toggleClass("active");
                 var id = menu.attr("data-id");
