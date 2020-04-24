@@ -262,13 +262,7 @@ var trace = {
                     thread.id = threads.length;
                     stack = parts[i].split("\n");
                     thread.name = stack.shift().trim();
-                    new_stack = [];
-                    for (let j = 0; j < stack.length; j++) {
-                        if (rLineNumbers.test(stack[j])) {
-                            new_stack.push(stack[j]);
-                        }
-                    }
-                    thread.error = new_stack.join("\n");
+                    thread.error = stack.join("\n");
                     if (thread.name.indexOf("Crashed:") !== -1) {
                         thread.name = thread.name.replace("Crashed:", "");
                         crash.error = thread.error.replace(rLineNumbers, "");
@@ -305,13 +299,7 @@ var trace = {
                         thread.id = threads.length;
                         stack = parts[i].split("\n");
                         thread.name = stack.shift().trim();
-                        new_stack = [];
-                        for (let j = 0; j < stack.length; j++) {
-                            if (rLineNumbers.test(stack[j])) {
-                                new_stack.push(stack[j]);
-                            }
-                        }
-                        thread.error = new_stack.join("\n");
+                        thread.error = stack.join("\n");
                         if (thread.name.indexOf("Crashed:") !== -1) {
                             thread.name = thread.name.replace("Crashed:", "");
                             crash.olderror = thread.error.replace(rLineNumbers, "");
