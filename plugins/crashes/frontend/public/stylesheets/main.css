@@ -126,7 +126,7 @@ td.details table tr.header, td.details table tr.header:hover {
 }
 .threads-list table td {vertical-align: top; height: 80px; word-break: break-all; word-wrap: break-word; width: 70%;}
 .routename-crashgroup .datatablesubrow table td {vertical-align: top; word-break: break-all; word-wrap: break-word;}
-.routename-crashgroup .datatablesubrow  table td pre, .threads-list table td pre {word-break: break-all; word-wrap: break-word; white-space: pre-wrap;}
+.routename-crashgroup .datatablesubrow  table td pre, .threads-list table td pre {word-break: break-word; word-wrap: break-word; white-space: pre-wrap; overflow-wrap: break-word;}
 .threads-list table td.open-thread i {cursor: pointer; margin-top: 30px;}
 .threads-list table td.thread-name {font-size: 13px; color: #777; width: 30%;}
 .threads-list table td.thread-name p {margin-bottom: 0px;}
