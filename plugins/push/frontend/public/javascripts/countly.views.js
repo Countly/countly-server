@@ -352,7 +352,7 @@ $(document).ready(function() {
         });
     }
 
-    $('body').off('click','.routename-messagingDashboardView > .tab-buttons > div').on('click', '.routename-messagingDashboardView > .tab-buttons > div', function() {
+    $('body').off('click', '.routename-messagingDashboardView > .tab-buttons > div').on('click', '.routename-messagingDashboardView > .tab-buttons > div', function() {
         if ($(this).next().length === 1) {
             $('.widget-content').addClass('hide-zoom');
         }
