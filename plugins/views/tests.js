@@ -45,6 +45,10 @@ function pushValues(period, index, map) {
         }
         tableResponse[period].aaData[index][key] += map[key];
     }
+    if (tableResponse[period].aaData[index]["t"] > 0) {
+        tableResponse[period].aaData[index]['d-calc'] = tableResponse[period].aaData[index]["d"] / tableResponse[period].aaData[index]["t"];
+        tableResponse[period].aaData[index]['scr-calc'] = tableResponse[period].aaData[index]["scr"] / tableResponse[period].aaData[index]["t"];
+    }
 }
 
 function merge_into(oldKey, newKey) {
@@ -749,9 +753,41 @@ describe('Testing views plugin', function() {
                 });
         });
         verifyTotals("30days");
-
-
     });
+
+    describe('Having multiple cly view events in same request', function() {
+        it('Adding view and duration in seperate events', function(done) {
+            pushValues("30days", 3, {"uvalue": 1, "u": 1, "t": 1, "s": 1, "n": 1, "d": 100});
+
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview9Ze", "visit": 1, "start": 1, "domain": "www.kakis.lv"}}, {"key": "[CLY]_view", "count": 1, "dur": 100, "segmentation": {"name": "testview9Ze"}}]);
+
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user100" + '&timestamp=' + (myTime - 30) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+        verifyTotals("30days");
+    });
+
+
+    describe('Having multiple cly view events in same request with different duration', function() {
+        it('Adding view and duration in seperate events', function(done) {
+            pushValues("30days", 3, {"uvalue": 1, "u": 1, "t": 1, "s": 1, "n": 1, "d": 600});
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 500, "segmentation": {"name": "testview9Ze", "visit": 1, "start": 1, "domain": "www.kakis.lv"}}, {"key": "[CLY]_view", "count": 1, "dur": 100, "segmentation": {"name": "testview9Ze"}}]);
+
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user102" + '&timestamp=' + (myTime - 30) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+        verifyTotals("30days");
+    });
+
+
 
     describe('reset app', function() {
         it('should reset data', function(done) {
