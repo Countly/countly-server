@@ -733,7 +733,7 @@ function cachedData(note) {
         if (note.tx) {
             log.i('Won\'t prepare tx message %j', note);
         }
-        else if (!prepared && !params.qstring.args.demo) {
+        else if (!prepared && !params.qstring.args || !params.qstring.args.demo) {
             log.i('No prepared message, preparing');
             let tmp = await api.prepare(params, true);
             log.i('Prepared %j', tmp);
