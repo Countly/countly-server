@@ -1608,24 +1608,30 @@ function cachedData(note) {
      */
     function mimeInfo(url) {
         return new Promise((resolve, reject) => {
-            if (url) {
-                log.d('Retrieving URL', url);
-                var parsed = require('url').parse(url);
+            try {
+                if (url) {
+                    log.d('Retrieving URL', url);
+                    var parsed = require('url').parse(url);
 
-                parsed.method = 'HEAD';
-                log.d('Parsed', parsed);
+                    parsed.method = 'HEAD';
+                    log.d('Parsed', parsed);
 
-                let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
-                    resolve({status: res.statusCode, headers: res.headers});
-                });
-                req.on('error', (err) => {
-                    log.e('error when HEADing ' + url, err);
-                    reject([400, 'Cannot access URL']);
-                });
-                req.end();
+                    let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
+                        resolve({status: res.statusCode, headers: res.headers});
+                    });
+                    req.on('error', (err) => {
+                        log.e('error when HEADing ' + url, err);
+                        reject([400, 'Cannot access URL']);
+                    });
+                    req.end();
+                }
+                else {
+                    reject([400, 'No url']);
+                }
             }
-            else {
-                reject([400, 'No url']);
+            catch (e) {
+                log.e('error getting mime info ' + url, e);
+                reject([500, 'Cannot load URL']);
             }
         });
     }
