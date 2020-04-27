@@ -1,4 +1,5 @@
 {
+    "KFMAWI" : "Fire HD 10 (2019)",
     "KFMUWI":"Fire 7 (2019)",
     "KFKAWI":"Fire HD 8 (2018)",
     "KFSUWI":"Fire HD 10 (2017)",
@@ -28,10 +29,15 @@
     "AFTS":"Fire TV (Gen 2)",
     "AFTN":"Fire TV (Gen 3)",
     "AFTA":"Fire TV Cube",
+    "AFTR":"Fire TV Cube (Gen 2)",
     "AFTMM":"Fire TV Stick 4K",
     "AFTRS":"Fire TV (Element 4K 2017)",
     "AFTEAMR311":"Fire TV (Insignia HD 2018)",
     "AFTJMST12":"Fire TV (Insignia 4K 2018)",
     "AFTBAMR311":"Fire TV (Toshiba HD 2018)",
-    "AFTKMST12":"Fire TV (Toshiba 4K 2018)"
+    "AFTKMST12":"Fire TV (Toshiba 4K 2018)",
+    "AFTSO001":"Fire TV (JVC 4K 2019)",
+    "AFTEU011":"Fire TV (Grundig Vision 6 HD 2019)",
+    "AFTEU014":"Fire TV (Grundig Vision 7 4K 2019)",
+    "AFTEUFF014":"Fire TV (Grundig OLED 4K 2019)"
 }
