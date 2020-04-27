@@ -57,7 +57,7 @@ then
     countly plugin enable performance-monitoring
 
     #install dependencies, process files and restart countly
-    countly upgrade
+    countly task dist-all
 
     #call after check
     countly check after upgrade fs "$VER"
