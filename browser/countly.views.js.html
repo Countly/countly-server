@@ -44,7 +44,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter */
+            <pre class="prettyprint source linenums"><code>/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation */
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
@@ -906,42 +906,44 @@ window.LoyaltyView = countlyView.extend({
             this.byDisabled = true;
             if (typeof extendViewWithFilter === "function") {
                 extendViewWithFilter(this);
-                this.initDrill();
+                $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
+                    this.initDrill();
 
-                setTimeout(function() {
-                    self.filterBlockClone = $("#filter-view").clone(true);
-                    if (self._query) {
-                        if ($(".filter-view-container").is(":visible")) {
-                            $("#filter-view").hide();
-                            $(".filter-view-container").hide();
-                        }
-                        else {
-                            $("#filter-view").show();
-                            $(".filter-view-container").show();
-                            self.adjustFilters();
-                        }
+                    setTimeout(function() {
+                        self.filterBlockClone = $("#filter-view").clone(true);
+                        if (self._query) {
+                            if ($(".filter-view-container").is(":visible")) {
+                                $("#filter-view").hide();
+                                $(".filter-view-container").hide();
+                            }
+                            else {
+                                $("#filter-view").show();
+                                $(".filter-view-container").show();
+                                self.adjustFilters();
+                            }
 
-                        $(".flot-text").hide().show(0);
-                        var filter = self._query;
-                        var inputs = [];
-                        var subs = {};
-                        for (var i in filter) {
-                            inputs.push(i);
-                            subs[i] = [];
-                            for (var j in filter[i]) {
-                                if (filter[i][j].length) {
-                                    for (var k = 0; k &lt; filter[i][j].length; k++) {
-                                        subs[i].push([j, filter[i][j][k]]);
+                            $(".flot-text").hide().show(0);
+                            var filter = self._query;
+                            var inputs = [];
+                            var subs = {};
+                            for (var i in filter) {
+                                inputs.push(i);
+                                subs[i] = [];
+                                for (var j in filter[i]) {
+                                    if (filter[i][j].length) {
+                                        for (var k = 0; k &lt; filter[i][j].length; k++) {
+                                            subs[i].push([j, filter[i][j][k]]);
+                                        }
+                                    }
+                                    else {
+                                        subs[i].push([j, filter[i][j]]);
                                     }
                                 }
-                                else {
-                                    subs[i].push([j, filter[i][j]]);
-                                }
                             }
+                            self.setInput(inputs, subs, 0, 0, 1);
                         }
-                        self.setInput(inputs, subs, 0, 0, 1);
-                    }
-                }, 500);
+                    }, 500);
+                });
             }
         }
     },
@@ -7065,7 +7067,7 @@ Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);</code></
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Mon Apr 27 2020 12:05:06 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Mon Apr 27 2020 19:09:20 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
