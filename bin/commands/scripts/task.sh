@@ -10,6 +10,11 @@ then
     usage ;
 else
     (cd "$DIR/../../.." ;
-    "$DIR/../../../node_modules/grunt/bin/grunt" "$1";
+        if [ -f "$DIR/../../../node_modules/grunt/bin/grunt" ]; then
+            "$DIR/../../../node_modules/grunt/bin/grunt" "$1";
+        else
+            #fallback to global grunt command
+            grunt "$1";
+        fi
     )
 fi

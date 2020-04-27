@@ -1,8 +1,8 @@
 FROM centos/nodejs-10-centos7
 
-#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
 # Enterprise Edition:
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing,active_users,performance-monitoring
 
 EXPOSE 3001
 HEALTHCHECK --start-period=60s CMD curl --fail http://localhost:3001/o/ping || exit 1
@@ -15,7 +15,7 @@ ENV COUNTLY_CONTAINER="api" \
 	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
 	COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
 	TINI_VERSION="0.18.0" \
-	PATH="/opt/rh/rh-nodejs8/root/usr/bin:${PATH}"
+	PATH="/opt/rh/rh-nodejs10/root/usr/bin:${PATH}"
 
 WORKDIR /opt/countly
 COPY . .
@@ -38,10 +38,9 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	bash /opt/countly/bin/scripts/detect.init.sh && \
 	\
 	# cleanup & chown
-	npm remove -y mocha nyc should supertest && \
+	npm remove -y mocha nyc should supertest puppeteer && \
 	rm -rf /opt/app-root/src/.npm && \
-	yum remove -y git gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel && \
-	yum -y autoremove && \
+	yum remove -y git gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel devtoolset-7-gcc devtoolset-7-libstdc++-devel python36-devel centos-release-scl devtoolset-7-gcc-c++ && \
 	yum clean all && \
 	rm -rf /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* && \
 	chown -R 1001:0 /opt/countly && \
@@ -49,8 +48,6 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 
 
 USER 1001:0
-
-#ENV PATH="/opt/rh/rh-nodejs8/root/usr/bin:${PATH}"
 
 ENTRYPOINT ["/usr/bin/tini", "-v", "--"]
 

@@ -101,9 +101,7 @@ window.component('push.dash', function (dash) {
                         this[tableName].fnDestroy(true);
                     } catch (e) { }
 
-                    var id = $(this[tableName].context).attr('id');
-                    if (id)
-                        $('#' + id + '_wrapper').remove();
+                    $(element).remove();
                     delete this[tableName];
                 }
             }.bind(this);
@@ -506,7 +504,7 @@ window.component('push.dash', function (dash) {
                     view: ctrl.tab() === '' ? 
                         m('table.d-table', { config: ctrl.tableConfig, key: 'single_messages' })
                         : m('table.d-table', { config: ctrl.tableConfigAutomatedMessages, key: 'automated_messages' }), 
-                    config: { class: 'message-table-container' }
+                    config: { key: 'table-' + ctrl.tab(), class: 'message-table-container' }
                 }
             }),
             m('.cly-button-menu.message-menu', [

@@ -1,6 +1,6 @@
 {
   "name": "countly-server",
-  "version": "20.3.0",
+  "version": "20.4.0",
   "description": "innovative, real-time, open source mobile analytics application",
   "keywords": [
     "analytics",
@@ -41,12 +41,12 @@
     "countly-sdk-web": "*",
     "csurf": "1.11.0",
     "docdash": "1.2.0",
-    "ejs": "3.0.2",
+    "ejs": "3.1.2",
     "errorhandler": "1.5.1",
     "express": "4.17.1",
     "express-rate-limit": "5.1.1",
     "express-session": "1.17.1",
-    "external-ip": "2.1.1",
+    "external-ip": "2.3.1",
     "formidable": "1.2.2",
     "fs-extra": "^9.0.0",
     "geoip-lite": "1.4.1",
