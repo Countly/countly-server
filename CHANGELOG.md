@@ -13,12 +13,15 @@
 * [UI] fixed single data point not visible
 * [UI] hide menu category if no menu items available
 * [UI] use arrow keys to handle navigation on dropdowns
+* [api] correctly merge array properties for users (not converting them to objects)
 * [api] fixed api side aggregated data user correction in some cases
 * [api] fixed escaping filenames in headers
+* [api] reset period object before getting query time ranges
 * [api] respect city settings when it comes to user 
 * [core] fixes running countly in sub directory
 * [core] improve countly user password change experience
 * [crashes] double dots on y axis for crash/session ratio
+* [crashes] fix closing first thread on refresh
 * [crashes] make sure minidump_stackwalk binary has proper permissions
 * [data-migration] correctly export push credentials and import them
 * [dbviewer] add link to all links instead of javascript view change
@@ -29,7 +32,11 @@
 * [export] fix problems with SSL configuration
 * [frontend] fixed app version sorting in the table
 * [frontend] fixed css for User Loyalty bug
+* [frontend] hide numbers before sparklines loaded
+* [frontend] more space for event names
 * [frontend] properly merge aggregated metrics to fix multiple empty and unknown keys
+* [frontend] resetting graph types when graphs change
+* [jobs] Fixing job start update being made after finish one
 * [push] Fixing multi-select overflow
 * [push] Fixing race when 2 jobs compete for 1 resource
 * [push] Prevent multiple dashboard requests when refresh is faster than the request itself
@@ -51,6 +58,7 @@
 * [security] prevent injection from localiztion key
 * [security] proper setup page validation
 * [security] sending activation link instead of password
+* [security] stricter decoding rules, disable eval, monitor eval usage
 * [security] updated jquery and jquery ui to latest versions
 * [slipping-aways] fixed calculating period bug
 * [star-rating] design fixes
@@ -85,13 +93,18 @@
 * [concurrent_users] removed broken css
 * [crash_symbolication] added file type check on api side for symbol upload process
 * [crash_symbolication] enter press event link to ajaxSubmit method
+* [crash_symbolication] fix error on symbol not found
 * [crash_symbolication] fix undefined values in build list
 * [crash_symboliction] fix symbolication log type and android native command
+* [db] fix $addToSet usage with new MongoDB limitations
 * [drill] event context specific indexes
+* [drill] fix username typo
 * [drill] treat numbers as potential floats
+* [drill] use display names for views in drill
 * [flows] cache event indices
 * [funnels] fixed using cohorts as segmentation in OR steps
 * [groups] add systemlogs
+* [jobs] fix of rescheduling cohorts
 * [remote-config] add systemlogs
 * [restrict] restrict access to manage menu
 * [restrict] updated API/view corelation
@@ -106,21 +119,28 @@
 * [UI] new date picker
 * [active_users] displays MAU, WAU, DAU in Users section
 * [api] record user's device orientation
-* [config] add buttong to test sending email
+* [config] add button to test sending email
 * [core] offline mode config for closed network servers
 * [crashes] add first crash line to crash name in table
 * [crashes] new crash metrics
 * [crashes] revised graph UI
 * [crashes] support for PL Crash reports
+* [dbviewer] can search for collections by hashes too
 * [dbviewer] correctly display ObjectId objects in DBViewer
 * [dbviewer] display indexes of collections
 * [frontend] config for default period selected on dashboard
+* [frontend] enable datatable display count by default
+* [frontend] sort app versions latest version at the top
 * [frontend] zooming controls for graphs
+* [populator] allow creating templates for specific event sets and user properties
 * [populator] populate feedback data
+* [push] Displaying message id in view message
 * [push] rate limiting push sending
 * [reports] job for clearing old autogenerates reports
 * [server-stats] add 3 month period for datapoints
+* [server-stats] add punchcard with hourly metrics
 * [star-rating] added custom theme support for feedback popup
+* [star-rating] allow changing size of the Feedback button
 * [star-rating] display tooltips on emojis
 * [systemlogs] display id of document changed on first level
 * [tokens] job for clearing old unused tokens
@@ -128,11 +148,13 @@
 
 **New Enterprise Features**
 * [UI] change URL on applied query in all views
+* [block] allow new operators as contains in filtering rules
 * [cohorts] new UI with overview and user metrics
 * [cohorts] new bars dashboard widget
 * [cohorts] support for OR steps
 * [crash_symbolication] UI for missing symbols
 * [crash_symbolication] add PL crash support
+* [crash_symbolication] add load address to binary symbols table
 * [drill] add doesn't contain operator
 * [drill] config to disable recording big lists
 * [drill] preaggregated reports for slower queries
@@ -147,6 +169,7 @@
 * [funnels] parallel step processing for faster responses
 * [funnels] show time spent between steps
 * [funnels] support for OR steps
+* [performance-monitoring] new plugin to monitor traces in the app
 * [slipping-away] allow segmenting Slipping away users for EE
 * [star-rating] added to drill and cohorts/funnels steps
 * [users] display more mtea info on user profile page
@@ -168,22 +191,29 @@
 * [core] no need to load js files in javascript directory anymore, they are loaded automatically
 * [core] update for moment construtor warning
 * [db] add log rotation to mongodb in default installation script
+* [db] remove unique constraint on collections that might need sharding
 * [db] removed unused drill index
 * [dep] nodejs version 10
 * [drill] get rid of old meta method
 * [drill] move extend drill view to separate file, to make drill.view.js more readable
 * [drill] record last session id
 * [frontend] added category menu management methods
+* [frontend] common template loader
 * [frontend] i18n do not download properties for locale en, as it is default locale
 * [frontend] log renderCommon failure
 * [frontend] updated os mapping
 * [jobs] cancel all jobs with “schedule” on replace instead of nearest ones
+* [logger] have separate phase for processing after /sdk finished
+* [package] move fs-extra to core packages
 * [package] move grunt and other required libs to dependencies
 * [render] close headless browser incase of errors
+* [rights] manage collection access globally in rights module
 * [scripts] shellcheck for scripts
+* [scripts] update openssl to latest
 * [taskmanager] fallback to gridfs for storing larger data sets
 * [taskmanager] support for sub tasks
 * [vagrant] use 8080 port
+* [version] mark separately db and fs versions and mark them on upgrades and installs
 
 ## Version 19.08.1
 
