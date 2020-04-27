@@ -1,4 +1,4 @@
-## Version 20.03
+## Version 20.04
 
 **Fixes**
 * [2fa] added white labeling to 2fa qr codes
