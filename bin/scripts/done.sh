@@ -1,10 +1,10 @@
 #!/bin/bash
 
-IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
+IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | head -n 1)
 echo ""
 echo ""
 echo ""
-echo "Your successfully installed Countly version $(countly version) to $(countly dir)"
+echo "You have successfully installed Countly version $(countly version) to $(countly dir)"
 echo ""
 echo "Installation and process logs are available here: $(countly dir)/log"
 echo ""
