@@ -1191,6 +1191,7 @@
             delete template.events[""]; // delete events without keys
             Object.keys(template.events).forEach(function(key) {
                 var event = template.events[key];
+
                 if (event.segments) {
                     delete event.segments[""];
                 }
@@ -1199,12 +1200,7 @@
                     delete event.segments;
                 }
 
-                if (Object.keys(event).length === 0) {
-                    delete template.events[key];
-                }
-                else {
-                    template.events[key] = event;
-                }
+                template.events[key] = event;
             });
 
             if (template.events.length === 0) {
