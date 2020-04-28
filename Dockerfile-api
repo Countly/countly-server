@@ -32,7 +32,8 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	# preinstall
 	cp -n ./api/config.sample.js ./api/config.js && \
 	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
-	HOME=/tmp npm install && \
+	HOME=/tmp npm install --unsafe-perm=true --allow-root && \
+	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
 	./bin/docker/preinstall.sh && \
 	bash /opt/countly/bin/scripts/detect.init.sh && \
 	\
