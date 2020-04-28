@@ -82,8 +82,9 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                         }
                     }
                     else if (fColRes.notFound !== true) {
-                        printMessage("error", "(" + app.name + ") Error at checkFixStatus: Only fixed collection exists (unexpected).");
-                        callback(true, "error");
+                        printMessage("log", "(" + app.name + ") Warning at checkFixStatus: Only fixed collection exists (unexpected).");
+                        printMessage("log", "(" + app.name + ") Needs rename");
+                        callback(null, "rename");
                     }
                 });
             });
