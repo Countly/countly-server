@@ -58,6 +58,11 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                         return callback(true, "error");
                     }
                     if (oColRes.notFound !== true && fColRes.notFound !== true) {
+                        if (!Object.prototype.hasOwnProperty.call(fColRes, "_id") ||
+                            !Object.prototype.hasOwnProperty.call(fColRes, "uid")) {
+                            printMessage("error", "(" + app.name + ") Error at checkFixStatus: Fixed collection document has missing properties.", fColRes);
+                            return callback(true, "error");
+                        }
                         if (fColRes._id === fColRes.uid) {
                             printMessage("log", "(" + app.name + ") Needs rename");
                             callback(null, "rename");
@@ -72,6 +77,11 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
                         callback(null, "skip");
                     }
                     else if (oColRes.notFound !== true) {
+                        if (!Object.prototype.hasOwnProperty.call(oColRes, "_id") ||
+                            !Object.prototype.hasOwnProperty.call(oColRes, "uid")) {
+                            printMessage("error", "(" + app.name + ") Error at checkFixStatus: Original collection document has missing properties.", oColRes);
+                            return callback(true, "error");
+                        }
                         if (oColRes._id === oColRes.uid) {
                             printMessage("log", "(" + app.name + ") App already fixed.");
                             callback(null, "skip");
