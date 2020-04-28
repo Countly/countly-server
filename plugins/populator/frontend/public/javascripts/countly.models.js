@@ -535,9 +535,6 @@
             else if (id === "[CLY]_view") {
                 event.dur = getRandomInt(0, 100);
             }
-            else {
-                event.dur = getRandomInt(0, 10);
-            }
 
             if (eventTemplate && eventTemplate.sum) {
                 event.sum = getRandomInt(eventTemplate.sum[0], eventTemplate.sum[1] || 10);
