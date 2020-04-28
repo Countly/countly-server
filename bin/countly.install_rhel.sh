@@ -163,6 +163,8 @@ countly check after install
 #finally start countly api and dashboard
 countly start
 
+bash "$DIR/scripts/done.sh";
+
 ENABLED=$(getenforce)
 if [ "$ENABLED" == "Enforcing" ]; then
   echo -e "\e[31mSELinux is enabled, please disable it or add nginx to exception for Countly to work properly\e[0m"
