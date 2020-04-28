@@ -8,103 +8,6 @@ function printMessage(messageType, ...message) {
 
 printMessage("log", "Started...");
 
-class WriteHandler {
-
-    constructor() {
-        this.currentUid = null;
-        this.candidates = [];
-        this.nDocsWithDups = 0;
-        this.nDocs = 0;
-        this.nInsertRequests = 0;
-        this.nRemoveRequests = 0;
-        this.nAlreadyFixed = 0;
-        this.nFalseFixed = 0;
-    }
-
-    flush() {
-        var requests = [];
-        var self = this;
-        if (this.candidates.length === 0) {
-            return [];
-        }
-        if (this.candidates.length > 1) {
-            this.nDocsWithDups++;
-        }
-        this.nDocs++;
-        var ranking = this.candidates.map(function(doc) {
-            var str = JSON.stringify(doc);
-            return {
-                "fs": parseInt(doc.fs),
-                "len": str.length,
-                "fixed": doc._id === doc.uid ? 1 : 0,
-                "doc": doc,
-                "removeId": doc._id,
-                "str": str
-            };
-        });
-        ranking.sort(function(a, b) {
-            return a.fs - b.fs || b.len - a.len;
-        });
-        var winningItem = ranking[0];
-
-        var fixedDocs = ranking.filter(function(item) {
-            return item.fixed === 1;
-        });
-
-        if (ranking.length > 1 && fixedDocs.length > 0 && fixedDocs[0] !== winningItem) {
-            requests.push({
-                deleteOne: { "filter": { _id: fixedDocs[0].removeId }}
-            });
-            self.nRemoveRequests++;
-            self.nFalseFixed++;
-        }
-        if (winningItem.fixed !== 1) {
-            winningItem.doc._id = winningItem.doc.uid;
-            requests.push({
-                insertOne: { "document": winningItem.doc }
-            });
-            self.nInsertRequests++;
-        }
-        else {
-            self.nAlreadyFixed++;
-        }
-
-        ranking.forEach(function(item) {
-            if (item.fixed !== 1) {
-                requests.push({
-                    deleteOne: { "filter": { _id: item.removeId }}
-                });
-                self.nRemoveRequests++;
-            }
-        });
-        return requests;
-    }
-
-    process(newDoc) {
-        if (this.currentUid === null) {
-            this.currentUid = newDoc.uid;
-            this.candidates.push(newDoc);
-            return [];
-        }
-        if (this.currentUid === newDoc.uid) {
-            // a duplicate of prevDoc
-            this.candidates.push(newDoc);
-            return [];
-        }
-        if (this.currentUid !== newDoc.uid) {
-            // uid changed, flush
-            var requests = this.flush();
-            this.currentUid = newDoc.uid;
-            this.candidates = [newDoc];
-            return requests;
-        }
-    }
-
-    end() {
-        return this.flush();
-    }
-}
-
 countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
     var hasAnyErrors = false;
@@ -130,114 +33,187 @@ countlyDb.collection('apps').find({}).toArray(function(appsErr, apps) {
 
     function upgrade(app, done) {
         printMessage("log", "(" + app.name + ") Fixing...");
-        var cursor = countlyDb.collection('app_nxret' + app._id).find({}).sort({uid: 1});
-        var requests = [];
-        var nScanned = 0;
-        var nSkipped = 0;
-        var bulkWritePromises = [];
 
-        var writeHandler = new WriteHandler();
+        var originalColId = 'app_nxret' + app._id;
+        var fixedColId = "fixed_app_nxret" + app._id;
 
-        cursor.forEach(function(nxret) {
-            if (nxret.uid === null || nxret.uid === undefined) {
-                printMessage("log", "(" + app.name + ") Skipping a doc with empty uid");
-                nSkipped++;
-            }
-            else {
-                var newRequests = writeHandler.process(nxret);
-                newRequests.forEach(function(nReq) {
-                    requests.push(nReq);
-                });
-                if (requests.length >= 1000) {
-                    bulkWritePromises.push(getBulkWritePromise(requests));
-                    requests = [];
+        function getOneDoc(collectionId, callback) {
+            countlyDb.collection(collectionId).findOne({}, function(err, result) {
+                if (err) {
+                    printMessage("error", "(" + app.name + ") Error at getOneDoc", err);
                 }
-                nScanned++;
-            }
-        }, function(err) {
-            if (err) {
-                printMessage("error", "cursor.forEach stopped execution: ", err);
-            }
-            var newRequests = writeHandler.end();
-            newRequests.forEach(function(nReq) {
-                requests.push(nReq);
-            });
-            if (requests.length > 0) {
-                bulkWritePromises.push(getBulkWritePromise(requests));
-                requests = [];
-            }
-            Promise.all(bulkWritePromises).then(finalizeApp).catch(function(err) {
-                hasAnyErrors = true;
-                printMessage("error", err);
-                printMessage("error", "----------------------------------------------");
-                printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
-                return done();
-            });
-        });
-
-        function getBulkWritePromise(reqArr) {
-            return new Promise(function(resolve/*, reject*/) {
-                countlyDb.collection('app_nxret' + app._id).bulkWrite(reqArr, function(err, response) {
-                    if (err) {
-                        printMessage("error", "Bulk write completed with errors: ", err);
-                    }
-                    if (response && response.result) {
-                        resolve({err: err, result: response.result});
-                    }
-                    else {
-                        resolve({err: err, result: null});
-                    }
-                });
-            }).catch(function(err) {
-                printMessage("error", "(" + app.name + ")", "error in Promise:", err);
-                return Promise.resolve({err: err, result: null});
+                if (callback) {
+                    callback(err, result || {"notFound": true});
+                }
             });
         }
 
-        function finalizeApp(responses) {
-            var hasError = false;
-            var nInserted = 0;
-            var nRemoved = 0;
-            responses.forEach(function(response) {
-                hasError = hasError || response.err;
-                if (response.result) {
-                    if (response.result.nInserted) {
-                        nInserted += response.result.nInserted;
+        function checkFixStatus(callback) {
+            getOneDoc(originalColId, function(oColErr, oColRes) {
+                if (oColErr) {
+                    return callback(true, "error");
+                }
+                getOneDoc(fixedColId, function(fColErr, fColRes) {
+                    if (fColErr) {
+                        return callback(true, "error");
                     }
-                    if (response.result.nRemoved) {
-                        nRemoved += response.result.nRemoved;
+                    if (oColRes.notFound !== true && fColRes.notFound !== true) {
+                        if (fColRes._id === fColRes.uid) {
+                            printMessage("log", "(" + app.name + ") Needs rename");
+                            callback(null, "rename");
+                        }
+                        else {
+                            printMessage("error", "(" + app.name + ") Error at checkFixStatus: Fixed collection has item with _id != uid (unexpected).");
+                            callback(true, "error");
+                        }
                     }
+                    else if (oColRes.notFound === true && fColRes.notFound === true) {
+                        printMessage("log", "(" + app.name + ") Both collections are empty.");
+                        callback(null, "skip");
+                    }
+                    else if (oColRes.notFound !== true) {
+                        if (oColRes._id === oColRes.uid) {
+                            printMessage("log", "(" + app.name + ") App already fixed.");
+                            callback(null, "skip");
+                        }
+                        else {
+                            printMessage("log", "(" + app.name + ") Needs complete fix");
+                            callback(null, "fix");
+                        }
+                    }
+                    else if (fColRes.notFound !== true) {
+                        printMessage("log", "(" + app.name + ") Warning at checkFixStatus: Only fixed collection exists (unexpected).");
+                        printMessage("log", "(" + app.name + ") Needs rename");
+                        callback(null, "rename");
+                    }
+                });
+            });
+        }
+
+        function fixCollection(callback) {
+            var pipeline = [
+                {
+                    $group: {
+                        "_id": "$uid",
+                        "min_fs": {$min: "$fs"},
+                        "candidates": {$push: "$$ROOT"}
+                    }
+                },
+                {
+                    $addFields: {
+                        candidates: {
+                            $filter: {
+                                input: '$candidates',
+                                as: "cand",
+                                cond: { $eq: [ "$$cand.fs", '$$ROOT.min_fs'] }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        'winner': { $arrayElemAt: [ "$candidates", 0 ] }
+                    }
+                },
+                {
+                    $replaceRoot: {
+                        'newRoot': '$winner'
+                    }
+                },
+                {
+                    $addFields: {
+                        '_id': '$uid'
+                    }
+                },
+                {
+                    $out: fixedColId
+                }
+            ];
+            printMessage("log", "(" + app.name + ") Fixing collection...");
+            countlyDb.collection(originalColId).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
+                if (err) {
+                    printMessage("error", "(" + app.name + ") Error at fixCollection", err);
+                }
+                else {
+                    printMessage("log", "(" + app.name + ") Fixed collection.");
+                }
+                if (callback) {
+                    callback(err, res);
                 }
             });
+        }
 
-            if (hasError) {
+        function ensureUidIndex(collectionId, callback) {
+            printMessage("log", "(" + app.name + ") Ensuring uid index...");
+            countlyDb.collection(collectionId).ensureIndex({ "uid": 1 }, function(err) {
+                if (err) {
+                    printMessage("log", "(" + app.name + ") Error at ensureUidIndex", err);
+                }
+                else {
+                    printMessage("log", "(" + app.name + ") Ensured uid index.");
+                }
+                if (callback) {
+                    callback(err);
+                }
+            });
+        }
+
+        function renameCollection(callback) {
+            printMessage("log", "(" + app.name + ") Renaming collection...");
+            countlyDb.collection(fixedColId).rename(originalColId, {dropTarget: true}, function(err) {
+                if (err) {
+                    printMessage("error", "(" + app.name + ") Error at renameCollection", err);
+                    if (callback) {
+                        callback(err);
+                    }
+                }
+                else {
+                    printMessage("log", "(" + app.name + ") Renamed collection.");
+                    ensureUidIndex(originalColId, callback);
+                }
+            });
+        }
+
+        function finalizeApp(err, res) {
+            if (err) {
                 hasAnyErrors = true;
                 printMessage("error", "----------------------------------------------");
                 printMessage("error", "(" + app.name + ")", "ERRORS, see previous", "\n");
             }
             else {
-                printMessage("log", "(" + app.name + ")", "scanned =", nScanned, "/", "skipped =", nSkipped);
-                if (nScanned > 0) {
-                    printMessage("log", "(" + app.name + ")", "uids with dup =", writeHandler.nDocsWithDups, "/", "total unique uids =", writeHandler.nDocs);
-                    printMessage("log", "(" + app.name + ")", "uids fixed before / correct =", writeHandler.nAlreadyFixed, "/", "incorrect =", writeHandler.nFalseFixed);
-                    printMessage("log", "(" + app.name + ")", "insert reqs =", writeHandler.nInsertRequests, "/", "remove reqs =", writeHandler.nRemoveRequests);
-                    printMessage("log", "(" + app.name + ")", "inserted =", nInserted, "/", "removed =", nRemoved);
+                if (res) {
+                    printMessage("log", "(" + app.name + ") Result", res);
                 }
-                var nExpectedInsert = writeHandler.nDocs - writeHandler.nAlreadyFixed;
-                var nExpectedRemove = nScanned - writeHandler.nAlreadyFixed;
-                if (writeHandler.nInsertRequests !== nInserted || writeHandler.nRemoveRequests !== nRemoved) {
-                    hasAnyErrors = true;
-                    printMessage("error", "(" + app.name + ")", "ERROR: # of requests doesn't match with inserted/removed.", "\n");
-                }
-                else if (nExpectedRemove !== nRemoved || nExpectedInsert !== nInserted) {
-                    hasAnyErrors = true;
-                    printMessage("error", "(" + app.name + ")", "ERROR: Expected insert or expected remove doesn't match with inserted/removed", "\n");
-                }
-                else {
-                    printMessage("log", "(" + app.name + ")", "Successful.", "\n");
-                }
+                printMessage("log", "(" + app.name + ")", "Successful.", "\n");
             }
             return done();
         }
+
+        (function runFix() {
+            checkFixStatus(function(err, action) {
+                if (err || action === "error") {
+                    finalizeApp(true);
+                }
+                else if (action === "skip") {
+                    printMessage("log", "(" + app.name + ")", "Skipping...");
+                    finalizeApp(false);
+                }
+                else if (action === "rename") {
+                    renameCollection(function(err) {
+                        finalizeApp(err);
+                    });
+                }
+                else if (action === "fix") {
+                    fixCollection(function(fixErr) {
+                        if (fixErr) {
+                            return finalizeApp(fixErr);
+                        }
+                        renameCollection(function(renameErr) {
+                            finalizeApp(renameErr);
+                        });
+                    });
+                }
+            });
+        })();
     }
 });
