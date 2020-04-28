@@ -543,8 +543,13 @@
             if (id === "[CLY]_view") {
                 event.segmentation = {};
                 Object.keys(viewSegments).forEach(function(key) {
-                    var values = viewSegments[key];
-
+                    var values = [];
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && key === "name") {
+                        values = [countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
+                    }
+                    else {
+                        values = viewSegments[key];
+                    }
                     event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
                 });
             }
