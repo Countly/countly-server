@@ -28,6 +28,7 @@
 </head>
 <body>
 	<div id="message" style="width:550px; margin-left:-275px; font-size:14px; line-height:20px;" data-localize="setup.explanation"></div>
+    <div  id="error-message"></div>
 	<div id="top-container">
 		<% if (countlyPage){ %>
 		<a class="top-button" href="<%- countlyPage %>"><%- countlyTitle %></a>
@@ -50,18 +51,27 @@
 	</div>
 	<div id="login-form" style="height:306px; margin-top:-153px;">
         <div id="login-logo" style="margin-bottom:25px;"></div>
-        <form id="account-form" method="POST">
+        <form id="account-form" method="POST" onsubmit="return validateForm()">
             <div>
-                <input required autocapitalize="off" autocomplete="off" type="text" name="full_name" placeholder="Full Name" data-localize="placeholder.full-name"/>
+                <input required autocapitalize="off" autocomplete="off" type="text" name="full_name" id="full_name" placeholder="Full Name" data-localize="placeholder.full-name"<% if (params && params.full_name){ %> value="<%- params.full_name %>" <% } %>/>
             </div>
             <div>
-                <input required autocapitalize="off" autocomplete="off" type="email" name="email" placeholder="Email" data-localize="placeholder.email"/>
+                <input required autocapitalize="off" autocomplete="off" type="email" name="email" id="email" placeholder="Email" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
             </div>
             <div>
-                <input required type="text" autocapitalize="off" autocomplete="off" name="username" placeholder="Username" data-localize="placeholder.username"/>
+                <input required type="text" autocapitalize="off" autocomplete="off" name="username" id="username" placeholder="Username" data-localize="placeholder.username"<% if (params && params.username){ %> value="<%- params.username %>" <% } %>/>
             </div>
             <div>
-                <input required name="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"/>
+                <input required name="password" id="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
+                <div id="password-requirements">
+                    <p data-localize="management-users.password.requirements"></p>
+                    <ul>
+                        <li data-localize="management-users.password.length"></li>
+                        <li data-localize="management-users.password.has-char"></li>
+                        <li data-localize="management-users.password.has-number"></li>
+                        <li data-localize="management-users.password.has-special"></li>
+                    </ul>
+                </div>
             </div>
             <% if (typeof inject_template.form != "undefined") { %>
                 <%- inject_template.form %>
@@ -70,8 +80,6 @@
                 <input type="hidden" value="<%= csrf %>" name="_csrf" />
                 <input type="hidden" value="en" name="lang" id="form-lang" />
                 <input id="login-button" value="Create account" type="submit" data-localize="setup.button"/>
-            </div>
-            <div  id="error-message">
             </div>
         </form>
         <% if (typeof inject_template.html != "undefined") { %>
@@ -83,32 +91,55 @@
 	<script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
     <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/countly/countly.helpers.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
 
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
+        var params = <%- JSON.stringify(params) %>;
+        countlyGlobal.security = <%- JSON.stringify(security) %>;
+        function validateForm() {
+            var valid = true;
+            var errors = [];
+            if ($("#full_name").val().trim().length === 0) {
+                valid = false;
+                errors.push(jQuery.i18n.map["management-users.full_name.invalid"]);
+            }
+            if ($("#username").val().trim().length === 0) {
+                valid = false;
+                errors.push(jQuery.i18n.map["management-users.username.invalid"]);
+            }
+            if (!CountlyHelpers.validateEmail($("#email").val())) {
+                valid = false;
+                errors.push(jQuery.i18n.map["management-users.email.invalid"]);
+            }
+            if (CountlyHelpers.validatePassword($("#password").val())) {
+                errors.push(CountlyHelpers.validatePassword($("#password").val()));
+                valid = false;
+            }
+            $("#error-message").html(errors.join("<br/>"));
+            return valid;
+        }
 		$(document).ready(function() {
+            $("#password-requirements li").first().text(jQuery.i18n.prop("management-users.password.length", countlyGlobal.security.password_min));
 			if (jQuery.i18n.map["setup.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
             }
-            var url = new URL(location.href);
-            var error = url.searchParams.get("error");
-            var errorObj = {}
-            try {
-               errorObj = JSON.parse(error);
-            } catch (e) {};
+            var errorObj = <%- JSON.stringify(error) %>;
             if (errorObj.message && errorObj.message.length > 0) {
-                var errI18n = ''
-                if (errorObj.message[0].indexOf('upchar') > 0) {
-                    errI18n = jQuery.i18n.map["management-users.password.has-char"];
-                } else if (errorObj.message[0].indexOf('min') > 0) {
-                    errI18n = jQuery.i18n.prop("management-users.password.length", errorObj.passMinLen);
-                } else if (errorObj.message[0].indexOf('number') > 0) {
-                    errI18n = jQuery.i18n.map["management-users.password.has-number"];
-                } else if (errorObj.message[0].indexOf('special') > 0) {
-                    errI18n = jQuery.i18n.map["management-users.password.has-special"];
-                }
-                $("#error-message").text(errI18n);
+                var errI18n = []
+                for (var i = 0; i < errorObj.message.length; i++) {
+                    if (errorObj.message[i].indexOf('upchar') > 0) {
+                        errI18n.push(jQuery.i18n.map["management-users.password.has-char"]);
+                    } else if (errorObj.message[i].indexOf('min') > 0) {
+                        errI18n.push(jQuery.i18n.prop("management-users.password.length", errorObj.passMinLen));
+                    } else if (errorObj.message[i].indexOf('number') > 0) {
+                        errI18n.push(jQuery.i18n.map["management-users.password.has-number"]);
+                    } else if (errorObj.message[i].indexOf('special') > 0) {
+                        errI18n.push(jQuery.i18n.map["management-users.password.has-special"]);
+                    }
+                } 
+                $("#error-message").html(errI18n.join("<br/>"));
             }
 		});
 		$(document).bind('clyLangChange', function() {

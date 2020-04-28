@@ -106,8 +106,20 @@ body.mobile { padding-top:0; min-height:300px; }
 .mobile #login-left { float:none; margin:0 auto; margin-bottom:30px; padding:0; width:250px; text-align: center; }
 .mobile #login-right { margin:0 auto; width:250px; text-align: center; }
 #error-message {
-  padding-top: 40px;
+  padding-top: 100px;
   height: 40px;
   text-align: center;
   color: #ED6262;
+}
+#password-requirements {
+    width: 400px;
+    margin: auto;
+    text-align: left;
+    color: #A7A7A7;
+    font: 18px Ubuntu,Helvetica,sans-serif;
+    font-size: 11px;
+}
+
+#password-requirements p{
+    text-align: center;
 }
