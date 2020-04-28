@@ -1,4 +1,4 @@
-FROM phusion/baseimage:0.10.2
+FROM phusion/baseimage:0.11
 
 CMD ["/sbin/my_init"]
 
@@ -17,14 +17,8 @@ RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
 	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" >> /etc/sudoers.d/countly && \
     apt-get update && apt-get -y install sudo && \
 	/opt/countly/bin/countly.install.sh && \
-    \
-    mkdir -p /var/lib/mongodb && \
-    mkdir -p /var/log/mongodb && \
-    mkdir -p /var/log/nginx && \
-    touch /var/log/mongodb/mongod.log && \
     chown -R mongodb:mongodb /var/lib/mongodb && \
-    chown -R mongodb:mongodb /var/log/mongodb && \
-
+    \
     mkdir /etc/service/mongodb && \
     mkdir /etc/service/nginx && \
     mkdir /etc/service/countly-api && \
