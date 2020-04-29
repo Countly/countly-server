@@ -193,7 +193,7 @@ countly_upgrade (){
 
             echo "Extracting Countly Enterprise Edition..."
             (cd "$DIR/../..";
-            tar xaf countly-enterprise-edition*.tar.gz --strip=1 countly;)
+            tar xaf countly-enterprise*.tar.gz --strip=1;)
 
             EE_PLUGINS=$(sed 's/\"//g' "$DIR/../../plugins/plugins.ee.json" | sed 's/\[//g' | sed 's/\]//g')
             CE_PLUGINS=$(sed 's/\"//g' "$DIR/../../plugins/plugins.ce.json" | sed 's/\[//g' | sed 's/\]//g')

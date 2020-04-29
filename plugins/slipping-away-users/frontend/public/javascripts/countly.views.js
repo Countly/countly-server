@@ -7,7 +7,8 @@
     _,
     moment,
     countlySlippingPlugin,
-    slippingView,
+    slippingView, 
+    countlySegmentation,
     extendViewWithFilter,
     CountlyHelpers
     $,
@@ -116,7 +117,9 @@ window.slippingView = countlyView.extend({
             this.byDisabled = true;
             if (typeof extendViewWithFilter === "function") {
                 var self = this;
-                self.drillInitProcess(self);
+                $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
+                    self.drillInitProcess(self);
+                });
             }
         }
         else {

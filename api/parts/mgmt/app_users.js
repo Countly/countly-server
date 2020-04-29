@@ -181,7 +181,6 @@ usersApi.delete = function(app_id, query, params, callback) {
                         }
                         //deleting userimages(if they exist);
                         if (res[0].picure) {
-                            //delete exports if exist
                             for (let i = 0;i < res[0].picture.length; i++) {
                                 //remove /userimages/ 
                                 let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
@@ -555,7 +554,7 @@ usersApi.deleteExport = function(filename, params, callback) {
                 function() {
                     if (name_parts.length === 3 && name_parts[2] !== 'HASH') {
                         //update user info
-                        common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false}, function(err) {
+                        common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false, multi: true}, function(err) {
                             if (err) {
                                 callback(err, "");
                             }
@@ -677,7 +676,8 @@ usersApi.export = function(app_id, query, params, callback) {
         {
             $group: {
                 _id: null,
-                uid: { $addToSet: '$uid' }
+                uid: { $addToSet: '$uid' },
+                mid: {$addToSet: '$_id'}
             }
         }
     ], {allowDiskUse: true}, function(err_base, res) {
@@ -691,6 +691,7 @@ usersApi.export = function(app_id, query, params, callback) {
         if (res && res[0] && res[0].uid && res[0].uid.length) {
             //create export folder
             var eid = res[0].uid[0];
+            var eid2 = res[0].mid[0];
             var single_user = true;
             //if more than one user - create hash
             if (res[0].uid.length > 1) {
@@ -769,7 +770,7 @@ usersApi.export = function(app_id, query, params, callback) {
             //update db if one user
             new Promise(function(resolve, reject) {
                 if (single_user) {
-                    common.db.collection('app_users' + app_id).update({"uid": eid}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err_sel) {
+                    common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err_sel) {
                         if (err_sel) {
                             reject(err_sel);
                         }
@@ -860,7 +861,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                                 else {
                                                     if (single_user === true) {
                                                         //update user document
-                                                        common.db.collection('app_users' + app_id).update({"uid": eid}, {$set: {"appUserExport": export_folder + ".tar.gz"}}, {upsert: false}, function(err4, res1) {
+                                                        common.db.collection('app_users' + app_id).update({"_id": eid2}, {$set: {"appUserExport": export_folder + ".tar.gz"}}, {upsert: false}, function(err4, res1) {
                                                             if (!err4 && res1.result && res1.result.n !== 0 && res1.result.nModified !== 0) {
                                                                 plugins.dispatch("/systemlogs", {
                                                                     params: params,

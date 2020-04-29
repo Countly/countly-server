@@ -1,4 +1,4 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter */
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation */
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
@@ -860,42 +860,44 @@ window.LoyaltyView = countlyView.extend({
             this.byDisabled = true;
             if (typeof extendViewWithFilter === "function") {
                 extendViewWithFilter(this);
-                this.initDrill();
+                $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
+                    this.initDrill();
 
-                setTimeout(function() {
-                    self.filterBlockClone = $("#filter-view").clone(true);
-                    if (self._query) {
-                        if ($(".filter-view-container").is(":visible")) {
-                            $("#filter-view").hide();
-                            $(".filter-view-container").hide();
-                        }
-                        else {
-                            $("#filter-view").show();
-                            $(".filter-view-container").show();
-                            self.adjustFilters();
-                        }
+                    setTimeout(function() {
+                        self.filterBlockClone = $("#filter-view").clone(true);
+                        if (self._query) {
+                            if ($(".filter-view-container").is(":visible")) {
+                                $("#filter-view").hide();
+                                $(".filter-view-container").hide();
+                            }
+                            else {
+                                $("#filter-view").show();
+                                $(".filter-view-container").show();
+                                self.adjustFilters();
+                            }
 
-                        $(".flot-text").hide().show(0);
-                        var filter = self._query;
-                        var inputs = [];
-                        var subs = {};
-                        for (var i in filter) {
-                            inputs.push(i);
-                            subs[i] = [];
-                            for (var j in filter[i]) {
-                                if (filter[i][j].length) {
-                                    for (var k = 0; k < filter[i][j].length; k++) {
-                                        subs[i].push([j, filter[i][j][k]]);
+                            $(".flot-text").hide().show(0);
+                            var filter = self._query;
+                            var inputs = [];
+                            var subs = {};
+                            for (var i in filter) {
+                                inputs.push(i);
+                                subs[i] = [];
+                                for (var j in filter[i]) {
+                                    if (filter[i][j].length) {
+                                        for (var k = 0; k < filter[i][j].length; k++) {
+                                            subs[i].push([j, filter[i][j][k]]);
+                                        }
+                                    }
+                                    else {
+                                        subs[i].push([j, filter[i][j]]);
                                     }
                                 }
-                                else {
-                                    subs[i].push([j, filter[i][j]]);
-                                }
                             }
+                            self.setInput(inputs, subs, 0, 0, 1);
                         }
-                        self.setInput(inputs, subs, 0, 0, 1);
-                    }
-                }, 500);
+                    }, 500);
+                });
             }
         }
     },
@@ -5659,6 +5661,7 @@ window.DownloadView = countlyView.extend({
         countlyTaskManager.fetchResult(this.task_id, function(res) {
             var myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-title"] + '</h1>';
             if (res && res.data) {
+                res.data = res.data.replace(new RegExp("&quot;", 'g'), "");
                 self.link = countlyCommon.API_PARTS.data.r + "/app_users/download/" + res.data + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
                 window.location = self.link;
 

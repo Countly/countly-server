@@ -342,6 +342,7 @@
         * @param {string|object} container - selector for container or container object itself where to create graph
         * @param {string} graphType - type of the graph, accepted values are bar, line, pie, separate-bar
         * @param {object} inGraphProperties - object with properties to extend and use on graph library directly
+        * @returns {boolean} false if container element not found, otherwise true
         * @example <caption>Drawing Pie chart</caption>
         * countlyCommon.drawGraph({"dp":[
         *    {"data":[[0,20]],"label":"Test1","color":"#52A3EF"},
@@ -368,6 +369,11 @@
         */
         countlyCommon.drawGraph = function(dataPoints, container, graphType, inGraphProperties) {
             var p = 0;
+
+            if ($(container).length <= 0) {
+                return false;
+            }
+
             if (graphType === "pie") {
                 var min_treshold = 0.05; //minimum treshold for graph
                 var break_other = 0.3; //try breaking other in smaller if at least given % from all
@@ -585,6 +591,8 @@
                     $(container).unbind("plothover");
                 }
             }, dataPoints, container, graphType, inGraphProperties);
+
+            return true;
         };
 
         /**
@@ -610,6 +618,9 @@
         */
         countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small, appIdsForNotes, options) {
             _.defer(function() {
+                if ($(container).length <= 0) {
+                    return false;
+                }
                 if (!dataPoints || !dataPoints.length) {
                     $(container).hide();
                     $(container).siblings(".graph-no-data").show();
@@ -1147,8 +1158,8 @@
                         zoomContainer.data("zoom", 1);
 
                         var yaxis = plot.getAxes().yaxis;
-                        var panOffset = yaxis.p2c(0) - yaxis.box.height + yaxis.box.width;
-                        if (Math.abs(panOffset) > 5) {
+                        var panOffset = yaxis.p2c(0) - plot.height() + 2;
+                        if (Math.abs(panOffset) > 2) {
                             plot.pan({top: panOffset});
                         }
                     });

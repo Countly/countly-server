@@ -1227,6 +1227,31 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     params.views = [];
                 }
                 params.viewsNamingMap = {};
+
+                //do this before to make sure they are not processed before duration is added
+                var current_views = {};
+
+                for (var p = 0; p < params.qstring.events.length; p++) {
+                    var currE = params.qstring.events[p];
+                    if (currE.key === "[CLY]_view") {
+                        if (currE.segmentation && currE.segmentation.name) {
+                            currE.dur = Math.round(currE.dur || currE.segmentation.dur || 0);
+                            if (currE.dur && (currE.dur + "").length >= 10) {
+                                currE.dur = 0;
+                            }
+
+                            if (currE.segmentation.visit) {
+                                current_views[currE.segmentation.name] = p;
+                            }
+                            else {
+                                if (currE.dur > 0 && current_views[currE.segmentation.name] > -1) {
+                                    params.qstring.events[current_views[currE.segmentation.name]].dur += currE.dur; //add duration to this request
+                                    params.qstring.events[p].dur = 0; //not use duration from this one anymore;
+                                }
+                            }
+                        }
+                    }
+                }
                 common.db.collection("views").findOne({'_id': params.app_id}, {}, function(err3, viewInfo) {
                     params.qstring.events = params.qstring.events.filter(function(currEvent) {
                         if (currEvent.timestamp) {

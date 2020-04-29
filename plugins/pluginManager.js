@@ -1139,8 +1139,7 @@ var pluginManager = function pluginManager() {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             auto_reconnect: true,
-            w: 1,
-            readConcern: "available"
+            w: 1
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);

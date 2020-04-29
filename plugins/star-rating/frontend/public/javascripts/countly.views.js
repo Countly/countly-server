@@ -405,6 +405,7 @@ window.starView = countlyView.extend({
         self.renderCommentsTable(true);
         self.renderFeedbacksTable(true);
         if (self.currentTab === 'cumulative') {
+            $('.widget-content').addClass('hide-zoom');
             self.renderCumulativeChart();
             self.renderCumulativeTable(isRefresh);
             $('#tableTwo_wrapper').css("display", "none");
@@ -412,6 +413,7 @@ window.starView = countlyView.extend({
             $('#big-numbers-container').css("display", "none");
         }
         if (self.currentTab === 'time-series') {
+            $('.widget-content').removeClass('hide-zoom');
             self.renderTimeSeriesTable(isRefresh);
             self.renderTimeSeriesChart();
             CountlyHelpers.applyColors();

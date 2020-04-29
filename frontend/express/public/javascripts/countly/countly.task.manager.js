@@ -42,7 +42,10 @@
             dataType: "json",
             success: function(json) {
                 if (json.data) {
-                    json.data = JSON.parse(json.data);
+                    try {
+                        json.data = JSON.parse(json.data);
+                    }
+                    catch (e) { /**/ }
                 }
                 if (json.request) {
                     json.request = JSON.parse(json.request);

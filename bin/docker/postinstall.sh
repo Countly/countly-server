@@ -19,9 +19,13 @@ else
 	printf %s\\n "${a[@]}"|sed 's/["\]/\\&/g;s/.*/"&"/;1s/^/[/;$s/$/]/;$!s/$/,/' > /opt/countly/plugins/plugins.json
 
 	while read -r plugin; do
-	  echo "[docker] Installing ${plugin}:"
-	  node "/opt/countly/plugins/$plugin/install.js"
-	  echo "[docker] Done installing ${plugin}."
+      if [ -f "/opt/countly/plugins/$plugin/install.js" ]; then
+        echo "[docker] Installing ${plugin}:"
+	    node "/opt/countly/plugins/$plugin/install.js"
+	    echo "[docker] Done installing ${plugin}."
+	  else
+	  	echo "[docker] Nothing to install for ${plugin}"
+	  fi
 	done <<< "$a"
 
 	(cd /opt/countly && npx grunt dist-all && npm prune --production && npm cache clean --force)

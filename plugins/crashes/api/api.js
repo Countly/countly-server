@@ -185,6 +185,36 @@ plugins.setConfigs("crashes", {
         });
     });
 
+    //process session being
+    plugins.register("/session/begin", function(ob) {
+        var params = ob.params;
+        var dbAppUser = params.app_user || {};
+        var metrics = ["cr_s", "cr_u"];
+        var platform = dbAppUser.p;
+        var version = dbAppUser.av;
+        if (params.qstring.metrics && params.qstring.metrics._os) {
+            platform = params.qstring.metrics._os;
+        }
+        if (params.qstring.metrics && params.qstring.metrics._app_version) {
+            version = params.qstring.metrics._app_version + "";
+            if (version.indexOf('.') === -1) {
+                version += ".0";
+            }
+            version = (version + "").replace(/^\$/, "").replace(/\./g, ":");
+        }
+
+        common.recordCustomMetric(params, "crashdata", params.app_id, metrics, 1, null, ["cr_u"], dbAppUser.ls);
+        if (platform && version) {
+            common.recordCustomMetric(params, "crashdata", platform + "**" + version + "**" + params.app_id, metrics, 1, null, ["cr_u"], (version === dbAppUser.av && platform === dbAppUser.p) ? dbAppUser.ls : 0);
+        }
+        if (platform) {
+            common.recordCustomMetric(params, "crashdata", platform + "**any**" + params.app_id, metrics, 1, null, ["cr_u"], (platform === dbAppUser.p) ? dbAppUser.ls : 0);
+        }
+        if (version) {
+            common.recordCustomMetric(params, "crashdata", "any**" + version + "**" + params.app_id, metrics, 1, null, ["cr_u"], (version === dbAppUser.av) ? dbAppUser.ls : 0);
+        }
+    });
+
     //post process session
     plugins.register("/session/post", function(ob) {
         var params = ob.params;

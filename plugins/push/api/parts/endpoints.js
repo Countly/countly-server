@@ -626,7 +626,27 @@ function cachedData(note) {
              */
             ret = (data) => {
                 return dontReturn ? data : common.returnOutput(params, data);
-            };
+            },
+            /**
+             * run simple count on app_users:
+             * - no accurate build needed (auto, tx & build later cases)
+             * - build timeout (return app_users count if aggregation is too slow)
+             */
+            countLocales = () => {
+                if (!params.res.finished) {
+                    sg.count(note, apps, true).then(([fields]) => {
+                        if (!params.res.finished) {
+                            let total = Object.values(fields).reduce((a, b) => a + b, 0);
+                            log.i('Returning fast queried audience for %s: %j', note._id, total);
+                            note.build = {total: total};
+                            ret(note);
+                        }
+                    }, err => {
+                        ret({error: err});
+                    });
+                }
+            },
+            sg = new S.StoreGroup(common.db);
 
         if (note.error) {
             return ret(note);
@@ -635,7 +655,13 @@ function cachedData(note) {
             return ret({error: 'Already created'});
         }
         else if (prepared) {
-            return ret(prepared);
+            if (prepared.doesntPrepare) {
+                note = prepared;
+                return countLocales();
+            }
+            else {
+                return ret(prepared);
+            }
         }
 
         note._id = new common.db.ObjectID();
@@ -651,29 +677,6 @@ function cachedData(note) {
         log.d('message data %j', note);
 
         await note.insert(common.db);
-
-        let sg = new S.StoreGroup(common.db);
-
-        // 
-        /**
-         * run simple count on app_users:
-         * - no accurate build needed (auto, tx & build later cases)
-         * - build timeout (return app_users count if aggregation is too slow)
-         */
-        let countLocales = () => {
-            if (!params.res.finished) {
-                sg.count(note, apps, true).then(([fields]) => {
-                    if (!params.res.finished) {
-                        let total = Object.values(fields).reduce((a, b) => a + b, 0);
-                        log.i('Returning fast queried audience for %s: %j', note._id, total);
-                        note.build = {total: total};
-                        ret(note);
-                    }
-                }, err => {
-                    ret({error: err});
-                });
-            }
-        };
 
         if (note.doesntPrepare) {
             return countLocales();
@@ -733,7 +736,7 @@ function cachedData(note) {
         if (note.tx) {
             log.i('Won\'t prepare tx message %j', note);
         }
-        else if (!prepared && !params.qstring.args.demo) {
+        else if (!prepared && (!params.qstring.args || !params.qstring.args.demo)) {
             log.i('No prepared message, preparing');
             let tmp = await api.prepare(params, true);
             log.i('Prepared %j', tmp);
@@ -1608,24 +1611,30 @@ function cachedData(note) {
      */
     function mimeInfo(url) {
         return new Promise((resolve, reject) => {
-            if (url) {
-                log.d('Retrieving URL', url);
-                var parsed = require('url').parse(url);
+            try {
+                if (url) {
+                    log.d('Retrieving URL', url);
+                    var parsed = require('url').parse(url);
 
-                parsed.method = 'HEAD';
-                log.d('Parsed', parsed);
+                    parsed.method = 'HEAD';
+                    log.d('Parsed', parsed);
 
-                let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
-                    resolve({status: res.statusCode, headers: res.headers});
-                });
-                req.on('error', (err) => {
-                    log.e('error when HEADing ' + url, err);
-                    reject([400, 'Cannot access URL']);
-                });
-                req.end();
+                    let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
+                        resolve({status: res.statusCode, headers: res.headers});
+                    });
+                    req.on('error', (err) => {
+                        log.e('error when HEADing ' + url, err);
+                        reject([400, 'Cannot access URL']);
+                    });
+                    req.end();
+                }
+                else {
+                    reject([400, 'No url']);
+                }
             }
-            else {
-                reject([400, 'No url']);
+            catch (e) {
+                log.e('error getting mime info ' + url, e);
+                reject([500, 'Cannot load URL']);
             }
         });
     }

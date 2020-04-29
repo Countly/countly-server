@@ -14,7 +14,7 @@ const CENTRAL = 'cache', OP = {INIT: 'i', PURGE: 'p', READ: 'r', WRITE: 'w', UPD
 // job removal from cache: {o: 0, k: 'ObjectId', g: 'jobs'}
 
 /**
- * Get value in nested object
+ * Get value in nested objects
  * @param  {object} obj         - object to checl
  * @param  {string|array} is    - keys for nested value
  * @param  {any} value          - if provided acts as setter setting this value in nested object
@@ -786,49 +786,62 @@ class StreamedCollection {
 
         log.i('Starting watcher stream in %d', process.pid);
 
-        let [col, last] = await createCollection(this.db, this.name, 1e7);
+        try {
+            let [col, last] = await createCollection(this.db, this.name, 1e7);
 
-        this.col = col;
-        this.stream = col.find({_id: {$gt: last}}, {tailable: true, awaitData: true, noCursorTimeout: true, numberOfRetries: -1}).stream();
+            this.col = col;
+            this.stream = col.find({_id: {$gt: last}}, {tailable: true, awaitData: true, noCursorTimeout: true, numberOfRetries: -1}).stream();
 
-        this.stream.on('data', doc => {
-            if (this.inserts.indexOf(doc._id.toString()) !== -1) {
-                return this.inserts.splice(this.inserts.indexOf(doc._id.toString()), 1);
-            }
-            log.d('new in the collection', doc);
-            if (doc.d !== undefined && doc.d !== null) {
-                try {
-                    doc.d = JSON.parse(doc.d);
+            this.stream.on('data', doc => {
+                if (this.inserts.indexOf(doc._id.toString()) !== -1) {
+                    return this.inserts.splice(this.inserts.indexOf(doc._id.toString()), 1);
+                }
+                log.d('new in the collection', doc);
+                if (doc.d !== undefined && doc.d !== null) {
+                    try {
+                        doc.d = JSON.parse(doc.d);
+                        this.handler(doc);
+                    }
+                    catch (e) {
+                        log.e(e);
+                    }
+                }
+                else {
                     this.handler(doc);
                 }
-                catch (e) {
-                    log.e(e);
-                }
-            }
-            else {
-                this.handler(doc);
-            }
-        });
+            });
 
-        this.stream.on('end', () => {
-            log.w('Stream ended');
-            this.stop();
-        });
+            this.stream.on('end', () => {
+                log.w('Stream ended');
+                this.stop();
+            });
 
-        this.stream.on('close', () => {
-            log.i('Stream closed');
-            this.stream = undefined;
-            setImmediate(() => {
-                this.start().catch(e => {
-                    log.e('Cannot start watcher', e);
+            this.stream.on('close', () => {
+                log.d('Stream closed');
+                this.stream = undefined;
+                setImmediate(() => {
+                    this.start().catch(e => {
+                        log.e('Cannot start watcher', e);
+                    });
                 });
             });
-        });
 
-        this.stream.on('error', error => {
-            log.e('Stream error', error);
-            this.stop();
-        });
+            this.stream.on('error', error => {
+                log.e('Stream error', error);
+                this.stop();
+            });
+
+        }
+        catch (e) {
+            setTimeout(() => {
+                try {
+                    this.start();
+                }
+                catch (ignored) {
+                    // ignored
+                }
+            }, 1000);
+        }
     }
 
     /**
@@ -837,7 +850,11 @@ class StreamedCollection {
     stop() {
         if (this.stream) {
             this.stream.close(e => {
-                log.e('Error while closing stream', e);
+                this.stream = undefined;
+                if (e) {
+                    log.e('Error while stopping stream', e);
+                }
+                log.d('Stream stopped');
             });
         }
     }

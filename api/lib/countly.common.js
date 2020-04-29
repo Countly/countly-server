@@ -1688,7 +1688,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
 * }
 */
 countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
-    var periodObj = countlyCommon.periodObj;
+    var periodObj = countlyCommon.getPeriodObj(params);
     var now = (params.time && params.time.now) ? params.time.now : moment();
     //create current period array if it does not exist
     if (!periodObj.currentPeriodArr || periodObj.currentPeriodArr.length === 0) {

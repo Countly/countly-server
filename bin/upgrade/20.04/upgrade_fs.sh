@@ -35,6 +35,9 @@ then
 
     #remove previous dependencies, as they need to be rebuild for new nodejs version
     rm -rf "$DIR/../node_modules"
+    
+    #remove previous package-lock.json
+    rm -rf "$DIR/../package-lock.json"
 
     #run upgrade scripts
     bash "$CUR/scripts/remove_moved_files.sh"
@@ -54,7 +57,7 @@ then
     countly plugin enable performance-monitoring
 
     #install dependencies, process files and restart countly
-    countly upgrade
+    countly task dist-all
 
     #call after check
     countly check after upgrade fs "$VER"
