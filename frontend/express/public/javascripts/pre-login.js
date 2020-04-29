@@ -159,7 +159,7 @@ $(document).ready(function() {
         }
         return obj.removeClass("password-hint-valid");
     }
-    $("#password").on("keyup", function() {
+    $(".register-form #password").on("keyup", function() {
         var password = $("#password").val();
         var valid = true;
         $(".hint-password-good").hide();
