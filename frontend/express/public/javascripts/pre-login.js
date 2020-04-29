@@ -153,36 +153,58 @@ $(document).ready(function() {
         }
     });
 
+    function hintClass(obj, add) {
+        if (add === true) {
+            return obj.addClass("password-hint-valid");
+        }
+        return obj.removeClass("password-hint-valid");
+    }
     $("#password").on("keyup", function() {
         var password = $("#password").val();
         var valid = true;
         $(".hint-password-good").hide();
-        var options = Object.keys(countlyGlobal.security);
-        for (var i = 0; i < options.length; i++) {
-            $("#hint-" + options[i]).hide();
-        }
 
         if (password.length < countlyGlobal.security.password_min) {
-            $("#hint-password_min").show();
+            hintClass($("#hint-password_min"), false);
             valid = false;
+        }
+        else {
+            hintClass($("#hint-password_min"), true);
         }
 
         if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
-            $("#hint-password_char").show();
+            hintClass($("#hint-password_char"), false);
             valid = false;
+        }
+        else {
+            hintClass($("#hint-password_char"), true);
         }
 
+
         if (countlyGlobal.security.password_number && !/\d/.test(password)) {
-            $("#hint-password_number").show();
+            hintClass($("#hint-password_number"), false);
             valid = false;
         }
+        else {
+            hintClass($("#hint-password_number"), true);
+        }
+
         if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
-            $("#hint-password_symbol").show();
+            hintClass($("#hint-password_symbol"), false);
             valid = false;
         }
+        else {
+            hintClass($("#hint-password_symbol"), true);
+        }
+
         if (valid === true) {
+            $(".register-form ul").hide();
             $(".hint-password-good").show();
         }
+        else {
+            $(".register-form ul").show();
+        }
+
 
     });
     $("#select-lang").click(function() {
