@@ -153,6 +153,38 @@ $(document).ready(function() {
         }
     });
 
+    $("#password").on("keyup", function() {
+        var password = $("#password").val();
+        var valid = true;
+        $(".hint-password-good").hide();
+        var options = Object.keys(countlyGlobal.security);
+        for (var i = 0; i < options.length; i++) {
+            $("#hint-" + options[i]).hide();
+        }
+
+        if (password.length < countlyGlobal.security.password_min) {
+            $("#hint-password_min").show();
+            valid = false;
+        }
+
+        if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
+            $("#hint-password_char").show();
+            valid = false;
+        }
+
+        if (countlyGlobal.security.password_number && !/\d/.test(password)) {
+            $("#hint-password_number").show();
+            valid = false;
+        }
+        if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
+            $("#hint-password_symbol").show();
+            valid = false;
+        }
+        if (valid === true) {
+            $(".hint-password-good").show();
+        }
+
+    });
     $("#select-lang").click(function() {
         $(this).toggleClass("active");
     });

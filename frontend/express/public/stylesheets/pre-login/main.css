@@ -119,10 +119,25 @@ body.mobile { padding-top:0; min-height:300px; }
     margin-top:-10px;
 }
 #password-requirements ul {
+    columns: 2;
+    -webkit-columns: 2;
+    -moz-columns: 2;
     padding-left: 12px;
     width:300px;
 }
 .register-form #login-button {width: 300px;}
 
 .register-form input[type=text], .register-form input[type=password],.register-form input[type=email] { font:15px Ubuntu,Helvetica,sans-serif; border-radius:3px; border:none; padding:12px; background-color:#FFF; color:#CCC; width:280px; margin:0 0 16px 0; }
+
+.register-form .passwd-check-pass {color:#2FA732}
+.register-form .hint-password-good {
+    border-radius: 3px;
+    border: none;
+    padding: 12px;
+    background-color: #f5e8e8;
+    color: #524f4f;
+    width: 280px;
+    margin: 0 0 16px 0;
+    text-align: center;
+}
 
