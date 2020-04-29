@@ -67,12 +67,12 @@
                 <input required name="password" id="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
                 <div id="password-requirements">
                     <ul>
-                        <li id="hint-password_min" style="display: none;" data-localize="management-users.password.length"></li>
-                        <li id="hint-password_char" style="display: none;" data-localize="management-users.password.has-char"></li>
-                        <li id="hint-password_number" style="display: none;" data-localize="management-users.password.has-number"></li>
-                        <li id="hint-password_symbol" style="display: none;" data-localize="management-users.password.has-special"></li>
+                        <li id="hint-password_min"  data-localize="management-users.password.length"></li>
+                        <li id="hint-password_char"  data-localize="management-users.password.has-char"></li>
+                        <li id="hint-password_number" data-localize="management-users.password.has-number"></li>
+                        <li id="hint-password_symbol"  data-localize="management-users.password.has-special"></li>
                     </ul>
-                    <div class="hint-password-good" style="display: none;"><i class="far fa-thumbs-up" style="color:#2FA732; margin-right:5px"></i>Your <b>password is good</b> to go!</div>
+                    <div class="hint-password-good" style="display: none;"><i class="far fa-thumbs-up" style="color:#2FA732; margin-right:5px"></i><span data-localize="setup.hint-password-good"></span></div>
 
                 </div>
             </div>
