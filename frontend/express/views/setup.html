@@ -13,6 +13,8 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <meta name="referrer" content="no-referrer">
+    <link rel="stylesheet" href="stylesheets/font-awesome/css/font-awesome.min.css" />
+
 	<link href='stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
 	<link rel="icon" type="image/png" href="<%- countlyFavicon %>">
     <% if (themeFiles && themeFiles.css) { %>
@@ -49,7 +51,7 @@
 			</div>
 		</div>
 	</div>
-	<div id="login-form" style="height:306px; margin-top:-153px;">
+	<div id="login-form" class="register-form" style="height:306px; margin-top:-153px;">
         <div id="login-logo" style="margin-bottom:25px;"></div>
         <form id="account-form" method="POST" onsubmit="return validateForm()">
             <div>
@@ -64,13 +66,14 @@
             <div>
                 <input required name="password" id="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
                 <div id="password-requirements">
-                    <p data-localize="management-users.password.requirements"></p>
                     <ul>
-                        <li data-localize="management-users.password.length"></li>
-                        <li data-localize="management-users.password.has-char"></li>
-                        <li data-localize="management-users.password.has-number"></li>
-                        <li data-localize="management-users.password.has-special"></li>
+                        <li id="hint-password_min"  data-localize="management-users.password.length"></li>
+                        <li id="hint-password_char"  data-localize="management-users.password.has-char"></li>
+                        <li id="hint-password_number" data-localize="management-users.password.has-number"></li>
+                        <li id="hint-password_symbol"  data-localize="management-users.password.has-special"></li>
                     </ul>
+                    <div class="hint-password-good" style="display: none;"><i class="far fa-thumbs-up" style="color:#2FA732; margin-right:5px"></i><span data-localize="setup.hint-password-good"></span></div>
+
                 </div>
             </div>
             <% if (typeof inject_template.form != "undefined") { %>
@@ -114,7 +117,7 @@
                 errors.push(jQuery.i18n.map["management-users.email.invalid"]);
             }
             if (CountlyHelpers.validatePassword($("#password").val())) {
-                errors.push(CountlyHelpers.validatePassword($("#password").val()));
+                errors.push(jQuery.i18n.map["placeholder.password"] + ": " + CountlyHelpers.validatePassword($("#password").val()));
                 valid = false;
             }
             $("#error-message").html(errors.join("<br/>"));
