@@ -66,7 +66,7 @@ a:active { color:inherit; }
 #forgot-form { width:420px; height:218px; margin-left:-210px; left:50%; top:50%; margin-top:-109px; position:absolute; }
 #forgot-left { margin-bottom:28px; }
 #reset-form { width:704px; height:174px; margin-left:-352px; left:50%; top:50%; margin-top:-87px; position:absolute; }
-#login-button { line-height:14px !important; font:14px Ubuntu,Helvetica,sans-serif; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:400; cursor:pointer; width:300px; margin-top:10px; }
+#login-button { line-height:14px !important; font:14px Ubuntu,Helvetica,sans-serif; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:400; cursor:pointer; width:226px; margin-top:10px; }
 	#login-button:hover { background-color: #2f9732; }
 	#login-button:active { }
     #forgot-form #login-button { margin-top:0; width: 123px;}
@@ -122,13 +122,7 @@ body.mobile { padding-top:0; min-height:300px; }
     padding-left: 12px;
     width:300px;
 }
+.register-form #login-button {width: 300px;}
 
-#password-requirements p{
-    text-align: center;
-}
+.register-form input[type=text], .register-form input[type=password],.register-form input[type=email] { font:15px Ubuntu,Helvetica,sans-serif; border-radius:3px; border:none; padding:12px; background-color:#FFF; color:#CCC; width:280px; margin:0 0 16px 0; }
 
-.register-form input[type=text], input[type=password], input[type=email] { font:15px Ubuntu,Helvetica,sans-serif; border-radius:3px; border:none; padding:12px; background-color:#FFF; color:#CCC; width:280px; margin:0 0 16px 0; }
-
-.register-form #login-button {
-    width: 300px;
-}
