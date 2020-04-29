@@ -618,6 +618,9 @@
         */
         countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small, appIdsForNotes, options) {
             _.defer(function() {
+                if ($(container).length <= 0) {
+                    return false;
+                }
                 if (!dataPoints || !dataPoints.length) {
                     $(container).hide();
                     $(container).siblings(".graph-no-data").show();
