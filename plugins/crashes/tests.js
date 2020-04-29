@@ -2068,7 +2068,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 10 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -2084,7 +2084,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 10 * testUtils.testScalingFactor);
                 });
         });
     });
