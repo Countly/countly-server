@@ -3984,7 +3984,7 @@ var checkGlovbalAdminOnlyPermission = function() {
         }
     });
 
-    if (countlyGlobal.member.global_admin !== true && existed === true) {
+    if (countlyGlobal.member.global_admin !== true && !countlyGlobal.config.autonomous && existed === true) {
 
         window.location.hash = "/";
         return false;
