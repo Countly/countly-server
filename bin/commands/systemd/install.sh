@@ -12,8 +12,7 @@ pkill -SIGTERM supervisord
 if [ -n "$(command -v apt-get)" ]; then
     if [ ! -f /etc/systemd/system/mongod.service ]; then
         #create mongodb service script
-        (cat "$DIR/mongod.service" ; 
-            echo "ExecStart=$( which mongod ) --quiet --config /etc/mongod.conf") > /etc/systemd/system/mongod.service
+        cp "$DIR/mongod.service" /etc/systemd/system/mongod.service
         
         #reload services
         systemctl daemon-reload

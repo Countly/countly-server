@@ -1,17 +1,33 @@
 [Unit]
-Description=An object/document-oriented database
-Documentation=man:mongod(1)
-
-[Install]
-WantedBy=multi-user.target
+Description=High-performance, schema-free document-oriented database
+After=network.target
+Documentation=https://docs.mongodb.org/manual
 
 [Service]
 User=mongodb
+Group=mongodb
+#if numactl is available we need to use this line
+#ExecStart=/usr/bin/numactl --interleave=all /usr/bin/mongod --config /etc/mongod.conf
+ExecStart=/usr/bin/mongod --config /etc/mongod.conf
+PIDFile=/var/run/mongodb/mongod.pid
+# file size
 LimitFSIZE=infinity
+# cpu time
 LimitCPU=infinity
+# virtual memory size
 LimitAS=infinity
-LimitNOFILE=64000
-LimitRSS=infinity
-LimitNPROC=64000
-TimeoutStopSec=300
-Restart=on-failure
+# open files
+LimitNOFILE=256000
+# processes/threads
+LimitNPROC=256000
+# locked memory
+LimitMEMLOCK=infinity
+# total threads (user+kernel)
+TasksMax=infinity
+TasksAccounting=false
+
+# Recommended limits for for mongod as specified in
+# http://docs.mongodb.org/manual/reference/ulimit/#recommended-settings
+
+[Install]
+WantedBy=multi-user.target
