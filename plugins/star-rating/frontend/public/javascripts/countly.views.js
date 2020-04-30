@@ -1522,6 +1522,12 @@ window.starView = countlyView.extend({
                             "key": input
                         };
                     }
+                },
+                onItemRemove: function(input) {
+                    var index = self.feedbackWidget.target_pages.indexOf(input);
+                    if (index > -1) {
+                        self.feedbackWidget.target_pages.splice(index, 1);
+                    }
                 }
             });
 
