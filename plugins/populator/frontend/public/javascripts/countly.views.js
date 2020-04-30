@@ -595,9 +595,9 @@ window.PopulatorView = countlyView.extend({
             $("#populate-to").datepicker({dateFormat: "yy-mm-dd", constrainInput: true, maxDate: now });
         }
         app.localize();
-        if (this.state === "/autostart") {
+        /*if (this.state === "/autostart") {
             $("#start-populate").click();
-        }
+        }*/
     },
     refresh: function() {}
 });
