@@ -454,7 +454,7 @@ window.ViewsView = countlyView.extend({
                     if (self.token) {
                         var path = self.useView.replace("#/analytics/views/action-map/", "");
                         newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
-                        newWindow.location.href = url + "/" + path;
+                        newWindow.location.href = url + path;
                     }
                 });
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
