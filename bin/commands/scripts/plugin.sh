@@ -16,7 +16,7 @@ usage (){
 } 
 
 if [ "$1" = "list" ]; then
-    for d in $DIR/../../../plugins/*/; do
+    for d in "$DIR"/../../../plugins/*/; do
         if [ "$2" = "states" ]; then
             PLUGIN="$(basename "$d")" ;
             if grep -Fq "\"$PLUGIN\"" "$DIR/../../../plugins/plugins.json"
