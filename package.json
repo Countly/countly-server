@@ -65,7 +65,7 @@
     "lru-cache": "^5.1.1",
     "mcc-mnc-list": "1.1.2",
     "method-override": "3.0.0",
-    "moment": "2.24.0",
+    "moment": "2.25.0",
     "moment-timezone": "0.5.28",
     "mongodb": "3.5.7",
     "mongoskin": "github:ar2rsawseen/node-mongoskin",
