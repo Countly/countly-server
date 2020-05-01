@@ -136,6 +136,19 @@ function getPeriodObject() {
                 previousPeriod: moment(fromDate).tz(_appTimezone).subtract(1, "day").format("YYYY.M.D")
             });
         }
+        else if (fromDate.getTime() > toDate.getTime()) {
+            //incorrect range - reset to 30 days
+            let nDays = 30;
+
+            startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+            endTimestamp = _currMoment.clone().utc().endOf("day");
+
+            cycleDuration = moment.duration(nDays, "days");
+            Object.assign(periodObject, {
+                dateString: "D MMM",
+                isSpecialPeriod: true
+            });
+        }
         else {
             cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays(), "days");
             Object.assign(periodObject, {
@@ -195,7 +208,9 @@ function getPeriodObject() {
     }
     else if (/([0-9]+)days/.test(_period)) {
         let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
-
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
         startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
         cycleDuration = moment.duration(nDays, "days");
         Object.assign(periodObject, {
