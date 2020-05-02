@@ -81,7 +81,7 @@ if grep -q -i "release 6" /etc/redhat-release ; then
     source /opt/rh/devtoolset-2/enable
     CC="$(which gcc)"
     CXX="$(which g++)"
-    export $CC 
+    export $CC
     export $CXX
 fi
 
@@ -104,6 +104,9 @@ mv /etc/sudoers2 /etc/sudoers
 chmod 0440 /etc/sudoers
 
 bash "$DIR/scripts/detect.init.sh"
+
+#install numactl
+yum install numactl -y
 
 #configure and start nginx
 set +e

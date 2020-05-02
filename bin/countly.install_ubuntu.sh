@@ -62,6 +62,9 @@ then
 	apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 fi
 
+#install numactl
+apt-get -y install numactl
+
 #install sendmail
 apt-get -y install sendmail
 
