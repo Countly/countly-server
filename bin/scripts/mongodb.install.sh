@@ -175,7 +175,7 @@ elif [ "$1" == "check" ]; then
             fi
         fi
     else
-        message_optional "LDD command not found"
+        message_optional "Command ldd not found"
     fi
 
     #Set swappiness to 1
@@ -226,7 +226,7 @@ elif [ "$1" == "check" ]; then
             fi
         fi
     else
-        message_warning "Numactl command not found"
+        message_warning "Command numactl not found"
     fi
 
     #Disable transparent-hugepages
