@@ -2152,6 +2152,7 @@ describe('Testing Crashes', function() {
 
     describe('Check crash details', function() {
         it('should be resolved', function(done) {
+            console.log("crashes", CRASHES[0]);
             request
                 .get('/o?group=' + CRASHES[0] + '&method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID)
                 .expect(200)
