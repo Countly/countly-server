@@ -280,6 +280,7 @@ plugins.setConfigs("crashes", {
             }
 
             if (params.qstring.crash && params.qstring.crash._error && params.qstring.crash._app_version && params.qstring.crash._os) {
+                console.log(report.group, "got crash", dbAppUser.sc);
                 var props = [
                     //device metrics
                     "os",
@@ -412,6 +413,7 @@ plugins.setConfigs("crashes", {
                                 var set = {group: hash, 'uid': report.uid, last: report.ts};
                                 if (dbAppUser && dbAppUser.sc) {
                                     set.sessions = dbAppUser.sc;
+                                    console.log(report.group, "setting", dbAppUser.sc);
                                 }
                                 common.db.collection('app_crashusers' + params.app_id).findAndModify({group: hash, 'uid': report.uid}, {}, {$set: set, $inc: {reports: 1}}, {upsert: true, new: false}, function(err, user) {
                                     user = user && user.ok ? user.value : null;
