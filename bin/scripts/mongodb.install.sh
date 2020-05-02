@@ -240,5 +240,36 @@ elif [ "$1" == "check" ]; then
         message_ok "Disabled transparent hugepages"
     fi
 
+    #Check if NTP is on
+    if [ -f /etc/redhat-release ]; then
+        if [ -x "$(command -v ntpstat)" ]; then
+            ntpstat
+
+            if [ $? -eq 1 ]; then
+                message_warning "NTP is disabled"
+            else
+                message_ok "NTP is enabled"
+            fi
+        else
+            message_warning "Command ntpstat not found"
+        fi
+    fi
+
+    if [ -f /etc/lsb-release ]; then
+        if [ -x "$(command -v timedatectl)" ]; then
+            timedatectl | grep "Network time on: yes" > /dev/null
+            TIMEDATECTL_OUTPUT_TYPE_1=$?
+
+            timedatectl | grep "System clock synchronized: yes" > /dev/null
+            TIMEDATECTL_OUTPUT_TYPE_2=$?
+
+            if [[ $TIMEDATECTL_OUTPUT_TYPE_1 -eq 0 || $TIMEDATECTL_OUTPUT_TYPE_2 -eq 0 ]]; then
+                message_ok "NTP is enabled"
+            fi
+        else
+            message_warning "Command timedatectl not found"
+        fi
+    fi
+
     echo -e "\nSome of changes may need reboot!\n"
 fi
