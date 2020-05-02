@@ -5,8 +5,7 @@ INDENT_LEVEL=$(grep dbPath ${MONGO_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF &&
 INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
 
 
-if grep -q "slowOpThresholdMs" "$MONGO_CONFIG_FILE"
-then
+if grep -q "slowOpThresholdMs" "$MONGO_CONFIG_FILE"; then
     sed -i "/slowOpThresholdMs/d" ${MONGO_CONFIG_FILE}
     sed -i "s#operationProfiling:#operationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000#g" ${MONGO_CONFIG_FILE}
 else

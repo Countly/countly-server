@@ -15,8 +15,7 @@ function message_ok () {
 }
 
 function update_sysctl() {
-    if grep -q "${1}" "/etc/sysctl.conf"
-    then
+    if grep -q "${1}" "/etc/sysctl.conf"; then
         sed -i "/${1}/d" /etc/sysctl.conf
     fi
 
@@ -24,8 +23,7 @@ function update_sysctl() {
     sysctl -p -q
 }
 
-if [ $# -eq 0 ]
-then
+if [ $# -eq 0 ]; then
     if [ -f /etc/redhat-release ]; then
         #install latest mongodb
 
@@ -58,11 +56,9 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
         sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-        if [ "$UBUNTU_YEAR" == "14" ]
-        then
+        if [ "$UBUNTU_YEAR" == "14" ]; then
             echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
-        elif [ "$UBUNTU_YEAR" == "16" ]
-        then
+        elif [ "$UBUNTU_YEAR" == "16" ]; then
             echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
         else
             echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
@@ -100,20 +96,17 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
             systemctl restart mongod || echo "mongodb systemctl job does not exist"
         fi
     fi
-elif [ "$1" == "check" ]
-then
+elif [ "$1" == "check" ]; then
     MONGO_CONFIG_FILE="/etc/mongod.conf"
     MONGO_USER=$(grep mongod /etc/passwd | awk -F':' '{print $1}')
     MONGO_PATH=$(grep dbPath ${MONGO_CONFIG_FILE} | awk -F' ' '{print $2}')
     MONGO_DISK=$(df -Th | grep "${MONGO_PATH}" | awk -F' ' '{print $2}')
 
     #Check data disk for type
-    if [ -z "$MONGO_DISK" ]
-    then
+    if [ -z "$MONGO_DISK" ]; then
         message_optional "Couldn't find any disk for MongoDB data"
     else
-        if [ "$MONGO_DISK" == "xfs" ]
-        then
+        if [ "$MONGO_DISK" == "xfs" ]; then
             message_ok "Type of MongoDB data disk is XFS"
 
             #Set noatime & nodiratime for data disk
@@ -121,13 +114,11 @@ then
             FSTAB_ENTRY_OPTIONS=$(echo "$FSTAB_ENTRY" | awk -F' ' '{print $4}')
             FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY")
 
-            if [[ "$FSTAB_ENTRY" != *"noatime"* ]]
-            then
+            if [[ "$FSTAB_ENTRY" != *"noatime"* ]]; then
                 FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY_UPDATED" | sed "s#${FSTAB_ENTRY_OPTIONS}#${FSTAB_ENTRY_OPTIONS},noatime#g")
             fi
 
-            if [[ "$FSTAB_ENTRY" != *"nodiratime"* ]]
-            then
+            if [[ "$FSTAB_ENTRY" != *"nodiratime"* ]]; then
                 FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY_UPDATED" | sed "s#${FSTAB_ENTRY_OPTIONS}#${FSTAB_ENTRY_OPTIONS},nodiratime#g")
             fi
 
@@ -152,16 +143,13 @@ then
     KERNEL_VERSION_PATCH=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $3}')
     KERNEL_VERSION_PATCH=$((KERNEL_VERSION_PATCH + 0))
 
-    if [ $KERNEL_VERSION_MAJOR -gt 2 ]
-    then
+    if [ $KERNEL_VERSION_MAJOR -gt 2 ]; then
         message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
     else
-        if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -gt 6 ]]
-        then
+        if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -gt 6 ]]; then
             message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
         else
-            if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -ge 6 && $KERNEL_VERSION_PATCH -ge 36 ]]
-            then
+            if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -ge 6 && $KERNEL_VERSION_PATCH -ge 36 ]]; then
                 message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
             else
                 message_warning "Linux kernel need to be updated"
@@ -170,20 +158,17 @@ then
     fi
 
     #Check glibc version 2.13
-    if [ -x "$(command -v ldd)" ]
-    then
+    if [ -x "$(command -v ldd)" ]; then
         LDD_VERSION=$(ldd --version | head -1 | awk -F' ' '{print $NF}')
         LDD_VERSION_MAJOR=$(echo "${LDD_VERSION}" | awk -F'.' '{print $1}')
         LDD_VERSION_MAJOR=$((LDD_VERSION_MAJOR + 0))
         LDD_VERSION_MINOR=$(echo "${LDD_VERSION}" | awk -F'.' '{print $2}')
         LDD_VERSION_MINOR=$((LDD_VERSION_MINOR + 0))
 
-        if [ $LDD_VERSION_MAJOR -gt 2 ]
-        then
+        if [ $LDD_VERSION_MAJOR -gt 2 ]; then
             message_ok "GLibC version is OK ${LDD_VERSION}"
         else
-            if [[ $LDD_VERSION_MAJOR -eq 2 && $LDD_VERSION_MINOR -ge 13 ]]
-            then
+            if [[ $LDD_VERSION_MAJOR -eq 2 && $LDD_VERSION_MINOR -ge 13 ]]; then
                 message_ok "GLibC version is OK ${LDD_VERSION}"
             else
                 message_warning "Glibc need to be updated"
@@ -194,8 +179,7 @@ then
     fi
 
     #Set swappiness to 1
-    if grep -q "vm.swappiness" "/etc/sysctl.conf"
-    then
+    if grep -q "vm.swappiness" "/etc/sysctl.conf"; then
         sed -i "/vm.swappiness/d" /etc/sysctl.conf
     fi
 
@@ -210,8 +194,7 @@ then
     message_ok "Configured file handle kernel limits"
 
     #Security limits for MongoDB user
-    if grep -q "${MONGO_USER}" "/etc/security/limits.conf"
-    then
+    if grep -q "${MONGO_USER}" "/etc/security/limits.conf"; then
         sed -i "/${MONGO_USER}/d" /etc/security/limits.conf
     fi
 
@@ -223,19 +206,16 @@ then
     message_ok "Configured security limits for MongoDB user"
 
     #Check numactl support & configure
-    if [ -x "$(command -v numactl)" ]
-    then
+    if [ -x "$(command -v numactl)" ]; then
         numactl --hardware > /dev/null
 
-        if [ $? -eq 1 ]
-        then
+        if [ $? -eq 1 ]; then
             message_optional "NUMA is not available on this system"
         else
             NUMA_NODES=$(numactl --hardware | grep nodes | awk -F' ' '{print $2}')
             NUMA_NODES=$((NUMA_NODES + 0))
 
-            if [ ! $NUMA_NODES -ge 2 ]
-            then
+            if [ ! $NUMA_NODES -ge 2 ]; then
                 message_optional "NUMA is not available on this system"
             else
                 update_sysctl "vm.zone_reclaim_mode" "0"
@@ -250,8 +230,7 @@ then
     fi
 
     #Disable transparent-hugepages
-    if [ -f "/etc/init.d/disable-transparent-hugepages" ]
-    then
+    if [ -f "/etc/init.d/disable-transparent-hugepages" ]; then
         message_ok "Transparent hugepages is already disabled"
     else
         cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
