@@ -272,11 +272,14 @@ var countlyView = Backbone.View.extend({
 
 /**
  * View class to expand by plugins which need configuration under Management->Applications.
+ * @name countlyManagementView
+ * @global
+ * @namespace countlyManagementView
  */
 window.countlyManagementView = countlyView.extend({
     /**
      * Handy function which returns currently saved configuration of this plugin or empty object.
-     *
+     * @memberof countlyManagementView
      * @return {Object} app object
      */
     config: function() {
@@ -287,6 +290,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Set current app id
+     * @memberof countlyManagementView
      * @param {string} appId - app Id to set
      */
     setAppId: function(appId) {
@@ -299,6 +303,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Reset template data when changing app
+     * @memberof countlyManagementView
      */
     resetTemplateData: function() {
         this.templateData = {};
@@ -306,7 +311,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Title of plugin configuration tab, override with your own title.
-     *
+     * @memberof countlyManagementView
      * @return {String} tab title
      */
     titleString: function() {
@@ -315,7 +320,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Saving string displayed when request takes more than 0.3 seconds, override if needed.
-     *
+     * @memberof countlyManagementView
      * @return {String} saving string
      */
     savingString: function() {
@@ -324,17 +329,19 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Callback function called before tab is expanded. Override if needed.
+     * @memberof countlyManagementView
      */
     beforeExpand: function() {},
 
     /**
      * Callback function called after tab is collapsed. Override if needed.
+     * @memberof countlyManagementView
      */
     afterCollapse: function() {},
 
     /**
      * Function used to determine whether save button should be visible. Used whenever UI is redrawn or some value changed. Override if needed.
-     *
+     * @memberof countlyManagementView
      * @return {Boolean} true if enabled
      */
     isSaveAvailable: function() {
@@ -343,7 +350,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Callback function called to apply changes. Override if validation is needed.
-     *
+     * @memberof countlyManagementView
      * @return {String} error to display to user if validation didn't pass
      */
     validate: function() {
@@ -352,7 +359,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Function which prepares data to the format required by the server, must return a Promise.
-     *
+     * @memberof countlyManagementView
      * @return {Promise} which resolves to object of {plugin-name: {config: true, options: true}} format or rejects with error string otherwise
      */
     prepare: function() {
@@ -361,6 +368,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Show error message returned by server or by validate function. Override if needed.
+     * @memberof countlyManagementView
      * @param {string} error - error message to show
      */
     showError: function(error) {
@@ -369,12 +377,13 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Called whenever element value with name in parameter have been changed. Override if needed.
-
+     * @memberof countlyManagementView
      */
     onChange: function(/* name */) { },
 
     /**
      * Called whenever element value with name in parameter have been changed.
+     * @memberof countlyManagementView
      * @param {string} name - key
      * @param {string} value - value to set
      */
@@ -399,6 +408,7 @@ window.countlyManagementView = countlyView.extend({
     /**
      * Save logic: validate, disable save button, submit to the server,
      * show loading dialog if it takes long enough, hide it when done, show error if any, enable save button.
+     * @memberof countlyManagementView
      * @param {event} ev - event
      * @returns {object} error
      */
@@ -531,6 +541,7 @@ window.countlyManagementView = countlyView.extend({
 * Drop class with embeded countly theme, use as any Drop class/instance
 * @name CountlyDrop
 * @global
+* @namespace CountlyDrop
 */
 var CountlyDrop = Drop.createContext({
     classPrefix: 'countly-drop',
@@ -665,6 +676,7 @@ var AppRouter = Backbone.Router.extend({
     _internalMenuCategories: ["management", "user"],
     /**
     * Add menu category. Categories will be copied for all app types and its visibility should be controled from the app type plugin
+    * @memberof app
     * @param {string} category - new menu category
     * @param {Object} node - object defining category lement
     * @param {string} node.text - key for localization string which to use as text
@@ -718,6 +730,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Add first level menu element for specific app type under specified category. You can only add app type specific menu to categories "understand", "explore", "reach", "improve", "utilities"
+    * @memberof app
     * @param {string} app_type - type of the app for which to add menu
     * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities"
     * @param {Object} node - object defining menu lement
@@ -815,6 +828,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Add second level menu element for specific app type under specified parent code.
+    * @memberof app
     * @param {string} app_type - type of the app for which to add menu
     * @param {string} parent_code - code for parent element under which to add this submenu element
     * @param {Object} node - object defining menu lement
@@ -899,6 +913,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Add first level menu element for all app types and special categories. 
+    * @memberof app
     * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities", "management", "user"
     * @param {Object} node - object defining menu lement
     * @param {string} node.text - key for localization string which to use as text
@@ -925,6 +940,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Add second level sub menu element for all app types (not available for special categories as "management" and "user")
+    * @memberof app
     * @param {string} parent_code - code for parent element under which to add this submenu element
     * @param {Object} node - object defining menu lement
     * @param {string} node.text - key for localization string which to use as text
@@ -3287,6 +3303,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
      * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
+     * @memberof app
      * @param {string} plugin - plugin name
      * @param {string} title  - plugin title
      * @param {object} View - plugin view
@@ -3984,7 +4001,7 @@ var checkGlovbalAdminOnlyPermission = function() {
         }
     });
 
-    if (countlyGlobal.member.global_admin !== true && !countlyGlobal.config.autonomous && existed === true) {
+    if (countlyGlobal.member.global_admin !== true && existed === true) {
 
         window.location.hash = "/";
         return false;

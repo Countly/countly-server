@@ -1,8 +1,6 @@
 /**
- * Library contaning functions for basic user operations: login, logout, setup, settings
- * @name membersUtility
- * @namespace membersUtility
- * @property {object} db - Data base connection. Needs to be set befoe callng any other function.
+ * Module contaning functions for basic user operations: login, logout, setup, settings
+ * @module frontend/express/libs/members
  * @example
  * var plugins = require('../../plugins/pluginManager.js'); //need for db
  * var countlyDb = plugins.dbConnection(countlyConfig); //get db connection
@@ -27,11 +25,16 @@ var versionInfo = require('./../version.info'),
     COUNTLY_VERSION = versionInfo.version,
     COUNTLY_TYPE = versionInfo.type;
 
-
+/** @lends module:frontend/express/libs/members */
 var membersUtility = { };
 //Helper functions
-
+/**
+ * @property {object} db - Data base connection. Needs to be set befoe callng any other function.
+ */
 membersUtility.db = null;
+/**
+ * @property {object} countlyConfig - countly configuration object
+ */
 membersUtility.countlyConfig = configs;
 if (membersUtility.countlyConfig.web && membersUtility.countlyConfig.web.track === "all") {
     membersUtility.countlyConfig.web.track = null;

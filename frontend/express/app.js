@@ -1,3 +1,8 @@
+/**
+ * Main dashboard process app.js
+ * @module frontend/express/app
+ */
+
 // Set process name
 process.title = "countly: dashboard node " + process.argv[1];
 
