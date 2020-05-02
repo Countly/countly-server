@@ -1,9 +1,18 @@
 #!/bin/bash
 
+function message_optional () {
+    echo -e "\e[1m[\e[93m?\e[97m]\e[0m $1"
+}
+
+function message_ok () {
+    echo -e "\e[1m[\e[92m+\e[97m]\e[0m $1"
+}
+
 #add mongod entry for logrotate daemon
 if [ -x "$(command -v logrotate)" ]; then
-    INDENT_LEVEL=$(cat /etc/mongod.conf | grep dbPath | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
-    INDENT_STRING=$(printf ' %.0s' $(seq 1 $INDENT_LEVEL))
+    MONGO_CONFIG_FILE="/etc/mongod.conf"
+    INDENT_LEVEL=$(grep dbPath "${MONGO_CONFIG_FILE}" | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
+    INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
     #delete if any other logRotate directive exist and add logRotate to mongod.conf
     sed -i '/logRotate/d' /etc/mongod.conf
     sed -i "s#systemLog:#systemLog:\n${INDENT_STRING}logRotate: reopen#g" /etc/mongod.conf
@@ -58,6 +67,8 @@ EOF
             systemctl restart mongod || echo "mongodb systemctl job does not exist"
         fi
     fi
+
+    message_ok 'Logrotate configured'
 else
-        echo 'Command logrotate is not found, continuing without logrotate setup.'
+    message_optional 'Command logrotate is not found, please install logrotate'
 fi
