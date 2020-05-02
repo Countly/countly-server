@@ -280,7 +280,6 @@ plugins.setConfigs("crashes", {
             }
 
             if (params.qstring.crash && params.qstring.crash._error && params.qstring.crash._app_version && params.qstring.crash._os) {
-                console.log(report.group, "got crash", dbAppUser.sc);
                 var props = [
                     //device metrics
                     "os",
@@ -390,6 +389,7 @@ plugins.setConfigs("crashes", {
                             }
                             else {
                                 report.group = hash;
+                                console.log(report.group, "got crash", dbAppUser.sc);
                                 report.uid = dbAppUser.uid;
                                 report.ts = params.time.timestamp;
                                 var updateUser = {};
