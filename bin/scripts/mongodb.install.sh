@@ -44,11 +44,6 @@ enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
         fi
         yum install -y mongodb-org
-
-        #disable transparent-hugepages (requires reboot)
-        cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-        chmod 755 /etc/init.d/disable-transparent-hugepages
-        chkconfig --add disable-transparent-hugepages
     fi
 
     if [ -f /etc/lsb-release ]; then
@@ -66,15 +61,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
         apt-get update
         #install mongodb
         DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
-
-        #disable transparent-hugepages (requires reboot)
-        cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-        chmod 755 /etc/init.d/disable-transparent-hugepages
-        update-rc.d disable-transparent-hugepages defaults
     fi
-
-    #configure logrotate daemon for mongodb
-    bash "$DIR/mongodb.init.logrotate.sh"
 
     #backup config and remove configuration to prevent duplicates
     cp /etc/mongod.conf /etc/mongod.conf.bak
@@ -96,6 +83,9 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
             systemctl restart mongod || echo "mongodb systemctl job does not exist"
         fi
     fi
+
+    bash $0 check
+
 elif [ "$1" == "check" ]; then
     MONGO_CONFIG_FILE="/etc/mongod.conf"
     MONGO_USER=$(grep mongod /etc/passwd | awk -F':' '{print $1}')
