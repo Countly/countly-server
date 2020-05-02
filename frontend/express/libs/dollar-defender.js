@@ -1,4 +1,9 @@
 /**
+ * Module to prevent MongoDB injections by catching operators in objects where keys start with $
+ * @module frontend/express/libs/dollar-defender
+ */
+
+/**
 * Test value recursively if any key starts with $ signText
 * @param {any} objectToTest - value to check for $ keys
 * @returns {bool} if any key started with $ or not
