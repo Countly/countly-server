@@ -110,7 +110,7 @@ elif [ "$1" == "check" ]; then
             message_ok "Type of MongoDB data disk is XFS"
 
             #Set noatime & nodiratime for data disk
-            FSTAB_ENTRY=$(grep "${MONGO_PATH}" /etc/fstab.bak)
+            FSTAB_ENTRY=$(grep "${MONGO_PATH}" /etc/fstab)
             FSTAB_ENTRY_OPTIONS=$(echo "$FSTAB_ENTRY" | awk -F' ' '{print $4}')
             FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY")
 
@@ -122,8 +122,9 @@ elif [ "$1" == "check" ]; then
                 FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY_UPDATED" | sed "s#${FSTAB_ENTRY_OPTIONS}#${FSTAB_ENTRY_OPTIONS},nodiratime#g")
             fi
 
-            sed -i "/${MONGO_PATH//\//\\/}/d" /etc/fstab.bak
-            sed -i "\$a${FSTAB_ENTRY_UPDATED}" /etc/fstab.bak
+            cp /etc/fstab /etc/fstab.countly.bak
+            sed -i "/${MONGO_PATH//\//\\/}/d" /etc/fstab
+            sed -i "\$a${FSTAB_ENTRY_UPDATED}" /etc/fstab
 
             message_ok "Added disk options 'noatime' & 'nodiratime' for MongoDB data disk, need reboot"
         else
