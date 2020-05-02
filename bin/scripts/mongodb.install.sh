@@ -133,7 +133,7 @@ elif [ "$1" == "check" ]; then
     fi
 
     #Check logrotation
-    #bash "$DIR/mongodb.init.logrotate.sh"
+    bash "$DIR/mongodb.init.logrotate.sh"
 
     #Check kernel version 2.6.36
     KERNEL_VERSION=$(uname -r | awk -F'-' '{print $1}')
