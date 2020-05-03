@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>T - Documentation</title>
+    <title>countly/external.jsdoc - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,1392 +34,298 @@
 
 <div id="main">
     
-    <h1 class="page-title">T</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        T
-        </h2>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3126">line 3126</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-            
-                <div class="description usertext"><p>Template loader for loading static resources over jquery</p></div>
-            
-
-            
-                <h3>Examples</h3>
-                
-        <p class="code-caption">Get Handlebar compiled HTML</p>
-    
-    <pre class="prettyprint"><code>$.when(T.render('/density/templates/density.html', function(src){
-   self.template = src;
-})).then(function () {});</code></pre>
-
-        <p class="code-caption">Get raw resources</p>
-    
-    <pre class="prettyprint"><code>$.when(T.get('/density/templates/density.html', function(src){
-   self.template = Handlebar.compile(src);
-})).then(function () {});</code></pre>
-
-            
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id=".fetch"><span class="type-signature">(static) </span>fetch<span class="signature">(name)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3213">line 3213</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Fetch template in sync request</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".get"><span class="type-signature">(static) </span>get<span class="signature">(name, callback)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3172">line 3172</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Fetch and return raw template</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>when done</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>ajax promise</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".isCached"><span class="type-signature">(static) </span>isCached<span class="signature">(name)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3226">line 3226</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Check if template is cached</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>true if template is cached</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">boolean</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".prefetch"><span class="type-signature">(static) </span>prefetch<span class="signature">(name)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3203">line 3203</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Prefetch template</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".render"><span class="type-signature">(static) </span>render<span class="signature">(name, callback)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3151">line 3151</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Process and return fetched template</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>when done</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>ajax promise</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".renderSync"><span class="type-signature">(static) </span>renderSync<span class="signature">(name, callback)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3192">line 3192</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Fetch and return raw template in sync</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>when done</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".store"><span class="type-signature">(static) </span>store<span class="signature">(name, raw)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3235">line 3235</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Store template in cache</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>raw</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Raw template data</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".urlFor"><span class="type-signature">(static) </span>urlFor<span class="signature">(name)</span><span class="type-signature"> &rarr; {string}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3245">line 3245</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Generate request URL for template</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>URL where to fetch template</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">countly/external.jsdoc</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Object with values passed from server to template and is available directly in the source of logged in user's dashboard generated in frontend/express/views/dashboard.html template
+ * @name countlyGlobal
+ * @global
+ * @namespace countlyGlobal
+ */
+ 
+ /**
+ * Countly instance title to be used as page name
+ * @name countlyGlobal.countlyTitle
+ * @type {string}
+ * @memberof countlyGlobal
+ * @example
+ * countlyGlobal["countlyTitle"] = "Countly";
+ */
+ 
+ /**
+ * Object of all apps that user has access to using app _id string as key and app document from MongoDB as value
+ * @name countlyGlobal.apps
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {string} id._id - id of the app
+ * @property {string} id.name - name of the app
+ * @property {string} id.country - selected country of the app
+ * @property {string} id.timezone - selected country's timezone for the app (example: Europe/Riga)
+ * @property {string} id.type - app type (mobile, web, desktop, etc)
+ * @property {number} id.created_at - seconds timestamp when app was created
+ * @property {number} id.edited_at - seconds timestamp when app was last time edited
+ * @property {string} id.owner - MongoDB _id as string of the user who created this app
+ * @property {string} id.key - app key used to send SDK requests
+ * @property {string} id.checksum_salt - salt used for checksum to prevent parameter tampering
+ * @property {number} id.last_login - seconds timestamp when user last logged in
+ * @example &lt;caption>Example object&lt;/caption>
+ *  countlyGlobal["apps"] = {
+ *       "586e3216326a8b0a07b8d87f":{
+ *           "_id":"586e3216326a8b0a07b8d87f", 
+ *           "name":"Test", 
+ *           "country":"LV", 
+ *           "type":"mobile", 
+ *           "category":"6", 
+ *           "timezone":"Europe/Riga", 
+ *           "created_at":1483616790, 
+ *           "edited_at":1483629279, 
+ *           "owner":"586e31f61424a909e8bd9e72", 
+ *           "key":"dbb1243f9c9ac891cebd63b5035a767c71b1e3d7", 
+ *           "checksum_salt":""
+ *       }, 
+ *       "586e339a326a8b0a07b8ecb9":{
+ *           "_id":"586e339a326a8b0a07b8ecb9", 
+ *           "name":"MobileApp", 
+ *           "country":"FI", 
+ *           "type":"mobile", 
+ *           "category":"6", 
+ *           "timezone":"Europe/Helsinki", 
+ *           "created_at":1483617178, 
+ *           "edited_at":1483617178, 
+ *           "owner":"586e31f61424a909e8bd9e72", 
+ *           "key":"b8fa15b9125dd54f534593639d3814b0a24e8c13"
+ *        }
+ *    };
+ */
+ 
+ /**
+ * Object with data of default app, which should be used if user does not have any app selected
+ * @name countlyGlobal.defaultApp
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {string} _id - id of the app
+ * @property {string} name - name of the app
+ * @property {string} country - selected country of the app
+ * @property {string} timezone - selected country's timezone for the app (example: Europe/Riga)
+ * @property {string} type - app type (mobile, web, desktop, etc)
+ * @property {number} created_at - seconds timestamp when app was created
+ * @property {number} edited_at - seconds timestamp when app was last time edited
+ * @property {string} owner - MongoDB _id as string of the user who created this app
+ * @property {string} key - app key used to send SDK requests
+ * @property {string} checksum_salt - salt used for checksum to prevent parameter tampering
+ * @property {number} last_login - seconds timestamp when user last logged in
+ * @example &lt;caption>Example object&lt;/caption>
+ *   countlyGlobal["defaultApp"] = {
+ *       "_id":"586e3216326a8b0a07b8d87f", 
+ *       "name":"Test", 
+ *       "country":"LV", 
+ *       "type":"mobile", 
+ *       "category":"6", 
+ *       "timezone":"Europe/Riga", 
+ *       "created_at":1483616790, 
+ *       "edited_at":1483629279, 
+ *       "owner":"586e31f61424a909e8bd9e72", 
+ *       "key":"dbb1243f9c9ac891cebd63b5035a767c71b1e3d7", 
+ *       "checksum_salt":""
+ *   };
+ */
+ 
+ /**
+ * Object with all apps that user has admin access too, using app _id as keys and app document as value
+ * @name countlyGlobal.admin_apps
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {string} id._id - id of the app
+ * @property {string} id.name - name of the app
+ * @property {string} id.country - selected country of the app
+ * @property {string} id.timezone - selected country's timezone for the app (example: Europe/Riga)
+ * @property {string} id.type - app type (mobile, web, desktop, etc)
+ * @property {number} id.created_at - seconds timestamp when app was created
+ * @property {number} id.edited_at - seconds timestamp when app was last time edited
+ * @property {string} id.owner - MongoDB _id as string of the user who created this app
+ * @property {string} id.key - app key used to send SDK requests
+ * @property {string} id.checksum_salt - salt used for checksum to prevent parameter tampering
+ * @property {number} id.last_login - seconds timestamp when user last logged in
+ * @example &lt;caption>Example object&lt;/caption>
+ *  countlyGlobal["apps"] = {
+ *       "586e3216326a8b0a07b8d87f":{
+ *           "_id":"586e3216326a8b0a07b8d87f", 
+ *           "name":"Test", 
+ *           "country":"LV", 
+ *           "type":"mobile", 
+ *           "category":"6", 
+ *           "timezone":"Europe/Riga", 
+ *           "created_at":1483616790, 
+ *           "edited_at":1483629279, 
+ *           "owner":"586e31f61424a909e8bd9e72", 
+ *           "key":"dbb1243f9c9ac891cebd63b5035a767c71b1e3d7", 
+ *           "checksum_salt":""
+ *       }, 
+ *       "586e339a326a8b0a07b8ecb9":{
+ *           "_id":"586e339a326a8b0a07b8ecb9", 
+ *           "name":"MobileApp", 
+ *           "country":"FI", 
+ *           "type":"mobile", 
+ *           "category":"6", 
+ *           "timezone":"Europe/Helsinki", 
+ *           "created_at":1483617178, 
+ *           "edited_at":1483617178, 
+ *           "owner":"586e31f61424a909e8bd9e72", 
+ *           "key":"b8fa15b9125dd54f534593639d3814b0a24e8c13"
+ *        }
+ *    };
+ */
+ 
+ /**
+ * CSRF token to be used on requests to the app.js server
+ * @name countlyGlobal.csrf_token
+ * @type {string}
+ * @memberof countlyGlobal
+ * @example
+ * countlyGlobal["csrf_token"] = "yvzAHjnM-t5LxZAAyAVYLooRvrzEss9aQ89Y";
+ */
+ 
+ /**
+ * Object containing all information about current user
+ * @name countlyGlobal.member
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {MongoObjectId} _id - id of the member document in MongoDB
+ * @property {string} full_name - full name of the user
+ * @property {string} username - username of the user
+ * @property {string} email - email address of the user
+ * @property {boolean} global_admin - true if user is global admin and has access to everything
+ * @property {number} created_at - seconds timestamp when user was created
+ * @property {number} password_changed - seconds timestamp when last time user has changed the password
+ * @property {string} lang - user's selected localization of dashboard, short version, as "en"
+ * @property {string} api_key - user's api key to use in ajax requests to server on user's behalf
+ * @property {number} last_login - seconds timestamp when user last logged in
+ * @example &lt;caption>Example object&lt;/caption>
+ *  countlyGlobal["member"] = {
+ *       "_id":{"_bsontype":"ObjectID", "id":{"type":"Buffer","data":[88,110,49,246,20,36,169,9,232,189,158,114]}}, 
+ *       "full_name":"test", 
+ *       "username":"test", 
+ *       "email":"test", 
+ *       "global_admin":true, 
+ *       "created_at":1483616758, 
+ *       "password_changed":1483616758, 
+ *       "lang":"en", 
+ *       "api_key":"1fd3ef9c94e3218934792e097afa836a", 
+ *       "last_login":1484911071
+ *   };
+ */
+ 
+ /**
+ * Frontend configuration from serverside shared configs
+ * @name countlyGlobal.config
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {boolean} production - if true minimized and combined files are served, else separate unminimized files are served
+ * @property {string} theme - current theme or empty if no theme, default is empty
+ * @property {number} session_timeout - number of minutes when session should timeout or 0 if disabled
+ * @property {boolean} use_google - should use google services like vizualization api or disable all related functionality
+ * @property {boolean} code - if true, will display links to integration guide in Management -> Apps section
+ * @example &lt;caption>Example object&lt;/caption>
+ *  countlyGlobal["config"] = {
+ *       "production":false, 
+ *       "theme":"", 
+ *       "session_timeout":0, 
+ *       "use_google":true, 
+ *       "code":true
+ *   };
+ */
+ 
+ /**
+ * Security configuration from serverside shared configs
+ * @name countlyGlobal.security
+ * @type {object}
+ * @memberof countlyGlobal
+ * @example &lt;caption>Example object&lt;/caption>
+ *  countlyGlobal["security"] = {
+ *       "login_tries":3, 
+ *       "login_wait":300, 
+ *       "password_min":4, 
+ *       "password_char":false, 
+ *       "password_number":false, 
+ *       "password_symbol":false, 
+ *       "password_expiration":0, 
+ *       "dashboard_additional_headers":"X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains", 
+ *       "api_additional_headers":"X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
+ *   };
+ */
+ 
+ /**
+ * Array with all enabled plugin names
+ * @name countlyGlobal.plugins
+ * @type {array}
+ * @memberof countlyGlobal
+ * @example &lt;caption>Example object&lt;/caption>
+ * countlyGlobal["plugins"] = ["mobile", "web", "desktop", "plugins", "density", "locale", "browser", "sources", "views"];
+ * @example &lt;caption>Checking if plugin is enabled&lt;/caption>
+ * if(countlyGlobal.plugins.indexOf("myplugin") !== -1){
+ *      //my plugin is enabled
+ * }
+ */
+ 
+ /**
+ * String of directory path if Countly is configured to run in subdirectory
+ * @name countlyGlobal.path
+ * @type {string}
+ * @memberof countlyGlobal
+ */
+ 
+ /**
+ * String of host of cdn which you can prefix user serverd files like app icons with
+ * @name countlyGlobal.cdn
+ * @type {string}
+ * @memberof countlyGlobal
+ */
+ 
+/**
+* Object for persistently storing values on browser side using localStorage as main storage and fallback to cookies
+* @name store
+* @global
+* @namespace store
+* @example
+* //saving value
+* store.set("lang", "lv");
+*
+* //returns lv
+* store.get("lang");
+*
+* //delete value
+* store.set("lang", nul);
+*/
+ 
+ /**
+* Persistently store value
+* @name store.set
+* @memberof store
+* @param {string} key - key under which we should store the value
+* @param {string} value - value to store
+* @example
+* store.set("lang", "lv");
+*/
+    
+/**
+* Get persistantly stored value
+* @name store.get
+* @memberof store
+* @param {string} key - key under which value was stored
+* @returns {string} previously stored value or undefined if value is not found
+* @example
+* var lang = store.get("lang");
+*/</code></pre>
+        </article>
+    </section>
 
 
 

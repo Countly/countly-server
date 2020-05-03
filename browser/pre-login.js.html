@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>T - Documentation</title>
+    <title>pre-login.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,1392 +34,217 @@
 
 <div id="main">
     
-    <h1 class="page-title">T</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        T
-        </h2>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3126">line 3126</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-            
-                <div class="description usertext"><p>Template loader for loading static resources over jquery</p></div>
-            
-
-            
-                <h3>Examples</h3>
-                
-        <p class="code-caption">Get Handlebar compiled HTML</p>
-    
-    <pre class="prettyprint"><code>$.when(T.render('/density/templates/density.html', function(src){
-   self.template = src;
-})).then(function () {});</code></pre>
-
-        <p class="code-caption">Get raw resources</p>
-    
-    <pre class="prettyprint"><code>$.when(T.get('/density/templates/density.html', function(src){
-   self.template = Handlebar.compile(src);
-})).then(function () {});</code></pre>
-
-            
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id=".fetch"><span class="type-signature">(static) </span>fetch<span class="signature">(name)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3213">line 3213</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Fetch template in sync request</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".get"><span class="type-signature">(static) </span>get<span class="signature">(name, callback)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3172">line 3172</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Fetch and return raw template</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>when done</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>ajax promise</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".isCached"><span class="type-signature">(static) </span>isCached<span class="signature">(name)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3226">line 3226</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Check if template is cached</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>true if template is cached</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">boolean</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".prefetch"><span class="type-signature">(static) </span>prefetch<span class="signature">(name)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3203">line 3203</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Prefetch template</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".render"><span class="type-signature">(static) </span>render<span class="signature">(name, callback)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3151">line 3151</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Process and return fetched template</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>when done</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>ajax promise</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".renderSync"><span class="type-signature">(static) </span>renderSync<span class="signature">(name, callback)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3192">line 3192</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Fetch and return raw template in sync</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>when done</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".store"><span class="type-signature">(static) </span>store<span class="signature">(name, raw)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3235">line 3235</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Store template in cache</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>raw</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Raw template data</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".urlFor"><span class="type-signature">(static) </span>urlFor<span class="signature">(name)</span><span class="type-signature"> &rarr; {string}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line3245">line 3245</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Generate request URL for template</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template path</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>URL where to fetch template</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">pre-login.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*global store, jQuery, $, document, countlyGlobal, filterXSS */
+/*exported showMessage, addLocalization */
+
+/**
+ * Javascript file loaded on pre login pages with some handy global functions
+ * @name Pre Login
+ * @global
+ * @namespace Pre Login
+ */
+
+
+/**
+* This method is called to show user a message, like error when loging in. By default this is taken from query parameter or passed to template directly as message variable
+* @param {string} key - key from localization property file
+* @memberof Pre Login
+*/
+function showMessage(key, prop) {
+    key = encodeSomeHtml(key);
+    $("#message").data("localize", key);
+    $("#message").html(jQuery.i18n.prop(key, prop));
+}
+
+var htmlEncodeOptions = {
+    "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
+    onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
+        if (tag === "a") {
+            if (name === "target" &amp;&amp; !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
+                return "target='_blank'"; //set _blank if incorrect value
+            }
+
+            if (name === "href" &amp;&amp; !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http")) {
+                return "href='#'"; //set # if incorrect value
+            }
+        }
+    }
+};
+
+/**
+* Encode some tags, leaving those set in whitelist as they are.
+* @memberof Pre Login
+* @param {string} html - value to encode
+* @param {object} options for encoding. Optional. If not passed, using default in common.
+* @returns {string} encode string
+*/
+function encodeSomeHtml(html, options) {
+    if (options) {
+        return filterXSS(html, options);
+    }
+    else {
+        return filterXSS(html, htmlEncodeOptions);
+    }
+}
+
+/**
+* By default only pre-login property file localization is available on prelogin pages, but you can additionally load other localization files, like for example needed for your plugin, using this function
+* @memberof Pre Login
+* @param {string} name - base name of the property file without the locale/language. Should be the same name as your plugin
+* @param {string} path - url path to where the localization file currently resides relative to the page you want to load it from
+* @param {function} callback - callback executed when localization file is loaded
+* @memberof Pre Login
+* @example
+* addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
+*/
+function addLocalization(name, path, callback) {
+    var langs = jQuery.i18n.map;
+    var lang = store.get("countly_lang") || "en";
+    jQuery.i18n.properties({
+        name: name,
+        path: [path],
+        mode: 'map',
+        language: lang,
+        callback: function() {
+            $.each(jQuery.i18n.map, function(key, value) {
+                if (countlyGlobal.company) {
+                    langs[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                }
+                langs[key] = encodeSomeHtml(value);
+            });
+
+            jQuery.i18n.map = langs;
+
+            $("[data-localize]").each(function() {
+                var elem = $(this),
+                    localizedValue = jQuery.i18n.map[elem.data("localize")];
+
+                if (elem.is("input[type=text]") || elem.is("input[type=password]")) {
+                    elem.attr("placeholder", localizedValue);
+                }
+                else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
+                    elem.attr("value", localizedValue);
+                }
+                else {
+                    elem.html(jQuery.i18n.map[elem.data("localize")]);
+                }
+            });
+            if (callback) {
+                callback();
+            }
+        }
+    });
+    $(document).bind('clyLangChange', function() {
+        addLocalization(name, path, callback);
+    });
+}
+
+$(document).ready(function() {
+
+    var lang = "en";
+    if (store.get("countly_lang")) {
+        lang = store.get("countly_lang");
+        $("#active-lang").text(lang.toUpperCase());
+        $("#form-lang").val(lang);
+    }
+
+    jQuery.i18n.properties({
+        name: 'pre-login',
+        path: [countlyGlobal["cdn"] + 'localization/pre-login/'],
+        mode: 'map',
+        language: lang,
+        callback: function() {
+            $.each(jQuery.i18n.map, function(key, value) {
+                if (countlyGlobal.company) {
+                    jQuery.i18n.map[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                }
+                jQuery.i18n.map[key] = encodeSomeHtml(value);
+            });
+
+            $("[data-localize]").each(function() {
+                var elem = $(this),
+                    localizedValue = jQuery.i18n.map[elem.data("localize")];
+
+                if (elem.is("input[type=text]") || elem.is("input[type=password]")) {
+                    elem.attr("placeholder", localizedValue);
+                }
+                else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
+                    elem.attr("value", localizedValue);
+                }
+                else {
+                    elem.html(jQuery.i18n.map[elem.data("localize")]);
+                }
+            });
+        }
+    });
+
+    $("#reset-password-form").submit(function() {
+        if ($("input[name=password]").val() != $("input[name=again]").val()) {
+            if ($("#message").length > 0) {
+                $("#message").text(jQuery.i18n.map["reset.dont-match"]);
+            }
+            else {
+                $("body").prepend($("&lt;div>").attr("id", "message").text(jQuery.i18n.map["reset.dont-match"]));
+            }
+            return false;
+        }
+    });
+
+    $("#select-lang").click(function() {
+        $(this).toggleClass("active");
+    });
+
+    $("#langs .item").click(function() {
+        var langCode = $(this).data("language-code"),
+            langCodeUpper = langCode.toUpperCase();
+
+        store.set("countly_lang", langCode);
+        $("#active-lang").text(langCodeUpper);
+        $("#form-lang").val(langCode);
+
+        jQuery.i18n.properties({
+            name: 'pre-login',
+            path: [countlyGlobal["cdn"] + 'localization/pre-login/'],
+            mode: 'map',
+            language: langCode,
+            callback: function() {
+                // Localization test
+                //$.each(jQuery.i18n.map, function(key, value) {
+                //	jQuery.i18n.map[key] = key;
+                //});
+
+                $(document).trigger('clyLangChange');
+
+                $("[data-localize]").each(function() {
+                    var elem = $(this),
+                        localizedValue = jQuery.i18n.map[elem.data("localize")];
+
+                    if (elem.is("input[type=text]") || elem.is("input[type=password]")) {
+                        elem.attr("placeholder", localizedValue);
+                    }
+                    else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
+                        elem.attr("value", localizedValue);
+                    }
+                    else {
+                        elem.html(jQuery.i18n.map[elem.data("localize")]);
+                    }
+                });
+            }
+        });
+    });
+});</code></pre>
+        </article>
+    </section>
 
 
 
