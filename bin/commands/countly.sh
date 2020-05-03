@@ -191,7 +191,7 @@ countly_upgrade (){
         fi
     elif [ "$1" == "ee" ]
     then
-        FILE=$(ls -la "$DIR/../../"countly-enterprise-edition*.tar.gz | tail -1 | awk -F' ' '{print $9}')
+        FILE=$(ls -la "$DIR/../../"countly-enterprise-edition*.tar.gz | tail -1 | awk -F' ' '{print $NF}')
         if [ -f "$FILE" ]; then
             cp -Rf "$DIR/../../"plugins/plugins.default.json "$DIR/../../"plugins/plugins.ce.json
 
