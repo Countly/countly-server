@@ -1621,11 +1621,11 @@ var AppRouter = Backbone.Router.extend({
 
         $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
         jQuery.i18n.properties({
-            name: 'locale',
+            name: window.production ? 'localization/min/locale' : ["localization/dashboard/dashboard", "localization/help/help", "localization/mail/mail"].concat(countlyGlobal.plugins.map(function(plugin){return plugin + "/localization/" + plugin})),
             cache: true,
             language: countlyCommon.BROWSER_LANG_SHORT,
             countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
-            path: [countlyGlobal.cdn + 'localization/min/'],
+            path: countlyGlobal.cdn,
             mode: 'map',
             callback: function() {
                 for (var key in jQuery.i18n.map) {
@@ -1929,11 +1929,11 @@ var AppRouter = Backbone.Router.extend({
                 });
 
                 jQuery.i18n.properties({
-                    name: 'locale',
+                    name: window.production ? 'localization/min/locale' : ["localization/dashboard/dashboard", "localization/help/help", "localization/mail/mail"].concat(countlyGlobal.plugins.map(function(plugin){return plugin + "/localization/" + plugin})),
                     cache: true,
                     language: countlyCommon.BROWSER_LANG_SHORT,
                     countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
-                    path: [countlyGlobal.cdn + 'localization/min/'],
+                    path: countlyGlobal.cdn,
                     mode: 'map',
                     callback: function() {
                         for (var key in jQuery.i18n.map) {
