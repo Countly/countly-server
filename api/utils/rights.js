@@ -91,7 +91,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
+                if (!((member.user_of && Array.isArray(member.user_of) && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
                     common.returnMessage(params, 401, 'User does not have view right for this application');
                     reject('User does not have view right for this application');
                     return false;
@@ -497,7 +497,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
     if (params.qstring.app_id) {
         //if app_id was provided, we need to check if user has access for this app_id
         // is user_of array contain current app_id?
-        var isUserOf = params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1;
+        var isUserOf = params.member.user_of && Array.isArray(params.member.user_of) && params.member.user_of.indexOf(params.qstring.app_id) !== -1;
         var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
         if (params.member.global_admin || isUserOf && !isRestricted) {
             apps = [params.qstring.app_id];

@@ -2212,7 +2212,19 @@
     *   });
     */
     CountlyHelpers.createMetricModel = function(countlyMetric, metric, $, fetchValue) {
+        /**
+        * Common metric object, all metric models inherit from it and should have these methods
+        * @name countlyMetric
+        * @global
+        * @namespace countlyMetric
+        */
         countlyMetric = countlyMetric || {};
+        /**
+        * Function to get value, modifying it before processing if needed.
+        * @memberof countlyMetric
+        * @param {string} value - value to fetch
+        * @returns {string} modified value
+        */
         countlyMetric.fetchValue = fetchValue;
         //Private Properties
         var _Db = {},
@@ -2224,16 +2236,10 @@
             _name = (metric.name) ? metric.name : metric,
             _estOverrideMetric = (metric.estOverrideMetric) ? metric.estOverrideMetric : "";
 
-        /**
-        * Common metric object, all metric models inherit from it and should have these methods
-        * @name countlyMetric
-        * @global
-        * @namespace countlyMetric
-        */
-
         //Public Methods
         /**
         * Initialize metric model to fetch initial data from server
+        * @memberof countlyMetric
         * @param {boolean=} processed - if true will fetch processed data, will fetch raw data by default
         * @returns {jquery_promise} jquery promise to wait while data is loaded
         * @example
@@ -2300,6 +2306,7 @@
 
         /**
         * Refresh metric model by fetching data only for the latest time bucket using action=refresh on server. Currently does not fetch data for processed data loaded on initialization
+        * @memberof countlyMetric
         * @returns {jquery_promise} jquery promise to wait while data is loaded
         * @example
         *$.when(countlyMetric.refresh()).then(function () {
@@ -2349,6 +2356,7 @@
 
         /**
         * Callback that each metric model can define, to be called when data is loaded or refreshed
+        * @memberof countlyMetric
         * @example
         *countlyDeviceDetails.callback = function(isRefresh, data){
         *    if(isRefresh){
@@ -2363,6 +2371,7 @@
 
         /**
         * Reset/delete all retrieved metric data, like when changing app or selected time period
+        * @memberof countlyMetric
         */
         countlyMetric.reset = function() {
             if (_processed) {
@@ -2376,6 +2385,7 @@
 
         /**
         * Get current data, if some view or model requires access to raw data
+        * @memberof countlyMetric
         * @return {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
         */
         countlyMetric.getDb = function() {
@@ -2384,6 +2394,7 @@
 
         /**
         * Set current data for model, if you need to provide data for model from another resource (as loaded in different model)
+        * @memberof countlyMetric
         * @param {object} db - set new data to be used by model
         */
         countlyMetric.setDb = function(db) {
@@ -2393,6 +2404,7 @@
 
         /**
         * Extend current data for model with some additional information about latest period (like data from action=refresh request)
+        * @memberof countlyMetric
         * @param {object} data - set new data to be used by model
         */
         countlyMetric.extendDb = function(data) {
@@ -2402,6 +2414,7 @@
 
         /**
         * Get array of unique segments available for metric data
+        * @memberof countlyMetric
         * @param {string} metric1 - name of the segment/metric to get meta for, by default will use default _name provided on initialization
         * @returns {array} array of unique metric values
         */
@@ -2412,6 +2425,7 @@
 
         /**
         * Get data after initialize finished and data was retrieved
+        * @memberof countlyMetric
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * @param {boolean} join - join new and total users into single graph, for example to dispaly in bars on the same graph and not 2 separate pie charts
         * @param {string} metric1 - name of the segment/metric to get data for, by default will use default _name provided on initialization
@@ -2571,6 +2585,7 @@
 
         /**
         * Prefill all expected properties as u, t, n with 0, to avoid null values in the result, if they don't exist, which won't work when drawing graphs
+        * @memberof countlyMetric
         * @param {object} obj - oject to prefill with  values if they don't exist
         * @returns {object} prefilled object
         */
@@ -2595,6 +2610,7 @@
 
         /**
         * Get bar data for metric with percentages of total
+        * @memberof countlyMetric
         * @param {string} metric_pd - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
@@ -2622,6 +2638,7 @@
 
         /**
         * Get bar data for metric
+        * @memberof countlyMetric
         * @param {string} metric_pd - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
@@ -2648,6 +2665,7 @@
 
         /**
         * If this metric's data should be segmented by OS (which means be prefixed by first os letter on server side), you can get OS segmented data
+        * @memberof countlyMetric
         * @param {string} os - os name for which to get segmented metrics data
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * @param {string} metric_pd - name of the segment/metric to get data for, by default will use default _name provided on initialization
@@ -2785,6 +2803,7 @@
         };
 
         /** Get range data which is usually stored in some time ranges/buckets. As example is loyalty, session duration and session frequency
+        * @memberof countlyMetric
         * @param {string} metric_pd - name of the property in the model to fetch
         * @param {string} meta - name of the meta where property's ranges are stored
         * @param {string} explain - function that receives index of the bucket and returns bucket name
@@ -3108,6 +3127,7 @@ var Template = function() {
 * Template loader for loading static resources over jquery
 * @name T
 * @global
+* @namespace T
 * @example <caption>Get Handlebar compiled HTML</caption>
 *$.when(T.render('/density/templates/density.html', function(src){
 *    self.template = src;
@@ -3121,6 +3141,13 @@ var Template = function() {
 var T = new Template();
 
 $.extend(Template.prototype, {
+    /**
+     *  Process and return fetched template
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @param {function} callback - when done
+     *  @returns {Promise} ajax promise
+     */
     render: function(name, callback) {
         if (T.isCached(name)) {
             if (typeof callback === "function") {
@@ -3135,6 +3162,13 @@ $.extend(Template.prototype, {
             });
         }
     },
+    /**
+     *  Fetch and return raw template
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @param {function} callback - when done
+     *  @returns {Promise} ajax promise
+     */
     get: function(name, callback) {
         if (T.isCached(name)) {
             if (typeof callback === "function") {
@@ -3149,17 +3183,33 @@ $.extend(Template.prototype, {
             });
         }
     },
+    /**
+     *  Fetch and return raw template in sync
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @param {function} callback - when done
+     */
     renderSync: function(name, callback) {
         if (!T.isCached(name)) {
             T.fetch(name);
         }
         T.render(name, callback);
     },
+    /**
+     *  Prefetch template
+     *  @memberof T
+     *  @param {string} name - Template path
+     */
     prefetch: function(name) {
         $.get(T.urlFor(name), function(raw) {
             T.store(name, raw);
         });
     },
+    /**
+     *  Fetch template in sync request
+     *  @memberof T
+     *  @param {string} name - Template path
+     */
     fetch: function(name) {
         // synchronous, for those times when you need it.
         if (!T.isCached(name)) {
@@ -3167,13 +3217,31 @@ $.extend(Template.prototype, {
             T.store(name, raw);
         }
     },
+    /**
+     *  Check if template is cached
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @returns {boolean} true if template is cached
+     */
     isCached: function(name) {
         return !!T.cached[name];
     },
+    /**
+     *  Store template in cache
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @param {string} raw - Raw template data
+     */
     store: function(name, raw) {
         T.raw[name] = raw;
         T.cached[name] = Handlebars.compile(raw);
     },
+    /**
+     *  Generate request URL for template
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @returns {string} URL where to fetch template
+     */
     urlFor: function(name) {
         //return "/resources/templates/"+ name + ".handlebars";
         if (countlyGlobal.path && countlyGlobal.path.length && name.indexOf(countlyGlobal.path) !== 0) {

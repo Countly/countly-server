@@ -6,6 +6,11 @@
  */
 
 /**
+ * Module to expose objects to template
+ * @module frontend/express/libs/express-expose
+ */
+
+/**
  * Default namespace.
  */
 var _namespace = 'app';
