@@ -889,6 +889,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             themeFiles: theme,
             inject_template: req.template,
             javascripts: [],
+            stylesheets: [],
             offline_mode: configs.offline_mode || false
         };
 
@@ -909,6 +910,13 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             try {
                 let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/javascripts`) || [];
                 toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+            }
+            catch (e) {
+                console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+            }
+            try {
+                let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/stylesheets`) || [];
+                toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
             }
             catch (e) {
                 console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
