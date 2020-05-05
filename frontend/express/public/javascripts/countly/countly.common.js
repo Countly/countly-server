@@ -4179,6 +4179,15 @@
         */
         countlyCommon.getPeriodRange = function(period, baseTimeStamp) {
             var periodRange;
+            if (period && period.indexOf(",") !== -1) {
+                try {
+                    period = JSON.parse(period);
+                }
+                catch (SyntaxError) {
+                    console.log("period JSON parse failed");
+                    period = countlyCommon.DEFAULT_PERIOD;
+                }
+            }
             if (Object.prototype.toString.call(period) === '[object Array]' && period.length === 2) { //range
                 periodRange = [period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0]), period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1])];
                 return periodRange;
