@@ -4184,7 +4184,6 @@
                     period = JSON.parse(period);
                 }
                 catch (SyntaxError) {
-                    console.log("period JSON parse failed");
                     period = countlyCommon.DEFAULT_PERIOD;
                 }
             }
