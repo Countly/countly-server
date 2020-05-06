@@ -1,10 +1,16 @@
 #!/bin/bash
 
+if [ -z "$NEW_COUNTLY" -o ! -f "$NEW_COUNTLY" ]
+then
+	echo "Run from upgrade.sh"
+	exit
+fi
+
 echo "Running filesystem modifications"
 
 VER="20.04"
 
-CONTINUE="$(countly check before upgrade fs "$VER")"
+CONTINUE="$($BASH "$NEW_COUNTLY" check before upgrade fs "$VER")"
 
 if [ "$CONTINUE" == "1" ]
 then
@@ -13,7 +19,7 @@ then
 
     #upgrade nodejs
     if [ -f /etc/redhat-release ]; then
-        curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+        curl -sL https://rpm.nodesource.com/setup_10.x | $BASH -
         yum clean all
         yum remove -y nodejs
         yum install -y nodejs
@@ -21,13 +27,13 @@ then
 
     if [ -f /etc/lsb-release ]; then
         sudo dpkg --configure -a
-        wget -qO- https://deb.nodesource.com/setup_10.x | bash -
+        wget -qO- https://deb.nodesource.com/setup_10.x | $BASH -
         apt-get -f -y install
         apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
     fi
 
     #enable command line
-    bash "$DIR/scripts/detect.init.sh"
+    $BASH "$DIR/scripts/detect.init.sh"
 
 
     #remove predefined locale file, it should fallback to default one
@@ -40,8 +46,8 @@ then
     rm -rf "$DIR/../package-lock.json"
 
     #run upgrade scripts
-    bash "$CUR/scripts/remove_moved_files.sh"
-    bash "$CUR/../19.08/scripts/remove_chrome_cache.sh"
+    $BASH "$CUR/scripts/remove_moved_files.sh"
+    $BASH "$CUR/../19.08/scripts/remove_chrome_cache.sh"
 
     #upgrade plugins
     (cd "$DIR/.." && sudo npm install --unsafe-perm)
@@ -49,19 +55,19 @@ then
     if [[ "$GLIBC_VERSION" != "2.25" ]]; then
         (cd "$DIR/.." && sudo npm install argon2 --build-from-source)
     fi
-    countly plugin upgrade push
+    $BASH "$NEW_COUNTLY" plugin upgrade push
     (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
-    countly plugin upgrade attribution
-    countly plugin upgrade web
-    countly plugin enable active_users
-    countly plugin enable performance-monitoring
+    $BASH "$NEW_COUNTLY" plugin upgrade attribution
+    $BASH "$NEW_COUNTLY" plugin upgrade web
+    $BASH "$NEW_COUNTLY" plugin enable active_users
+    $BASH "$NEW_COUNTLY" plugin enable performance-monitoring
     
     #get web sdk
-    countly update sdk-web
+    $BASH "$NEW_COUNTLY" update sdk-web
 
     #install dependencies, process files and restart countly
-    countly task dist-all
+    $BASH "$NEW_COUNTLY" task dist-all
 
     #call after check
-    countly check after upgrade fs "$VER"
+    $BASH "$NEW_COUNTLY" check after upgrade fs "$VER"
 fi

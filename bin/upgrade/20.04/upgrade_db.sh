@@ -1,10 +1,16 @@
 #!/bin/bash
 
+if [ -z "$NEW_COUNTLY" -o ! -f "$NEW_COUNTLY" ]
+then
+	echo "Run from upgrade.sh"
+	exit
+fi
+
 echo "Running database modifications"
 
 VER="20.04"
 
-CONTINUE="$(countly check before upgrade db "$VER")"
+CONTINUE="$($BASH "$NEW_COUNTLY" check before upgrade db "$VER")"
 
 if [ "$CONTINUE" == "1" ]
 then
@@ -13,8 +19,8 @@ then
 
     if [ "$1" != "combined" ]; then
         #upgrade plugins
-        countly plugin enable active_users
-        countly plugin enable performance-monitoring
+        $BASH "$NEW_COUNTLY" plugin enable active_users
+        $BASH "$NEW_COUNTLY" plugin enable performance-monitoring
     fi
 
     #run upgrade scripts
@@ -30,5 +36,5 @@ then
     nodejs "$DIR/scripts/add_indexes.js"
 
     #call after check
-    countly check after upgrade db "$VER"
+    $BASH "$NEW_COUNTLY" check after upgrade db "$VER"
 fi
