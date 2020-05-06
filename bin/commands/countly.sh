@@ -10,7 +10,7 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 #get current countly version
-VERSION="$(grep -oP 'version:\s*"\K[0-9\.]*' "$DIR/../../frontend/express/version.info.js")"
+VERSION="$(egrep -o 'version: *"[0-9\.]+"' "$DIR/../../frontend/express/version.info.js" | sed -E -e 's,^version: *"([0-9\.]+)"$,\1,')"
 
 export LANGUAGE=C ; export LC_ALL=C ;
 

@@ -16,7 +16,7 @@ rm -rf "$DIR/../frontend/express/public/localization/min/locale_en.properties"
 rm -rf "$DIR/../node_modules/connect-mongoskin/"
 
 #upgrade plugins
-countly upgrade
+sudo countly upgrade
 countly plugin upgrade retention_segments
 countly plugin upgrade alerts
 countly plugin upgrade push
@@ -32,4 +32,4 @@ countly plugin upgrade views
 countly plugin enable remote-config
 
 #install dependencies, process files and restart countly
-countly upgrade
+sudo countly upgrade

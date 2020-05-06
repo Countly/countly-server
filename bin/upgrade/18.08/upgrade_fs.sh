@@ -35,7 +35,7 @@ rm -rf "$DIR/../node_modules"
 rm -rf "$DIR/../frontend/express/public/localization/min/locale_en.properties"
 
 
-countly upgrade
+sudo countly upgrade
 
 #upgrade plugins
 countly plugin upgrade push
@@ -61,4 +61,4 @@ else
 fi
 
 #install dependencies, process files and restart countly
-countly upgrade
+sudo countly upgrade

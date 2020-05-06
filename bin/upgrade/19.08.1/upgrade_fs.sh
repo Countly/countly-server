@@ -19,4 +19,4 @@ countly plugin upgrade push
 countly update sdk-web
 
 #install dependencies, process files and restart countly
-countly upgrade
+sudo countly upgrade

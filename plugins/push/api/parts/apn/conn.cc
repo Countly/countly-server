@@ -325,7 +325,11 @@ namespace apns {
 
 		int val = 1;
 
+#if defined(__GNUC__) && ( defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) )
+		obj->fd = socket(AF_INET, SOCK_STREAM, 0);
+#else
 		obj->fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+#endif
 		LOG_DEBUG("CONN " << uv_thread_self() << ": socket " << obj->fd);
 		if (obj->fd == -1) {
 			std::ostringstream out;
@@ -994,14 +998,16 @@ namespace apns {
 					h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, frame->hd.stream_id);
 					if (strncmp((const char *)name, ":status", MIN(namelen, 7)) == 0) {
 						std::string status_string((const char *)value, valuelen);
-						try {
-							int status = std::atoi(status_string.c_str());
+						char *endP = NULL;
+						int status = std::strtol(status_string.c_str(), &endP, 0);
+						if (endP == status_string.c_str()) {
+							// Error case - nothing got converted.
+							stream->status = -1;
+						} else {
 							if (status == 410) {
 								status = -200;
 							}
 							stream->status = status;
-						} catch (const std::invalid_argument &e) {
-							stream->status = -1;
 						}
 
 						// // LOG_DEBUG("CONN " << uv_thread_self() << ": nghttp2_session_callbacks_set_on_header_callback block ");
@@ -1189,7 +1195,7 @@ namespace apns {
 			if (rv < 0) {
 				std::ostringstream out;
 				// out << "H2: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
-				LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
+				LOG_ERROR("CONN " << uv_thread_self() << ": ");
 				send_error(out.str());
 				conn_thread_stop();
 				return;
@@ -1313,7 +1319,7 @@ namespace apns {
 					if (rv < 0) {
 						std::ostringstream out;
 						out << "H2: Couldn't submit nghttp2_session_mem_send in transmit: " << nghttp2_strerror(rv);
-						LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
+						LOG_ERROR("CONN " << uv_thread_self() << ": ");
 						send_error(out.str());
 						conn_thread_stop();
 						return;

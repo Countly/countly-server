@@ -53,7 +53,9 @@ static std::string timestr(int offset) {
 
 #define ARRLEN(x) (sizeof(x) / sizeof(x[0]))
 
+#if !(defined(__GNUC__) && ( defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) ))
 #define MIN(X,Y) {X < Y ? X : Y}
+#endif
 
 // #define MAKE_NV(K, V, F) { (uint8_t *) K, (uint8_t *)V, sizeof(K) - 1, sizeof(V) - 1, F ? NGHTTP2_NV_FLAG_NONE : NGHTTP2_NV_FLAG_NO_INDEX }
 

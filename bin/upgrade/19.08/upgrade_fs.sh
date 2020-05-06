@@ -35,4 +35,4 @@ then
 fi
 
 #install dependencies, process files and restart countly
-countly upgrade
+sudo countly upgrade
