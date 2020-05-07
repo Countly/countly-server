@@ -2,6 +2,12 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+if [ ! -z "$1" -a -d "$(dirname "$1")" -a "$(basename "$1")" = "mongod.conf" ]; then
+	MONGOD_CONF="$1"
+else
+	MONGOD_CONF=/etc/mongod.conf
+fi
+
 if [ -f /etc/redhat-release ]; then
     #install latest mongodb
 
@@ -27,9 +33,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
     cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     chkconfig --add disable-transparent-hugepages
-fi
-
-if [ -f /etc/lsb-release ]; then
+elif [ -f /etc/lsb-release ]; then
     #install latest mongodb
 	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
     UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
@@ -51,13 +55,17 @@ if [ -f /etc/lsb-release ]; then
     cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     update-rc.d disable-transparent-hugepages defaults
+elif [ -x /usr/local/bin/brew ]; then
+	brew tap mongodb/brew
+	brew install mongodb-community@3.6
+	MONGOD_CONF=/usr/local/etc/mongod.conf
 fi
 
-bash "$DIR/mongodb.init.logrotate.sh"
+bash "$DIR/mongodb.init.logrotate.sh" "$MONGOD_CONF"
 
 #backup config and remove configuration to prevent duplicates
-cp /etc/mongod.conf /etc/mongod.conf.bak
-nodejs "$DIR/configure_mongodb.js" /etc/mongod.conf
+cp "$MONGOD_CONF" "$MONGOD_CONF".bak
+nodejs "$DIR/configure_mongodb.js" "$MONGOD_CONF"
 
 if [ -f /etc/redhat-release ]; then
     #mongodb might need to be started
@@ -66,12 +74,12 @@ if [ -f /etc/redhat-release ]; then
     else
         systemctl restart mongod || echo "mongodb systemctl job does not exist"
     fi
-fi
-
-if [ -f /etc/lsb-release ]; then
+elif [ -f /etc/lsb-release ]; then
     if [[ "$(/sbin/init --version)" =~ upstart ]]; then
         restart mongod || echo "mongodb upstart job does not exist"
     else
         systemctl restart mongod || echo "mongodb systemctl job does not exist"
     fi
+elif [ -x /usr/local/bin/brew ]; then
+	sudo brew services restart mongodb/brew/mongodb-community@3.6
 fi

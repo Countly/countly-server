@@ -229,31 +229,37 @@ countly_upgrade (){
 }
 
 countly_mark_version (){
-    countly_root ;
-    if [ "$1" == "fs" ] || [ "$1" == "db" ]
-    then
-        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" write_"$1" "$2");
-    elif [ "$1" == "help" ]
-    then
-        echo "countly mark_version usage:"
-        echo "    countly mark_version fs <version> # upgrades fs version";
-        echo "    countly mark_version db <version> # upgrades db version";
-        echo "    countly mark_version help         # this command";
+    if [[ $EUID -ne 0 ]]; then
+        sudo countly mark_version "$@"
+    else
+        if [ "$1" == "fs" ] || [ "$1" == "db" ]
+        then
+            UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" write_"$1" "$2");
+        elif [ "$1" == "help" ]
+        then
+            echo "countly mark_version usage:"
+            echo "    countly mark_version fs <version> # upgrades fs version";
+            echo "    countly mark_version db <version> # upgrades db version";
+            echo "    countly mark_version help         # this command";
+        fi
     fi
 }
 
 countly_compare_version (){
-    countly_root ;
-    if [ "$1" == "fs" ] || [ "$1" == "db" ]
-    then
-        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" compare_"$1" "$2");
-        echo "$UPGRADE";
-    elif [ "$1" == "help" ]
-    then
-        echo "countly compare_version usage:"
-        echo "    countly compare_version fs <version> # compares fs version";
-        echo "    countly compare_version db <version> # compares db version";
-        echo "    countly compare_version help         # this command";
+    if [[ $EUID -ne 0 ]]; then
+        sudo countly compare_version_version "$@"
+    else
+        if [ "$1" == "fs" ] || [ "$1" == "db" ]
+        then
+            UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" compare_"$1" "$2");
+            echo "$UPGRADE";
+        elif [ "$1" == "help" ]
+        then
+            echo "countly compare_version usage:"
+            echo "    countly compare_version fs <version> # compares fs version";
+            echo "    countly compare_version db <version> # compares db version";
+            echo "    countly compare_version help         # this command";
+        fi
     fi
 }
 
