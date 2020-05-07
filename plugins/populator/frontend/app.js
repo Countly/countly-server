@@ -5,8 +5,9 @@ var exported = {},
 
 (function(plugin) {
     plugin.init = function(app) {
-        app.get(countlyConfig.path + '/:id/demo-page.html', function(req, res) {
-            var pageSourceCode = fs.readFileSync(path.resolve(__dirname, 'public/templates/demo-page.html'));
+        app.get(countlyConfig.path + '/:id/:page', function(req, res) {
+            var url = 'public/templates/' + req.params.page;
+            var pageSourceCode = fs.readFileSync(path.resolve(__dirname, url));
             res.writeHead(200, { 'Content-Type': 'text/html'});
             res.end(pageSourceCode);
         });
