@@ -39,7 +39,7 @@ then
     # mongodb is now on its own brew tap. make sure we have it tapped.
     if [ -z "$(doBrew tap | grep mongodb/brew)" ]
     then
-        brew tap mongodb/brew
+        doBrew tap mongodb/brew
     fi
     doBrew install "$MONGODB"
 fi
@@ -52,7 +52,7 @@ then
 fi
 
 # Make sure that nodeenv is installed under brew
-if [ -z "$(brew list | grep nodeenv)" ]
+if [ -z "$(doBrew list | grep nodeenv)" ]
 then
     doBrew install nodeenv
 fi

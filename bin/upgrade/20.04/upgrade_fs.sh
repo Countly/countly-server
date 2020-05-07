@@ -5,14 +5,26 @@ echo "Running filesystem modifications"
 VER="20.04"
 
 # Prior to 20.04, countly check doesn't exist.
-OLDVERSION="$(countly version)"
-if [ "$OLDVERSION" >= "20.04" ]
+OLDVERSION=($(countly version | tr '.' "\n"))
+COUNTLY_CHECK_VERSION=(20 04)
+CONTINUE=""
+IDX=0
+while [ -z "$CONTINUE" -a $IDX -lt ${#OLDVERSION[*]} -a $IDX -lt ${#COUNTLY_CHECK_VERSION[*]} ];
+do
+	if [ ${OLDVERSION[$IDX]} -lt ${COUNTLY_CHECK_VERSION[$IDX]} ]
+	then
+		# The old version is older than the first version supporting 'countly check' - continue.
+		CONTINUE="1"
+	else
+		(( IDX += 1 ))
+	fi
+done
+if [ -z "$CONTINUE" ]
 then
 	CONTINUE="$(countly check before upgrade fs "$VER")"
 else
 	CONTINUE="1"
 fi
-
 if [ "$CONTINUE" == "1" ]
 then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"

@@ -40,10 +40,10 @@ if [ -d "$DIR/.nodeenv" ]; then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 fi
 if [ -f "$DIR/upgrade_fs.sh" ]; then
-    $BASH "$DIR/upgrade_fs.sh" combined 2>&1 | tee -a "$DIR/../../../log/countly-upgrade-fs-$VERSION-$DATE.log"
+    bash "$DIR/upgrade_fs.sh" combined 2>&1 | tee -a "$DIR/../../../log/countly-upgrade-fs-$VERSION-$DATE.log"
 fi
 if [ -f "$DIR/upgrade_db.sh" ]; then
-    $BASH "$DIR/upgrade_db.sh" combined 2>&1 | tee -a "$DIR/../../../log/countly-upgrade-db-$VERSION-$DATE.log"
+    bash "$DIR/upgrade_db.sh" combined 2>&1 | tee -a "$DIR/../../../log/countly-upgrade-db-$VERSION-$DATE.log"
 fi
 
 # See if there are any user-added files that we should copy over to the new installation

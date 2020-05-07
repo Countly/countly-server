@@ -12,6 +12,12 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 #get current countly version
 VERSION="$(egrep -o 'version: *"[0-9\.]+"' "$DIR/../../frontend/express/version.info.js" | sed -E -e 's,^version: *"([0-9\.]+)"$,\1,')"
 
+#Activate our nodejs, if using nodeenv
+if [ -x "$DIR/../../.nodeenv/bin/activate" ]
+then
+	source "$DIR/../../.nodeenv/bin/activate"
+fi
+
 export LANGUAGE=C ; export LC_ALL=C ;
 
 #stub commands to be overwritten
