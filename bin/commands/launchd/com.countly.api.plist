@@ -16,6 +16,6 @@
 	<key>Disabled</key>
 	<false/>
 	<key>WorkingDirectory</key>
-	<string>/usr/local/countly-current/bin/config/</string>
+	<string>/usr/local/countly/bin/config/</string>
 </dict>
 </plist>

@@ -57,10 +57,6 @@ then
     doBrew install nodeenv
 fi
 
-# Create a symbolic link to this countly in /usr/local/countly-current
-sudo rm -f /usr/local/countly-current
-sudo ln -s "$COUNTLY_DIR" /usr/local/countly-current
-
 if [ -f /Library/LaunchDaemons/com.countly.dashboard.plist ];
 then
     sudo launchctl unload /Library/LaunchDaemons/com.countly.dashboard.plist

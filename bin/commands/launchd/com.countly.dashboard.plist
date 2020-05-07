@@ -18,10 +18,10 @@
 	<key>Disabled</key>
 	<false/>
 	<key>WorkingDirectory</key>
-	<string>/usr/local/countly-current/bin/config/</string>
+	<string>/usr/local/countly/bin/config/</string>
 	<key>StandardOutPath</key>
-	<string>/usr/local/countly-current/log/countly-dashboard.log</string>
+	<string>/usr/local/countly/log/countly-dashboard.log</string>
 	<key>StandardErrorPath</key>
-	<string>/usr/local/countly-current/log/countly-dashboard.err</string>
+	<string>/usr/local/countly/log/countly-dashboard.err</string>
 </dict>
 </plist>
