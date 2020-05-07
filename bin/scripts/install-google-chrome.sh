@@ -172,7 +172,7 @@ function install_missing_dependencies() {
                 file=$(echo "$line" | sed 's>.*/\([^/:]*\):.*>\1>')
             else
                 # Extract the filename for missing libraries without a path.
-                file=$(echo "$line" | awk '{print "$1";}')
+                file=$(echo "$line" | awk '{print $1}')
             fi
 
             if [ -z "$file" ]; then

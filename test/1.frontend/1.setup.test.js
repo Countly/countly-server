@@ -115,8 +115,7 @@ describe('Setting Up', function() {
             agent
                 .post('/setup')
                 .send({username: testUtils.username, email: testUtils.email, password: testUtils.password, _csrf: testUtils.getCSRF()})
-                .expect('location', '/setup?error=%7B%22message%22:[%22Missing%20full_name%20argument%22],%22passMinLen%22:8%7D')
-                .expect(302, done);
+                .expect(200, done);
         });
     });
     describe('Missing username', function() {
@@ -127,8 +126,7 @@ describe('Setting Up', function() {
             agent
                 .post('/setup')
                 .send({full_name: testUtils.name, email: testUtils.email, password: testUtils.password, _csrf: testUtils.getCSRF()})
-                .expect('location', '/setup?error=%7B%22message%22:[%22Missing%20username%20argument%22],%22passMinLen%22:8%7D')
-                .expect(302, done);
+                .expect(200, done);
         });
     });
     describe('Missing email', function() {
@@ -139,8 +137,7 @@ describe('Setting Up', function() {
             agent
                 .post('/setup')
                 .send({full_name: testUtils.name, username: testUtils.username, password: testUtils.password, _csrf: testUtils.getCSRF()})
-                .expect('location', '/setup?error=%7B%22message%22:[%22Missing%20email%20argument%22],%22passMinLen%22:8%7D')
-                .expect(302, done);
+                .expect(200, done);
         });
     });
     describe('Missing password', function() {
@@ -151,8 +148,7 @@ describe('Setting Up', function() {
             agent
                 .post('/setup')
                 .send({full_name: testUtils.name, username: testUtils.username, email: testUtils.email, _csrf: testUtils.getCSRF()})
-                .expect('location', '/setup?error=%7B%22message%22:[%22Missing%20password%20argument%22],%22passMinLen%22:8%7D')
-                .expect(302, done);
+                .expect(200, done);
         });
     });
     describe('password is not match requirement', function() {
@@ -163,8 +159,7 @@ describe('Setting Up', function() {
             agent
                 .post('/setup')
                 .send({full_name: testUtils.name, username: testUtils.username, email: testUtils.email, password: testUtils.weakPassword, _csrf: testUtils.getCSRF()})
-                .expect('location', '/setup?error=%7B%22message%22:[%22password%20should%20has%20upchar%22,%22password%20should%20has%20special%20character%22],%22passMinLen%22:8%7D')
-                .expect(302, done);
+                .expect(200, done);
         });
     });
     describe('Register user', function() {

@@ -9,7 +9,7 @@
     opacity: 0.5;
     left: 0;
 }
-.mright-s {
+.countly-feedback-sticker.mright-s {
     top: 25%;
     right: 0;
     width: 21px;
@@ -24,7 +24,7 @@
     text-align: center;
 }
 
-.mright-m {
+.countly-feedback-sticker.mright-m {
     top: 25%;
     right: 0;
     width: 27px;
@@ -39,7 +39,7 @@
     text-align: center;
 }
 
-.mright-l {
+.countly-feedback-sticker.mright-l {
     top: 25%;
     right: 0;
     width: 35px;
@@ -53,7 +53,7 @@
     writing-mode: vertical-rl;
     text-align: center;
 }
-.mleft-s {
+.countly-feedback-sticker.mleft-s {
     top: 25%;
     left: 0;
     width: 21px;
@@ -67,7 +67,7 @@
     text-align: center;
     writing-mode: vertical-lr;
 }
-.mleft-m {
+.countly-feedback-sticker.mleft-m {
     top: 25%;
     left: 0;
     width: 27px;
@@ -81,7 +81,7 @@
     text-align: center;
     writing-mode: vertical-lr;
 }
-.mleft-l {
+.countly-feedback-sticker.mleft-l {
     top: 25%;
     left: 0;
     width: 35px;
@@ -95,7 +95,7 @@
     text-align: center;
     writing-mode: vertical-lr;
 }
-.bleft-s {
+.countly-feedback-sticker.bleft-s {
     bottom: 0;
     left: 15%;
     height: 20px;
@@ -109,7 +109,7 @@
     font-size: 16px;
     writing-mode: horizontal-tb;
 }
-.bleft-m {
+.countly-feedback-sticker.bleft-m {
     bottom: 0;
     left: 15%;
     height: 26px;
@@ -123,7 +123,7 @@
     font-size: 20px;
     writing-mode: horizontal-tb;
 }
-.bleft-l {
+.countly-feedback-sticker.bleft-l {
     bottom: 0;
     left: 15%;
     height: 32px;
@@ -137,7 +137,7 @@
     font-size: 24px;
     writing-mode: horizontal-tb;
 }
-.bright-s {
+.countly-feedback-sticker.bright-s {
     bottom: 0;
     right: 15%;
     height: 20px;
@@ -152,7 +152,7 @@
     writing-mode: horizontal-tb;
 }
 
-.bright-m {
+.countly-feedback-sticker.bright-m {
     bottom: 0;
     right: 15%;
     height: 26px;
@@ -167,7 +167,7 @@
     writing-mode: horizontal-tb;
 }
 
-.bright-l {
+.countly-feedback-sticker.bright-l {
     bottom: 0;
     right: 15%;
     height: 32px;
@@ -182,38 +182,42 @@
     writing-mode: horizontal-tb;
 }
 
-.mleft-s > #feedback-sticker-svg, .mright-s > #feedback-sticker-svg, .bright-s > #feedback-sticker-svg, .bleft-s > #feedback-sticker-svg {
+.countly-feedback-sticker.mleft-s > span,
+.countly-feedback-sticker.mleft-m > span,
+.countly-feedback-sticker.mleft-l > span,
+.countly-feedback-sticker.mright-s > span,
+.countly-feedback-sticker.mright-m > span,
+.countly-feedback-sticker.mright-l > span {
+    margin-top: 5px;
+}
+
+.countly-feedback-sticker.bleft-s > span,
+.countly-feedback-sticker.bleft-m > span,
+.countly-feedback-sticker.bleft-l > span,
+.countly-feedback-sticker.bright-s > span,
+.countly-feedback-sticker.bright-m > span,
+.countly-feedback-sticker.bright-l > span {
+    margin-left: 5px;
+}
+
+.countly-feedback-sticker.mleft-s > #feedback-sticker-svg, .countly-feedback-sticker.mright-s > #feedback-sticker-svg, .countly-feedback-sticker.bright-s > #feedback-sticker-svg, .countly-feedback-sticker.bleft-s > #feedback-sticker-svg {
     height: 14px;
     width: 14px;
 }
-.mleft-m > #feedback-sticker-svg, .mright-m > #feedback-sticker-svg, .bright-m > #feedback-sticker-svg, .bleft-m > #feedback-sticker-svg {
+.countly-feedback-sticker.mleft-m > #feedback-sticker-svg, .countly-feedback-sticker.mright-m > #feedback-sticker-svg, .countly-feedback-sticker.bright-m > #feedback-sticker-svg, .countly-feedback-sticker.bleft-m > #feedback-sticker-svg {
     height: 18px;
     width: 18px;
 }
-.mleft-l > #feedback-sticker-svg, .mright-l > #feedback-sticker-svg, .bright-l > #feedback-sticker-svg, .bleft-l > #feedback-sticker-svg {
+.countly-feedback-sticker.mleft-l > #feedback-sticker-svg, .countly-feedback-sticker.mright-l > #feedback-sticker-svg, .countly-feedback-sticker.bright-l > #feedback-sticker-svg, .countly-feedback-sticker.bleft-l > #feedback-sticker-svg {
     height: 20px;
     width: 20px;
 }
 
-.mleft > svg {
-    margin-left: -10px;
-    margin-bottom: 3px;
-}
-.mright > svg {
-    margin-bottom: 3px;
-}
-.bright > svg {
-    margin-top: -3px;
-    margin-right: 3px;
-}
-.bleft > svg {
-    margin-top: -3px;
-    margin-right: 3px;
-}
-#feedback-sticker-svg {
+.countly-feedback-sticker > #feedback-sticker-svg {
     height: 14px;
     width: 14px;
 }
+
 #countly-feedback-iframe {
     width: 100%;
     height: 600px;
@@ -237,6 +241,7 @@
     color: #fff;
     cursor: pointer;
     font-family: "Lato", sans-serif;
+    box-sizing: content-box;
 }
 .countly-feedback-close-icon {
     cursor: pointer;

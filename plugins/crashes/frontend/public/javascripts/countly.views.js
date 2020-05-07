@@ -728,9 +728,6 @@ window.CrashesView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             self.switchMetric();
             self.addScriptsForFilter(crashData);
-            $("#total-user-estimate-ind").off("click").on("click", function() {
-                CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
-            });
 
             $(".filter-segmentation").clySelectSetSelection(this.filter, jQuery.i18n.map["crashes." + this.filter.split("-").pop()]);
 
@@ -1046,6 +1043,9 @@ window.CrashesView = countlyView.extend({
     },
     pageScripts: function() {
         var self = this;
+        $("#total-user-estimate-ind").off("click").on("click", function() {
+            CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
+        });
         $(".big-numbers .inner").off("click").on("click", function() {
             var elID = $(this).find('.select').attr("id");
 

@@ -535,9 +535,6 @@
             else if (id === "[CLY]_view") {
                 event.dur = getRandomInt(0, 100);
             }
-            else {
-                event.dur = getRandomInt(0, 10);
-            }
 
             if (eventTemplate && eventTemplate.sum) {
                 event.sum = getRandomInt(eventTemplate.sum[0], eventTemplate.sum[1] || 10);
@@ -546,8 +543,13 @@
             if (id === "[CLY]_view") {
                 event.segmentation = {};
                 Object.keys(viewSegments).forEach(function(key) {
-                    var values = viewSegments[key];
-
+                    var values = [];
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && key === "name") {
+                        values = ["/" + countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
+                    }
+                    else {
+                        values = viewSegments[key];
+                    }
                     event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
                 });
             }
@@ -1191,6 +1193,7 @@
             delete template.events[""]; // delete events without keys
             Object.keys(template.events).forEach(function(key) {
                 var event = template.events[key];
+
                 if (event.segments) {
                     delete event.segments[""];
                 }
@@ -1199,12 +1202,7 @@
                     delete event.segments;
                 }
 
-                if (Object.keys(event).length === 0) {
-                    delete template.events[key];
-                }
-                else {
-                    template.events[key] = event;
-                }
+                template.events[key] = event;
             });
 
             if (template.events.length === 0) {

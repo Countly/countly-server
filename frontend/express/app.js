@@ -1,3 +1,8 @@
+/**
+ * Main dashboard process app.js
+ * @module frontend/express/app
+ */
+
 // Set process name
 process.title = "countly: dashboard node " + process.argv[1];
 
@@ -1018,7 +1023,8 @@ app.get(countlyConfig.path + '/setup', function(req, res) {
             res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
             res.header('Expires', '0');
             res.header('Pragma', 'no-cache');
-            res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+            var config = plugins.getConfig("security");
+            res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol}});
         }
         else if (err) {
             res.status(500).send('Server Error');
@@ -1137,6 +1143,7 @@ app.post(countlyConfig.path + '/forgot', function(req, res/*, next*/) {
 });
 
 app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
+    var params = req.body || {};
     membersUtility.setup(req, function(err) {
         if (!err) {
             res.redirect(countlyConfig.path + '/dashboard');
@@ -1145,7 +1152,24 @@ app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
             res.redirect(countlyConfig.path + '/login');
         }
         else if (err && err.message) {
-            res.redirect(countlyConfig.path + `/setup?error=${JSON.stringify(err)}`);
+            res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+            res.header('Expires', '0');
+            res.header('Pragma', 'no-cache');
+            var config = plugins.getConfig("security");
+            var data = { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: err || {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol}};
+            if (params.email) {
+                data.params.email = params.email;
+            }
+            if (params.full_name) {
+                data.params.full_name = params.full_name;
+            }
+            if (params.username) {
+                data.params.username = params.username;
+            }
+            if (params.password) {
+                data.params.password = params.password;
+            }
+            res.render('setup', data);
         }
         else {
             res.status(500).send('Server Error');

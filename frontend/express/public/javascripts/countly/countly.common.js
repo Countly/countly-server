@@ -1,12 +1,11 @@
 /*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
-/**
- * Object with common functions to be used for multiple purposes
- * @name countlyCommon
- * @global
- * @namespace countlyCommon
- */
 (function(window, $) {
-
+    /**
+     * Object with common functions to be used for multiple purposes
+     * @name countlyCommon
+     * @global
+     * @namespace countlyCommon
+     */
     var CommonConstructor = function() {
         // Private Properties
         var countlyCommon = this;
@@ -40,6 +39,7 @@
 
         /**
         * Get Browser language
+        * @memberof countlyCommon
         * @returns {string} browser locale in iso format en-US
         * @example
         * //outputs en-US
@@ -57,6 +57,7 @@
         // Public Properties
         /**
          * Set user persistent settings to store local storage
+         * @memberof countlyCommon
          * @param {object} data - Object param for set new data
         */
         countlyCommon.setPersistentSettings = function(data) {
@@ -73,6 +74,7 @@
 
         /**
          * Get user persistent settings
+         * @memberof countlyCommon
          * @returns {object} settings
          */
         countlyCommon.getPersistentSettings = function() {
@@ -84,21 +86,25 @@
         };
         /**
         * App Key of currently selected app or 0 when not initialized
+        * @memberof countlyCommon
         * @type {string|number}
         */
         countlyCommon.ACTIVE_APP_KEY = 0;
         /**
         * App ID of currently selected app or 0 when not initialized
+        * @memberof countlyCommon
         * @type {string|number}
         */
         countlyCommon.ACTIVE_APP_ID = 0;
         /**
         * Current user's selected language in form en-EN, by default will use browser's language
+        * @memberof countlyCommon
         * @type {string}
         */
         countlyCommon.BROWSER_LANG = countlyCommon.browserLang() || "en-US";
         /**
         * Current user's browser language in short form as "en", by default will use browser's language
+        * @memberof countlyCommon
         * @type {string}
         */
         countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
@@ -125,6 +131,7 @@
         // Public Methods
         /**
         * Change currently selected period
+        * @memberof countlyCommon
         * @param {string|array} period - new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
         * @param {int} timeStamp - timeStamp for the period based
         * @param {boolean} noSet - if set  - updates countly_date
@@ -154,6 +161,7 @@
 
         /**
         * Get currently selected period
+        * @memberof countlyCommon
         * @returns {string|array} supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
         */
         countlyCommon.getPeriod = function() {
@@ -162,6 +170,7 @@
 
         /**
         * Get currently selected period that can be used in ajax requests
+        * @memberof countlyCommon
         * @returns {string} supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
         */
         countlyCommon.getPeriodForAjax = function() {
@@ -175,6 +184,7 @@
 
         /**
         * Change currently selected app by app ID
+        * @memberof countlyCommon
         * @param {string} appId - new app ID from @{countlyGlobal.apps} object
         */
         countlyCommon.setActiveApp = function(appId) {
@@ -195,6 +205,7 @@
 
         /**
         * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
+        * @memberof countlyCommon
         * @param {string} str - value to encode
         * @returns {string} encoded string
         */
@@ -204,6 +215,7 @@
 
         /**
         * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). Decodes also url encoded values as &amp;#36;.
+        * @memberof countlyCommon
         * @param {string} str - value to decode
         * @returns {string} decoded string
         */
@@ -213,6 +225,7 @@
 
         /**
         * Decode escaped HTML from db
+        * @memberof countlyCommon
         * @param {string} html - value to decode
         * @returns {string} decoded string
         */
@@ -223,6 +236,7 @@
 
         /**
         * Encode html
+        * @memberof countlyCommon
         * @param {string} html - value to encode
         * @returns {string} encode string
         */
@@ -234,6 +248,7 @@
 
         /**
         * Encode some tags, leaving those set in whitelist as they are.
+        * @memberof countlyCommon
         * @param {string} html - value to encode
         * @param {object} options for encoding. Optional. If not passed, using default in common.
         * @returns {string} encode string
@@ -250,6 +265,7 @@
 
         /**
         * Calculates the percent change between previous and current values.
+        * @memberof countlyCommon
         * @param {number} previous - data for previous period
         * @param {number} current - data for current period
         * @returns {object} in the following format {"percent": "20%", "trend": "u"}
@@ -289,6 +305,7 @@
 
         /**
         * Fetches nested property values from an obj.
+        * @memberof countlyCommon
         * @param {object} obj - standard countly metric object
         * @param {string} my_passed_path - dot separate path to fetch from object
         * @param {object} def - stub object to return if nothing is found on provided path
@@ -314,7 +331,13 @@
             return obj;
         };
 
-        /* Checks if current graph type matches the one being drawn */
+        /**
+         *  Checks if current graph type matches the one being drawn
+         *  @memberof countlyCommon
+         *  @param {string} type - graph type
+         *  @param {object} settings - graph settings
+         *  @returns {boolean} Return true if type is the same
+         */
         countlyCommon.checkGraphType = function(type, settings) {
             var eType = "line";
             if (settings && settings.series && settings.series.bars && settings.series.bars.show === true) {
@@ -338,6 +361,7 @@
         };
         /**
         * Draws a graph with the given dataPoints to container. Used for drawing bar and pie charts.
+        * @memberof countlyCommon
         * @param {object} dataPoints - data poitns to draw on graph
         * @param {string|object} container - selector for container or container object itself where to create graph
         * @param {string} graphType - type of the graph, accepted values are bar, line, pie, separate-bar
@@ -597,6 +621,7 @@
 
         /**
         * Draws a time line graph with the given dataPoints to container.
+        * @memberof countlyCommon
         * @param {object} dataPoints - data points to draw on graph
         * @param {string|object} container - selector for container or container object itself where to create graph
         * @param {string=} bucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
@@ -1155,8 +1180,8 @@
                         zoomContainer.data("zoom", 1);
 
                         var yaxis = plot.getAxes().yaxis;
-                        var panOffset = yaxis.p2c(0) - yaxis.box.height + yaxis.box.width;
-                        if (Math.abs(panOffset) > 5) {
+                        var panOffset = yaxis.p2c(0) - plot.height() + 2;
+                        if (Math.abs(panOffset) > 2) {
                             plot.pan({top: panOffset});
                         }
                     });
@@ -1183,6 +1208,7 @@
 
         /**
         * Draws a gauge with provided value on procided container.
+        * @memberof countlyCommon
         * @param {string|object} targetEl - selector for container or container object itself where to create graph
         * @param {number} value - value to display on gauge
         * @param {number} maxValue - maximal value of the gauge
@@ -1218,6 +1244,7 @@
 
         /**
         * Draws horizibtally stacked bars like in platforms and density analytic sections.
+        * @memberof countlyCommon
         * @param {array} data - data to draw in form of [{"data":[[0,85]],"label":"Test1"},{"data":[[0,79]],"label":"Test2"},{"data":[[0,78]],"label":"Test3"}]
         * @param {object|string} intoElement - selector for container or container object itself where to create graph
         * @param {number} colorIndex - index of color from {@link countlyCommon.GRAPH_COLORS}
@@ -1363,6 +1390,7 @@
 
         /**
         * Extract range data from standard countly metric data model
+        * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {string} propertyName - name of the property to extract
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
@@ -1458,6 +1486,7 @@
 
         /**
         * Extract single level data without metrics/segments, like total user data from users collection
+        * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {object} chartData - prefill chart data with labels, colors, etc
@@ -1610,6 +1639,7 @@
 
         /**
         * Extract two level data with metrics/segments, like total user data from carriers collection
+        * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
@@ -1838,6 +1868,7 @@
 
         /**
         * Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown
+        * @memberof countlyCommon
         * @param {object} chartData - chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }
         * @param {string} metric - metric name to merge
         * @returns {object} chartData object with same metrics summed up
@@ -1886,6 +1917,7 @@
 
         /**
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
+        * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
@@ -1915,6 +1947,7 @@
 
         /**
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
+        * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
@@ -1944,6 +1977,7 @@
 
         /**
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData with their percentage of total
+        * @memberof countlyCommon
         * @param {object} rangeData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
@@ -1994,6 +2028,7 @@
 
         /**
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData.
+        * @memberof countlyCommon
         * @param {object} rangeData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
@@ -2126,6 +2161,7 @@
 
         /**
         * Shortens the given number by adding K (thousand) or M (million) postfix. K is added only if the number is bigger than 10000, etc.
+        * @memberof countlyCommon
         * @param {number} number - number to shorten
         * @returns {string} shorter representation of number
         * @example
@@ -2158,6 +2194,7 @@
 
         /**
         * Getting the date range shown on the dashboard like 1 Aug - 30 Aug, using {@link countlyCommon.periodObj) dateString property which holds the date format.
+        * @memberof countlyCommon
         * @returns {string} string with  formatted date range as 1 Aug - 30 Aug
         */
         countlyCommon.getDateRange = function() {
@@ -2234,6 +2271,7 @@
         /**
         * Merge standard countly metric data object, by mergin updateObj retrieved from action=refresh api requests object into dbObj.
         * Used for merging the received data for today to the existing data while updating the dashboard.
+        * @memberof countlyCommon
         * @param {object} dbObj - standard metric data object
         * @param {object} updateObj - standard metric data object retrieved from action=refresh request to last time bucket data only
         */
@@ -2419,6 +2457,7 @@
 
         /**
         * Convert string to first letter uppercase and all other letters - lowercase for each word
+        * @memberof countlyCommon
         * @param {string} str - string to convert
         * @returns {string} converted string
         * @example
@@ -2433,6 +2472,7 @@
 
         /**
         * Safe division between numbers providing 0 as result in cases when dividing by 0
+        * @memberof countlyCommon
         * @param {number} val1 - number which to divide
         * @param {number} val2 - number by which to divide
         * @returns {number} result of division
@@ -2452,6 +2492,7 @@
 
         /**
         * Get Date graph ticks
+        * @memberof countlyCommon
         * @param {string} bucket - time bucket, accepted values, hourly, weekly, monthly
         * @param {boolean} overrideBucket - override existing bucket logic and simply use current date for generating ticks
         * @returns {object} object containing tick texts and ticks to use on time graphs
@@ -2624,6 +2665,7 @@
 
         /**
         * Joined 2 arrays into one removing all duplicated values
+        * @memberof countlyCommon
         * @param {array} x - first array
         * @param {array} y - second array
         * @returns {array} new array with only unique values from x and y
@@ -2660,6 +2702,7 @@
 
         /**
         * Recursively merges an object into another
+        * @memberof countlyCommon
         * @param {Object} target - object to be merged into
         * @param {Object} source - object to merge into the target
         * @returns {Object} target after the merge
@@ -2678,7 +2721,8 @@
         };
 
         /**
-        * Formats the number by separating each 3 digits with ,
+        * Formats the number by separating each 3 digits with
+        * @memberof countlyCommon
         * @param {number} x - number to format
         * @returns {string} formatted number
         * @example
@@ -2693,7 +2737,8 @@
         };
 
         /**
-        * Pad number with specified character from left to specified length ,
+        * Pad number with specified character from left to specified length
+        * @memberof countlyCommon
         * @param {number} n - number to pad
         * @param {number} width - pad to what length in symboles
         * @param {string} z - character to pad with, default 0
@@ -2823,6 +2868,7 @@
 
         /**
         * Add item or array to existing array only if values are not already in original array. given array is modified.
+        * @memberof countlyCommon
         * @param {array} arr - original array where to add unique elements
         * @param {string|number|array} item - item to add or array to merge
         */
@@ -2847,6 +2893,7 @@
 
         /**
         * Format timestamp to twitter like time ago format with real date as tooltip and hidden data for exporting
+        * @memberof countlyCommon
         * @param {number} timestamp - timestamp in seconds or miliseconds
         * @returns {string} formated time ago
         * @example
@@ -2923,6 +2970,7 @@
 
         /**
         * Format duration to units of how much time have passed
+        * @memberof countlyCommon
         * @param {number} timestamp - amount in seconds passed since some reference point
         * @returns {string} formated time with how much units passed
         * @example
@@ -2953,6 +3001,7 @@
 
         /**
         * Format duration into highest unit of how much time have passed. Used in big numbers
+        * @memberof countlyCommon
         * @param {number} timespent - amount in seconds passed since some reference point
         * @returns {string} formated time with how much highest units passed
         * @example
@@ -3005,6 +3054,7 @@
 
         /**
         * Get date from seconds timestamp
+        * @memberof countlyCommon
         * @param {number} timestamp - timestamp in seconds or miliseconds
         * @returns {string} formated date
         * @example
@@ -3022,6 +3072,7 @@
 
         /**
         * Get time from seconds timestamp
+        * @memberof countlyCommon
         * @param {number} timestamp - timestamp in seconds or miliseconds
         * @returns {string} formated time
         * @example
@@ -3038,6 +3089,7 @@
 
         /**
         * Round to provided number of digits
+        * @memberof countlyCommon
         * @param {number} num - number to round
         * @param {number} digits - amount of digits to round to
         * @returns {number} rounded number
@@ -3052,6 +3104,7 @@
 
         /**
         * Get calculated totals for each property, usualy used as main dashboard data timeline data without metric segments
+        * @memberof countlyCommon
         * @param {object} data - countly metric model data
         * @param {array} properties - array of all properties to extract
         * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
@@ -3236,6 +3289,7 @@
 
         /**
         * Get total data for period's each time bucket as comma separated string to generate sparkle/small bar lines
+        * @memberof countlyCommon
         * @param {object} data - countly metric model data
         * @param {object} props - object where key is output property name and value could be string as key from data object or function to create new value based on existing ones
         * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
@@ -3312,6 +3366,7 @@
 
         /**
         * Format date based on some locale settings
+        * @memberof countlyCommon
         * @param {moment} date - moment js object
         * @param {string} format - format string to use
         * @returns {string} date in formatted string
@@ -3358,6 +3413,7 @@
 
         /**
         * Getter for period object
+        * @memberof countlyCommon
         * @returns {object} returns {@link countlyCommon.periodObj}
         */
         countlyCommon.getPeriodObj = function() {
@@ -3366,6 +3422,7 @@
 
         /**
         * Getter for period object by providing period string value
+        * @memberof countlyCommon
         * @param {object} period - given period
         * @param {number} currentTimeStamp timestamp
         * @returns {object} returns {@link countlyCommon.periodObj}
@@ -3895,6 +3952,7 @@
 
         /**
         * Correct timezone offset on the timestamp for current browser's timezone
+        * @memberof countlyCommon
         * @param {number} inTS - second or milisecond timestamp
         * @returns {number} corrected timestamp applying user's timezone offset
         */
@@ -3919,6 +3977,7 @@
 
         /**
         * Get array of localized short month names from moment js
+        * @memberof countlyCommon
         * @param {boolean} reset - used to reset months cache when changing locale
         * @returns {array} array of short localized month names used in moment js MMM formatting
         * @example
@@ -3940,6 +3999,7 @@
 
         /**
         * Currently selected period
+        * @memberof countlyCommon
         * @property {array=} currentPeriodArr - array with ticks for current period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
         * @property {array=} previousPeriodArr - array with ticks for previous period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
         * @property {string} dateString - date format to use when outputting date in graphs, example D MMM, YYYY
@@ -3991,6 +4051,7 @@
 
         /**
         * Parse second to standard time format
+        * @memberof countlyCommon
         * @param {number} second  number
         * @returns {string} return format "HH:MM:SS"
         */
@@ -4028,6 +4089,11 @@
 
         /**
         * add one more column in chartDP[index].data to show string in dp
+        * @memberof countlyCommon
+        * @param {array} chartDPs  - chart data points
+        * @param {string} labelName  - label name
+        * @return {array} chartDPs
+        * @example
         * for example:
         *     chartDPs = [
         *          {color:"#88BBC8", label:"duration", data:[[0, 23], [1, 22]}],
@@ -4040,9 +4106,6 @@
         *          {color:"#88BBC8", label:"duration", data:[[0, 23, "00:00:23"], [1, 22, "00:00:22"]}],
         *          {color:"#88BBC8", label:"count", data:[[0, 3], [1, 3]}],
         *     }
-        * @param {array} chartDPs  - chart data points
-        * @param {string} labelName  - label name
-        * @return {array} chartDPs
         */
         countlyCommon.formatSecondForDP = function(chartDPs, labelName) {
             for (var k = 0; k < chartDPs.length; k++) {
@@ -4058,6 +4121,7 @@
 
         /**
         * Getter/setter for dot notatons:
+        * @memberof countlyCommon
         * @param {object} obj - object to use
         * @param {string} is - path of properties to get
         * @param {varies} value - value to set
@@ -4092,6 +4156,7 @@
 
         /**
         * Save division, handling division by 0 and rounding up to 2 decimals
+        * @memberof countlyCommon
         * @param {number} dividend - object to use
         * @param {number} divisor - path of properties to get
         * @returns {number} division
@@ -4107,12 +4172,21 @@
 
         /**
         * Get timestamp range in format as [startTime, endTime] with period and base time
+        * @memberof countlyCommon
         * @param {object} period - period has two format: array or string
         * @param {number} baseTimeStamp - base timestamp to calc the period range
         * @returns {array} period range
         */
         countlyCommon.getPeriodRange = function(period, baseTimeStamp) {
             var periodRange;
+            if (period && period.indexOf(",") !== -1) {
+                try {
+                    period = JSON.parse(period);
+                }
+                catch (SyntaxError) {
+                    period = countlyCommon.DEFAULT_PERIOD;
+                }
+            }
             if (Object.prototype.toString.call(period) === '[object Array]' && period.length === 2) { //range
                 periodRange = [period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0]), period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1])];
                 return periodRange;
@@ -4164,6 +4238,7 @@
 
         /**
         * Based on the algorithm at http://en.wikipedia.org/wiki/Levenshtein_distance.
+        * @memberof countlyCommon
         */
         countlyCommon.Levenshtein = {
             /**
@@ -4326,6 +4401,7 @@
         };
         /**
         * Compare two versions
+        * @memberof countlyCommon
         * @param {String} a, First version
         * @param {String} b, Second version
         * @returns {Number} returns -1, 0 or 1 by result of comparing

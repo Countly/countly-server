@@ -138,3 +138,5 @@ if [ "$INSIDE_DOCKER" != "1" ]
 then
 	countly start
 fi
+
+bash "$DIR/scripts/done.sh";

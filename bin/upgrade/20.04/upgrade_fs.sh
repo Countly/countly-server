@@ -55,9 +55,12 @@ then
     countly plugin upgrade web
     countly plugin enable active_users
     countly plugin enable performance-monitoring
+    
+    #get web sdk
+    countly update sdk-web
 
     #install dependencies, process files and restart countly
-    countly upgrade
+    countly task dist-all
 
     #call after check
     countly check after upgrade fs "$VER"

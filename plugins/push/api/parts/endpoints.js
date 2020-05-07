@@ -24,7 +24,7 @@ function catchy(f) {
     return (...args) => {
         try {
             let res = f.apply(this, args);
-            if (res && res.resolve && res.reject) {
+            if (res && res.then) {
                 res.catch(e => {
                     log.e('Rejection %j', e);
                     if (args[0].res && !args[0].res.finished) {

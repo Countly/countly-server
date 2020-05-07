@@ -1247,7 +1247,7 @@ window.starView = countlyView.extend({
                 $('#overlay').fadeIn();
                 $('#widgets-array').html($(this).data('id'));
                 $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + $(this).data('id') + "']}]);");
-                $('.feedback-modal').css({
+                $('#feedback-' + countlyGlobal.apps[store.get('countly_active_app')].type + '-integration').css({
                     "display": "block"
                 });
                 var id = $(this).data('id');
@@ -1521,6 +1521,12 @@ window.starView = countlyView.extend({
                         return {
                             "key": input
                         };
+                    }
+                },
+                onItemRemove: function(input) {
+                    var index = self.feedbackWidget.target_pages.indexOf(input);
+                    if (index > -1) {
+                        self.feedbackWidget.target_pages.splice(index, 1);
                     }
                 }
             });
@@ -2075,7 +2081,7 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.successfully-created'],
                                     message: jQuery.i18n.map['feedback.successfully-created-message']
                                 });
-                                $('.feedback-modal').css({
+                                $('#feedback-' + countlyGlobal.apps[store.get('countly_active_app')].type + '-integration').css({
                                     "display": "block"
                                 });
                                 self.renderFeedbacksTable(true);

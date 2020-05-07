@@ -1,4 +1,5 @@
 /*global store, jQuery, $, document, countlyGlobal, filterXSS */
+/*exported showMessage, addLocalization */
 
 /**
  * Javascript file loaded on pre login pages with some handy global functions
@@ -13,7 +14,6 @@
 * @param {string} key - key from localization property file
 * @memberof Pre Login
 */
-/* exported showMessage */
 function showMessage(key, prop) {
     key = encodeSomeHtml(key);
     $("#message").data("localize", key);
@@ -37,6 +37,7 @@ var htmlEncodeOptions = {
 
 /**
 * Encode some tags, leaving those set in whitelist as they are.
+* @memberof Pre Login
 * @param {string} html - value to encode
 * @param {object} options for encoding. Optional. If not passed, using default in common.
 * @returns {string} encode string
@@ -52,6 +53,7 @@ function encodeSomeHtml(html, options) {
 
 /**
 * By default only pre-login property file localization is available on prelogin pages, but you can additionally load other localization files, like for example needed for your plugin, using this function
+* @memberof Pre Login
 * @param {string} name - base name of the property file without the locale/language. Should be the same name as your plugin
 * @param {string} path - url path to where the localization file currently resides relative to the page you want to load it from
 * @param {function} callback - callback executed when localization file is loaded
@@ -59,7 +61,6 @@ function encodeSomeHtml(html, options) {
 * @example
 * addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
 */
-/* exported addLocalization */
 function addLocalization(name, path, callback) {
     var langs = jQuery.i18n.map;
     var lang = store.get("countly_lang") || "en";
