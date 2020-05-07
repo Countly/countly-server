@@ -15,8 +15,14 @@ VERSION="$(egrep -o 'version: *"[0-9\.]+"' "$DIR/../../frontend/express/version.
 #Activate our nodejs, if using nodeenv
 if [ -x "$DIR/../../.nodeenv/bin/activate" ]
 then
+    #Ugh, everyone wants to use "SOURCE" and "DIR" for their stuff, so save ours.
+    SAVED_SOURCE="$SOURCE"
+    SAVED_DIR="$DIR"
     source "$DIR/../../.nodeenv/bin/activate"
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    DIR="$SAVED_DIR"
+    SOURCE="$SAVED_SOURCE"
+    unset SAVED_SOURCE
+    unset SAVED_DIR
 fi
 
 export LANGUAGE=C ; export LC_ALL=C ;
