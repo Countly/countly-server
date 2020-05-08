@@ -3993,11 +3993,11 @@ var checkGlobalAdminOnlyPermission = function() {
         "/manage/users",
         "/manage/apps"
     ];
-    
+
     var adminCheckList = [
         "/manage/users"
     ];
-    
+
     if (!countlyGlobal.member.global_admin && !countlyGlobal.config.autonomous) {
 
         var existed = false;
