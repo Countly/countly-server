@@ -1,21 +1,25 @@
 .top-bar {
   height: 60px;
-  background-color: #13B94D;
+  background-color: #13b94d;
   color: white;
   font-size: 14px;
 }
+
 .top-bar > .col-sm-1 {
   margin-top: 18px;
   cursor: pointer;
 }
+
 .top-bar > .col-sm-8 {
   font-size: 20px;
   margin-top: 15px;
   font-weight: bolder;
 }
+
 .content {
   margin-top: 120px;
 }
+
 .footer {
   position: fixed;
   bottom: 0;
@@ -23,20 +27,24 @@
   margin-bottom: 15px;
   font-size: 12px;
 }
+
 .description {
   margin-top: 10px;
   font-size: 12px;
 }
+
 .download-your-phone-icon {
   display: inline-block;
   margin-left: 10px;
   width: 150px;
   margin-top: 10px;
 }
+
 .btn-large {
   width: 150px;
   height: 50px;
 }
+
 .download-section {
   margin-top: 60px;
 }

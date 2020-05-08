@@ -1,32 +1,38 @@
 .top-bar {
   height: 60px;
-  background-color: #13B94D;
+  background-color: #13b94d;
   color: white;
   font-size: 16px;
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
 }
+
 .top-bar > .col-sm-3 {
   margin-top: 18px;
   cursor: pointer;
 }
+
 .search-bar {
   margin-top: 50px;
 }
+
 .content {
   margin-top: 120px;
 }
+
 .footer {
   position: fixed;
   bottom: 0;
   width: 100%;
   margin-bottom: 15px;
 }
+
 .search-bar > .col-sm-8 > input {
-  border: 10px solid #13B94D;
+  border: 10px solid #13b94d;
   padding: 20px;
   outline: none;
 }
+
 .content > .col-sm-4:first-of-type {
   margin-top: 60px;
 }
