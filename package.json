@@ -70,6 +70,7 @@
     "mongodb": "3.5.7",
     "mongoskin": "github:ar2rsawseen/node-mongoskin",
     "nginx-conf": "1.5.0",
+    "node-xlsx-stream": "^0.1.8",
     "nodemailer": "6.4.6",
     "nodemailer-sendmail-transport": "1.0.2",
     "nodemailer-smtp-pool": "2.8.3",
