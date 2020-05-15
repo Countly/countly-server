@@ -32,7 +32,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 
 			python3 -m pip install pandas
 			python3 -m pip install pystan
-			python3 "/opt/countly/plugins/ab-testing/api/bayesian/model.py"
+			cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
 
 		elif [ "${ID}" == "ubuntu" ]; then
 			DEBIAN_FRONTEND=noninteractive apt-get -y install gcc g++ build-essential python3-dev python3-pip libncurses*-dev  libsqlite3-dev libreadline6-dev libgdbm-dev zlib1g-dev libbz2-dev sqlite3 tk-dev zip libssl-dev libncurses5-dev python-lzma liblzma-dev tk8.5-dev
