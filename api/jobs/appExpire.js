@@ -75,13 +75,15 @@ class AppExpireJob extends job.Job {
                             if (EXPIRE_AFTER === 0 || dropIndex) {
                                 log.d("dropping index", collection);
                                 drillDatabase.collection(collection).dropIndex(INDEX_NAME, function() {
-                                    log.d("creating index", collection);
                                     if (EXPIRE_AFTER === 0) {
                                         next();
                                     }
-                                    drillDatabase.collection(collection).createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
-                                        next();
-                                    });
+                                    else {
+                                        log.d("creating index", collection);
+                                        drillDatabase.collection(collection).createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
+                                            next();
+                                        });
+                                    }
                                 });
                             }
                             else if (!hasIndex) {
@@ -105,7 +107,7 @@ class AppExpireJob extends job.Job {
             });
         }
 
-        database.collection('apps').find({}, { _id: 1 }).toArray(function(appsErr, apps) {
+        database.collection('apps').find({}, { _id: 1, plugins: 1 }).toArray(function(appsErr, apps) {
             if (!appsErr && apps && apps.length) {
                 async.eachSeries(apps, clearExpiredData, function() {
                     log.d('Clearing data finished ...');
