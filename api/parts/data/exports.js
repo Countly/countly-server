@@ -101,6 +101,39 @@ function preventCSVInjection(val) {
 }
 
 /**
+* Function to make all values CSV friendly
+* @param {string} value - value to convert
+* @returns {string}   - converted string
+*/
+function processCSVvalue(value) {
+    if (value === null || value === undefined) {
+        return undefined;
+    }
+
+    const valueType = typeof value;
+    if (valueType !== 'boolean' && valueType !== 'number' && valueType !== 'string') {
+        value = JSON.stringify(value);
+
+        if (value === undefined) {
+            return undefined;
+        }
+        if (value[0] === '"') {
+            value = value.replace(/^"(.+)"$/, '$1');
+        }
+    }
+
+    if (typeof value === 'string') {
+        if (value.includes('"')) {
+            value = value.replace(new RegExp('"', 'g'), '"' + '"');
+        }
+
+        value = '"' + value + '"';
+    }
+
+    return value;
+}
+
+/**
 * Convert json object to needed data type
 * @param {array} data - data to convert
 * @param {string} type - type to which to convert
@@ -196,13 +229,17 @@ exports.stream = function(params, stream, filename, type, projection) {
     if (projection) {
         for (var k in projection) { //keep order as in projection if given
             paramList.push(k);
+            listAtEnd = false;
         }
-        listAtEnd = false;
+
     }
     if (params.res.writeHead) {
         params.res.writeHead(200, headers);
         if (type === "csv") {
             if (listAtEnd === false) {
+                for (let p = 0; p < paramList.length; p++) {
+                    paramList[p] = processCSVvalue(paramList[p]);
+                }
                 params.res.write(paramList.join(',') + '\r\n');
             }
 
@@ -210,12 +247,19 @@ exports.stream = function(params, stream, filename, type, projection) {
                 var values = [];
                 var valuesMap = {};
                 getValues(values, valuesMap, paramList, doc);
+
+                for (let p = 0; p < values.length; p++) {
+                    values[p] = processCSVvalue(values[p]);
+                }
                 params.res.write(values.join(',') + '\r\n');
             });
 
             stream.once('close', function() {
                 if (listAtEnd) {
-                    params.res.write(paramList.join(','));
+                    for (var p = 0; p < paramList.length; p++) {
+                        paramList[p] = processCSVvalue(paramList[p]);
+                    }
+                    params.res.write(paramList.join(',') + '\r\n');
                 }
                 params.res.end();
             });
