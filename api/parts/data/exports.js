@@ -183,28 +183,40 @@ exports.output = function(params, data, filename, type) {
 * @param {object} valuesMap - object to see which values are collected
 * @param {array} paramList - array of keys(in order)
 * @param {object} doc - data from db
+* @param {boolean} collectProp - true if collect properties,if false use only listed(from projection)
 */
-function getValues(values, valuesMap, paramList, doc) {
-    doc = flattenObject(doc);
-    var keys = Object.keys(doc);
-    for (var z = 0; z < keys.length; z++) {
-        valuesMap[keys[z]] = false;
-    }
-
-    for (var p = 0; p < paramList.length; p++) {
-        if (doc[paramList[p]]) {
-            values.push(doc[paramList[p]]);
+function getValues(values, valuesMap, paramList, doc, collectProp) {
+    if (collectProp) {
+        doc = flattenObject(doc);
+        var keys = Object.keys(doc);
+        for (var z = 0; z < keys.length; z++) {
+            valuesMap[keys[z]] = false;
         }
-        else {
-            values.push("");
+        for (var p = 0; p < paramList.length; p++) {
+            if (doc[paramList[p]]) {
+                values.push(doc[paramList[p]]);
+            }
+            else {
+                values.push("");
+            }
+            valuesMap[paramList[p]] = true;
         }
-        valuesMap[paramList[p]] = true;
+        for (var k in valuesMap) {
+            if (valuesMap[k] === false) {
+                values.push(doc[k]);
+                paramList.push(k);
+            }
+        }
     }
-
-    for (var k in valuesMap) {
-        if (valuesMap[k] === false) {
-            values.push(doc[k]);
-            paramList.push(k);
+    else {
+        for (var kz = 0; kz < paramList.length; kz++) {
+            var value = common.getDescendantProp(doc, paramList[kz]) || "";
+            if (typeof value === 'object' || Array.isArray(value)) {
+                values.push(JSON.stringify(value));
+            }
+            else {
+                values.push(value);
+            }
         }
     }
 }
@@ -219,11 +231,9 @@ function getValues(values, valuesMap, paramList, doc) {
 exports.stream = function(params, stream, filename, type, projection) {
     var headers = {};
     var listAtEnd = true;
-
     if (type && contents[type]) {
         headers["Content-Type"] = contents[type];
     }
-
     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
     var paramList = [];
     if (projection) {
@@ -231,22 +241,22 @@ exports.stream = function(params, stream, filename, type, projection) {
             paramList.push(k);
             listAtEnd = false;
         }
-
     }
     if (params.res.writeHead) {
         params.res.writeHead(200, headers);
         if (type === "csv") {
+            var head = [];
             if (listAtEnd === false) {
                 for (let p = 0; p < paramList.length; p++) {
-                    paramList[p] = processCSVvalue(paramList[p]);
+                    head.push(processCSVvalue(paramList[p]));
                 }
-                params.res.write(paramList.join(',') + '\r\n');
+                params.res.write(head.join(',') + '\r\n');
             }
 
             stream.on('data', function(doc) {
                 var values = [];
                 var valuesMap = {};
-                getValues(values, valuesMap, paramList, doc);
+                getValues(values, valuesMap, paramList, doc, listAtEnd); // if we have list at end - then we don'thave projection
 
                 for (let p = 0; p < values.length; p++) {
                     values[p] = processCSVvalue(values[p]);
@@ -257,9 +267,9 @@ exports.stream = function(params, stream, filename, type, projection) {
             stream.once('close', function() {
                 if (listAtEnd) {
                     for (var p = 0; p < paramList.length; p++) {
-                        paramList[p] = processCSVvalue(paramList[p]);
+                        head.push(processCSVvalue(paramList[p]));
                     }
-                    params.res.write(paramList.join(',') + '\r\n');
+                    params.res.write(head.join(',') + '\r\n');
                 }
                 params.res.end();
             });
@@ -274,7 +284,7 @@ exports.stream = function(params, stream, filename, type, projection) {
             stream.on('data', function(doc) {
                 var values = [];
                 var valuesMap = {};
-                getValues(values, valuesMap, paramList, doc);
+                getValues(values, valuesMap, paramList, doc, listAtEnd);
                 sheet.write(values);
             });
 
