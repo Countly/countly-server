@@ -9,7 +9,7 @@ usage (){
 
 if [ -z "$1" ]
 then
-    read -p "Text to decrypt: " text
+    read -rp "Text to decrypt: " text
 else
     text=$1
 fi

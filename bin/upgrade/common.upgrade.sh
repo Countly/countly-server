@@ -30,7 +30,7 @@ countly_staging (){
     fi
   
     #backup current countly installation
-    cp -rf "$COUNTLY_OUT/$COUNTLY_DIR_NAME $COUNTLY_OUT/staging_$COUNTLY_DIR_NAME.$COUNTLY_VERSION"
+    cp -rf "$COUNTLY_OUT/$COUNTLY_DIR_NAME" "$COUNTLY_OUT/staging_$COUNTLY_DIR_NAME.$COUNTLY_VERSION"
     
     #clean logs
     mkdir -p "$COUNTLY_DIR/log/logs.$COUNTLY_VERSION"
@@ -60,10 +60,10 @@ countly_staging_recover (){
         fi
         
         #backup current upgrade attempt countly installation
-        mv -rf "$COUNTLY_OUT/$COUNTLY_DIR_NAME $COUNTLY_OUT/failed_$COUNTLY_DIR_NAME.$COUNTLY_VERSION"
+        mv -rf "$COUNTLY_OUT/$COUNTLY_DIR_NAME" "$COUNTLY_OUT/failed_$COUNTLY_DIR_NAME.$COUNTLY_VERSION"
         
         #bring back staging to life
-        mv -rf "$COUNTLY_OUT/staging_$COUNTLY_DIR_NAME.$COUNTLY_VERSION $COUNTLY_OUT/$COUNTLY_DIR_NAME"
+        mv -rf "$COUNTLY_OUT/staging_$COUNTLY_DIR_NAME.$COUNTLY_VERSION" "$COUNTLY_OUT/$COUNTLY_DIR_NAME"
         
         #restart process
         countly restart

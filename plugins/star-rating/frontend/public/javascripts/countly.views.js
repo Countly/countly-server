@@ -1763,6 +1763,10 @@ window.starView = countlyView.extend({
                 $("#counter-for-feedback-popup-button-text").html($("#feedback-popup-button-text").val().length + "/35");
                 $("#counter-for-feedback-popup-thanks-text").html($("#feedback-popup-thanks-text").val().length + "/45");
 
+                if (!self.feedbackWidget.trigger_size) {
+                    self.feedbackWidget.trigger_size = "m";
+                }
+
                 // add related place and size class to sticker preview
                 $("#feedback-sticker-on-window").removeClass().addClass(self.feedbackWidget.trigger_position + '-' + self.feedbackWidget.trigger_size);
 

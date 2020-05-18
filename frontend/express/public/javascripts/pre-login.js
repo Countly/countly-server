@@ -1,4 +1,5 @@
 /*global store, jQuery, $, document, countlyGlobal, filterXSS */
+/*exported showMessage, addLocalization */
 
 /**
  * Javascript file loaded on pre login pages with some handy global functions
@@ -13,7 +14,6 @@
 * @param {string} key - key from localization property file
 * @memberof Pre Login
 */
-/* exported showMessage */
 function showMessage(key, prop) {
     key = encodeSomeHtml(key);
     $("#message").data("localize", key);
@@ -37,6 +37,7 @@ var htmlEncodeOptions = {
 
 /**
 * Encode some tags, leaving those set in whitelist as they are.
+* @memberof Pre Login
 * @param {string} html - value to encode
 * @param {object} options for encoding. Optional. If not passed, using default in common.
 * @returns {string} encode string
@@ -52,6 +53,7 @@ function encodeSomeHtml(html, options) {
 
 /**
 * By default only pre-login property file localization is available on prelogin pages, but you can additionally load other localization files, like for example needed for your plugin, using this function
+* @memberof Pre Login
 * @param {string} name - base name of the property file without the locale/language. Should be the same name as your plugin
 * @param {string} path - url path to where the localization file currently resides relative to the page you want to load it from
 * @param {function} callback - callback executed when localization file is loaded
@@ -59,7 +61,6 @@ function encodeSomeHtml(html, options) {
 * @example
 * addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
 */
-/* exported addLocalization */
 function addLocalization(name, path, callback) {
     var langs = jQuery.i18n.map;
     var lang = store.get("countly_lang") || "en";
@@ -153,60 +154,6 @@ $(document).ready(function() {
         }
     });
 
-    function hintClass(obj, add) {
-        if (add === true) {
-            return obj.addClass("password-hint-valid");
-        }
-        return obj.removeClass("password-hint-valid");
-    }
-    $(".register-form #password").on("keyup", function() {
-        var password = $("#password").val();
-        var valid = true;
-        $(".hint-password-good").hide();
-
-        if (password.length < countlyGlobal.security.password_min) {
-            hintClass($("#hint-password_min"), false);
-            valid = false;
-        }
-        else {
-            hintClass($("#hint-password_min"), true);
-        }
-
-        if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
-            hintClass($("#hint-password_char"), false);
-            valid = false;
-        }
-        else {
-            hintClass($("#hint-password_char"), true);
-        }
-
-
-        if (countlyGlobal.security.password_number && !/\d/.test(password)) {
-            hintClass($("#hint-password_number"), false);
-            valid = false;
-        }
-        else {
-            hintClass($("#hint-password_number"), true);
-        }
-
-        if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
-            hintClass($("#hint-password_symbol"), false);
-            valid = false;
-        }
-        else {
-            hintClass($("#hint-password_symbol"), true);
-        }
-
-        if (valid === true) {
-            $(".register-form ul").hide();
-            $(".hint-password-good").show();
-        }
-        else {
-            $(".register-form ul").show();
-        }
-
-
-    });
     $("#select-lang").click(function() {
         $(this).toggleClass("active");
     });

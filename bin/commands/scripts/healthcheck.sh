@@ -2,7 +2,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$1" = "all" ]; then
-    for d in $DIR/healthcheck/* ; do
+    for d in "$DIR"/healthcheck/* ; do
         name=$(basename "$d");
         ext="${name##*.}";
         if [ "$ext" == "sh" ]; then
@@ -17,7 +17,7 @@ elif ! [ $# -eq 0 ]; then
     done
 else
     scripts=""
-    for d in $DIR/healthcheck/* ; do
+    for d in "$DIR"/healthcheck/* ; do
         name=$(basename "$d");
         ext="${name##*.}";
         if [ "$ext" == "sh" ]; then

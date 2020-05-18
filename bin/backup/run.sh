@@ -18,11 +18,8 @@ cd "$(dirname "$0")"
 
 function check_connectivity_mongo() {
     local MONGO_OK;
-	MONGO_OK=$(mongo \
-		--quiet \
-		--eval "db.serverStatus().ok == true")
 
-	if [[ $? != 0 || "$MONGO_OK" != true ]]; then
+	if MONGO_OK=$(mongo --quiet --eval "db.serverStatus().ok == true") || [[ "$MONGO_OK" != true ]]; then
 		echo "error: mongodb service check failed"
 		return 1
 	fi
@@ -35,7 +32,7 @@ function check_connectivity() {
 	retries=600
 	until eval "check_connectivity_$*"; do
 		sleep 1
-		let retries--
+		(( retries-- ))
 		if [ $retries == 0 ]; then
 			echo "time out while waiting for $* is ready"
 			exit 1
