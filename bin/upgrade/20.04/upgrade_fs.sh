@@ -89,19 +89,19 @@ then
 			(cd "$DIR/.." && sudo npm install argon2 --build-from-source)
 		fi
 	fi
-    bash countly plugin upgrade push
+    countly plugin upgrade push
     (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
-    bash countly plugin upgrade attribution
-    bash countly plugin upgrade web
-    bash countly plugin enable active_users
-    bash countly plugin enable performance-monitoring
+    countly plugin upgrade attribution
+    countly plugin upgrade web
+    countly plugin enable active_users
+    countly plugin enable performance-monitoring
     
     #get web sdk
-    bash countly update sdk-web
+    countly update sdk-web
     
     #install dependencies, process files and restart countly
-    bash countly task dist-all
+    countly task dist-all
 
     #call after check
-    bash countly check after upgrade fs "$VER"
+    countly check after upgrade fs "$VER"
 fi

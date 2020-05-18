@@ -61,4 +61,4 @@ else
 fi
 
 #install dependencies, process files and restart countly
-sudo countly upgrade
+countly upgrade
