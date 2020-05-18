@@ -337,7 +337,7 @@ exports.fromDatabase = function(options) {
     options.query = options.query || {};
     options.projection = options.projection || {};
     if (options.limit && options.limit !== "") {
-        options.limit = parseInt(options.limit);
+        options.limit = parseInt(options.limit, 10);
         if (options.limit > plugin.getConfig("api").export_limit) {
             options.limit = plugin.getConfig("api").export_limit;
         }
