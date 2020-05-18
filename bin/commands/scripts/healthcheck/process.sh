@@ -6,7 +6,7 @@ mempercentthreshold=80
 cpuover=""
 memover=""
 top=$(top -b -n 1 | sed -e "1,7d")
-while read line; do
+while read -r line; do
     cpuutil=$(echo "${line}" | awk '{print $9}' | cut -d"." -f 1)
     memutil=$(echo "${line}" | awk '{print $10}' | cut -d"." -f 1)
     procname=$(echo "${line}" | awk '{print $12}' | cut -d"." -f 1)
@@ -34,7 +34,7 @@ apiproc=0
 workers=0
 # shellcheck disable=SC2009
 paths=$(ps -ax | grep countly)
-while read line; do
+while read -r line; do
     if [[ "$line" = *"dashboard node"* ]]; then
         appproc=$((appproc+1))
     fi
@@ -47,7 +47,7 @@ while read line; do
 done <<< "$paths"
 res=""
 if [ "${appproc}" -gt "${appprocthreshold}" ]; then
-    res=$"{res}\n    Too many processes for app.js: $appproc"
+    res="${res}\n    Too many processes for app.js: $appproc"
 elif [ "${appproc}" == 0 ]; then
     res="${res}\n    Process app.js is not found"
 fi

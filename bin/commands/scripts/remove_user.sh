@@ -16,7 +16,7 @@ else
 
     if [ -z "$2" ]
     then
-        read -sp "Enter password: " password
+        read -srp "Enter password: " password
         echo ""
     else
         password=$2

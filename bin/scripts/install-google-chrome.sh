@@ -55,7 +55,7 @@ pushd ${working_directory}
 # A helper to make sure that Chrome is linked correctly
 function installation_status() {
     google-chrome-stable --version > /dev/null 2>&1
-    [ $? -eq 0 ]
+    #[ $? -eq 0 ]
 }
 
 
@@ -230,8 +230,9 @@ rm -rf ${working_directory}
 popd > /dev/null
 
 # Print out the success status message and exit.
-version="$(google-chrome-stable --version)"
-if [ $? -eq 0 ]; then
+
+if version="$(google-chrome-stable --version)"
+then
     echo "Successfully installed google-chrome-stable, ${version}."
     exit 0
 else

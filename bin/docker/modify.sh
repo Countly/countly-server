@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source /etc/os-release
 
 # Remove plugins unsupported in Docker distribution
@@ -57,6 +58,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 			rm -rf ~/.cache
 		else
 			yum install -y python36 python36-libs python36-devel python36-pip centos-release-scl devtoolset-7-gcc-c++
+            # shellcheck disable=SC1091
 		    source /opt/rh/devtoolset-7/enable
 			export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
 			export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
