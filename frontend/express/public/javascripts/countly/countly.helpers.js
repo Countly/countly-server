@@ -758,6 +758,10 @@
                 data.limit = hardLimit;
                 data.skip = page * hardLimit;
             }
+            else {
+                data.limit = "";
+                data.skip = 0;
+            }
 
             var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
             var form = $('<form method="POST" action="' + url + '">');
