@@ -12,6 +12,7 @@ function mongodb_configure () {
         sed -i "/slowOpThresholdMs/d" ${MONGODB_CONFIG_FILE}
         sed -i "s#operationProfiling:#operationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000#g" ${MONGODB_CONFIG_FILE}
     else
+        sed -i "/#operationProfiling/d" ${MONGODB_CONFIG_FILE}
         sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGODB_CONFIG_FILE}
     fi
 }
@@ -62,14 +63,14 @@ EOF
         if [ -f /etc/redhat-release ]; then
             #mongodb might need to be started
             if grep -q -i "release 6" /etc/redhat-release ; then
-                service mongod restart || echo "mongodb service does not exist"
+                service mongod restart > /dev/null || echo "mongodb service does not exist"
             else
-                systemctl restart mongod || echo "mongodb systemctl job does not exist"
+                systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
             fi
         fi
 
         if [ -f /etc/lsb-release ]; then
-            systemctl restart mongod || echo "mongodb systemctl job does not exist"
+            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
         fi
 
         message_ok 'Logrotate configured'
@@ -133,6 +134,8 @@ ExecStart=/bin/sh -c 'echo never | tee /sys/kernel/mm/transparent_hugepage/enabl
 [Install]
 WantedBy=basic.target
 EOF
+
+        systemctl daemon-reload
         systemctl start disable-transparent-huge-pages
         systemctl enable disable-transparent-huge-pages
 	fi 2> /dev/null
@@ -158,7 +161,7 @@ function update_sysctl() {
     fi
 
     sed -i "\$a${1} = ${2}" /etc/sysctl.conf
-    sysctl -p -q
+    sysctl -p -q > /dev/null
 }
 
 if [ $# -eq 0 ]; then
@@ -207,18 +210,18 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
     if [ -f /etc/redhat-release ]; then
         #mongodb might need to be started
         if grep -q -i "release 6" /etc/redhat-release ; then
-            service mongod restart || echo "mongodb service does not exist"
+            service mongod restart > /dev/null || echo "mongodb service does not exist"
         else
-            systemctl restart mongod || echo "mongodb systemctl job does not exist"
+            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
         fi
     fi
 
     if [ -f /etc/lsb-release ]; then
         if [[ "$(/sbin/init --version)" =~ upstart ]]; then
-            restart mongod || echo "mongodb upstart job does not exist"
+            restart mongod > /dev/null || echo "mongodb upstart job does not exist"
         else
             systemctl restart mongod || echo "mongodb systemctl job does not exist"
-        fi
+        fi 2> /dev/null
     fi
 
     bash "$0" check
@@ -362,7 +365,7 @@ elif [ "$1" == "check" ]; then
     #Check if NTP is on
     if [ -f /etc/redhat-release ]; then
         if [ -x "$(command -v ntpstat)" ]; then
-            ntpstat
+            ntpstat > /dev/null
 
             if [ $? -eq 1 ]; then
                 message_warning "NTP is disabled"
