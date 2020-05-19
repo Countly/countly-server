@@ -69,11 +69,7 @@ EOF
         fi
 
         if [ -f /etc/lsb-release ]; then
-            if [[ "$(/sbin/init --version)" =~ upstart ]]; then
-                restart mongod || echo "mongodb upstart job does not exist"
-            else
-                systemctl restart mongod || echo "mongodb systemctl job does not exist"
-            fi
+            systemctl restart mongod || echo "mongodb systemctl job does not exist"
         fi
 
         message_ok 'Logrotate configured'
