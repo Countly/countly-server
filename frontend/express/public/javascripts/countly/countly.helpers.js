@@ -732,6 +732,7 @@
             dialog.find(".cly-select").hide();
         }
         else {
+            dialog.find(".select-items > div").append('<div data-value="-1" class="segmentation-option item">' + jQuery.i18n.map["common.all"] + " " + jQuery.i18n.map["export.documents"] + '</div>');
             for (var i = 0; i < pages; i++) {
                 dialog.find(".select-items > div").append('<div data-value="' + i + '" class="segmentation-option item">' + ((i * hardLimit + 1) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + ' - ' + (Math.min((i + 1) * hardLimit, count) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + " " + jQuery.i18n.map["export.documents"] + '</div>');
             }
@@ -753,8 +754,14 @@
                 return;
             }
             data.type = type;
-            data.limit = hardLimit;
-            data.skip = page * hardLimit;
+            if (page !== -1) {
+                data.limit = hardLimit;
+                data.skip = page * hardLimit;
+            }
+            else {
+                data.limit = "";
+                data.skip = 0;
+            }
 
             var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
             var form = $('<form method="POST" action="' + url + '">');
