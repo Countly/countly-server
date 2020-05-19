@@ -82,6 +82,48 @@ EOF
     fi
 }
 
+function disable_transparent_hugepages () {
+    if [ -f "/etc/init.d/disable-transparent-hugepages" ]; then
+        message_ok "Transparent hugepages is already disabled"
+    else
+        cat <<'EOF' > /etc/init.d/disable-transparent-hugepages
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          disable-transparent-hugepages
+# Required-Start:    $local_fs
+# Required-Stop:
+# X-Start-Before:    mongod mongodb-mms-automation-agent
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Disable Linux transparent huge pages
+# Description:       Disable Linux transparent huge pages, to improve
+#                    database performance.
+### END INIT INFO
+
+case $1 in
+  start)
+    if [ -d /sys/kernel/mm/transparent_hugepage ]; then
+      thp_path=/sys/kernel/mm/transparent_hugepage
+    elif [ -d /sys/kernel/mm/redhat_transparent_hugepage ]; then
+      thp_path=/sys/kernel/mm/redhat_transparent_hugepage
+    else
+      return 0
+    fi
+
+    echo 'never' > ${thp_path}/enabled
+    echo 'never' > ${thp_path}/defrag
+
+    unset thp_path
+    ;;
+esac
+EOF
+        chmod 755 /etc/init.d/disable-transparent-hugepages
+        chkconfig --add disable-transparent-hugepages
+
+        message_ok "Disabled transparent hugepages"
+    fi
+}
+
 function message_warning () {
     echo -e "\e[1m[\e[91m!\e[97m]\e[0m $1"
 }
@@ -300,15 +342,7 @@ elif [ "$1" == "check" ]; then
     fi
 
     #Disable transparent-hugepages
-    if [ -f "/etc/init.d/disable-transparent-hugepages" ]; then
-        message_ok "Transparent hugepages is already disabled"
-    else
-        cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-        chmod 755 /etc/init.d/disable-transparent-hugepages
-        chkconfig --add disable-transparent-hugepages
-
-        message_ok "Disabled transparent hugepages"
-    fi
+    disable_transparent_hugepages
 
     #Check if NTP is on
     if [ -f /etc/redhat-release ]; then
