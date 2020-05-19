@@ -43,8 +43,6 @@ if [ -x "$(command -v mongo)" ]; then
     fi
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-
 if [ -f /etc/redhat-release ]; then
     #install latest mongodb
 
