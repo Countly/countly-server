@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source /etc/os-release
 
 while IFS= read -r -d '' plugin

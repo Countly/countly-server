@@ -72,7 +72,7 @@ var common = require('../../../api/utils/common.js'),
             var limit = parseInt(params.qstring.limit || 20);
             var skip = parseInt(params.qstring.skip || 0);
             var filter = params.qstring.filter || params.qstring.query || "{}";
-            var project = params.qstring.project || params.qstring.projection || "{}";
+            var projection = params.qstring.project || params.qstring.projection || "{}";
             var sort = params.qstring.sort || "{}";
             try {
                 sort = JSON.parse(sort);
@@ -90,15 +90,15 @@ var common = require('../../../api/utils/common.js'),
                 filter._id = common.db.ObjectID(filter._id);
             }
             try {
-                project = JSON.parse(project);
+                projection = JSON.parse(projection);
             }
             catch (SyntaxError) {
-                project = {};
+                projection = {};
             }
 
             if (dbs[dbNameOnParam]) {
                 dbs[dbNameOnParam].onOpened(function() {
-                    var cursor = dbs[dbNameOnParam]._native.collection(params.qstring.collection).find(filter, project);
+                    var cursor = dbs[dbNameOnParam]._native.collection(params.qstring.collection).find(filter, { projection });
                     if (Object.keys(sort).length > 0) {
                         cursor.sort(sort);
                     }

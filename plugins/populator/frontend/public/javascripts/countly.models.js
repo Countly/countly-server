@@ -542,10 +542,11 @@
 
             if (id === "[CLY]_view") {
                 event.segmentation = {};
+                var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
                 Object.keys(viewSegments).forEach(function(key) {
                     var values = [];
                     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && key === "name") {
-                        values = ["/" + countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
+                        values = ["/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html"];
                     }
                     else {
                         values = viewSegments[key];
@@ -557,7 +558,6 @@
                 event.segmentation = {};
                 Object.keys(eventTemplate.segments).forEach(function(key) {
                     var values = eventTemplate.segments[key];
-
                     event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
                 });
             }
@@ -629,8 +629,8 @@
 
         this.getHeatmapEvent = function() {
             this.stats.e++;
-
-            var views = ["/" + countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
+            var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
+            var views = ["/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html"];
             var event = {
                 "key": "[CLY]_action",
                 "count": 1,
@@ -680,7 +680,8 @@
 
         this.getScrollmapEvent = function() {
             this.stats.e++;
-            var views = ["/" + countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
+            var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
+            var views = ["/populator/" + countlyCommon.ACTIVE_APP_KEY + "/demo-" + populatorType + ".html"];
             var event = {
                 "key": "[CLY]_action",
                 "count": 1,

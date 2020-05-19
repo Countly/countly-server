@@ -504,7 +504,7 @@ window.component('push.view', function(view) {
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab3.date')),
                                 m('.col-right', (ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab3.date.now')) + 
-									(ctrl.message.tz() ? 
+									(typeof ctrl.message.tz() === 'number'  ? 
 									    t('pu.po.tab3.date.intz') 
 									    : ctrl.message.autoTime() ? 
 									        t('pu.po.tab3.date.intz') + ' ' + t('pu.at') + ctrl.message.autoTime()

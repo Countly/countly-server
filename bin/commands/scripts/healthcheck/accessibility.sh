@@ -1,22 +1,22 @@
 #!/bin/bash
 status=""
-wget -q -t 1 --timeout=10 127.0.0.1:6001/ping
-if [ $? -ne 0 ]; then
+if ! wget -q -t 1 --timeout=10 127.0.0.1:6001/ping 
+then
     status=${status}"\n    Dashboard is not accessible";
 fi
 
-wget -q -t 1 --timeout=10 127.0.0.1:3001/o/ping
-if [ $? -ne 0 ]; then
+if ! wget -q -t 1 --timeout=10 127.0.0.1:3001/o/ping
+then
     status=${status}"\n    Api is not accessible";
 fi
 
-wget -q -t 1 --timeout=10 127.0.0.1/ping
-if [ $? -ne 0 ]; then
+if ! wget -q -t 1 --timeout=10 127.0.0.1/ping
+then
     status=${status}"\n    Dashboard is not accessible through Nginx";
 fi
 
-wget -q -t 1 --timeout=10 127.0.0.1/o/ping
-if [ $? -ne 0 ]; then
+if ! wget -q -t 1 --timeout=10 127.0.0.1/o/ping
+then
     status=${status}"\n    Api is not accessible through Nginx";
 fi
 
