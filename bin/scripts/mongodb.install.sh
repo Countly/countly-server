@@ -79,10 +79,12 @@ EOF
 }
 
 function disable_transparent_hugepages () {
-    if [ -f "/etc/init.d/disable-transparent-hugepages" ]; then
-        message_ok "Transparent hugepages is already disabled"
-    else
-        cat <<'EOF' > /etc/init.d/disable-transparent-hugepages
+    if [[ $(/sbin/init --version) =~ upstart ]];
+	then
+        if [ -f "/etc/init.d/disable-transparent-hugepages" ]; then
+            message_ok "Transparent hugepages is already disabled"
+        else
+            cat <<'EOF' > /etc/init.d/disable-transparent-hugepages
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          disable-transparent-hugepages
@@ -113,11 +115,29 @@ case $1 in
     ;;
 esac
 EOF
-        chmod 755 /etc/init.d/disable-transparent-hugepages
-        chkconfig --add disable-transparent-hugepages
+            chmod 755 /etc/init.d/disable-transparent-hugepages
+            chkconfig --add disable-transparent-hugepages
+        fi
+	else
+        cat <<'EOF' > /etc/systemd/system/disable-transparent-huge-pages.service
+[Unit]
+Description=Disable Transparent Huge Pages (THP)
+DefaultDependencies=no
+After=sysinit.target local-fs.target
+Before=mongod.service
 
-        message_ok "Disabled transparent hugepages"
-    fi
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo never | tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null'
+
+[Install]
+WantedBy=basic.target
+EOF
+        systemctl start disable-transparent-huge-pages
+        systemctl enable disable-transparent-huge-pages
+	fi 2> /dev/null
+
+    message_ok "Disabled transparent hugepages"
 }
 
 function message_warning () {
