@@ -59,7 +59,8 @@ plugins.setConfigs("api", {
     metric_changes: true,
     offline_mode: false,
     reports_regenerate_interval: 3600,
-    send_test_email: ""
+    send_test_email: "",
+    data_retention_period: 0
 });
 
 /**
@@ -206,6 +207,7 @@ if (cluster.isMaster) {
         jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
         jobs.job('api:task').replace().schedule('every 5 minutes');
         jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
+        jobs.job('api:appExpire').replace().schedule('every 1 day');
     }, 10000);
 }
 else {
