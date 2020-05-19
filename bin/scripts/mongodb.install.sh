@@ -1,29 +1,29 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-MONGO_CONFIG_FILE="/etc/mongod.conf"
+MONGODB_CONFIG_FILE="/etc/mongod.conf"
 
 function mongodb_configure () {
-    INDENT_LEVEL=$(grep dbPath ${MONGO_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
+    cp "$MONGODB_CONFIG_FILE" "$MONGODB_CONFIG_FILE".bak
+    INDENT_LEVEL=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
     INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
 
-    if grep -q "slowOpThresholdMs" "$MONGO_CONFIG_FILE"; then
-        sed -i "/slowOpThresholdMs/d" ${MONGO_CONFIG_FILE}
-        sed -i "s#operationProfiling:#operationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000#g" ${MONGO_CONFIG_FILE}
+    if grep -q "slowOpThresholdMs" "$MONGODB_CONFIG_FILE"; then
+        sed -i "/slowOpThresholdMs/d" ${MONGODB_CONFIG_FILE}
+        sed -i "s#operationProfiling:#operationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000#g" ${MONGODB_CONFIG_FILE}
     else
-        sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGO_CONFIG_FILE}
+        sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGODB_CONFIG_FILE}
     fi
 }
 
 function mongodb_logrotate () {
     #add mongod entry for logrotate daemon
     if [ -x "$(command -v logrotate)" ]; then
-        MONGO_CONFIG_FILE="/etc/mongod.conf"
-        INDENT_LEVEL=$(grep dbPath "${MONGO_CONFIG_FILE}" | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
+        INDENT_LEVEL=$(grep dbPath "${MONGODB_CONFIG_FILE}" | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
         INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
         #delete if any other logRotate directive exist and add logRotate to mongod.conf
-        sed -i '/logRotate/d' /etc/mongod.conf
-        sed -i "s#systemLog:#systemLog:\n${INDENT_STRING}logRotate: reopen#g" /etc/mongod.conf
+        sed -i '/logRotate/d' "$MONGODB_CONFIG_FILE"
+        sed -i "s#systemLog:#systemLog:\n${INDENT_STRING}logRotate: reopen#g" "$MONGODB_CONFIG_FILE"
 
         if [ -f /etc/redhat-release ]; then
             cat <<'EOF' > /etc/logrotate.d/mongod
@@ -186,7 +186,6 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
     fi
 
     #backup config and remove configuration to prevent duplicates
-    cp /etc/mongod.conf /etc/mongod.conf.bak
     mongodb_configure
 
     if [ -f /etc/redhat-release ]; then
@@ -209,19 +208,19 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
     bash "$0" check
 
 elif [ "$1" == "check" ]; then
-    MONGO_USER=$(grep mongod /etc/passwd | awk -F':' '{print $1}')
-    MONGO_PATH=$(grep dbPath ${MONGO_CONFIG_FILE} | awk -F' ' '{print $2}')
-    MONGO_DISK=$(df -Th | grep "${MONGO_PATH}" | awk -F' ' '{print $2}')
+    MONGODB_USER=$(grep mongod /etc/passwd | awk -F':' '{print $1}')
+    MONGODB_PATH=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F' ' '{print $2}')
+    MONGODB_DISK=$(df -Th | grep "${MONGODB_PATH}" | awk -F' ' '{print $2}')
 
     #Check data disk for type
-    if [ -z "$MONGO_DISK" ]; then
+    if [ -z "$MONGODB_DISK" ]; then
         message_optional "Couldn't find any disk for MongoDB data"
     else
-        if [ "$MONGO_DISK" == "xfs" ]; then
+        if [ "$MONGODB_DISK" == "xfs" ]; then
             message_ok "Type of MongoDB data disk is XFS"
 
             #Set noatime & nodiratime for data disk
-            FSTAB_ENTRY=$(grep "${MONGO_PATH}" /etc/fstab)
+            FSTAB_ENTRY=$(grep "${MONGODB_PATH}" /etc/fstab)
             FSTAB_ENTRY_OPTIONS=$(echo "$FSTAB_ENTRY" | awk -F' ' '{print $4}')
             FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY")
 
@@ -234,7 +233,7 @@ elif [ "$1" == "check" ]; then
             fi
 
             cp /etc/fstab /etc/fstab.countly.bak
-            sed -i "/${MONGO_PATH//\//\\/}/d" /etc/fstab
+            sed -i "/${MONGODB_PATH//\//\\/}/d" /etc/fstab
             sed -i "\$a${FSTAB_ENTRY_UPDATED}" /etc/fstab
 
             message_ok "Added disk options 'noatime' & 'nodiratime' for MongoDB data disk, need reboot"
@@ -306,14 +305,14 @@ elif [ "$1" == "check" ]; then
     message_ok "Configured file handle kernel limits"
 
     #Security limits for MongoDB user
-    if grep -q "${MONGO_USER}" "/etc/security/limits.conf"; then
-        sed -i "/${MONGO_USER}/d" /etc/security/limits.conf
+    if grep -q "${MONGODB_USER}" "/etc/security/limits.conf"; then
+        sed -i "/${MONGODB_USER}/d" /etc/security/limits.conf
     fi
 
-    sed -i "\$a${MONGO_USER} soft nproc 256000" /etc/security/limits.conf
-    sed -i "\$a${MONGO_USER} hard nproc 256000" /etc/security/limits.conf
-    sed -i "\$a${MONGO_USER} soft nofile 392000" /etc/security/limits.conf
-    sed -i "\$a${MONGO_USER} hard nofile 392000" /etc/security/limits.conf
+    sed -i "\$a${MONGODB_USER} soft nproc 256000" /etc/security/limits.conf
+    sed -i "\$a${MONGODB_USER} hard nproc 256000" /etc/security/limits.conf
+    sed -i "\$a${MONGODB_USER} soft nofile 392000" /etc/security/limits.conf
+    sed -i "\$a${MONGODB_USER} hard nofile 392000" /etc/security/limits.conf
 
     message_ok "Configured security limits for MongoDB user"
 
