@@ -84,7 +84,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
         fi
     fi
 
-    bash $0 check
+    bash "$0" check
 
 elif [ "$1" == "check" ]; then
     MONGO_CONFIG_FILE="/etc/mongod.conf"
