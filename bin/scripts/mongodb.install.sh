@@ -1,6 +1,19 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MONGO_CONFIG_FILE="/etc/mongod.conf"
+
+function mongodb_configure () {
+    INDENT_LEVEL=$(grep dbPath ${MONGO_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
+    INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
+
+    if grep -q "slowOpThresholdMs" "$MONGO_CONFIG_FILE"; then
+        sed -i "/slowOpThresholdMs/d" ${MONGO_CONFIG_FILE}
+        sed -i "s#operationProfiling:#operationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000#g" ${MONGO_CONFIG_FILE}
+    else
+        sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGO_CONFIG_FILE}
+    fi
+}
 
 function message_warning () {
     echo -e "\e[1m[\e[91m!\e[97m]\e[0m $1"
@@ -65,7 +78,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
 
     #backup config and remove configuration to prevent duplicates
     cp /etc/mongod.conf /etc/mongod.conf.bak
-    bash "$DIR/mongodb.configure.sh"
+    mongodb_configure
 
     if [ -f /etc/redhat-release ]; then
         #mongodb might need to be started
@@ -87,7 +100,6 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
     bash "$0" check
 
 elif [ "$1" == "check" ]; then
-    MONGO_CONFIG_FILE="/etc/mongod.conf"
     MONGO_USER=$(grep mongod /etc/passwd | awk -F':' '{print $1}')
     MONGO_PATH=$(grep dbPath ${MONGO_CONFIG_FILE} | awk -F' ' '{print $2}')
     MONGO_DISK=$(df -Th | grep "${MONGO_PATH}" | awk -F' ' '{print $2}')
