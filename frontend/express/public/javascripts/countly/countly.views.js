@@ -5030,7 +5030,7 @@ window.EventsOverviewView = countlyView.extend({
         var self = this;
         this.currentOverviewList = countlyEvent.getOverviewList();
         this.eventmap = countlyEvent.getEventMap();
-
+        
         var app_admin = false;
         if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             app_admin = true;
@@ -5038,6 +5038,7 @@ window.EventsOverviewView = countlyView.extend({
 
         this.templateData = {
             "logo-class": "events",
+            "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-map": this.eventmap,
             "overview-list": this.overviewList || [],
             "overview-graph": this.overviewGraph || [],
@@ -5259,6 +5260,8 @@ window.EventsView = countlyView.extend({
             }
             $(".event-container").removeClass("active");
             $(this).addClass("active");
+            var eventHashURL = "/dashboard#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/#" + tmpCurrEvent;
+            window.location.href.replace(eventHashURL);
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() {
                 self.refresh(true);
@@ -5516,6 +5519,7 @@ window.EventsView = countlyView.extend({
         var eventCount = countlyEvent.getEvents().length;
         this.templateData = {
             "page-title": eventData.eventName.toUpperCase(),
+            "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-description": eventData.eventDescription,
             "logo-class": "events",
             "events": countlyEvent.getEvents(),
@@ -5531,6 +5535,8 @@ window.EventsView = countlyView.extend({
             "showManagmentButton": showManagmentButton,
             "event-count": eventCount
         };
+                
+
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
@@ -5547,6 +5553,15 @@ window.EventsView = countlyView.extend({
                 self.resizeTitle();
             });
             $('.nav-search').find("input").trigger("input");
+
+            var eventURLComponents =  window.location.hash.match(/analytics\/events\/#(.*)/);
+            if (eventURLComponents && eventURLComponents.length >= 2) {
+                targetEvent = eventURLComponents[1];
+                if (countlyEvent.getEventData().eventName !== targetEvent) {
+                    $("div[data-key='" + targetEvent + "']").click()
+                    countlyEvent.setActiveEvent(targetEvent);
+                }
+            }
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
