@@ -378,7 +378,7 @@ window.PopulatorView = countlyView.extend({
             if (["true", "false"].indexOf(s) !== -1) {
                 return s === "true";
             }
-            else if (/^[1-9][0-9]+|0$/.test(s)) {
+            else if (/^[1-9][0-9]+|0|[1-9]$/.test(s)) {
                 return parseInt(s);
             }
             else {
