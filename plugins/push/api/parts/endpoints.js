@@ -132,7 +132,7 @@ function cachedData(note) {
             common.dbPromise(sen, 'find', que),
             common.dbPromise(act, 'find', que),
             common.dbPromise(app, 'count', qtk),
-            common.dbPromise(app, 'count'),
+            common.dbPromise(app, 'estimatedDocumentCount'),
             getCohortsPluginApi() ? common.dbPromise('cohorts', 'find', qqh) : Promise.resolve(),
             getGeoPluginApi() ? common.dbPromise(geo, 'find', qge) : Promise.resolve(),
             getGeoPluginApi() ? new Promise((resolve) => resolve(geoip.lookup(params.ip_address))) : Promise.resolve()

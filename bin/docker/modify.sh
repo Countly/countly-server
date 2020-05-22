@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source /etc/os-release
 
 # Remove plugins unsupported in Docker distribution
@@ -32,7 +33,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 
 			python3 -m pip install pandas
 			python3 -m pip install pystan
-			python3 "/opt/countly/plugins/ab-testing/api/bayesian/model.py"
+			cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
 
 		elif [ "${ID}" == "ubuntu" ]; then
 			DEBIAN_FRONTEND=noninteractive apt-get -y install gcc g++ build-essential python3-dev python3-pip libncurses*-dev  libsqlite3-dev libreadline6-dev libgdbm-dev zlib1g-dev libbz2-dev sqlite3 tk-dev zip libssl-dev libncurses5-dev python-lzma liblzma-dev tk8.5-dev
@@ -57,6 +58,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 			rm -rf ~/.cache
 		else
 			yum install -y python36 python36-libs python36-devel python36-pip centos-release-scl devtoolset-7-gcc-c++
+            # shellcheck disable=SC1091
 		    source /opt/rh/devtoolset-7/enable
 			export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
 			export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++

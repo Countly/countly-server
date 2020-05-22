@@ -3988,27 +3988,38 @@ Backbone.history.checkUrl = function() {
     }
 };
 
-var checkGlovbalAdminOnlyPermission = function() {
-    var checkList = [
+var checkGlobalAdminOnlyPermission = function() {
+    var userCheckList = [
         "/manage/users",
-        "/manage/apps",
+        "/manage/apps"
     ];
 
-    var existed = false;
-    checkList.forEach(function(item) {
-        if (Backbone.history.getFragment().indexOf(item) > -1) {
-            existed = true;
+    var adminCheckList = [
+        "/manage/users"
+    ];
+
+    if (!countlyGlobal.member.global_admin && !countlyGlobal.config.autonomous) {
+
+        var existed = false;
+        var checkList = userCheckList;
+        if (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length) {
+            checkList = adminCheckList;
         }
-    });
+        checkList.forEach(function(item) {
+            if (Backbone.history.getFragment().indexOf(item) > -1) {
+                existed = true;
+            }
+        });
 
-    if (countlyGlobal.member.global_admin !== true && existed === true) {
+        if (existed === true) {
 
-        window.location.hash = "/";
-        return false;
+            window.location.hash = "/";
+            return false;
+        }
     }
     return true;
 };
-Backbone.history.urlChecks.push(checkGlovbalAdminOnlyPermission);
+Backbone.history.urlChecks.push(checkGlobalAdminOnlyPermission);
 
 
 //initial hash check

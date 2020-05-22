@@ -40,9 +40,6 @@ bash "$DIR/scripts/detect.init.sh"
 #stop countly
 #countly stop
 
-#install new node.js
-#bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
-
 #install new mongodb
 #apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 

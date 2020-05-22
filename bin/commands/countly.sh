@@ -71,7 +71,7 @@ run_upgrade (){
             if [ -f "$DIR/../upgrade/$i/upgrade_fs.sh" ]; then
                 if [[ " ${arr[*]} " != *" -y "* ]]; then
                     echo "Upgrading filesystem for $i. y/n?";
-                    read choice;
+                    read -r choice;
                     if [ "$choice" != "y" ]; then
                         continue
                     fi
@@ -85,7 +85,7 @@ run_upgrade (){
             if [ -f "$DIR/../upgrade/$i/upgrade_db.sh" ]; then
                 if [[ " ${arr[*]} " != *" -y "* ]]; then
                     echo "Upgrading database for $i. y/n?";
-                    read choice;
+                    read -r choice;
                     if [ "$choice" != "y" ]; then
                         continue
                     fi
@@ -98,7 +98,7 @@ run_upgrade (){
             if [ -f "$DIR/../upgrade/$i/upgrade.sh" ]; then
                 if [[ " ${arr[*]} " != *" -y "* ]]; then
                     echo "Upgrading for $i. y/n?";
-                    read choice;
+                    read -r choice;
                     if [ "$choice" != "y" ]; then
                         continue
                     fi
@@ -127,7 +127,7 @@ countly_upgrade (){
 
         if [ "$INOFFLINEMODE" == "false" ]
         then
-            (cd $DIR/../..;
+            (cd "$DIR"/../..;
             echo "Installing dependencies...";
             sudo npm install;)
         fi
@@ -140,8 +140,7 @@ countly_upgrade (){
         )
     elif [ "$1" == "auto" ]
     then
-        UPGRADE=$(nodejs "$DIR/../scripts/checking_versions.js");
-        if [ $? -eq 0 ]
+        if UPGRADE=$(nodejs "$DIR/../scripts/checking_versions.js");
         then
             run_upgrade "$UPGRADE" "$2" "$y";
         else
@@ -153,16 +152,20 @@ countly_upgrade (){
         then
             if [ "$2" == "fs" ] || [ "$2" == "db" ]
             then
-                UPGRADE=$(nodejs "$DIR/../scripts/checking_versions.js" "$3" "$4");
+                if UPGRADE=$(nodejs "$DIR/../scripts/checking_versions.js" "$3" "$4")
+                then
+                    run_upgrade "$UPGRADE" "$2" "$y";
+                else
+                    echo "$UPGRADE";
+                fi
             elif [ $# -ge 3 ]
             then
-                UPGRADE=$(nodejs "$DIR/../scripts/checking_versions.js" "$2" "$3");
-            fi
-            if [ $? -eq 0 ]
-            then
-                run_upgrade "$UPGRADE" "$2" "$y";
-            else
-                echo "$UPGRADE";
+                if UPGRADE=$(nodejs "$DIR/../scripts/checking_versions.js" "$2" "$3")
+                then
+                    run_upgrade "$UPGRADE" "$2" "$y";
+                else
+                    echo "$UPGRADE";
+                fi
             fi
         else
             echo "Provide upgrade version in format:";
@@ -201,7 +204,8 @@ countly_upgrade (){
         fi
     elif [ "$1" == "ee" ]
     then
-        if [ -f "$DIR/../../"countly-enterprise-edition*.tar.gz ]; then
+        FILE=$(ls -la "$DIR/../../"countly-enterprise-edition*.tar.gz | tail -1 | awk -F' ' '{print $NF}')
+        if [ -f "$FILE" ]; then
             cp -Rf "$DIR/../../"plugins/plugins.default.json "$DIR/../../"plugins/plugins.ce.json
 
             echo "Extracting Countly Enterprise Edition..."
@@ -357,7 +361,7 @@ countly_backupfiles (){
         cp -a "$DIR/../../frontend/express/certificates/." files/frontend/express/certificates/
     fi
 
-    for d in $DIR/../../plugins/*; do
+    for d in "$DIR"/../../plugins/*; do
         PLUGIN="$(basename "$d")";
         if [ -f "$d/config.js" ]; then
             mkdir -p "files/plugins/$PLUGIN" ;
@@ -386,7 +390,8 @@ countly_backupdb (){
     echo "Backing up mongodb...";
     shift
     #allow passing custom flags
-    connection=( $(node "$DIR/scripts/db.conf.js")  "${@}" );
+    IFS=" " read -r -a con <<< "$(node "$DIR/scripts/db.conf.js")"
+    connection=( "${con[@]}"  "${@}" );
     mongodump "${connection[@]}" --db countly > /dev/null;
     mongodump "${connection[@]}" --db countly_drill > /dev/null;
     mongodump "${connection[@]}" --db countly_fs > /dev/null;
@@ -429,7 +434,7 @@ countly_save (){
 
         if [ "$files" -gt 0 ]
         then
-            for d in $2/*; do
+            for d in "$2"/*; do
                 diff=$(diff "$1" "$d" | wc -l)
                 if [ "$diff" == 0 ]
                 then
@@ -523,7 +528,8 @@ countly_restoredb (){
     fi
     shift
     #allow passing custom flags
-    connection=( $(node "$DIR/scripts/db.conf.js")  "${@}" );
+    IFS=" " read -r -a con <<< "$(node "$DIR/scripts/db.conf.js")"
+    connection=( "${con[@]}"  "${@}" );
     if [ -d "$1/dump/countly" ]; then
         echo "Restoring countly database...";
         mongorestore "${connection[@]}" --db countly --batchSize=10 "$1/dump/countly" > /dev/null;
@@ -569,6 +575,7 @@ countly_thp (){
 }
 
 #load real platform/init sys file to overwrite stubs
+# shellcheck source=/dev/null
 source "$DIR/enabled/countly.sh"
 
 #process command

@@ -15,6 +15,7 @@ if [ ! -f "$COUNTLY_DIR/bin/config/supervisord.conf.backup" ]; then
 fi
 
 #copy new supervisord configuration file
+# shellcheck disable=SC2216
 yes | cp -rf "$DIR/supervisort.wuser.conf" "$COUNTLY_DIR/bin/config/supervisord.conf"
 
 #check if user not created yet
