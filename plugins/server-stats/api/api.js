@@ -197,7 +197,7 @@ var plugins = require('../../pluginManager.js'),
     **/
     plugins.register("/o/server-stats/punch-card", function(ob) {
         var params = ob.params;
-        ob.validateUserForMgmtReadAPI(async()=> {
+        ob.validateUserForMgmtReadAPI(async() => {
             try {
                 const _punchCard = await punchCard(params);
                 common.returnOutput(params, _punchCard);
@@ -226,8 +226,8 @@ var plugins = require('../../pluginManager.js'),
             if (!params.member.global_admin) {
                 filter.$or = [];
                 const hasUserApps = params.member.user_of;
-                hasUserApps.forEach(id => {
-                    dateRangeArray.forEach(period => {
+                hasUserApps.forEach((id) => {
+                    dateRangeArray.forEach((period) => {
                         filter.$or.push({_id: `${id}_${period}`});
                     });
                 });
