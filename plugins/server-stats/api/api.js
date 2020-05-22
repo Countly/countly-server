@@ -197,16 +197,15 @@ var plugins = require('../../pluginManager.js'),
     **/
     plugins.register("/o/server-stats/punch-card", function(ob) {
         var params = ob.params;
-        ob.validateUserForMgmtReadAPI(function() {
-            punchCard(params.qstring.date_range,).then((response, error) => {
-                if (error) {
-                    console.log("Error while fetching punch card data: ", error.message);
-                    common.returnMessage(params, 400, "Something went wrong");
-                    return false;
-                }
-                common.returnOutput(params, response);
-                return true;
-            });
+        ob.validateUserForMgmtReadAPI(async()=> {
+            try {
+                const _punchCard = await punchCard(params);
+                common.returnOutput(params, _punchCard);
+            }
+            catch (error) {
+                console.log("Error while fetching punch card data: ", error.message);
+                common.returnMessage(params, 400, "Something went wrong");
+            }
         }, params);
 
         return true;
@@ -214,15 +213,25 @@ var plugins = require('../../pluginManager.js'),
 
     /**
      * punchCard function
-     * @param {String} date_range - date range
+     * @param {Object} params - params
      * @return {Promise<Array>} - dataPoints
      */
-    function punchCard(date_range) {
+    function punchCard(params) {
         const TIME_RANGE = 24;
         const ROW = 7;
         const COLLECTION_NAME = "server_stats_data_points";
         return new Promise((resolve, reject) => {
-            const filter = {"m": {$in: date_range.split(',')} };
+            const dateRangeArray = params.qstring.date_range.split(',');
+            let filter = {"m": {$in: dateRangeArray} };
+            if (!params.member.global_admin) {
+                filter.$or = [];
+                const hasUserApps = params.member.user_of;
+                hasUserApps.forEach(id => {
+                    dateRangeArray.forEach(period => {
+                        filter.$or.push({_id: `${id}_${period}`});
+                    });
+                });
+            }
             common.db.collection(COLLECTION_NAME).find(filter).toArray((error, results) => {
                 if (error) {
                     return reject(error);
