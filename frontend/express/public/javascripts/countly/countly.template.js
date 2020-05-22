@@ -1619,6 +1619,17 @@ var AppRouter = Backbone.Router.extend({
             return options.fn(object[options.hash.key]);
         });
 
+        /**
+        * Encode uri component
+        * @name encodeURIComponent 
+        * @memberof Handlebars
+        * @example
+        * <a href="/path/{{encodeURIComponent entity}}" </a>
+        */
+        Handlebars.registerHelper('encodeURIComponent', function(entity) {
+            return encodeURIComponent(entity);
+        });
+
         $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
         jQuery.i18n.properties({
             name: 'locale',

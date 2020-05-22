@@ -5260,8 +5260,9 @@ window.EventsView = countlyView.extend({
             }
             $(".event-container").removeClass("active");
             $(this).addClass("active");
-            var eventHashURL = "/dashboard#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/#" + tmpCurrEvent;
-            window.location.href.replace(eventHashURL);
+            
+            var eventHashURL = "/dashboard#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/#" + encodeURIComponent(tmpCurrEvent);
+            window.location.replace(eventHashURL);
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() {
                 self.refresh(true);
@@ -5556,7 +5557,7 @@ window.EventsView = countlyView.extend({
 
             var eventURLComponents =  window.location.hash.match(/analytics\/events\/#(.*)/);
             if (eventURLComponents && eventURLComponents.length >= 2) {
-                targetEvent = eventURLComponents[1];
+                var targetEvent = decodeURIComponent(eventURLComponents[1]);
                 if (countlyEvent.getEventData().eventName !== targetEvent) {
                     $("div[data-key='" + targetEvent + "']").click()
                     countlyEvent.setActiveEvent(targetEvent);

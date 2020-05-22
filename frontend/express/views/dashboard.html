@@ -1381,7 +1381,7 @@
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
                                     <div class="col">
-                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/#{{this.name}}">{{this.name}}</a></h4>
+                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/#{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
                                         <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
                                     </div>
                                     {{/eachOfObjectValue}}
@@ -1392,7 +1392,7 @@
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventData30Day}}
                                     <div class="col">
-                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/#{{this.name}}">{{this.name}}</a></h4>
+                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/#{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
                                         <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
                                     </div>
                                     {{/eachOfObjectValue}}
@@ -1467,7 +1467,7 @@
 
                                         {{#if this.value.name}}
                                         <td class="event-overview-grid-block cly-widget">
-                                            <div class="title"><a href="/dashboard#/{{../../../active-app-id}}/analytics/events/#{{this.value.name}}">{{this.value.name}}</a></div>
+                                            <div class="title"><a href="/dashboard#/{{../active-app-id}}/analytics/events/#{{encodeUriComponent this.value.name}}">{{this.value.name}}</a></div>
                                             {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
                                             <table>
                                                 <tr>
