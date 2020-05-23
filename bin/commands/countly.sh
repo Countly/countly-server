@@ -523,14 +523,14 @@ countly_restoredb (){
     else
         echo "No countly_drill database dump to restore from";
     fi
-    
+
     if [ -d "$1/dump/countly_fs" ]; then
         echo "Restoring countly_fs database...";
         mongorestore "${connection[@]}" --db countly_fs --batchSize=10 "$1/dump/countly_fs" > /dev/null;
     else
         echo "No countly_fs database dump to restore from";
     fi
-    
+
     if [ -d "$1/dump/countly_out" ]; then
         echo "Restoring countly_out database...";
         mongorestore "${connection[@]}" --db countly_out --batchSize=10 "$1/dump/countly_out" > /dev/null;
@@ -547,12 +547,6 @@ countly_restore (){
     fi
     countly_restorefiles "$@";
     countly_restoredb "$@";
-}
-
-countly_thp (){
-    cp -f "$DIR/../scripts/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-    chmod 755 /etc/init.d/disable-transparent-hugepages
-    update-rc.d disable-transparent-hugepages defaults
 }
 
 #load real platform/init sys file to overwrite stubs

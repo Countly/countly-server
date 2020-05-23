@@ -104,6 +104,9 @@ chmod 0440 /etc/sudoers
 
 bash "$DIR/scripts/detect.init.sh"
 
+#install numactl
+yum install numactl -y
+
 #configure and start nginx
 set +e
 countly save /etc/nginx/conf.d/default.conf "$DIR/config/nginx"

@@ -36,18 +36,16 @@ if [ -x "$(command -v mongo)" ]; then
         #uninstall mognodb
         yum erase -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
     fi
-    
+
     if [ -f /etc/lsb-release ]; then
         #uninstall mognodb
         apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
     fi
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-
 if [ -f /etc/redhat-release ]; then
-    #install latest mongodb 
-    
+    #install latest mongodb
+
     #select source based on release
 	if grep -q -i "release 6" /etc/redhat-release ; then
         echo "[mongodb-org-3.6]
@@ -65,15 +63,10 @@ enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
     fi
     yum install -y mongodb-org
-    
-    #disable transparent-hugepages (requires reboot)
-    cp -f "$DIR/scripts/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-    chmod 755 /etc/init.d/disable-transparent-hugepages
-    chkconfig --add disable-transparent-hugepages
 fi
 
 if [ -f /etc/lsb-release ]; then
-    #install latest mongodb 
+    #install latest mongodb
 	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
     UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
@@ -92,11 +85,6 @@ if [ -f /etc/lsb-release ]; then
     apt-get update
     #install mongodb
     apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
-    
-    #disable transparent-hugepages (requires reboot)
-    cp -f "$DIR/scripts/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-    chmod 755 /etc/init.d/disable-transparent-hugepages
-    update-rc.d disable-transparent-hugepages defaults
 fi
 
 if [ -f /etc/redhat-release ]; then
