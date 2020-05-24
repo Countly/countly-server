@@ -14,5 +14,4 @@ fi
 if [ -f "$DIR/upgrade_db.sh" ]; then
     bash "$DIR/upgrade_db.sh" combined 2>&1 | tee -a "$DIR/../../../log/countly-upgrade-db-$VERSION-$DATE.log"
 fi
-
 countly start

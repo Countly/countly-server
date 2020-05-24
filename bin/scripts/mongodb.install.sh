@@ -1,85 +1,404 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 if [ ! -z "$1" -a -d "$(dirname "$1")" -a "$(basename "$1")" = "mongod.conf" ]; then
 	MONGOD_CONF="$1"
 else
 	MONGOD_CONF=/etc/mongod.conf
 fi
 
-if [ -f /etc/redhat-release ]; then
-    #install latest mongodb
+function mongodb_configure () {
+    cp "$MONGODB_CONFIG_FILE" "$MONGODB_CONFIG_FILE".bak
+    INDENT_LEVEL=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
+    INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
 
-    #select source based on release
-	if grep -q -i "release 6" /etc/redhat-release ; then
-        echo "[mongodb-org-3.6]
+    sed -i "/directoryPerDB/d" ${MONGODB_CONFIG_FILE}
+    sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
+
+    if grep -q "slowOpThresholdMs" "$MONGODB_CONFIG_FILE"; then
+        sed -i "/slowOpThresholdMs/d" ${MONGODB_CONFIG_FILE}
+        sed -i "s#operationProfiling:#operationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000#g" ${MONGODB_CONFIG_FILE}
+    else
+        sed -i "/#operationProfiling/d" ${MONGODB_CONFIG_FILE}
+        sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGODB_CONFIG_FILE}
+    fi
+}
+
+function mongodb_logrotate () {
+    #add mongod entry for logrotate daemon
+    if [ -x "$(command -v logrotate)" ]; then
+        INDENT_LEVEL=$(grep dbPath "${MONGODB_CONFIG_FILE}" | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
+        INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
+        #delete if any other logRotate directive exist and add logRotate to mongod.conf
+        sed -i '/logRotate/d' "$MONGODB_CONFIG_FILE"
+        sed -i "s#systemLog:#systemLog:\n${INDENT_STRING}logRotate: reopen#g" "$MONGODB_CONFIG_FILE"
+
+        if [ -f /etc/redhat-release ]; then
+            cat <<'EOF' > /etc/logrotate.d/mongod
+/var/log/mongodb/mongod.log {
+daily
+size 100M
+rotate 5
+missingok
+notifempty
+create 0600 mongod mongod
+sharedscripts
+postrotate
+    /bin/kill -SIGUSR1 $(cat /var/lib/mongo/mongod.lock)
+endscript
+}
+EOF
+        fi
+
+        if [ -f /etc/lsb-release ]; then
+            cat <<'EOF' > /etc/logrotate.d/mongod
+/var/log/mongodb/mongod.log {
+daily
+size 100M
+rotate 5
+missingok
+notifempty
+create 0600 mongodb mongodb
+sharedscripts
+postrotate
+    /bin/kill -SIGUSR1 $(cat /var/lib/mongodb/mongod.lock)
+endscript
+}
+EOF
+        fi
+
+        if [ -f /etc/redhat-release ]; then
+            #mongodb might need to be started
+            if grep -q -i "release 6" /etc/redhat-release ; then
+                service mongod restart > /dev/null || echo "mongodb service does not exist"
+            else
+                systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
+            fi
+        fi
+
+        if [ -f /etc/lsb-release ]; then
+            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
+        fi
+
+        message_ok 'Logrotate configured'
+    else
+        message_optional 'Command logrotate is not found, please install logrotate'
+    fi
+}
+
+function disable_transparent_hugepages () {
+    if [[ $(/sbin/init --version) =~ upstart ]];
+	then
+        if [ -f "/etc/init.d/disable-transparent-hugepages" ]; then
+            message_ok "Transparent hugepages is already disabled"
+        else
+            cat <<'EOF' > /etc/init.d/disable-transparent-hugepages
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          disable-transparent-hugepages
+# Required-Start:    $local_fs
+# Required-Stop:
+# X-Start-Before:    mongod mongodb-mms-automation-agent
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Disable Linux transparent huge pages
+# Description:       Disable Linux transparent huge pages, to improve
+#                    database performance.
+### END INIT INFO
+
+case $1 in
+  start)
+    if [ -d /sys/kernel/mm/transparent_hugepage ]; then
+      thp_path=/sys/kernel/mm/transparent_hugepage
+    elif [ -d /sys/kernel/mm/redhat_transparent_hugepage ]; then
+      thp_path=/sys/kernel/mm/redhat_transparent_hugepage
+    else
+      return 0
+    fi
+
+    echo 'never' > ${thp_path}/enabled
+    echo 'never' > ${thp_path}/defrag
+
+    unset thp_path
+    ;;
+esac
+EOF
+            chmod 755 /etc/init.d/disable-transparent-hugepages
+            chkconfig --add disable-transparent-hugepages
+        fi
+	else
+        cat <<'EOF' > /etc/systemd/system/disable-transparent-huge-pages.service
+[Unit]
+Description=Disable Transparent Huge Pages (THP)
+DefaultDependencies=no
+After=sysinit.target local-fs.target
+Before=mongod.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo never | tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null'
+
+[Install]
+WantedBy=basic.target
+EOF
+
+        systemctl daemon-reload
+        systemctl start disable-transparent-huge-pages
+        systemctl enable disable-transparent-huge-pages
+	fi 2> /dev/null
+
+    message_ok "Disabled transparent hugepages"
+}
+
+function message_warning () {
+    echo -e "\e[1m[\e[91m!\e[97m]\e[0m $1"
+}
+
+function message_optional () {
+    echo -e "\e[1m[\e[93m?\e[97m]\e[0m $1"
+}
+
+function message_ok () {
+    echo -e "\e[1m[\e[92m+\e[97m]\e[0m $1"
+}
+
+function update_sysctl() {
+    if grep -q "${1}" "/etc/sysctl.conf"; then
+        sed -i "/${1}/d" /etc/sysctl.conf
+    fi
+
+    sed -i "\$a${1} = ${2}" /etc/sysctl.conf
+    sysctl -p -q > /dev/null
+}
+
+if [ $# -eq 0 ]; then
+    if [ -f /etc/redhat-release ]; then
+        #install latest mongodb
+
+        #select source based on release
+        if grep -q -i "release 6" /etc/redhat-release ; then
+            echo "[mongodb-org-3.6]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.6/x86_64/
 gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
-    elif grep -q -i "release 7" /etc/redhat-release ; then
-        echo "[mongodb-org-3.6]
+        elif grep -q -i "release 7" /etc/redhat-release ; then
+            echo "[mongodb-org-3.6]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.6/x86_64/
 gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
+        fi
+        yum install -y mongodb-org
     fi
-    yum install -y nodejs mongodb-org
 
-    #disable transparent-hugepages (requires reboot)
-    cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-    chmod 755 /etc/init.d/disable-transparent-hugepages
-    chkconfig --add disable-transparent-hugepages
-elif [ -f /etc/lsb-release ]; then
-    #install latest mongodb
-	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
-    UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+    if [ -f /etc/lsb-release ]; then
+        #install latest mongodb
+        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+        UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-    if [ "$UBUNTU_YEAR" == "14" ]
-    then
-		echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
-    elif [ "$UBUNTU_YEAR" == "16" ]
-    then
-        echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        if [ "$UBUNTU_YEAR" == "14" ]; then
+            echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        elif [ "$UBUNTU_YEAR" == "16" ]; then
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        else
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        fi
+        apt-get update
+        #install mongodb
+        DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
+    fi
+
+    #backup config and remove configuration to prevent duplicates
+    mongodb_configure
+
+    if [ -f /etc/redhat-release ]; then
+        #mongodb might need to be started
+        if grep -q -i "release 6" /etc/redhat-release ; then
+            service mongod restart > /dev/null || echo "mongodb service does not exist"
+        else
+            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
+        fi
+    fi
+
+    if [ -f /etc/lsb-release ]; then
+        if [[ "$(/sbin/init --version)" =~ upstart ]]; then
+            restart mongod > /dev/null || echo "mongodb upstart job does not exist"
+        else
+            systemctl restart mongod || echo "mongodb systemctl job does not exist"
+        fi 2> /dev/null
+    fi
+
+    bash "$0" check
+
+elif [ "$1" == "check" ]; then
+    MONGODB_USER=$(grep mongod /etc/passwd | awk -F':' '{print $1}')
+    MONGODB_PATH=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F' ' '{print $2}')
+    MONGODB_DISK=$(df -Th | grep "${MONGODB_PATH}" | awk -F' ' '{print $2}')
+
+    #Check data disk for type
+    if [ -z "$MONGODB_DISK" ]; then
+        message_optional "Couldn't find any disk for MongoDB data"
     else
-        echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        if [ "$MONGODB_DISK" == "xfs" ]; then
+            message_ok "Type of MongoDB data disk is XFS"
+
+            #Set noatime & nodiratime for data disk
+            FSTAB_ENTRY=$(grep "${MONGODB_PATH}" /etc/fstab)
+            FSTAB_ENTRY_OPTIONS=$(echo "$FSTAB_ENTRY" | awk -F' ' '{print $4}')
+            FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY")
+
+            if [[ "$FSTAB_ENTRY" != *"noatime"* ]]; then
+                FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY_UPDATED" | sed "s#${FSTAB_ENTRY_OPTIONS}#${FSTAB_ENTRY_OPTIONS},noatime#g")
+            fi
+
+            if [[ "$FSTAB_ENTRY" != *"nodiratime"* ]]; then
+                FSTAB_ENTRY_UPDATED=$(echo "$FSTAB_ENTRY_UPDATED" | sed "s#${FSTAB_ENTRY_OPTIONS}#${FSTAB_ENTRY_OPTIONS},nodiratime#g")
+            fi
+
+            cp /etc/fstab /etc/fstab.countly.bak
+            sed -i "/${MONGODB_PATH//\//\\/}/d" /etc/fstab
+            sed -i "\$a${FSTAB_ENTRY_UPDATED}" /etc/fstab
+
+            message_ok "Added disk options 'noatime' & 'nodiratime' for MongoDB data disk, need reboot"
+        else
+            message_warning "Data of MongoDB is on additional disk but disk's type is not XFS"
+        fi
     fi
-    apt-get update
-    #install mongodb
-    DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
-    #disable transparent-hugepages (requires reboot)
-    cp -f "$DIR/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-    chmod 755 /etc/init.d/disable-transparent-hugepages
-    update-rc.d disable-transparent-hugepages defaults
-elif [ -x /usr/local/bin/brew ]; then
-	brew tap mongodb/brew
-	brew install mongodb-community@3.6
-	MONGOD_CONF=/usr/local/etc/mongod.conf
-fi
+    #Check logrotation
+    mongodb_logrotate
 
-bash "$DIR/mongodb.init.logrotate.sh" "$MONGOD_CONF"
+    #Check kernel version 2.6.36
+    KERNEL_VERSION=$(uname -r | awk -F'-' '{print $1}')
+    KERNEL_VERSION_MAJOR=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $1}')
+    KERNEL_VERSION_MAJOR=$((KERNEL_VERSION_MAJOR + 0))
+    KERNEL_VERSION_MINOR=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $2}')
+    KERNEL_VERSION_MINOR=$((KERNEL_VERSION_MINOR + 0))
+    KERNEL_VERSION_PATCH=$(echo "${KERNEL_VERSION}" | awk -F'.' '{print $3}')
+    KERNEL_VERSION_PATCH=$((KERNEL_VERSION_PATCH + 0))
 
-#backup config and remove configuration to prevent duplicates
-cp "$MONGOD_CONF" "$MONGOD_CONF".bak
-nodejs "$DIR/configure_mongodb.js" "$MONGOD_CONF"
-
-if [ -f /etc/redhat-release ]; then
-    #mongodb might need to be started
-    if grep -q -i "release 6" /etc/redhat-release ; then
-        service mongod restart || echo "mongodb service does not exist"
+    if [ $KERNEL_VERSION_MAJOR -gt 2 ]; then
+        message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
     else
-        systemctl restart mongod || echo "mongodb systemctl job does not exist"
+        if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -gt 6 ]]; then
+            message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
+        else
+            if [[ $KERNEL_VERSION_MAJOR -eq 2 && $KERNEL_VERSION_MINOR -ge 6 && $KERNEL_VERSION_PATCH -ge 36 ]]; then
+                message_ok "Linux kernel version is OK ${KERNEL_VERSION}"
+            else
+                message_warning "Linux kernel need to be updated"
+            fi
+        fi
     fi
-elif [ -f /etc/lsb-release ]; then
-    if [[ "$(/sbin/init --version)" =~ upstart ]]; then
-        restart mongod || echo "mongodb upstart job does not exist"
+
+    #Check glibc version 2.13
+    if [ -x "$(command -v ldd)" ]; then
+        LDD_VERSION=$(ldd --version | head -1 | awk -F' ' '{print $NF}')
+        LDD_VERSION_MAJOR=$(echo "${LDD_VERSION}" | awk -F'.' '{print $1}')
+        LDD_VERSION_MAJOR=$((LDD_VERSION_MAJOR + 0))
+        LDD_VERSION_MINOR=$(echo "${LDD_VERSION}" | awk -F'.' '{print $2}')
+        LDD_VERSION_MINOR=$((LDD_VERSION_MINOR + 0))
+
+        if [ $LDD_VERSION_MAJOR -gt 2 ]; then
+            message_ok "GLibC version is OK ${LDD_VERSION}"
+        else
+            if [[ $LDD_VERSION_MAJOR -eq 2 && $LDD_VERSION_MINOR -ge 13 ]]; then
+                message_ok "GLibC version is OK ${LDD_VERSION}"
+            else
+                message_warning "Glibc need to be updated"
+            fi
+        fi
     else
-        systemctl restart mongod || echo "mongodb systemctl job does not exist"
+        message_optional "Command ldd not found"
     fi
-elif [ -x /usr/local/bin/brew ]; then
-	sudo brew services restart mongodb/brew/mongodb-community@3.6
+
+    #Set swappiness to 1
+    if grep -q "vm.swappiness" "/etc/sysctl.conf"; then
+        sed -i "/vm.swappiness/d" /etc/sysctl.conf
+    fi
+
+    message_ok "Swappiness set to 1"
+
+    #File handle security limits
+    update_sysctl "fs.file-max" "392000"
+    update_sysctl "kernel.pid_max" "256000"
+    update_sysctl "kernel.threads-max" "256000"
+    update_sysctl "vm.max_map_count" "512000"
+
+    message_ok "Configured file handle kernel limits"
+
+    #Security limits for MongoDB user
+    if grep -q "${MONGODB_USER}" "/etc/security/limits.conf"; then
+        sed -i "/${MONGODB_USER}/d" /etc/security/limits.conf
+    fi
+
+    sed -i "\$a${MONGODB_USER} soft nproc 256000" /etc/security/limits.conf
+    sed -i "\$a${MONGODB_USER} hard nproc 256000" /etc/security/limits.conf
+    sed -i "\$a${MONGODB_USER} soft nofile 392000" /etc/security/limits.conf
+    sed -i "\$a${MONGODB_USER} hard nofile 392000" /etc/security/limits.conf
+
+    message_ok "Configured security limits for MongoDB user"
+
+    #Check numactl support & configure
+    if [ -x "$(command -v numactl)" ]; then
+        numactl --hardware > /dev/null
+
+        if [ $? -eq 1 ]; then
+            message_optional "NUMA is not available on this system"
+        else
+            NUMA_NODES=$(numactl --hardware | grep nodes | awk -F' ' '{print $2}')
+            NUMA_NODES=$((NUMA_NODES + 0))
+
+            if [ ! $NUMA_NODES -ge 2 ]; then
+                message_optional "NUMA is not available on this system"
+            else
+                update_sysctl "vm.zone_reclaim_mode" "0"
+                sed -i "s#NUMACTL_STATUS=0#NUMACTL_STATUS=1#g" "${DIR}/../commands/systemd/mongodb.sh"
+                systemctl daemon-reload
+
+                message_ok "Changed service file to work with NUMA"
+            fi
+        fi
+    else
+        message_warning "Command numactl not found"
+    fi
+
+    #Disable transparent-hugepages
+    disable_transparent_hugepages
+
+    #Check if NTP is on
+    if [ -f /etc/redhat-release ]; then
+        if [ -x "$(command -v ntpstat)" ]; then
+            ntpstat > /dev/null
+
+            if [ $? -eq 1 ]; then
+                message_warning "NTP is disabled"
+            else
+                message_ok "NTP is enabled"
+            fi
+        else
+            message_warning "Command ntpstat not found"
+        fi
+    fi
+
+    if [ -f /etc/lsb-release ]; then
+        if [ -x "$(command -v timedatectl)" ]; then
+            timedatectl | grep "Network time on: yes" > /dev/null
+            TIMEDATECTL_OUTPUT_TYPE_1=$?
+
+            timedatectl | grep "System clock synchronized: yes" > /dev/null
+            TIMEDATECTL_OUTPUT_TYPE_2=$?
+
+            if [[ $TIMEDATECTL_OUTPUT_TYPE_1 -eq 0 || $TIMEDATECTL_OUTPUT_TYPE_2 -eq 0 ]]; then
+                message_ok "NTP is enabled"
+            fi
+        else
+            message_warning "Command timedatectl not found"
+        fi
+    fi
+
+    echo -e "\nSome of changes may need reboot!\n"
 fi

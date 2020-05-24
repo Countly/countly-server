@@ -65,11 +65,12 @@ then
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
 
+
     #remove predefined locale file, it should fallback to default one
     rm -rf "$DIR/../frontend/express/public/localization/min/locale_en.properties"
 
     #remove previous dependencies, as they need to be rebuild for new nodejs version
-    sudo rm -rf "$DIR/../node_modules"
+    rm -rf "$DIR/../node_modules"
     
     #remove previous package-lock.json
     rm -rf "$DIR/../package-lock.json"
@@ -98,7 +99,7 @@ then
     
     #get web sdk
     countly update sdk-web
-    
+
     #install dependencies, process files and restart countly
     countly task dist-all
 

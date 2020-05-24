@@ -246,37 +246,31 @@ countly_upgrade (){
 }
 
 countly_mark_version (){
-    if [[ $EUID -ne 0 ]]; then
-        sudo countly mark_version "$@"
-    else
-        if [ "$1" == "fs" ] || [ "$1" == "db" ]
-        then
-            UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" write_"$1" "$2");
-        elif [ "$1" == "help" ]
-        then
-            echo "countly mark_version usage:"
-            echo "    countly mark_version fs <version> # upgrades fs version";
-            echo "    countly mark_version db <version> # upgrades db version";
-            echo "    countly mark_version help         # this command";
-        fi
+    countly_root ;
+    if [ "$1" == "fs" ] || [ "$1" == "db" ]
+    then
+        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" write_"$1" "$2");
+    elif [ "$1" == "help" ]
+    then
+        echo "countly mark_version usage:"
+        echo "    countly mark_version fs <version> # upgrades fs version";
+        echo "    countly mark_version db <version> # upgrades db version";
+        echo "    countly mark_version help         # this command";
     fi
 }
 
 countly_compare_version (){
-    if [[ $EUID -ne 0 ]]; then
-        sudo countly compare_version_version "$@"
-    else
-        if [ "$1" == "fs" ] || [ "$1" == "db" ]
-        then
-            UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" compare_"$1" "$2");
-            echo "$UPGRADE";
-        elif [ "$1" == "help" ]
-        then
-            echo "countly compare_version usage:"
-            echo "    countly compare_version fs <version> # compares fs version";
-            echo "    countly compare_version db <version> # compares db version";
-            echo "    countly compare_version help         # this command";
-        fi
+    countly_root ;
+    if [ "$1" == "fs" ] || [ "$1" == "db" ]
+    then
+        UPGRADE=$(nodejs "$DIR/../scripts/version_marks.js" compare_"$1" "$2");
+        echo "$UPGRADE";
+    elif [ "$1" == "help" ]
+    then
+        echo "countly compare_version usage:"
+        echo "    countly compare_version fs <version> # compares fs version";
+        echo "    countly compare_version db <version> # compares db version";
+        echo "    countly compare_version help         # this command";
     fi
 }
 
@@ -542,14 +536,14 @@ countly_restoredb (){
     else
         echo "No countly_drill database dump to restore from";
     fi
-    
+
     if [ -d "$1/dump/countly_fs" ]; then
         echo "Restoring countly_fs database...";
         mongorestore "${connection[@]}" --db countly_fs --batchSize=10 "$1/dump/countly_fs" > /dev/null;
     else
         echo "No countly_fs database dump to restore from";
     fi
-    
+
     if [ -d "$1/dump/countly_out" ]; then
         echo "Restoring countly_out database...";
         mongorestore "${connection[@]}" --db countly_out --batchSize=10 "$1/dump/countly_out" > /dev/null;
@@ -566,12 +560,6 @@ countly_restore (){
     fi
     countly_restorefiles "$@";
     countly_restoredb "$@";
-}
-
-countly_thp (){
-    cp -f "$DIR/../scripts/disable-transparent-hugepages" /etc/init.d/disable-transparent-hugepages
-    chmod 755 /etc/init.d/disable-transparent-hugepages
-    update-rc.d disable-transparent-hugepages defaults
 }
 
 #load real platform/init sys file to overwrite stubs
