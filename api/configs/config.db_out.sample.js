@@ -16,7 +16,7 @@ var countlyConfig = {
             ssl:false
         }
         */
-    }
+    },
     /*  or for a replica set
     mongodb: {
         replSetServers : [
@@ -42,6 +42,21 @@ var countlyConfig = {
 	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
 	mongodb: "mongodb://localhost:27017/countly_out",
     */
+    /**
+    * Default API configuration
+    * @type {object} 
+    * @property {number} [port=3001] - api port number to use, default 3001
+    * @property {string} [host=localhost] - host to which to bind connection
+    * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
+    * @property {number} workers - amount of paralel countly processes to run, defaults to cpu/core amount
+    * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
+    */
+    api: {
+        port: 4001,
+        host: "localhost",
+        max_sockets: 1024,
+        timeout: 120000
+    },
 };
 
 module.exports = countlyConfig;
