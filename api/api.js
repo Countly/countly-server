@@ -1,41 +1,19 @@
 const http = require('http');
-const cluster = require('cluster');
 const formidable = require('formidable');
-const os = require('os');
+const {processRequest} = require('./utils/requestProcessor');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
-const {processRequest} = require('./utils/requestProcessor');
-const frontendConfig = require('../frontend/express/config.js');
-const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
+const {CacheMaster} = require('./parts/data/cache.js');
 
 var t = ["countly:", "api"];
-
-if (cluster.isMaster) {
-    console.log("Starting master");
-    if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
-        log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
-    }
-    common.db = plugins.dbConnection();
-    t.push("master");
-    t.push("node");
-    t.push(process.argv[1]);
-}
-else {
-    t.push("worker");
-    t.push("node");
-}
+common.db = plugins.dbConnection(countlyConfig);
+t.push("node");
+t.push(process.argv[1]);
 
 // Finaly set the visible title
 process.title = t.join(' ');
-
-let workers = [];
-
-/**
- * Set Max Sockets
- */
-http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
 
 /**
  * Set Plugins APIs Config
@@ -132,140 +110,65 @@ process.on('unhandledRejection', (reason, p) => {
     }
     console.trace();
 });
+    
+console.log("Starting worker", process.pid);
+const taskManager = require('./utils/taskmanager.js');
+
+common.cache = new CacheMaster(common.db);
+common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e => {
+    console.log(e);
+    process.exit(1);
+});
+
+//since process restarted mark running tasks as errored
+taskManager.errorResults({db: common.db});
+
+plugins.dispatch("/worker", {common: common});
 
 /**
- * Pass To Master
- * @param {cluster.Worker} worker - worker thatw as spawned by master
- */
-const passToMaster = (worker) => {
-    worker.on('message', (msg) => {
-        if (msg.cmd === 'log') {
-            workers.forEach((w) => {
-                if (w !== worker) {
-                    w.send({
-                        cmd: 'log',
-                        config: msg.config
-                    });
-                }
-            });
-            require('./utils/log.js').ipcHandler(msg);
-        }
-        else if (msg.cmd === "checkPlugins") {
-            plugins.checkPluginsMaster();
-        }
-        else if (msg.cmd === "startPlugins") {
-            plugins.startSyncing();
-        }
-        else if (msg.cmd === "endPlugins") {
-            plugins.stopSyncing();
-        }
-        else if (msg.cmd === "dispatch" && msg.event) {
-            workers.forEach((w) => {
-                w.send(msg);
-            });
-        }
-    });
-};
+* Set Max Sockets
+*/
+http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
 
+http.Server((req, res) => {
+    const params = {
+        qstring: {},
+        res: res,
+        req: req
+    };
 
-const workerCount = (countlyConfig.api.workers)
-    ? countlyConfig.api.workers
-    : os.cpus().length;
-
-if (cluster.isMaster && workerCount > 1) {
-    common.cache = new CacheMaster(common.db);
-    common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e => {
-        console.log(e);
-        process.exit(1);
-    });
-
-    for (let i = 0; i < workerCount; i++) {
-        const worker = cluster.fork();
-        workers.push(worker);
-    }
-
-    workers.forEach(passToMaster);
-
-    cluster.on('exit', (worker) => {
-        workers = workers.filter((w) => {
-            return w !== worker;
+    if (req.method.toLowerCase() === 'post') {
+        const form = new formidable.IncomingForm();
+        req.body = '';
+        req.on('data', (data) => {
+            req.body += data;
         });
-        const newWorker = cluster.fork();
-        workers.push(newWorker);
-        passToMaster(newWorker);
-    });
 
-    plugins.dispatch("/master", {});
-}
-else {
-    console.log("Starting worker", process.pid, "parent:", process.ppid);
-    const taskManager = require('./utils/taskmanager.js');
-    common.db = plugins.dbConnection(countlyConfig);
+        form.parse(req, (err, fields, files) => {
+            params.files = files;
+            for (const i in fields) {
+                params.qstring[i] = fields[i];
+            }
+            if (!params.apiPath) {
+                processRequest(params);
+            }
+        });
+    }
+    else if (req.method.toLowerCase() === 'options') {
+        const headers = {};
+        headers["Access-Control-Allow-Origin"] = "*";
+        headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+        headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
+        res.writeHead(200, headers);
+        res.end();
+    }
+    //attempt process GET request
+    else if (req.method.toLowerCase() === 'get') {
+        processRequest(params);
+    }
+    else {
+        common.returnMessage(params, 405, "Method not allowed");
+    }
+}).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 
-    common.cache = new CacheWorker(common.db);
-    common.cache.start();
-
-    //since process restarted mark running tasks as errored
-    taskManager.errorResults({db: common.db});
-
-    process.on('message', common.log.ipcHandler);
-
-    process.on('message', (msg) => {
-        if (msg.cmd === 'log') {
-            common.log.ipcHandler(msg);
-        }
-        else if (msg.cmd === "dispatch" && msg.event) {
-            plugins.dispatch(msg.event, msg.data || {});
-        }
-    });
-
-    process.on('exit', () => {
-        console.log('Exiting due to master exited');
-        process.exit(1);
-    });
-
-    plugins.dispatch("/worker", {common: common});
-
-    http.Server((req, res) => {
-        const params = {
-            qstring: {},
-            res: res,
-            req: req
-        };
-
-        if (req.method.toLowerCase() === 'post') {
-            const form = new formidable.IncomingForm();
-            req.body = '';
-            req.on('data', (data) => {
-                req.body += data;
-            });
-
-            form.parse(req, (err, fields, files) => {
-                params.files = files;
-                for (const i in fields) {
-                    params.qstring[i] = fields[i];
-                }
-                if (!params.apiPath) {
-                    processRequest(params);
-                }
-            });
-        }
-        else if (req.method.toLowerCase() === 'options') {
-            const headers = {};
-            headers["Access-Control-Allow-Origin"] = "*";
-            headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-            headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
-            res.writeHead(200, headers);
-            res.end();
-        }
-        //attempt process GET request
-        else if (req.method.toLowerCase() === 'get') {
-            processRequest(params);
-        }
-        else {
-            common.returnMessage(params, 405, "Method not allowed");
-        }
-    }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
-
-    plugins.loadConfigs(common.db);
-}
+plugins.loadConfigs(common.db);
