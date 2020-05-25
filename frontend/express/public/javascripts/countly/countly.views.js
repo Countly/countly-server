@@ -5261,7 +5261,7 @@ window.EventsView = countlyView.extend({
             $(".event-container").removeClass("active");
             $(this).addClass("active");
             
-            var eventHashURL = "/dashboard#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/#" + encodeURIComponent(tmpCurrEvent);
+            var eventHashURL = "/dashboard#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/key/" + encodeURIComponent(tmpCurrEvent);
             window.location.replace(eventHashURL);
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() {
@@ -5555,7 +5555,7 @@ window.EventsView = countlyView.extend({
             });
             $('.nav-search').find("input").trigger("input");
 
-            var eventURLComponents =  window.location.hash.match(/analytics\/events\/#(.*)/);
+            var eventURLComponents =  window.location.hash.match(/analytics\/events\/key\/(.*)/);
             if (eventURLComponents && eventURLComponents.length >= 2) {
                 var targetEvent = decodeURIComponent(eventURLComponents[1]);
                 if (countlyEvent.getEventData().eventName !== targetEvent) {
@@ -6967,7 +6967,9 @@ app.route('/manage/token_manager', 'token_manager', function() {
 app.route('/versions', 'version_history', function() {
     this.renderWhenReady(this.VersionHistoryView);
 });
-
+app.route("/analytics/events/key/:event", "events", function() {
+    this.renderWhenReady(this.eventsView);
+})
 app.route("/analytics/events/:subpageid", "events", function(subpageid) {
     this.eventsView.subpageid = subpageid;
     if (subpageid === 'blueprint') {
