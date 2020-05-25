@@ -1,4 +1,5 @@
 const http = require('http');
+const os = require('os');
 const formidable = require('formidable');
 const {processRequest} = require('./utils/requestProcessor');
 const countlyConfig = require('./config', 'dont-enclose');
@@ -9,6 +10,12 @@ const {CacheMaster} = require('./parts/data/cache.js');
 
 var t = ["countly:", "api"];
 common.db = plugins.dbConnection(countlyConfig);
+if (!process.env.worker) {
+    t.push("master");
+}
+else {
+    t.push("worker");
+}
 t.push("node");
 t.push(process.argv[1]);
 
@@ -110,8 +117,13 @@ process.on('unhandledRejection', (reason, p) => {
     }
     console.trace();
 });
-    
-console.log("Starting worker", process.pid);
+
+if (!process.env.worker) {
+    console.log("Starting master", process.pid);
+}
+else {
+    console.log("Starting worker", process.pid);
+}
 const taskManager = require('./utils/taskmanager.js');
 
 common.cache = new CacheMaster(common.db);
@@ -122,6 +134,11 @@ common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e =
 
 //since process restarted mark running tasks as errored
 taskManager.errorResults({db: common.db});
+
+if (!process.env.worker) {
+    //process not passed in env, so must be the first process to be spawned
+    plugins.dispatch("/master", {});
+}
 
 plugins.dispatch("/worker", {common: common});
 
@@ -169,6 +186,18 @@ http.Server((req, res) => {
     else {
         common.returnMessage(params, 405, "Method not allowed");
     }
-}).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
+}).listen(process.env.port || common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
+
+//spawn more clones if there need to be
+const workerCount = (countlyConfig.api.workers)
+    ? countlyConfig.api.workers
+    : os.cpus().length;
+if (!process.env.worker && workerCount > 1) {
+    let cp = require('child_process');
+    for (let i = 1; i < workerCount; i++) {
+        cp.fork('../../api/api.js', {env: {port: common.config.api.port + i, worker: true}});
+        //we would also need to modify nginx config here too
+    }
+}
 
 plugins.loadConfigs(common.db);
