@@ -707,6 +707,7 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}}, function() {});
     common.db.collection('device_details').remove({'_id': {$regex: appId + ".*"}}, function() {});
     common.db.collection('cities').remove({'_id': {$regex: appId + ".*"}}, function() {});
+    common.db.collection('long_tasks').remove({'app_id': appId + ""}, function() {});
 
     /**
     * Deletes all app's events
