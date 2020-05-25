@@ -2491,7 +2491,7 @@ function processUser(params, done, try_times) {
  * @returns {Function} - done or boolean value
  */
 const checksumSaltVerification = (params, type) => {
-    if (params.app.checksum_salt && params.app.checksum_salt.length) {
+    if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
         const payloads = [];
         if (type === "WriteAPI") {
             payloads.push(params.href.substr(3));
