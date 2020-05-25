@@ -4,7 +4,6 @@ const formidable = require('formidable');
 const os = require('os');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
-const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
@@ -168,16 +167,17 @@ const passToMaster = (worker) => {
     });
 };
 
-if (cluster.isMaster) {
+
+const workerCount = (countlyConfig.api.workers)
+    ? countlyConfig.api.workers
+    : os.cpus().length;
+
+if (cluster.isMaster && workerCount > 1) {
     common.cache = new CacheMaster(common.db);
     common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e => {
         console.log(e);
         process.exit(1);
     });
-
-    const workerCount = (countlyConfig.api.workers)
-        ? countlyConfig.api.workers
-        : os.cpus().length;
 
     for (let i = 0; i < workerCount; i++) {
         const worker = cluster.fork();
@@ -196,17 +196,6 @@ if (cluster.isMaster) {
     });
 
     plugins.dispatch("/master", {});
-
-    // Allow configs to load & scanner to find all jobs classes
-    setTimeout(() => {
-        jobs.job('api:topEvents').replace().schedule('every 1 day');
-        jobs.job('api:ping').replace().schedule('every 1 day');
-        jobs.job('api:clear').replace().schedule('every 1 day');
-        jobs.job('api:clearTokens').replace().schedule('every 1 day');
-        jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
-        jobs.job('api:task').replace().schedule('every 5 minutes');
-        jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
-    }, 10000);
 }
 else {
     console.log("Starting worker", process.pid, "parent:", process.ppid);
