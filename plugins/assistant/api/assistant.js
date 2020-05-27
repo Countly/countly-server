@@ -4,6 +4,7 @@ const pluginManager = require('../../pluginManager.js');
 const PromiseB = require("bluebird");
 const async = require("async");
 const _ = require('underscore');
+const moment = require('moment-timezone');
 
 (function(assistant) {
     const db_name_notifs = "assistant_notifs";
@@ -671,17 +672,11 @@ const _ = require('underscore');
         apc.is_mobile = appData.type === "mobile";//check if app type is mobile or web
 
         //set the current time info based on the apps timezone
-        apc.dateNow = new Date();//get current day and time
-        try {
-            apc.dateNow.setTimezone(apc.appTimezone);
-        }
-        catch (ex) {
-            log.w('Assistant plugin got exception while trying to set timezone [%j]', { message: ex.message, stack: ex.stack });
-        }
+        apc.dateNow = moment().tz(apc.appTimezone);//get current day and time
 
-        apc.hour = apc.dateNow.getHours();
-        apc.minutes = apc.dateNow.getMinutes();
-        apc.dow = apc.dateNow.getDay();
+        apc.hour = apc.dateNow.hour();
+        apc.minutes = apc.dateNow.minute();
+        apc.dow = apc.dateNow.day();
         if (apc.dow === 0) {
             apc.dow = 7;
         }

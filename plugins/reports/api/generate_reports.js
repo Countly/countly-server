@@ -1,17 +1,15 @@
 //start db connection
 var plugins = require('../../pluginManager.js'),
-    async = require("async"),
-    time = require('time');
+    moment = require('moment-timezone'),
+    async = require("async");
 /**
  * convert to app's timezone
  * @param {obj} props - original time object
  */
 function convertToTimezone(props) {
     //convert time
-    var date = new time.Date();
-    var serverOffset = date.getTimezoneOffset();
-    date.setTimezone(props.timezone);
-    var clientOffset = date.getTimezoneOffset();
+    var serverOffset = moment().utcOffset();
+    var clientOffset = moment().tz(props.timezone).utcOffset();
     var diff = serverOffset - clientOffset;
     var day = props.day;
     var hour = props.hour - Math.floor(diff / 60);

@@ -1507,9 +1507,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     var lastViewTimestamp = view[viewName];
                     var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                         lastViewDate = common.getDate(lastViewTimestamp, params.appTimezone),
-                        secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                        secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                        secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                        secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                        secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                        secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                         secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
@@ -1521,8 +1521,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         monthSmallerUpdate['d.' + params.time.day + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 
-                    if (lastViewDate.getFullYear() === params.time.yearly &&
-                        Math.ceil(common.moment(lastViewDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+                    if (lastViewDate.year() === params.time.yearly &&
+                        Math.ceil(lastViewDate.format("DDD") / 7) < params.time.weekly) {
                         tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 

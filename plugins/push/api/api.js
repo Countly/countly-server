@@ -424,9 +424,9 @@ const PUSH_CACHE_GROUP = 'P';
             var userLastSeenTimestamp = dbAppUser[common.dbUserMap.last_seen],
                 currDate = common.getDate(params.time.timestamp, params.appTimezone),
                 userLastSeenDate = common.getDate(userLastSeenTimestamp, params.appTimezone),
-                secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                 secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
             if (userLastSeenTimestamp < (params.time.timestamp - secInMin) && messagingTokenKeys(dbAppUser).length) {
@@ -437,8 +437,8 @@ const PUSH_CACHE_GROUP = 'P';
                 updateUsersMonth['d.' + params.time.day + '.' + common.dbMap['messaging-enabled']] = 1;
             }
 
-            if (userLastSeenDate.getFullYear() === parseInt(params.time.yearly) &&
-                Math.ceil(common.moment(userLastSeenDate).tz(params.appTimezone).format('DDD') / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
+            if (userLastSeenDate.year() === parseInt(params.time.yearly) &&
+                Math.ceil(userLastSeenDate.format('DDD') / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
                 updateUsersZero['d.w' + params.time.weekly + '.' + common.dbMap['messaging-enabled']] = 1;
             }
 

@@ -113,30 +113,30 @@ function getPeriodObject() {
         var fromDate, toDate;
 
         if (Number.isInteger(_period[0]) && Number.isInteger(_period[1])) {
-            fromDate = new Date(_period[0]);
-            toDate = new Date(_period[1]);
+            fromDate = moment(_period[0]);
+            toDate = moment(_period[1]);
         }
         else {
-            fromDate = moment(_period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
-            toDate = moment(_period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
+            fromDate = moment(_period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+            toDate = moment(_period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
         }
 
-        startTimestamp = moment(fromDate).utc().startOf("day");
-        endTimestamp = moment(toDate).utc().endOf("day");
-        fromDate.setTimezone(_appTimezone);
-        toDate.setTimezone(_appTimezone);
+        startTimestamp = fromDate.clone().utc().startOf("day");
+        endTimestamp = toDate.clone().utc().endOf("day");
+        fromDate.tz(_appTimezone);
+        toDate.tz(_appTimezone);
 
-        if (fromDate.getTime() === toDate.getTime()) {
+        if (fromDate.valueOf() === toDate.valueOf()) {
             cycleDuration = moment.duration(1, "day");
             Object.assign(periodObject, {
                 dateString: "D MMM, HH:mm",
                 periodMax: 23,
                 periodMin: 0,
-                activePeriod: moment(fromDate).tz(_appTimezone).format("YYYY.M.D"),
-                previousPeriod: moment(fromDate).tz(_appTimezone).subtract(1, "day").format("YYYY.M.D")
+                activePeriod: fromDate.format("YYYY.M.D"),
+                previousPeriod: fromDate.clone().subtract(1, "day").format("YYYY.M.D")
             });
         }
-        else if (fromDate.getTime() > toDate.getTime()) {
+        else if (fromDate.valueOf() > toDate.valueOf()) {
             //incorrect range - reset to 30 days
             let nDays = 30;
 
@@ -341,11 +341,7 @@ countlyCommon.periodObj = getPeriodObject();
 countlyCommon.setTimezone = function(appTimezone) {
     if (appTimezone && appTimezone.length) {
         _appTimezone = appTimezone;
-
-        var currTime = new Date();
-        currTime.setTimezone(appTimezone);
-
-        _currMoment = moment(currTime);
+        _currMoment = moment();
         _currMoment.tz(appTimezone);
         countlyCommon.periodObj = getPeriodObject();
     }
@@ -1739,24 +1735,21 @@ countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
     var ts = {};
 
     tmpArr = periodObj.currentPeriodArr[0].split(".");
-    ts.$gte = new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])));
-    ts.$gte.setTimezone(params.appTimezone);
+    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).tz(params.appTimezone);
     if (inSeconds) {
-        ts.$gte = ts.$gte.getTime() / 1000 + ts.$gte.getTimezoneOffset() * 60;
+        ts.$gte = ts.$gte.valueOf() / 1000 - ts.$gte.utcOffset() * 60;
     }
     else {
-        ts.$gte = ts.$gte.getTime() + ts.$gte.getTimezoneOffset() * 60000;
+        ts.$gte = ts.$gte.valueOf() - ts.$gte.utcOffset() * 60000;
     }
 
     tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
-    ts.$lt = new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])));
-    ts.$lt.setDate(ts.$lt.getDate() + 1);
-    ts.$lt.setTimezone(params.appTimezone);
+    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days').tz(params.appTimezone);
     if (inSeconds) {
-        ts.$lt = ts.$lt.getTime() / 1000 + ts.$lt.getTimezoneOffset() * 60;
+        ts.$lt = ts.$lt.valueOf() / 1000 - ts.$lt.utcOffset() * 60;
     }
     else {
-        ts.$lt = ts.$lt.getTime() + ts.$lt.getTimezoneOffset() * 60000;
+        ts.$lt = ts.$lt.valueOf() - ts.$lt.utcOffset() * 60000;
     }
     return ts;
 };
@@ -1883,10 +1876,7 @@ countlyCommon.getPeriodObj = function(params, defaultPeriod = "month") {
     if (appTimezone && appTimezone.length) {
         _appTimezone = appTimezone;
 
-        let currTime = new Date();
-        currTime.setTimezone(appTimezone);
-
-        _currMoment = moment(currTime);
+        _currMoment = moment().tz(appTimezone);
         _currMoment.tz(appTimezone);
     }
 

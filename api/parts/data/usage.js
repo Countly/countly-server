@@ -401,13 +401,11 @@ usage.endUserSession = function(params, done) {
                     return done ? done() : false;
                 }
 
-                var lastBeginSession = dbAppUser[common.dbUserMap.last_begin_session_timestamp],
-                    currDateWithoutTimestamp = new Date();
+                var lastBeginSession = dbAppUser[common.dbUserMap.last_begin_session_timestamp];
 
                 // We can't use the params.time.timestamp since we are inside a setTimeout
                 // and we need the actual timestamp
-                currDateWithoutTimestamp.setTimezone(params.appTimezone);
-                var currTimestamp = Math.round(currDateWithoutTimestamp.getTime() / 1000);
+                var currTimestamp = moment().tz(params.appTimezone).unix();
 
 
                 // If ongoing session flag is set and there is a 11 second difference between the current
@@ -771,9 +769,9 @@ function processUserSession(dbAppUser, params, done) {
         var userLastSeenTimestamp = dbAppUser[common.dbUserMap.last_seen],
             currDate = common.getDate(params.time.timestamp, params.appTimezone),
             userLastSeenDate = common.getDate(userLastSeenTimestamp, params.appTimezone),
-            secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-            secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-            secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+            secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+            secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+            secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
             secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
         // If the last end_session is received less than 15 seconds ago we will ignore
@@ -834,8 +832,8 @@ function processUserSession(dbAppUser, params, done) {
             uniqueLevelsMonth.push(params.time.day);
         }
 
-        if (userLastSeenDate.getFullYear() === params.time.yearly &&
-                Math.ceil(common.moment(userLastSeenDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+        if (userLastSeenDate.year() === params.time.yearly &&
+                Math.ceil(userLastSeenDate.format("DDD") / 7) < params.time.weekly) {
             uniqueLevels[uniqueLevels.length] = params.time.yearly + ".w" + params.time.weekly;
             uniqueLevelsZero.push("w" + params.time.weekly);
         }

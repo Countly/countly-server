@@ -6,6 +6,7 @@
 /** @lends module:api/parts/data/fetch */
 var fetch = {},
     common = require('./../../utils/common.js'),
+    moment = require('moment-timezone'),
     async = require('async'),
     countlyModel = require('../../lib/countly.model.js'),
     countlySession = countlyModel.load("users"),
@@ -83,9 +84,8 @@ fetch.fetchEventData = function(collection, params) {
 
     common.db.collection(collection).findOne({_id: idToFetch}, fetchFields, function(err, result) {
         if (err || !result) {
-            var now = new common.time.Date();
             result = {};
-            result[now.getFullYear()] = {};
+            result[moment().year()] = {};
         }
 
         common.returnOutput(params, result);
@@ -272,9 +272,8 @@ fetch.fetchTimeData = function(collection, params) {
 
     common.db.collection(collection).findOne({'_id': params.app_id}, fetchFields, function(err, result) {
         if (!result) {
-            let now = new common.time.Date();
             result = {};
-            result[now.getFullYear()] = {};
+            result[moment.year()] = {};
         }
 
         common.returnOutput(params, result);
