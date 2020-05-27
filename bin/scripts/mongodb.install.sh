@@ -167,69 +167,7 @@ function update_sysctl() {
     sysctl -p -q > /dev/null
 }
 
-if [ $# -eq 0 ]; then
-    if [ -f /etc/redhat-release ]; then
-        #install latest mongodb
-
-        #select source based on release
-        if grep -q -i "release 6" /etc/redhat-release ; then
-            echo "[mongodb-org-3.6]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.6/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
-        elif grep -q -i "release 7" /etc/redhat-release ; then
-            echo "[mongodb-org-3.6]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.6/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
-        fi
-        yum install -y mongodb-org
-    fi
-
-    if [ -f /etc/lsb-release ]; then
-        #install latest mongodb
-        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
-        UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
-
-        if [ "$UBUNTU_YEAR" == "14" ]; then
-            echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
-        elif [ "$UBUNTU_YEAR" == "16" ]; then
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
-        else
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
-        fi
-        apt-get update
-        #install mongodb
-        DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
-    fi
-
-    #backup config and remove configuration to prevent duplicates
-    mongodb_configure
-
-    if [ -f /etc/redhat-release ]; then
-        #mongodb might need to be started
-        if grep -q -i "release 6" /etc/redhat-release ; then
-            service mongod restart > /dev/null || echo "mongodb service does not exist"
-        else
-            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
-        fi
-    fi
-
-    if [ -f /etc/lsb-release ]; then
-        if [[ "$(/sbin/init --version)" =~ upstart ]]; then
-            restart mongod > /dev/null || echo "mongodb upstart job does not exist"
-        else
-            systemctl restart mongod || echo "mongodb systemctl job does not exist"
-        fi 2> /dev/null
-    fi
-
-    bash "$0" check
-
-elif [ "$1" == "check" ]; then
+function mongodb_check() {
     MONGODB_USER=$(grep mongod /etc/passwd | awk -F':' '{print $1}')
     MONGODB_PATH=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F' ' '{print $2}')
     MONGODB_DISK=$(df -Th | grep "${MONGODB_PATH}" | awk -F' ' '{print $2}')
@@ -397,4 +335,69 @@ elif [ "$1" == "check" ]; then
     fi
 
     echo -e "\nSome of changes may need reboot!\n"
+}
+
+if [ $# -eq 0 ]; then
+    if [ -f /etc/redhat-release ]; then
+        #install latest mongodb
+
+        #select source based on release
+        if grep -q -i "release 6" /etc/redhat-release ; then
+            echo "[mongodb-org-3.6]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.6/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
+        elif grep -q -i "release 7" /etc/redhat-release ; then
+            echo "[mongodb-org-3.6]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.6/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
+        fi
+        yum install -y mongodb-org
+    fi
+
+    if [ -f /etc/lsb-release ]; then
+        #install latest mongodb
+        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+        UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+
+        if [ "$UBUNTU_YEAR" == "14" ]; then
+            echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        elif [ "$UBUNTU_YEAR" == "16" ]; then
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        else
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        fi
+        apt-get update
+        #install mongodb
+        DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
+    fi
+
+    #backup config and remove configuration to prevent duplicates
+    mongodb_configure
+
+    if [ -f /etc/redhat-release ]; then
+        #mongodb might need to be started
+        if grep -q -i "release 6" /etc/redhat-release ; then
+            service mongod restart > /dev/null || echo "mongodb service does not exist"
+        else
+            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
+        fi
+    fi
+
+    if [ -f /etc/lsb-release ]; then
+        if [[ "$(/sbin/init --version)" =~ upstart ]]; then
+            restart mongod > /dev/null || echo "mongodb upstart job does not exist"
+        else
+            systemctl restart mongod || echo "mongodb systemctl job does not exist"
+        fi 2> /dev/null
+    fi
+
+    mongodb_check
+elif [ "$1" == "check" ]; then
+    mongodb_check
 fi
