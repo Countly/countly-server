@@ -23,7 +23,9 @@
     "supertest": "4.0.2"
   },
   "scripts": {
-    "test": "grunt --verbose"
+    "test": "grunt --verbose",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "argon2": "0.26.2",
@@ -80,10 +82,12 @@
     "request": "2.88.2",
     "time": "0.12.0",
     "underscore": "1.10.2",
-    "yamljs": "0.3.0"
+    "yamljs": "0.3.0",
+    "snyk": "^1.330.4"
   },
   "jshintConfig": {
     "esversion": 6,
     "node": true
-  }
+  },
+  "snyk": true
 }
