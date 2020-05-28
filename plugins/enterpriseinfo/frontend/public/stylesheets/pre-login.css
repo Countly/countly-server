@@ -1,5 +1,5 @@
-#login-form { background-image:none; margin-top: -190px; margin-left: -400px; width:800px; height:380px; }
-#login-form > div:first-child{float:left; overflow:auto; height:100%; width:36%; text-align: center;}
+#login-form { background-image:none; margin-top: -190px; margin-left: -450px; width:920px; height:380px; }
+#login-form > div:first-child{float:left; overflow:auto; width:330px; text-align: center;}
 #login-left { margin-right:35px; padding-right:35px; height:auto; width: 450px; }
 #login-logo { margin-top:45px; margin-bottom:25px !important;}
 #login-form form {padding: 20px 20px 0px 20px;}
