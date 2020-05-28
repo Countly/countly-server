@@ -190,6 +190,8 @@
         {
             "files": [
                 "api/**/*.js",
+                "core/**/*.js",
+                "ingest/**/*.js",
                 "frontend/express/*.js",
                 "frontend/express/libs/*.js",
                 "plugins/pluginManager.js",
