@@ -1,0 +1,22 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-567746:
+    - lodash:
+        patched: '2020-05-28T11:38:27.031Z'
+    - geoip-lite > async > lodash:
+        patched: '2020-05-28T11:38:27.031Z'
+    - geoip-lite > ip-address > lodash:
+        patched: '2020-05-28T11:38:27.031Z'
+    - grunt > grunt-legacy-log > lodash:
+        patched: '2020-05-28T11:38:27.031Z'
+    - grunt > grunt-legacy-util > lodash:
+        patched: '2020-05-28T11:38:27.031Z'
+    - jsdoc > catharsis > lodash:
+        patched: '2020-05-28T11:38:27.031Z'
+    - jsdoc > requizzle > lodash:
+        patched: '2020-05-28T11:38:27.031Z'
+    - grunt > grunt-legacy-log > grunt-legacy-log-utils > lodash:
+        patched: '2020-05-28T11:38:27.031Z'
