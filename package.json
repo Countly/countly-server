@@ -23,7 +23,9 @@
     "supertest": "4.0.2"
   },
   "scripts": {
-    "test": "grunt --verbose"
+    "test": "grunt --verbose",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "argon2": "0.26.2",
@@ -56,7 +58,7 @@
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-cssmin": "3.0.0",
     "grunt-contrib-uglify": "4.0.1",
-    "jimp": "0.10.1",
+    "jimp": "0.12.0",
     "jsdoc": "3.6.4",
     "json2csv": "4.5.4",
     "json2xls": "^0.1.2",
@@ -80,10 +82,12 @@
     "request": "2.88.2",
     "time": "0.12.0",
     "underscore": "1.10.2",
-    "yamljs": "0.3.0"
+    "yamljs": "0.3.0",
+    "snyk": "^1.330.4"
   },
   "jshintConfig": {
     "esversion": 6,
     "node": true
-  }
+  },
+  "snyk": true
 }
