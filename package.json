@@ -79,7 +79,6 @@
     "properties-parser": "0.3.1",
     "puppeteer": "2.1.1",
     "request": "2.88.2",
-    "time": "0.12.0",
     "underscore": "1.10.2",
     "yamljs": "0.3.0"
   },

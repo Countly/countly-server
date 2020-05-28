@@ -6,7 +6,6 @@
 /** @lends module:api/utils/common */
 var common = {},
     moment = require('moment-timezone'),
-    time = require('time')(Date),
     crypto = require('crypto'),
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
@@ -216,12 +215,6 @@ common.dbEventMap = {
 * @type {object} 
 */
 common.config = countlyConfig;
-
-/**
-* Reference to time module
-* @type {object} 
-*/
-common.time = time;
 
 /**
 * Reference to momentjs
@@ -560,32 +553,29 @@ common.fillTimeObject = function(params, object, property, increment) {
 common.initTimeObj = function(appTimezone, reqTimestamp) {
     var currTimestamp,
         curMsTimestamp,
-        currDate,
-        currDateWithoutTimestamp = new Date();
+        tmpMoment,
+        currDateWithoutTimestamp = moment();
 
     // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer, handling also float timestamps with ms after dot
     if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
         // If the received timestamp is greater than current time use the current time as timestamp
-        currTimestamp = (parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
-        curMsTimestamp = (parseInt(reqTimestamp, 10) > time.time()) ? time.time() * 1000 : parseFloat(reqTimestamp, 10) * 1000;
-        currDate = new Date(currTimestamp * 1000);
+        currTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.unix() : parseInt(reqTimestamp, 10);
+        curMsTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.valueOf() : parseFloat(reqTimestamp, 10) * 1000;
+        tmpMoment = moment(currTimestamp * 1000);
     }
     else if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 && common.isNumber(reqTimestamp)) {
         var tmpTimestamp = Math.floor(parseInt(reqTimestamp, 10) / 1000);
-        curMsTimestamp = (tmpTimestamp > time.time()) ? Date.now() : parseInt(reqTimestamp, 10);
-        currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
-        currDate = new Date(currTimestamp * 1000);
+        curMsTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix()) ? Date.now() : parseInt(reqTimestamp, 10);
+        currTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.valueOf() : tmpTimestamp;
+        tmpMoment = moment(currTimestamp * 1000);
     }
     else {
-        currTimestamp = time.time(); // UTC
-        currDate = new Date();
-        curMsTimestamp = currDate.getTime();
+        tmpMoment = moment();
+        currTimestamp = tmpMoment.unix(); // UTC
+        curMsTimestamp = tmpMoment.valueOf();
     }
 
-    currDate.setTimezone(appTimezone);
-    currDateWithoutTimestamp.setTimezone(appTimezone);
-
-    var tmpMoment = moment(currDate);
+    currDateWithoutTimestamp.tz(appTimezone);
     tmpMoment.tz(appTimezone);
 
     /**
@@ -608,8 +598,8 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
    */
     return {
         now: tmpMoment,
-        nowUTC: moment.utc(currDate),
-        nowWithoutTimestamp: moment(currDateWithoutTimestamp).tz(appTimezone),
+        nowUTC: tmpMoment.clone().utc(),
+        nowWithoutTimestamp: currDateWithoutTimestamp,
         timestamp: currTimestamp,
         mstimestamp: curMsTimestamp,
         yearly: tmpMoment.format("YYYY"),
@@ -627,13 +617,13 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 * Creates a Date object from provided seconds timestamp in provided timezone
 * @param {number} timestamp - unix timestamp in seconds
 * @param {string} timezone - name of the timezone
-* @returns {Date} Date object for provided time
+* @returns {moment} moment object for provided time
 */
 common.getDate = function(timestamp, timezone) {
-    var tmpDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
+    var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
 
     if (timezone) {
-        tmpDate.setTimezone(timezone);
+        tmpDate.tz(timezone);
     }
 
     return tmpDate;
@@ -646,30 +636,13 @@ common.getDate = function(timestamp, timezone) {
 * @returns {number} current day of the year
 */
 common.getDOY = function(timestamp, timezone) {
-    var endDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
+    var endDate = (timestamp) ? moment.unix(timestamp * 1000) : moment();
 
     if (timezone) {
-        endDate.setTimezone(timezone);
+        endDate.tz(timezone);
     }
 
-    var startDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
-
-    if (timezone) {
-        startDate.setTimezone(timezone);
-    }
-
-    startDate.setMonth(0);
-    startDate.setDate(1);
-    startDate.setHours(0);
-    startDate.setMinutes(0);
-    startDate.setSeconds(0);
-    startDate.setMilliseconds(0);
-
-    var diff = endDate - startDate;
-    var oneDay = 1000 * 60 * 60 * 24;
-    var currDay = Math.ceil(diff / oneDay);
-
-    return currDay;
+    return endDate.dayOfYear();
 };
 
 /**
@@ -1498,9 +1471,9 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
         if (props.lastTimestamp) {
             var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                 lastDate = common.getDate(props.lastTimestamp, params.appTimezone),
-                secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                 secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
             if (props.lastTimestamp < (params.time.timestamp - secInMin)) {
@@ -1511,8 +1484,8 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
                 updateUsersMonth['d.' + params.time.day + '.' + metric] = props.value;
             }
 
-            if (lastDate.getFullYear() + "" === params.time.yearly + "" &&
-                    Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+            if (lastDate.year() + "" === params.time.yearly + "" &&
+                    Math.ceil(lastDate.format("DDD") / 7) < params.time.weekly) {
                 updateUsersZero["d.w" + params.time.weekly + '.' + metric] = props.value;
             }
 
@@ -1575,9 +1548,9 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
         if (props.lastTimestamp) {
             var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                 lastDate = common.getDate(props.lastTimestamp, params.appTimezone),
-                secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                 secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
             if (props.lastTimestamp < (params.time.timestamp - secInMin)) {
@@ -1588,8 +1561,8 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
                 updateUsersMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + metric] = props.value;
             }
 
-            if (lastDate.getFullYear() + "" === params.time.yearly + "" &&
-                    Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+            if (lastDate.yeat() + "" === params.time.yearly + "" &&
+                    Math.ceil(lastDate.format("DDD") / 7) < params.time.weekly) {
                 updateUsersZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + metric] = props.value;
             }
 
@@ -1737,9 +1710,8 @@ common.versionCompare = function(v1, v2, options) {
 * @returns {number} adjusted timestamp for timezone
 */
 common.adjustTimestampByTimezone = function(ts, tz) {
-    var d = new Date();
-    d.setTimezone(tz);
-    return ts - (d.getTimezoneOffset() * 60);
+    var d = moment().tz(tz);
+    return ts + (d.utcOffset() * 60);
 };
 
 
