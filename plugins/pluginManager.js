@@ -1159,14 +1159,16 @@ var pluginManager = function pluginManager() {
             dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) + "@" + dbName;
         }
 
-        if (dbName.indexOf('mongodb://') !== 0) {
+        if (dbName.indexOf('mongodb://') !== 0 && dbName.indexOf('mongodb+srv://') !== 0) {
             dbName = 'mongodb://' + dbName;
         }
-        if (dbName.indexOf('?') === -1) {
-            dbName = dbName + "?retryWrites=false";
-        }
-        else {
-            dbName = dbName + "&retryWrites=false";
+        if (dbName.indexOf('retryWrites') === -1) {
+            if (dbName.indexOf('?') === -1) {
+                dbName = dbName + "?retryWrites=false";
+            }
+            else {
+                dbName = dbName + "&retryWrites=false";
+            }
         }
 
         var db_name = "countly";
