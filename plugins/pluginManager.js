@@ -452,7 +452,12 @@ var pluginManager = function pluginManager() {
         if (events[event]) {
             try {
                 for (let i = 0, l = events[event].length; i < l; i++) {
-                    promise = events[event][i].call(null, params);
+                    try {
+                        promise = events[event][i].call(null, params);
+                    }
+                    catch (error) {
+                        promise = Promise.reject(error);
+                    }
                     if (promise) {
                         used = true;
                     }
@@ -466,14 +471,6 @@ var pluginManager = function pluginManager() {
             if (params && params.params && params.params.promises) {
                 params.params.promises.push(new Promise(function(resolve) {
                     Promise.allSettled(promises).then(function(results) {
-                        results = results.map(function(result) {
-                            if (result.isRejected()) {
-                                console.log(result.reason());
-                            }
-                            else {
-                                return result.value();
-                            }
-                        });
                         resolve();
                         if (callback) {
                             callback(null, results);
@@ -483,14 +480,6 @@ var pluginManager = function pluginManager() {
             }
             else if (callback) {
                 Promise.allSettled(promises).then(function(results) {
-                    results = results.map(function(result) {
-                        if (result.isRejected()) {
-                            console.log(result.reason());
-                        }
-                        else {
-                            return result.value();
-                        }
-                    });
                     callback(null, results);
                 });
             }
