@@ -250,10 +250,7 @@ function mongodb_check() {
     fi
 
     #Set swappiness to 1
-    if grep -q "vm.swappiness" "/etc/sysctl.conf"; then
-        sed -i "/vm.swappiness/d" /etc/sysctl.conf
-    fi
-
+    update_sysctl "vm.swappiness" "1"
     message_ok "Swappiness set to 1"
 
     #File handle security limits
