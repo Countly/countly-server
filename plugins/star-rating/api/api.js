@@ -1,4 +1,5 @@
 var exported = {},
+    requestProcessor = require('../../../api/utils/requestProcessor'),
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
@@ -260,6 +261,44 @@ const widgetPropertyPreprocessors = {
             }
         });
     };
+    var nonChecksumHandler = function(ob) {
+        try {
+            var events = JSON.parse(ob.params.qstring.events);
+            if (events.length !== 1 || events[0].key !== "[CLY]_star_rating") {
+                common.returnMessage(ob.params, 400, 'invalid_event_request');
+                return false;
+            }
+            else {
+                var params = {
+                    no_checksum: true,
+                    //providing data in request object
+                    'req': {
+                        url: "/i?" + ob.params.href.split("/i/feedback/input?")[1]
+                    },
+                    //adding custom processing for API responses
+                    'APICallback': function(err, responseData, headers, returnCode) {
+                        //sending response to client
+                        if (returnCode === 200) {
+                            common.returnOutput(ob.params, JSON.parse(responseData));
+                            return true;
+                        }
+                        else {
+                            common.returnMessage(ob.params, returnCode, JSON.parse(responseData).result);
+                            return false;
+                        }
+                    }
+                };
+                requestProcessor.processRequest(params);
+                return true;
+            }
+        }
+        catch (jsonParseError) {
+            common.returnMessage(ob.params, 400, 'invalid_event_request');
+            return false;
+        }
+    };
+
+    plugins.register("/i/feedback/input", nonChecksumHandler);
     plugins.register("/i", function(ob) {
         var params = ob.params;
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {

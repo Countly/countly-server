@@ -341,7 +341,7 @@
             }
             $.ajax({
                 "type": "GET",
-                "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
+                "url": url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
                 "success": function(response) {
                     document.getElementsByClassName("success-modal-content")[0].style.display = "block";
                     document.getElementsByClassName("modal-content")[0].style.display = "none";
