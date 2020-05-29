@@ -8,8 +8,8 @@ function mongodb_configure () {
     INDENT_LEVEL=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
     INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
 
-    sed -i "/directoryPerDB/d" ${MONGODB_CONFIG_FILE}
-    sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
+    #sed -i "/directoryPerDB/d" ${MONGODB_CONFIG_FILE}
+    #sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
 
     if grep -q "slowOpThresholdMs" "$MONGODB_CONFIG_FILE"; then
         sed -i "/slowOpThresholdMs/d" ${MONGODB_CONFIG_FILE}
