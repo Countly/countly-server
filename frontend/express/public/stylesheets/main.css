@@ -1236,6 +1236,7 @@ margin: 50px 0;}
 #eventOverviewWidgets>table tr:last-child td{border-bottom:none;}
 #eventOverviewWidgets .cly-widget .value {color: #3a3a3a; font-size:38px;}
 #eventOverviewWidgets .cly-widget .title {color: #3a3a3a; max-width:80%; float:left; text-overflow: ellipsis;white-space: nowrap;overflow: hidden; margin-right:8px;}
+#eventOverviewWidgets .cly-widget .title:hover{color:#6bb96ecc;}
 #eventOverviewWidgets .cly-widget td{padding: 0 10px;}
 #eventOverviewWidgets .cly-widget>table>tr {display:block;}
 #eventOverviewWidgets .cly-widget .spark {margin-top:20px; margin-bottom: 20px;}
@@ -2933,6 +2934,7 @@ color:#E95C6C; transition:color 1s;
     margin: 0;
     margin-bottom: 4px;
 }
+#top-events-widget-container > .top-events-widget > .outer > .row > .right > .col > h4:hover {color:#6bb96ecc;}
 #top-events-widget-container > .top-events-widget > .outer > .row > .right > .col > label {
     color: #3a3a3a;
     font-size: 17px;
