@@ -27,8 +27,8 @@ var exported = {},
             return common.returnMessage(params, 400, 'Missing parameter: events');
         }
 
-        if (params.qstring.events.length > 10) {
-            return common.returnMessage(params, 400, 'Maximum length for parameter events is 10');
+        if (params.qstring.events.length > 20) {
+            return common.returnMessage(params, 400, 'Maximum length for parameter events is 20');
         }
 
         ob.validateUserForDataReadAPI(params, function() {
@@ -82,8 +82,8 @@ var exported = {},
             return common.returnMessage(params, 400, 'Missing parameter: apps');
         }
 
-        if (params.qstring.apps.length > 10) {
-            return common.returnMessage(params, 400, 'Maximum length for parameter apps is 10');
+        if (params.qstring.apps.length > 20) {
+            return common.returnMessage(params, 400, 'Maximum length for parameter apps is 20');
         }
 
         var appsToFetch = params.qstring.apps;
