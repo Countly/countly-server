@@ -275,6 +275,7 @@ namespace apns {
 
 				if (ssl) {
 					SSL_free(ssl);
+					ssl = nullptr;
 				}
 
 				// BIO_free(read_bio);
