@@ -595,7 +595,7 @@ class Manager {
             n = (this.running[job.name] || []).length,
             can = c === 0 || (n + count) <= c;
         if (!can) {
-            log.i('Hit concurrency limit on %j: %d is running out of limit %d, requested to run %d', job._id, n, c, count);
+            log.i('Hit concurrency limit on %j: %d is running out of limit %d, requested to run %d, running %j', job._id, n, c, count, this.running[job.name]);
         }
         return can;
     }
