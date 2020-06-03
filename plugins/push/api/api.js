@@ -464,12 +464,12 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/apps/reset', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
-        common.db.collection(`push_${appId}`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_id`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_ia`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_ip`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_at`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_ap`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}`).drop({}, function() {});
+        common.db.collection(`push_${appId}_id`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ia`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ip`).drop({}, function() {});
+        common.db.collection(`push_${appId}_at`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ap`).drop({}, function() {});
         common.db.collection('apps').findOne({_id: common.db.ObjectID(appId)}, function(err, app) {
             if (err || !app) {
                 return log.e('Cannot find app: %j', err || 'no app');
@@ -484,7 +484,12 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/apps/clear_all', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
-        common.db.collection(`push_${appId}`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}`).drop({}, function() {});
+        common.db.collection(`push_${appId}_id`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ia`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ip`).drop({}, function() {});
+        common.db.collection(`push_${appId}_at`).drop({}, function() {});
+        common.db.collection(`push_${appId}_ap`).drop({}, function() {});
         // common.db.collection('credentials').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
 
