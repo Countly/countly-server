@@ -1018,6 +1018,9 @@ class Loader extends Store {
     ack(ids) {
         log.i('Acking %d in %s', ids && ids.length || 0, this.collectionName);
         return new Promise((resolve, reject) => {
+            if (!ids.length) {
+                return resolve(0);
+            }
             this.collection.deleteMany({_id: {$in: ids}}, (err, res) => {
                 log.i('Acked %j in %s', res && res.deletedCount || err, this.collectionName);
                 if (err) {
