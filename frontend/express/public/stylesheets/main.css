@@ -2324,11 +2324,11 @@ h4 + .mgmt-plugins-row {
 #report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-active a{color:#333; border-bottom: 2px solid #19cc63 !important;}
 #report-manager-view .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
 #report-manager-view .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
-.report-manager-table td { line-height: 20px; }
+.report-manager-table td { line-height: 15px; }
 .report-manager-break { word-wrap: normal; word-break: normal; }
 .report-manager-data-col { width: 15%; }
 .report-manager-data-col.report-manager-automatically-created { width: 55%; }
-.report-manager-report-desc { color: #AAA; }
+.report-manager-report-desc { color: #AAA; margin-top:5px;}
 .extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
 
 .dashboard-summary .item .bar .bar-inner-new-e{
@@ -2568,15 +2568,38 @@ color:#E95C6C; transition:color 1s;
 #create-token-drawer  #limit_life>div:nth-child(3){width:60%; margin-left: 40%;}
 #create-token-drawer #select_limit_value{border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-right:none; height:29px;}
 #create-token-drawer #select_limit_span{border-top-left-radius: 0px;border-bottom-left-radius: 0px; height:29px;}
-#token-manager-view  .token_status_dot{ display: block;
+
+/*Status tot used in token manager and report manager */
+.table_status_dot {
+    line-height: 20px;
+    
+}
+.table_status_dot span {
+    display: block;
     width: 8px;
     height: 8px;
     border-radius: 4px;
-    background-color: #ff4b29;
+    background-color: #14ca5f;
     position: relative;
     float: left;
-    margin: 3px 10px 3px 0px;}
-#token-manager-view  .token_status_dot_green{background-color: #14ca5f;}
+    margin: 7px 10px 3px 0px;  
+}
+
+.table_status_dot_green span{
+    background-color: #14ca5f;
+}
+.table_status_dot_red span{
+    background-color: #ff4b29;
+}
+.table_status_dot_blue span{
+    background-color: #55a8ed;
+}
+.table_status_dot .error_message_div {
+    display: none;
+}
+.table_status_dot.have_error_message:hover{
+    cursor: pointer;
+}
 #token-manager-view  .tokenvalue{float:left;  cursor:pointer;
     text-align: center;
     border: none;
