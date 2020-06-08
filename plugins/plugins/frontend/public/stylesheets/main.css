@@ -59,6 +59,41 @@
     box-sizing: border-box;
     box-shadow: 0 0 0 1px #d0d0d0;
 }
+#danger-title-bar {
+    margin-top: 10px;
+    background-color: red;
+    color: white;
+    box-sizing: border-box;
+    border: 1px solid #d0d0d0;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+#danger-nav-head {
+    display: flex;
+    align-items: center;
+    height: 27px;
+    padding: 15px 20px 15px 15px;
+    color: white;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    font: 15px Ubuntu,Helvetica,sans-serif;
+    text-align: left;
+    background-color: #D63E40;
+    text-transform: uppercase;
+}
+#danger-table-td {
+    background-color: #FFF;
+    color: #2FA732;
+    width: 125px;
+    padding: 20px 25px;
+    border-right: 1px solid #d0d0d0;
+}
+#danger-table-row {
+    border-bottom: 1px solid #d0d0d0d0;
+}
+#danger-table-row:hover {
+    background-color: white;
+}
 #configs-nav-head {
     display: flex;
     align-items: center;
