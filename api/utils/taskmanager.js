@@ -256,6 +256,13 @@ taskmanager.saveResult = function(options, data, callback) {
                 updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
                 updateObj.$set["subtasks." + options.id + ".hasData"] = true;
                 updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
+                if (update.errormsg) {
+                    updateObj.$set["subtasks." + options.id + ".errormsg"] = update.errormsg;
+                }
+                else {
+                    updateObj.$unset = {};
+                    updateObj.$unset["subtasks." + options.id + ".errormsg"] = "";
+                }
 
                 options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
             }
