@@ -6096,7 +6096,6 @@ window.LongTaskView = countlyView.extend({
                         }
                     }
                     else {
-                        color = "green";
                         if (row.status === "errored") {
                             color = "red";
                         }
