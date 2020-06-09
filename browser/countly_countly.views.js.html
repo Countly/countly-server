@@ -6068,7 +6068,7 @@ window.LongTaskView = countlyView.extend({
                 "mData": function(row, type) {
                     var time = 0;
                     if (row.taskgroup &amp;&amp; row.subtasks) {
-                        for (var k = 0; k &lt; row.subtasks.length; k++) {
+                        for (var k in row.subtasks) {
                             if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
                                 row.status = row.subtasks[k].status;
                                 row.start = row.subtasks[k].start || row.start;
@@ -6094,6 +6094,66 @@ window.LongTaskView = countlyView.extend({
                 "bSortable": false,
                 "sType": "numeric",
                 "sTitle": jQuery.i18n.map["events.table.dur"]
+            },
+            {
+                "mData": function(row/*, type*/) {
+                    var color = "green";
+                    if (row.taskgroup &amp;&amp; row.subtasks) {
+                        var difStats = false;
+                        var stat = "completed";
+                        var dd = "";
+
+                        for (var k in row.subtasks) {
+                            if (row.subtasks[k].status !== stat) {
+                                difStats = true;
+                            }
+                            color = "green";
+                            if (row.subtasks[k].status === "errored") {
+                                color = "red";
+                            }
+                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                color = "blue";
+                            }
+                            if (row.subtasks[k].errormsg) {
+                                dd += "&lt;div class='have_error_message table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.subtasks[k].status + "&lt;div class='error_message_div'>" + row.subtasks[k].errormsg + "&lt;/div>&lt;/div>";
+                            }
+                            else {
+                                dd += "&lt;div class='table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.subtasks[k].status + "&lt;/div>";
+                            }
+
+                        }
+                        if (difStats) {
+                            return dd;
+                        }
+                        else {
+                            color = "green";
+                            if (row.status === "errored") {
+                                color = "red";
+                            }
+                            if (row.status === "running" || row.status === "rerunning") {
+                                color = "yellow";
+                            }
+                            if (row.errormsg) {
+                                return "&lt;div class='have_error_message table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.status + "&lt;div class='error_message_div'>" + row.errormsg + "&lt;/div>&lt;/div>";
+                            }
+                            else {
+                                return "&lt;div class='table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.status + "&lt;/div>";
+                            }
+                        }
+                    }
+                    else {
+                        if (row.status === "errored") {
+                            color = "red";
+                        }
+                        if (row.status === "running" || row.status === "rerunning") {
+                            color = "yellow";
+                        }
+                        return "&lt;div class='table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.status + "&lt;/div>";
+                    }
+                },
+                "bSortable": false,
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["common.status"]
             },
             {
                 "mData": function() {
@@ -6145,6 +6205,7 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
+        this.addErrorTooltips();
         this.dtable.fnSort([ [8, 'desc'] ]);
         $(this.el).append('&lt;div class="cly-button-menu tasks-menu" tabindex="1">' +
             '&lt;a class="item view-task" href="" data-localize="common.view">&lt;/a>' +
@@ -6309,6 +6370,36 @@ window.LongTaskView = countlyView.extend({
     },
     refresh: function() {
         this.dtable.fnDraw(false);
+
+    },
+    addErrorTooltips: function() {
+        $("#data-table").on('mouseenter mouseleave', ".have_error_message", function() {
+            $('.have_error_message span').not(".tooltipstered").tooltipster({
+                animation: "fade",
+                animationDuration: 50,
+                delay: 100,
+                theme: 'tooltipster-borderless',
+                side: ['top'],
+                maxWidth: 500,
+                trigger: 'click',
+                interactive: true,
+                functionBefore: function(instance, helper) {
+                    instance.content($(helper.origin).parent().find(".error_message_div").html());
+                },
+                contentAsHTML: true,
+                functionInit: function(instance, helper) {
+                    instance.content($(helper.origin).parent().find(".error_message_div").html());
+                }
+            });
+
+        });
+        $("#data-table").on('click', ".have_error_message", function(e) {
+            if ($(e.target).hasClass('have_error_message')) {
+                $(this).find('span').trigger("click");
+            }
+        });
+
+
     }
 });
 
@@ -6599,10 +6690,10 @@ window.TokenManagerView = countlyView.extend({
                     {
                         "mData": function(row) {
                             if (row.ttl &amp;&amp; ((row.ends * 1000) - Date.now()) &lt; 0) {
-                                return '&lt;span class="token_status_dot">&lt;/span>' + jQuery.i18n.map["token_manager.table.status-expired"];
+                                return '&lt;div class="table_status_dot table_status_dot_red">&lt;span >&lt;/span>' + jQuery.i18n.map["token_manager.table.status-expired"] + "&lt;/div>";
                             }
                             else {
-                                return '&lt;span class="token_status_dot token_status_dot_green">&lt;/span>' + jQuery.i18n.map["token_manager.table.status-active"];
+                                return '&lt;div class="table_status_dot table_status_dot_green">&lt;span >&lt;/span>' + jQuery.i18n.map["token_manager.table.status-active"] + "&lt;/div>";
                             }
                         },
                         "sType": "string",
@@ -7067,7 +7158,7 @@ Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);</code></
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Tue Jun 09 2020 16:55:00 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Tue Jun 09 2020 19:23:51 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
