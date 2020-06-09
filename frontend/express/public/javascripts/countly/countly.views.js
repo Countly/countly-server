@@ -6329,12 +6329,13 @@ window.LongTaskView = countlyView.extend({
     },
     addErrorTooltips: function() {
         $("#data-table").on('mouseenter mouseleave', ".have_error_message", function() {
-            $('.have_error_message span').tooltipster({
+            $('.have_error_message span').not(".tooltipstered").tooltipster({
                 animation: "fade",
                 animationDuration: 50,
                 delay: 100,
                 theme: 'tooltipster-borderless',
                 side: ['top'],
+                maxWidth: 500,
                 trigger: 'click',
                 interactive: true,
                 functionBefore: function(instance, helper) {
