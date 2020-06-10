@@ -477,6 +477,8 @@
             var trace = {};
             trace.stz = getRandomInt(this.startTs, this.endTs);
             trace.etz = getRandomInt(trace.stz, this.endTs);
+            trace.stz *= 1000;
+            trace.etz *= 1000;
             var rand = Math.random();
             if (rand < 0.3) {
                 trace.type = "device";
