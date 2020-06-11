@@ -4872,6 +4872,13 @@ window.EventsOverviewView = countlyView.extend({
             self.refresh(true, true);
             $("#update_overview_button").removeClass('disabled');
         });
+        $(".top-events-widget .col").off("click").on("click", function(e) {
+            window.location.href = $(e.currentTarget).children("h4").children("a").attr("href");
+        });
+        $(".event-overview-grid-block").off("click").on("click", function(e) {
+            window.location.href = $(e.currentTarget).children(".title").children("a").attr("href");
+        });
+
     },
     pageScripts: function() {
         var self = this;
