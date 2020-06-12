@@ -6,6 +6,7 @@
     var _configsData = {};
     var _userConfigsData = {};
     var _themeList = [];
+    var _graph = {};
 
     //Public Methods
     countlyPlugins.initialize = function() {
@@ -16,6 +17,7 @@
             },
             success: function(json) {
                 _pluginsData = json;
+                _graph = {};
                 var dependentsMap = _pluginsData.reduce(function(acc, val) {
                     Object.keys(val.cly_dependencies).forEach(function(dep) {
                         if (!Object.prototype.hasOwnProperty.call(acc, dep)) {
@@ -32,9 +34,46 @@
                     else {
                         plugin.dependents = {};
                     }
+                    _graph[plugin.code] = {parents: plugin.cly_dependencies, children: plugin.dependents};
                 });
             }
         });
+    };
+
+    countlyPlugins.getRelativePlugins = function(code, direction) {
+
+        if (!Object.prototype.hasOwnProperty.call(_graph, code)) {
+            return [];
+        }
+
+        var queue = [code],
+            visited = {},
+            relativeType = "parents";
+
+        direction = direction || "up";
+        if (direction === "up") {
+            relativeType = "parents";
+        }
+        else {
+            relativeType = "children";
+        }
+        while (queue.length > 0) {
+            var current = queue.pop();
+            if (Object.prototype.hasOwnProperty.call(visited, current)) {
+                continue;
+            }
+            for (var item in _graph[current][relativeType]) {
+                queue.push(item);
+            }
+            visited[current] = 1;
+        }
+        var relatives = [];
+        for (var itemCode in visited) {
+            if (itemCode !== code) {
+                relatives.push(itemCode);
+            }
+        }
+        return relatives;
     };
 
     countlyPlugins.toggle = function(plugins, callback) {
