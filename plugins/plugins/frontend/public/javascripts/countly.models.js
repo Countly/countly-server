@@ -16,6 +16,23 @@
             },
             success: function(json) {
                 _pluginsData = json;
+                var dependentsMap = _pluginsData.reduce(function(acc, val) {
+                    Object.keys(val.cly_dependencies).forEach(function(dep) {
+                        if (!Object.prototype.hasOwnProperty.call(acc, dep)) {
+                            acc[dep] = {};
+                        }
+                        acc[dep][val.code] = 1;
+                    });
+                    return acc;
+                }, {});
+                _pluginsData.forEach(function(plugin) {
+                    if (Object.prototype.hasOwnProperty.call(dependentsMap, plugin.code)) {
+                        plugin.dependents = dependentsMap[plugin.code];
+                    }
+                    else {
+                        plugin.dependents = {};
+                    }
+                });
             }
         });
     };

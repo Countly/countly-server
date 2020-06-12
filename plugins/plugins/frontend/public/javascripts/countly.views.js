@@ -39,6 +39,11 @@ window.PluginsView = countlyView.extend({
                 return true;
             });
 
+            var nameMap = pluginsData.reduce(function(acc, val) {
+                acc[val.code] = val.title;
+                return acc;
+            }, {});
+
             this.dtable = $('#plugins-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": pluginsData,
                 "bPaginate": false,
@@ -94,6 +99,18 @@ window.PluginsView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["plugins.description"],
                         "bSortable": false,
                         "sClass": "light"
+                    },
+                    {
+                        "mData": function(row) {
+                            var dependentKeys = Object.keys(row.dependents).map(function(item) {
+                                return nameMap[item];
+                            });
+                            return dependentKeys.join(", ");
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["plugins.dependents"],
+                        "sClass": "center",
+                        "bSortable": false
                     },
                     {
                         "mData": function(row) {
@@ -1542,26 +1559,55 @@ app.addPageScript("/manage/plugins", function() {
     for (var i = 0; i < pluginsData.length; i++) {
         plugins.push(pluginsData[i].code);
     }
-
     $("#plugins-table").on("change", ".on-off-switch input", function() {
         var $checkBox = $(this),
             plugin = $checkBox.attr("id").replace(/^plugin-/, '');
 
-        if ($checkBox.is(":checked")) {
-            plugins.push(plugin);
-            plugins = _.uniq(plugins);
+        var defaultAction = function() {
+            if ($checkBox.is(":checked")) {
+                plugins.push(plugin);
+                plugins = _.uniq(plugins);
+            }
+            else {
+                plugins = _.without(plugins, plugin);
+            }
+
+            if (_.difference(countlyGlobal.plugins, plugins).length === 0 &&
+                _.difference(plugins, countlyGlobal.plugins).length === 0) {
+                $(".btn-plugin-enabler").hide();
+            }
+            else {
+                $(".btn-plugin-enabler").show();
+            }
+        };
+
+        var enabledChildren = [],
+            disabledParents = [];
+
+        if (!$checkBox.is(":checked") && enabledChildren.length > 0) {
+            CountlyHelpers.confirm("Disabling this will cause dependent plugins (...) to be disabled as well. Do you want to proceed?", "popStyleGreen popStyleGreenWide", function(result) {
+                if (result) {
+                    defaultAction();
+                }
+                else {
+                    $checkBox.prop('checked', true);
+                }
+            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
+        }
+        else if ($checkBox.is(":checked") && disabledParents.length > 0) {
+            CountlyHelpers.confirm("Enabling this plugin will cause depended plugins (...) to be enabled as well. Do you want to proceed?", "popStyleGreen popStyleGreenWide", function(result) {
+                if (result) {
+                    defaultAction();
+                }
+                else {
+                    $checkBox.prop('checked', true);
+                }
+            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
         }
         else {
-            plugins = _.without(plugins, plugin);
+            defaultAction();
         }
 
-        if (_.difference(countlyGlobal.plugins, plugins).length === 0 &&
-            _.difference(plugins, countlyGlobal.plugins).length === 0) {
-            $(".btn-plugin-enabler").hide();
-        }
-        else {
-            $(".btn-plugin-enabler").show();
-        }
     });
 
     $(document).on("click", ".btn-plugin-enabler", function() {
