@@ -34,10 +34,18 @@
                     else {
                         plugin.dependents = {};
                     }
-                    _graph[plugin.code] = {parents: plugin.cly_dependencies, children: plugin.dependents};
+                    _graph[plugin.code] = {title: plugin.title, parents: plugin.cly_dependencies, children: plugin.dependents};
                 });
             }
         });
+    };
+
+    countlyPlugins.getTitle = function(code) {
+        if (!Object.prototype.hasOwnProperty.call(_graph, code)) {
+            return "";
+        }
+
+        return _graph[code].title;
     };
 
     countlyPlugins.getRelativePlugins = function(code, direction) {
@@ -46,11 +54,15 @@
             return [];
         }
 
+        direction = direction || "up";
+
+        if (Object.prototype.hasOwnProperty.call(_graph[code], direction)) {
+            return _graph[code][direction];
+        }
+
         var queue = [code],
             visited = {},
             relativeType = "parents";
-
-        direction = direction || "up";
         if (direction === "up") {
             relativeType = "parents";
         }
@@ -73,6 +85,9 @@
                 relatives.push(itemCode);
             }
         }
+
+        _graph[code][direction] = relatives;
+
         return relatives;
     };
 

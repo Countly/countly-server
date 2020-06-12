@@ -39,11 +39,6 @@ window.PluginsView = countlyView.extend({
                 return true;
             });
 
-            var nameMap = pluginsData.reduce(function(acc, val) {
-                acc[val.code] = val.title;
-                return acc;
-            }, {});
-
             this.dtable = $('#plugins-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": pluginsData,
                 "bPaginate": false,
@@ -103,7 +98,7 @@ window.PluginsView = countlyView.extend({
                     {
                         "mData": function(row) {
                             var dependentKeys = Object.keys(row.dependents).map(function(item) {
-                                return nameMap[item];
+                                return countlyPlugins.getTitle(item);
                             });
                             return dependentKeys.join(", ");
                         },
@@ -1581,28 +1576,32 @@ app.addPageScript("/manage/plugins", function() {
             }
         };
 
-        var enabledChildren = [],
-            disabledParents = [];
+        var enabledDescendants = _.intersection(countlyPlugins.getRelativePlugins(plugin, "down"), plugins),
+            disabledAncestors = _.difference(countlyPlugins.getRelativePlugins(plugin, "up"), plugins);
 
-        if (!$checkBox.is(":checked") && enabledChildren.length > 0) {
-            CountlyHelpers.confirm("Disabling this will cause dependent plugins (...) to be disabled as well. Do you want to proceed?", "popStyleGreen popStyleGreenWide", function(result) {
+        if (!$checkBox.is(":checked") && enabledDescendants.length > 0) {
+            CountlyHelpers.confirm(jQuery.i18n.prop("plugins.disable-descendants", enabledDescendants.map(function(item) {
+                return countlyPlugins.getTitle(item);
+            }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
                 if (result) {
                     defaultAction();
                 }
                 else {
                     $checkBox.prop('checked', true);
                 }
-            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
+            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-continue"]], { title: jQuery.i18n.map["plugins.indirect-status-change"], image: "apply-changes-to-plugins" });
         }
-        else if ($checkBox.is(":checked") && disabledParents.length > 0) {
-            CountlyHelpers.confirm("Enabling this plugin will cause depended plugins (...) to be enabled as well. Do you want to proceed?", "popStyleGreen popStyleGreenWide", function(result) {
+        else if ($checkBox.is(":checked") && disabledAncestors.length > 0) {
+            CountlyHelpers.confirm(jQuery.i18n.prop("plugins.enable-ancestors", disabledAncestors.map(function(item) {
+                return countlyPlugins.getTitle(item);
+            }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
                 if (result) {
                     defaultAction();
                 }
                 else {
-                    $checkBox.prop('checked', true);
+                    $checkBox.prop('checked', false);
                 }
-            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
+            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-continue"]], { title: jQuery.i18n.map["plugins.indirect-status-change"], image: "apply-changes-to-plugins" });
         }
         else {
             defaultAction();
