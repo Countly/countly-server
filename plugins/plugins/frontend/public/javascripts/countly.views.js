@@ -1554,6 +1554,20 @@ app.addPageScript("/manage/plugins", function() {
     for (var i = 0; i < pluginsData.length; i++) {
         plugins.push(pluginsData[i].code);
     }
+
+    function changeStateOf(pluginList, newState) {
+        pluginList.forEach(function(item) {
+            $("#plugin-" + item).prop('checked', newState);
+            if (newState) {
+                plugins.push(item);
+                plugins = _.uniq(plugins);
+            }
+            else {
+                plugins = _.without(plugins, item);
+            }
+        });
+    }
+
     $("#plugins-table").on("change", ".on-off-switch input", function() {
         var $checkBox = $(this),
             plugin = $checkBox.attr("id").replace(/^plugin-/, '');
@@ -1580,10 +1594,11 @@ app.addPageScript("/manage/plugins", function() {
             disabledAncestors = _.difference(countlyPlugins.getRelativePlugins(plugin, "up"), plugins);
 
         if (!$checkBox.is(":checked") && enabledDescendants.length > 0) {
-            CountlyHelpers.confirm(jQuery.i18n.prop("plugins.disable-descendants", enabledDescendants.map(function(item) {
+            CountlyHelpers.confirm(jQuery.i18n.prop("plugins.disable-descendants", countlyPlugins.getTitle(plugin), enabledDescendants.map(function(item) {
                 return countlyPlugins.getTitle(item);
             }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
                 if (result) {
+                    changeStateOf(enabledDescendants, false);
                     defaultAction();
                 }
                 else {
@@ -1592,10 +1607,11 @@ app.addPageScript("/manage/plugins", function() {
             }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-continue"]], { title: jQuery.i18n.map["plugins.indirect-status-change"], image: "apply-changes-to-plugins" });
         }
         else if ($checkBox.is(":checked") && disabledAncestors.length > 0) {
-            CountlyHelpers.confirm(jQuery.i18n.prop("plugins.enable-ancestors", disabledAncestors.map(function(item) {
+            CountlyHelpers.confirm(jQuery.i18n.prop("plugins.enable-ancestors", countlyPlugins.getTitle(plugin), disabledAncestors.map(function(item) {
                 return countlyPlugins.getTitle(item);
             }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
                 if (result) {
+                    changeStateOf(disabledAncestors, true);
                     defaultAction();
                 }
                 else {
