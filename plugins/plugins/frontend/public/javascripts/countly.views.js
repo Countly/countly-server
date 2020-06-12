@@ -59,7 +59,7 @@ window.PluginsView = countlyView.extend({
                         "mData": function(row, type) {
                             if (type === "display") {
                                 var disabled = (row.prepackaged) ? 'disabled' : '';
-                                var input = '<div class="on-off-switch ' + disabled + '">';
+                                var input = '<div data-initial="' + row.enabled + '" class="on-off-switch ' + disabled + '">';
 
                                 if (row.enabled) {
                                     input += '<input type="checkbox" class="on-off-switch-checkbox" id="plugin-' + row.code + '" checked ' + disabled + '>';
@@ -1551,6 +1551,7 @@ app.addPageScript("/manage/plugins", function() {
 
     var pluginsData = countlyPlugins.getData();
     var plugins = [];
+    var dirtyPlugins = {};
     for (var i = 0; i < pluginsData.length; i++) {
         plugins.push(pluginsData[i].code);
     }
@@ -1572,7 +1573,7 @@ app.addPageScript("/manage/plugins", function() {
         var $checkBox = $(this),
             plugin = $checkBox.attr("id").replace(/^plugin-/, '');
 
-        var defaultAction = function() {
+        var defaultAction = function(affected) {
             if ($checkBox.is(":checked")) {
                 plugins.push(plugin);
                 plugins = _.uniq(plugins);
@@ -1581,12 +1582,32 @@ app.addPageScript("/manage/plugins", function() {
                 plugins = _.without(plugins, plugin);
             }
 
-            if (_.difference(countlyGlobal.plugins, plugins).length === 0 &&
-                _.difference(plugins, countlyGlobal.plugins).length === 0) {
-                $(".btn-plugin-enabler").hide();
+            if (!affected) {
+                affected = [plugin];
             }
             else {
+                affected = [plugin].concat(affected);
+            }
+
+            affected.forEach(function(item) {
+                var itemCb = $("#plugin-" + item);
+                if (itemCb.is(":checked") !== itemCb.parent().data("initial")) {
+                    itemCb.parents("tr").addClass("dirty");
+                    dirtyPlugins[item] = 1;
+                }
+                else {
+                    itemCb.parents("tr").removeClass("dirty");
+                    delete dirtyPlugins[item];
+                }
+            });
+
+            var isDirty = Object.keys(dirtyPlugins).length > 0;
+
+            if (isDirty) {
                 $(".btn-plugin-enabler").show();
+            }
+            else {
+                $(".btn-plugin-enabler").hide();
             }
         };
 
@@ -1599,7 +1620,7 @@ app.addPageScript("/manage/plugins", function() {
             }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
                 if (result) {
                     changeStateOf(enabledDescendants, false);
-                    defaultAction();
+                    defaultAction(enabledDescendants);
                 }
                 else {
                     $checkBox.prop('checked', true);
@@ -1612,7 +1633,7 @@ app.addPageScript("/manage/plugins", function() {
             }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
                 if (result) {
                     changeStateOf(disabledAncestors, true);
-                    defaultAction();
+                    defaultAction(disabledAncestors);
                 }
                 else {
                     $checkBox.prop('checked', false);

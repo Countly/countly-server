@@ -314,3 +314,7 @@
     vertical-align: text-top;
     padding-left: 5px;
 }
+
+.plugins #plugins-table tr.dirty {
+    background-color: #fbffc4;
+}
