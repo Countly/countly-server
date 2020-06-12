@@ -3346,6 +3346,8 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
             app.onUserEdit({}, $(".create-user-row"));
+            $("div[data-localize='management-users.password']").parent().hide();
+            $(".generate-password").click();
             $(".create-user-row").slideDown();
             self.initTable();
             $(this).hide();
