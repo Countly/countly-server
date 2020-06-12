@@ -13,9 +13,9 @@ countlyDb.collection('members').find({global_admin: false}).toArray(function(err
         if (!member.admin_of || !member.user_of) {
             done();
         }
-        
+
         var writeAccess = member.admin_of;
-        var readAccess  = member.user_of;
+        var readAccess = member.user_of;
 
         var memberPermission = {
             "c": {},
@@ -41,7 +41,7 @@ countlyDb.collection('members').find({global_admin: false}).toArray(function(err
             }
             done();
         });
-    };
+    }
 
     async.forEach(members, upgrade, function() {
         console.log("Finished upgrading member permissions.");
