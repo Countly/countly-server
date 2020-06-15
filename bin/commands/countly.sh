@@ -573,6 +573,12 @@ elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts
     shift;
     shift;
     nodejs "$DIR/../../plugins/$NAME/scripts/$SCRIPT.js" "$@";
+elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts/$NAME.sh" ]; then
+    shift;
+    bash "$DIR/../../plugins/$NAME/scripts/$NAME.sh" "$@";
+elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts/$NAME.js" ]; then
+    shift;
+    nodejs "$DIR/../../plugins/$NAME/scripts/$NAME.js" "$@";
 else
     echo "";
     echo "countly usage:";
@@ -598,5 +604,6 @@ else
     countly update ;
     countly config ;
     countly upgrade help ;
+    countly block ;
     echo "";
 fi
