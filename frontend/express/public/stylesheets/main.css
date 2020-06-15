@@ -2921,7 +2921,7 @@ color:#E95C6C; transition:color 1s;
 #top-events-widget-container > .top-events-widget > .outer .row .right .col:hover {cursor: pointer;}
 #top-events-widget-container > .top-events-widget > .outer .row .right .col:hover > label {cursor: pointer;}
 
-#top-events-widget-container > .top-events-widget > .outer > .row > .right > .col:hover > h4{color:#6bb96ecc;}
+#top-events-widget-container > .top-events-widget > .outer > .row > .right > .col:hover > h4{color:#2FA732;}
 #top-events-widget-container > .top-events-widget > .outer .row .right .col {
     float:left;
     width:17%;
