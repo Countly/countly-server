@@ -27,6 +27,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 			./configure && make && make install
 
 			update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3 2
+			update-alternatives --install /usr/bin/python3.6 python3.6 /usr/local/bin/python3 2
 
 			curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 			python3 get-pip.py
@@ -47,6 +48,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 				./configure && make && make install
 
 				update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3 2
+				update-alternatives --install /usr/bin/python3.6 python3.6 /usr/local/bin/python3 2
 
 				rm /usr/bin/lsb_release
 				curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py

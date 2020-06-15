@@ -17,7 +17,7 @@
     "grunt-eslint": "^23.0.0",
     "grunt-mocha-nyc": "^1.0.3",
     "grunt-mocha-test": "0.13.3",
-    "mocha": "^7.1.0",
+    "mocha": "^8.0.1",
     "nyc": "^15.0.0",
     "should": "13.2.3",
     "supertest": "4.0.2"
@@ -67,7 +67,7 @@
     "method-override": "3.0.0",
     "moment": "2.26.0",
     "moment-timezone": "0.5.31",
-    "mongodb": "3.5.8",
+    "mongodb": "3.5.9",
     "mongoskin": "github:ar2rsawseen/node-mongoskin",
     "nginx-conf": "1.5.0",
     "node-xlsx-stream": "^0.1.8",

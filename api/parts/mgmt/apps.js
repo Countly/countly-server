@@ -13,6 +13,7 @@ var appsApi = {},
     jimp = require('jimp'),
     fs = require('fs'),
     countlyFs = require('./../../utils/countlyFs.js');
+const taskmanager = require('./../../utils/taskmanager.js');
 
 /**
 * Get all apps and outputs to browser, requires global admin permission
@@ -692,6 +693,18 @@ function deleteAppData(appId, fromAppDelete, params, app) {
 }
 
 /**
+* Deletes long tasks for app
+* @param {string} appId - id of the app for which to delete data
+**/
+function deleteAppLongTasks(appId) {
+    common.db.collection('long_tasks').find({'app_id': appId + ""}).toArray(function(err, res) {
+        for (var k = 0; k < res.length; k++) {
+            //deleteResult also checks subtaks. Running like that (also calling for subtasks here) to be sure nothing stays. Already deleted subtask handled in deleteResult function.
+            taskmanager.deleteResult({id: res[k]._id, db: common.db}, function() {});
+        }
+    });
+}
+/**
 * Deletes all app's data or resets data to clean state
 * @param {string} appId - id of the app for which to delete data
 * @param {boolean} fromAppDelete - true if all document will also be deleted
@@ -707,7 +720,7 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}}, function() {});
     common.db.collection('device_details').remove({'_id': {$regex: appId + ".*"}}, function() {});
     common.db.collection('cities').remove({'_id': {$regex: appId + ".*"}}, function() {});
-
+    deleteAppLongTasks(appId);
     /**
     * Deletes all app's events
     **/
