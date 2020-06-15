@@ -1126,7 +1126,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 
 /* EVENTS */
 #event-nav { transition:width 200ms; overflow:hidden; z-index:3; width:180px; position:fixed; left:242px; top:79px; text-align:right; background-color:#efefef; max-height:580px; box-sizing:border-box; box-shadow: 0 0 0 1px #d0d0d0; border-radius:2px;}
-#event-nav .nav-search { border-bottom:none; border-top:1px solid #d0d0d0; }
+#event-nav .nav-search { border-top:1px solid #d0d0d0; border-bottom:1px solid #d0d0d0;}
 
 #event-nav-head { background-color:#ececec; position:relative; height:27px; padding:15px 20px 15px 15px; color:#636363; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; }
 #event-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:4px; }
