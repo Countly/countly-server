@@ -14,7 +14,7 @@ countlyDb.collection('members').find({global_admin: false}).toArray(function(err
             done();
             return;
         }
-        
+
         var writeAccess = member.admin_of;
         var readAccess = member.user_of;
 
