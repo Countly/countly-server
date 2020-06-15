@@ -12,8 +12,9 @@ countlyDb.collection('members').find({global_admin: false}).toArray(function(err
     function upgrade(member, done) {
         if (!member.admin_of || !member.user_of) {
             done();
+            return;
         }
-
+        
         var writeAccess = member.admin_of;
         var readAccess = member.user_of;
 
@@ -40,6 +41,7 @@ countlyDb.collection('members').find({global_admin: false}).toArray(function(err
                 console.log("Member not found.");
             }
             done();
+            return;
         });
     }
 
