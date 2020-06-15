@@ -576,6 +576,9 @@ elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts
 elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts/$NAME.sh" ]; then
     shift;
     bash "$DIR/../../plugins/$NAME/scripts/$NAME.sh" "$@";
+elif [ -d "$DIR/../../plugins/$NAME" ] && [ -f "$DIR/../../plugins/$NAME/scripts/$NAME.js" ]; then
+    shift;
+    bash "$DIR/../../plugins/$NAME/scripts/$NAME.js" "$@";
 else
     echo "";
     echo "countly usage:";
