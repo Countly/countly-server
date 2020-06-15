@@ -507,7 +507,11 @@ window.countlyManagementView = countlyView.extend({
             });
         });
 
-        this.el.find('input[type=text], input[type=password], input[type=number]').off('input').on('input', function() {
+        this.el.find(' input[type=number]').off('input').on('input', function() {
+            self.doOnChange($(this).attr('name') || $(this).attr('id'), parseFloat($(this).val()));
+        });
+
+        this.el.find('input[type=text], input[type=password]').off('input').on('input', function() {
             self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
         });
 

@@ -6022,7 +6022,7 @@ window.LongTaskView = countlyView.extend({
                 "mData": function(row, type) {
                     var time = 0;
                     if (row.taskgroup && row.subtasks) {
-                        for (var k = 0; k < row.subtasks.length; k++) {
+                        for (var k in row.subtasks) {
                             if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
                                 row.status = row.subtasks[k].status;
                                 row.start = row.subtasks[k].start || row.start;
@@ -6048,6 +6048,66 @@ window.LongTaskView = countlyView.extend({
                 "bSortable": false,
                 "sType": "numeric",
                 "sTitle": jQuery.i18n.map["events.table.dur"]
+            },
+            {
+                "mData": function(row/*, type*/) {
+                    var color = "green";
+                    if (row.taskgroup && row.subtasks) {
+                        var difStats = false;
+                        var stat = "completed";
+                        var dd = "";
+
+                        for (var k in row.subtasks) {
+                            if (row.subtasks[k].status !== stat) {
+                                difStats = true;
+                            }
+                            color = "green";
+                            if (row.subtasks[k].status === "errored") {
+                                color = "red";
+                            }
+                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                color = "blue";
+                            }
+                            if (row.subtasks[k].errormsg) {
+                                dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<div class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
+                            }
+                            else {
+                                dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
+                            }
+
+                        }
+                        if (difStats) {
+                            return dd;
+                        }
+                        else {
+                            color = "green";
+                            if (row.status === "errored") {
+                                color = "red";
+                            }
+                            if (row.status === "running" || row.status === "rerunning") {
+                                color = "yellow";
+                            }
+                            if (row.errormsg) {
+                                return "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "<div class='error_message_div'>" + row.errormsg + "</div></div>";
+                            }
+                            else {
+                                return "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "</div>";
+                            }
+                        }
+                    }
+                    else {
+                        if (row.status === "errored") {
+                            color = "red";
+                        }
+                        if (row.status === "running" || row.status === "rerunning") {
+                            color = "yellow";
+                        }
+                        return "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "</div>";
+                    }
+                },
+                "bSortable": false,
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["common.status"]
             },
             {
                 "mData": function() {
@@ -6099,6 +6159,7 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
+        this.addErrorTooltips();
         this.dtable.fnSort([ [8, 'desc'] ]);
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
             '<a class="item view-task" href="" data-localize="common.view"></a>' +
@@ -6263,6 +6324,36 @@ window.LongTaskView = countlyView.extend({
     },
     refresh: function() {
         this.dtable.fnDraw(false);
+
+    },
+    addErrorTooltips: function() {
+        $("#data-table").on('mouseenter mouseleave', ".have_error_message", function() {
+            $('.have_error_message span').not(".tooltipstered").tooltipster({
+                animation: "fade",
+                animationDuration: 50,
+                delay: 100,
+                theme: 'tooltipster-borderless',
+                side: ['top'],
+                maxWidth: 500,
+                trigger: 'click',
+                interactive: true,
+                functionBefore: function(instance, helper) {
+                    instance.content($(helper.origin).parent().find(".error_message_div").html());
+                },
+                contentAsHTML: true,
+                functionInit: function(instance, helper) {
+                    instance.content($(helper.origin).parent().find(".error_message_div").html());
+                }
+            });
+
+        });
+        $("#data-table").on('click', ".have_error_message", function(e) {
+            if ($(e.target).hasClass('have_error_message')) {
+                $(this).find('span').trigger("click");
+            }
+        });
+
+
     }
 });
 
@@ -6553,10 +6644,10 @@ window.TokenManagerView = countlyView.extend({
                     {
                         "mData": function(row) {
                             if (row.ttl && ((row.ends * 1000) - Date.now()) < 0) {
-                                return '<span class="token_status_dot"></span>' + jQuery.i18n.map["token_manager.table.status-expired"];
+                                return '<div class="table_status_dot table_status_dot_red"><span ></span>' + jQuery.i18n.map["token_manager.table.status-expired"] + "</div>";
                             }
                             else {
-                                return '<span class="token_status_dot token_status_dot_green"></span>' + jQuery.i18n.map["token_manager.table.status-active"];
+                                return '<div class="table_status_dot table_status_dot_green"><span ></span>' + jQuery.i18n.map["token_manager.table.status-active"] + "</div>";
                             }
                         },
                         "sType": "string",
