@@ -200,7 +200,8 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                             reject('User does not have write right for this application');
                             return false;
                         }
-                    } else {
+                    }
+                    else {
                         common.returnMessage(params, 401, 'User does not have write right for this application');
                         reject('User does not have write right for this application');
                         return false;
