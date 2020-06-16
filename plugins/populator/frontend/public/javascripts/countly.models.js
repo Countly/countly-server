@@ -1250,6 +1250,19 @@
         var mult = (Math.round(queued / 10) + 1);
         timeout = bucket * 10 * mult * mult;
         generating = true;
+
+        var seg = {};
+
+        if (template && template.name){
+            seg.template = template.name;
+        }
+
+        app.recordEvent({
+            "key": "populator-execute",
+            "count": 1,
+            "segmentation": seg
+        });
+
         /**
          * Create new user
          **/
