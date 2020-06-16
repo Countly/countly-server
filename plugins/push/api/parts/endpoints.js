@@ -1317,15 +1317,24 @@ function cachedData(note) {
                     data.type = detected;
                 }
 
-                let id = new common.db.ObjectID();
-                credsToCheck.push(common.dbPromise('credentials', 'insertOne', {
-                    _id: id,
-                    type: data.type,
-                    platform: N.Platform.IOS,
-                    key: data.file.substring(data.file.indexOf(',') + 1),
-                    secret: data.type === C.CRED_TYPE[N.Platform.IOS].UNIVERSAL ? data.pass : [data.key, data.team, data.bundle].join('[CLY]')
+                let id = new common.db.ObjectID(),
+                    oldid = common.dot(app, `plugins.push.${N.Platform.IOS}._id`);
+
+                oldid = oldid && common.db.ObjectID(oldid);
+                if (oldid) {
+                    credsToRemove.push(oldid);
+                }
+
+                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
+                    return common.dbPromise('credentials', 'insertOne', {
+                        _id: id,
+                        type: data.type,
+                        platform: N.Platform.IOS,
+                        key: data.file.substring(data.file.indexOf(',') + 1),
+                        secret: data.type === C.CRED_TYPE[N.Platform.IOS].UNIVERSAL ? data.pass : [data.key, data.team, data.bundle].join('[CLY]'),
+                        seq: seq && seq + 1000000 || 0
+                    });
                 }));
-                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.IOS}._id`)));
 
                 data._id = '' + id;
                 log.d('Setting APN config for app %s: %j', app._id, data);
@@ -1340,15 +1349,23 @@ function cachedData(note) {
             }
             else if (!common.equal(config[N.Platform.ANDROID], app.plugins && app.plugins.push && app.plugins.push[N.Platform.ANDROID], true)) {
                 let id = new common.db.ObjectID(),
+                    oldid = common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`),
                     data = config[N.Platform.ANDROID];
 
-                credsToCheck.push(common.dbPromise('credentials', 'insertOne', {
-                    _id: id,
-                    type: data.type,
-                    platform: N.Platform.ANDROID,
-                    key: data.key
+                oldid = oldid && common.db.ObjectID(oldid);
+                if (oldid) {
+                    credsToRemove.push(oldid);
+                }
+
+                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
+                    return common.dbPromise('credentials', 'insertOne', {
+                        _id: id,
+                        type: data.type,
+                        platform: N.Platform.ANDROID,
+                        key: data.key,
+                        seq: seq && seq + 1000000 || 0
+                    });
                 }));
-                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)));
 
                 data._id = '' + id;
                 log.d('Setting ANDROID config for app %s: %j', app._id, data);
