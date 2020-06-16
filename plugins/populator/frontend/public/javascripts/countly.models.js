@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery*/
+/*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"],
@@ -1253,7 +1253,7 @@
 
         var seg = {};
 
-        if (template && template.name){
+        if (template && template.name) {
             seg.template = template.name;
         }
 
