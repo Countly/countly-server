@@ -79,9 +79,11 @@ class ProcessJob extends J.IPCJob {
      */
     prepare(manager, db) {
         this.log.d('Loading credentials for %j', this.data);
-        this.creds = new C.Credentials(this.data.cid);
+        this.creds = new C.Credentials(this.cid, this.aid, this.field);
         return new Promise((resolve, reject) => {
             this.creds.load(db).then(() => {
+                this.data.cid = this.creds._id.toString();
+
                 let cid = typeof this.cid === 'string' ? this.cid : this.cid.toString(),
                     aid = typeof this.aid === 'string' ? db.ObjectID(this.aid) : this.aid;
                 db.collection('apps').findOne({_id: aid, $or: [{'plugins.push.i._id': cid}, {'plugins.push.a._id': cid}]}, (err, app) => {
@@ -119,6 +121,7 @@ class ProcessJob extends J.IPCJob {
                     this.log.e('Adding resourceErrors to notes %j', ids);
                     await loader.updateNotes({_id: {$in: ids.map(db.ObjectID)}}, {$set: {error: error}, $push: {'result.resourceErrors': {$each: [{date: this.now(), field: this.field, error: error}], $slice: -5}}});
                 }
+                reject(err);
             });
         });
     }
@@ -137,7 +140,7 @@ class ProcessJob extends J.IPCJob {
      * @returns {object} Resource
      */
     createResource(_id, name, db) {
-        return new Resource(_id, name, {cid: this.cid, field: this.field, proxyhost: this.proxyhost, proxyport: this.proxyport, proxyuser: this.proxyuser, proxypass: this.proxypass}, db);
+        return new Resource(_id, name, {cid: this.cid, field: this.field, aid: this.aid, proxyhost: this.proxyhost, proxyport: this.proxyport, proxyuser: this.proxyuser, proxypass: this.proxypass}, db);
     }
 
     /** gets new retry policy

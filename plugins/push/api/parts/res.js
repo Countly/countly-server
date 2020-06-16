@@ -83,7 +83,7 @@ class Connection extends res.Resource {
     constructor(_id, name, args, db) {
         super(_id, name);
         this.db = db;
-        this.creds = new C.Credentials(args.cid);
+        this.creds = new C.Credentials(args.cid, args.aid, args.field);
         this.field = args.field;
         if (args.proxyhost && args.proxyport) {
             this.proxyhost = args.proxyhost;

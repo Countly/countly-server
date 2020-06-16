@@ -5,6 +5,7 @@
 var plugin = {},
     push = require('./parts/endpoints.js'),
     N = require('./parts/note.js'),
+    C = require('./parts/credentials.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
     plugins = require('../../pluginManager.js'),
@@ -465,11 +466,9 @@ const PUSH_CACHE_GROUP = 'P';
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
         common.db.collection(`push_${appId}`).drop({}, function() {});
-        common.db.collection(`push_${appId}_id`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ia`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ip`).drop({}, function() {});
-        common.db.collection(`push_${appId}_at`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ap`).drop({}, function() {});
+        C.FIELDS.forEach(f => {
+            common.db.collection(`push_${appId}_${f}`).drop({}, function() {});
+        });
         common.db.collection('apps').findOne({_id: common.db.ObjectID(appId)}, function(err, app) {
             if (err || !app) {
                 return log.e('Cannot find app: %j', err || 'no app');
@@ -485,11 +484,9 @@ const PUSH_CACHE_GROUP = 'P';
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
         common.db.collection(`push_${appId}`).drop({}, function() {});
-        common.db.collection(`push_${appId}_id`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ia`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ip`).drop({}, function() {});
-        common.db.collection(`push_${appId}_at`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ap`).drop({}, function() {});
+        C.FIELDS.forEach(f => {
+            common.db.collection(`push_${appId}_${f}`).drop({}, function() {});
+        });
         // common.db.collection('credentials').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
 
@@ -497,11 +494,9 @@ const PUSH_CACHE_GROUP = 'P';
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
         common.db.collection(`push_${appId}`).drop({}, function() {});
-        common.db.collection(`push_${appId}_id`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ia`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ip`).drop({}, function() {});
-        common.db.collection(`push_${appId}_at`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ap`).drop({}, function() {});
+        C.FIELDS.forEach(f => {
+            common.db.collection(`push_${appId}_${f}`).drop({}, function() {});
+        });
     });
 
     plugins.register('/consent/change', ({params, changes}) => {
