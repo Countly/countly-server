@@ -5037,7 +5037,6 @@ window.EventsOverviewView = countlyView.extend({
         var self = this;
         this.currentOverviewList = countlyEvent.getOverviewList();
         this.eventmap = countlyEvent.getEventMap();
-        
         var app_admin = false;
         if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             app_admin = true;
@@ -5267,7 +5266,6 @@ window.EventsView = countlyView.extend({
             }
             $(".event-container").removeClass("active");
             $(this).addClass("active");
-            
             var eventHashURL = "/dashboard#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/key/" + encodeURIComponent(tmpCurrEvent);
             window.location.replace(eventHashURL);
 
@@ -5543,8 +5541,6 @@ window.EventsView = countlyView.extend({
             "showManagmentButton": showManagmentButton,
             "event-count": eventCount
         };
-                
-
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
@@ -5562,11 +5558,11 @@ window.EventsView = countlyView.extend({
             });
             $('.nav-search').find("input").trigger("input");
 
-            var eventURLComponents =  window.location.hash.match(/analytics\/events\/key\/(.*)/);
+            var eventURLComponents = window.location.hash.match(/analytics\/events\/key\/(.*)/);
             if (eventURLComponents && eventURLComponents.length >= 2) {
                 var targetEvent = decodeURIComponent(eventURLComponents[1]);
                 if (countlyEvent.getEventData().eventName !== targetEvent) {
-                    $("div[data-key='" + targetEvent + "']").click()
+                    $("div[data-key='" + targetEvent + "']").click();
                     countlyEvent.setActiveEvent(targetEvent);
                 }
             }
