@@ -861,7 +861,7 @@ window.LoyaltyView = countlyView.extend({
             if (typeof extendViewWithFilter === "function") {
                 extendViewWithFilter(this);
                 $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
-                    this.initDrill();
+                    self.initDrill();
 
                     setTimeout(function() {
                         self.filterBlockClone = $("#filter-view").clone(true);
