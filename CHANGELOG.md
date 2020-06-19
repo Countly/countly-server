@@ -47,8 +47,10 @@
 **Improvements**
 * [compare] increased app/event compare limit to 20
 * [db] support for mongodb DNS seed list connection string
+* [frontend] add links to events in event overview
 * [frontend] remove password field when creating users from Global admin
 * [ip_store] store ip address as custom user property (disabled by default)
+* [logger] allow searching for request contents in search field
 * [logger] register data for tokens on top level
 * [logger] register requests with ms precision
 * [performance-monitoring] network response latency overall percentages and breakdown by country

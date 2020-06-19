@@ -7065,7 +7065,7 @@ app.route('/versions', 'version_history', function() {
 });
 app.route("/analytics/events/key/:event", "events", function() {
     this.renderWhenReady(this.eventsView);
-})
+});
 app.route("/analytics/events/:subpageid", "events", function(subpageid) {
     this.eventsView.subpageid = subpageid;
     if (subpageid === 'blueprint') {
