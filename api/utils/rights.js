@@ -640,7 +640,15 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                 // is member.permission.r[app_id].all is true?
                 // or member.global_admin?
                 if (!member.global_admin) {
-                    if (!((member.permission && member.permission.r && typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object") && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]))) {
+                    if (feature.substr(0, 7) === 'global_') {
+                        feature = feature.split('_')[1];
+                        if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r.global === "object") && (member.permission.r.global.all || member.permission.r.global.allowed[feature]))) {
+                            common.returnMessage(params, 401, 'User does not have view right for this application');
+                            reject('User does not have view right for this application');
+                            return false;
+                        }
+                    }
+                    else if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object") && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]))) {
                         common.returnMessage(params, 401, 'User does not have view right for this application');
                         reject('User does not have view right for this application');
                         return false;
@@ -667,10 +675,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
-                        console.log('in dispatch validation user');
-
                         if (!params.res.finished) {
-                            console.log('not finished and error will return by server.');
                             common.returnMessage(params, 401, 'User does not have permission');
                             reject('User does not have permission');
                         }
@@ -735,10 +740,20 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
-                if (!((typeof member.permission === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object" && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature])) || member.global_admin)) {
-                    common.returnMessage(params, 401, 'User does not have write right for this application');
-                    reject('User does not have write right for this application');
-                    return false;
+                if (!member.global_admin) {
+                    if (feature.substr(0, 7) === 'global_') {
+                        feature = feature.split('_')[1];
+                        if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType].global === "object") && (member.permission[accessType].global.all || member.permission[accessType].global.allowed[feature]))) {
+                            common.returnMessage(params, 401, 'User does not have view right for this application');
+                            reject('User does not have view right for this application');
+                            return false;
+                        }
+                    }
+                    else if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object") && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]))) {
+                        common.returnMessage(params, 401, 'User does not have view right for this application');
+                        reject('User does not have view right for this application');
+                        return false;
+                    }
                 }
 
                 if (member && member.locked) {
