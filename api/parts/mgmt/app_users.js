@@ -1033,7 +1033,7 @@ usersApi.loyalty = function(params) {
             query = {};
         }
     }
-    
+
     if (cohorts) {
         var cohortQuery = cohorts.preprocessQuery(query);
         query = Object.assign(query, cohortQuery);
