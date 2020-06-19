@@ -797,6 +797,7 @@
             params.hour = getRandomInt(0, 23);
             params.dow = getRandomInt(0, 6);
             params.stats = JSON.parse(JSON.stringify(this.stats));
+            params.populator = true;
             bulk.push(params);
             this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
             countlyPopulator.sync();
