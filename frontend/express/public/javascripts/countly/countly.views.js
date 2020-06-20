@@ -5268,8 +5268,7 @@ window.EventsView = countlyView.extend({
             }
             $(".event-container").removeClass("active");
             $(this).addClass("active");
-            var eventHashURL = "/dashboard#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/key/" + encodeURIComponent(tmpCurrEvent);
-            window.location.replace(eventHashURL);
+            app.navigate("/analytics/events/key/" + encodeURIComponent(tmpCurrEvent));
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() {
                 self.refresh(true);
