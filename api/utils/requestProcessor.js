@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateRead, validateCreate, validateUpdate, validateDelete} = require('./rights.js');
+const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection} = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -22,10 +22,6 @@ const validateUserForDataReadAPI = validateUserForRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
-const validateContextRead = validateRead;
-const validateContextCreate = validateCreate;
-const validateContextUpdate = validateUpdate;
-const validateContextDelete = validateDelete;
 
 var loaded_configs_time = 0;
 
@@ -187,10 +183,6 @@ const processRequest = (params) => {
             validateUserForDataReadAPI: validateUserForDataReadAPI,
             validateUserForDataWriteAPI: validateUserForDataWriteAPI,
             validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-            validateContextRead: validateContextRead,
-            validateContextCreate: validateContextCreate,
-            validateContextUpdate: validateContextUpdate,
-            validateContextDelete: validateContextDelete,
             paths: paths,
             urlParts: urlParts
         });
@@ -254,11 +246,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /deleteOwnAccount or /delete');
                     }
@@ -522,11 +510,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
                     }
@@ -575,11 +559,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /delete or /reset');
                     }
@@ -657,11 +637,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path');
                     }
@@ -1155,11 +1131,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
                     }
@@ -1237,11 +1209,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
                     }
@@ -1302,11 +1270,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
                     }
@@ -1332,11 +1296,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
                     }
@@ -1507,11 +1467,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path');
                     }
@@ -1539,11 +1495,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path');
                     }
@@ -1677,11 +1629,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path');
                     }
@@ -1902,11 +1850,7 @@ const processRequest = (params) => {
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid method');
                     }
@@ -1956,11 +1900,7 @@ const processRequest = (params) => {
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard or /countries');
                     }
@@ -2030,11 +1970,7 @@ const processRequest = (params) => {
                     validateUserForWriteAPI: validateUserForWriteAPI,
                     paths: paths,
                     validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                    validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                    validateContextRead: validateContextRead,
-                    validateContextCreate: validateContextCreate,
-                    validateContextUpdate: validateContextUpdate,
-                    validateContextDelete: validateContextDelete
+                    validateUserForGlobalAdmin: validateUserForGlobalAdmin
                 })) {
                     if (!plugins.dispatch(params.fullPath, {
                         params: params,
@@ -2043,11 +1979,7 @@ const processRequest = (params) => {
                         validateUserForWriteAPI: validateUserForWriteAPI,
                         paths: paths,
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-                        validateUserForGlobalAdmin: validateUserForGlobalAdmin,
-                        validateContextRead: validateContextRead,
-                        validateContextCreate: validateContextCreate,
-                        validateContextUpdate: validateContextUpdate,
-                        validateContextDelete: validateContextDelete
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
                         common.returnMessage(params, 400, 'Invalid path');
                     }
