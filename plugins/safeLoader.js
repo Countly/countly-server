@@ -1,4 +1,5 @@
-
+var log = require('../api/utils/log.js'),
+    logSafeLoader = log('plugins:safeloader');
 /**
  * 
  * @param {string} fixStrategy {disableChildren|enableParents}
@@ -14,7 +15,7 @@ var analyzeAndFixDependencies = function(plugins, fixStrategy) {
 
     fixStrategy = fixStrategy || "disableChildren";
     if (["disableChildren", "enableParents"].indexOf(fixStrategy) === -1) {
-        console.error("Invalid fixStrategy (" + fixStrategy + ") for analyzeAndFixDependencies.");
+        logSafeLoader.e("Invalid fixStrategy (" + fixStrategy + ") for analyzeAndFixDependencies.");
         return null;
     }
 
@@ -107,15 +108,14 @@ var analyzeAndFixDependencies = function(plugins, fixStrategy) {
         }
     };
 
-    if (Object.keys(errors).length === 0) {
-        errors = false;
+    if (Object.keys(errors).length > 0) {
+        logSafeLoader.e("Loaded plugins:\n", fixedPlugins);
+        logSafeLoader.e("Safe loader couldn't load following plugins:\n", errors);
     }
-    
-    return {fixed: fixedPlugins, errors: errors};
+    else {
+        logSafeLoader.i("Loaded successfully.");
+    }
+    return fixedPlugins;
 }
 
-// var response = analyzeAndFixDependencies(require('./plugins.json', 'dont-enclose'), "enableParents");
-
-// console.log(JSON.stringify(response, null, 4));
-
-exports.analyzeAndFixDependencies = analyzeAndFixDependencies;
+exports.load = analyzeAndFixDependencies;
