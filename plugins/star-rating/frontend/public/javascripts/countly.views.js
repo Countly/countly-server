@@ -845,7 +845,8 @@ window.starView = countlyView.extend({
                     }
                 },
                 sType: "string",
-                "sTitle": jQuery.i18n.map["feedback.comment"]
+                "sTitle": jQuery.i18n.map["feedback.comment"],
+                "bSortable": false
             }, {
                 "mData": function(row) {
                     if (row.email) {
@@ -856,7 +857,8 @@ window.starView = countlyView.extend({
                     }
                 },
                 sType: "string",
-                "sTitle": jQuery.i18n.map["management-users.email"]
+                "sTitle": jQuery.i18n.map["management-users.email"],
+                "bSortable": false
             }, {
                 "mData": "ts",
                 sType: "numeric",
