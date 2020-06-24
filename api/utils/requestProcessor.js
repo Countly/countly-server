@@ -2126,7 +2126,7 @@ const processBulkRequest = (i, requests, params) => {
         return;
     }
 
-    if (!requests[i].app_key && !appKey) {
+    if (!requests[i] || (!requests[i].app_key && !appKey)) {
         return processBulkRequest(i + 1, requests, params);
     }
 
