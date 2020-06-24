@@ -420,6 +420,7 @@ const widgetPropertyPreprocessors = {
         var query = {};
         var skip = parseInt(params.qstring.iDisplayStart);
         var limit = parseInt(params.qstring.iDisplayLength);
+        var colNames = ['rating', 'comment', 'email', 'ts'];
         query.ts = countlyCommon.getTimestampRangeQuery(params, true);
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
@@ -439,11 +440,28 @@ const widgetPropertyPreprocessors = {
         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
             query.comment = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
         }
+        if (params.qstring.iSortCol_0) {
+            try {
+                var colIndex = parseInt(params.qstring.iSortCol_0);
+                var colName = colNames[colIndex];
+                var sortType = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
+                var sort = {};
+                sort[colName] = sortType;
+            }
+            catch (e) {
+                common.returnMessage(params, 500, 'Invalid column index for sorting');
+                return true;
+            }
+        }
+
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
                 if (!err) {
+                    if (sort) {
+                        cursor.sort(sort);
+                    }
                     cursor.skip(skip);
                     cursor.limit(limit);
                     cursor.toArray(function(cursorErr, res) {
