@@ -486,9 +486,14 @@ window.countlyManagementView = countlyView.extend({
 
     beforeRender: function() {
         var self = this;
-        return $.when(T.render(this.templatePath, function(src) {
-            self.template = src;
-        }));
+        if (this.templatePath && this.templatePath !== "") {
+            return $.when(T.render(this.templatePath, function(src) {
+                self.template = src;
+            }));
+        }
+        else {
+            return;
+        }
     },
 
     render: function() { //backbone.js view render function
