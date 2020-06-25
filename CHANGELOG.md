@@ -1,20 +1,26 @@
 ## Version 20.04.1
 
 **Fixes**
+* [api] make sure location is string
+* [api] skip empty bulk requests
+* [cmd] fix logging of upgrade commands
 * [configuration] plugin settings in app managament treat number like number
 * [crashes] log bulk error on crash users upsert
 * [dbviewer] fixed projection problem
 * [enterpriseinfo] more space to login area
+* [frontend] fix empty template load in application management
 * [frontend] fixed admins accessing applications section
 * [frontend] fixed error when checking user_of rights
 * [frontend] period parsing fixes
 * [members] maintain backwards compatability for api key validation
+* [plugin-upload] fix file type check
 * [populator] allow providing single digit values as custom user properties in templates
 * [push] fixing unhandled rejection on delete of notification with invalid id
 * [reportmanager] delete long tasks on app delete
 * [server-stats] punchcard comply with rights access
 * [star-rating] fix dialog to work with checksum enabled apps
 * [star-rating] fixed integration popup problem
+* [star-ratings] fixed comments tab sorting problem
 * [systemlogs] fix exports script for new driver version
 * [views] correct localization based on app type
 * [views] fixed incorrect result when searching for specific views
@@ -32,6 +38,7 @@
 * [drill] fixed duration formatting for BY queryes and dashboard widgets
 * [drill] fixed recording orientation key
 * [drill] limit line count in graph based on settings color count for BY queries
+* [drill] proper event key escaping/unescaping processing
 * [drill] use BY limit from configuration correctly
 * [flows] use view display name in flow diagram
 * [formulas] correctly regenerate formulas data in report manager
