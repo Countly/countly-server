@@ -467,10 +467,13 @@ var pluginManager = function pluginManager() {
             catch (ex) {
                 console.error(ex.stack);
             }
+
+            promises = promises.map(p => p && p.catch && p.catch(e => log('plugins').e('Error during plugins dispatch: %j', e)) || p);
+
             //should we create a promise for this dispatch
             if (params && params.params && params.params.promises) {
                 params.params.promises.push(new Promise(function(resolve) {
-                    Promise.allSettled(promises).then(function(results) {
+                    Promise.all(promises).then(function(results) {
                         resolve();
                         if (callback) {
                             callback(null, results);
@@ -479,7 +482,7 @@ var pluginManager = function pluginManager() {
                 }));
             }
             else if (callback) {
-                Promise.allSettled(promises).then(function(results) {
+                Promise.all(promises).then(function(results) {
                     callback(null, results);
                 });
             }

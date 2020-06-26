@@ -230,7 +230,7 @@ usage.processLocation = function(params) {
 
         if ('location' in params.qstring) {
             if (params.qstring.location) {
-                var coords = params.qstring.location.split(',');
+                var coords = (params.qstring.location + "").split(',');
                 if (coords.length === 2) {
                     var lat = parseFloat(coords[0]),
                         lon = parseFloat(coords[1]);

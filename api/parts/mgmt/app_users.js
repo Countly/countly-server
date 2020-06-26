@@ -15,6 +15,14 @@ var spawn = cp.spawn; //for calling comannd line
 const fse = require('fs-extra');
 var crypto = require('crypto');
 
+var cohorts;
+try {
+    cohorts = require("../../../plugins/cohorts/api/parts/cohorts.js");
+}
+catch (ex) {
+    cohorts = null;
+}
+
 /**
 * Create new app_user document. Creates uid if one is not provided
 * @param {string} app_id - _id of the app
@@ -1024,6 +1032,11 @@ usersApi.loyalty = function(params) {
         catch (error) {
             query = {};
         }
+    }
+
+    if (cohorts) {
+        var cohortQuery = cohorts.preprocessQuery(query);
+        query = Object.assign(query, cohortQuery);
     }
 
     // Time

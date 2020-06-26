@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery*/
+/*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"],
@@ -797,6 +797,7 @@
             params.hour = getRandomInt(0, 23);
             params.dow = getRandomInt(0, 6);
             params.stats = JSON.parse(JSON.stringify(this.stats));
+            params.populator = true;
             bulk.push(params);
             this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
             countlyPopulator.sync();
@@ -1250,6 +1251,19 @@
         var mult = (Math.round(queued / 10) + 1);
         timeout = bucket * 10 * mult * mult;
         generating = true;
+
+        var seg = {};
+
+        if (template && template.name) {
+            seg.template = template.name;
+        }
+
+        app.recordEvent({
+            "key": "populator-execute",
+            "count": 1,
+            "segmentation": seg
+        });
+
         /**
          * Create new user
          **/

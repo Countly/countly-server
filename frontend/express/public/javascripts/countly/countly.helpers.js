@@ -853,7 +853,7 @@
                     var ob = {};
                     for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
                         try {
-                            if (!(tableData[i] && tableData[i][colIndex])) {
+                            if (!(tableData[i] && tableData[i][colIndex]) || (tableCols[colIndex] && tableCols[colIndex].noExport)) {
                                 continue;
                             }
                             if (tableCols[colIndex].sType === "formatted-num") {
@@ -2036,6 +2036,7 @@
             "sType": "string",
             "sTitle": '',
             "bSortable": false,
+            "noExport": true,
             'sWidth': '1px'
         };
     };

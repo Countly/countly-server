@@ -861,7 +861,7 @@ window.LoyaltyView = countlyView.extend({
             if (typeof extendViewWithFilter === "function") {
                 extendViewWithFilter(this);
                 $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
-                    this.initDrill();
+                    self.initDrill();
 
                     setTimeout(function() {
                         self.filterBlockClone = $("#filter-view").clone(true);
@@ -3346,6 +3346,8 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
             app.onUserEdit({}, $(".create-user-row"));
+            $("div[data-localize='management-users.password']").parent().hide();
+            $(".generate-password").click();
             $(".create-user-row").slideDown();
             self.initTable();
             $(this).hide();
@@ -4872,6 +4874,13 @@ window.EventsOverviewView = countlyView.extend({
             self.refresh(true, true);
             $("#update_overview_button").removeClass('disabled');
         });
+        $(".top-events-widget .col").off("click").on("click", function(e) {
+            window.location.href = $(e.currentTarget).children("h4").children("a").attr("href");
+        });
+        $(".event-overview-grid-block").off("click").on("click", function(e) {
+            window.location.href = $(e.currentTarget).children(".title").children("a").attr("href");
+        });
+
     },
     pageScripts: function() {
         var self = this;
@@ -5030,7 +5039,6 @@ window.EventsOverviewView = countlyView.extend({
         var self = this;
         this.currentOverviewList = countlyEvent.getOverviewList();
         this.eventmap = countlyEvent.getEventMap();
-
         var app_admin = false;
         if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             app_admin = true;
@@ -5038,6 +5046,7 @@ window.EventsOverviewView = countlyView.extend({
 
         this.templateData = {
             "logo-class": "events",
+            "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-map": this.eventmap,
             "overview-list": this.overviewList || [],
             "overview-graph": this.overviewGraph || [],
@@ -5259,6 +5268,7 @@ window.EventsView = countlyView.extend({
             }
             $(".event-container").removeClass("active");
             $(this).addClass("active");
+            app.navigate("/analytics/events/key/" + encodeURIComponent(tmpCurrEvent));
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() {
                 self.refresh(true);
@@ -5516,6 +5526,7 @@ window.EventsView = countlyView.extend({
         var eventCount = countlyEvent.getEvents().length;
         this.templateData = {
             "page-title": eventData.eventName.toUpperCase(),
+            "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-description": eventData.eventDescription,
             "logo-class": "events",
             "events": countlyEvent.getEvents(),
@@ -5547,6 +5558,15 @@ window.EventsView = countlyView.extend({
                 self.resizeTitle();
             });
             $('.nav-search').find("input").trigger("input");
+
+            var eventURLComponents = window.location.hash.match(/analytics\/events\/key\/(.*)/);
+            if (eventURLComponents && eventURLComponents.length >= 2) {
+                var targetEvent = decodeURIComponent(eventURLComponents[1]);
+                if (countlyEvent.getEventData().eventName !== targetEvent) {
+                    $("div[data-key='" + targetEvent + "']").click();
+                    countlyEvent.setActiveEvent(targetEvent);
+                }
+            }
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
@@ -7042,7 +7062,9 @@ app.route('/manage/token_manager', 'token_manager', function() {
 app.route('/versions', 'version_history', function() {
     this.renderWhenReady(this.VersionHistoryView);
 });
-
+app.route("/analytics/events/key/:event", "events", function() {
+    this.renderWhenReady(this.eventsView);
+});
 app.route("/analytics/events/:subpageid", "events", function(subpageid) {
     this.eventsView.subpageid = subpageid;
     if (subpageid === 'blueprint') {
