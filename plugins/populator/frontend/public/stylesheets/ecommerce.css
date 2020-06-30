@@ -15,15 +15,15 @@
 }
 
 .demo-ecommerce .content {
-   margin-top: 150px;
+  margin-top: 150px;
 }
 
 .demo-ecommerce .footer {
-   position: fixed;
-   bottom: 0;
-   width: 100%;
-   margin-bottom: 15px;
-   font-size: 12px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  margin-bottom: 15px;
+  font-size: 12px;
 }
 
 .demo-ecommerce .search-bar > .col-sm-8 > input {
