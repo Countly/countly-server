@@ -1,26 +1,26 @@
-.top-bar {
+.demo-gaming .top-bar {
   height: 60px;
   background-color: #13b94d;
   color: white;
   font-size: 14px;
 }
 
-.top-bar > .col-sm-1 {
+.demo-gaming .top-bar > .col-sm-1 {
   margin-top: 18px;
   cursor: pointer;
 }
 
-.top-bar > .col-sm-8 {
+.demo-gaming .top-bar > .col-sm-8 {
   font-size: 20px;
   margin-top: 15px;
   font-weight: bolder;
 }
 
-.content {
+.demo-gaming .content {
   margin-top: 120px;
 }
 
-.footer {
+.demo-gaming .footer {
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -28,23 +28,23 @@
   font-size: 12px;
 }
 
-.description {
+.demo-gaming .description {
   margin-top: 10px;
   font-size: 12px;
 }
 
-.download-your-phone-icon {
+.demo-gaming .download-your-phone-icon {
   display: inline-block;
   margin-left: 10px;
   width: 150px;
   margin-top: 10px;
 }
 
-.btn-large {
+.demo-gaming .btn-large {
   width: 150px;
   height: 50px;
 }
 
-.download-section {
+.demo-gaming .download-section {
   margin-top: 60px;
 }
