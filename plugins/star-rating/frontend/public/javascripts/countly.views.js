@@ -1179,6 +1179,16 @@ window.starView = countlyView.extend({
             animation: 'scale'
         });
 
+        $('body').on('click', '.dataTable .sorting, .dataTable .sorting_asc, .dataTable .sorting_desc', function(e) {
+            var dtSelector = $(e.target).parent().parent().parent().parent().attr('id').split("_")[0];
+            var sortIndex = $(e.target).index();
+            var sortType = e.target.className === 'sorting' ? 'asc' : (e.target.className === 'sorting_asc' ? 'desc' : false);
+            if (sortType) {
+                var sortObject = [sortIndex, sortType, (sortType === "asc" ? 0 : 1)];
+                store.set(dtSelector + '_sort', sortObject);
+            }
+        });
+
         var processColorString = function(string) {
             if (/^([0-9a-f]{3}){1,2}$/i.test(string)) {
                 return "#" + string;
