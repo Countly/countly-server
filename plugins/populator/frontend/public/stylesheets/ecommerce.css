@@ -1,24 +1,24 @@
-.top-bar {
+.demo-ecommerce .top-bar {
   height: 60px;
   background-color: #13b94d;
   color: white;
   font-size: 16px;
 }
 
-.top-bar > .col-sm-2 {
+.demo-ecommerce .top-bar > .col-sm-2 {
   margin-top: 18px;
   cursor: pointer;
 }
 
-.search-bar {
+.demo-ecommerce .search-bar {
   margin-top: 12px;
 }
 
-.content {
+.demo-ecommerce .content {
   margin-top: 150px;
 }
 
-.footer {
+.demo-ecommerce .footer {
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -26,13 +26,13 @@
   font-size: 12px;
 }
 
-.search-bar > .col-sm-8 > input {
+.demo-ecommerce .search-bar > .col-sm-8 > input {
   border: 10px solid #13b94d;
   padding: 20px;
   outline: none;
 }
 
-.navigation-bar > .col-sm {
+.demo-ecommerce .navigation-bar > .col-sm {
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
   background-color: #f7f7f7;
@@ -42,6 +42,6 @@
   cursor: pointer;
 }
 
-#bag-icon {
+.demo-ecommerce #bag-icon {
   margin-top: -5px;
 }
