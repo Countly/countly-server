@@ -338,7 +338,11 @@ const _ = require('underscore');
      */
     assistant.getAssistantConfig = function(db, callback) {
         db.collection(db_name_config).find({}, {}).toArray(function(err, result) {
-            //log.i('Assistant plugin getAssistantConfig: [%j][%j][%j][%j]', 18, err, result, typeof result);
+            
+            if (err || !result) {
+                log.e('Assistant plugin getAssistantConfig: [%j][%j][%j][%j]', 18, err, result, typeof result);
+                callback([]);
+            }
 
             //optimize config info before returning it
             result.forEach(function(elem) {
