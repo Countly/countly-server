@@ -1,4 +1,5 @@
-var plugins = require('./plugins.json', 'dont-enclose'),
+var safeLoader = require('./safeLoader.js'),
+    plugins = safeLoader.load(require('./plugins.json', 'dont-enclose'), "disableChildren"),
     pluginsApis = {},
     mongo = require('mongoskin'),
     cluster = require('cluster'),
@@ -607,7 +608,7 @@ var pluginManager = function pluginManager() {
     **/
     this.reloadPlugins = function() {
         delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
-        plugins = require('./plugins.json', 'dont-enclose');
+        plugins = safeLoader.load(require('./plugins.json', 'dont-enclose'), "disableChildren");
     };
 
     /**
