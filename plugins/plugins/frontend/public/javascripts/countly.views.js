@@ -1553,7 +1553,9 @@ app.addPageScript("/manage/plugins", function() {
     var plugins = [];
     var dirtyPlugins = {};
     for (var i = 0; i < pluginsData.length; i++) {
-        plugins.push(pluginsData[i].code);
+        if (pluginsData[i].enabled) {
+            plugins.push(pluginsData[i].code);
+        }
     }
 
     function changeStateOf(pluginList, newState) {
@@ -1591,7 +1593,7 @@ app.addPageScript("/manage/plugins", function() {
 
             affected.forEach(function(item) {
                 var itemCb = $("#plugin-" + item);
-                if (itemCb.is(":checked") !== itemCb.parent().data("initial")) {
+                if (itemCb.length > 0 && itemCb.is(":checked") !== itemCb.parent().data("initial")) {
                     itemCb.parents("tr").addClass("dirty");
                     dirtyPlugins[item] = 1;
                 }

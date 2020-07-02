@@ -74,6 +74,12 @@
             if (Object.prototype.hasOwnProperty.call(visited, current)) {
                 continue;
             }
+
+            if(!_graph[current]) {
+                visited[current] = 1;
+                continue;
+            }
+
             for (var item in _graph[current][relativeType]) {
                 queue.push(item);
             }
