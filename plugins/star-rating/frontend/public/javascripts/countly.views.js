@@ -1185,7 +1185,7 @@ window.starView = countlyView.extend({
             };
 
             if (typeof addDrill !== "undefined") {
-                $("#content .widget:first-child .widget-header>.left .title").after(addDrill("sg.rating", null, "[CLY]_star_rating"));
+                $("#content #feedback-ratings-tab .widget:first-child .widget-header>.left .title").after(addDrill("sg.rating", null, "[CLY]_star_rating"));
             }
 
             self.renderCommentsTable();

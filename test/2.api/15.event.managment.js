@@ -272,9 +272,11 @@ describe('Testing event settings', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
+
+                        ob.list.sort();
                         ob.should.have.property("overview", []);
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
-                        ob.should.have.property("list", ["test1", "test3", "t1"]);
+                        ob.should.have.property("list", ["t1", "test1", "test3"]);
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
                         ob.should.have.property("segments", {"test3": ["my_segment", "my_segment2"], "t1": ["s"]});
@@ -348,9 +350,10 @@ describe('Testing event settings', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
+                    ob.list.sort();
                     ob.should.have.property("overview", []);
                     ob.should.have.property("map", {"test1": {"is_visible": false}});
-                    ob.should.have.property("list", ["test1", "test3", "t1"]);
+                    ob.should.have.property("list", ["t1", "test1", "test3"]);
                     ob.should.have.property("order", ["test1"]);
                     ob.should.have.property("overview", []);
                     ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": ["s"]});
@@ -410,9 +413,10 @@ describe('Testing event settings', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
+                        ob.list.sort();
                         ob.should.have.property("overview", []);
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
-                        ob.should.have.property("list", ["test1", "test3", "t1"]);
+                        ob.should.have.property("list", ["t1", "test1", "test3"]);
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
                         ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": ["s"]});
@@ -460,9 +464,10 @@ describe('Testing event settings', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
+                        ob.list.sort();
                         ob.should.have.property("overview", []);
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
-                        ob.should.have.property("list", ["test1", "test3", "t1"]);
+                        ob.should.have.property("list", ["t1", "test1", "test3"]);
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
                         ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": []});

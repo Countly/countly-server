@@ -486,9 +486,14 @@ window.countlyManagementView = countlyView.extend({
 
     beforeRender: function() {
         var self = this;
-        return $.when(T.render(this.templatePath, function(src) {
-            self.template = src;
-        }));
+        if (this.templatePath && this.templatePath !== "") {
+            return $.when(T.render(this.templatePath, function(src) {
+                self.template = src;
+            }));
+        }
+        else {
+            return;
+        }
     },
 
     render: function() { //backbone.js view render function
@@ -507,7 +512,11 @@ window.countlyManagementView = countlyView.extend({
             });
         });
 
-        this.el.find('input[type=text], input[type=password], input[type=number]').off('input').on('input', function() {
+        this.el.find(' input[type=number]').off('input').on('input', function() {
+            self.doOnChange($(this).attr('name') || $(this).attr('id'), parseFloat($(this).val()));
+        });
+
+        this.el.find('input[type=text], input[type=password]').off('input').on('input', function() {
             self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
         });
 
@@ -1268,7 +1277,7 @@ var AppRouter = Backbone.Router.extend({
             self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
             self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
             self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
-            if (countlyGlobal.member.global_admin) {
+            if (countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) {
                 self.addSubMenu("events", {code: "manage-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
             }
             self.addMenu("utilities", {
@@ -1617,6 +1626,17 @@ var AppRouter = Backbone.Router.extend({
         */
         Handlebars.registerHelper('withItem', function(object, options) {
             return options.fn(object[options.hash.key]);
+        });
+
+        /**
+        * Encode uri component
+        * @name encodeURIComponent 
+        * @memberof Handlebars
+        * @example
+        * <a href="/path/{{encodeURIComponent entity}}" </a>
+        */
+        Handlebars.registerHelper('encodeURIComponent', function(entity) {
+            return encodeURIComponent(entity);
         });
 
         $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
