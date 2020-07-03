@@ -269,8 +269,7 @@ window.component('push.dash', function (dash) {
                     message = self.messages().find(function (m) { return m._id() === id; });
 
                 if ($(data.target).hasClass('view-recipients') && message) {
-                    countlySegmentation.setQueryObject({message: message._id()});
-                    window.location.hash = "/users/request/"+JSON.stringify(countlySegmentation.getRequestData());
+                    window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/users/filter/' + JSON.stringify({message: {$in: [message._id()]}});
                     return;
                 } else if ($(data.target).hasClass('duplicate-message') && message) {
                     var json = message.toJSON(false, true, true);

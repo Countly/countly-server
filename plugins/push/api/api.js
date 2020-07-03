@@ -134,10 +134,33 @@ const PUSH_CACHE_GROUP = 'P';
         });
     });
 
-    plugins.register('/drill/preprocess_query', ({query}) => {
-        if (query.message) {
-            log.d(`removing message ${query.message} from queryObject`);
+    plugins.register('/drill/preprocess_query', ({query, params}) => {
+        if (query.message && query.message.$in) {
+            let min = query.message.$in;
+            log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
+
+            if (params.qstring.method === 'user_details') {
+                return new Promise((res, rej) => {
+                    try {
+                        common.db.collection(`push_${params.app_id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(common.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+                            if (err) {
+                                rej(err);
+                            }
+                            else {
+                                ids = (ids || []).map(id => id._id);
+                                query.uid = {$in: ids};
+                                log.d(`filtered by message: uids out of ${ids.length}`);
+                                res();
+                            }
+                        });
+                    }
+                    catch (e) {
+                        console.log(e);
+                        rej(e);
+                    }
+                });
+            }
         }
     });
 

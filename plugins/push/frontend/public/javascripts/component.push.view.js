@@ -182,8 +182,7 @@ window.component('push.view', function(view) {
                                     title: t('pu.po.metrics.sent'),
                                     titleClick: function(ev){
                                         ev.preventDefault();
-                                        window.countlySegmentation.setQueryObject({message: ctrl.message._id()});
-                                        window.location.hash = "/users/request/"+JSON.stringify(window.countlySegmentation.getRequestData());
+                                        window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/users/filter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}});
                                     },
                                     titleTitle: t('push.po.table.recipients'),
                                     helpr: t('pu.po.metrics.sent.desc'),

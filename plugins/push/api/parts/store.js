@@ -450,6 +450,26 @@ class Store extends Base {
         }), note._id);
     }
 
+    /**
+     * Get uids by message $in
+     * @param  {Array} min  Array of mids
+     * @return {Promise}    resoves to array of uids
+     */
+    _filterMessage(min) {
+        return new Promise((res, rej) => {
+            this.db.collection(`push_${this.app._id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(this.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+                if (err) {
+                    rej(err);
+                }
+                else {
+                    ids = (ids || []).map(id => id._id);
+                    log.d(`filtered by message: uids out of ${ids.length}`);
+                    res(ids);
+                }
+            });
+        });
+    }
+
     /** fetchedQuery
      * @param {object} note - note object
      * @param {array} uids - array of user ids
@@ -461,6 +481,19 @@ class Store extends Base {
 
         if (note.queryUser) {
             query = note.queryUser;
+
+            if (query.message) {
+                let filtered = await this._filterMessage(query.message.$in);
+                delete query.message;
+
+                if (uids) {
+                    uids = uids.filter(uid => filtered.indexOf(uid) !== -1);
+                }
+                else {
+                    uids = filtered;
+                }
+            }
+
             if (query.$and) {
                 if (uids) {
                     query.$and.push({uid: {$in: uids}});
