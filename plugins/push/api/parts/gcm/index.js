@@ -194,7 +194,7 @@ class ConnectionResource extends EventEmitter {
 
             let content = this.content(message, tokens);
             log.d('sending %s', content);
-            
+
             this.requestCount++;
             this.inFlight += tokens.length;
 
@@ -227,7 +227,7 @@ class ConnectionResource extends EventEmitter {
      * @param  {[String]} tokens array of tokens to send to
      * @return {String}   message string ready to send
      */
-    content (message, tokens) {
+    content(message, tokens) {
         message = JSON.parse(message);
         message.registration_ids = tokens;
         return JSON.stringify(message);
@@ -237,6 +237,7 @@ class ConnectionResource extends EventEmitter {
      * @param {object} req - req obj
      * @param {object} res - res
      * @param {array} ids - id
+     * @param {array} tokens - array of tokens
      * @param {content} content - content
      */
     handle(req, res, ids, tokens, content) {

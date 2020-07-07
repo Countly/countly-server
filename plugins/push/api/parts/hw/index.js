@@ -117,7 +117,7 @@ class ConnectionResource extends FcmResource {
      * @param  {[String]} tokens array of tokens to send to
      * @return {String}   message string ready to send
      */
-    content (message, tokens) {
+    content(message, tokens) {
         if (message === '{"test":true}') {
             return JSON.stringify({message: {data: JSON.stringify({a: 1}), token: tokens}});
         }
@@ -140,7 +140,12 @@ class ConnectionResource extends FcmResource {
         }
     }
 
-    handle(req, res, ids, tokens, content) {
+    /** handle
+     * @param {object} req - req obj
+     * @param {object} res - res
+     * @param {array} ids - id
+     */
+    handle(req, res, ids) {
         if (req.handled || this._closed) {
             return;
         }
@@ -254,7 +259,7 @@ class ConnectionResource extends FcmResource {
                     log.w('Huawei returned error: %j', this.resouceError);
                 }
                 else {
-                     // Unknown error.
+                    // Unknown error.
                     this.resouceError = new Error(`Huawei: unknown error (${obj.code})`);
                     log.w('Huawei returned error: %j', this.resouceError);
                 }

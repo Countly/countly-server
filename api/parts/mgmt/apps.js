@@ -465,7 +465,8 @@ appsApi.updateAppPlugins = function(params) {
                             let err = changes.filter(c => c.status === 'rejected')[0];
                             if (err) {
                                 reject(err.reason);
-                            } else {
+                            }
+                            else {
                                 resolve({[k]: changes.map(c => c.value)});
                             }
                         }
