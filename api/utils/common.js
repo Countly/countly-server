@@ -74,6 +74,20 @@ common.escape_html = function(string, more) {
 };
 
 /**
+* Decode escaped html 
+* @param  {string} string - The string to decode
+* @returns {string} escaped string
+**/
+common.decode_html = function(string) {
+    string = string.replace(/&amp;/g, '&');
+    string = string.replace(/&#39;/g, "'");
+    string = string.replace(/&quot;/g, '"');
+    string = string.replace(/&lt;/g, '<');
+    string = string.replace(/&gt;/g, '>');
+    return string;
+};
+
+/**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
 * @param  {vary} value - value to escape
