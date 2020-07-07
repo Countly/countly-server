@@ -462,7 +462,12 @@ appsApi.updateAppPlugins = function(params) {
                             reject(err2);
                         }
                         else if (changes) {
-                            resolve({[k]: changes});
+                            let err = changes.filter(c => c.status === 'rejected')[0];
+                            if (err) {
+                                reject(err.reason);
+                            } else {
+                                resolve({[k]: changes.map(c => c.value)});
+                            }
                         }
                         else {
                             log.d('Updating %s plugin config for app %s in db: %j', k, params.qstring.app_id, params.qstring.args[k]);
