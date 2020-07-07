@@ -1304,6 +1304,48 @@ margin: 50px 0;}
 .export-dialog .export-data {width: 100%; margin:0px auto; padding-left:0px; padding-right:0px; text-align: center; height:30px;}
 #export-type-selector {width: 100%; float: none; margin:0px auto;  margin-bottom: 10px; height:30px;}
 #export-type-selector .button {width: 33%; text-align: center;}
+.export-dialog .export-columns-selector {
+    overflow:hidden;
+    margin: 0 -15px 10px -15px;
+    display:none;    
+}
+.export-dialog .columns-height-wrapper {
+    height: 150px;
+    border-bottom: 1px solid #D0D0D0;
+}
+.export-dialog .export-columns-selector  p{
+    font-size:12px;
+    color:#6b6b6b;
+    padding:7px 15px;
+    font-weight: normal;
+    
+}
+.export-dialog .export-columns-selector  p:first-child{
+    font-size:13px;
+    padding-bottom:0px;
+}
+.export-dialog .export-columns-selector .columns-wrapper {
+    border-top:1px solid #D0D0D0;
+    
+}
+.export-dialog .export-columns-selector p .check-green {
+    margin-right: 10px;
+}
+.export-dialog .export-columns-selector .columns-wrapper div{
+    font-size:12px;
+    color:#6b6b6b;
+    padding:7px 15px;
+    cursor:pointer;
+}
+.export-dialog .export-columns-selector .columns-wrapper div div {
+    display: inline-block;
+    margin-right: 10px;
+    padding:0px;
+}
+
+.export-dialog .hide-column-selectors .columns-height-wrapper{
+    display: none;
+}
 /* EXPORT END */
 
 .cly-button-group .icon-button { border-radius:0; margin:0; border-left:none; }
