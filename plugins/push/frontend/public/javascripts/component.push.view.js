@@ -182,7 +182,8 @@ window.component('push.view', function(view) {
                                     title: t('pu.po.metrics.sent'),
                                     titleClick: function(ev){
                                         ev.preventDefault();
-                                        window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/users/filter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}});
+                                        window.app.navigate('#/users/qfilter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}}), true);
+                                        // window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/users/qfilter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}});
                                     },
                                     titleTitle: t('push.po.table.recipients'),
                                     helpr: t('pu.po.metrics.sent.desc'),

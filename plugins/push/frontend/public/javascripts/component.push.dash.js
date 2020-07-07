@@ -269,7 +269,7 @@ window.component('push.dash', function (dash) {
                     message = self.messages().find(function (m) { return m._id() === id; });
 
                 if ($(data.target).hasClass('view-recipients') && message) {
-                    window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/users/filter/' + JSON.stringify({message: {$in: [message._id()]}});
+                    window.app.navigate('#/users/qfilter/' + JSON.stringify({message: {$in: [message._id()]}}), true);
                     return;
                 } else if ($(data.target).hasClass('duplicate-message') && message) {
                     var json = message.toJSON(false, true, true);
