@@ -912,7 +912,7 @@ function cachedData(note) {
             common.returnOutput(params, json);
         }
         else {
-            if (!prepared || !prepared.build || (!note.delayed && !prepared.build.total)) {
+            if (!note.delayed && (!prepared || !prepared.build || !prepared.build.total)) {
                 return common.returnOutput(params, {error: 'No audience'});
             }
 
