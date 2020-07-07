@@ -86,7 +86,7 @@ class ProcessJob extends J.IPCJob {
 
                 let cid = typeof this.cid === 'string' ? this.cid : this.cid.toString(),
                     aid = typeof this.aid === 'string' ? db.ObjectID(this.aid) : this.aid;
-                db.collection('apps').findOne({_id: aid, $or: [{'plugins.push.i._id': cid}, {'plugins.push.a._id': cid}]}, (err, app) => {
+                db.collection('apps').findOne({_id: aid, $or: [{'plugins.push.i._id': cid}, {'plugins.push.a._id': cid}, {'plugins.push.h._id': cid}]}, (err, app) => {
                     if (err) {
                         return reject(err);
                     }

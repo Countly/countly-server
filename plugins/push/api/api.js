@@ -410,6 +410,9 @@ const PUSH_CACHE_GROUP = 'P';
         case 'mime':
             validateUserForWriteAPI(push.mimeInfo, params);
             break;
+        case 'huawei':
+            push.huawei(params);
+            break;
         // case 'download':
         //     validateUserForWriteAPI(push.download.bind(push, params, paths[4]), params);
         //     break;

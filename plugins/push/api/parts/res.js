@@ -7,6 +7,7 @@ const res = require('../../../../api/parts/jobs/resource.js'),
     PL = require('./note.js').Platform,
     APN = require('../parts/apn'),
     GCM = require('../parts/gcm'),
+    HW = require('../parts/hw'),
     jwt = require('jsonwebtoken'),
     TOKEN_VALID = 60 * 45;
 
@@ -134,6 +135,14 @@ class Connection extends res.Resource {
                 }
                 else if (this.creds.platform === PL.ANDROID) {
                     this.connection = new GCM.ConnectionResource(this.creds.key);
+
+                    this.connection.on('closed', () => {
+                        this.closed();
+                        this.stopInterval();
+                    });
+                }
+                else if (this.creds.platform === PL.HUAWEI) {
+                    this.connection = new HW.ConnectionResource(this.creds.key, this.creds.secret);
 
                     this.connection.on('closed', () => {
                         this.closed();

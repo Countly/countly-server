@@ -40,7 +40,8 @@ Status.PAUSED_MIXED = Status.PAUSED_SUCCESS | Status.PAUSED_FAILURE;// 51  Waiti
  */
 const Platform = {
     IOS: 'i',
-    ANDROID: 'a'
+    ANDROID: 'a',
+    HUAWEI: 'h'
 };
 
 const DEFAULT_EXPIRY = 1000 * 60 * 60 * 24 * 7;
@@ -545,6 +546,59 @@ class Note {
             }
 
             return JSON.stringify(compiled);
+        }
+        else if (platform === Platform.HUAWEI) {
+            let android = {
+                    bi_tag: this.id + '.' + Date.now(),
+                    ttl: '' + Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000))
+                },
+                dt = {};
+
+            if (collapseKey) {
+                android.collapse_key = collapseKey;
+            }
+
+
+            if (alert) {
+                dt.message = alert;
+            }
+            if (title) {
+                dt.title = title;
+            }
+
+            if (sound !== null) {
+                dt.sound = sound;
+            }
+            if (badge !== null) {
+                dt.badge = badge;
+            }
+
+            if (!alert && sound === null) {
+                dt['c.s'] = 'true';
+            }
+
+            if (data) {
+                Object.assign(dt, data);
+            }
+            dt['c.i'] = this._id.toString();
+
+            if (url) {
+                dt['c.l'] = url;
+            }
+
+            if (media && mediaMime && ['image/jpeg', 'image/png'].indexOf(mediaMime) !== -1) {
+                dt['c.m'] = media;
+            }
+
+            if (buttonsJSON) {
+                dt['c.b'] = buttonsJSON;
+            }
+            return JSON.stringify({
+                message: {
+                    android,
+                    data: JSON.stringify(dt)
+                }
+            });
         }
         else {
             compiled = {};

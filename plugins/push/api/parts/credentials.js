@@ -20,10 +20,14 @@ const DB_USER_MAP = {
     'gcm_0': `${Platform.ANDROID}p`, // production
     'gcm_test': `${Platform.ANDROID}t`, // testing
     'gcm_2': `${Platform.ANDROID}t`, // testing
+    'hms_prod': `${Platform.HUAWEI}p`, // production
+    'hms_0': `${Platform.HUAWEI}p`, // production
+    'hms_test': `${Platform.HUAWEI}t`, // testing
+    'hms_2': `${Platform.HUAWEI}t`, // testing
     'messages': 'msgs' // messages sent
 };
 
-const FIELDS = ['ip', 'ia', 'id', 'ap', 'at'];
+const FIELDS = ['ip', 'ia', 'id', 'ap', 'at', 'hp', 'ht'];
 
 const CRED_TYPE = {
     [Platform.IOS]: {
@@ -34,6 +38,10 @@ const CRED_TYPE = {
     [Platform.ANDROID]: {
         GCM: 'gcm',
         FCM: 'fcm',
+    },
+
+    [Platform.HUAWEI]: {
+        TOKEN: 'hms',
     }
 };
 

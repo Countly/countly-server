@@ -1472,12 +1472,14 @@ class Loader extends Store {
         log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
         require('../../../../api/parts/data/events.js').processEvents(params);
 
-        try {
-            log.d('Recording %d data points', sent);
-            require('../../../server-stats/api/api.js').updateDataPoints(this.app._id, 0, sent);
-        }
-        catch (e) {
-            log.d('Error during dp recording', e);
+        if (sent > 0) {
+            try {
+                log.d('Recording %d data points', sent);
+                require('../../../server-stats/api/api.js').updateDataPoints(this.app._id, 0, sent);
+            }
+            catch (e) {
+                log.d('Error during dp recording', e);
+            }
         }
     }
 }
@@ -1548,6 +1550,21 @@ class StoreGroup {
                     else if (note.test === false) {
                         return [
                             [app, C.DB_USER_MAP.gcm_prod, new C.Credentials(this.db.ObjectID(creds1._id))],
+                        ];
+                    }
+                    else {
+                        return [];
+                    }
+                }
+                else if (platform === N.Platform.HUAWEI) {
+                    if (note.test === true) {
+                        return [
+                            [app, C.DB_USER_MAP.hms_test, new C.Credentials(this.db.ObjectID(creds1._id))],
+                        ];
+                    }
+                    else if (note.test === false) {
+                        return [
+                            [app, C.DB_USER_MAP.hms_prod, new C.Credentials(this.db.ObjectID(creds1._id))],
                         ];
                     }
                     else {
