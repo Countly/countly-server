@@ -1960,6 +1960,10 @@
             }
         }
 
+        if (store.get(dTable[0].id + '_sort')) {
+            oSettings.aaSorting = [store.get(dTable[0].id + '_sort')];
+        }
+
         oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
         dTable.fnStandingRedraw();
         dTable.trigger("table.refresh");

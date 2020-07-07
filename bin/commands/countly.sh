@@ -374,10 +374,33 @@ countly_backupdb (){
     #allow passing custom flags
     IFS=" " read -r -a con <<< "$(node "$DIR/scripts/db.conf.js")"
     connection=( "${con[@]}"  "${@}" );
-    mongodump "${connection[@]}" --db countly > /dev/null;
-    mongodump "${connection[@]}" --db countly_drill > /dev/null;
-    mongodump "${connection[@]}" --db countly_fs > /dev/null;
-    mongodump "${connection[@]}" --db countly_out > /dev/null;
+    STATUS=0
+    
+    mongodump "${connection[@]}" --db countly 2>&1 | tee "$DIR/../../log/countly-backup-$DATE.log";
+    if [ "${PIPESTATUS[0]}" -ne 0 ]
+    then
+        STATUS=1
+    fi
+    
+    mongodump "${connection[@]}" --db countly_drill 2>&1 | tee -a "$DIR/../../log/countly-backup-$DATE.log";
+    if [ "${PIPESTATUS[0]}" -ne 0 ]
+    then
+        STATUS=1
+    fi
+    
+    mongodump "${connection[@]}" --db countly_fs 2>&1 | tee -a "$DIR/../../log/countly-backup-$DATE.log";
+    if [ "${PIPESTATUS[0]}" -ne 0 ]
+    then
+        STATUS=1
+    fi
+    
+    mongodump "${connection[@]}" --db countly_out 2>&1 | tee -a "$DIR/../../log/countly-backup-$DATE.log";
+    if [ "${PIPESTATUS[0]}" -ne 0 ]
+    then
+        STATUS=1
+    fi
+    
+    exit $STATUS;
     )
 }
 
@@ -508,36 +531,58 @@ countly_restoredb (){
         echo "Please provide path" ;
         return 0;
     fi
+    CLY_EXPORT_PATH=$1
     shift
     #allow passing custom flags
     IFS=" " read -r -a con <<< "$(node "$DIR/scripts/db.conf.js")"
     connection=( "${con[@]}"  "${@}" );
-    if [ -d "$1/dump/countly" ]; then
+    STATUS=0
+    
+    if [ -d "$CLY_EXPORT_PATH/dump/countly" ]; then
         echo "Restoring countly database...";
-        mongorestore "${connection[@]}" --db countly --batchSize=10 "$1/dump/countly" > /dev/null;
+        mongorestore "${connection[@]}" --db countly --batchSize=10 "$CLY_EXPORT_PATH/dump/countly" 2>&1 | tee "$DIR/../../log/countly-restore-$DATE.log";
+        if [ "${PIPESTATUS[0]}" -ne 0 ]
+        then
+            STATUS=1
+        fi
     else
         echo "No countly database dump to restore from";
     fi
-    if [ -d "$1/dump/countly_drill" ]; then
+    
+    if [ -d "$CLY_EXPORT_PATH/dump/countly_drill" ]; then
         echo "Restoring countly_drill database...";
-        mongorestore "${connection[@]}" --db countly_drill --batchSize=10 "$1/dump/countly_drill" > /dev/null;
+        mongorestore "${connection[@]}" --db countly_drill --batchSize=10 "$CLY_EXPORT_PATH/dump/countly_drill" 2>&1 | tee -a "$DIR/../../log/countly-restore-$DATE.log";
+        if [ "${PIPESTATUS[0]}" -ne 0 ]
+        then
+            STATUS=1
+        fi
     else
         echo "No countly_drill database dump to restore from";
     fi
 
-    if [ -d "$1/dump/countly_fs" ]; then
+    if [ -d "$CLY_EXPORT_PATH/dump/countly_fs" ]; then
         echo "Restoring countly_fs database...";
-        mongorestore "${connection[@]}" --db countly_fs --batchSize=10 "$1/dump/countly_fs" > /dev/null;
+        mongorestore "${connection[@]}" --db countly_fs --batchSize=10 "$CLY_EXPORT_PATH/dump/countly_fs" 2>&1 | tee -a "$DIR/../../log/countly-restore-$DATE.log";
+        if [ "${PIPESTATUS[0]}" -ne 0 ]
+        then
+            STATUS=1
+        fi
     else
         echo "No countly_fs database dump to restore from";
     fi
 
-    if [ -d "$1/dump/countly_out" ]; then
+    if [ -d "$CLY_EXPORT_PATH/dump/countly_out" ]; then
         echo "Restoring countly_out database...";
-        mongorestore "${connection[@]}" --db countly_out --batchSize=10 "$1/dump/countly_out" > /dev/null;
+        mongorestore "${connection[@]}" --db countly_out --batchSize=10 "$CLY_EXPORT_PATH/dump/countly_out" 2>&1 | tee -a "$DIR/../../log/countly-restore-$DATE.log";
+        if [ "${PIPESTATUS[0]}" -ne 0 ]
+        then
+            STATUS=1
+        fi
     else
         echo "No countly_out database dump to restore from";
     fi
+    
+    exit $STATUS;
 }
 
 countly_restore (){

@@ -95,6 +95,9 @@ window.CrashesView = countlyView.extend({
                         $("#view-filter .bar-values").text(jQuery.i18n.prop('crashes.of-users', data.iTotalDisplayRecords, data.iTotalRecords));
                         $("#view-filter .bar span").text(Math.floor((data.iTotalDisplayRecords / data.iTotalRecords) * 100) + "%");
                         $("#view-filter .bar .bar-inner").animate({width: Math.floor((data.iTotalDisplayRecords / data.iTotalRecords) * 100) + "%"}, 1000);
+                        $(".extable-link").off('click').on('click', function(e) {
+                            e.stopPropagation();
+                        });
                     }
                 });
             },

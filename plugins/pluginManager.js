@@ -438,6 +438,19 @@ var pluginManager = function pluginManager() {
         events[event].push(callback);
     };
 
+    // TODO: Remove this function and all it calls when moving to Node 12.
+    var promiseAllSettledBluebirdToStandard = function(bluebirdResults) {
+        return bluebirdResults.map((bluebirdResult) => {
+            const isFulfilled = bluebirdResult.isFulfilled();
+
+            const status = isFulfilled ? 'fulfilled' : 'rejected';
+            const value = isFulfilled ? bluebirdResult.value() : undefined;
+            const reason = isFulfilled ? undefined : bluebirdResult.reason();
+
+            return { status, value, reason };
+        });
+    };
+
     /**
     * Dispatch specific event on api side
     * @param {string} event - event to dispatch
@@ -468,22 +481,20 @@ var pluginManager = function pluginManager() {
                 console.error(ex.stack);
             }
 
-            promises = promises.map(p => p && p.catch && p.catch(e => log('plugins').e('Error during plugins dispatch: %j', e)) || p);
-
             //should we create a promise for this dispatch
             if (params && params.params && params.params.promises) {
                 params.params.promises.push(new Promise(function(resolve) {
-                    Promise.all(promises).then(function(results) {
+                    Promise.allSettled(promises).then(function(results) {
                         resolve();
                         if (callback) {
-                            callback(null, results);
+                            callback(null, promiseAllSettledBluebirdToStandard(results));
                         }
                     });
                 }));
             }
             else if (callback) {
-                Promise.all(promises).then(function(results) {
-                    callback(null, results);
+                Promise.allSettled(promises).then(function(results) {
+                    callback(null, promiseAllSettledBluebirdToStandard(results));
                 });
             }
         }

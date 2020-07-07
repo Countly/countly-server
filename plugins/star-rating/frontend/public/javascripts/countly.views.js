@@ -819,9 +819,10 @@ window.starView = countlyView.extend({
     },
     renderCommentsTable: function(isRefresh) {
         var self = this;
-        this.templateData.commentsData = this.getFeedbackData();
+        this.templateData.commentsData = this.getFeedbackData().aaData;
+
         if (isRefresh) {
-            CountlyHelpers.refreshTable($('#tableThree').dataTable(), this.templateData.commentsData);
+            CountlyHelpers.refreshTable(self.commentsTable, this.templateData.commentsData);
         }
         else {
             var columnsDefine = [{
@@ -836,6 +837,16 @@ window.starView = countlyView.extend({
                     return d;
                 }
             }, {
+                "mData": "ts",
+                sType: "numeric",
+                "sTitle": jQuery.i18n.map["common.time"],
+                "mRender": function(d, type) {
+                    if (type === "display") {
+                        return moment.unix(d).format("DD MMMM YYYY HH:MM:SS");
+                    }
+                    return d;
+                }
+            }, {
                 "mData": function(row) {
                     if (row.comment) {
                         return row.comment;
@@ -846,7 +857,7 @@ window.starView = countlyView.extend({
                 },
                 sType: "string",
                 "sTitle": jQuery.i18n.map["feedback.comment"],
-                "bSortable": false
+                bSortable: false
             }, {
                 "mData": function(row) {
                     if (row.email) {
@@ -858,44 +869,11 @@ window.starView = countlyView.extend({
                 },
                 sType: "string",
                 "sTitle": jQuery.i18n.map["management-users.email"],
-                "bSortable": false
-            }, {
-                "mData": "ts",
-                sType: "numeric",
-                "sTitle": jQuery.i18n.map["common.time"],
-                "mRender": function(d, type) {
-                    if (type === "display") {
-                        return countlyCommon.formatTimeAgo(d || 0);
-                    }
-                    return d;
-                }
+                bSortable: false
             }];
-            $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "bServerSide": true,
-                "bFilter": true,
-                "sAjaxSource": countlyCommon.API_PARTS.data.r + "/feedback/data?app_id=" + countlyCommon.ACTIVE_APP_ID,
-                "fnServerData": function(sSource, aoData, fnCallback) {
-                    if (self.ratingFilter.comments.rating && self.ratingFilter.comments.rating !== "") {
-                        sSource += "&rating=" + self.ratingFilter.comments.rating;
-                    }
-                    if (self.ratingFilter.comments.version && self.ratingFilter.comments.version !== "") {
-                        sSource += "&version=" + self.ratingFilter.comments.version;
-                    }
-                    if (self.ratingFilter.comments.platform && self.ratingFilter.comments.platform !== "") {
-                        sSource += "&platform=" + self.ratingFilter.comments.platform;
-                    }
-                    if (self.ratingFilter.comments.widget && self.ratingFilter.comments.widget !== "") {
-                        sSource += "&widget_id=" + self.ratingFilter.comments.widget;
-                    }
-                    $.ajax({
-                        type: "GET",
-                        url: sSource,
-                        data: aoData,
-                        success: function(responseData) {
-                            fnCallback(responseData);
-                        }
-                    });
-                },
+
+            this.commentsTable = $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": this.templateData.commentsData,
                 "aoColumns": columnsDefine
             }));
         }
