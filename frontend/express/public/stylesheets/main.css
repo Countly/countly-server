@@ -3656,3 +3656,7 @@ color:#E95C6C; transition:color 1s;
 .cly-breadcrumbs ul li a:hover {
     text-decoration: underline;
 }
+
+.clip { max-height: 60px; line-height: 20px; text-overflow: ellipsis; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;}
+.clip.nothing { color: #bbb;}
+
