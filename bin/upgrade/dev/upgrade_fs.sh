@@ -9,7 +9,7 @@ CONTINUE="$(countly check before upgrade fs "$VER")"
 if [ "$CONTINUE" == "1" ]
 then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-    CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    # CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
