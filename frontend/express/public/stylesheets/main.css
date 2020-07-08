@@ -1310,7 +1310,7 @@ margin: 50px 0;}
     display:none;    
 }
 .export-dialog .columns-height-wrapper {
-    height: 150px;
+    height: 240px;
     border-bottom: 1px solid #D0D0D0;
 }
 .export-dialog .export-columns-selector  p{
@@ -1323,9 +1323,15 @@ margin: 50px 0;}
 .export-dialog .export-columns-selector  p:first-child{
     font-size:13px;
     padding-bottom:0px;
+	margin-top:4px;
 }
+.export-dialog .export-columns-selector  p:first-child span {
+	float:right;
+}
+
 .export-dialog .export-columns-selector .columns-wrapper {
     border-top:1px solid #D0D0D0;
+	background-color:#FBFBFB;
     
 }
 .export-dialog .export-columns-selector p .check-green {
@@ -1341,6 +1347,8 @@ margin: 50px 0;}
     display: inline-block;
     margin-right: 10px;
     padding:0px;
+	position:relative;
+	top:2px;
 }
 
 .export-dialog .hide-column-selectors .columns-height-wrapper{

@@ -707,7 +707,29 @@
             return false;
         }
     };
+	/** function to show selected column count in export dialog
+	* @param {object} dialog - dialog 
+	*/
+    function show_selected_column_count(dialog) {
 
+        var allSelected = dialog.find('.export-all-columns.fa-check-square');
+
+
+        var boxesCn = dialog.find('.columns-wrapper .checkbox-line');
+        if (boxesCn) {
+            boxesCn = boxesCn.length;
+        }
+        var selectedCn = dialog.find('.columns-wrapper .fa-check-square');
+        if (selectedCn) {
+            selectedCn = selectedCn.length;
+        }
+        if (allSelected.length === 0 && selectedCn !== boxesCn) {
+            dialog.find(".export-columns-selector p:first").html(jQuery.i18n.map["export.columns-to-export"] + "<span>" + jQuery.i18n.prop("export.export-columns-selected-count", selectedCn, boxesCn) + "</span>");
+        }
+        else {
+            dialog.find(".export-columns-selector p:first span").text("");
+        }
+    }
     /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
@@ -723,14 +745,14 @@
     */
     CountlyHelpers.export = function(count, data, asDialog, exportByAPI, instance) {
         var hardLimit = countlyGlobal.config.export_limit;
-        var pages = Math.ceil(count / hardLimit);
+        //var pages = Math.ceil(count / hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
-        var page = 0;
+        //var page = 0;
         var tableCols;
 
         dialog.removeAttr("id");
-        dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
+		/*dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
         if (count <= hardLimit) {
             dialog.find(".cly-select").hide();
         }
@@ -740,10 +762,10 @@
                 dialog.find(".select-items > div").append('<div data-value="' + i + '" class="segmentation-option item">' + ((i * hardLimit + 1) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + ' - ' + (Math.min((i + 1) * hardLimit, count) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + " " + jQuery.i18n.map["export.documents"] + '</div>');
             }
             dialog.find(".export-data").addClass("disabled");
-        }
+        }*/
 
         var str = "";
-        if (instance && instance.fnSettings) {
+        if (instance && instance.addColumnExportSelector && instance.fnSettings ) {
             tableCols = instance.fnSettings().aoColumns || [];
         }
 
@@ -802,8 +824,9 @@
                         dialog.find(".export-columns-selector").addClass("hide-column-selectors");
                     }
                 }
+                show_selected_column_count(dialog);
             });
-
+            show_selected_column_count(dialog);
         }
         else {
             dialog.find(".export-columns-selector .columns-wrapper").html("");
@@ -817,23 +840,25 @@
             $(this).addClass("active");
             type = $(this).attr("id").replace("export-", "");
         });
-        dialog.find(".segmentation-option").on("click", function() {
+        /*dialog.find(".segmentation-option").on("click", function() {
             page = $(this).data("value");
             dialog.find(".export-data").removeClass("disabled");
-        });
+        });*/
         dialog.find(".export-data").click(function() {
             if ($(this).hasClass("disabled")) {
                 return;
             }
             data.type = type;
-            if (page !== -1) {
+            data.limit = "";
+            data.skip = 0;
+            /*if (page !== -1) {
                 data.limit = hardLimit;
                 data.skip = page * hardLimit;
             }
             else {
                 data.limit = "";
                 data.skip = 0;
-            }
+            }*/
 
             delete data.projection;
             if (dialog.find(".export-columns-selector")) {
