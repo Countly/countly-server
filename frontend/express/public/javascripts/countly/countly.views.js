@@ -3152,6 +3152,110 @@ window.ManageUsersView = countlyView.extend({
             Ex:
                 $(app.manageUsersView).trigger('user-mgmt.render');
     */
+    memberPermission: {},
+    renderFeatureTemplate: function(featureName, appId) {
+        var self = this;
+        var featureTemplate = '<div class="feature-name">';
+        featureTemplate += featureName + '</div>';
+        featureTemplate += '<div class="feature-permissions">';
+        var isChecked = typeof self.memberPermission.c[appId].allowed[featureName] !== "undefined" ? self.memberPermission.c[appId].allowed[featureName] : false;
+        featureTemplate += 'Create <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + '  id="c-' + appId + '-' + featureName + '">'
+        isChecked = typeof self.memberPermission.r[appId].allowed[featureName] !== "undefined" ? self.memberPermission.r[appId].allowed[featureName] : false;
+        featureTemplate += 'Read   <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="r-' + appId + '-' + featureName + '">'
+        isChecked = typeof self.memberPermission.u[appId].allowed[featureName] !== "undefined" ? self.memberPermission.u[appId].allowed[featureName] : false;
+        featureTemplate += 'Update <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="u-' + appId + '-' + featureName + '">'
+        isChecked = typeof self.memberPermission.d[appId].allowed[featureName] !== "undefined" ? self.memberPermission.d[appId].allowed[featureName] : false;
+        featureTemplate += 'Delete <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="d-' + appId + '-' + featureName + '">'
+        featureTemplate += '</div>';
+        return featureTemplate;
+    },
+    initializeMemberPermission: function() {
+        if (store.get('permission_model')) {
+            this.memberPermission = store.get('permission_model');
+        }
+        else {
+            this.memberPermission = {
+                c: {},
+                r: {},
+                u: {},
+                d: {}
+            }
+            for (var countlyApp in countlyGlobal["apps"]) {
+                for (var accessType in this.memberPermission) {
+                    this.memberPermission[accessType][countlyApp] = {};
+                    this.memberPermission[accessType][countlyApp].all = false;
+                    this.memberPermission[accessType][countlyApp].allowed = {};
+                    this.memberPermission[accessType].global = {};
+                    this.memberPermission[accessType].global.all = false;
+                    this.memberPermission[accessType].global.allowed = {};
+                }
+            }
+        }
+        console.log(this.memberPermission);
+    },
+    initializeAppPermission: function(appObj) {
+        appObj = {
+            all: false,
+            allowed: {}
+        };
+        return appObj;
+    },
+    renderPermissionsTable: function(isFirstRender) {
+        var self = this;
+        // feature holder object for permission table
+        var features = {
+            "plugins": countlyGlobal["plugins"],
+            "core": ["applications", "users", "configurations"]
+        };
+
+        // Prepare permission table for new member
+        for (var a in countlyGlobal["apps"]) {
+            if (isFirstRender) {
+                // add apps as options to selector
+                $('#permission-app-selector').append('<option value="' + countlyGlobal["apps"][a]._id + '">' + countlyGlobal["apps"][a].name + '</option>');
+                // create permission sections for apps
+                $('.plugins-features').append('<div style="display:none" class="permission-wrapper plugins-wrapper-for-' + a + '"></div>');
+                $('.core-features').append('<div style="display:none" class="permission-wrapper core-wrapper-for-' + a + '"></div>');
+            }
+
+            // clear target wrappers
+            $('.plugins-wrapper-for-' + a).empty();
+            $('.core-wrapper-for-' + a).empty();
+
+            // render permission checkboxes for features/plugins
+            features.plugins.forEach(function(feature) {
+                $('.plugins-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
+            });
+            // render permission checkboxes for features/core
+            features.core.forEach(function(feature) {
+                $('.core-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
+            });
+        };
+
+        if (isFirstRender) {
+            // render clear permissions button
+            // TODO: LOCALIZE IT!
+            $('.permission-app-select').append('<button id="clear-stored-permissions">Clear all permissions</button>');
+        }
+    },
+    updatePermission: function(type, app, scope, value) {
+        if (value) {
+            if (typeof this.memberPermission[type][app] === "undefined") {
+                this.memberPermission[type][app] = this.initializeAppPermission(this.memberPermission[type][app]);
+            }
+            this.memberPermission[type][app].allowed[scope] = true;    
+        }
+        else {
+            this.memberPermission[type][app].allowed[scope] = false;
+        }
+        store.set('permission_model', this.memberPermission);
+        console.log(this.memberPermission);
+    },
+    showPermissionSection: function(app) {
+        $('.permission-wrapper').hide();
+        $('.core-wrapper-for-' + app).show();
+        $('.plugins-wrapper-for-' + app).show();
+    },
     template: null,
     initialize: function() {},
     beforeRender: function() {
@@ -3341,7 +3445,18 @@ window.ManageUsersView = countlyView.extend({
             });
         }
         self.initTable();
+
+        /*
+            Handle create new user button
+        */
         $("#add-user-mgmt").on("click", function() {
+            
+            // render permission table
+            self.renderPermissionsTable(true);
+            // make visible first option of app selector
+            for (var firstApp in countlyGlobal["apps"]) break;
+            self.showPermissionSection(firstApp);
+
             CountlyHelpers.closeRows(self.dtable);
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
@@ -3352,6 +3467,7 @@ window.ManageUsersView = countlyView.extend({
 
             $(self).trigger('user-mgmt.new-user-button-clicked');
         });
+
         $("#listof-apps .app").on('click', function() {
             if ($(this).hasClass("disabled")) {
                 return true;
@@ -3423,6 +3539,7 @@ window.ManageUsersView = countlyView.extend({
             data.email = currUserDetails.find(".email-text").val();
             data.global_admin = currUserDetails.find(".global-admin").hasClass("checked");
             data.password = currUserDetails.find(".password-text").val();
+            data.permission = self.memberPermission;
 
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
@@ -3464,10 +3581,12 @@ window.ManageUsersView = countlyView.extend({
                 return false;
             }
 
+            /*
             if (!data.global_admin) {
                 data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
                 data.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
             }
+            */
 
             app.onUserEdit(data, false);
 
@@ -3553,6 +3672,38 @@ window.ManageUsersView = countlyView.extend({
         $(".manage-users-table .detail .password-text").off("focus").on("focus", function() {
             $(this).select();
         });
+
+        /*
+            Handle permission checkbox click event
+            Call permission modifier by passed data
+        */
+        $('body').on("click", ".permission-checkbox", function() {
+            // parse permission data from dom
+            var permissionData = $(this).attr('id').split("-"); 
+
+            if (permissionData[0] !== "r") {
+                // call permission modifier for read too
+                self.updatePermission("r", permissionData[1], permissionData[2], $(this).is(":checked"));
+                // update dom for read permission
+                $('#r-' + permissionData[1] + '-' + permissionData[2]).attr('checked', 'checked');
+            };
+
+            // call permission modifier
+            self.updatePermission(permissionData[0], permissionData[1], permissionData[2], $(this).is(":checked"));
+        });
+
+        $('body').on("change", "#permission-app-selector", function() {
+            self.showPermissionSection($(this).val());
+        });
+
+        $('body').on("click", "#clear-stored-permissions", function() {
+            var accepted = confirm("You will lost all marked permissions below. Are you sure to continue?")
+            if (accepted) {
+                store.remove('permission_model');
+                self.initializeMemberPermission();
+                self.renderPermissionsTable(false);
+            }
+        });
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
@@ -3576,6 +3727,11 @@ window.ManageUsersView = countlyView.extend({
         $(this).off('user-mgmt.render').on('user-mgmt.render', function() {
             app.activeView.render();
         });
+        
+        /* CRUD CONTEXT LOGIC - START */
+        // init permission model object with default values
+        self.initializeMemberPermission();
+        /* CRUD CONTEXT LOGIC - END */
     },
     setSelectDeselect: function() {
         var searchInput = $("#listof-apps").find(".search input").val();
@@ -3920,6 +4076,14 @@ window.ManageUsersView = countlyView.extend({
         });
         $(".global-admin").off("click").on('click', function() {
             var currUserDetails = $(".user-details:visible");
+
+            // toggle permission section by global-admin state
+            if ($(this).hasClass('checked')) {
+                $('.member-permission').show();
+            }
+            else {
+                $('.member-permission').hide();
+            }
 
             currUserDetails.find(".user-apps").toggle();
             currUserDetails.find(".admin-apps").toggle();
