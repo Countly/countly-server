@@ -1827,4 +1827,89 @@ function union(x, y) {
     return res;
 }
 
+/**
+* Get data for jobs listing for jobs api
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.fetchJobs = async function(metric, params) {
+    if (params.qstring.name) {
+        fetch.jobDetails(metric, params);
+    }
+    else {
+        fetch.alljobs(metric, params);
+    }
+};
+
+/**
+* Get all jobs grouped by job name for jobs api
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.alljobs = async function(metric, params) {
+    const columns = ["name", "schedule", "next", "finished", "status", "total"];
+    let sort = {};
+    let total = await countlyDb._native.collection('jobs').aggregate([
+        {
+            $group: { _id: "$name" }
+        },
+        {
+            $count: 'total'
+        }
+    ]).toArray();
+    total = total.length > 0 ? total[0].total : 0;
+    const cursor = countlyDb._native.collection('jobs').aggregate([
+        {
+            $sort: {
+                finished: -1
+            }
+        },
+        {
+            $group: {
+                _id: "$name",
+                name: {$first: "$name"},
+                status: {$first: "$status"},
+                schedule: {$first: "$schedule"},
+                next: {$first: "$next"},
+                finished: {$first: "$finished"},
+                total: {$sum: 1}
+            }
+        },
+    ]);
+    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
+    items = items.map(job => {
+        job.status = STATUS_MAP[job.status];
+        return job;
+    });
+    cursor.close();
+    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || []});
+};
+
+/**
+* Get all documents for a given job name
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.jobDetails = async function(metric, params) {
+    const columns = ["schedule", "next", "finished", "status", "data", "duration"];
+    let sort = {};
+    const cursor = countlyDb._native.collection('jobs').find({name: params.qstring.name});
+    const total = await cursor.count();
+    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
+    items = items.map(job => {
+        job.status = STATUS_MAP[job.status];
+        return job;
+    });
+    cursor.close();
+    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || []});
+};
+
 module.exports = fetch;
