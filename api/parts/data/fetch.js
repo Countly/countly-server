@@ -18,7 +18,8 @@ var fetch = {},
     crypto = require('crypto'),
     usage = require('./usage.js'),
     STATUS_MAP = require('../jobs/job').STATUS_MAP,
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    countlyDb = plugins.dbConnection();
 
 /**
 * Prefetch event data, either by provided key or first event in the list and output result to browser
