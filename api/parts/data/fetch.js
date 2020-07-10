@@ -17,6 +17,7 @@ var fetch = {},
     _ = require('underscore'),
     crypto = require('crypto'),
     usage = require('./usage.js'),
+    STATUS_MAP = require('../jobs/job').STATUS_MAP,
     plugins = require('../../../plugins/pluginManager.js');
 
 /**
