@@ -1883,7 +1883,7 @@ fetch.alljobs = async function(metric, params) {
     cursor.skip(Number(params.qstring.iDisplayStart || 0));
     cursor.limit(Number(params.qstring.iDisplayLength || 10));
     let items = await cursor.toArray();
-    items = items.map(job => {
+    items = items.map((job) => {
         job.status = STATUS_MAP[job.status];
         return job;
     });
@@ -1906,7 +1906,7 @@ fetch.jobDetails = async function(metric, params) {
     cursor.skip(Number(params.qstring.iDisplayStart || 0));
     cursor.limit(Number(params.qstring.iDisplayLength || 10));
     let items = await cursor.toArray();
-    items = items.map(job => {
+    items = items.map((job) => {
         job.status = STATUS_MAP[job.status];
         return job;
     });

@@ -1299,7 +1299,6 @@ var AppRouter = Backbone.Router.extend({
             if (countlyGlobal.member.global_admin) {
                 self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
             }
-            
             if (countlyGlobal.member.global_admin) {
                 self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
             }
