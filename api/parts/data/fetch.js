@@ -1838,9 +1838,7 @@ fetch.fetchJobs = async function(metric, params) {
     if (params.qstring.name) {
         fetch.jobDetails(metric, params);
     }
-    else {
-        fetch.alljobs(metric, params);
-    }
+    fetch.alljobs(metric, params);
 };
 
 /**
@@ -1860,7 +1858,7 @@ fetch.alljobs = async function(metric, params) {
         }
     ]).toArray();
     total = total.length > 0 ? total[0].total : 0;
-    const cursor = countlyDb._native.collection('jobs').aggregate([
+    const pipeline = [
         {
             $sort: {
                 finished: -1
@@ -1876,8 +1874,15 @@ fetch.alljobs = async function(metric, params) {
                 finished: {$first: "$finished"},
                 total: {$sum: 1}
             }
-        },
-    ]);
+        }
+    ];
+    if (params.qstring.sSearch) {
+        let namesMatch = await countlyDb._native.collection('jobs').distinct('name', {name: {$regex: new RegExp(params.qstring.sSearch, "i")}});
+        pipeline.unshift({
+            $match: { 'name': {'$in': namesMatch}}
+        });
+    }
+    const cursor = countlyDb._native.collection('jobs').aggregate(pipeline);
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);
     cursor.skip(Number(params.qstring.iDisplayStart || 0));

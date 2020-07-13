@@ -6344,7 +6344,6 @@ window.LongTaskView = countlyView.extend({
     },
     refresh: function() {
         this.dtable.fnDraw(false);
-
     },
     addErrorTooltips: function() {
         $("#data-table").on('mouseenter mouseleave', ".have_error_message", function() {
@@ -7003,6 +7002,7 @@ window.JobsView = countlyView.extend({
                     },
                     "sType": "string",
                     "bSortable": true,
+                    "bSearchable": true,
                     "sTitle": jQuery.i18n.map["jobs.job-name"]
                 },
                 {
@@ -7011,6 +7011,7 @@ window.JobsView = countlyView.extend({
                     },
                     "sType": "string",
                     "bSortable": false,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-schedule"]
                 },
                 {
@@ -7019,6 +7020,7 @@ window.JobsView = countlyView.extend({
                     },
                     "sType": "format-ago",
                     "bSortable": true,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-next-run"]
                 },
                 {
@@ -7027,6 +7029,7 @@ window.JobsView = countlyView.extend({
                     },
                     "sType": "format-ago",
                     "bSortable": true,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-last-run"]
                 },
                 {
@@ -7035,6 +7038,7 @@ window.JobsView = countlyView.extend({
                     },
                     "sType": "string",
                     "bSortable": true,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-status"]
                 },
                 {
@@ -7043,6 +7047,7 @@ window.JobsView = countlyView.extend({
                     },
                     "sType": "numeric",
                     "bSortable": true,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-total-scheduled"]
                 }
             ],
@@ -7086,6 +7091,7 @@ window.JobDetailView = countlyView.extend({
         var self = this;
         this.dtable = $('#jobs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaSorting": [[ 3, "desc" ]],
+            "bFilter": false,
             "bServerSide": true,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=jobs&name=" + self.name,
             "fnServerData": function(sSource, aoData, fnCallback) {
@@ -7105,6 +7111,7 @@ window.JobDetailView = countlyView.extend({
                     },
                     "sType": "string",
                     "bSortable": false,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-schedule"]
                 },
                 {
@@ -7113,6 +7120,7 @@ window.JobDetailView = countlyView.extend({
                     },
                     "sType": "format-ago",
                     "bSortable": true,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-next-run"]
                 },
                 {
@@ -7121,6 +7129,7 @@ window.JobDetailView = countlyView.extend({
                     },
                     "sType": "format-ago",
                     "bSortable": true,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-last-run"]
                 },
                 {
@@ -7129,6 +7138,7 @@ window.JobDetailView = countlyView.extend({
                     },
                     "sType": "string",
                     "bSortable": true,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-status"]
                 },
                 {
@@ -7137,6 +7147,7 @@ window.JobDetailView = countlyView.extend({
                     },
                     "sType": "string",
                     "bSortable": false,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.job-data"]
                 },
                 {
@@ -7145,6 +7156,7 @@ window.JobDetailView = countlyView.extend({
                     },
                     "sType": "string",
                     "bSortable": true,
+                    "bSearchable": false,
                     "sTitle": jQuery.i18n.map["jobs.run-duration"]
                 },
             ],
@@ -7157,6 +7169,7 @@ window.JobDetailView = countlyView.extend({
         });
     },
 });
+
 
 
 $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
