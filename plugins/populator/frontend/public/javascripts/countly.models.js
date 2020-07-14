@@ -299,7 +299,7 @@
         this.isRegistered = false;
 
         this.hasSession = false;
-        this.ip = predefined_ip_addresses[Math.floor(chance.random() * 20)];
+        this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
         this.userdetails = {name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp)};
         this.userdetails.custom.populator = true;
         this.metrics = {};
@@ -991,7 +991,7 @@
      * @param {string} name - campaign name
      **/
     function clickCampaign(name) {
-        var ip = predefined_ip_addresses[Math.floor(chance.random() * 20)];
+        var ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/campaign/click/" + name + countlyCommon.ACTIVE_APP_ID,
@@ -1091,7 +1091,7 @@
 
                 var userdetails = {name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp)};
 
-                bulk.push({ip_address: predefined_ip_addresses[Math.floor(chance.random() * 20)], device_id: userIndex + "" + ids[j], begin_session: 1, metrics: metrics, user_details: userdetails, timestamp: ts, hour: getRandomInt(0, 23), dow: getRandomInt(0, 6)});
+                bulk.push({ip_address: predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))], device_id: userIndex + "" + ids[j], begin_session: 1, metrics: metrics, user_details: userdetails, timestamp: ts, hour: getRandomInt(0, 23), dow: getRandomInt(0, 6)});
                 totalStats.s++;
                 totalStats.u++;
             }
