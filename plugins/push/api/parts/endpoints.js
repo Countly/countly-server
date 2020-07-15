@@ -400,7 +400,7 @@ function cachedData(note) {
             }
 
             if (!data.platforms || data.platforms.filter(x => Object.values(N.Platform).indexOf(x) === -1).length) {
-                return [{error: `Bad message plaform: only ${N.Platform.IOS} (IOS) & ${N.Platform.ANDROID} (ANDROID) are supported`}];
+                return [{error: `Bad message plaform: only ${N.Platform.IOS} (IOS), ${N.Platform.ANDROID} (ANDROID) & ${N.Platform.HUAWEI} (HUAWEI) are supported`}];
             }
 
             if (data.type === 'data') {
@@ -498,6 +498,12 @@ function cachedData(note) {
             else {
                 return [{error: 'No such message'}];
             }
+        }
+
+        if (data.platforms.indexOf(N.Platform.ANDROID) !== 1 &&
+            data.platforms.indexOf(N.Platform.HUAWEI) === -1 &&
+            apps.filter(a => common.dot(a, `plugins.push.${N.Platform.HUAWEI}._id`)).length) {
+            data.platforms.push(N.Platform.HUAWEI);
         }
 
         if (!skipAppsPlatforms && apps.length !== data.apps.length) {
@@ -795,6 +801,7 @@ function cachedData(note) {
             apps.forEach(app => {
                 common.db.collection('apps').updateOne({_id: app._id, 'plugins.push.i._id': {$exists: false}}, {$set: {'plugins.push.i._id': 'demo'}}, () => {});
                 common.db.collection('apps').updateOne({_id: app._id, 'plugins.push.a._id': {$exists: false}}, {$set: {'plugins.push.a._id': 'demo'}}, () => {});
+                common.db.collection('apps').updateOne({_id: app._id, 'plugins.push.h._id': {$exists: false}}, {$set: {'plugins.push.h._id': 'demo'}}, () => {});
             });
 
             if (json.auto) {
@@ -912,7 +919,7 @@ function cachedData(note) {
             common.returnOutput(params, json);
         }
         else {
-            if (!prepared || !prepared.build || (!note.delayed && !prepared.build.total)) {
+            if (!note.delayed && (!prepared || !prepared.build || !prepared.build.total)) {
                 return common.returnOutput(params, {error: 'No audience'});
             }
 
@@ -1317,15 +1324,24 @@ function cachedData(note) {
                     data.type = detected;
                 }
 
-                let id = new common.db.ObjectID();
-                credsToCheck.push(common.dbPromise('credentials', 'insertOne', {
-                    _id: id,
-                    type: data.type,
-                    platform: N.Platform.IOS,
-                    key: data.file.substring(data.file.indexOf(',') + 1),
-                    secret: data.type === C.CRED_TYPE[N.Platform.IOS].UNIVERSAL ? data.pass : [data.key, data.team, data.bundle].join('[CLY]')
+                let id = new common.db.ObjectID(),
+                    oldid = common.dot(app, `plugins.push.${N.Platform.IOS}._id`);
+
+                oldid = oldid && common.db.ObjectID(oldid);
+                if (oldid) {
+                    credsToRemove.push(oldid);
+                }
+
+                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
+                    return common.dbPromise('credentials', 'insertOne', {
+                        _id: id,
+                        type: data.type,
+                        platform: N.Platform.IOS,
+                        key: data.file.substring(data.file.indexOf(',') + 1),
+                        secret: data.type === C.CRED_TYPE[N.Platform.IOS].UNIVERSAL ? data.pass : [data.key, data.team, data.bundle].join('[CLY]'),
+                        seq: seq && seq + 1000000 || 0
+                    });
                 }));
-                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.IOS}._id`)));
 
                 data._id = '' + id;
                 log.d('Setting APN config for app %s: %j', app._id, data);
@@ -1340,19 +1356,58 @@ function cachedData(note) {
             }
             else if (!common.equal(config[N.Platform.ANDROID], app.plugins && app.plugins.push && app.plugins.push[N.Platform.ANDROID], true)) {
                 let id = new common.db.ObjectID(),
+                    oldid = common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`),
                     data = config[N.Platform.ANDROID];
 
-                credsToCheck.push(common.dbPromise('credentials', 'insertOne', {
-                    _id: id,
-                    type: data.type,
-                    platform: N.Platform.ANDROID,
-                    key: data.key
+                oldid = oldid && common.db.ObjectID(oldid);
+                if (oldid) {
+                    credsToRemove.push(oldid);
+                }
+
+                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
+                    return common.dbPromise('credentials', 'insertOne', {
+                        _id: id,
+                        type: data.type,
+                        platform: N.Platform.ANDROID,
+                        key: data.key,
+                        seq: seq && seq + 1000000 || 0
+                    });
                 }));
-                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)));
 
                 data._id = '' + id;
                 log.d('Setting ANDROID config for app %s: %j', app._id, data);
                 update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.ANDROID]: data});
+            }
+
+            if (config[N.Platform.HUAWEI] === null) {
+                log.d('Unsetting HUAWEI config for app %s', app._id);
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.HUAWEI]: {}});
+                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.HUAWEI}._id`)));
+            }
+            else if (!common.equal(config[N.Platform.HUAWEI], app.plugins && app.plugins.push && app.plugins.push[N.Platform.HUAWEI], true)) {
+                let id = new common.db.ObjectID(),
+                    oldid = common.dot(app, `plugins.push.${N.Platform.HUAWEI}._id`),
+                    data = config[N.Platform.HUAWEI];
+
+                oldid = oldid && common.db.ObjectID(oldid);
+                if (oldid) {
+                    credsToRemove.push(oldid);
+                }
+
+                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
+                    return common.dbPromise('credentials', 'insertOne', {
+                        _id: id,
+                        type: data.type,
+                        platform: N.Platform.HUAWEI,
+                        key: data.key,
+                        secret: data.secret,
+                        seq: seq && seq + 1000000 || 0
+                    });
+                }));
+
+                data._id = '' + id;
+                log.d('Setting HUAWEI config for app %s: %j', app._id, data);
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.HUAWEI]: data});
             }
 
             if (config.rate) {
@@ -1469,7 +1524,7 @@ function cachedData(note) {
                     reject(err);
                 }
                 else {
-                    if (common.dot(app, `plugins.push.${N.Platform.IOS}._id`) || common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)) {
+                    if (common.dot(app, `plugins.push.${N.Platform.IOS}._id`) || common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`) || common.dot(app, `plugins.push.${N.Platform.HUAWEI}._id`)) {
                         let now = new Date(), query = {
                             apps: app._id,
                             auto: true,
@@ -1530,7 +1585,7 @@ function cachedData(note) {
                     reject(err);
                 }
                 else {
-                    if (common.dot(app, `plugins.push.${N.Platform.IOS}._id`) || common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)) {
+                    if (common.dot(app, `plugins.push.${N.Platform.IOS}._id`) || common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`) || common.dot(app, `plugins.push.${N.Platform.HUAWEI}._id`)) {
                         log.d('[auto] Processing message %s', msg._id);
                         let sg = new S.StoreGroup(common.db),
                             note = new N.Note(msg);
@@ -1648,6 +1703,133 @@ function cachedData(note) {
         return true;
     };
 
+    api.huawei = function(params) {
+        log.d('Huawei callback: %s %j %j', params.req.method, params.qstring.length, params.qstring);
+        if (params.qstring && params.qstring.statuses && params.qstring.statuses.length) {
+            let unset = {},
+                decr = {};
+
+            params.qstring.statuses.forEach(s => {
+                let [mid, time] = s.biTag.split('.');
+
+                time = parseInt(time);
+
+                if (!time || isNaN(time)) {
+                    return;
+                }
+
+                if (s.status !== 0 && s.status !== 6 && s.status !== 27) {
+                    if (s.token) {
+                        if (!unset[mid]) {
+                            unset[mid] = [];
+                        }
+                        unset[mid].push(s.token);
+                    }
+                    decr[mid] = (decr[mid] || 0) + 1;
+                }
+            });
+
+            let mids = Object.keys(unset).concat(Object.keys(decr));
+            mids = mids.filter((mid, i) => mids.indexOf(mid) === i).map(mid => {
+                try {
+                    return common.db.ObjectID(mid);
+                }
+                catch (e) {
+                    log.e('Wrong mid from huawei %j: %j', mid, e);
+                    delete unset[mid];
+                    delete decr[mid];
+                }
+            }).filter(x => !!x);
+
+            if (mids.length) {
+                log.d('Processing messages %j', mids);
+                common.db.collection('messages').find({_id: {$in: mids}}).toArray((err, msgs) => {
+                    if (err) {
+                        return log.e('Cannot find apps: %j', err);
+                    }
+                    if (!msgs || !msgs.length) {
+                        return log.w('No such messages: %j', mids);
+                    }
+                    log.d('Found %d messages', msgs.length);
+
+                    let aids = [];
+                    msgs.forEach(m => m.apps.forEach(id => !aids.filter(aid => aid.toString() === id.toString()).length && aids.push(id)));
+
+                    common.db.collection('apps').find({_id: {$in: aids}}).toArray((err3, apps) => {
+                        if (err3) {
+                            return log.e('Cannot find apps: %j', err3);
+                        }
+                        if (!apps || !apps.length) {
+                            return log.w('No such apps: %j', aids);
+                        }
+                        log.d('Found %d apps', apps.length);
+
+                        Object.keys(unset).forEach(mid => {
+                            let m = msgs.filter(x => x._id.toString() === mid)[0];
+                            if (!m) {
+                                return log.w('Message not found: %j', mid);
+                            }
+                            m.apps.forEach(aid => {
+                                let app = apps.filter(a => a._id.toString() === aid.toString())[0];
+                                if (!m) {
+                                    return log.w('App not found: %j', mid);
+                                }
+
+                                let cid = common.dot(app, `plugins.push.${N.Platform.HUAWEI}._id`);
+                                if (cid) {
+                                    let field = 'tk.' + (m.test ? 'ht' : 'hp');
+                                    common.db.collection(`push_${aid.toString()}`).updateMany({[field]: {$in: unset[mid]}}, {$unset: {[field]: 1}}, (err2, res) => {
+                                        if (err2) {
+                                            return log.e('Cannot unset tokens: %j', err2);
+                                        }
+                                        log.i('Unset %d tokens out of %d for app %s / message %s', res && res.modifiedCount, unset[mid].length, aid, mid);
+                                    });
+                                }
+                            });
+                        });
+
+                        Object.keys(decr).forEach(mid => {
+                            let m = msgs.filter(x => x._id.toString() === mid)[0];
+                            if (!m) {
+                                return log.w('Message not found: %j', mid);
+                            }
+
+                            m.apps.forEach(aid => {
+                                let app = apps.filter(a => a._id.toString() === aid.toString())[0];
+                                if (!m) {
+                                    return log.w('App not found: %j', mid);
+                                }
+
+                                let cid = common.dot(app, `plugins.push.${N.Platform.HUAWEI}._id`);
+                                if (cid) {
+                                    let field = 'tk.' + (m.test ? 'ht' : 'hp'),
+                                        loader = new S.Loader({_id: cid}, field, common.db, {_id: aid});
+
+                                    loader.recordSentEvent(m, -decr[mid]);
+
+                                    common.db.collection('messages').updateOne({_id: m._id}, {$inc: {'result.sent': -decr[mid]}}, (err2, res) => {
+                                        if (err2) {
+                                            return log.e('Cannot $inc message: %j', err2);
+                                        }
+                                        log.i('decremented %s message %s by %d', res && res.modifiedCount ? '' : 'Not ', mid, decr[mid]);
+                                    });
+                                }
+                            });
+
+
+                        });
+                    });
+                });
+            }
+
+        }
+        else {
+            log.w('Nothing to process in huawei callback: %j', params.qstring);
+        }
+        common.returnOutput(params, {});
+        return true;
+    };
+
     api.processTokenSession = function(dbAppUser, params) {
         var token, field, bool;
         if (typeof params.qstring.ios_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
@@ -1657,8 +1839,14 @@ function cachedData(note) {
         }
         else if (typeof params.qstring.android_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring.android_token;
-            field = common.dbUserMap.tokens + '.' + common.dbUserMap['gcm_' + params.qstring.test_mode];
-            bool = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
+            if (!params.qstring.token_provider || params.qstring.token_provider === 'FCM') {
+                field = common.dbUserMap.tokens + '.' + common.dbUserMap['gcm_' + params.qstring.test_mode];
+                bool = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
+            }
+            else {
+                field = common.dbUserMap.tokens + '.' + common.dbUserMap['hms_' + params.qstring.test_mode];
+                bool = common.dbUserMap.tokens + common.dbUserMap['hms_' + params.qstring.test_mode];
+            }
         }
 
         if (token === 'BLACKLISTED') {

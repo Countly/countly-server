@@ -11,8 +11,8 @@ class ConnectionResource extends EventEmitter {
      */
     constructor(key) {
         super();
-        log.i('New FCM connection %j', arguments);
-        this._key = key;
+        log.i('New connection %j', arguments);
+        this._key = 'key=' + key;
         this.requestCount = 0;
         this.inFlight = 0;
 
@@ -44,7 +44,7 @@ class ConnectionResource extends EventEmitter {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'Authorization': 'key=' + this._key,
+                    'Authorization': this._key,
                 },
             };
         }
@@ -57,7 +57,7 @@ class ConnectionResource extends EventEmitter {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'Authorization': 'key=' + this._key,
+                    'Authorization': this._key,
                 },
             };
         }
@@ -189,16 +189,14 @@ class ConnectionResource extends EventEmitter {
         }
 
         if (tokens.length) {
-            message = JSON.parse(message);
-            message.registration_ids = tokens;
-
-            this.requestCount++;
-            this.inFlight += tokens.length;
-
             // log.i('sending to %d tokens, %d requests / %d notes in flight', ids.length, this.requestCount, this.inFlight);
             // log.d('sending %s to %j', message, this.requestCount, this.inFlight);
 
-            let content = JSON.stringify(message);
+            let content = this.content(message, tokens);
+            log.d('sending %s', content);
+
+            this.requestCount++;
+            this.inFlight += tokens.length;
 
             this.options.headers['Content-length'] = Buffer.byteLength(content, 'utf8');
 
@@ -207,8 +205,8 @@ class ConnectionResource extends EventEmitter {
                 res.on('data', d => {
                     res.reply += d;
                 });
-                res.on('end', this.handle.bind(this, req, res, ids, content));
-                res.on('close', this.handle.bind(this, req, res, ids, content));
+                res.on('end', this.handle.bind(this, req, res, ids, tokens, content));
+                res.on('close', this.handle.bind(this, req, res, ids, tokens, content));
             });
             req.on('socket', this.onSocket.bind(this));
             req.on('error', this.onError.bind(this));
@@ -223,13 +221,26 @@ class ConnectionResource extends EventEmitter {
         }
     }
 
+    /**
+     * Add tokens to the message string
+     * @param  {String} message compiled message json string
+     * @param  {[String]} tokens array of tokens to send to
+     * @return {String}   message string ready to send
+     */
+    content(message, tokens) {
+        message = JSON.parse(message);
+        message.registration_ids = tokens;
+        return JSON.stringify(message);
+    }
+
     /** handle
      * @param {object} req - req obj
      * @param {object} res - res
      * @param {array} ids - id
+     * @param {array} tokens - array of tokens
      * @param {content} content - content
      */
-    handle(req, res, ids, content) {
+    handle(req, res, ids, tokens, content) {
         if (req.handled || this._closed) {
             return;
         }

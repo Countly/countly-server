@@ -19,7 +19,8 @@ window.component('push', function(push) {
 
         PLATFORMS: {
             IOS: 'i',
-            ANDROID: 'a'
+            ANDROID: 'a',
+            HUAWEI: 'h'
         },
         S: '|'
     };
@@ -94,7 +95,7 @@ window.component('push', function(push) {
         // this.availableCohorts = buildClearingProp(data.availableCohorts || []);
         // Automated push fields -----
 
-        this.platforms = buildClearingProp(data.platforms || []);
+        this.platforms = buildClearingProp((data.platforms || []).filter(function(p){ return p !== push.C.PLATFORMS.HUAWEI; }));
         this.sent = m.prop(data.sent);
         this.sound = vprop(data.sound, function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
         this.badge = vprop(data.badge, function(v){ return v === undefined || ((v + '') === (parseInt(v) + '') && parseInt(v) >= 0); }, t('pu.po.tab2.extras.badge.invalid'));
@@ -324,12 +325,13 @@ window.component('push', function(push) {
             var platofrms = [];
             this.apps().forEach(function(id){
                 var a = window.countlyGlobal.apps[id];
-                [push.C.PLATFORMS.IOS, push.C.PLATFORMS.ANDROID].forEach(function(p) {
+                [push.C.PLATFORMS.IOS, push.C.PLATFORMS.ANDROID, push.C.PLATFORMS.HUAWEI].forEach(function(p) {
                     if (countlyCommon.dot(a, 'plugins.push.' + p + '._id') && platofrms.indexOf(p) === -1) {
-                        platofrms.push(p);
+                        platofrms.push(p === push.C.PLATFORMS.HUAWEI ? push.C.PLATFORMS.ANDROID : p);
                     }
                 });
             });
+            platofrms = platofrms.filter(function(p, i){ return platofrms.indexOf(p) === i; });
             return platofrms;
         };
         if (this.apps().length && !this.platforms().length) {
