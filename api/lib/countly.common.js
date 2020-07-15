@@ -105,7 +105,7 @@ function getPeriodObject() {
         }
         catch (SyntaxError) {
             console.log("period JSON parse failed");
-            _period = "month";
+            _period = "30days";
         }
     }
 
@@ -1865,7 +1865,7 @@ countlyCommon.decode = function(str) {
 * @param {(string|string[]|number[])} defaultPeriod - default period value in case it's not supplied in the params
 * @returns {module:api/lib/countly.common.periodObj} period object
 */
-countlyCommon.getPeriodObj = function(params, defaultPeriod = "month") {
+countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
     let appTimezone = params.appTimezone || (params.app && params.app.timezone);
 
     params.qstring.period = params.qstring.period || defaultPeriod;
