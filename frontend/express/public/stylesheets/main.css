@@ -1324,6 +1324,17 @@ margin: 50px 0;}
     font-size:13px;
     padding-bottom:0px;
 	margin-top:4px;
+	
+}
+.export-dialog .export-columns-selector  p:nth-child(even){
+	cursor:pointer;
+}
+.export-dialog .export-columns-selector  p:nth-child(even):hover {
+	color:#444444;
+}
+.export-dialog .export-columns-selector  p:nth-child(even) a{
+	position: relative;
+    top: 2px;
 }
 .export-dialog .export-columns-selector  p:first-child span {
 	float:right;
@@ -1342,6 +1353,9 @@ margin: 50px 0;}
     color:#6b6b6b;
     padding:7px 15px;
     cursor:pointer;
+}
+.export-dialog .export-columns-selector .columns-wrapper div:hover {
+	color:#444444;
 }
 .export-dialog .export-columns-selector .columns-wrapper div div {
     display: inline-block;
