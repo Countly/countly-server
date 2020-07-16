@@ -1,4 +1,4 @@
-/* global app, T, countlyGlobal, countlyCommon, CountlyHelpers, $ */
+/* global app, T, countlyGlobal, CountlyHelpers, $ */
 
 $(document).ready(function() {
     // if configuration view exists
