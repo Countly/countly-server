@@ -3276,7 +3276,8 @@ $.widget("cly.datepickerExtended", {
 
             var currentFirst = null,
                 currentSecond = null,
-                committedValue = null;
+                committedRange = null,
+                temporaryRange = null;
 
             this.options.onCommit = this.options.onCommit || function(){};
 
@@ -3292,30 +3293,66 @@ $.widget("cly.datepickerExtended", {
             
                 if (self.isSelectingSecond){
                     currentSecond = parsedDate;
-                    committedValue = [currentFirst, currentSecond].sort(function(a, b){
+                    temporaryRange = null;
+                    committedRange = [currentFirst, currentSecond].sort(function(a, b){
                         return a-b;
                     });
-                    self.options.onCommit.apply($(el), committedValue);
+                    self.options.onCommit.apply($(el), committedRange);
                 }
                 else {
                     currentFirst = parsedDate;
-                    committedValue = null;
+                    committedRange = null;
                 }
                 self.isSelectingSecond = !self.isSelectingSecond;
             }
 
             this.options.beforeShowDay = function(date){
                 var returned = originalBeforeShowDay.apply($($el), [date]);
-                if (committedValue) {
-                    if (committedValue[0]<date && date<committedValue[1]) {
+                var targetRange = committedRange;
+                if (self.isSelectingSecond) {
+                    targetRange = temporaryRange;
+                }
+                if (targetRange) {
+                    if (targetRange[0]<date && date<targetRange[1]) {
                         return [returned[0], returned[1] + " in-range", returned[2]];
                     }
-                    if (committedValue[0].getTime() === date.getTime() || date.getTime() === committedValue[1].getTime()) {
+                    if (targetRange[0].getTime() === date.getTime() || date.getTime() === targetRange[1].getTime()) {
                         return [returned[0], returned[1] + " point", returned[2]];
                     }
                 }
                 return returned;
             }
+
+            function _cellHover(temporarySecond) {
+                if (!self.isSelectingSecond) {
+                    return;
+                }
+
+                if (temporarySecond) {
+                    temporaryRange = [currentFirst, temporarySecond].sort(function(a, b){
+                        return a-b;
+                    });
+                }
+                else {
+                    temporaryRange = null;
+                }
+            }
+
+            function parseCell(element){
+                var day = parseInt($(element).text());
+                var month = parseInt($(element).parent().data("month"));
+                var year = parseInt($(element).parent().data("year"));
+                if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
+                    return new Date(year, month, day, 0, 0, 0, 0);
+                }
+                else {
+                    return null;
+                }
+            }
+
+            $($el).on("mouseover", ".ui-state-default", function() {
+                _cellHover(parseCell($(this)));
+            });
         }
 
         $el.datepicker(this.options);
