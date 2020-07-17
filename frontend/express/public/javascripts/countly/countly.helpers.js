@@ -3306,7 +3306,7 @@ $.widget("cly.datepickerExtended", {
                 self.isSelectingSecond = !self.isSelectingSecond;
             }
 
-            this.options.beforeShowDay = function(date){
+            function _beforeShowDay(date){
                 var returned = originalBeforeShowDay.apply($($el), [date]);
                 var targetRange = committedRange;
                 if (self.isSelectingSecond) {
@@ -3323,6 +3323,18 @@ $.widget("cly.datepickerExtended", {
                 return returned;
             }
 
+            this.options.beforeShowDay = _beforeShowDay;
+
+            function _refreshTable(){
+                $($el).find(".ui-datepicker-calendar td").each(function(){
+                    var parsedDate = _cellToDate($(this));
+                    if (parsedDate) {
+                        var returned = _beforeShowDay(parsedDate);
+                        $(this).removeAttr('class').attr('class', returned[1]);
+                    }
+                });
+            }
+
             function _cellHover(temporarySecond) {
                 if (!self.isSelectingSecond) {
                     return;
@@ -3336,12 +3348,13 @@ $.widget("cly.datepickerExtended", {
                 else {
                     temporaryRange = null;
                 }
+                _refreshTable();
             }
 
-            function parseCell(element){
-                var day = parseInt($(element).text());
-                var month = parseInt($(element).parent().data("month"));
-                var year = parseInt($(element).parent().data("year"));
+            function _cellToDate(element){
+                var day = parseInt($(element).find("a").text());
+                var month = parseInt($(element).data("month"));
+                var year = parseInt($(element).data("year"));
                 if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
                     return new Date(year, month, day, 0, 0, 0, 0);
                 }
@@ -3351,7 +3364,7 @@ $.widget("cly.datepickerExtended", {
             }
 
             $($el).on("mouseover", ".ui-state-default", function() {
-                _cellHover(parseCell($(this)));
+                _cellHover(_cellToDate($(this).parent()));
             });
         }
 
