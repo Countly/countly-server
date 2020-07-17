@@ -3275,9 +3275,10 @@ $.widget("cly.datepickerExtended", {
             var self = this;
 
             var currentFirst = null,
-                currentSecond = null,
-                committedRange = null,
-                temporaryRange = null;
+                currentSecond = null;
+
+            this.committedRange = null;
+            this.temporaryRange = null;
 
             this.options.onCommit = this.options.onCommit || function(){};
 
@@ -3293,24 +3294,24 @@ $.widget("cly.datepickerExtended", {
             
                 if (self.isSelectingSecond){
                     currentSecond = parsedDate;
-                    temporaryRange = null;
-                    committedRange = [currentFirst, currentSecond].sort(function(a, b){
+                    self.temporaryRange = null;
+                    self.committedRange = [currentFirst, currentSecond].sort(function(a, b){
                         return a-b;
                     });
-                    self.options.onCommit.apply($(el), committedRange);
+                    self.options.onCommit.apply($(el), self.committedRange);
                 }
                 else {
                     currentFirst = parsedDate;
-                    committedRange = null;
+                    self.committedRange = null;
                 }
                 self.isSelectingSecond = !self.isSelectingSecond;
             }
 
             function _beforeShowDay(date){
                 var returned = originalBeforeShowDay.apply($($el), [date]);
-                var targetRange = committedRange;
+                var targetRange = self.committedRange;
                 if (self.isSelectingSecond) {
-                    targetRange = temporaryRange;
+                    targetRange = self.temporaryRange;
                 }
                 if (targetRange) {
                     if (targetRange[0]<date && date<targetRange[1]) {
@@ -3339,14 +3340,13 @@ $.widget("cly.datepickerExtended", {
                 if (!self.isSelectingSecond) {
                     return;
                 }
-
                 if (temporarySecond) {
-                    temporaryRange = [currentFirst, temporarySecond].sort(function(a, b){
+                    self.temporaryRange = [currentFirst, temporarySecond].sort(function(a, b){
                         return a-b;
                     });
                 }
                 else {
-                    temporaryRange = null;
+                    self.temporaryRange = null;
                 }
                 _refreshTable();
             }
@@ -3368,6 +3368,27 @@ $.widget("cly.datepickerExtended", {
             });
         }
 
-        $el.datepicker(this.options);
+        this.baseInstance = $el.datepicker(this.options);
+    },
+    getRange: function(){
+        return this.committedRange;
+    },
+    getDate: function() {
+        if (this.options.compact === true) {
+            return this.getRange();
+        }
+        return this.baseInstance.datepicker("getDate");
+    },
+    setRange: function(dateRange){
+        this.committedRange = dateRange;
+        this.baseInstance.datepicker("setDate", dateRange[0]).datepicker("refresh");
+    },
+    setDate: function(date) {
+        if (this.options.compact === true) {
+            this.setRange(date);
+        }
+        else {
+            this.baseInstance.datepicker("setDate", date);
+        }
     }
 });
