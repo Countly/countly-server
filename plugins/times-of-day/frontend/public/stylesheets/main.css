@@ -1,55 +1,77 @@
 #tod text {
     cursor: default;
 }
-  
+
 #tod .dot-label text {
     font-size: 12px;
 }
-  
-#tod .tod-xlabel, 
-#tod .tod-ylabel{
-    font-size : 14px;
-    font-family: Ubuntu,Helvetica,sans-serif;
+
+#tod .tod-xlabel,#tod .tod-ylabel {
+    font-size: 14px;
+    font-family: Ubuntu, Helvetica, sans-serif;
     color: #777;
 }
+
 #tod .row {
     background: #777;
 }
-#tod .tod-react-hover{
-    -webkit-box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.75);
-    box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.75);
+
+#tod .tod-react-hover {
+    -webkit-box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.75);
+    box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.75);
 }
-#tod .tod-chart-title{
+
+#tod .tod-chart-title {
     text-transform: uppercase;
     font-size: 14px;
-    color: #444
+    color: #444;
 }
+
 .cly-drawer .details .section .opts .opt .inner .icon.timesofday { background-image: url("../images/times-of-day/times-of-day.svg"); }
 
-.cly-widget .timesofday table { width:100%; color:rgba(255, 255, 255, 0.4); font-size: 13px; border-collapse: separate; padding-right: 10px; table-layout: fixed; }
-.cly-widget .timesofday table th { text-align: left; padding: 0px 0px 4px 0px; font-size: 11px; text-transform: uppercase; font-weight: normal; }
-.cly-widget .timesofday table th:first-child { border-left:none; text-align: right; padding: 0px 8px; }
+.cly-widget .timesofday table { width: 100%; color: rgba(255, 255, 255, 0.4); font-size: 13px; border-collapse: separate; padding-right: 10px; table-layout: fixed; }
+
+.cly-widget .timesofday table th { text-align: left; padding: 0 0 4px 0; font-size: 11px; text-transform: uppercase; font-weight: normal; }
+
+.cly-widget .timesofday table th:first-child { border-left: none; text-align: right; padding: 0 8px; }
+
 .cly-widget .timesofday table th:nth-child(2n+1) { visibility: hidden; }
-.cly-widget .timesofday table td { padding: 0px; }
-.cly-widget .timesofday table td:first-child { border-left:none; text-align: right; padding: 7px 8px; line-height: 16px; }
+
+.cly-widget .timesofday table td { padding: 0; }
+
+.cly-widget .timesofday table td:first-child { border-left: none; text-align: right; padding: 7px 8px; line-height: 16px; }
+
 .cly-widget .timesofday .timesofday-body-cell { position: relative; right: -7px; }
+
 .cly-widget .timesofday .crcl { width: 100%; height: 26px; }
 
-#tod-tip { font-size:12px; max-width:300px; text-align: center; }
+#tod-tip { font-size: 12px; max-width: 300px; text-align: center; }
+
 #tod-tip .highlight { color: #2FA732; }
-#tod-tip a[href=""] { cursor: default; text-decoration: none; color:#FFF; }
-#tod-tip a { cursor: pointer; text-decoration: underline; color:#2FA732; }
+
+#tod-tip a[href=""] { cursor: default; text-decoration: none; color: #FFF; }
+
+#tod-tip a { cursor: pointer; text-decoration: underline; color: #2FA732; }
 
 /* White */
-html.theme-5 .cly-widget .timesofday table { color:rgba(0, 0, 0, 0.6); }
 
-.routename-times-of-day #date-selector2 { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:6px; padding-right:0; user-select:none; position: relative; }
-.routename-times-of-day #date-selector2 .button { visibility: visible; cursor:pointer; user-select:none; background-color:#ececec; float:left; padding:7px 5px; padding-top:6px; border:1px solid #D0D0D0; margin-right:-1px; }
+html.theme-5 .cly-widget .timesofday table { color: rgba(0, 0, 0, 0.6); }
+
+.routename-times-of-day #date-selector2 { float: right; font: 13px Ubuntu, Helvetica, sans-serif; line-height: 111%; color: #6B6B6B; padding: 6px; padding-right: 0; user-select: none; position: relative; }
+
+.routename-times-of-day #date-selector2 .button { visibility: visible; cursor: pointer; user-select: none; background-color: #ECECEC; float: left; padding: 7px 5px; padding-top: 6px; border: 1px solid #D0D0D0; margin-right: -1px; }
+
 .routename-times-of-day #date-selector2 .button { visibility: visible; }
+
 .routename-times-of-day #date-selector2 .date-buttons-container { float: left; }
-.routename-times-of-day #date-selector2 .date-buttons-container .button:first-child { border-top-left-radius:2px; border-bottom-left-radius:2px; }
-.routename-times-of-day #date-selector2 .date-buttons-container .button:last-child { border-top-right-radius:2px; border-bottom-right-radius:2px; border-right:1px solid #D0D0D0; }
-.routename-times-of-day #date-selector2 .button:hover { background-color:#F9F9F9; }
-.routename-times-of-day #date-selector2 .button:active  { background-color:#F9F9F9; }
-.routename-times-of-day #date-selector2 .button.active { background-color:#F9F9F9; }
+
+.routename-times-of-day #date-selector2 .date-buttons-container .button:first-child { border-top-left-radius: 2px; border-bottom-left-radius: 2px; }
+
+.routename-times-of-day #date-selector2 .date-buttons-container .button:last-child { border-top-right-radius: 2px; border-bottom-right-radius: 2px; border-right: 1px solid #D0D0D0; }
+
+.routename-times-of-day #date-selector2 .button:hover { background-color: #F9F9F9; }
+
+.routename-times-of-day #date-selector2 .button:active { background-color: #F9F9F9; }
+
+.routename-times-of-day #date-selector2 .button.active { background-color: #F9F9F9; }

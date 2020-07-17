@@ -1,62 +1,85 @@
-#populator{ overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; font-family:Ubuntu;}
-#populator .clear {clear: both;}
-#populator h3{margin: 0 0 20px 0; color: #646464; font-size: 15px; font-family: Ubuntu; text-align: center; font-weight: 400; text-transform: uppercase; padding:20px; border-bottom: 1px solid #ddd;}
-#populator .left-side{ width: 380px; float: left; background-color: #fff; border-right: 1px solid #ddd; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden; position: relative;}
-#populator .right-side { margin-left: 380px; padding: 0;}
-#populator .right-side .widget-content { border:none; padding:0 25px; }
-#populator .right-side .widget-header { border-top:none; }
-#populator #date-selector {float: none; clear: both; overflow: auto;}
-#populator .icon-button{padding:10px; margin: 0 auto; float: none;}
-#populate-explain{cursor: pointer; text-align: center; color:#9e9e9e; font-size: 18px; position: absolute; top:20px; right:34px;}
-#populate-bar {margin: 5px;  border-radius: 4px; position:relative; height: 30px; background-color: #ececec}
-#populate-bar  div{background-color: #52a3ef; position: absolute; top:0; left:0; width:0;height: 30px; border-radius: 4px 0px 0px 4px}
+#populator { overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; font-family: Ubuntu; }
+
+#populator .clear { clear: both; }
+
+#populator h3 { margin: 0 0 20px 0; color: #646464; font-size: 15px; font-family: Ubuntu; text-align: center; font-weight: 400; text-transform: uppercase; padding: 20px; border-bottom: 1px solid #DDD; }
+
+#populator .left-side { width: 380px; float: left; background-color: #FFF; border-right: 1px solid #DDD; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden; position: relative; }
+
+#populator .right-side { margin-left: 380px; padding: 0; }
+
+#populator .right-side .widget-content { border: none; padding: 0 25px; }
+
+#populator .right-side .widget-header { border-top: none; }
+
+#populator #date-selector { float: none; clear: both; overflow: auto; }
+
+#populator .icon-button { padding: 10px; margin: 0 auto; float: none; }
+
+#populate-explain { cursor: pointer; text-align: center; color: #9E9E9E; font-size: 18px; position: absolute; top: 20px; right: 34px; }
+
+#populate-bar { margin: 5px; border-radius: 4px; position: relative; height: 30px; background-color: #ECECEC; }
+
+#populate-bar div { background-color: #52A3EF; position: absolute; top: 0; left: 0; width: 0; height: 30px; border-radius: 4px 0 0 4px; }
+
 #populator-status { text-align: center; color: gray; font-size: 14px; }
 
+#populator { padding: 77px 30px; }
 
-#populator { padding: 77px 30px;}
 #populator > .content { max-width: 960px; display: flex; margin: 0 auto; }
-#populator > .content > div:first-child { width : 273px; }
-#populator > .content > div:last-child { width: 344px; border-left: solid 1px #dadada; display: flex; align-items: center; justify-content: center}
-#populator > .content p { color: #a2a2a2; font-size: 14px; line-height: 1.5; letter-spacing: 0.3px}
-#populator > .content h1{color: #636363; font-size: 18px;  font-weight: 400; letter-spacing: 0.3px; line-height: 1.4}
-#populator > .content img { width:243px; margin-right:50px; margin-left:50px; }
-#populator > .content .data-populater-form { width: 220px;}
-#populator > .content .data-populater-form > div { margin-bottom: 20px }
-#populator > .content label { font-size: 12px; color: #636363; display: block; margin-bottom: 8px;}
+
+#populator > .content > div:first-child { width: 273px; }
+
+#populator > .content > div:last-child { width: 344px; border-left: solid 1px #DADADA; display: flex; align-items: center; justify-content: center; }
+
+#populator > .content p { color: #A2A2A2; font-size: 14px; line-height: 1.5; letter-spacing: 0.3px; }
+
+#populator > .content h1 { color: #636363; font-size: 18px; font-weight: 400; letter-spacing: 0.3px; line-height: 1.4; }
+
+#populator > .content img { width: 243px; margin-right: 50px; margin-left: 50px; }
+
+#populator > .content .data-populater-form { width: 220px; }
+
+#populator > .content .data-populater-form > div { margin-bottom: 20px; }
+
+#populator > .content label { font-size: 12px; color: #636363; display: block; margin-bottom: 8px; }
+
 #populator > .content input {
     width: 220px;
     font-size: 12px;
     color: #636363;
-    background-color: #fdfdfd;
-    border: 1px solid #d6d6d6;
+    background-color: #FDFDFD;
+    border: 1px solid #D6D6D6;
     outline: none;
     padding: 7px;
     box-sizing: border-box;
-    border-radius: 2px
+    border-radius: 2px;
 }
+
 #populator > .content .icon-button {
     text-align: center;
     font-weight: 400;
-    font-size:14px;
-    outline:none;
-    border:none;
+    font-size: 14px;
+    outline: none;
+    border: none;
     width: 100%;
 }
 
 .populator_modal {
-    border-width: 0px !important;
+    border-width: 0 !important;
     min-width: 600px;
     min-height: 615px;
     padding: 20px 70px 49px 60px;
     box-sizing: border-box;
 }
 
-.populator_modal > .indicator { display: none}
+.populator_modal > .indicator { display: none; }
 
 .populator_modal.cly-loading {
-    background-color: #fff;
+    background-color: #FFF;
 }
-.populator_modal.cly-loading .content{
+
+.populator_modal.cly-loading .content {
     width: 100%;
     height: auto;
 }
@@ -68,22 +91,25 @@
 }
 
 #populator-modal-content .stop-container {
-    text-align:center;
-    margin: 15px 0px 40px 0px;
+    text-align: center;
+    margin: 15px 0 40px 0;
 }
+
 #populator-modal-content a {
     font-size: 12px;
-    color:#636363;
+    color: #636363;
     text-align: center;
     text-decoration: underline;
 }
 
 #populator-modal-content table {
     width: 100%;
-    font-size:15px;
+    font-size: 15px;
 }
-#populator-modal-content table > tbody > tr > td:first-child { color: #636363}
-#populator-modal-content table > tbody > tr > td:last-child { text-align:  right; font-weight: 400}
+
+#populator-modal-content table > tbody > tr > td:first-child { color: #636363; }
+
+#populator-modal-content table > tbody > tr > td:last-child { text-align: right; font-weight: 400; }
 
 .populator-template-name.cly-select {
     width: 220px;
@@ -117,8 +143,8 @@
     height: 31px;
     font-size: 12px;
     color: #636363;
-    background-color: #fdfdfd;
-    border: 1px solid #d6d6d6;
+    background-color: #FDFDFD;
+    border: 1px solid #D6D6D6;
     outline: none;
     margin: 0;
     padding: 7px;
@@ -171,8 +197,8 @@
 }
 
 #populator-templates .dataTable-top {
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
 
 #create-populator-template-button {
@@ -211,13 +237,13 @@
 #populator-template-drawer .text-link {
     cursor: pointer;
     font-size: 12px;
-    color: #e5851a;
+    color: #E5851A;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none; 
+    user-select: none;
 }
 
 #populator-template-drawer .buttons > * {
@@ -234,7 +260,7 @@
     margin-bottom: 2px;
 }
 
-.populator-event-key-row, .populator-event-segmentation-row, .populator-custom-user-prop-row {
+.populator-event-key-row,.populator-event-segmentation-row,.populator-custom-user-prop-row {
     display: flex;
     flex-direction: row;
     height: 30px;
@@ -271,7 +297,7 @@
 #populator-template-drawer .event-property-inputs .input {
     box-sizing: border-box;
     border-radius: 2px;
-    border: 1px solid #d6d6d6;
+    border: 1px solid #D6D6D6;
     outline: none;
     padding: 7px;
     font-size: 12px;
@@ -295,8 +321,8 @@
 }
 
 #populator-template-drawer .populator-template-remove-event {
-    color: #d63e40;
-    margin: 8px 0px 8px auto
+    color: #D63E40;
+    margin: 8px 0 8px auto;
 }
 
 .populator-event-segmentation-table {
@@ -322,7 +348,7 @@
     top: 0;
     font-size: 17px;
     cursor: pointer;
-    color: #a7a7a7;
+    color: #A7A7A7;
     background-color: rgba(255, 255, 255, 0.03);
     transition: background-color 1s;
     padding-top: 17px;
@@ -350,11 +376,11 @@
     position: absolute;
     font-size: 13px;
     white-space: nowrap;
-    background-color: #fff;
+    background-color: #FFF;
     border-radius: 2px;
     width: 210px;
     padding: 10px 0 10px 0;
-    border: 1px solid #d0d0d0;
+    border: 1px solid #D0D0D0;
 }
 
 .populator-template-options-item .edit-menu .item {
@@ -369,7 +395,7 @@
 }
 
 .populator-template-options-item .edit-menu .item:hover {
-    background-color: #f3f3f3;
+    background-color: #F3F3F3;
 }
 
 .populator-template-options-item .edit-menu .item > i {
@@ -391,7 +417,7 @@
 
 .populator-template-options-item .edit-menu::after {
     border: 5px solid rgba(194, 225, 245, 0);
-    border-bottom-color: #d0d0d0;
+    border-bottom-color: #D0D0D0;
     right: 6px;
     top: -10px;
     content: " ";
@@ -415,7 +441,7 @@
 }
 
 .populator-event-property {
-    margin: 20px 20px 0px 20px;
+    margin: 20px 20px 0 20px;
 }
 
 .populator-event-property .content {
@@ -436,7 +462,7 @@
 }
 
 .populator-event-property .help-subtitle {
-    color: #b8b8b8;
+    color: #B8B8B8;
     margin-top: 4px;
 }
 

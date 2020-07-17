@@ -7,9 +7,10 @@
     left: 0;
     z-index: 1000000000000;
     opacity: 0;
-    transition:opacity 200ms;
+    transition: opacity 200ms;
 }
-#whatsnew #whatsnew-overlay.active { opacity: 1 !important; transition:opacity 200ms; }
+
+#whatsnew #whatsnew-overlay.active { opacity: 1 !important; transition: opacity 200ms; }
 
 #whatsnew #whatsnew-popup {
     overflow: visible;
@@ -24,45 +25,72 @@
     z-index: 1000000000001;
     border-radius: 3px;
     box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.35);
-    opacity:0;
+    opacity: 0;
     transition: top 500ms, opacity 500ms;
 }
-#whatsnew #whatsnew-popup.show { top:50%; opacity:1 !important; transition: top 500ms, opacity 500ms; }
 
-#whatsnew #whatsnew-popup .inner { position: relative; width:700px; height:600px; overflow:hidden; border-radius: 2px; }
-#whatsnew #whatsnew-popup-close { cursor:pointer; position:absolute; right:-37px; top:0; width:30px; height:30px; background-color: #FFF; z-index: 1; text-align: center; border-radius: 30px; user-select: none; }
-#whatsnew #whatsnew-popup-close:hover { background-color: #f5f5f5; }
+#whatsnew #whatsnew-popup.show { top: 50%; opacity: 1 !important; transition: top 500ms, opacity 500ms; }
+
+#whatsnew #whatsnew-popup .inner { position: relative; width: 700px; height: 600px; overflow: hidden; border-radius: 2px; }
+
+#whatsnew #whatsnew-popup-close { cursor: pointer; position: absolute; right: -37px; top: 0; width: 30px; height: 30px; background-color: #FFF; z-index: 1; text-align: center; border-radius: 30px; user-select: none; }
+
+#whatsnew #whatsnew-popup-close:hover { background-color: #F5F5F5; }
+
 #whatsnew #whatsnew-popup-close i { color: #000; font-size: 29px; line-height: 30px; }
 
-#whatsnew #whatsnew-slider { width:700px; height:600px; overflow: hidden; position:relative; }
-#whatsnew #whatsnew-slider #slider_inner { width:700px; height:500px; display:none; cursor: default; padding: 0 !important; -webkit-filter: blur(0px); overflow: hidden; }
-#whatsnew #whatsnew-slider .element { width:700px; height:500px; overflow: hidden; }
+#whatsnew #whatsnew-slider { width: 700px; height: 600px; overflow: hidden; position: relative; }
+
+#whatsnew #whatsnew-slider #slider_inner { width: 700px; height: 500px; display: none; cursor: default; padding: 0 !important; -webkit-filter: blur(0); overflow: hidden; }
+
+#whatsnew #whatsnew-slider .element { width: 700px; height: 500px; overflow: hidden; }
+
 #whatsnew #whatsnew-slider .element .image { height: 300px; overflow: hidden; border-top-left-radius: 2px; border-top-right-radius: 2px; }
+
 #whatsnew #whatsnew-slider .element .image img { max-width: 100%; overflow: hidden; border-top-left-radius: 2px; border-top-right-radius: 2px; }
-#whatsnew #whatsnew-slider .element .subtitle,
-#whatsnew #whatsnew-slider .element .title,
-#whatsnew #whatsnew-slider .element .text { position:relative; opacity: 0; transition:opacity 100ms; }
-#whatsnew #whatsnew-slider .element .subtitle { padding:0 40px; font-size:13px; color: #2FA732; text-transform: uppercase; margin-top:25px; }
-#whatsnew #whatsnew-slider .element .title { padding:0 40px; font-size:23px; margin-top:12px; line-height: 30px; }
-#whatsnew #whatsnew-slider .element .text { padding:0 40px; font-size: 15px; margin-top: 17px; color: #797979; line-height: 23px; }
-#whatsnew #whatsnew-slider .element.current .subtitle { opacity: 1; transition:opacity 200ms; }
-#whatsnew #whatsnew-slider .element.current .title { opacity: 1; transition:opacity 200ms; }
-#whatsnew #whatsnew-slider .element.current .text { opacity: 1; transition:opacity 200ms; }
 
-#whatsnew #whatsnew-nav { position: absolute; top:500px; width:100%; height: 100px; }
-#whatsnew #whatsnew-nav #bullet-navigation { user-select: none; position: relative; top:48px; left:40px; }
-#whatsnew #whatsnew-nav #bullet-navigation .jssor-bullet { position: absolute; width: 8px; height: 8px; background-color: #D6D6D6; border-radius: 10px; cursor:pointer; }
-#whatsnew #whatsnew-nav #bullet-navigation .jssor-bullet:hover { background-color: #bdbdbd; }
+#whatsnew #whatsnew-slider .element .subtitle,#whatsnew #whatsnew-slider .element .title,#whatsnew #whatsnew-slider .element .text { position: relative; opacity: 0; transition: opacity 100ms; }
+
+#whatsnew #whatsnew-slider .element .subtitle { padding: 0 40px; font-size: 13px; color: #2FA732; text-transform: uppercase; margin-top: 25px; }
+
+#whatsnew #whatsnew-slider .element .title { padding: 0 40px; font-size: 23px; margin-top: 12px; line-height: 30px; }
+
+#whatsnew #whatsnew-slider .element .text { padding: 0 40px; font-size: 15px; margin-top: 17px; color: #797979; line-height: 23px; }
+
+#whatsnew #whatsnew-slider .element.current .subtitle { opacity: 1; transition: opacity 200ms; }
+
+#whatsnew #whatsnew-slider .element.current .title { opacity: 1; transition: opacity 200ms; }
+
+#whatsnew #whatsnew-slider .element.current .text { opacity: 1; transition: opacity 200ms; }
+
+#whatsnew #whatsnew-nav { position: absolute; top: 500px; width: 100%; height: 100px; }
+
+#whatsnew #whatsnew-nav #bullet-navigation { user-select: none; position: relative; top: 48px; left: 40px; }
+
+#whatsnew #whatsnew-nav #bullet-navigation .jssor-bullet { position: absolute; width: 8px; height: 8px; background-color: #D6D6D6; border-radius: 10px; cursor: pointer; }
+
+#whatsnew #whatsnew-nav #bullet-navigation .jssor-bullet:hover { background-color: #BDBDBD; }
+
 #whatsnew #whatsnew-nav #bullet-navigation .jssor-bullet.jssor-bulletav { background-color: #2FA732; }
-#whatsnew #whatsnew-nav #arrow-navigation { user-select: none; position: absolute; right:40px; top:34px; }
-#whatsnew #whatsnew-nav #arrow-navigation .icon-button { border:none; padding:10px 25px; user-select: none; outline: none; }
-#whatsnew #whatsnew-nav #arrow-navigation .jssora01l { display: block; color: #828181; background-color: #FFF; position: absolute; right:85px; }
-#whatsnew #whatsnew-nav #arrow-navigation .jssora01r { margin-left:0; position: absolute; right:0; }
-#whatsnew #whatsnew-nav #arrow-navigation #last-step-button { position: absolute; right:0; white-space: nowrap; }
 
-#whatsnew #whatsnew-first-time { position: absolute; width:100%; height: 100%; background-color: #FFF; z-index: 1; border-radius: 2px; }
-#whatsnew #whatsnew-first-time .icon { width:130px; height: 130px; margin:100px auto 20px auto; background-repeat: no-repeat; background-position: center; }
-#whatsnew #whatsnew-first-time .title { font-size:32px; text-align: center; max-width: 500px; margin:12px auto 0 auto; font-weight: 500; }
-#whatsnew #whatsnew-first-time .text { font-size: 15px; color: #797979; line-height: 23px; text-align: center; max-width: 410px; margin:20px auto 0 auto; }
-#whatsnew #whatsnew-first-time .button { text-align: center; margin-top:30px; }
+#whatsnew #whatsnew-nav #arrow-navigation { user-select: none; position: absolute; right: 40px; top: 34px; }
+
+#whatsnew #whatsnew-nav #arrow-navigation .icon-button { border: none; padding: 10px 25px; user-select: none; outline: none; }
+
+#whatsnew #whatsnew-nav #arrow-navigation .jssora01l { display: block; color: #828181; background-color: #FFF; position: absolute; right: 85px; }
+
+#whatsnew #whatsnew-nav #arrow-navigation .jssora01r { margin-left: 0; position: absolute; right: 0; }
+
+#whatsnew #whatsnew-nav #arrow-navigation #last-step-button { position: absolute; right: 0; white-space: nowrap; }
+
+#whatsnew #whatsnew-first-time { position: absolute; width: 100%; height: 100%; background-color: #FFF; z-index: 1; border-radius: 2px; }
+
+#whatsnew #whatsnew-first-time .icon { width: 130px; height: 130px; margin: 100px auto 20px auto; background-repeat: no-repeat; background-position: center; }
+
+#whatsnew #whatsnew-first-time .title { font-size: 32px; text-align: center; max-width: 500px; margin: 12px auto 0 auto; font-weight: 500; }
+
+#whatsnew #whatsnew-first-time .text { font-size: 15px; color: #797979; line-height: 23px; text-align: center; max-width: 410px; margin: 20px auto 0 auto; }
+
+#whatsnew #whatsnew-first-time .button { text-align: center; margin-top: 30px; }
+
 #whatsnew #whatsnew-first-time .button .icon-button { display: inline-block; float: none; padding: 12px 23px; font-size: 14px; }

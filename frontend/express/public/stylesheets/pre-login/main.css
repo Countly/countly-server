@@ -1,144 +1,201 @@
 @font-face {
-  font-family: 'Ubuntu';
-  font-weight: 400;
-  font-style: normal;
-  src: url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.eot');
-  src: url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.eot?#iefix') format('embedded-opentype'),
-       local('Ubuntu'),
-       local('Ubuntu-Regular'),
-       url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.woff2') format('woff2'),
-       url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.woff') format('woff'),
-       url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.ttf') format('truetype'),
-       url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.svg#Ubuntu') format('svg');
+    font-family: 'Ubuntu';
+    font-weight: 400;
+    font-style: normal;
+    src: url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.eot');
+    src:
+        url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.eot?#iefix') format('embedded-opentype'),
+        local('Ubuntu'),
+        local('Ubuntu-Regular'),
+        url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.woff2') format('woff2'),
+        url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.woff') format('woff'),
+        url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.ttf') format('truetype'),
+        url('../../fonts/Ubuntu-Regular/Ubuntu-Regular.svg#Ubuntu') format('svg');
 }
 
 @font-face {
-  font-family: 'Ubuntu';
-  font-weight: 500;
-  font-style: normal;
-  src: url('../../fonts/Ubuntu-500/Ubuntu-500.eot');
-  src: url('../../fonts/Ubuntu-500/Ubuntu-500.eot?#iefix') format('embedded-opentype'),
-       local('Ubuntu Medium'),
-       local('Ubuntu-500'),
-       url('../../fonts/Ubuntu-500/Ubuntu-500.woff2') format('woff2'),
-       url('../../fonts/Ubuntu-500/Ubuntu-500.woff') format('woff'),
-       url('../../fonts/Ubuntu-500/Ubuntu-500.ttf') format('truetype'),
-       url('../../fonts/Ubuntu-500/Ubuntu-500.svg#Ubuntu') format('svg');
+    font-family: 'Ubuntu';
+    font-weight: 500;
+    font-style: normal;
+    src: url('../../fonts/Ubuntu-500/Ubuntu-500.eot');
+    src:
+        url('../../fonts/Ubuntu-500/Ubuntu-500.eot?#iefix') format('embedded-opentype'),
+        local('Ubuntu Medium'),
+        local('Ubuntu-500'),
+        url('../../fonts/Ubuntu-500/Ubuntu-500.woff2') format('woff2'),
+        url('../../fonts/Ubuntu-500/Ubuntu-500.woff') format('woff'),
+        url('../../fonts/Ubuntu-500/Ubuntu-500.ttf') format('truetype'),
+        url('../../fonts/Ubuntu-500/Ubuntu-500.svg#Ubuntu') format('svg');
 }
 
 @font-face {
-  font-family: 'Ubuntu';
-  font-weight: 400;
-  font-style: italic;
-  src: url('../../fonts/Ubuntu-italic/Ubuntu-italic.eot');
-  src: url('../../fonts/Ubuntu-italic/Ubuntu-italic.eot?#iefix') format('embedded-opentype'),
-       local('Ubuntu Italic'),
-       local('Ubuntu-italic'),
-       url('../../fonts/Ubuntu-italic/Ubuntu-italic.woff2') format('woff2'),
-       url('../../fonts/Ubuntu-italic/Ubuntu-italic.woff') format('woff'),
-       url('../../fonts/Ubuntu-italic/Ubuntu-italic.ttf') format('truetype'),
-       url('../../fonts/Ubuntu-italic/Ubuntu-italic.svg#Ubuntu') format('svg');
+    font-family: 'Ubuntu';
+    font-weight: 400;
+    font-style: italic;
+    src: url('../../fonts/Ubuntu-italic/Ubuntu-italic.eot');
+    src:
+        url('../../fonts/Ubuntu-italic/Ubuntu-italic.eot?#iefix') format('embedded-opentype'),
+        local('Ubuntu Italic'),
+        local('Ubuntu-italic'),
+        url('../../fonts/Ubuntu-italic/Ubuntu-italic.woff2') format('woff2'),
+        url('../../fonts/Ubuntu-italic/Ubuntu-italic.woff') format('woff'),
+        url('../../fonts/Ubuntu-italic/Ubuntu-italic.ttf') format('truetype'),
+        url('../../fonts/Ubuntu-italic/Ubuntu-italic.svg#Ubuntu') format('svg');
 }
 
 @font-face {
-  font-family: 'Ubuntu';
-  font-weight: 500;
-  font-style: italic;
-  src: url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.eot');
-  src: url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.eot?#iefix') format('embedded-opentype'),
-       local('Ubuntu Medium Italic'),
-       local('Ubuntu-500italic'),
-       url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.woff2') format('woff2'),
-       url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.woff') format('woff'),
-       url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
-       url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
+    font-family: 'Ubuntu';
+    font-weight: 500;
+    font-style: italic;
+    src: url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.eot');
+    src:
+        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.eot?#iefix') format('embedded-opentype'),
+        local('Ubuntu Medium Italic'),
+        local('Ubuntu-500italic'),
+        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.woff2') format('woff2'),
+        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.woff') format('woff'),
+        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
+        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
 }
-body { padding:20px; background-color:#0B131A; font-family:Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-input { outline:none; }
-input[type=text], input[type=password], input[type=email] { font:15px Ubuntu,Helvetica,sans-serif; border-radius:3px; border:none; padding:10px; background-color:#FFF; color:#CCC; width:206px; margin:0 0 8px 0; }
-input[type=text]:active, input[type=text]:focus, input[type=password]:active, input[type=password]:focus { outline:none; color:#666; }
-a { color:inherit; text-decoration:none; }
-a:visited { color:inherit; }
-a:hover { color:inherit; }
-a:active { color:inherit; }
-#login-form { text-align:center; width:480px; height:270px; margin-left:-240px; left:50%; top:50%; margin-top:-135px; position:absolute; }
-#login-left { margin-right:30px; padding-right:30px; height:100%; float:left; }
-#forgot-form { width:420px; height:218px; margin-left:-210px; left:50%; top:50%; margin-top:-109px; position:absolute; }
-#forgot-left { margin-bottom:28px; }
-#reset-form { width:704px; height:174px; margin-left:-352px; left:50%; top:50%; margin-top:-87px; position:absolute; }
-#login-button { line-height:14px !important; font:14px Ubuntu,Helvetica,sans-serif; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:400; cursor:pointer; width:226px; margin-top:10px; }
-	#login-button:hover { background-color: #2f9732; }
-	#login-button:active { }
-    #forgot-form #login-button { margin-top:0; width: 123px;}
-#top-container { position:absolute; top:20px; right:20px; min-width: 200px; z-index: 1; }
-#top-left-container { position:absolute; top:20px; left:20px; min-width: 200px; z-index: 1; }
-.top-button { float:right;  margin-left:5px; color:#6F6F6F; padding:9px 20px; display:block; background-color:#02060B; border-radius:4px; cursor:pointer; font-size:14px; }
-	.top-button:hover { background-color: #000; }
-	.top-button:active { background:#000; }
-	a.top-button:visited { color:#6F6F6F; }
-	a.top-button:hover { color:#6F6F6F; }
-	a.top-button:active { color:#6F6F6F; }
-    #top-left-container .top-button {float: left;}
-#select-lang { padding:9px 10px; }
-	#select-lang.active #langs { display:block; }
-	#select-lang.active { background:#02060B; }
-	#select-lang.active:hover { background:#02060B; }
-	#select-lang.active:active { background:#02060B; }
-	#select-lang .item  { padding-bottom:3px; padding-top:3px; cursor:pointer; display:block; font-size:12px; }
-	#select-lang .item:hover { color:#A2A2A2; }
-#active-lang { text-align:right; }
-	#langs { display:none; margin-top:8px; }
-	#langs .group { float:left; margin-right:17px; }
-	#langs .group:last-child { margin-right:0; }
-#login-logo { margin:0 auto; width:165px; height:50px; background-image:url('../../images/pre-login/countly-logo.svg'); background-repeat: no-repeat; background-size: contain; }
-#forgot-logo { margin:0 auto; width:180px; height:55px; background-image:url('../../images/pre-login/countly-logo.svg'); background-repeat: no-repeat; background-size: contain; }
-#create-account { overflow:auto; }
-	#create-account div { float:left; margin-right:10px; }
-	#create-account div:last-child { margin-right:0; }
-#message { position:absolute; top:50px; text-align:center; left:50%; width:400px; margin-left:-200px; color:#A7A7A7; font:18px Ubuntu,Helvetica,sans-serif; }
-#forgot-password { color:#666; font-size:13px; cursor:pointer; transition:color 1s; }
-	#forgot-password:hover { color:#2f9732; transition:color 1s; }
 
-body.mobile { padding-top:0; min-height:300px; }
+body { padding: 20px; background-color: #0B131A; font-family: Ubuntu, Helvetica, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-.mobile #login-form { background-image: none; height:210px; width:300px; margin-left:-150px; margin-top:-105px; }
+input { outline: none; }
+
+input[type=text],input[type=password],input[type=email] { font: 15px Ubuntu, Helvetica, sans-serif; border-radius: 3px; border: none; padding: 10px; background-color: #FFF; color: #CCC; width: 206px; margin: 0 0 8px 0; }
+
+input[type=text]:active,input[type=text]:focus,input[type=password]:active,input[type=password]:focus { outline: none; color: #666; }
+
+a { color: inherit; text-decoration: none; }
+
+a:visited { color: inherit; }
+
+a:hover { color: inherit; }
+
+a:active { color: inherit; }
+
+#login-form { text-align: center; width: 480px; height: 270px; margin-left: -240px; left: 50%; top: 50%; margin-top: -135px; position: absolute; }
+
+#login-left { margin-right: 30px; padding-right: 30px; height: 100%; float: left; }
+
+#forgot-form { width: 420px; height: 218px; margin-left: -210px; left: 50%; top: 50%; margin-top: -109px; position: absolute; }
+
+#forgot-left { margin-bottom: 28px; }
+
+#reset-form { width: 704px; height: 174px; margin-left: -352px; left: 50%; top: 50%; margin-top: -87px; position: absolute; }
+
+#login-button { line-height: 14px !important; font: 14px Ubuntu, Helvetica, sans-serif; border: none; border-radius: 3px; padding: 11px 26px 12px 26px; background-color: #2FA732; color: #FFF; font-weight: 400; cursor: pointer; width: 226px; margin-top: 10px; }
+
+#login-button:hover { background-color: #2F9732; }
+
+#login-button:active { }
+
+#forgot-form #login-button { margin-top: 0; width: 123px; }
+
+#top-container { position: absolute; top: 20px; right: 20px; min-width: 200px; z-index: 1; }
+
+#top-left-container { position: absolute; top: 20px; left: 20px; min-width: 200px; z-index: 1; }
+
+.top-button { float: right; margin-left: 5px; color: #6F6F6F; padding: 9px 20px; display: block; background-color: #02060B; border-radius: 4px; cursor: pointer; font-size: 14px; }
+
+.top-button:hover { background-color: #000; }
+
+.top-button:active { background: #000; }
+
+a.top-button:visited { color: #6F6F6F; }
+
+a.top-button:hover { color: #6F6F6F; }
+
+a.top-button:active { color: #6F6F6F; }
+
+#top-left-container .top-button { float: left; }
+
+#select-lang { padding: 9px 10px; }
+
+#select-lang.active #langs { display: block; }
+
+#select-lang.active { background: #02060B; }
+
+#select-lang.active:hover { background: #02060B; }
+
+#select-lang.active:active { background: #02060B; }
+
+#select-lang .item { padding-bottom: 3px; padding-top: 3px; cursor: pointer; display: block; font-size: 12px; }
+
+#select-lang .item:hover { color: #A2A2A2; }
+
+#active-lang { text-align: right; }
+
+#langs { display: none; margin-top: 8px; }
+
+#langs .group { float: left; margin-right: 17px; }
+
+#langs .group:last-child { margin-right: 0; }
+
+#login-logo { margin: 0 auto; width: 165px; height: 50px; background-image: url('../../images/pre-login/countly-logo.svg'); background-repeat: no-repeat; background-size: contain; }
+
+#forgot-logo { margin: 0 auto; width: 180px; height: 55px; background-image: url('../../images/pre-login/countly-logo.svg'); background-repeat: no-repeat; background-size: contain; }
+
+#create-account { overflow: auto; }
+
+#create-account div { float: left; margin-right: 10px; }
+
+#create-account div:last-child { margin-right: 0; }
+
+#message { position: absolute; top: 50px; text-align: center; left: 50%; width: 400px; margin-left: -200px; color: #A7A7A7; font: 18px Ubuntu, Helvetica, sans-serif; }
+
+#forgot-password { color: #666; font-size: 13px; cursor: pointer; transition: color 1s; }
+
+#forgot-password:hover { color: #2F9732; transition: color 1s; }
+
+body.mobile { padding-top: 0; min-height: 300px; }
+
+.mobile #login-form { background-image: none; height: 210px; width: 300px; margin-left: -150px; margin-top: -105px; }
+
 .mobile #login-logo { margin: 0 auto; }
-.mobile #login-left { float:none; margin:0 auto; margin-bottom:30px; padding:0; width:250px; text-align: center; }
-.mobile #login-right { margin:0 auto; width:250px; text-align: center; }
+
+.mobile #login-left { float: none; margin: 0 auto; margin-bottom: 30px; padding: 0; width: 250px; text-align: center; }
+
+.mobile #login-right { margin: 0 auto; width: 250px; text-align: center; }
+
 #error-message {
-  padding-top: 100px;
-  height: 40px;
-  text-align: center;
-  color: #ED6262;
+    padding-top: 100px;
+    height: 40px;
+    text-align: center;
+    color: #ED6262;
 }
+
 #password-requirements {
     text-align: left;
     color: #A7A7A7;
-    font: 12px Ubuntu,Helvetica,sans-serif;
+    font: 12px Ubuntu, Helvetica, sans-serif;
     padding-left: 90px;
-    margin-top:-10px;
+    margin-top: -10px;
 }
+
 #password-requirements ul {
     margin-top: -6px;
     padding-left: 12px;
-    width:300px;
+    width: 300px;
     color: #FFF;
 }
-#password-requirements ul li { margin-bottom: 4px;}
 
-.register-form #login-button {width: 300px;}
+#password-requirements ul li { margin-bottom: 4px; }
 
-.register-form input[type=text], .register-form input[type=password],.register-form input[type=email] { font:15px Ubuntu,Helvetica,sans-serif; border-radius:3px; border:none; padding:12px; background-color:#FFF; color:#CCC; width:280px; margin:0 0 16px 0; }
+.register-form #login-button { width: 300px; }
 
-.register-form .passwd-check-pass {color:#2FA732}
+.register-form input[type=text],.register-form input[type=password],.register-form input[type=email] { font: 15px Ubuntu, Helvetica, sans-serif; border-radius: 3px; border: none; padding: 12px; background-color: #FFF; color: #CCC; width: 280px; margin: 0 0 16px 0; }
+
+.register-form .passwd-check-pass { color: #2FA732; }
+
 .register-form .hint-password-good {
-    color: #fff;
+    color: #FFF;
     width: 280px;
     margin: 12px 0 12px 0;
     text-align: center;
 }
-.register-form .password-hint-valid {
-    color:#A7A7A7;
-    transition:all 0.25s ease-in-out 0s;
-}
 
+.register-form .password-hint-valid {
+    color: #A7A7A7;
+    transition: all 0.25s ease-in-out 0s;
+}

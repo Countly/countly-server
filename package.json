@@ -23,9 +23,13 @@
     "grunt-eslint": "^23.0.0",
     "grunt-mocha-nyc": "^1.0.3",
     "grunt-mocha-test": "0.13.3",
+    "grunt-stylelint": "^0.15.0",
     "mocha": "^8.0.1",
     "nyc": "^15.0.0",
     "should": "13.2.3",
+    "stylelint": "^13.6.1",
+    "stylelint-config-standard": "^20.0.0",
+    "stylelint-no-unsupported-browser-features": "^4.0.0",
     "supertest": "4.0.2"
   },
   "scripts": {

@@ -7,6 +7,15 @@ module.exports = function(grunt) {
             },
             target: ['./']
         },
+        stylelint: {
+            options: {
+                configFile: './.stylelintrc.json',
+                syntax: 'css'
+            },
+            src: [
+                '**/main.css'
+            ]
+        },
         concat: {
             options: {
                 separator: ';'
@@ -197,9 +206,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-eslint');
+    grunt.loadNpmTasks('grunt-stylelint');
     grunt.loadNpmTasks('grunt-mocha-test');
 
-    grunt.registerTask('default', ['eslint', 'mochaTest']);
+    grunt.registerTask('default', ['eslint', 'stylelint', 'mochaTest']);
 
     grunt.registerTask('dist', ['concat', 'uglify', 'cssmin']);
 

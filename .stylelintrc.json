@@ -1,0 +1,27 @@
+{
+  "extends": "stylelint-config-standard",
+  "plugins": ["stylelint-no-unsupported-browser-features"],
+  "ignoreFiles": ["**/javascripts/**", "**/fonts/**", "**/themes/**", "**/min/**"],
+  "rules": {
+    "color-hex-case": "upper",
+    "color-hex-length": "short",
+    "unit-case": "lower",
+    "number-leading-zero": "always",
+    "value-keyword-case": "lower",
+    "declaration-block-single-line-max-declarations": 1,
+    "no-descending-specificity": "off",
+    "selector-list-comma-newline-after": "never-multi-line",
+    "selector-list-comma-newline-before": "never-multi-line",
+    "selector-list-comma-space-after": "always-single-line",
+    "selector-list-comma-space-after": "never-single-line",
+    "rule-empty-line-before": "always",
+    "indentation": 4,
+    "linebreaks": "unix",
+    "no-eol-whitespace": "true",
+    "unicode-bom": "never",
+    "plugin/no-unsupported-browser-features": [true, {
+      "browsers": ["IE 11"],
+      "ignore": []
+    }]
+  }
+}
