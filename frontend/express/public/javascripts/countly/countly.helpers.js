@@ -3280,22 +3280,25 @@ $.widget("cly.datepickerExtended", {
 
             this.options.onCommit = this.options.onCommit || function(){};
 
-            $($el).addClass("datepicker-compact").removeClass("datepicker-compact-searching-end");
+            $($el).addClass("datepicker-compact");
 
             this.options.onSelect = function(dateText, inst){
                 var point = self.isSelectingSecond ? "second":"first"; 
-                var returned = originalOnSelect.apply($($el), [dateText, inst, point]);
-                if (!returned) {
-                    returned = dateText;
-                }
+                originalOnSelect.apply($($el), [dateText, inst, point]);
+
+                var instance = $($el).data("datepicker");
+                var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
+                parsedDate.setHours(0, 0, 0, 0);
+            
                 if (self.isSelectingSecond){
-                    currentSecond = returned;
-                    committedValue = self.options.onCommit.apply($(el), [currentFirst, currentSecond].sort(function(a, b){
+                    currentSecond = parsedDate;
+                    committedValue = [currentFirst, currentSecond].sort(function(a, b){
                         return a-b;
-                    }));
+                    });
+                    self.options.onCommit.apply($(el), committedValue);
                 }
                 else {
-                    currentFirst = returned;
+                    currentFirst = parsedDate;
                     committedValue = null;
                 }
                 self.isSelectingSecond = !self.isSelectingSecond;
