@@ -3262,3 +3262,59 @@ $.extend(Template.prototype, {
         return name + "?" + countlyGlobal.countlyVersion;
     }
 });
+
+
+$.widget("cly.datepickerExtended", {
+    _init: function() {
+        var $el = this.element;
+
+        if (this.options.compact === true) {
+            this.isSelectingSecond = false;
+            var originalOnSelect = this.options.onSelect;
+            var originalBeforeShowDay = this.options.beforeShowDay;
+            var self = this;
+
+            var currentFirst = null,
+                currentSecond = null,
+                committedValue = null;
+
+            this.options.onCommit = this.options.onCommit || function(){};
+
+            $($el).addClass("datepicker-compact").removeClass("datepicker-compact-searching-end");
+
+            this.options.onSelect = function(dateText, inst){
+                var point = self.isSelectingSecond ? "second":"first"; 
+                var returned = originalOnSelect.apply($($el), [dateText, inst, point]);
+                if (!returned) {
+                    returned = dateText;
+                }
+                if (self.isSelectingSecond){
+                    currentSecond = returned;
+                    committedValue = self.options.onCommit.apply($(el), [currentFirst, currentSecond].sort(function(a, b){
+                        return a-b;
+                    }));
+                }
+                else {
+                    currentFirst = returned;
+                    committedValue = null;
+                }
+                self.isSelectingSecond = !self.isSelectingSecond;
+            }
+
+            this.options.beforeShowDay = function(date){
+                var returned = originalBeforeShowDay.apply($($el), [date]);
+                if (committedValue) {
+                    if (committedValue[0]<date && date<committedValue[1]) {
+                        return [returned[0], returned[1] + " in-range", returned[2]];
+                    }
+                    if (committedValue[0].getTime() === date.getTime() || date.getTime() === committedValue[1].getTime()) {
+                        return [returned[0], returned[1] + " point", returned[2]];
+                    }
+                }
+                return returned;
+            }
+        }
+
+        $el.datepicker(this.options);
+    }
+});
