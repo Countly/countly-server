@@ -3381,6 +3381,17 @@ $.widget("cly.datepickerExtended", {
         self.committedRange = [dateFirst, dateSecond].sort(function(a, b){
             return a-b;
         });
+
+        if (self.options.minDate && self.options.minDate - self.committedRange[0] > 0){
+            self.committedRange[0] = new Date(self.options.minDate.getTime());
+            self.committedRange[0].setHours(0,0,0,0);
+        }
+
+        if (self.options.maxDate && self.committedRange[1] - self.options.maxDate > 0){
+            self.committedRange[1] = new Date(self.options.maxDate.getTime());
+            self.committedRange[1].setHours(0,0,0,0);
+        }
+
         if (self.options.onCommit) {
             self.options.onCommit.apply($($el), self.committedRange);
         }
