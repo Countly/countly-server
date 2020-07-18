@@ -194,4 +194,136 @@
         }
     };
 
+
+    /**
+     * CLY Extended Date Picker
+     */
+    CountlyVueComponents.datePickerExtended = {
+        template: '<div ref="datePicker" class="date-picker-component"><input type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate"><div class="date-picker date-picker-extended" style="display:none"><div class="calendar-container calendar-dark"><div class="calendar"></div></div></div></div>',
+        props: {
+            placeholder: { type: String, default: 'Date' },
+            value: { default: null },
+            onValueChanged: { type: Function, required: true },
+            maxDate: Date,
+            isRangePicker: { type: Boolean, default: false },
+            isTextEditAllowed: { type: Boolean, default: false },
+            autoHide: { type: Boolean, default: true }
+        },
+        computed: {
+            formatDate: function() {
+                if (Array.isArray(this.value)) {
+                    return this.value.map(function(point) {
+                        return countlyCommon.formatDate(moment(point * 1000), "DD MMMM, YYYY");
+                    }).join(" - ");
+                }
+                else if (this.value) {
+                    return countlyCommon.formatDate(moment(this.value * 1000), "DD MMMM, YYYY");
+                }
+                else {
+                    return null;
+                }
+            }
+        },
+        mounted: function() {
+
+            var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
+
+            var self = this;
+            var options = {
+                numberOfMonths: 1,
+                showOtherMonths: true,
+                range: this.isRangePicker,
+                textEdit: this.isTextEditAllowed,
+            };
+
+            if (this.isRangePicker) {
+                options.onCommit = function(startDate, endDate) {
+                    var currMoments = [moment(startDate), moment(endDate)];
+
+                    var selectedRange = currMoments.map(function(currMoment) {
+                        var selectedTimestamp = moment(currMoment.format("DD MMMM, YYYY"), "DD MMMM, YYYY").unix();
+                        var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(selectedTimestamp);
+                        var selectedValue = selectedTimestamp - tzCorr;
+                        return selectedValue;
+                    });
+
+                    self.onValueChanged({
+                        value: selectedRange,
+                        type: 'datepicker'
+                    });
+
+                    if (self.autoHide) {
+                        $(".date-picker").hide();
+                    }
+                };
+            }
+            else {
+                options.onSelect = function(selectedDate) {
+                    var instance = $(this).data("datepicker"),
+                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
+                        currMoment = moment(date);
+
+                    var selectedTimestamp = moment(currMoment.format("DD MMMM, YYYY"), "DD MMMM, YYYY").unix();
+                    var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(selectedTimestamp);
+                    var selectedValue = selectedTimestamp - tzCorr;
+
+                    self.onValueChanged({
+                        value: selectedValue,
+                        type: 'datepicker'
+                    });
+
+                    if (self.autoHide) {
+                        $(".date-picker").hide();
+                    }
+                };
+            }
+
+            datePickerDOM.find(".calendar").datepickerExtended(options);
+
+            if (this.maxDate) {
+                datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+            }
+
+            $.datepicker.setDefaults($.datepicker.regional[""]);
+            datePickerDOM.find(".calendar").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+
+            if (Array.isArray(this.value)) {
+                datePickerDOM.find(".calendar").datepicker("setDate", this.value.map(function(point) {
+                    return moment(point * 1000).toDate();
+                }));
+            }
+            else if (this.value) {
+                datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
+            }
+
+            datePickerDOM.click(function(e) {
+                e.stopPropagation();
+            });
+        },
+        updated: function() {
+            var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
+
+            if (Array.isArray(this.value)) {
+                datePickerDOM.find(".calendar").datepicker("setDate", this.value.map(function(point) {
+                    return moment(point * 1000).toDate();
+                }));
+            }
+            else if (this.value) {
+                datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
+            }
+            if (this.maxDate) {
+                datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+            }
+        },
+        methods: {
+            onClick: function(e) {
+                $(".date-picker").hide();
+
+                $(this.$refs.datePicker).find(".date-picker").show();
+
+                e.stopPropagation();
+            }
+        }
+    };
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

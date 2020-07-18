@@ -3291,7 +3291,9 @@ $.widget("cly.datepickerExtended", {
     _initRangeSelection: function() {
         var self = this,
             originalOnSelect = this.options.onSelect,
-            originalBeforeShowDay = this.options.beforeShowDay,
+            originalBeforeShowDay = this.options.beforeShowDay || function() {
+                return [true, "", ""];
+            },
             currentFirst = null,
             currentSecond = null,
             $el = this.element;
@@ -3308,8 +3310,10 @@ $.widget("cly.datepickerExtended", {
          */
         function _onSelect(dateText, inst) {
             var point = self.isSelectingSecond ? "second" : "first";
-            originalOnSelect.apply($($el), [dateText, inst, point]);
-
+            if (originalOnSelect) {
+                originalOnSelect.apply($($el), [dateText, inst, point]);
+            }
+            
             var instance = $($el).data("datepicker");
             var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
             parsedDate.setHours(0, 0, 0, 0);

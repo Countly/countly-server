@@ -2151,6 +2151,11 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     border: 1px solid #d0d0d0;
     background-color: #ffffff;
 }
+
+.date-picker-component .date-picker.date-picker-extended {
+    background-color: #0b131a;
+}
+
 .date-picker-component .date-picker .calendar-container {
     padding: 14px;
 }
