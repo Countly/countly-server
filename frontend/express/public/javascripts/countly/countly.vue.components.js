@@ -288,7 +288,7 @@
             datePickerDOM.find(".calendar").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
 
             if (Array.isArray(this.value)) {
-                datePickerDOM.find(".calendar").datepicker("setDate", this.value.map(function(point) {
+                datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value.map(function(point) {
                     return moment(point * 1000).toDate();
                 }));
             }
@@ -303,12 +303,7 @@
         updated: function() {
             var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
 
-            if (Array.isArray(this.value)) {
-                datePickerDOM.find(".calendar").datepicker("setDate", this.value.map(function(point) {
-                    return moment(point * 1000).toDate();
-                }));
-            }
-            else if (this.value) {
+            if (this.value && !Array.isArray(this.value)) {
                 datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
             }
             if (this.maxDate) {
