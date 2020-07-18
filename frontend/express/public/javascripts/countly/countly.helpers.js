@@ -3268,7 +3268,7 @@ $.widget("cly.datepickerExtended", {
     _init: function() {
         var $el = this.element;
 
-        if (this.options.compact === true) {
+        if (this.options.range === true) {
             this.isSelectingSecond = false;
             var originalOnSelect = this.options.onSelect;
             var originalBeforeShowDay = this.options.beforeShowDay;
@@ -3282,7 +3282,7 @@ $.widget("cly.datepickerExtended", {
 
             this.options.onCommit = this.options.onCommit || function(){};
 
-            $($el).addClass("datepicker-compact");
+            $($el).addClass("datepicker-range");
 
             this.options.onSelect = function(dateText, inst){
                 var point = self.isSelectingSecond ? "second":"first"; 
@@ -3331,7 +3331,7 @@ $.widget("cly.datepickerExtended", {
                     var parsedDate = _cellToDate($(this));
                     if (parsedDate) {
                         var returned = _beforeShowDay(parsedDate);
-                        $(this).removeAttr('class').attr('class', returned[1]);
+                        $(this).attr('class', returned[1]);
                     }
                 });
             }
@@ -3374,17 +3374,17 @@ $.widget("cly.datepickerExtended", {
         return this.committedRange;
     },
     getDate: function() {
-        if (this.options.compact === true) {
+        if (this.options.range === true) {
             return this.getRange();
         }
         return this.baseInstance.datepicker("getDate");
     },
     setRange: function(dateRange){
         this.committedRange = dateRange;
-        this.baseInstance.datepicker("setDate", dateRange[0]).datepicker("refresh");
+        this.baseInstance.datepicker("setDate", dateRange[0]);
     },
     setDate: function(date) {
-        if (this.options.compact === true) {
+        if (this.options.range === true) {
             this.setRange(date);
         }
         else {

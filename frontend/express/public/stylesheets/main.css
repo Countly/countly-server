@@ -768,14 +768,14 @@ div.datatablesubrow {display: none;}
 .calendar-light .ui-datepicker-inline table tbody { border-color:#CCC; }
 .calendar-light .ui-widget-header { color:#000; }
 
-.datepicker-compact .in-range a {
+.datepicker-range .in-range a {
     background: rgba(46, 167, 50, 0.6);
     border-radius: 2px;
     margin: 1px;
     padding: 4px;
   }
   
-  .datepicker-compact .point a{
+  .datepicker-range .point a{
     background-color: #2FA732;
     color: #FFF;
     text-shadow: none;
