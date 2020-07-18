@@ -199,7 +199,7 @@
      * CLY Extended Date Picker
      */
     CountlyVueComponents.datePickerExtended = {
-        template: '<div ref="datePicker" class="date-picker-component"><input type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate"><div class="date-picker date-picker-extended" style="display:none"><div class="calendar-container calendar-dark"><div class="calendar"></div></div></div></div>',
+        template: '<div ref="datePicker" class="date-picker-component"><input v-if="collapsible" type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate"><div v-bind:class="[collapsible ? \'collapsible\' : \'\', \'date-picker\', \'extended\']"><div class="calendar-container calendar-dark"><div class="calendar"></div></div></div></div>',
         props: {
             placeholder: { type: String, default: 'Date' },
             value: { default: null },
@@ -207,7 +207,8 @@
             maxDate: Date,
             isRangePicker: { type: Boolean, default: false },
             isTextEditAllowed: { type: Boolean, default: false },
-            autoHide: { type: Boolean, default: true }
+            hideOnSelect: { type: Boolean, default: true },
+            collapsible: { type: Boolean, default: true },
         },
         computed: {
             formatDate: function() {
@@ -252,7 +253,7 @@
                         type: 'datepicker'
                     });
 
-                    if (self.autoHide) {
+                    if (self.hideOnSelect && self.collapsible) {
                         $(".date-picker").hide();
                     }
                 };
@@ -272,7 +273,7 @@
                         type: 'datepicker'
                     });
 
-                    if (self.autoHide) {
+                    if (self.hideOnSelect && self.collapsible) {
                         $(".date-picker").hide();
                     }
                 };
