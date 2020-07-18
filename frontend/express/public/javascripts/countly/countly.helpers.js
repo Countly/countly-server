@@ -3311,6 +3311,8 @@ $.widget("cly.datepickerExtended", {
                 if (self.options.onCommit) {
                     self.options.onCommit.apply($(el), self.committedRange);
                 }
+                self._syncWith("picker", 0, true);
+                self._syncWith("picker", 1, true);
             }
             else {
                 currentFirst = parsedDate;
@@ -3354,6 +3356,8 @@ $.widget("cly.datepickerExtended", {
             self.temporaryRange = [currentFirst, temporarySecond].sort(function(a, b){
                 return a-b;
             });
+            self._syncWith("picker", 0);
+            self._syncWith("picker", 1);
         }
         else {
             self.temporaryRange = null;
@@ -3379,7 +3383,7 @@ $.widget("cly.datepickerExtended", {
                 var date = moment($(this).val(), "MM/DD/YYYY");
                 var inputIdx = parseInt($(this).data("input"));
 
-                if (date.format("MM/DD/YYYY") === $(this).val()) {
+                if (date.isValid()) {
                     // update the picker value
                     self._syncWith("text", inputIdx);
                 }
@@ -3390,7 +3394,12 @@ $.widget("cly.datepickerExtended", {
             }
         });
     },
-    _syncWith: function(source, inputIdx){
+    _syncWith: function(source, inputIdx, onlyCommitted){
+        
+        if (!this.options.textEdit) {
+            return;
+        }
+
         var $el = this.element,
             self = this;
 
@@ -3410,15 +3419,18 @@ $.widget("cly.datepickerExtended", {
                 $($el).find(".text-fields .input-" + inputIdx).val(moment(self.getDate()).format("MM/DD/YYYY"));
             }
             else if (self.options.range === true) {
-                var range = self.getRange();
-                var selectedDate = range[inputIdx];
+                var targetRange = self.committedRange;
+                if (self.isSelectingSecond && !onlyCommitted) {
+                    targetRange = self.temporaryRange;
+                }
+                var selectedDate = targetRange[inputIdx];
                 $($el).find(".text-fields .input-" + inputIdx).val(moment(selectedDate).format("MM/DD/YYYY"));
             }
         }
     },
     _finalizeInit: function(){
         if (this.options.range === true) {
-            this.setRange([moment().subtract(7, "d",).startOf("d").toDate(), moment().startOf("d").toDate()]);
+            this.setRange([moment().subtract(8, "d",).startOf("d").toDate(), moment().subtract(1, "d",).startOf("d").toDate()]);
         }
         else {
             this.setDate(moment().startOf("d").toDate());
@@ -3460,6 +3472,8 @@ $.widget("cly.datepickerExtended", {
     },
     setRange: function(dateRange){
         this.committedRange = dateRange;
+        this._syncWith("picker", 0, true);
+        this._syncWith("picker", 1, true);
         this.baseInstance.datepicker("setDate", dateRange[1]);
     },
     setDate: function(date) {
@@ -3468,6 +3482,7 @@ $.widget("cly.datepickerExtended", {
         }
         else {
             this.baseInstance.datepicker("setDate", date);
+            this._syncWith("picker", 0);
         }
     }
 });
