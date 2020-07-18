@@ -3282,13 +3282,13 @@ $.widget("cly.datepickerExtended", {
         if (this.options.textEdit === true) {
             this._initTextEdit();
         }
-        setTimeout(function(){
-            self._finalizeInit();  
+        setTimeout(function() {
+            self._finalizeInit();
         }, 0);
     },
 
     // Private, range picker
-    _initRangeSelection: function(){
+    _initRangeSelection: function() {
         var self = this,
             originalOnSelect = this.options.onSelect,
             originalBeforeShowDay = this.options.beforeShowDay,
@@ -3300,15 +3300,21 @@ $.widget("cly.datepickerExtended", {
         this.temporaryRange = null;
         this.isSelectingSecond = false;
 
-        function _onSelect(dateText, inst){
-            var point = self.isSelectingSecond ? "second":"first"; 
+        /**
+         * Wraps onSelect callback of jQuery UI Datepicker and 
+         * injects the necessary business logic needed for range picking
+         * @param {String} dateText Date as string, passed by Datepicker 
+         * @param {Object} inst Instance object, passed by Datepicker
+         */
+        function _onSelect(dateText, inst) {
+            var point = self.isSelectingSecond ? "second" : "first";
             originalOnSelect.apply($($el), [dateText, inst, point]);
 
             var instance = $($el).data("datepicker");
             var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
             parsedDate.setHours(0, 0, 0, 0);
-        
-            if (self.isSelectingSecond){
+
+            if (self.isSelectingSecond) {
                 currentSecond = parsedDate;
                 self.temporaryRange = null;
                 self._commitRange(currentFirst, currentSecond);
@@ -3319,14 +3325,21 @@ $.widget("cly.datepickerExtended", {
             self.isSelectingSecond = !self.isSelectingSecond;
         }
 
-        function _beforeShowDay(date){
+        /**
+         * Wraps beforeShowDay callback of jQuery UI Datepicker and 
+         * injects the necessary business logic needed for highlighting
+         * the current and temporary range.
+         * @param {Date} date Date as Date, passed by Datepicker 
+         * @returns {Array} Array structure requested by Datepicker UI
+         */
+        function _beforeShowDay(date) {
             var returned = originalBeforeShowDay.apply($($el), [date]);
             var targetRange = self.committedRange;
             if (self.isSelectingSecond) {
                 targetRange = self.temporaryRange;
             }
             if (targetRange) {
-                if (targetRange[0]<date && date<targetRange[1]) {
+                if (targetRange[0] < date && date < targetRange[1]) {
                     return [returned[0], returned[1] + " in-range", returned[2]];
                 }
                 if (targetRange[0].getTime() === date.getTime() || date.getTime() === targetRange[1].getTime()) {
@@ -3344,27 +3357,34 @@ $.widget("cly.datepickerExtended", {
         $($el).on("mouseover", ".ui-state-default", function() {
             self._onTemporaryRangeUpdate(currentFirst, self._cellToDate($(this).parent()));
         });
-    }, 
-    _initDateSelection: function(){
+    },
+    _initDateSelection: function() {
         var self = this,
             originalOnSelect = this.options.onSelect,
             $el = this.element;
 
-        function _onSelect(dateText, inst){
+        /**
+         * Wraps onSelect callback of jQuery UI Datepicker and 
+         * injects the necessary business logic needed for picker -> text field
+         * data binding.
+         * @param {String} dateText Date as string, passed by Datepicker 
+         * @param {Object} inst Instance object, passed by Datepicker
+         */
+        function _onSelect(dateText, inst) {
             originalOnSelect.apply($($el), [dateText, inst]);
             self._syncWith("picker", 0);
         }
 
         this.options.onSelect = _onSelect;
     },
-    _onTemporaryRangeUpdate: function(currentFirst, temporarySecond){
+    _onTemporaryRangeUpdate: function(currentFirst, temporarySecond) {
         var self = this;
         if (!self.isSelectingSecond) {
             return;
         }
         if (temporarySecond) {
-            self.temporaryRange = [currentFirst, temporarySecond].sort(function(a, b){
-                return a-b;
+            self.temporaryRange = [currentFirst, temporarySecond].sort(function(a, b) {
+                return a - b;
             });
             self._syncWith("picker", 0);
             self._syncWith("picker", 1);
@@ -3378,18 +3398,18 @@ $.widget("cly.datepickerExtended", {
         var self = this,
             $el = this.element;
 
-        self.committedRange = [dateFirst, dateSecond].sort(function(a, b){
-            return a-b;
+        self.committedRange = [dateFirst, dateSecond].sort(function(a, b) {
+            return a - b;
         });
 
-        if (self.options.minDate && self.options.minDate - self.committedRange[0] > 0){
+        if (self.options.minDate && self.options.minDate - self.committedRange[0] > 0) {
             self.committedRange[0] = new Date(self.options.minDate.getTime());
-            self.committedRange[0].setHours(0,0,0,0);
+            self.committedRange[0].setHours(0, 0, 0, 0);
         }
 
-        if (self.options.maxDate && self.committedRange[1] - self.options.maxDate > 0){
+        if (self.options.maxDate && self.committedRange[1] - self.options.maxDate > 0) {
             self.committedRange[1] = new Date(self.options.maxDate.getTime());
-            self.committedRange[1].setHours(0,0,0,0);
+            self.committedRange[1].setHours(0, 0, 0, 0);
         }
 
         if (self.options.onCommit) {
@@ -3400,7 +3420,7 @@ $.widget("cly.datepickerExtended", {
     },
 
     // Private, generic
-    _initTextEdit: function(){
+    _initTextEdit: function() {
         var $el = this.element,
             self = this;
 
@@ -3428,8 +3448,8 @@ $.widget("cly.datepickerExtended", {
             }
         });
     },
-    _syncWith: function(source, inputIdx, onlyCommitted){
-        
+    _syncWith: function(source, inputIdx, onlyCommitted) {
+
         if (!this.options.textEdit) {
             return;
         }
@@ -3471,17 +3491,17 @@ $.widget("cly.datepickerExtended", {
             }
         }
     },
-    _finalizeInit: function(){
+    _finalizeInit: function() {
         if (this.options.range === true) {
             if (this.options.defaultRange) {
                 this.setRange(this.options.defaultRange);
             }
             else {
-                this.setRange([moment().subtract(8, "d",).startOf("d").toDate(), moment().subtract(1, "d",).startOf("d").toDate()]);
+                this.setRange([moment().subtract(8, "d").startOf("d").toDate(), moment().subtract(1, "d").startOf("d").toDate()]);
             }
         }
     },
-    _cellToDate: function(element){
+    _cellToDate: function(element) {
         var day = parseInt($(element).find("a").text());
         var month = parseInt($(element).data("month"));
         var year = parseInt($(element).data("year"));
@@ -3492,11 +3512,11 @@ $.widget("cly.datepickerExtended", {
             return null;
         }
     },
-    _refreshCellStates: function(){
-        var self = this,  
+    _refreshCellStates: function() {
+        var self = this,
             $el = this.element;
-            
-        $($el).find(".ui-datepicker-calendar td").each(function(){
+
+        $($el).find(".ui-datepicker-calendar td").each(function() {
             var parsedDate = self._cellToDate($(this));
             if (parsedDate) {
                 var returned = self.options.beforeShowDay(parsedDate);
@@ -3506,7 +3526,7 @@ $.widget("cly.datepickerExtended", {
     },
 
     // Public
-    getRange: function(){
+    getRange: function() {
         return this.committedRange;
     },
     getDate: function() {
@@ -3515,7 +3535,7 @@ $.widget("cly.datepickerExtended", {
         }
         return this.baseInstance.datepicker("getDate");
     },
-    setRange: function(dateRange){
+    setRange: function(dateRange) {
         this._commitRange(dateRange[0], dateRange[1]);
         this.baseInstance.datepicker("setDate", dateRange[1]);
     },
