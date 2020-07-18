@@ -3266,109 +3266,112 @@ $.extend(Template.prototype, {
 
 $.widget("cly.datepickerExtended", {
     _init: function() {
-        var $el = this.element;
-
         if (this.options.range === true) {
-            this.isSelectingSecond = false;
-            var originalOnSelect = this.options.onSelect;
-            var originalBeforeShowDay = this.options.beforeShowDay;
-            var self = this;
-
-            var currentFirst = null,
-                currentSecond = null;
-
-            this.committedRange = null;
-            this.temporaryRange = null;
-
-            this.options.onCommit = this.options.onCommit || function(){};
-
-            $($el).addClass("datepicker-range");
-
-            this.options.onSelect = function(dateText, inst){
-                var point = self.isSelectingSecond ? "second":"first"; 
-                originalOnSelect.apply($($el), [dateText, inst, point]);
-
-                var instance = $($el).data("datepicker");
-                var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
-                parsedDate.setHours(0, 0, 0, 0);
-            
-                if (self.isSelectingSecond){
-                    currentSecond = parsedDate;
-                    self.temporaryRange = null;
-                    self.committedRange = [currentFirst, currentSecond].sort(function(a, b){
-                        return a-b;
-                    });
-                    self.options.onCommit.apply($(el), self.committedRange);
-                }
-                else {
-                    currentFirst = parsedDate;
-                    self.committedRange = null;
-                }
-                self.isSelectingSecond = !self.isSelectingSecond;
-            }
-
-            function _beforeShowDay(date){
-                var returned = originalBeforeShowDay.apply($($el), [date]);
-                var targetRange = self.committedRange;
-                if (self.isSelectingSecond) {
-                    targetRange = self.temporaryRange;
-                }
-                if (targetRange) {
-                    if (targetRange[0]<date && date<targetRange[1]) {
-                        return [returned[0], returned[1] + " in-range", returned[2]];
-                    }
-                    if (targetRange[0].getTime() === date.getTime() || date.getTime() === targetRange[1].getTime()) {
-                        return [returned[0], returned[1] + " point", returned[2]];
-                    }
-                }
-                return returned;
-            }
-
-            this.options.beforeShowDay = _beforeShowDay;
-
-            function _refreshTable(){
-                $($el).find(".ui-datepicker-calendar td").each(function(){
-                    var parsedDate = _cellToDate($(this));
-                    if (parsedDate) {
-                        var returned = _beforeShowDay(parsedDate);
-                        $(this).attr('class', returned[1]);
-                    }
-                });
-            }
-
-            function _cellHover(temporarySecond) {
-                if (!self.isSelectingSecond) {
-                    return;
-                }
-                if (temporarySecond) {
-                    self.temporaryRange = [currentFirst, temporarySecond].sort(function(a, b){
-                        return a-b;
-                    });
-                }
-                else {
-                    self.temporaryRange = null;
-                }
-                _refreshTable();
-            }
-
-            function _cellToDate(element){
-                var day = parseInt($(element).find("a").text());
-                var month = parseInt($(element).data("month"));
-                var year = parseInt($(element).data("year"));
-                if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
-                    return new Date(year, month, day, 0, 0, 0, 0);
-                }
-                else {
-                    return null;
-                }
-            }
-
-            $($el).on("mouseover", ".ui-state-default", function() {
-                _cellHover(_cellToDate($(this).parent()));
-            });
+            this._initRangeSelection();
         }
 
-        this.baseInstance = $el.datepicker(this.options);
+        this.baseInstance = this.element.datepicker(this.options);
+    },
+    _initRangeSelection: function(){
+        var self = this,
+            originalOnSelect = this.options.onSelect,
+            originalBeforeShowDay = this.options.beforeShowDay,
+            currentFirst = null,
+            currentSecond = null,
+            $el = this.element;
+
+        this.committedRange = null;
+        this.temporaryRange = null;
+        this.isSelectingSecond = false;
+
+        function _onSelect(dateText, inst){
+            var point = self.isSelectingSecond ? "second":"first"; 
+            originalOnSelect.apply($($el), [dateText, inst, point]);
+
+            var instance = $($el).data("datepicker");
+            var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
+            parsedDate.setHours(0, 0, 0, 0);
+        
+            if (self.isSelectingSecond){
+                currentSecond = parsedDate;
+                self.temporaryRange = null;
+                self.committedRange = [currentFirst, currentSecond].sort(function(a, b){
+                    return a-b;
+                });
+                if (self.options.onCommit) {
+                    self.options.onCommit.apply($(el), self.committedRange);
+                }
+            }
+            else {
+                currentFirst = parsedDate;
+                self.committedRange = null;
+            }
+            self.isSelectingSecond = !self.isSelectingSecond;
+        }
+
+        function _beforeShowDay(date){
+            var returned = originalBeforeShowDay.apply($($el), [date]);
+            var targetRange = self.committedRange;
+            if (self.isSelectingSecond) {
+                targetRange = self.temporaryRange;
+            }
+            if (targetRange) {
+                if (targetRange[0]<date && date<targetRange[1]) {
+                    return [returned[0], returned[1] + " in-range", returned[2]];
+                }
+                if (targetRange[0].getTime() === date.getTime() || date.getTime() === targetRange[1].getTime()) {
+                    return [returned[0], returned[1] + " point", returned[2]];
+                }
+            }
+            return returned;
+        }
+
+        this.options.beforeShowDay = _beforeShowDay;
+        this.options.onSelect = _onSelect;
+
+        $($el).addClass("datepicker-range");
+
+        $($el).on("mouseover", ".ui-state-default", function() {
+            self._onCellHoverRange(currentFirst, self._cellToDate($(this).parent()));
+        });
+    },
+    _cellToDate: function(element){
+        var day = parseInt($(element).find("a").text());
+        var month = parseInt($(element).data("month"));
+        var year = parseInt($(element).data("year"));
+        if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
+            return new Date(year, month, day, 0, 0, 0, 0);
+        }
+        else {
+            return null;
+        }
+    },
+    _onCellHoverRange: function(currentFirst, temporarySecond){
+        var self = this;
+        if (!self.isSelectingSecond) {
+            return;
+        }
+        if (temporarySecond) {
+            self.temporaryRange = [currentFirst, temporarySecond].sort(function(a, b){
+                return a-b;
+            });
+        }
+        else {
+            self.temporaryRange = null;
+        }
+        self._refreshTable();
+    },
+    _refreshTable: function(){
+        var self = this,  
+            $el = this.element;
+            
+        $($el).find(".ui-datepicker-calendar td").each(function(){
+            var parsedDate = self._cellToDate($(this));
+            if (parsedDate) {
+                var returned = self.options.beforeShowDay(parsedDate);
+                $(this).attr('class', returned[1]);
+            }
+        });
     },
     getRange: function(){
         return this.committedRange;
