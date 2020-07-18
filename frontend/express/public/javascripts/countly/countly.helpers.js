@@ -3266,8 +3266,13 @@ $.extend(Template.prototype, {
 
 $.widget("cly.datepickerExtended", {
     _init: function() {
+        var self = this;
+
         if (this.options.range === true) {
             this._initRangeSelection();
+        }
+        else {
+            this._initDateSelection();
         }
 
         $(this.element).addClass("datepicker-extended");
@@ -3277,7 +3282,6 @@ $.widget("cly.datepickerExtended", {
         if (this.options.textEdit === true) {
             this._initTextEdit();
         }
-        var self = this;
         setTimeout(function(){
             self._finalizeInit();  
         }, 0);
@@ -3311,7 +3315,6 @@ $.widget("cly.datepickerExtended", {
             }
             else {
                 currentFirst = parsedDate;
-                self.committedRange = null;
             }
             self.isSelectingSecond = !self.isSelectingSecond;
         }
@@ -3341,6 +3344,18 @@ $.widget("cly.datepickerExtended", {
         $($el).on("mouseover", ".ui-state-default", function() {
             self._onTemporaryRangeUpdate(currentFirst, self._cellToDate($(this).parent()));
         });
+    }, 
+    _initDateSelection: function(){
+        var self = this,
+            originalOnSelect = this.options.onSelect,
+            $el = this.element;
+
+        function _onSelect(dateText, inst){
+            originalOnSelect.apply($($el), [dateText, inst]);
+            self._syncWith("picker", 0);
+        }
+
+        this.options.onSelect = _onSelect;
     },
     _onTemporaryRangeUpdate: function(currentFirst, temporarySecond){
         var self = this;
@@ -3417,6 +3432,10 @@ $.widget("cly.datepickerExtended", {
                 self.setDate(parsedDate);
             }
             else if (self.options.range === true) {
+                if (self.isSelectingSecond) {
+                    self.isSelectingSecond = false;
+                    // abort the ongoing picking
+                }
                 if (inputIdx === 0) {
                     self._commitRange(parsedDate, self.committedRange[1]);
                 }
@@ -3443,10 +3462,12 @@ $.widget("cly.datepickerExtended", {
     },
     _finalizeInit: function(){
         if (this.options.range === true) {
-            this.setRange([moment().subtract(8, "d",).startOf("d").toDate(), moment().subtract(1, "d",).startOf("d").toDate()]);
-        }
-        else {
-            this.setDate(moment().startOf("d").toDate());
+            if (this.options.defaultRange) {
+                this.setRange(this.options.defaultRange);
+            }
+            else {
+                this.setRange([moment().subtract(8, "d",).startOf("d").toDate(), moment().subtract(1, "d",).startOf("d").toDate()]);
+            }
         }
     },
     _cellToDate: function(element){
