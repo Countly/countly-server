@@ -3277,8 +3277,10 @@ $.widget("cly.datepickerExtended", {
         if (this.options.textEdit === true) {
             this._initTextEdit();
         }
-        
-        this._finalizeInit();
+        var self = this;
+        setTimeout(function(){
+            self._finalizeInit();  
+        }, 0);
     },
 
     // Private, range picker
@@ -3305,14 +3307,7 @@ $.widget("cly.datepickerExtended", {
             if (self.isSelectingSecond){
                 currentSecond = parsedDate;
                 self.temporaryRange = null;
-                self.committedRange = [currentFirst, currentSecond].sort(function(a, b){
-                    return a-b;
-                });
-                if (self.options.onCommit) {
-                    self.options.onCommit.apply($(el), self.committedRange);
-                }
-                self._syncWith("picker", 0, true);
-                self._syncWith("picker", 1, true);
+                self._commitRange(currentFirst, currentSecond);
             }
             else {
                 currentFirst = parsedDate;
@@ -3364,6 +3359,19 @@ $.widget("cly.datepickerExtended", {
         }
         self._refreshCellStates();
     },
+    _commitRange: function(dateFirst, dateSecond) {
+        var self = this,
+            $el = this.element;
+
+        self.committedRange = [dateFirst, dateSecond].sort(function(a, b){
+            return a-b;
+        });
+        if (self.options.onCommit) {
+            self.options.onCommit.apply($($el), self.committedRange);
+        }
+        self._syncWith("picker", 0, true);
+        self._syncWith("picker", 1, true);
+    },
 
     // Private, generic
     _initTextEdit: function(){
@@ -3409,7 +3417,12 @@ $.widget("cly.datepickerExtended", {
                 self.setDate(parsedDate);
             }
             else if (self.options.range === true) {
-                self.committedRange[inputIdx] = parsedDate;
+                if (inputIdx === 0) {
+                    self._commitRange(parsedDate, self.committedRange[1]);
+                }
+                else if (inputIdx === 1) {
+                    self._commitRange(self.committedRange[0], parsedDate);
+                }
                 this.baseInstance.datepicker("setDate", parsedDate);
                 self.baseInstance.datepicker("refresh");
             }
@@ -3471,9 +3484,7 @@ $.widget("cly.datepickerExtended", {
         return this.baseInstance.datepicker("getDate");
     },
     setRange: function(dateRange){
-        this.committedRange = dateRange;
-        this._syncWith("picker", 0, true);
-        this._syncWith("picker", 1, true);
+        this._commitRange(dateRange[0], dateRange[1]);
         this.baseInstance.datepicker("setDate", dateRange[1]);
     },
     setDate: function(date) {
