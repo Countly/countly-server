@@ -768,14 +768,19 @@ div.datatablesubrow {display: none;}
 .calendar-light .ui-datepicker-inline table tbody { border-color:#CCC; }
 .calendar-light .ui-widget-header { color:#000; }
 
-.datepicker-range .in-range a {
+
+.datepicker-extended{
+    display: inline-block;
+}
+
+.datepicker-extended.datepicker-range .in-range a {
     background: rgba(46, 167, 50, 0.6);
     border-radius: 2px;
     margin: 1px;
     padding: 4px;
   }
   
-  .datepicker-range .point a{
+  .datepicker-extended.datepicker-range .point a{
     background-color: #2FA732;
     color: #FFF;
     text-shadow: none;
@@ -784,6 +789,33 @@ div.datatablesubrow {display: none;}
     padding: 4px;
     border-radius: 2px;
   }
+  .datepicker-extended .text-fields input {
+        height: 25px;
+        background-color: #0b131a;
+        color: white;
+        border: 1px solid #979797;
+        margin-bottom: 4px;
+        font-family: 'Ubuntu';
+        border-radius: 2px;
+        font-size: 12px;
+        padding: 4px 7px;
+    }
+    .datepicker-extended .text-fields{
+        background-color: #0b131a;
+    }
+    .datepicker-extended .text-fields .input-0 {
+        width: 194px;
+      }
+      .datepicker-extended.datepicker-range .text-fields .input-0,
+      .datepicker-extended.datepicker-range .text-fields .input-1 {
+            width: 82px;
+        }
+    .datepicker-extended.datepicker-range .text-fields .input-0 {
+        margin-right: 7px;
+      }
+      .datepicker-extended.datepicker-range .text-fields .input-1 {
+          margin-left: 7px;
+        }
 /* DATEPICKER END */
 
 /* FORMS */

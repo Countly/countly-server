@@ -3270,8 +3270,18 @@ $.widget("cly.datepickerExtended", {
             this._initRangeSelection();
         }
 
+        $(this.element).addClass("datepicker-extended");
+
         this.baseInstance = this.element.datepicker(this.options);
+
+        if (this.options.textEdit === true) {
+            this._initTextEdit();
+        }
+        
+        this._finalizeInit();
     },
+
+    // Private, range picker
     _initRangeSelection: function(){
         var self = this,
             originalOnSelect = this.options.onSelect,
@@ -3332,21 +3342,10 @@ $.widget("cly.datepickerExtended", {
         $($el).addClass("datepicker-range");
 
         $($el).on("mouseover", ".ui-state-default", function() {
-            self._onCellHoverRange(currentFirst, self._cellToDate($(this).parent()));
+            self._onTemporaryRangeUpdate(currentFirst, self._cellToDate($(this).parent()));
         });
     },
-    _cellToDate: function(element){
-        var day = parseInt($(element).find("a").text());
-        var month = parseInt($(element).data("month"));
-        var year = parseInt($(element).data("year"));
-        if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
-            return new Date(year, month, day, 0, 0, 0, 0);
-        }
-        else {
-            return null;
-        }
-    },
-    _onCellHoverRange: function(currentFirst, temporarySecond){
+    _onTemporaryRangeUpdate: function(currentFirst, temporarySecond){
         var self = this;
         if (!self.isSelectingSecond) {
             return;
@@ -3359,9 +3358,84 @@ $.widget("cly.datepickerExtended", {
         else {
             self.temporaryRange = null;
         }
-        self._refreshTable();
+        self._refreshCellStates();
     },
-    _refreshTable: function(){
+
+    // Private, generic
+    _initTextEdit: function(){
+        var $el = this.element,
+            self = this;
+
+        $($el).addClass("datepicker-text-edit");
+        $($el).prepend("<div class='text-fields'></div>");
+
+        $el.find(".text-fields").append('<input type="text" class="calendar-input-field input-0" data-input="0"></input>');
+        if (this.options.range === true) {
+            $el.find(".text-fields").append('<input type="text" class="calendar-input-field input-1" data-input="1"></input>');
+        }
+
+        $($el).on("keyup", ".text-fields input", function(event) {
+            if (event.keyCode === 13) {
+                var date = moment($(this).val(), "MM/DD/YYYY");
+                var inputIdx = parseInt($(this).data("input"));
+
+                if (date.format("MM/DD/YYYY") === $(this).val()) {
+                    // update the picker value
+                    self._syncWith("text", inputIdx);
+                }
+                else {
+                    // revert back to the original value
+                    self._syncWith("picker", inputIdx);
+                }
+            }
+        });
+    },
+    _syncWith: function(source, inputIdx){
+        var $el = this.element,
+            self = this;
+
+        if (source === "text") {
+            var parsedDate = moment($($el).find(".text-fields .input-" + inputIdx).val(), "MM/DD/YYYY").toDate();
+            if (self.options.range !== true && inputIdx === 0) {
+                self.setDate(parsedDate);
+            }
+            else if (self.options.range === true) {
+                self.committedRange[inputIdx] = parsedDate;
+                this.baseInstance.datepicker("setDate", parsedDate);
+                self.baseInstance.datepicker("refresh");
+            }
+        }
+        else if (source === "picker") {
+            if (self.options.range !== true && inputIdx === 0) {
+                $($el).find(".text-fields .input-" + inputIdx).val(moment(self.getDate()).format("MM/DD/YYYY"));
+            }
+            else if (self.options.range === true) {
+                var range = self.getRange();
+                var selectedDate = range[inputIdx];
+                $($el).find(".text-fields .input-" + inputIdx).val(moment(selectedDate).format("MM/DD/YYYY"));
+            }
+        }
+    },
+    _finalizeInit: function(){
+        if (this.options.range === true) {
+            this.setRange([moment().subtract(7, "d",).startOf("d").toDate(), moment().startOf("d").toDate()]);
+        }
+        else {
+            this.setDate(moment().startOf("d").toDate());
+        }
+    },
+    _cellToDate: function(element){
+        var day = parseInt($(element).find("a").text());
+        var month = parseInt($(element).data("month"));
+        var year = parseInt($(element).data("year"));
+        if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
+            return new Date(year, month, day, 0, 0, 0, 0);
+        }
+        else {
+            return null;
+        }
+    },
+    _refreshCellStates: function(){
         var self = this,  
             $el = this.element;
             
@@ -3373,6 +3447,8 @@ $.widget("cly.datepickerExtended", {
             }
         });
     },
+
+    // Public
     getRange: function(){
         return this.committedRange;
     },
@@ -3384,7 +3460,7 @@ $.widget("cly.datepickerExtended", {
     },
     setRange: function(dateRange){
         this.committedRange = dateRange;
-        this.baseInstance.datepicker("setDate", dateRange[0]);
+        this.baseInstance.datepicker("setDate", dateRange[1]);
     },
     setDate: function(date) {
         if (this.options.range === true) {
