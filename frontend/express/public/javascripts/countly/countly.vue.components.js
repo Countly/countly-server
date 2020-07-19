@@ -288,14 +288,7 @@
             $.datepicker.setDefaults($.datepicker.regional[""]);
             datePickerDOM.find(".calendar").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
 
-            if (Array.isArray(this.value)) {
-                datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value.map(function(point) {
-                    return moment(point * 1000).toDate();
-                }));
-            }
-            else if (this.value) {
-                datePickerDOM.find(".calendar").datepickerExtended("setDate", moment(this.value * 1000).toDate());
-            }
+            this.refreshValues();
 
             datePickerDOM.click(function(e) {
                 e.stopPropagation();
@@ -304,14 +297,7 @@
         updated: function() {
             var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
 
-            if (Array.isArray(this.value)) {
-                datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value.map(function(point) {
-                    return moment(point * 1000).toDate();
-                }));
-            }
-            else if (this.value) { //&& !Array.isArray(this.value)
-                datePickerDOM.find(".calendar").datepickerExtended("setDate", moment(this.value * 1000).toDate());
-            }
+            this.refreshValues();
 
             if (this.maxDate) {
                 datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
@@ -324,6 +310,18 @@
                 $(this.$refs.datePicker).find(".date-picker").show();
 
                 e.stopPropagation();
+            },
+            refreshValues: function() {
+
+                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
+                if (Array.isArray(this.value)) {
+                    datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value.map(function(point) {
+                        return moment(point * 1000).toDate();
+                    }));
+                }
+                else if (this.value) { //&& !Array.isArray(this.value)
+                    datePickerDOM.find(".calendar").datepickerExtended("setDate", moment(this.value * 1000).toDate());
+                }
             }
         }
     };

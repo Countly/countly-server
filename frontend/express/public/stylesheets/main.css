@@ -2163,6 +2163,10 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     width: 240px;
 }
 
+.date-picker-component.extended:not(.collapsible) .date-picker{
+    border: none;
+}
+
 .date-picker-component.extended.collapsible .date-picker{
     display: none;
     top: 33px;
