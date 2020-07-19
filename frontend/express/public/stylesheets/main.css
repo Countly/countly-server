@@ -2152,13 +2152,18 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     background-color: #ffffff;
 }
 
-.date-picker-component .date-picker.extended {
+.date-picker-component.extended .date-picker {
     background-color: #0b131a;
     display: block;
     top: 0px;
 }
 
-.date-picker-component .date-picker.extended.collapsible {
+.date-picker-component.extended:not(.collapsible){
+    height: 266px;
+    width: 240px;
+}
+
+.date-picker-component.extended.collapsible .date-picker{
     display: none;
     top: 33px;
 }
