@@ -3730,3 +3730,53 @@ color:#E95C6C; transition:color 1s;
 .clip { max-height: 60px; line-height: 20px; text-overflow: ellipsis; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;}
 .clip.nothing { color: #bbb;}
 
+.cly-menu-component .menu-toggler{
+    cursor: pointer;
+    padding: 6px 9px;
+    padding-right: 25px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #444;
+    font-weight: normal;
+    font: 13px Ubuntu,Helvetica,sans-serif;
+    line-height: 111%;
+}
+
+.cly-menu-component .menu-toggler .right {
+    opacity: 0.8;
+    right: auto;
+    position: absolute;
+    width: 15px;
+    height: 100%;
+    line-height: 27px;
+    margin-left: 11px;
+    margin-top: -6px;
+    display: inline-block;
+}
+
+.cly-menu-component .menu-toggler .right.combo:before {
+    color: #717171;
+    font-family: 'Ionicons';
+    content: "\f123";
+    font-size: 9px;
+    position: absolute;
+    right: 8px;
+}
+
+.cly-menu-component .menu-toggler:hover .right.combo:before{
+    color: #2fa732;
+}
+
+.cly-menu-component.shown .menu-toggler .right.combo:before{
+    content: "\f126";
+    color: #2fa732;
+}
+
+.cly-menu-component .menu-toggler:hover {
+    color: #2FA732;
+}
+
+.cly-menu-component .menu-content{
+    position: absolute;
+}
