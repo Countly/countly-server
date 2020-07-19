@@ -3313,7 +3313,7 @@ $.widget("cly.datepickerExtended", {
             if (originalOnSelect) {
                 originalOnSelect.apply($($el), [dateText, inst, point]);
             }
-            
+
             var instance = $($el).data("datepicker");
             var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
             parsedDate.setHours(0, 0, 0, 0);
@@ -3321,7 +3321,7 @@ $.widget("cly.datepickerExtended", {
             if (self.isSelectingSecond) {
                 currentSecond = parsedDate;
                 self.temporaryRange = null;
-                self._commitRange(currentFirst, currentSecond);
+                self._commitRange(currentFirst, currentSecond, true);
             }
             else {
                 currentFirst = parsedDate;
@@ -3398,7 +3398,7 @@ $.widget("cly.datepickerExtended", {
         }
         self._refreshCellStates();
     },
-    _commitRange: function(dateFirst, dateSecond) {
+    _commitRange: function(dateFirst, dateSecond, fireOnCommit) {
         var self = this,
             $el = this.element;
 
@@ -3408,15 +3408,16 @@ $.widget("cly.datepickerExtended", {
 
         if (self.options.minDate && self.options.minDate - self.committedRange[0] > 0) {
             self.committedRange[0] = new Date(self.options.minDate.getTime());
-            self.committedRange[0].setHours(0, 0, 0, 0);
         }
 
         if (self.options.maxDate && self.committedRange[1] - self.options.maxDate > 0) {
             self.committedRange[1] = new Date(self.options.maxDate.getTime());
-            self.committedRange[1].setHours(0, 0, 0, 0);
         }
 
-        if (self.options.onCommit) {
+        self.committedRange[0].setHours(0, 0, 0, 0);
+        self.committedRange[1].setHours(0, 0, 0, 0);
+
+        if (fireOnCommit && self.options.onCommit) {
             self.options.onCommit.apply($($el), self.committedRange);
         }
         self._syncWith("picker", 0, true);

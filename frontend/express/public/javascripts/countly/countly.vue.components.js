@@ -294,7 +294,7 @@
                 }));
             }
             else if (this.value) {
-                datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
+                datePickerDOM.find(".calendar").datepickerExtended("setDate", moment(this.value * 1000).toDate());
             }
 
             datePickerDOM.click(function(e) {
@@ -304,9 +304,15 @@
         updated: function() {
             var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
 
-            if (this.value && !Array.isArray(this.value)) {
-                datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
+            if (Array.isArray(this.value)) {
+                datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value.map(function(point) {
+                    return moment(point * 1000).toDate();
+                }));
             }
+            else if (this.value) { //&& !Array.isArray(this.value)
+                datePickerDOM.find(".calendar").datepickerExtended("setDate", moment(this.value * 1000).toDate());
+            }
+
             if (this.maxDate) {
                 datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
             }
