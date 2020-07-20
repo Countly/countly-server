@@ -3743,6 +3743,10 @@ color:#E95C6C; transition:color 1s;
     line-height: 111%;
 }
 
+.cly-menu-component .menu-toggler .label-wrapper {
+    display: inline-block;
+}
+
 .cly-menu-component .menu-toggler .right {
     opacity: 0.8;
     right: auto;

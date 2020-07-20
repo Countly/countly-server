@@ -329,7 +329,7 @@
     * CLY Simple menu
     */
     CountlyVueComponents.menu = {
-        template: '<div v-bind:class="[\'cly-menu-component\', isShown ? \'shown\' : \'hidden\']"><div class="menu-toggler" v-on:click="toggle">{{label}}<div class="right combo"></div></div><div class="menu-content" v-show="isShown"><slot></slot></div></div>',
+        template: '<div v-bind:class="[\'cly-menu-component\', isShown ? \'shown\' : \'hidden\']"><div class="menu-toggler" v-on:click="toggle"><div class="label-wrapper">{{label}}</div><div class="right combo"></div></div><div class="menu-content" v-show="isShown"><slot></slot></div></div>',
         props: {
             label: { type: String, default: '' },
             isShown: { type: Boolean, default: false },
