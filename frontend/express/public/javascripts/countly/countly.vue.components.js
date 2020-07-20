@@ -315,12 +315,10 @@
 
                 var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
                 if (Array.isArray(this.value)) {
-                    datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value.map(function(point) {
-                        return moment(point * 1000).toDate();
-                    }));
+                    datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value);
                 }
                 else if (this.value) { //&& !Array.isArray(this.value)
-                    datePickerDOM.find(".calendar").datepickerExtended("setDate", moment(this.value * 1000).toDate());
+                    datePickerDOM.find(".calendar").datepickerExtended("setDate", this.value);
                 }
             }
         }
