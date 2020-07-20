@@ -1014,6 +1014,8 @@ input:disabled + label {
     color: #636363;
     font-size: 12px;
     position: relative;
+}
+.comp-push-view-row > .col-right .col-right {
     overflow: scroll;
 }
 
