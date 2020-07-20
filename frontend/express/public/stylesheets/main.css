@@ -3794,4 +3794,17 @@ color:#E95C6C; transition:color 1s;
 
 .cly-menu-component .menu-content{
     position: absolute;
+    border: 1px solid #D0D0D0;
+}
+
+.cly-menu-component .menu-content::before {
+    border: 6px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #292929;
+    right: 9px;
+    top: -12px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
 }
