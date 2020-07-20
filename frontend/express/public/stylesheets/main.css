@@ -790,7 +790,7 @@ div.datatablesubrow {display: none;}
     border-radius: 2px;
   }
   .datepicker-extended .text-fields input {
-        height: 20px;
+        height: 19px;
         background-color: #0b131a;
         color: white;
         border: 1px solid #979797;
