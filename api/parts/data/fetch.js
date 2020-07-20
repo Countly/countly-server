@@ -1835,10 +1835,16 @@ function union(x, y) {
 * @param {params} params - params object with app_id and date
 */
 fetch.fetchJobs = async function(metric, params) {
-    if (params.qstring.name) {
-        fetch.jobDetails(metric, params);
+    try {
+        if (params.qstring.name) {
+            await fetch.jobDetails(metric, params);
+        }
+        await fetch.alljobs(metric, params);
     }
-    fetch.alljobs(metric, params);
+    catch (e) {
+        console.log(e);
+        common.returnOutput(params, 500, "Fetching jobs failed");
+    }
 };
 
 /**
