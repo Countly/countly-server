@@ -3747,6 +3747,11 @@ color:#E95C6C; transition:color 1s;
     display: inline-block;
 }
 
+.cly-menu-component.empty .menu-toggler .label-wrapper{
+    color: #d0d0d0;
+    border-bottom: 1px dotted #444;
+}
+
 .cly-menu-component .menu-toggler .right {
     opacity: 0.8;
     right: auto;
