@@ -202,7 +202,7 @@
         template: '<div ref="datePicker" v-bind:class="[collapsible ? \'collapsible\' : \'\', \'date-picker-component\', \'extended\']"><input v-if="collapsible" type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate"><div class="date-picker"><div class="calendar-container calendar-dark"><div class="calendar"></div></div></div></div>',
         props: {
             placeholder: { type: String, default: 'Date' },
-            value: { default: null },
+            value: Date,
             onValueChanged: { type: Function, required: true },
             maxDate: Date,
             isRangePicker: { type: Boolean, default: false },
@@ -214,11 +214,11 @@
             formatDate: function() {
                 if (Array.isArray(this.value)) {
                     return this.value.map(function(point) {
-                        return countlyCommon.formatDate(moment(point * 1000), "DD MMMM, YYYY");
+                        return countlyCommon.formatDate(moment(point), "DD MMMM, YYYY");
                     }).join(" - ");
                 }
                 else if (this.value) {
-                    return countlyCommon.formatDate(moment(this.value * 1000), "DD MMMM, YYYY");
+                    return countlyCommon.formatDate(moment(this.value), "DD MMMM, YYYY");
                 }
                 else {
                     return null;
@@ -294,13 +294,15 @@
                 e.stopPropagation();
             });
         },
-        updated: function() {
-            var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
-
-            this.refreshValues();
-
-            if (this.maxDate) {
-                datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+        watch: {
+            value: function() {
+                this.refreshValues();
+            },
+            maxDate: function() {
+                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
+                if (this.maxDate) {
+                    datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+                }
             }
         },
         methods: {

@@ -3362,25 +3362,6 @@ $.widget("cly.datepickerExtended", {
             self._onTemporaryRangeUpdate(currentFirst, self._cellToDate($(this).parent()));
         });
     },
-    _initDateSelection: function() {
-        var self = this,
-            originalOnSelect = this.options.onSelect,
-            $el = this.element;
-
-        /**
-         * Wraps onSelect callback of jQuery UI Datepicker and 
-         * injects the necessary business logic needed for picker -> text field
-         * data binding.
-         * @param {String} dateText Date as string, passed by Datepicker 
-         * @param {Object} inst Instance object, passed by Datepicker
-         */
-        function _onSelect(dateText, inst) {
-            originalOnSelect.apply($($el), [dateText, inst]);
-            self._syncWith("picker", 0);
-        }
-
-        this.options.onSelect = _onSelect;
-    },
     _onTemporaryRangeUpdate: function(currentFirst, temporarySecond) {
         var self = this;
         if (!self.isSelectingSecond) {
@@ -3420,11 +3401,30 @@ $.widget("cly.datepickerExtended", {
         if (fireOnCommit && self.options.onCommit) {
             self.options.onCommit.apply($($el), self.committedRange);
         }
-        self._syncWith("picker", 0, true);
-        self._syncWith("picker", 1, true);
+        self._syncWith("picker", 0, { onlyCommitted: true });
+        self._syncWith("picker", 1, { onlyCommitted: true });
     },
 
     // Private, generic
+    _initDateSelection: function() {
+        var self = this,
+            originalOnSelect = this.options.onSelect,
+            $el = this.element;
+
+        /**
+         * Wraps onSelect callback of jQuery UI Datepicker and 
+         * injects the necessary business logic needed for picker -> text field
+         * data binding.
+         * @param {String} dateText Date as string, passed by Datepicker 
+         * @param {Object} inst Instance object, passed by Datepicker
+         */
+        function _onSelect(dateText, inst) {
+            originalOnSelect.apply($($el), [dateText, inst]);
+            self._syncWith("picker", 0);
+        }
+
+        this.options.onSelect = _onSelect;
+    },
     _initTextEdit: function() {
         var $el = this.element,
             self = this;
@@ -3444,7 +3444,7 @@ $.widget("cly.datepickerExtended", {
 
                 if (date.isValid()) {
                     // update the picker value
-                    self._syncWith("text", inputIdx);
+                    self._syncWith("text", inputIdx, {isDOMEvent: true});
                 }
                 else {
                     // revert back to the original value
@@ -3453,11 +3453,13 @@ $.widget("cly.datepickerExtended", {
             }
         });
     },
-    _syncWith: function(source, inputIdx, onlyCommitted) {
+    _syncWith: function(source, inputIdx, syncOptions) {
 
         if (!this.options.textEdit) {
             return;
         }
+
+        syncOptions = syncOptions || {};
 
         var $el = this.element,
             self = this;
@@ -3466,6 +3468,10 @@ $.widget("cly.datepickerExtended", {
             var parsedDate = moment($($el).find(".text-fields .input-" + inputIdx).val(), "MM/DD/YYYY").toDate();
             if (self.options.range !== true && inputIdx === 0) {
                 self.setDate(parsedDate);
+                if (syncOptions.isDOMEvent) {
+                    // manually trigger onSelect
+                    self.baseInstance.find('.ui-datepicker-current-day').click(); // rapresent the current selected day
+                }
             }
             else if (self.options.range === true) {
                 if (self.isSelectingSecond) {
@@ -3473,10 +3479,10 @@ $.widget("cly.datepickerExtended", {
                     // abort the ongoing picking
                 }
                 if (inputIdx === 0) {
-                    self._commitRange(parsedDate, self.committedRange[1]);
+                    self._commitRange(parsedDate, self.committedRange[1], syncOptions.isDOMEvent);
                 }
                 else if (inputIdx === 1) {
-                    self._commitRange(self.committedRange[0], parsedDate);
+                    self._commitRange(self.committedRange[0], parsedDate, syncOptions.isDOMEvent);
                 }
                 this.baseInstance.datepicker("setDate", parsedDate);
                 self.baseInstance.datepicker("refresh");
@@ -3488,7 +3494,7 @@ $.widget("cly.datepickerExtended", {
             }
             else if (self.options.range === true) {
                 var targetRange = self.committedRange;
-                if (self.isSelectingSecond && !onlyCommitted) {
+                if (self.isSelectingSecond && !syncOptions.onlyCommitted) {
                     targetRange = self.temporaryRange;
                 }
                 var selectedDate = targetRange[inputIdx];
