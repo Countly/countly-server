@@ -3734,7 +3734,6 @@ color:#E95C6C; transition:color 1s;
     cursor: pointer;
     padding: 6px 9px;
     padding-right: 25px;
-    text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
     color: #444;
@@ -3750,6 +3749,13 @@ color:#E95C6C; transition:color 1s;
 .cly-menu-component.empty .menu-toggler .label-wrapper{
     color: #d0d0d0;
     border-bottom: 1px dotted #444;
+}
+
+.cly-menu-component .menu-toggler .label-wrapper .text{
+    max-width: 160px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .cly-menu-component .menu-toggler .right {
