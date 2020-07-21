@@ -800,6 +800,10 @@ div.datatablesubrow {display: none;}
         font-size: 12px;
         padding: 4px 7px;
     }
+    .datepicker-extended .text-fields input.focused {
+        background-color: #22232b;
+        border-color: #2EB52B;
+    }
     .datepicker-extended .text-fields{
         background-color: #0b131a;
     }

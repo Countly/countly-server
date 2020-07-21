@@ -3318,13 +3318,20 @@ $.widget("cly.datepickerExtended", {
             var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
             parsedDate.setHours(0, 0, 0, 0);
 
+            if (self.isSelectingSecond && parsedDate < currentFirst) {
+                self.isSelectingSecond = false;
+                // reset
+            }
+
             if (self.isSelectingSecond) {
                 currentSecond = parsedDate;
                 self.temporaryRange = null;
                 self._commitRange(currentFirst, currentSecond, true);
+                $($el).find(".text-fields input").removeClass("focused");
             }
             else {
                 currentFirst = parsedDate;
+                $($el).find(".input-1").addClass("focused");
             }
             self.isSelectingSecond = !self.isSelectingSecond;
         }
@@ -3361,22 +3368,24 @@ $.widget("cly.datepickerExtended", {
         $($el).on("mouseover", ".ui-state-default", function() {
             self._onTemporaryRangeUpdate(currentFirst, self._cellToDate($(this).parent()));
         });
+
+        $($el).on("mouseout", ".ui-state-default", function() {
+            self._onTemporaryRangeUpdate(currentFirst, null);
+        });
     },
     _onTemporaryRangeUpdate: function(currentFirst, temporarySecond) {
         var self = this;
         if (!self.isSelectingSecond) {
             return;
         }
-        if (temporarySecond) {
-            self.temporaryRange = [currentFirst, temporarySecond].sort(function(a, b) {
-                return a - b;
-            });
-            self._syncWith("picker", 0);
-            self._syncWith("picker", 1);
+        if (temporarySecond && currentFirst <= temporarySecond) {
+            self.temporaryRange = [currentFirst, temporarySecond];
         }
         else {
-            self.temporaryRange = null;
+            self.temporaryRange = [currentFirst, currentFirst];
         }
+        self._syncWith("picker", 0);
+        self._syncWith("picker", 1);
         self._refreshCellStates();
     },
     _commitRange: function(dateFirst, dateSecond, fireOnCommit) {
