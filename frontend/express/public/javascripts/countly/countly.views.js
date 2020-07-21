@@ -861,7 +861,7 @@ window.LoyaltyView = countlyView.extend({
             if (typeof extendViewWithFilter === "function") {
                 extendViewWithFilter(this);
                 $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
-                    this.initDrill();
+                    self.initDrill();
 
                     setTimeout(function() {
                         self.filterBlockClone = $("#filter-view").clone(true);
@@ -3346,6 +3346,8 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
             app.onUserEdit({}, $(".create-user-row"));
+            $("div[data-localize='management-users.password']").parent().hide();
+            $(".generate-password").click();
             $(".create-user-row").slideDown();
             self.initTable();
             $(this).hide();
@@ -4209,6 +4211,7 @@ window.EventsBlueprintView = countlyView.extend({
             countlyEvent.setActiveEvent(previousEvent);
         }
         this.template = Handlebars.compile($("#template-events-blueprint").html());
+        this.textLimit = 100;
     },
     pageScript: function() {
         var self = this;
@@ -4397,6 +4400,10 @@ window.EventsBlueprintView = countlyView.extend({
                     var eventName = el.data('name');
                     if (eventName === "") {
                         eventName = event;
+                    }
+
+                    if (eventName.length > self.textLimit) {
+                        eventName = eventName.substr(0, self.textLimit) + "...";
                     }
                     CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this", "<b>" + eventName + "</b>"), "popStyleGreen", function(result) {
                         if (!result) {
@@ -4621,8 +4628,15 @@ window.EventsBlueprintView = countlyView.extend({
                         else if (selected === "delete") {
                             var title = jQuery.i18n.map["events.general.want-delete-title"];
                             var msg = jQuery.i18n.prop("events.general.want-delete", "<b>" + nameList.join(", ") + "</b>");
+                            if (nameList.join(", ").length > self.textLimit) {
+                                var mz = jQuery.i18n.prop("events.delete.multiple-events", nameList.length);
+                                msg = jQuery.i18n.prop("events.general.want-delete", "<b>" + mz + "</b>");
+                            }
                             var yes_but = jQuery.i18n.map["events.general.yes-delete-events"];
                             if (changeList.length === 1) {
+                                if (nameList[0].length > self.textLimit) {
+                                    nameList[0] = nameList[0].substr(0, self.textLimit) + "...";
+                                }
                                 msg = jQuery.i18n.prop("events.general.want-delete-this", "<b>" + nameList.join(", ") + "</b>");
                                 title = jQuery.i18n.map["events.general.want-delete-this-title"];
                                 yes_but = jQuery.i18n.map["events.general.yes-delete-event"];
@@ -4872,6 +4886,13 @@ window.EventsOverviewView = countlyView.extend({
             self.refresh(true, true);
             $("#update_overview_button").removeClass('disabled');
         });
+        $(".top-events-widget .col").off("click").on("click", function(e) {
+            window.location.href = $(e.currentTarget).children("h4").children("a").attr("href");
+        });
+        $(".event-overview-grid-block").off("click").on("click", function(e) {
+            window.location.href = $(e.currentTarget).children(".title").children("a").attr("href");
+        });
+
     },
     pageScripts: function() {
         var self = this;
@@ -5030,7 +5051,6 @@ window.EventsOverviewView = countlyView.extend({
         var self = this;
         this.currentOverviewList = countlyEvent.getOverviewList();
         this.eventmap = countlyEvent.getEventMap();
-
         var app_admin = false;
         if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             app_admin = true;
@@ -5038,6 +5058,7 @@ window.EventsOverviewView = countlyView.extend({
 
         this.templateData = {
             "logo-class": "events",
+            "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-map": this.eventmap,
             "overview-list": this.overviewList || [],
             "overview-graph": this.overviewGraph || [],
@@ -5259,6 +5280,7 @@ window.EventsView = countlyView.extend({
             }
             $(".event-container").removeClass("active");
             $(this).addClass("active");
+            app.navigate("/analytics/events/key/" + encodeURIComponent(tmpCurrEvent));
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() {
                 self.refresh(true);
@@ -5516,6 +5538,7 @@ window.EventsView = countlyView.extend({
         var eventCount = countlyEvent.getEvents().length;
         this.templateData = {
             "page-title": eventData.eventName.toUpperCase(),
+            "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-description": eventData.eventDescription,
             "logo-class": "events",
             "events": countlyEvent.getEvents(),
@@ -5547,6 +5570,15 @@ window.EventsView = countlyView.extend({
                 self.resizeTitle();
             });
             $('.nav-search').find("input").trigger("input");
+
+            var eventURLComponents = window.location.hash.match(/analytics\/events\/key\/(.*)/);
+            if (eventURLComponents && eventURLComponents.length >= 2) {
+                var targetEvent = decodeURIComponent(eventURLComponents[1]);
+                if (countlyEvent.getEventData().eventName !== targetEvent) {
+                    $("div[data-key='" + targetEvent + "']").click();
+                    countlyEvent.setActiveEvent(targetEvent);
+                }
+            }
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
@@ -6022,7 +6054,7 @@ window.LongTaskView = countlyView.extend({
                 "mData": function(row, type) {
                     var time = 0;
                     if (row.taskgroup && row.subtasks) {
-                        for (var k = 0; k < row.subtasks.length; k++) {
+                        for (var k in row.subtasks) {
                             if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
                                 row.status = row.subtasks[k].status;
                                 row.start = row.subtasks[k].start || row.start;
@@ -6048,6 +6080,66 @@ window.LongTaskView = countlyView.extend({
                 "bSortable": false,
                 "sType": "numeric",
                 "sTitle": jQuery.i18n.map["events.table.dur"]
+            },
+            {
+                "mData": function(row/*, type*/) {
+                    var color = "green";
+                    if (row.taskgroup && row.subtasks) {
+                        var difStats = false;
+                        var stat = "completed";
+                        var dd = "";
+
+                        for (var k in row.subtasks) {
+                            if (row.subtasks[k].status !== stat) {
+                                difStats = true;
+                            }
+                            color = "green";
+                            if (row.subtasks[k].status === "errored") {
+                                color = "red";
+                            }
+                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                color = "blue";
+                            }
+                            if (row.subtasks[k].errormsg) {
+                                dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<div class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
+                            }
+                            else {
+                                dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
+                            }
+
+                        }
+                        if (difStats) {
+                            return dd;
+                        }
+                        else {
+                            color = "green";
+                            if (row.status === "errored") {
+                                color = "red";
+                            }
+                            if (row.status === "running" || row.status === "rerunning") {
+                                color = "yellow";
+                            }
+                            if (row.errormsg) {
+                                return "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "<div class='error_message_div'>" + row.errormsg + "</div></div>";
+                            }
+                            else {
+                                return "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "</div>";
+                            }
+                        }
+                    }
+                    else {
+                        if (row.status === "errored") {
+                            color = "red";
+                        }
+                        if (row.status === "running" || row.status === "rerunning") {
+                            color = "yellow";
+                        }
+                        return "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "</div>";
+                    }
+                },
+                "bSortable": false,
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["common.status"]
             },
             {
                 "mData": function() {
@@ -6099,6 +6191,7 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
+        this.addErrorTooltips();
         this.dtable.fnSort([ [8, 'desc'] ]);
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
             '<a class="item view-task" href="" data-localize="common.view"></a>' +
@@ -6263,6 +6356,36 @@ window.LongTaskView = countlyView.extend({
     },
     refresh: function() {
         this.dtable.fnDraw(false);
+
+    },
+    addErrorTooltips: function() {
+        $("#data-table").on('mouseenter mouseleave', ".have_error_message", function() {
+            $('.have_error_message span').not(".tooltipstered").tooltipster({
+                animation: "fade",
+                animationDuration: 50,
+                delay: 100,
+                theme: 'tooltipster-borderless',
+                side: ['top'],
+                maxWidth: 500,
+                trigger: 'click',
+                interactive: true,
+                functionBefore: function(instance, helper) {
+                    instance.content($(helper.origin).parent().find(".error_message_div").html());
+                },
+                contentAsHTML: true,
+                functionInit: function(instance, helper) {
+                    instance.content($(helper.origin).parent().find(".error_message_div").html());
+                }
+            });
+
+        });
+        $("#data-table").on('click', ".have_error_message", function(e) {
+            if ($(e.target).hasClass('have_error_message')) {
+                $(this).find('span').trigger("click");
+            }
+        });
+
+
     }
 });
 
@@ -6553,10 +6676,10 @@ window.TokenManagerView = countlyView.extend({
                     {
                         "mData": function(row) {
                             if (row.ttl && ((row.ends * 1000) - Date.now()) < 0) {
-                                return '<span class="token_status_dot"></span>' + jQuery.i18n.map["token_manager.table.status-expired"];
+                                return '<div class="table_status_dot table_status_dot_red"><span ></span>' + jQuery.i18n.map["token_manager.table.status-expired"] + "</div>";
                             }
                             else {
-                                return '<span class="token_status_dot token_status_dot_green"></span>' + jQuery.i18n.map["token_manager.table.status-active"];
+                                return '<div class="table_status_dot table_status_dot_green"><span ></span>' + jQuery.i18n.map["token_manager.table.status-active"] + "</div>";
                             }
                         },
                         "sType": "string",
@@ -6951,7 +7074,9 @@ app.route('/manage/token_manager', 'token_manager', function() {
 app.route('/versions', 'version_history', function() {
     this.renderWhenReady(this.VersionHistoryView);
 });
-
+app.route("/analytics/events/key/:event", "events", function() {
+    this.renderWhenReady(this.eventsView);
+});
 app.route("/analytics/events/:subpageid", "events", function(subpageid) {
     this.eventsView.subpageid = subpageid;
     if (subpageid === 'blueprint') {

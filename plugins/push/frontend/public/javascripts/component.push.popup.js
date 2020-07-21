@@ -38,7 +38,9 @@ window.component('push.popup', function(popup) {
             var found = false;
             message.platforms().forEach(function (p) {
                 message.apps().forEach(function (a) {
-                    if (CC.dot(CG.apps[a], 'plugins.push.' + p + '._id')) {
+                    if (CC.dot(CG.apps[a], 'plugins.push.' + p + '._id') || 
+                        (p === push.C.PLATFORMS.ANDROID && CC.dot(CG.apps[a], 'plugins.push.' + push.C.PLATFORMS.HUAWEI + '._id')) ||
+                        (p === push.C.PLATFORMS.HUAWEI && CC.dot(CG.apps[a], 'plugins.push.' + push.C.PLATFORMS.ANDROID + '._id'))) {
                         found = true;
                     }
                 });

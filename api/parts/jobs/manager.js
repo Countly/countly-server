@@ -353,11 +353,13 @@ class Manager {
     **/
     schedule(job) {
         if (job.scheduleObj) {
-            var schedule = typeof job.scheduleObj === 'string' ? later.parse.text(job.scheduleObj) : job.scheduleObj,
-                nextFrom = new Date(job.next);
-            var next = later.schedule(schedule).next(2, nextFrom);
+            var strict = job.strict !== null && job.strict !== undefined,
+                schedule = typeof job.scheduleObj === 'string' ? later.parse.text(job.scheduleObj) : job.scheduleObj,
+                nextFrom = strict ? new Date(job.next) : new Date(),
+                next = later.schedule(schedule).next(2, nextFrom);
+
             if (next && next.length > 1) {
-                if (job.strict !== null && job.strict !== undefined) {
+                if (strict) {
                     // for strict jobs we're going to repeat all missed tasks up to current date after restart
                     // for non-strict ones, we want to start from current date
                     while (next[1].getTime() < Date.now()) {
@@ -595,7 +597,7 @@ class Manager {
             n = (this.running[job.name] || []).length,
             can = c === 0 || (n + count) <= c;
         if (!can) {
-            log.i('Hit concurrency limit on %j: %d is running out of limit %d, requested to run %d', job._id, n, c, count);
+            log.i('Hit concurrency limit on %j: %d is running out of limit %d, requested to run %d, running %j', job._id, n, c, count, this.running[job.name]);
         }
         return can;
     }

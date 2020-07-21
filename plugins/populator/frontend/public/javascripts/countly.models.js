@@ -1,4 +1,4 @@
-/*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery*/
+/*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"],
@@ -53,7 +53,8 @@
         {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|1|t": "Stornieren", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": []},
         {"demo": 3, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": true, "type": "message", "messagePerLocale": {"default|t": "What your friends don't know", "default|0|t": "Share", "default|1|t": "Button 2", "default|0|l": "theapp://scores/share", "default|tp": {}, "default|p": {}, "default": "... is your personal best score! Share it now!"}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "source": "dash", "buttons": 1, "autoOnEntry": true, "autoCohorts": [], "autoTime": 57600000, "autoCapMessages": 1, "autoCapSleep": 86400000}
     ];
-    var ip_address = [];
+    // usa, uk, japan, germany, italy, france, turkey, uruguay, netherlands, new zealand, mexico, canada, china, finland, hungary, ukraine, argentina, bahamas, latvia, malaysia
+    var predefined_ip_addresses = ["2.167.106.72", "4.69.238.178", "3.112.23.176", "13.32.136.0", "4.69.130.86", "4.69.208.18", "17.67.198.23", "5.145.169.96", "2.59.88.2", "17.86.219.128", "23.65.126.2", "4.14.242.30", "14.192.76.3", "4.68.30.78", "5.38.128.2", "31.40.128.2", "5.145.169.100", "62.67.185.16", "14.139.54.208", "62.40.112.206", "14.192.192.1"];
     var campaigns = [
         {id: "email", name: "Email campaign", cost: "0.1", type: "click"},
         {id: "email2", name: "Email campaign 2", cost: "0.2", type: "install"},
@@ -298,12 +299,7 @@
         this.isRegistered = false;
 
         this.hasSession = false;
-        if (ip_address.length > 0 && Math.random() >= 0.5) {
-            this.ip = ip_address.pop();
-        }
-        else {
-            this.ip = chance.ip();
-        }
+        this.ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
         this.userdetails = {name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp)};
         this.userdetails.custom.populator = true;
         this.metrics = {};
@@ -477,6 +473,8 @@
             var trace = {};
             trace.stz = getRandomInt(this.startTs, this.endTs);
             trace.etz = getRandomInt(trace.stz, this.endTs);
+            trace.stz *= 1000;
+            trace.etz *= 1000;
             var rand = Math.random();
             if (rand < 0.3) {
                 trace.type = "device";
@@ -529,8 +527,8 @@
 
             this.ts += 1000;
 
-            if (eventTemplate && eventTemplate.dur) {
-                event.dur = getRandomInt(eventTemplate.dur[0], eventTemplate.dur[1] || 10);
+            if (eventTemplate && eventTemplate.duration) {
+                event.dur = getRandomInt(eventTemplate.duration[0], eventTemplate.duration[1] || 10);
             }
             else if (id === "[CLY]_view") {
                 event.dur = getRandomInt(0, 100);
@@ -795,6 +793,7 @@
             params.hour = getRandomInt(0, 23);
             params.dow = getRandomInt(0, 6);
             params.stats = JSON.parse(JSON.stringify(this.stats));
+            params.populator = true;
             bulk.push(params);
             this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
             countlyPopulator.sync();
@@ -992,13 +991,7 @@
      * @param {string} name - campaign name
      **/
     function clickCampaign(name) {
-        var ip = chance.ip();
-        if (ip_address.length && Math.random() > 0.5) {
-            ip = ip_address[Math.floor(Math.random() * ip_address.length)];
-        }
-        else {
-            ip_address.push(ip);
-        }
+        var ip = predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))];
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/campaign/click/" + name + countlyCommon.ACTIVE_APP_ID,
@@ -1098,7 +1091,7 @@
 
                 var userdetails = {name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp)};
 
-                bulk.push({ip_address: chance.ip(), device_id: userIndex + "" + ids[j], begin_session: 1, metrics: metrics, user_details: userdetails, timestamp: ts, hour: getRandomInt(0, 23), dow: getRandomInt(0, 6)});
+                bulk.push({ip_address: predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))], device_id: userIndex + "" + ids[j], begin_session: 1, metrics: metrics, user_details: userdetails, timestamp: ts, hour: getRandomInt(0, 23), dow: getRandomInt(0, 6)});
                 totalStats.s++;
                 totalStats.u++;
             }
@@ -1258,6 +1251,19 @@
                 u.startSession(template);
             }, Math.random() * timeout);
         }
+
+        var seg = {};
+
+        if (template && template.name) {
+            seg.template = template.name;
+        }
+
+        app.recordEvent({
+            "key": "populator-execute",
+            "count": 1,
+            "segmentation": seg
+        });
+
         /**
          * Start user session process
          * @param {object} u - user object

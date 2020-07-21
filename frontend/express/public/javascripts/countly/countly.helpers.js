@@ -846,7 +846,7 @@
                     var ob = {};
                     for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
                         try {
-                            if (!(tableData[i] && tableData[i][colIndex])) {
+                            if (!(tableData[i] && tableData[i][colIndex]) || (tableCols[colIndex] && tableCols[colIndex].noExport)) {
                                 continue;
                             }
                             if (tableCols[colIndex].sType === "formatted-num") {
@@ -1953,6 +1953,10 @@
             }
         }
 
+        if (store.get(dTable[0].id + '_sort')) {
+            oSettings.aaSorting = [store.get(dTable[0].id + '_sort')];
+        }
+
         oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
         dTable.fnStandingRedraw();
         dTable.trigger("table.refresh");
@@ -2029,6 +2033,7 @@
             "sType": "string",
             "sTitle": '',
             "bSortable": false,
+            "noExport": true,
             'sWidth': '1px'
         };
     };
