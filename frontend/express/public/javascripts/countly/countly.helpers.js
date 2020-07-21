@@ -3446,7 +3446,7 @@ $.widget("cly.datepickerExtended", {
         $($el).on("keyup", ".text-fields input", function(event) {
             if (event.keyCode === 13) {
                 var date = moment($(this).val(), "MM/DD/YYYY");
-                var inputIdx = parseInt($(this).data("input"));
+                var inputIdx = parseInt($(this).data("input"), 10);
 
                 if (date.isValid()) {
                     // update the picker value
@@ -3519,9 +3519,9 @@ $.widget("cly.datepickerExtended", {
         }
     },
     _cellToDate: function(element) {
-        var day = parseInt($(element).find("a").text());
-        var month = parseInt($(element).data("month"));
-        var year = parseInt($(element).data("year"));
+        var day = parseInt($(element).find("a").text(), 10);
+        var month = parseInt($(element).data("month"), 10);
+        var year = parseInt($(element).data("year"), 10);
         if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
             return new Date(year, month, day, 0, 0, 0, 0);
         }
