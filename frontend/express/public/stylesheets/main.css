@@ -3794,7 +3794,7 @@ color:#E95C6C; transition:color 1s;
 
 .cly-menu-component .menu-content{
     position: absolute;
-    border: 1px solid #D0D0D0;
+    /*border: 1px solid #D0D0D0;*/
 }
 
 .cly-menu-component .menu-content::before {

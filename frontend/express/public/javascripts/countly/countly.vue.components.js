@@ -204,7 +204,7 @@
             placeholder: { type: String, default: 'Date' },
             value: Date,
             onValueChanged: { type: Function, required: true },
-            maxDate: Date,
+            maxDate: {type: Date, default: moment().subtract(1, 'days').toDate() },
             isRangePicker: { type: Boolean, default: false },
             isTextEditAllowed: { type: Boolean, default: false },
             hideOnSelect: { type: Boolean, default: true },

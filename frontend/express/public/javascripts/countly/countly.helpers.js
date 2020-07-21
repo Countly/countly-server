@@ -3387,12 +3387,18 @@ $.widget("cly.datepickerExtended", {
             return a - b;
         });
 
-        if (self.options.minDate && self.options.minDate - self.committedRange[0] > 0) {
-            self.committedRange[0] = new Date(self.options.minDate.getTime());
+        var minDate = self.baseInstance.datepicker("option", "minDate"),
+            maxDate = self.baseInstance.datepicker("option", "maxDate");
+
+        minDate = minDate ? moment(minDate, "MM/DD/YYYY").toDate() : false;
+        maxDate = maxDate ? moment(maxDate, "MM/DD/YYYY").toDate() : false;
+
+        if (minDate && minDate - self.committedRange[0] > 0) {
+            self.committedRange[0] = new Date(minDate.getTime());
         }
 
-        if (self.options.maxDate && self.committedRange[1] - self.options.maxDate > 0) {
-            self.committedRange[1] = new Date(self.options.maxDate.getTime());
+        if (maxDate && self.committedRange[1] - maxDate > 0) {
+            self.committedRange[1] = new Date(maxDate.getTime());
         }
 
         self.committedRange[0].setHours(0, 0, 0, 0);
