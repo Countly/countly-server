@@ -3752,7 +3752,7 @@ color:#E95C6C; transition:color 1s;
 }
 
 .cly-menu-component .menu-toggler .label-wrapper .text{
-    max-width: 160px;
+    max-width: 181px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -3799,7 +3799,7 @@ color:#E95C6C; transition:color 1s;
 
 .cly-menu-component .menu-content::before {
     border: 6px solid rgba(194, 225, 245, 0);
-    border-bottom-color: #292929;
+    border-bottom-color: #0b131a;
     right: 9px;
     top: -12px;
     content: " ";
