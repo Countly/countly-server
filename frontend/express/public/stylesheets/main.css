@@ -663,9 +663,9 @@ div.datatablesubrow {display: none;}
         border: 1px solid #243544;
     }
     #date-selector .calendar-block span.date-input-label {float: right; display: inline-block; text-transform: uppercase; color: #d2d2d1; margin-top:11px; font: 12px Ubuntu,Helvetica,sans-serif;}
-    #date-picker, .date-picker { white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
-	#date-picker .calendar-container, .date-picker .calendar-container { overflow:auto; padding:10px 5px; margin-right:200px; }
-	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar { vertical-align: top; margin-bottom:10px; }
+    #date-picker, .date-picker, .date-picker-ext-wrapper{ white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
+	#date-picker .calendar-container, .date-picker .calendar-container, .date-picker-ext-wrapper .calendar-container { overflow:auto; padding:10px 5px; margin-right:200px; }
+	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar, .date-picker-ext-wrapper .calendar-container .calendar { vertical-align: top; margin-bottom:10px; }
     #date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
 	#date-picker .button-container { overflow:auto; position:absolute; right: 20px; bottom: 15px;}
     #date-picker .button-container .icon-button { display: inline-block; padding: 7px 10px; float: right }
@@ -2129,14 +2129,15 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     width: 230px;
 }
 .date-picker-component .date-value { cursor: pointer }
-.date-picker-component .date-picker {
+.date-picker-component .date-picker,
+.date-picker-component .date-picker-ext-wrapper{
     padding: 0;
     right: 0;
     top: 33px;
     border: 1px solid #d0d0d0;
     background-color: #ffffff;
 }
-.date-picker-component .date-picker .calendar-container { padding: 14px }
+.date-picker-component .date-picker .calendar-container, .date-picker-component .date-picker-ext-wrapper .calendar-container { padding: 14px }
 .date-picker-component .string-input {
     margin: 0;
     outline: none;
@@ -2148,7 +2149,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     font: 13px Ubuntu,Helvetica,sans-serif;
     line-height: 111%;
 }
-.date-picker-component .date-picker {
+.date-picker-component .date-picker, .date-picker-component .date-picker-ext-wrapper {
     padding: 0;
     right: 0;
     top: 33px;
@@ -2156,7 +2157,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     background-color: #ffffff;
 }
 
-.date-picker-component.extended .date-picker {
+.date-picker-component.extended .date-picker-ext-wrapper {
     background-color: #0b131a;
     display: block;
     top: 0px;
@@ -2167,16 +2168,17 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     width: 240px;
 }
 
-.date-picker-component.extended:not(.collapsible) .date-picker{
+.date-picker-component.extended:not(.collapsible) .date-picker-ext-wrapper{
     border: none;
 }
 
-.date-picker-component.extended.collapsible .date-picker{
+.date-picker-component.extended.collapsible .date-picker-ext-wrapper{
     display: none;
     top: 33px;
 }
 
-.date-picker-component .date-picker .calendar-container {
+.date-picker-component .date-picker .calendar-container,
+.date-picker-component .date-picker-ext-wrapper .calendar-container {
     padding: 14px;
 }
 

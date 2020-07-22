@@ -199,7 +199,7 @@
      * CLY Extended Date Picker
      */
     CountlyVueComponents.datePickerExtended = {
-        template: '<div ref="datePicker" v-bind:class="[collapsible ? \'collapsible\' : \'\', \'date-picker-component\', \'extended\']"><input v-if="collapsible" type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate"><div class="date-picker"><div class="calendar-container calendar-dark"><div class="calendar"></div></div></div></div>',
+        template: '<div ref="datePicker" v-bind:class="[collapsible ? \'collapsible\' : \'\', \'date-picker-component\', \'extended\']"><input v-if="collapsible" type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate"><div class="date-picker-ext-wrapper"><div class="calendar-container calendar-dark"><div class="calendar"></div></div></div></div>',
         props: {
             placeholder: { type: String, default: 'Date' },
             value: Date,
@@ -227,7 +227,7 @@
         },
         mounted: function() {
 
-            var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
+            var datePickerDOM = $(this.$refs.datePicker).find('.date-picker-ext-wrapper');
 
             var self = this;
             var options = {
@@ -254,7 +254,7 @@
                     });
 
                     if (self.hideOnSelect && self.collapsible) {
-                        $(".date-picker").hide();
+                        $(".date-picker-ext-wrapper").hide();
                     }
                 };
             }
@@ -274,7 +274,7 @@
                     });
 
                     if (self.hideOnSelect && self.collapsible) {
-                        $(".date-picker").hide();
+                        $(".date-picker-ext-wrapper").hide();
                     }
                 };
             }
@@ -299,7 +299,7 @@
                 this.refreshValues();
             },
             maxDate: function() {
-                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
+                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker-ext-wrapper');
                 if (this.maxDate) {
                     datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
                 }
@@ -307,15 +307,15 @@
         },
         methods: {
             onClick: function(e) {
-                $(".date-picker").hide();
+                $(".date-picker-ext-wrapper").hide();
 
-                $(this.$refs.datePicker).find(".date-picker").show();
+                $(this.$refs.datePicker).find(".date-picker-ext-wrapper").show();
 
                 e.stopPropagation();
             },
             refreshValues: function() {
 
-                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
+                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker-ext-wrapper');
                 if (Array.isArray(this.value)) {
                     datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value);
                 }
