@@ -258,7 +258,7 @@
                     "off"
                 ],
                 "no-console": [
-                    "off"
+                    "error"
                 ],
                 "no-control-regex": [
                     "off"
