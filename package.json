@@ -58,7 +58,7 @@
     "grunt-contrib-uglify": "5.0.0",
     "jimp": "0.14.0",
     "jsdoc": "3.6.5",
-    "json2csv": "4.5.4",
+    "json2csv": "5.0.1",
     "json2xls": "^0.1.2",
     "later": "^1.2.0",
     "lodash": "^4.17.15",
