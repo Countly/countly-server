@@ -209,6 +209,7 @@
             isTextEditAllowed: { type: Boolean, default: false },
             hideOnSelect: { type: Boolean, default: true },
             collapsible: { type: Boolean, default: true },
+            aborted: { type: Boolean, default: false },
         },
         computed: {
             formatDate: function() {
@@ -303,6 +304,11 @@
                 if (this.maxDate) {
                     datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
                 }
+            },
+            aborted: function(value) {
+                if (value === true) {
+                    this.abort();
+                }
             }
         },
         methods: {
@@ -312,6 +318,10 @@
                 $(this.$refs.datePicker).find(".date-picker-ext-wrapper").show();
 
                 e.stopPropagation();
+            },
+            abort: function() {
+                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker-ext-wrapper');
+                datePickerDOM.find(".calendar").datepickerExtended("abortRangePicking");
             },
             refreshValues: function() {
 

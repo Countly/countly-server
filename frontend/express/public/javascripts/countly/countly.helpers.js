@@ -3552,6 +3552,14 @@ $.widget("cly.datepickerExtended", {
     },
 
     // Public
+    abortRangePicking: function() {
+        if (this.options.range === true) {
+            this.isSelectingSecond = false;
+            this._syncWith("picker", 0);
+            this._syncWith("picker", 1);
+            this.baseInstance.datepicker("refresh");
+        }
+    },
     getRange: function() {
         return this.committedRange;
     },
