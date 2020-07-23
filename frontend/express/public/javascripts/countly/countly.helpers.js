@@ -3317,9 +3317,11 @@ $.widget("cly.datepickerExtended", {
             var instance = $($el).data("datepicker");
             var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
             parsedDate.setHours(0, 0, 0, 0);
+            var reset = false;
 
             if (self.isSelectingSecond && parsedDate < currentFirst) {
                 self.isSelectingSecond = false;
+                reset = true;
                 // reset
             }
 
@@ -3334,6 +3336,9 @@ $.widget("cly.datepickerExtended", {
                 $($el).find(".input-1").addClass("focused");
             }
             self.isSelectingSecond = !self.isSelectingSecond;
+            if (reset) {
+                self._onTemporaryRangeUpdate(currentFirst, null);
+            }
         }
 
         /**
@@ -3485,7 +3490,7 @@ $.widget("cly.datepickerExtended", {
                 self.setDate(parsedDate);
                 if (syncOptions.isDOMEvent) {
                     // manually trigger onSelect
-                    self.baseInstance.find('.ui-datepicker-current-day').click(); // rapresent the current selected day
+                    self.baseInstance.find('.ui-datepicker-current-day').click(); // represents the current day
                 }
             }
             else if (self.options.range === true) {
@@ -3500,7 +3505,7 @@ $.widget("cly.datepickerExtended", {
                     self._commitRange(self.committedRange[0], parsedDate, syncOptions.isDOMEvent);
                 }
                 this.baseInstance.datepicker("setDate", parsedDate);
-                self.baseInstance.datepicker("refresh");
+                this.baseInstance.datepicker("refresh");
             }
         }
         else if (source === "picker") {
@@ -3557,6 +3562,8 @@ $.widget("cly.datepickerExtended", {
             this.isSelectingSecond = false;
             this._syncWith("picker", 0);
             this._syncWith("picker", 1);
+            this.temporaryRange = null;
+            $(this.element).find(".text-fields input").removeClass("focused");
             this.baseInstance.datepicker("refresh");
         }
     },
