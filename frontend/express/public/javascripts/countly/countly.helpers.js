@@ -707,7 +707,7 @@
             return false;
         }
     };
-	/** function to show selected column count in export dialog
+    /** function to show selected column count in export dialog
 	* @param {object} dialog - dialog 
 	*/
     function show_selected_column_count(dialog) {
@@ -744,7 +744,7 @@
     * CountlyHelpers.removeDialog(dialog);
     */
     CountlyHelpers.export = function(count, data, asDialog, exportByAPI, instance) {
-        var hardLimit = countlyGlobal.config.export_limit;
+        //var hardLimit = countlyGlobal.config.export_limit;
         //var pages = Math.ceil(count / hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
@@ -752,7 +752,7 @@
         var tableCols;
 
         dialog.removeAttr("id");
-		/*dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
+        /*dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
         if (count <= hardLimit) {
             dialog.find(".cly-select").hide();
         }
@@ -765,7 +765,7 @@
         }*/
 
         var str = "";
-        if (instance && instance.addColumnExportSelector && instance.fnSettings ) {
+        if (instance && instance.addColumnExportSelector && instance.fnSettings) {
             tableCols = instance.fnSettings().aoColumns || [];
         }
 
