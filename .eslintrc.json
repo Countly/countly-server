@@ -209,7 +209,6 @@
                 "ecmaVersion": 9
             },
             "rules": {
-                "no-console": "off",
                 "node/handle-callback-err": "error",
                 "node/no-extraneous-import": "off",
                 "node/no-extraneous-require": "off",
@@ -231,11 +230,18 @@
                 "node/callback-return": "error",
                 "node/exports-style": "error",
                 "node/no-sync": "error",
-                "promise/no-promise-in-callback": "off",
-                "promise/no-callback-in-promise": "off",
-                "promise/valid-params": "error",
-                "promise/no-return-in-finally": "error",
+                "promise/always-return": "error",
+                "promise/no-return-wrap": "off",
+                "promise/param-names": "error",
+                "promise/catch-or-return": "error",
+                "promise/no-native": "off",
                 "promise/no-nesting": "off",
+                "promise/no-promise-in-callback": "error",
+                "promise/no-callback-in-promise": "off",
+                "promise/avoid-new": "off",
+                "promise/no-new-statics": "error",
+                "promise/no-return-in-finally": "error",
+                "promise/valid-params": "error",
                 "valid-jsdoc": [
                     "error",
                     {
