@@ -527,8 +527,8 @@
 
             this.ts += 1000;
 
-            if (eventTemplate && eventTemplate.dur) {
-                event.dur = getRandomInt(eventTemplate.dur[0], eventTemplate.dur[1] || 10);
+            if (eventTemplate && eventTemplate.duration) {
+                event.dur = getRandomInt(eventTemplate.duration[0], eventTemplate.duration[1] || 10);
             }
             else if (id === "[CLY]_view") {
                 event.dur = getRandomInt(0, 100);
