@@ -3034,10 +3034,15 @@ var AppRouter = Backbone.Router.extend({
 
                     if (exportAPIData || exportQueryData) {
                         //create export dialog
+                        var position = 'right middle';
+                        if (oSettings.oInstance && oSettings.oInstance.addColumnExportSelector === true) {
+                            position = 'right top';
+                        }
+
                         exportDrop = new CountlyDrop({
                             target: tableWrapper.find('.save-table-data')[0],
                             content: "",
-                            position: 'right middle',
+                            position: position,
                             classes: "server-export",
                             constrainToScrollParent: false,
                             remove: true,
@@ -3045,10 +3050,10 @@ var AppRouter = Backbone.Router.extend({
                         });
                         exportDrop.on("open", function() {
                             if (exportAPIData) {
-                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportAPI(oSettings.sTableId), null, true).removeClass("dialog"));
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportAPI(oSettings.sTableId), null, true, oSettings.oInstance).removeClass("dialog"));
                             }
                             else if (exportQueryData) {
-                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportQuery(oSettings.sTableId)).removeClass("dialog"));
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportQuery(oSettings.sTableId), null, null, oSettings.oInstance).removeClass("dialog"));
                             }
                             exportDrop.position();
                         });

@@ -707,27 +707,52 @@
             return false;
         }
     };
+    /** function to show selected column count in export dialog
+	* @param {object} dialog - dialog 
+	*/
+    function show_selected_column_count(dialog) {
 
+        var allSelected = dialog.find('.export-all-columns.fa-check-square');
+
+
+        var boxesCn = dialog.find('.columns-wrapper .checkbox-line');
+        if (boxesCn) {
+            boxesCn = boxesCn.length;
+        }
+        var selectedCn = dialog.find('.columns-wrapper .fa-check-square');
+        if (selectedCn) {
+            selectedCn = selectedCn.length;
+        }
+        if (allSelected.length === 0 && selectedCn !== boxesCn) {
+            dialog.find(".export-columns-selector p:first").html(jQuery.i18n.map["export.columns-to-export"] + "<span>" + jQuery.i18n.prop("export.export-columns-selected-count", selectedCn, boxesCn) + "</span>");
+        }
+        else {
+            dialog.find(".export-columns-selector p:first span").text("");
+        }
+    }
     /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
     * @param {boolean} exportByAPI - export from api request, export from db when set to false
+	* @param {boolean} instance - optional. Reference to table to get correct colum names(only if there is need to select columns to export) There must be changes made in table settings to allow it. (table.addColumnExportSelector = true and each column must have columnsSelectorIndex value as field in db)
     * @returns {object} jQuery object reference to dialog
     * @example
     * var dialog = CountlyHelpers.export(300000);
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.export = function(count, data, asDialog, exportByAPI) {
-        var hardLimit = countlyGlobal.config.export_limit;
-        var pages = Math.ceil(count / hardLimit);
+    CountlyHelpers.export = function(count, data, asDialog, exportByAPI, instance) {
+        //var hardLimit = countlyGlobal.config.export_limit;
+        //var pages = Math.ceil(count / hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
-        var page = 0;
+        //var page = 0;
+        var tableCols;
+
         dialog.removeAttr("id");
-        dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
+        /*dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
         if (count <= hardLimit) {
             dialog.find(".cly-select").hide();
         }
@@ -737,7 +762,77 @@
                 dialog.find(".select-items > div").append('<div data-value="' + i + '" class="segmentation-option item">' + ((i * hardLimit + 1) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + ' - ' + (Math.min((i + 1) * hardLimit, count) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + " " + jQuery.i18n.map["export.documents"] + '</div>');
             }
             dialog.find(".export-data").addClass("disabled");
+        }*/
+
+        var str = "";
+        if (instance && instance.addColumnExportSelector && instance.fnSettings) {
+            tableCols = instance.fnSettings().aoColumns || [];
         }
+
+        if (tableCols && Array.isArray(tableCols) && tableCols.length > 0) {
+            var disabled = ""; //left in case want to add disabled  column feature
+            var myClass = "";
+            var myClass2 = "";
+            for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
+                if (tableCols[colIndex].columnSelectorIndex) {
+                    var colName = tableCols[colIndex].columnSelectorIndex;
+                    myClass = 'fa-check-square';
+                    myClass2 = "";
+
+
+                    if (tableCols[colIndex].bVisible === true) {
+                        //selectedC++;
+                    }
+                    else {
+                        myClass = 'fa-square-o';
+                        myClass2 = ' not-checked';
+                    }
+                    str += "<div class='checkbox-line' data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colName + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</div>";
+                }
+            }
+            dialog.find(".export-columns-selector .columns-wrapper").html(str);
+            dialog.find(".export-columns-selector").css("display", "block");
+
+
+            dialog.find('.columns-wrapper').slimScroll({
+                height: '100%',
+                start: 'top',
+                wheelStep: 10,
+                position: 'right',
+                disableFadeOut: true
+            });
+
+            $(".data-table-column-selector").on("click", function(e) {
+                e.stopPropagation();
+            });
+
+            dialog.find(".export-columns-selector").on("click", ".checkbox-line", function() {
+                var checkbox = $(this).find("a").first();
+                var isChecked = $(checkbox).hasClass("fa-check-square");//is now checked
+
+                if (isChecked) {
+                    $(checkbox).addClass("fa-square-o");
+                    $(checkbox).removeClass("fa-check-square");
+                    if ($(checkbox).hasClass("export-all-columns")) {
+                        dialog.find(".export-columns-selector").removeClass("hide-column-selectors");
+                    }
+                }
+                else {
+                    $(checkbox).removeClass("fa-square-o");
+                    $(checkbox).addClass("fa-check-square");
+                    if ($(checkbox).hasClass("export-all-columns")) {
+                        dialog.find(".export-columns-selector").addClass("hide-column-selectors");
+                    }
+                }
+                show_selected_column_count(dialog);
+            });
+            show_selected_column_count(dialog);
+        }
+        else {
+            dialog.find(".export-columns-selector .columns-wrapper").html("");
+            dialog.find(".export-columns-selector").css("display", "none");
+        }
+
         dialog.find(".button").click(function() {
             dialog.find(".button-selector .button").removeClass("selected");
             dialog.find(".button-selector .button").removeClass("active");
@@ -745,23 +840,45 @@
             $(this).addClass("active");
             type = $(this).attr("id").replace("export-", "");
         });
-        dialog.find(".segmentation-option").on("click", function() {
+        /*dialog.find(".segmentation-option").on("click", function() {
             page = $(this).data("value");
             dialog.find(".export-data").removeClass("disabled");
-        });
+        });*/
         dialog.find(".export-data").click(function() {
             if ($(this).hasClass("disabled")) {
                 return;
             }
             data.type = type;
-            if (page !== -1) {
+            data.limit = "";
+            data.skip = 0;
+            /*if (page !== -1) {
                 data.limit = hardLimit;
                 data.skip = page * hardLimit;
             }
             else {
                 data.limit = "";
                 data.skip = 0;
+            }*/
+
+            delete data.projection;
+            if (dialog.find(".export-columns-selector")) {
+                if (dialog.find(".export-all-columns").hasClass("fa-check-square")) {
+                    //export all columns no need for projections
+                }
+                else {
+                    var projection = {};
+                    var checked = dialog.find('.columns-wrapper .fa-check-square');
+                    for (var kz = 0; kz < checked.length; kz++) {
+                        projection[$(checked[kz]).data("index")] = true;
+                    }
+
+                    if (instance && instance.fixProjectionParams) {
+                        projection = instance.fixProjectionParams(projection);
+                    }
+                    data.projection = JSON.stringify(projection);
+                }
             }
+
 
             var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
             var form = $('<form method="POST" action="' + url + '">');
