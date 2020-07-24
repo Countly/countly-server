@@ -299,3 +299,37 @@
         right: 25px;
     }
 }
+
+/* SAFARI ONLY STYLES - START */
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-s > #feedback-sticker-svg, 
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-m > #feedback-sticker-svg, 
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-l > #feedback-sticker-svg {
+    vertical-align: middle;
+    margin-left: 3px;
+}
+/*middle right sticker styles*/
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-s,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-m {
+    right: 3px;
+}
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-l {
+    right: 5px;
+}
+/*middle left sticker styles*/
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mleft-l > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mleft-m > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mleft-s > #feedback-sticker-svg {
+    margin-left: -2px;
+}
+/*bottom left sticker styles*/
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bleft-m > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bright-m > #feedback-sticker-svg {
+    margin-bottom: -2px;
+}
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bleft-l > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bright-l > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bright-s > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bleft-s > #feedback-sticker-svg {
+    margin-bottom: -1px;   
+}
+/* SAFARI ONLY STYLES - END */
