@@ -4,10 +4,10 @@
     <div>
         <input v-model="targetName"></input>
         <input v-model.numeric="targetValue"></input>
-        <button v-on:click="add">Add</button>
+        <button v-on:click="add">{{i18nMap["vue-example.add-new-row"]}}</button>
         <cly-datatable v-bind:rows="tableRows" v-bind:columns="tableColumns"></cly-datatable>
 
         JSON:
         {{tableRows}}
     </div>
-</div>"
+</div>
