@@ -18,8 +18,7 @@ var fetch = {},
     crypto = require('crypto'),
     usage = require('./usage.js'),
     STATUS_MAP = require('../jobs/job').STATUS_MAP,
-    plugins = require('../../../plugins/pluginManager.js'),
-    countlyDb = plugins.dbConnection();
+    plugins = require('../../../plugins/pluginManager.js');
 
 /**
 * Prefetch event data, either by provided key or first event in the list and output result to browser
@@ -1855,7 +1854,7 @@ fetch.fetchJobs = async function(metric, params) {
 fetch.alljobs = async function(metric, params) {
     const columns = ["name", "schedule", "next", "finished", "status", "total"];
     let sort = {};
-    let total = await countlyDb._native.collection('jobs').aggregate([
+    let total = await common.db._native.collection('jobs').aggregate([
         {
             $group: { _id: "$name" }
         },
@@ -1883,12 +1882,11 @@ fetch.alljobs = async function(metric, params) {
         }
     ];
     if (params.qstring.sSearch) {
-        let namesMatch = await countlyDb._native.collection('jobs').distinct('name', {name: {$regex: new RegExp(params.qstring.sSearch, "i")}});
         pipeline.unshift({
-            $match: { 'name': {'$in': namesMatch}}
+            $match: {name: {$regex: new RegExp(params.qstring.sSearch, "i")}}
         });
     }
-    const cursor = countlyDb._native.collection('jobs').aggregate(pipeline);
+    const cursor = common.db._native.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);
     cursor.skip(Number(params.qstring.iDisplayStart || 0));
@@ -1910,7 +1908,7 @@ fetch.alljobs = async function(metric, params) {
 fetch.jobDetails = async function(metric, params) {
     const columns = ["schedule", "next", "finished", "status", "data", "duration"];
     let sort = {};
-    const cursor = countlyDb._native.collection('jobs').find({name: params.qstring.name});
+    const cursor = common.db._native.collection('jobs').find({name: params.qstring.name});
     const total = await cursor.count();
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);
