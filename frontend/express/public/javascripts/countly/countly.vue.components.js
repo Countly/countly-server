@@ -232,6 +232,7 @@
 
             self.vueInstance = new Vue({
                 el: el,
+                store: countlyVue.vuex.getGlobalStore(),
                 render: function (h) {
                     if (self.defaultArgs) {
                         return h(self.component, { attrs: self.defaultArgs })

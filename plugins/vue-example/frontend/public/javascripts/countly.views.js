@@ -5,13 +5,17 @@ var ExampleComponent = {
     mixins: [countlyVue.mixins.refreshable],
     data: function() {
         return {
-            count: 0,
             refreshed: 0
+        }
+    },
+    computed: {
+        count: function(){
+            return this.$store.state.vueExample.count;
         }
     },
     methods: {
         plus: function(){
-            this.count++;
+            this.$store.commit("vueExample/increment");
         },
         refresh: function() {
             this.refreshed++;

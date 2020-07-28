@@ -9,6 +9,14 @@
             name: "vueExample",
             module: {
                 namespaced: true,
+                state: {
+                    count: 0
+                },
+                mutations: {
+                    increment: function(state) {
+                        state.count++
+                    }
+                }
             }
         }
     }
