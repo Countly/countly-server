@@ -54,6 +54,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/webfont.js',
                     'frontend/express/public/javascripts/utils/selectize.min.js',
                     'frontend/express/public/javascripts/utils/vue.min.js',
+                    'frontend/express/public/javascripts/utils/vuex.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/simpleUpload.min.js',

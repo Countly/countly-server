@@ -1,8 +1,8 @@
-/*global $, jQuery, app, countlyView, countlyVueWrapperView, clyVueMixins, countlyCommon, T, CountlyHelpers, Vue */
+/*global $, jQuery, app, countlyView, countlyVue, countlyCommon, T, CountlyHelpers */
 
 var ExampleComponent = {
     template: '<div>Refreshed {{refreshed}} times. Hello world {{count}} times. <button v-on:click="plus">+</button></div>',
-    mixins: [clyVueMixins.clyRefreshable],
+    mixins: [countlyVue.mixins.refreshable],
     data: function() {
         return {
             count: 0,
@@ -22,7 +22,7 @@ var ExampleComponent = {
     }
 };
 
-var exampleView = new countlyVueWrapperView({
+var exampleView = new countlyVue.views.BackboneWrapper({
     component: ExampleComponent
 });
 

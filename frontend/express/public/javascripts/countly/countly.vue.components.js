@@ -1,4 +1,4 @@
-/* global countlyCommon, moment, jQuery */
+/* global countlyCommon, moment, jQuery, Vue, Vuex */
 (function(CountlyVueComponents, $) {
 
     /**
@@ -194,7 +194,7 @@
         }
     };
 
-    window.countlyVueWrapperView = countlyView.extend({
+    var countlyVueWrapperView = countlyView.extend({
         init: function (opts) {
             this.component = opts.component
             this.defaultArgs = opts.defaultArgs
@@ -250,9 +250,30 @@
         }
     }
 
-    window.clyVueMixins = {
-        'clyRefreshable': clyRefreshable
+    Vue.use(Vuex);
+    var _globalVuexStore = new Vuex.Store();
+
+    window.countlyVue = {
+        mixins: {
+            'refreshable': clyRefreshable
+        },
+        vuex: {
+            getGlobalStore: function() {
+                return _globalVuexStore;
+            },
+            registerModule: function(name, value, force){
+                if (!store.state.name || force) {
+                    store.registerModule(name, value);
+                }
+            }
+        },
+        views: {
+            BackboneWrapper: countlyVueWrapperView
+        }
     }
+
+
+
 
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

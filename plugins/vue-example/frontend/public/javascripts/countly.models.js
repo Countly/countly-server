@@ -1,4 +1,4 @@
-/*global $, jQuery, countlyCommon, moment, Vuex*/
+/*global $, jQuery, countlyCommon, moment, countlyVue*/
 
 (function(countlyVueExample) {
 
@@ -7,9 +7,5 @@
     countlyVueExample.initialize = function() {
         _store = new Vuex.store({});
     }
-    
-    countlyVueExample.getMetricData = function() {
-        return _data;
-    };
 
 })(window.countlyVueExample = window.countlyVueExample || {});
