@@ -4211,6 +4211,7 @@ window.EventsBlueprintView = countlyView.extend({
             countlyEvent.setActiveEvent(previousEvent);
         }
         this.template = Handlebars.compile($("#template-events-blueprint").html());
+        this.textLimit = 100;
     },
     pageScript: function() {
         var self = this;
@@ -4399,6 +4400,10 @@ window.EventsBlueprintView = countlyView.extend({
                     var eventName = el.data('name');
                     if (eventName === "") {
                         eventName = event;
+                    }
+
+                    if (eventName.length > self.textLimit) {
+                        eventName = eventName.substr(0, self.textLimit) + "...";
                     }
                     CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this", "<b>" + eventName + "</b>"), "popStyleGreen", function(result) {
                         if (!result) {
@@ -4623,8 +4628,15 @@ window.EventsBlueprintView = countlyView.extend({
                         else if (selected === "delete") {
                             var title = jQuery.i18n.map["events.general.want-delete-title"];
                             var msg = jQuery.i18n.prop("events.general.want-delete", "<b>" + nameList.join(", ") + "</b>");
+                            if (nameList.join(", ").length > self.textLimit) {
+                                var mz = jQuery.i18n.prop("events.delete.multiple-events", nameList.length);
+                                msg = jQuery.i18n.prop("events.general.want-delete", "<b>" + mz + "</b>");
+                            }
                             var yes_but = jQuery.i18n.map["events.general.yes-delete-events"];
                             if (changeList.length === 1) {
+                                if (nameList[0].length > self.textLimit) {
+                                    nameList[0] = nameList[0].substr(0, self.textLimit) + "...";
+                                }
                                 msg = jQuery.i18n.prop("events.general.want-delete-this", "<b>" + nameList.join(", ") + "</b>");
                                 title = jQuery.i18n.map["events.general.want-delete-this-title"];
                                 yes_but = jQuery.i18n.map["events.general.yes-delete-event"];
