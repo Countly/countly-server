@@ -194,4 +194,66 @@
         }
     };
 
+    window.countlyVueWrapperView = countlyView.extend({
+        init: function (opts) {
+            this.component = opts.component
+            this.defaultArgs = opts.defaultArgs
+        },
+        template: function() {
+            return this.vueTemplate;
+        },
+        renderCommon: function(isRefresh) {
+            if (!isRefresh) {
+                $(this.el).html("<div class='vue-wrapper'></div>");
+            }
+        },
+        refresh: function() {
+            var self = this;
+            if (self.vueInstance) {
+                self.vueInstance.$emit("cly-refresh");
+            }
+        },
+        afterRender: function() {
+            var el = $(this.el).find('.vue-wrapper').get(0),
+                self = this;
+
+            self.vueInstance = new Vue({
+                el: el,
+                render: function (h) {
+                    if (self.options.defaultArgs) {
+                        return h(self.options.component, { attrs: self.options.defaultArgs })
+                    } else {
+                        return h(self.options.component)
+                    }
+                }
+            });
+        }
+    });
+
+    var clyRefreshable = {
+        mounted: function() {
+            var self = this;
+            this.$root.$on("cly-refresh", function(){
+                self.refresh();
+            });
+        },
+        methods: {
+            refresh: function(){
+                var warning = ["Countly refresh mixin is used, but not handled.", this]
+                if (console.warn) {
+                    console.warn.apply(this, warning);
+                }
+                else {
+                    console.log.apply(this, warning);
+                }
+            }
+        }
+    }
+
+    window.clyVueMixins = {
+        'clyRefreshable': clyRefreshable
+    }
+
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
+
