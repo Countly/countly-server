@@ -1,4 +1,4 @@
-/* global countlyCommon, moment, jQuery, Vue, Vuex */
+/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView */
 (function(CountlyVueComponents, $) {
 
     /**
@@ -194,11 +194,67 @@
         }
     };
 
+    /*
+        Countly + Vue.js
+    */
+
+    var autoRefreshMixin = {
+        mounted: function() {
+            var self = this;
+            this.$root.$on("cly-refresh", function() {
+                self.refresh();
+            });
+        },
+        methods: {
+            refresh: function() {
+                var warning = ["Countly refresh mixin is used, but not handled.", this];
+                if (console.warn) {
+                    console.warn.apply(this, warning);
+                }
+                else {
+                    console.log.apply(this, warning);
+                }
+            }
+        }
+    };
+
+    var i18nMixin = {
+        methods: {
+            i18n: function() {
+                return jQuery.i18n.prop.apply(null, arguments);
+            }
+        },
+        data: function() {
+            return {
+                i18nMap: jQuery.i18n.map
+            };
+        }
+    };
+
+    var _mixins = {
+        'autoRefresh': autoRefreshMixin,
+        'i18n': i18nMixin
+    };
+
+    var _globalVuexStore = new Vuex.Store();
+
+    var _vuex = {
+        getGlobalStore: function() {
+            return _globalVuexStore;
+        },
+        registerGlobally: function(wrapper, force) {
+            var store = _globalVuexStore;
+            if (!store.hasModule(wrapper.name) || force) {
+                store.registerModule(wrapper.name, wrapper.module);
+            }
+        }
+    };
+
     var countlyVueWrapperView = countlyView.extend({
-        constructor: function (opts) {
-            this.component = opts.component
-            this.defaultArgs = opts.defaultArgs
-            this.vuex = opts.vuex
+        constructor: function(opts) {
+            this.component = opts.component;
+            this.defaultArgs = opts.defaultArgs;
+            this.vuex = opts.vuex;
         },
         beforeRender: function() {
             var self = this;
@@ -225,81 +281,35 @@
                 self = this;
 
             if (self.vuex) {
-                self.vuex.forEach(function(item){
-                    countlyVue.vuex.registerGlobally(item.clyModel.getVuexModule())
+                self.vuex.forEach(function(item) {
+                    _vuex.registerGlobally(item.clyModel.getVuexModule());
                 });
             }
 
             self.vueInstance = new Vue({
                 el: el,
-                store: countlyVue.vuex.getGlobalStore(),
-                render: function (h) {
+                store: _vuex.getGlobalStore(),
+                render: function(h) {
                     if (self.defaultArgs) {
-                        return h(self.component, { attrs: self.defaultArgs })
-                    } else {
-                        return h(self.component)
+                        return h(self.component, { attrs: self.defaultArgs });
+                    }
+                    else {
+                        return h(self.component);
                     }
                 }
             });
         }
     });
 
-    var autoRefreshMixin = {
-        mounted: function() {
-            var self = this;
-            this.$root.$on("cly-refresh", function(){
-                self.refresh();
-            });
-        },
-        methods: {
-            refresh: function(){
-                var warning = ["Countly refresh mixin is used, but not handled.", this]
-                if (console.warn) {
-                    console.warn.apply(this, warning);
-                }
-                else {
-                    console.log.apply(this, warning);
-                }
-            }
-        }
-    }
-
-    var i18nMixin = {
-        methods: {
-            i18n: function(){
-                return jQuery.i18n.prop.apply(null, arguments)
-            }
-        },
-        data: function() { 
-            return {
-                i18nMap: jQuery.i18n.map
-            }
-        }
-    }
-
-    Vue.use(Vuex);
-    var _globalVuexStore = new Vuex.Store();
+    var _views = {
+        BackboneWrapper: countlyVueWrapperView
+    };
 
     window.countlyVue = {
-        mixins: {
-            'autoRefresh': autoRefreshMixin,
-            'i18n': i18nMixin
-        },
-        vuex: {
-            getGlobalStore: function() {
-                return _globalVuexStore;
-            },
-            registerGlobally: function(wrapper, force){
-                var store = _globalVuexStore;
-                if (!store.hasModule(wrapper.name) || force) {
-                    store.registerModule(wrapper.name, wrapper.module);
-                }
-            }
-        },
-        views: {
-            BackboneWrapper: countlyVueWrapperView
-        }
-    }
+        mixins: _mixins,
+        vuex: _vuex,
+        views: _views
+    };
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
 

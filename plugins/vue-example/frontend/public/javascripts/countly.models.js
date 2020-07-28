@@ -1,8 +1,8 @@
-/*global $, jQuery, countlyCommon, moment, countlyVue*/
+/*global */
 
 (function(countlyVueExample) {
 
-    countlyVueExample.initialize = function() {}
+    countlyVueExample.initialize = function() {};
 
     countlyVueExample.getVuexModule = function() {
         return {
@@ -14,11 +14,11 @@
                 },
                 mutations: {
                     increment: function(state) {
-                        state.count++
+                        state.count++;
                     }
                 }
             }
-        }
-    }
+        };
+    };
 
 })(window.countlyVueExample = window.countlyVueExample || {});

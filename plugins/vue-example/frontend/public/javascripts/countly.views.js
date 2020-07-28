@@ -1,26 +1,26 @@
-/*global $, jQuery, app, countlyView, countlyVue, countlyCommon, T, CountlyHelpers */
+/*global app, countlyVue, countlyVueExample */
 
 var ExampleComponent = {
     template: '/vue-example/templates/main.html',
     mixins: [
-        countlyVue.mixins.autoRefresh, 
+        countlyVue.mixins.autoRefresh,
         countlyVue.mixins.i18n
     ],
     data: function() {
         return {
             refreshed: 0
-        }
+        };
     },
     computed: {
-        count: function(){
+        count: function() {
             return this.$store.state.vueExample.count;
         },
-        message: function () {
+        message: function() {
             return this.i18n("vue-example.message", this.refreshed, this.count);
         }
     },
     methods: {
-        plus: function(){
+        plus: function() {
             this.$store.commit("vueExample/increment");
         },
         refresh: function() {
@@ -31,7 +31,7 @@ var ExampleComponent = {
 
 var vuex = [{
     clyModel: countlyVueExample
-}]
+}];
 
 var exampleView = new countlyVue.views.BackboneWrapper({
     component: ExampleComponent,
