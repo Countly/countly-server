@@ -1,6 +1,13 @@
 <div>
     <h1>{{i18nMap["vue-example.title"]}}</h1>
     
-    {{message}}
-    <button v-on:click="plus">+</button>
-</div>
+    <div>
+        <input v-model="targetName"></input>
+        <input v-model.numeric="targetValue"></input>
+        <button v-on:click="add">Add</button>
+        <cly-datatable v-bind:rows="tableRows" v-bind:columns="tableColumns"></cly-datatable>
+
+        JSON:
+        {{tableRows}}
+    </div>
+</div>"

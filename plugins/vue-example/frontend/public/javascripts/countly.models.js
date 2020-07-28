@@ -10,11 +10,16 @@
             module: {
                 namespaced: true,
                 state: {
-                    count: 0
+                    pairs: []
+                },
+                getters: {
+                    pairs: function(state) {
+                        return state.pairs;
+                    }
                 },
                 mutations: {
-                    increment: function(state) {
-                        state.count++;
+                    addPair: function(state, obj) {
+                        state.pairs.push([obj.name, obj.value]);
                     }
                 }
             }

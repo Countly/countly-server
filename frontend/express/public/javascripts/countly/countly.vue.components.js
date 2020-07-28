@@ -1,4 +1,4 @@
-/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView */
+/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers */
 (function(CountlyVueComponents, $) {
 
     /**
@@ -310,6 +310,49 @@
         vuex: _vuex,
         views: _views
     };
+
+    // New components
+
+    Vue.component("cly-datatable", {
+        template: '<table ref="dtable" cellpadding="0" cellspacing="0" class="d-table"></table>',
+        data: function() {
+            return {
+                isInitialized: false,
+                tableInstance: null
+            };
+        },
+        props: {
+            rows: { type: Array, default: [] },
+            columns: { type: Array }
+        },
+        methods: {
+            initialize: function() {
+                this.isInitialized = false;
+                this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {
+                    "aaData": this.rows,
+                    "aoColumns": this.columns
+                }));
+                this.tableInstance.stickyTableHeaders();
+                this.isInitialized = true;
+            },
+            refresh: function() {
+                if (this.isInitialized) {
+                    CountlyHelpers.refreshTable(this.tableInstance, this.rows);
+                }
+                else {
+                    this.initialize();
+                }
+            }
+        },
+        watch: {
+            rows: function() {
+                this.refresh();
+            }
+        },
+        mounted: function() {
+            this.initialize();
+        }
+    });
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
 

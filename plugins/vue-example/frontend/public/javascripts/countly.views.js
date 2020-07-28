@@ -6,26 +6,34 @@ var ExampleComponent = {
         countlyVue.mixins.autoRefresh,
         countlyVue.mixins.i18n
     ],
+    computed: {
+        tableRows: function() {
+            return this.$store.getters["vueExample/pairs"];
+        }
+    },
     data: function() {
         return {
-            refreshed: 0
+            targetName: "John Doe",
+            targetValue: 10,
+            tableColumns: [
+                {
+                    "sType": "string",
+                    "sTitle": "Name"
+                },
+                {
+                    "sType": "numeric",
+                    "sTitle": "Total"
+                }
+            ]
         };
     },
-    computed: {
-        count: function() {
-            return this.$store.state.vueExample.count;
-        },
-        message: function() {
-            return this.i18n("vue-example.message", this.refreshed, this.count);
-        }
-    },
     methods: {
-        plus: function() {
-            this.$store.commit("vueExample/increment");
+        add: function() {
+            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
+            this.targetName = "";
+            this.targetValue = 0;
         },
-        refresh: function() {
-            this.refreshed++;
-        }
+        refresh: function() {}
     }
 };
 
