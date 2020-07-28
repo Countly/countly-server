@@ -244,7 +244,7 @@
         }
     });
 
-    var clyRefreshable = {
+    var autoRefreshMixin = {
         mounted: function() {
             var self = this;
             this.$root.$on("cly-refresh", function(){
@@ -264,12 +264,26 @@
         }
     }
 
+    var i18nMixin = {
+        methods: {
+            i18n: function(){
+                return jQuery.i18n.prop.apply(null, arguments)
+            }
+        },
+        data: function() { 
+            return {
+                i18nMap: jQuery.i18n.map
+            }
+        }
+    }
+
     Vue.use(Vuex);
     var _globalVuexStore = new Vuex.Store();
 
     window.countlyVue = {
         mixins: {
-            'refreshable': clyRefreshable
+            'autoRefresh': autoRefreshMixin,
+            'i18n': i18nMixin
         },
         vuex: {
             getGlobalStore: function() {

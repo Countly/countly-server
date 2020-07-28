@@ -2,7 +2,10 @@
 
 var ExampleComponent = {
     template: '/vue-example/templates/main.html',
-    mixins: [countlyVue.mixins.refreshable],
+    mixins: [
+        countlyVue.mixins.autoRefresh, 
+        countlyVue.mixins.i18n
+    ],
     data: function() {
         return {
             refreshed: 0
@@ -11,6 +14,9 @@ var ExampleComponent = {
     computed: {
         count: function(){
             return this.$store.state.vueExample.count;
+        },
+        message: function () {
+            return this.i18n("vue-example.message", this.refreshed, this.count);
         }
     },
     methods: {
