@@ -195,12 +195,19 @@
     };
 
     var countlyVueWrapperView = countlyView.extend({
-        init: function (opts) {
+        constructor: function (opts) {
             this.component = opts.component
             this.defaultArgs = opts.defaultArgs
+            this.vuex = opts.vuex
         },
-        template: function() {
-            return this.vueTemplate;
+        beforeRender: function() {
+            var self = this;
+            if (this.component.template && this.component.template.endsWith(".html")) {
+                return $.when(T.get(this.component.template, function(src) {
+                    self.component.template = src;
+                }));
+            }
+            return true;
         },
         renderCommon: function(isRefresh) {
             if (!isRefresh) {
@@ -217,13 +224,19 @@
             var el = $(this.el).find('.vue-wrapper').get(0),
                 self = this;
 
+            if (self.vuex) {
+                self.vuex.forEach(function(item){
+                    countlyVue.vuex.registerGlobally(item.clyModel.getVuexModule())
+                });
+            }
+
             self.vueInstance = new Vue({
                 el: el,
                 render: function (h) {
-                    if (self.options.defaultArgs) {
-                        return h(self.options.component, { attrs: self.options.defaultArgs })
+                    if (self.defaultArgs) {
+                        return h(self.component, { attrs: self.defaultArgs })
                     } else {
-                        return h(self.options.component)
+                        return h(self.component)
                     }
                 }
             });
@@ -261,9 +274,10 @@
             getGlobalStore: function() {
                 return _globalVuexStore;
             },
-            registerModule: function(name, value, force){
-                if (!store.state.name || force) {
-                    store.registerModule(name, value);
+            registerGlobally: function(wrapper, force){
+                var store = _globalVuexStore;
+                if (!store.hasModule(wrapper.name) || force) {
+                    store.registerModule(wrapper.name, wrapper.module);
                 }
             }
         },
@@ -271,10 +285,6 @@
             BackboneWrapper: countlyVueWrapperView
         }
     }
-
-
-
-
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
 

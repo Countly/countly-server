@@ -2,10 +2,15 @@
 
 (function(countlyVueExample) {
 
-    var _store = null;
+    countlyVueExample.initialize = function() {}
 
-    countlyVueExample.initialize = function() {
-        _store = new Vuex.store({});
+    countlyVueExample.getVuexModule = function() {
+        return {
+            name: "vueExample",
+            module: {
+                namespaced: true,
+            }
+        }
     }
 
 })(window.countlyVueExample = window.countlyVueExample || {});
