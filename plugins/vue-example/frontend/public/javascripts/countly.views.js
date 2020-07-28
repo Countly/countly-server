@@ -1,9 +1,8 @@
 /*global app, countlyVue, countlyVueExample */
 
-var ExampleComponent = {
-    template: '/vue-example/templates/main.html',
+var TableExampleView = {
+    template: '#vue-example-table-template',
     mixins: [
-        countlyVue.mixins.autoRefresh,
         countlyVue.mixins.i18n
     ],
     computed: {
@@ -32,18 +31,38 @@ var ExampleComponent = {
             this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
             this.targetName = "";
             this.targetValue = 0;
-        },
-        refresh: function() {}
+        }
     }
 };
+
+var MainView = {
+    template: '#vue-example-main-template',
+    mixins: [
+        countlyVue.mixins.autoRefresh,
+        countlyVue.mixins.i18n
+    ],
+    components: {
+        "table-view": TableExampleView
+    },
+    methods:{
+        refresh: function() {}
+    }
+}
 
 var vuex = [{
     clyModel: countlyVueExample
 }];
 
 var exampleView = new countlyVue.views.BackboneWrapper({
-    component: ExampleComponent,
-    vuex: vuex
+    component: MainView,
+    vuex: vuex,
+    templates: {
+        namespace: 'vue-example',
+        mapping: {
+            'table-template': '/vue-example/templates/table.html',
+            'main-template': '/vue-example/templates/main.html'
+        }
+    }
 });
 
 app.vueExampleView = exampleView;

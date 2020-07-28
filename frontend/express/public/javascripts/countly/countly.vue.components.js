@@ -255,19 +255,32 @@
             this.component = opts.component;
             this.defaultArgs = opts.defaultArgs;
             this.vuex = opts.vuex;
+            this.templates = opts.templates;
+            this.elementsToBeRendered = [];
         },
         beforeRender: function() {
             var self = this;
-            if (this.component.template && this.component.template.endsWith(".html")) {
-                return $.when(T.get(this.component.template, function(src) {
-                    self.component.template = src;
-                }));
+            if (this.templates) {
+                var templatesDeferred = [];
+                for (var name in this.templates.mapping){
+                    var fileName = this.templates.mapping[name];
+                    var elementId = self.templates.namespace + "-" + name;
+                    templatesDeferred.push(function(elId) {
+                        return T.get(fileName, function(src) {
+                            self.elementsToBeRendered.push("<script type='text/x-template' id='"+elId+"'>" + src + "</script>");
+                        });
+                    }(elementId));
+                }
+                return $.when.apply(null, templatesDeferred);
             }
             return true;
         },
         renderCommon: function(isRefresh) {
             if (!isRefresh) {
-                $(this.el).html("<div class='vue-wrapper'></div>");
+                $(this.el).html("<div class='vue-wrapper'></div><div id='vue-templates'></div>");
+                this.elementsToBeRendered.forEach(function(el) {
+                    $("#vue-templates").append(el);
+                })
             }
         },
         refresh: function() {
@@ -298,6 +311,9 @@
                     }
                 }
             });
+        },
+        destroy: function(){
+            this.elementsToBeRendered = [];
         }
     });
 
