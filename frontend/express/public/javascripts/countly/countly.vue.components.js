@@ -262,14 +262,14 @@
             var self = this;
             if (this.templates) {
                 var templatesDeferred = [];
-                for (var name in this.templates.mapping){
+                for (var name in this.templates.mapping) {
                     var fileName = this.templates.mapping[name];
                     var elementId = self.templates.namespace + "-" + name;
-                    templatesDeferred.push(function(elId) {
-                        return T.get(fileName, function(src) {
-                            self.elementsToBeRendered.push("<script type='text/x-template' id='"+elId+"'>" + src + "</script>");
+                    templatesDeferred.push(function(fName, elId) {
+                        return T.get(fName, function(src) {
+                            self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
                         });
-                    }(elementId));
+                    }(fileName, elementId));
                 }
                 return $.when.apply(null, templatesDeferred);
             }
@@ -280,7 +280,7 @@
                 $(this.el).html("<div class='vue-wrapper'></div><div id='vue-templates'></div>");
                 this.elementsToBeRendered.forEach(function(el) {
                     $("#vue-templates").append(el);
-                })
+                });
             }
         },
         refresh: function() {
@@ -312,7 +312,7 @@
                 }
             });
         },
-        destroy: function(){
+        destroy: function() {
             this.elementsToBeRendered = [];
         }
     });
@@ -330,7 +330,7 @@
     // New components
 
     Vue.component("cly-datatable", {
-        template: '<table ref="dtable" cellpadding="0" cellspacing="0" class="d-table"></table>',
+        template: '<table ref="dtable" cellpadding="0" cellspacing="0" class="cly-vue cly-datatable-wrapper d-table"></table>',
         data: function() {
             return {
                 isInitialized: false,
@@ -367,6 +367,64 @@
         },
         mounted: function() {
             this.initialize();
+        }
+    });
+
+    Vue.component("cly-tabs", {
+        template: '<div class="cly-vue cly-tabs"><ul class="cly-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.tId)" v-html="tab.tName"></a></li></ul><div class="cly-tabs-container"><slot/></div></div>',
+        data: function() {
+            return {
+                tabs: [],
+                activeTabId: '',
+            };
+        },
+        props: {
+            initialTab: { default: null },
+        },
+        methods: {
+            setTab: function(tId) {
+                this.activeTabId = tId;
+            }
+        },
+        created: function() {
+            this.tabs = this.$children;
+        },
+        mounted: function() {
+            if (this.initialTab) {
+                this.activeTabId = this.initialTab;
+            }
+            else if (this.tabs.length > 0) {
+                this.activeTabId = this.tabs[0].tId;
+            }
+        },
+        watch: {
+            activeTabId: function(newId) {
+                this.tabs.forEach(function(tab) {
+                    if (tab.tId === newId) {
+                        tab.isActive = true;
+                    }
+                    else {
+                        tab.isActive = false;
+                    }
+                });
+            }
+        }
+    });
+
+    Vue.component("cly-tab", {
+        template: '<div v-show="isActive" class="cly-tab"><slot/></div>',
+        props: {
+            name: { required: true },
+            id: { required: true },
+            isActive: { default: false },
+        },
+        computed: {
+            tName: function() {
+                return this.name;
+            },
+            tId: function() {
+                return this.id;
+            }
         }
     });
 

@@ -44,10 +44,10 @@ var MainView = {
     components: {
         "table-view": TableExampleView
     },
-    methods:{
+    methods: {
         refresh: function() {}
     }
-}
+};
 
 var vuex = [{
     clyModel: countlyVueExample

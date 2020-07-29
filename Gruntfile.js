@@ -137,6 +137,7 @@ module.exports = function(grunt) {
                 files: {
                     'frontend/express/public/stylesheets/main.min.css': [
                         'frontend/express/public/stylesheets/main.css',
+                        'frontend/express/public/stylesheets/clyvue.css',
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
                         'frontend/express/public/stylesheets/jsoneditor/codemirror.css',

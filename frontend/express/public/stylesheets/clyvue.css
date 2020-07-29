@@ -1,0 +1,62 @@
+/* tabs component */
+
+.cly-vue.cly-tabs .cly-tabs-list{
+    background-image: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    margin-top: -1px;
+    height: 40px;
+    border: none;
+    background-color: transparent;
+    padding-left: 12px;
+    margin-bottom: 5px;
+}
+
+.cly-vue.cly-tabs .cly-tabs-list li{
+    text-decoration: none;
+    color: #FFF;
+    font-size: 12px;
+    text-align: center;
+    box-shadow: none;
+    list-style: none;
+    float: left;
+    position: relative;
+    top: 1px;
+    white-space: nowrap;
+    margin: 0;
+    background-color: #f8f8f8;
+    border-radius: 0;
+    border: none;
+    background-image: none;
+    padding: 0;
+    border-top: 3px solid #f8f8f8;
+    border-bottom: none !important;
+    width: auto;
+    margin-right: 30px;
+}
+
+.cly-vue.cly-tabs .cly-tabs-list li a{
+    cursor: pointer;
+    display: block;
+    float: none;
+    font-family: Ubuntu;
+    text-transform: uppercase;
+    background-color: transparent;
+    color: #666;
+    padding: 0px 0px 6px 0px;
+    font-size: 15px;
+}
+
+.cly-vue.cly-tabs .cly-tabs-list li.is-active a {
+    color: #333;
+    border-bottom: 2px solid #19cc63 !important;
+}
+
+.cly-vue.cly-tabs. .cly-tabs-container{
+
+}
+
+.cly-vue.cly-tabs. .cly-tabs-container .cly-tab{
+
+}
