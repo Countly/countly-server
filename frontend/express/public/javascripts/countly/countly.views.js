@@ -2314,7 +2314,7 @@ window.ManageAppsView = countlyView.extend({
                     else {
                         accordionContent.removeClass("overflow-visible");
                     }
-                }, 300);
+                }, 400);
             });
             /** function creates users manage links
              * @param {array} users -  list of users
