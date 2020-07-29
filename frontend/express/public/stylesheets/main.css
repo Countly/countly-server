@@ -3663,3 +3663,20 @@ color:#E95C6C; transition:color 1s;
 #jobs-menu:hover svg g {
     fill: #fff;
 }
+
+.view-more::after {
+    content: url('../images/dashboard/vm-arrow.svg');
+    background-repeat: no-repeat;
+    position: relative;
+    top: 2px;
+    margin-left: 5px;
+}
+
+.view-more:hover::after {
+    content: url('../images/dashboard/vm-arrow-hover.svg');
+    background-repeat: no-repeat;
+}
+
+.view-more:hover {
+    color: #2FA732;
+}
