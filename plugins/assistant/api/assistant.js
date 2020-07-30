@@ -449,8 +449,7 @@ const moment = require('moment-timezone');
             return;
         }
 
-        const nativeDb = db._native;
-        nativeDb.collection(db_name_config, {}, function(err, collection) {
+        db.collection(db_name_config, {}, function(err, collection) {
             const bulk = collection.initializeUnorderedBulkOp();
 
             dataBatch.forEach(function(batchElem) {

@@ -21,7 +21,7 @@ else {
     localize.getProperties("en", function(err, properties) {
         plugins.dbConnection().then((db) => {
             plugins.loadConfigs(db, function() {
-                var cursor = db._native.collection("systemlogs").find({ts: {$gte: date.unix()}});
+                var cursor = db.collection("systemlogs").find({ts: {$gte: date.unix()}});
                 var returned = false;
                 var first = true;
                 cursor.on('data', function(doc) {

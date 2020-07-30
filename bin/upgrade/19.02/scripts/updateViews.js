@@ -25,7 +25,7 @@ pluginManager.dbConnection().then((countlyDb) => {
         var colName = "";
         if (count1 >= bufferSize || force) {
             colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
-            var bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
+            var bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
             for (var d in newObj['no-segment']) {
                 if (viewsMap[d]) {
                     var iid = viewsMap[d] + "";
@@ -51,7 +51,7 @@ pluginManager.dbConnection().then((countlyDb) => {
         }
         if (count2 >= bufferSize || force) {
             colName = "app_viewdata" + crypto.createHash('sha1').update("platform" + appID).digest('hex');
-            var bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
+            var bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
             for (var d in newObj.platform) {
                 if (viewsMap[d]) {
                     let iid = viewsMap[d] + "";
@@ -80,7 +80,7 @@ pluginManager.dbConnection().then((countlyDb) => {
         }
         if (flush_zero === true) {
             colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
-            var bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
+            var bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
             for (var d in summedZero['no-segment']) {
                 if (viewsMap[d]) {
                     let iid = viewsMap[d] + "";
@@ -92,7 +92,7 @@ pluginManager.dbConnection().then((countlyDb) => {
             }
     
             colName = "app_viewdata" + crypto.createHash('sha1').update("platform" + appID).digest('hex');
-            bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
+            bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
             for (var d in summedZero.platform) {
                 if (viewsMap[d]) {
                 let iid = viewsMap[d] + "";
@@ -213,7 +213,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                                     if (ss !== 'no-segment') {
                                         colName = "app_viewdata" + crypto.createHash('sha1').update(ss + appID).digest('hex');
                                     }
-                                    var bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
+                                    var bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
                                     for (var d in newObj[ss]) {
                                         if( viewsMap[d] ) {
                                             var iid = viewsMap[d] + "";
@@ -257,7 +257,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                         summedZero.platform = {};
     
                         countlyDb.onOpened(async function() {
-                            var cursor = countlyDb._native.collection('app_viewdata' + appID).find({"m": monthObject._id, 'dataMoved': {$ne: true}});
+                            var cursor = countlyDb.collection('app_viewdata' + appID).find({"m": monthObject._id, 'dataMoved': {$ne: true}});
                             for (let dataObj = await cursor.next(); dataObj !== null; dataObj = await cursor.next()) {
                                 if (dataObj.d) {
                                     var segment = dataObj._id.split('_');
@@ -425,8 +425,8 @@ pluginManager.dbConnection().then((countlyDb) => {
                 var batchFilled = 0;
                 var query = [{$project: {"_idO": "$_id" + "", 'uid': true}}, {$lookup: {from: "app_views" + appID, localField: "_idO", foreignField: "_id", as: "uinfo"}}, {$match: {"uinfo": {$ne: []}}}];
                 countlyDb.onOpened(async function() {
-                    var cursor = countlyDb._native.collection('app_users' + appID).aggregate(query).batchSize(batch);
-                    var bulk = countlyDb._native.collection('app_userviews' + appID).initializeUnorderedBulkOp();
+                    var cursor = countlyDb.collection('app_users' + appID).aggregate(query).batchSize(batch);
+                    var bulk = countlyDb.collection('app_userviews' + appID).initializeUnorderedBulkOp();
                     for (let doc = await cursor.next(); doc !== null; doc = await cursor.next()) {
                         if (doc.uinfo && doc.uinfo[0] && doc.uinfo[0].dataMoved !== true) {
                             let data = doc.uinfo[0];
@@ -446,17 +446,17 @@ pluginManager.dbConnection().then((countlyDb) => {
                         if (batchFilled === batch) {
                             runval++;
                             await bulk.execute().catch(function(err){});
-                            await countlyDb._native.collection("app_views" + appID).updateOne({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true});
+                            await countlyDb.collection("app_views" + appID).updateOne({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true});
     
                             ids.splice(0, ids.length);
-                            bulk = countlyDb._native.collection('app_userviews' + appID).initializeUnorderedBulkOp();
+                            bulk = countlyDb.collection('app_userviews' + appID).initializeUnorderedBulkOp();
                             console.log("Processed :" + runval + "/" + wraps);
                             batchFilled = 0;
                         }
                     }
                     if( batchFilled>0 ) {
                         await bulk.execute();
-                        await countlyDb._native.collection("app_views" + appID).updateMany({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true}).catch(function(err){ console.log(err);});;
+                        await countlyDb.collection("app_views" + appID).updateMany({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true}).catch(function(err){ console.log(err);});
                     }
                 
                     console.log("Users processed in " + (Date.now() - rightNow) / 1000 + " seconds");

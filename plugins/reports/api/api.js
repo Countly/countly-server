@@ -293,7 +293,7 @@ var common = require('../../../api/utils/common.js'),
                 const statusList = params.qstring.args;
 
                 common.db.onOpened(function() {
-                    var bulk = common.db._native.collection("reports").initializeUnorderedBulkOp();
+                    var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
                     for (const id in statusList) {
                         bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
                     }

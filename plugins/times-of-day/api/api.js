@@ -137,7 +137,7 @@ var plugin = {},
                 var overLimit = eventData.list.count > limit;
 
                 common.db.onOpened(function() {
-                    var bulk = common.db._native.collection(collectionName).initializeUnorderedBulkOp();
+                    var bulk = common.db.collection(collectionName).initializeUnorderedBulkOp();
 
 
                     Object.keys(query).forEach(function(key) {

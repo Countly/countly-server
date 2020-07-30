@@ -231,8 +231,8 @@ Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("c
                                 }, 5000);
                             });
                         });
-                        /*db.onOpened(function(){
-                            var bulk = db._native.collection("drill_meta"+app_id).initializeUnorderedBulkOp();
+                        /*
+                            var bulk = db.collection("drill_meta"+app_id).initializeUnorderedBulkOp();
                             for(var i = 0; i < updates.length; i++){
                                 bulk.find({
                                     "_id": updates[i]._id
@@ -248,7 +248,7 @@ Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("c
                                 done(); 
                                 }, 5000);
                             });
-                        });*/
+                        */
                     }
                     else {
                         done();

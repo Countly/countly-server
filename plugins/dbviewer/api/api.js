@@ -98,7 +98,7 @@ var common = require('../../../api/utils/common.js'),
 
             if (dbs[dbNameOnParam]) {
                 dbs[dbNameOnParam].onOpened(function() {
-                    var cursor = dbs[dbNameOnParam]._native.collection(params.qstring.collection).find(filter, { projection });
+                    var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, { projection });
                     if (Object.keys(sort).length > 0) {
                         cursor.sort(sort);
                     }

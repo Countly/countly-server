@@ -59,7 +59,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             return;
                         }
                         common.db.onOpened(function() {
-                            const bulk = common.db._native.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
+                            const bulk = common.db.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
                             for (var k = 0; k < data.length; k++) {
                                 if (data[k].value !== "") {
                                     bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
@@ -161,7 +161,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var newUid = ob.newUser.uid;
         if (oldUid !== newUid) {
             common.db.collection("app_userviews" + appId).find({_id: oldUid}).toArray(function(err, data) {
-                const bulk = common.db._native.collection("app_userviews" + appId).initializeUnorderedBulkOp();
+                const bulk = common.db.collection("app_userviews" + appId).initializeUnorderedBulkOp();
                 var haveUpdate = false;
                 for (var k in data) {
                     for (var view in data[k]) {

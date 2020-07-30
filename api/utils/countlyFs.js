@@ -31,7 +31,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
         * @param {function} callback - function called when we have result, providing error object as first param and id as second
         **/
         function save(category, filename, readStream, options, callback) {
-            var bucket = new GridFSBucket(db._native, { bucketName: category });
+            var bucket = new GridFSBucket(db, { bucketName: category });
             var uploadStream;
             var id = options.id;
             delete options.id;
@@ -74,7 +74,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
                     }
                     else if (options.writeMode === "overwrite") {
                         db.onOpened(function() {
-                            var bucket = new GridFSBucket(db._native, { bucketName: category });
+                            var bucket = new GridFSBucket(db, { bucketName: category });
                             bucket.delete(res, function(error) {
                                 if (!error) {
                                     setTimeout(done, 1);
@@ -279,7 +279,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
 
             db.onOpened(function() {
                 if (options.id) {
-                    let bucket = new GridFSBucket(db._native, { bucketName: category });
+                    let bucket = new GridFSBucket(db, { bucketName: category });
                     bucket.rename(options.id, newname, function(error) {
                         if (callback) {
                             callback(error);
@@ -290,7 +290,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
                     db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, function(err, res) {
                         if (!err) {
                             if (res && res._id) {
-                                let bucket = new GridFSBucket(db._native, { bucketName: category });
+                                let bucket = new GridFSBucket(db, { bucketName: category });
                                 bucket.rename(res._id, newname, function(error) {
                                     if (callback) {
                                         callback(error);
@@ -373,7 +373,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
         */
         ob.deleteAll = function(category, dest, callback) {
             db.onOpened(function() {
-                var bucket = new GridFSBucket(db._native, { bucketName: category });
+                var bucket = new GridFSBucket(db, { bucketName: category });
                 bucket.drop(function(error) {
                     if (callback) {
                         callback(error);
@@ -411,7 +411,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
                         ob.getStreamById(category, options.id, callback);
                     }
                     else {
-                        var bucket = new GridFSBucket(db._native, { bucketName: category });
+                        var bucket = new GridFSBucket(db, { bucketName: category });
                         callback(null, bucket.openDownloadStreamByName(filename));
                     }
                 }
@@ -445,7 +445,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
                     ob.getDataById(category, options.id, callback);
                 }
                 else {
-                    var bucket = new GridFSBucket(db._native, { bucketName: category });
+                    var bucket = new GridFSBucket(db, { bucketName: category });
                     var downloadStream = bucket.openDownloadStreamByName(filename);
                     downloadStream.on('error', function(error) {
                         if (callback) {
@@ -560,7 +560,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
         */
         ob.getDataById = function(category, id, callback) {
             db.onOpened(function() {
-                var bucket = new GridFSBucket(db._native, { bucketName: category });
+                var bucket = new GridFSBucket(db, { bucketName: category });
                 var downloadStream = bucket.openDownloadStream(id);
                 downloadStream.on('error', function(error) {
                     if (callback) {
@@ -594,7 +594,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
         ob.getStreamById = function(category, id, callback) {
             db.onOpened(function() {
                 if (callback) {
-                    var bucket = new GridFSBucket(db._native, { bucketName: category });
+                    var bucket = new GridFSBucket(db, { bucketName: category });
                     callback(null, bucket.openDownloadStream(id));
                 }
             });
@@ -612,7 +612,7 @@ plugins.dbConnection("countly_fs").then(function(db) {
         */
         ob.deleteFileById = function(category, id, callback) {
             db.onOpened(function() {
-                var bucket = new GridFSBucket(db._native, { bucketName: category });
+                var bucket = new GridFSBucket(db, { bucketName: category });
                 bucket.delete(id, function(error) {
                     if (callback) {
                         callback(error);

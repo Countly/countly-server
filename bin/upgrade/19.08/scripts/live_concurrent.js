@@ -72,7 +72,7 @@ pluginManager.dbConnection().then((countlyDb) => {
             callback(null);
             return;
         }
-        var bulk = countlyDb._native.collection('concurrent_users_max').initializeUnorderedBulkOp();
+        var bulk = countlyDb.collection('concurrent_users_max').initializeUnorderedBulkOp();
     
         docs.forEach(function(doc){
             bulk.find({

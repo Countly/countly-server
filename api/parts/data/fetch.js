@@ -1853,7 +1853,7 @@ fetch.fetchJobs = async function(metric, params) {
 fetch.alljobs = async function(metric, params) {
     const columns = ["name", "schedule", "next", "finished", "status", "total"];
     let sort = {};
-    let total = await common.db._native.collection('jobs').aggregate([
+    let total = await common.db.collection('jobs').aggregate([
         {
             $group: { _id: "$name" }
         },
@@ -1885,7 +1885,7 @@ fetch.alljobs = async function(metric, params) {
             $match: {name: {$regex: new RegExp(params.qstring.sSearch, "i")}}
         });
     }
-    const cursor = common.db._native.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
+    const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);
     cursor.skip(Number(params.qstring.iDisplayStart || 0));
@@ -1907,7 +1907,7 @@ fetch.alljobs = async function(metric, params) {
 fetch.jobDetails = async function(metric, params) {
     const columns = ["schedule", "next", "finished", "status", "data", "duration"];
     let sort = {};
-    const cursor = common.db._native.collection('jobs').find({name: params.qstring.name});
+    const cursor = common.db.collection('jobs').find({name: params.qstring.name});
     const total = await cursor.count();
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);
