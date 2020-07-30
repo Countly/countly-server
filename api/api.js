@@ -30,7 +30,9 @@ else {
 // Finaly set the visible title
 process.title = t.join(' ');
 plugins.dbConnection().then(function(db) {
+Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_out")]).then(function(db,outDb){
     common.db = db;
+    common.outDb = outDb;
     let workers = [];
 
     /**
