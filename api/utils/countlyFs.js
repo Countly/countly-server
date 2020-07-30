@@ -68,21 +68,17 @@ plugins.dbConnection("countly_fs").then(function(db) {
             ob.getId(category, filename, function(err, res) {
                 if (!err) {
                     if (!res || options.writeMode === "version") {
-                        db.onOpened(function() {
-                            done();
-                        });
+                        done();
                     }
                     else if (options.writeMode === "overwrite") {
-                        db.onOpened(function() {
-                            var bucket = new GridFSBucket(db, { bucketName: category });
-                            bucket.delete(res, function(error) {
-                                if (!error) {
-                                    setTimeout(done, 1);
-                                }
-                                else if (callback) {
-                                    callback(error);
-                                }
-                            });
+                        var bucket = new GridFSBucket(db, { bucketName: category });
+                        bucket.delete(res, function(error) {
+                            if (!error) {
+                                setTimeout(done, 1);
+                            }
+                            else if (callback) {
+                                callback(error);
+                            }
                         });
                     }
                     else {
@@ -277,40 +273,38 @@ plugins.dbConnection("countly_fs").then(function(db) {
                 options = {};
             }
 
-            db.onOpened(function() {
-                if (options.id) {
-                    let bucket = new GridFSBucket(db, { bucketName: category });
-                    bucket.rename(options.id, newname, function(error) {
-                        if (callback) {
-                            callback(error);
-                        }
-                    });
-                }
-                else {
-                    db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, function(err, res) {
-                        if (!err) {
-                            if (res && res._id) {
-                                let bucket = new GridFSBucket(db, { bucketName: category });
-                                bucket.rename(res._id, newname, function(error) {
-                                    if (callback) {
-                                        callback(error);
-                                    }
-                                });
-                            }
-                            else {
+            if (options.id) {
+                let bucket = new GridFSBucket(db, { bucketName: category });
+                bucket.rename(options.id, newname, function(error) {
+                    if (callback) {
+                        callback(error);
+                    }
+                });
+            }
+            else {
+                db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, function(err, res) {
+                    if (!err) {
+                        if (res && res._id) {
+                            let bucket = new GridFSBucket(db, { bucketName: category });
+                            bucket.rename(res._id, newname, function(error) {
                                 if (callback) {
-                                    callback(new Error("File does not exist"));
+                                    callback(error);
                                 }
-                            }
+                            });
                         }
                         else {
                             if (callback) {
-                                callback(err);
+                                callback(new Error("File does not exist"));
                             }
                         }
-                    });
-                }
-            });
+                    }
+                    else {
+                        if (callback) {
+                            callback(err);
+                        }
+                    }
+                });
+            }
         };
 
         /**
@@ -335,30 +329,28 @@ plugins.dbConnection("countly_fs").then(function(db) {
                 options = {};
             }
 
-            db.onOpened(function() {
-                if (options.id) {
-                    ob.deleteFileById(category, options.id, callback);
-                }
-                else {
-                    db.collection(category + ".files").findOne({ filename: filename }, {_id: 1}, function(err, res) {
-                        if (!err) {
-                            if (res && res._id) {
-                                ob.deleteFileById(category, res._id, callback);
-                            }
-                            else {
-                                if (callback) {
-                                    callback(new Error("File does not exist"));
-                                }
-                            }
+            if (options.id) {
+                ob.deleteFileById(category, options.id, callback);
+            }
+            else {
+                db.collection(category + ".files").findOne({ filename: filename }, {_id: 1}, function(err, res) {
+                    if (!err) {
+                        if (res && res._id) {
+                            ob.deleteFileById(category, res._id, callback);
                         }
                         else {
                             if (callback) {
-                                callback(err);
+                                callback(new Error("File does not exist"));
                             }
                         }
-                    });
-                }
-            });
+                    }
+                    else {
+                        if (callback) {
+                            callback(err);
+                        }
+                    }
+                });
+            }
         };
 
         /**
@@ -372,13 +364,11 @@ plugins.dbConnection("countly_fs").then(function(db) {
         * });
         */
         ob.deleteAll = function(category, dest, callback) {
-            db.onOpened(function() {
-                var bucket = new GridFSBucket(db, { bucketName: category });
-                bucket.drop(function(error) {
-                    if (callback) {
-                        callback(error);
-                    }
-                });
+            var bucket = new GridFSBucket(db, { bucketName: category });
+            bucket.drop(function(error) {
+                if (callback) {
+                    callback(error);
+                }
             });
         };
 
@@ -405,17 +395,15 @@ plugins.dbConnection("countly_fs").then(function(db) {
                 options = {};
             }
 
-            db.onOpened(function() {
-                if (callback) {
-                    if (options.id) {
-                        ob.getStreamById(category, options.id, callback);
-                    }
-                    else {
-                        var bucket = new GridFSBucket(db, { bucketName: category });
-                        callback(null, bucket.openDownloadStreamByName(filename));
-                    }
+            if (callback) {
+                if (options.id) {
+                    ob.getStreamById(category, options.id, callback);
                 }
-            });
+                else {
+                    var bucket = new GridFSBucket(db, { bucketName: category });
+                    callback(null, bucket.openDownloadStreamByName(filename));
+                }
+            }
         };
 
         /**
@@ -440,31 +428,29 @@ plugins.dbConnection("countly_fs").then(function(db) {
                 options = {};
             }
 
-            db.onOpened(function() {
-                if (options.id) {
-                    ob.getDataById(category, options.id, callback);
-                }
-                else {
-                    var bucket = new GridFSBucket(db, { bucketName: category });
-                    var downloadStream = bucket.openDownloadStreamByName(filename);
-                    downloadStream.on('error', function(error) {
-                        if (callback) {
-                            callback(error, null);
-                        }
-                    });
+            if (options.id) {
+                ob.getDataById(category, options.id, callback);
+            }
+            else {
+                var bucket = new GridFSBucket(db, { bucketName: category });
+                var downloadStream = bucket.openDownloadStreamByName(filename);
+                downloadStream.on('error', function(error) {
+                    if (callback) {
+                        callback(error, null);
+                    }
+                });
 
-                    var str = '';
-                    downloadStream.on('data', function(data) {
-                        str += data.toString('utf8');
-                    });
+                var str = '';
+                downloadStream.on('data', function(data) {
+                    str += data.toString('utf8');
+                });
 
-                    downloadStream.on('end', function() {
-                        if (callback) {
-                            callback(null, str);
-                        }
-                    });
-                }
-            });
+                downloadStream.on('end', function() {
+                    if (callback) {
+                        callback(null, str);
+                    }
+                });
+            }
         };
 
         /**
@@ -559,25 +545,23 @@ plugins.dbConnection("countly_fs").then(function(db) {
         * });
         */
         ob.getDataById = function(category, id, callback) {
-            db.onOpened(function() {
-                var bucket = new GridFSBucket(db, { bucketName: category });
-                var downloadStream = bucket.openDownloadStream(id);
-                downloadStream.on('error', function(error) {
-                    if (callback) {
-                        callback(error, null);
-                    }
-                });
+            var bucket = new GridFSBucket(db, { bucketName: category });
+            var downloadStream = bucket.openDownloadStream(id);
+            downloadStream.on('error', function(error) {
+                if (callback) {
+                    callback(error, null);
+                }
+            });
 
-                var str = '';
-                downloadStream.on('data', function(data) {
-                    str += data.toString('utf8');
-                });
+            var str = '';
+            downloadStream.on('data', function(data) {
+                str += data.toString('utf8');
+            });
 
-                downloadStream.on('end', function() {
-                    if (callback) {
-                        callback(null, str);
-                    }
-                });
+            downloadStream.on('end', function() {
+                if (callback) {
+                    callback(null, str);
+                }
             });
         };
 
@@ -592,12 +576,10 @@ plugins.dbConnection("countly_fs").then(function(db) {
         * });
         */
         ob.getStreamById = function(category, id, callback) {
-            db.onOpened(function() {
-                if (callback) {
-                    var bucket = new GridFSBucket(db, { bucketName: category });
-                    callback(null, bucket.openDownloadStream(id));
-                }
-            });
+            if (callback) {
+                var bucket = new GridFSBucket(db, { bucketName: category });
+                callback(null, bucket.openDownloadStream(id));
+            }
         };
 
         /**
@@ -611,13 +593,11 @@ plugins.dbConnection("countly_fs").then(function(db) {
         * });
         */
         ob.deleteFileById = function(category, id, callback) {
-            db.onOpened(function() {
-                var bucket = new GridFSBucket(db, { bucketName: category });
-                bucket.delete(id, function(error) {
-                    if (callback) {
-                        callback(error);
-                    }
-                });
+            var bucket = new GridFSBucket(db, { bucketName: category });
+            bucket.delete(id, function(error) {
+                if (callback) {
+                    callback(error);
+                }
             });
         };
 

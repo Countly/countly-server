@@ -292,20 +292,18 @@ var common = require('../../../api/utils/common.js'),
             validate(function(params) {
                 const statusList = params.qstring.args;
 
-                common.db.onOpened(function() {
-                    var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
-                    for (const id in statusList) {
-                        bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
-                    }
-                    if (bulk.length > 0) {
-                        bulk.execute(function(err) {
-                            if (err) {
-                                common.returnMessage(params, 200, err);
-                            }
-                            common.returnMessage(params, 200, "Success");
-                        });
-                    }
-                });
+                var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
+                for (const id in statusList) {
+                    bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
+                }
+                if (bulk.length > 0) {
+                    bulk.execute(function(err) {
+                        if (err) {
+                            common.returnMessage(params, 200, err);
+                        }
+                        common.returnMessage(params, 200, "Success");
+                    });
+                }
             }, paramsInstance);
             break;
         default:

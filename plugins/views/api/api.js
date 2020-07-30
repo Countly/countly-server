@@ -58,36 +58,34 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             resolve();
                             return;
                         }
-                        common.db.onOpened(function() {
-                            const bulk = common.db.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
-                            for (var k = 0; k < data.length; k++) {
-                                if (data[k].value !== "") {
-                                    bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
-                                }
-                                else {
-                                    bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$unset: {"display": true}});
-                                }
-                                haveUpdate = true;
-                            }
-
-                            if (haveUpdate) {
-                                bulk.execute(function(err/*, updateResult*/) {
-                                    if (err) {
-                                        log.e(err);
-                                        common.returnMessage(params, 400, err);
-                                        resolve();
-                                    }
-                                    else {
-                                        common.returnMessage(params, 200, 'Success');
-                                        resolve();
-                                    }
-                                });
+                        const bulk = common.db.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
+                        for (var k = 0; k < data.length; k++) {
+                            if (data[k].value !== "") {
+                                bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
                             }
                             else {
-                                common.returnMessage(params, 400, 'Nothing to update');
-                                resolve();
+                                bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$unset: {"display": true}});
                             }
-                        });
+                            haveUpdate = true;
+                        }
+
+                        if (haveUpdate) {
+                            bulk.execute(function(err/*, updateResult*/) {
+                                if (err) {
+                                    log.e(err);
+                                    common.returnMessage(params, 400, err);
+                                    resolve();
+                                }
+                                else {
+                                    common.returnMessage(params, 200, 'Success');
+                                    resolve();
+                                }
+                            });
+                        }
+                        else {
+                            common.returnMessage(params, 400, 'Nothing to update');
+                            resolve();
+                        }
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing request parameter: data');

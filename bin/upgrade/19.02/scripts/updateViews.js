@@ -208,26 +208,24 @@ pluginManager.dbConnection().then((countlyDb) => {
                         var allSegments = Object.keys(newObj);
                         Promise.each(allSegments, function(ss) {
                             return new Promise(function(resolve1, reject1) {
-                                countlyDb.onOpened(async function() {
-                                    var colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
-                                    if (ss !== 'no-segment') {
-                                        colName = "app_viewdata" + crypto.createHash('sha1').update(ss + appID).digest('hex');
+                                var colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
+                                if (ss !== 'no-segment') {
+                                    colName = "app_viewdata" + crypto.createHash('sha1').update(ss + appID).digest('hex');
+                                }
+                                var bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
+                                for (var d in newObj[ss]) {
+                                    if( viewsMap[d] ) {
+                                        var iid = viewsMap[d] + "";
+                                        bulk.find({'_id': iid + '_' + monthObject._id}).upsert().updateOne({$set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': ss, 'm': monthObject._id, 'd': newObj[ss][d] }});
                                     }
-                                    var bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
-                                    for (var d in newObj[ss]) {
-                                        if( viewsMap[d] ) {
-                                            var iid = viewsMap[d] + "";
-                                            bulk.find({'_id': iid + '_' + monthObject._id}).upsert().updateOne({$set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': ss, 'm': monthObject._id, 'd': newObj[ss][d] }});
-                                        }
+                                }
+                                if (bulk.length > 0) {
+                                    try {
+                                        await bulk.execute().catch(function(err){});
                                     }
-                                    if (bulk.length > 0) {
-                                        try {
-                                            await bulk.execute().catch(function(err){});
-                                        }
-                                        catch (e) {}
-                                    }
-                                    resolve1();
-                                });
+                                    catch (e) {}
+                                }
+                                resolve1();
                             });
                         }).then(function() {
                             countlyDb.collection('app_viewdata' + appID).update({"m": monthObject._id}, {$set: {'dataMoved': true}}, {"multi": true}, function(err, res) {
@@ -256,132 +254,130 @@ pluginManager.dbConnection().then((countlyDb) => {
                         summedZero['no-segment'] = {};
                         summedZero.platform = {};
     
-                        countlyDb.onOpened(async function() {
-                            var cursor = countlyDb.collection('app_viewdata' + appID).find({"m": monthObject._id, 'dataMoved': {$ne: true}});
-                            for (let dataObj = await cursor.next(); dataObj !== null; dataObj = await cursor.next()) {
-                                if (dataObj.d) {
-                                    var segment = dataObj._id.split('_');
-                                    segment = segment[0]; //segment value
-                                    var msplit = dataObj.m.split(':');
-                                    var escapeProp = "";
-                                    var ss = 'no-segment';
-                                    if (segment !== 'no-segment') {
-                                        ss = 'platform';
-                                        escapeProp = "." + segment; //saved 
-                                        if (!segments.platform) {
-                                            segments.platform = [];
-                                        }
-                                        if (segments.platform.indexOf(segment) === -1) {
-                                            segments.platform.push(segment);
-                                        }
+                        var cursor = countlyDb.collection('app_viewdata' + appID).find({"m": monthObject._id, 'dataMoved': {$ne: true}});
+                        for (let dataObj = await cursor.next(); dataObj !== null; dataObj = await cursor.next()) {
+                            if (dataObj.d) {
+                                var segment = dataObj._id.split('_');
+                                segment = segment[0]; //segment value
+                                var msplit = dataObj.m.split(':');
+                                var escapeProp = "";
+                                var ss = 'no-segment';
+                                if (segment !== 'no-segment') {
+                                    ss = 'platform';
+                                    escapeProp = "." + segment; //saved 
+                                    if (!segments.platform) {
+                                        segments.platform = [];
                                     }
-                                    if (msplit[1] !== '0') {
-                                        if (ss === 'no-segment') {
-                                            for (var day in dataObj.d) { //each day
-                                                for (var hour in dataObj.d[day]) { //day object has hour objects and summed objects
-                                                    if (hours.indexOf(hour) !== -1) { //it is hour object;
-                                                        //each key in this is viewName
-                                                        if (ss === 'no-segment') {
-                                                            for (let viewName in dataObj.d[day][hour]) {
-                                                                if (!newObj[ss][viewName]) {
-                                                                    newObj[ss][viewName] = {};
-                                                                    count1++;
-                                                                }
-                                                                for (var prop in dataObj.d[day][hour][viewName]) {
-                                                                    newObj[ss][viewName]["d" + "." + day + "." + hour + "." + prop] = dataObj.d[day][hour][viewName][prop];
-                                                                }
-    
+                                    if (segments.platform.indexOf(segment) === -1) {
+                                        segments.platform.push(segment);
+                                    }
+                                }
+                                if (msplit[1] !== '0') {
+                                    if (ss === 'no-segment') {
+                                        for (var day in dataObj.d) { //each day
+                                            for (var hour in dataObj.d[day]) { //day object has hour objects and summed objects
+                                                if (hours.indexOf(hour) !== -1) { //it is hour object;
+                                                    //each key in this is viewName
+                                                    if (ss === 'no-segment') {
+                                                        for (let viewName in dataObj.d[day][hour]) {
+                                                            if (!newObj[ss][viewName]) {
+                                                                newObj[ss][viewName] = {};
+                                                                count1++;
                                                             }
+                                                            for (var prop in dataObj.d[day][hour][viewName]) {
+                                                                newObj[ss][viewName]["d" + "." + day + "." + hour + "." + prop] = dataObj.d[day][hour][viewName][prop];
+                                                            }
+    
                                                         }
                                                     }
-                                                    else {
-                                                        var viewName = hour;
-                                                        if (!newObj[ss][viewName]) {
-                                                            newObj[ss][viewName] = {};
-                                                            count1++;
-                                                        }
-                                                        if (!newObj2[ss][viewName]) {
-                                                            newObj2[ss][viewName] = {};
-                                                        }
-                                                        if (!summedZero[ss][viewName]) {
-                                                            summedZero[ss][viewName] = {};
-                                                        }
+                                                }
+                                                else {
+                                                    var viewName = hour;
+                                                    if (!newObj[ss][viewName]) {
+                                                        newObj[ss][viewName] = {};
+                                                        count1++;
+                                                    }
+                                                    if (!newObj2[ss][viewName]) {
+                                                        newObj2[ss][viewName] = {};
+                                                    }
+                                                    if (!summedZero[ss][viewName]) {
+                                                        summedZero[ss][viewName] = {};
+                                                    }
     
-                                                        for (var prop in dataObj.d[day][hour]) {
-                                                            newObj[ss][viewName]["d." + day + "." + prop] = dataObj.d[day][hour][prop];
-                                                            newObj2[ss][viewName]["d." + day + "." + prop] = dataObj.d[day][hour][prop];
-                                                            if (prop !== 'u') {
-                                                                if (summedZero[ss][viewName]["d." + msplit[1] + "." + prop]) {
-                                                                    summedZero[ss][viewName]["d." + msplit[1] + "." + prop] += dataObj.d[day][hour][prop];
-                                                                }
-                                                                else {
-                                                                    summedZero[ss][viewName]["d." + msplit[1] + "." + prop] = dataObj.d[day][hour][prop];
-                                                                }
+                                                    for (var prop in dataObj.d[day][hour]) {
+                                                        newObj[ss][viewName]["d." + day + "." + prop] = dataObj.d[day][hour][prop];
+                                                        newObj2[ss][viewName]["d." + day + "." + prop] = dataObj.d[day][hour][prop];
+                                                        if (prop !== 'u') {
+                                                            if (summedZero[ss][viewName]["d." + msplit[1] + "." + prop]) {
+                                                                summedZero[ss][viewName]["d." + msplit[1] + "." + prop] += dataObj.d[day][hour][prop];
+                                                            }
+                                                            else {
+                                                                summedZero[ss][viewName]["d." + msplit[1] + "." + prop] = dataObj.d[day][hour][prop];
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
                                         }
-                                        else {
-                                            for (var day in dataObj.d) { //each day
-                                                for (var hour in dataObj.d[day]) { //day object has hour objects and summed objects
-                                                    if (hours.indexOf(hour) !== -1) { //it is hour object;
-                                                        for (viewName in dataObj.d[day][hour]) {
-                                                            if (!newObj[ss][viewName]) {
-                                                                newObj[ss][viewName] = {};
-                                                                count2++;
-                                                            }
-                                                            for (var prop in dataObj.d[day][hour][viewName]) {
-                                                                newObj[ss][viewName]["d." + day + "." + hour + escapeProp + "." + prop] = dataObj.d[day][hour][viewName][prop];
-                                                            }
-                                                        }
-                                                    }
-                                                    else {
-                                                        var viewName = hour;
+                                    }
+                                    else {
+                                        for (var day in dataObj.d) { //each day
+                                            for (var hour in dataObj.d[day]) { //day object has hour objects and summed objects
+                                                if (hours.indexOf(hour) !== -1) { //it is hour object;
+                                                    for (viewName in dataObj.d[day][hour]) {
                                                         if (!newObj[ss][viewName]) {
                                                             newObj[ss][viewName] = {};
                                                             count2++;
                                                         }
+                                                        for (var prop in dataObj.d[day][hour][viewName]) {
+                                                            newObj[ss][viewName]["d." + day + "." + hour + escapeProp + "." + prop] = dataObj.d[day][hour][viewName][prop];
+                                                        }
+                                                    }
+                                                }
+                                                else {
+                                                    var viewName = hour;
+                                                    if (!newObj[ss][viewName]) {
+                                                        newObj[ss][viewName] = {};
+                                                        count2++;
+                                                    }
     
-                                                        if (!newObj2[ss][viewName]) {
-                                                            newObj2[ss][viewName] = {};
+                                                    if (!newObj2[ss][viewName]) {
+                                                        newObj2[ss][viewName] = {};
+                                                    }
+    
+                                                    if (!summedZero[ss][viewName]) {
+                                                        summedZero[ss][viewName] = {};
+                                                    }
+    
+                                                    for (var prop in dataObj.d[day][hour]) {
+                                                        newObj[ss][hour]["d." + day + escapeProp + "." + prop] = dataObj.d[day][hour][prop];
+                                                        newObj2[ss][hour]["d." + day + escapeProp + "." + prop] = dataObj.d[day][hour][prop];
+                                                        if (summedZero[ss][hour]["d." + msplit[1] + escapeProp + "." + prop]) {
+                                                            summedZero[ss][hour]["d." + msplit[1] + escapeProp + "." + prop] += dataObj.d[day][hour][prop];
+                                                        }
+                                                        else {
+                                                            summedZero[ss][hour]["d." + msplit[1] + escapeProp + "." + prop] = dataObj.d[day][hour][prop];
                                                         }
     
-                                                        if (!summedZero[ss][viewName]) {
-                                                            summedZero[ss][viewName] = {};
-                                                        }
-    
-                                                        for (var prop in dataObj.d[day][hour]) {
-                                                            newObj[ss][hour]["d." + day + escapeProp + "." + prop] = dataObj.d[day][hour][prop];
-                                                            newObj2[ss][hour]["d." + day + escapeProp + "." + prop] = dataObj.d[day][hour][prop];
-                                                            if (summedZero[ss][hour]["d." + msplit[1] + escapeProp + "." + prop]) {
-                                                                summedZero[ss][hour]["d." + msplit[1] + escapeProp + "." + prop] += dataObj.d[day][hour][prop];
-                                                            }
-                                                            else {
-                                                                summedZero[ss][hour]["d." + msplit[1] + escapeProp + "." + prop] = dataObj.d[day][hour][prop];
-                                                            }
-    
-                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
+                                }
     
-                                    await flushData(viewsMap,count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, false);
-                                    if (count1 >= bufferSize || count2 >= bufferSize) {
-                                        count1 = 0;
-                                    }
-                                    if (count2 >= bufferSize) {
-                                        count2 = 0;
-                                    }
+                                await flushData(viewsMap,count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, false);
+                                if (count1 >= bufferSize || count2 >= bufferSize) {
+                                    count1 = 0;
+                                }
+                                if (count2 >= bufferSize) {
+                                    count2 = 0;
                                 }
                             }
-                            await flushData(viewsMap,count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, true);
-                            countlyDb.collection('app_viewdata' + appID).update({"m": monthObject._id}, {$set: {'dataMoved': true}}, {"multi": true}, function(err, res) {
-                                resolve();
-                            });
+                        }
+                        await flushData(viewsMap,count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, true);
+                        countlyDb.collection('app_viewdata' + appID).update({"m": monthObject._id}, {$set: {'dataMoved': true}}, {"multi": true}, function(err, res) {
+                            resolve();
                         });
                     });
                 }).then(function() {
@@ -424,44 +420,42 @@ pluginManager.dbConnection().then((countlyDb) => {
                 var runval = 0;
                 var batchFilled = 0;
                 var query = [{$project: {"_idO": "$_id" + "", 'uid': true}}, {$lookup: {from: "app_views" + appID, localField: "_idO", foreignField: "_id", as: "uinfo"}}, {$match: {"uinfo": {$ne: []}}}];
-                countlyDb.onOpened(async function() {
-                    var cursor = countlyDb.collection('app_users' + appID).aggregate(query).batchSize(batch);
-                    var bulk = countlyDb.collection('app_userviews' + appID).initializeUnorderedBulkOp();
-                    for (let doc = await cursor.next(); doc !== null; doc = await cursor.next()) {
-                        if (doc.uinfo && doc.uinfo[0] && doc.uinfo[0].dataMoved !== true) {
-                            let data = doc.uinfo[0];
-                            ids.push(data._id);
-                            let insertMe = {'_id': doc.uid};
-                            for (var z in data) {
-                                if (z !== '_id') {
-                                    if (!viewsMap[z]) {}
-                                    else {
-                                        insertMe[viewsMap[z]] = {"ts": data[z]};
-                                    }
+                var cursor = countlyDb.collection('app_users' + appID).aggregate(query).batchSize(batch);
+                var bulk = countlyDb.collection('app_userviews' + appID).initializeUnorderedBulkOp();
+                for (let doc = await cursor.next(); doc !== null; doc = await cursor.next()) {
+                    if (doc.uinfo && doc.uinfo[0] && doc.uinfo[0].dataMoved !== true) {
+                        let data = doc.uinfo[0];
+                        ids.push(data._id);
+                        let insertMe = {'_id': doc.uid};
+                        for (var z in data) {
+                            if (z !== '_id') {
+                                if (!viewsMap[z]) {}
+                                else {
+                                    insertMe[viewsMap[z]] = {"ts": data[z]};
                                 }
                             }
-                            bulk.find({'_id': doc.uid}).upsert().updateOne({ $set: insertMe});
-                            batchFilled++;
                         }
-                        if (batchFilled === batch) {
-                            runval++;
-                            await bulk.execute().catch(function(err){});
-                            await countlyDb.collection("app_views" + appID).updateOne({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true});
+                        bulk.find({'_id': doc.uid}).upsert().updateOne({ $set: insertMe});
+                        batchFilled++;
+                    }
+                    if (batchFilled === batch) {
+                        runval++;
+                        await bulk.execute().catch(function(err){});
+                        await countlyDb.collection("app_views" + appID).updateOne({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true});
     
-                            ids.splice(0, ids.length);
-                            bulk = countlyDb.collection('app_userviews' + appID).initializeUnorderedBulkOp();
-                            console.log("Processed :" + runval + "/" + wraps);
-                            batchFilled = 0;
-                        }
+                        ids.splice(0, ids.length);
+                        bulk = countlyDb.collection('app_userviews' + appID).initializeUnorderedBulkOp();
+                        console.log("Processed :" + runval + "/" + wraps);
+                        batchFilled = 0;
                     }
-                    if( batchFilled>0 ) {
-                        await bulk.execute();
-                        await countlyDb.collection("app_views" + appID).updateMany({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true}).catch(function(err){ console.log(err);});
-                    }
+                }
+                if( batchFilled>0 ) {
+                    await bulk.execute();
+                    await countlyDb.collection("app_views" + appID).updateMany({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true}).catch(function(err){ console.log(err);});
+                }
                 
-                    console.log("Users processed in " + (Date.now() - rightNow) / 1000 + " seconds");
-                    done();
-                });
+                console.log("Users processed in " + (Date.now() - rightNow) / 1000 + " seconds");
+                done();
             }
         });
     }
