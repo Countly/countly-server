@@ -4,7 +4,6 @@ var testUtils = require("../testUtils");
 request = request(testUtils.url);
 
 var plugins = require("../../plugins/pluginManager");
-var db;
 var crypto = require('crypto');
 var API_KEY_ADMIN = "";
 var API_KEY_USER = "";
@@ -47,9 +46,6 @@ var validate_token = function(token_id, values, token_count, done) {
 };
 
 describe('Testing token manager', function() {
-    before('Create db connection', async function(done) {
-        db = await plugins.dbConnection("countly");
-    });
     it('getting empty token list(if not - clear it)', function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
@@ -64,7 +60,7 @@ describe('Testing token manager', function() {
                 var ob = JSON.parse(res.text);
                 ob = ob.result;
                 if (ob.length > 0) {
-                    db.collection("auth_tokens").remove({owner: ob[0]["owner"]}, function(err, res) {
+                    testUtils.db.collection("auth_tokens").remove({owner: ob[0]["owner"]}, function(err, res) {
                         done();
                     });
                 }

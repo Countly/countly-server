@@ -3,7 +3,6 @@ var should = require('should');
 var crypto = require('crypto');
 var testUtils = require("../testUtils");
 var pluginManager = require("../../plugins/pluginManager.js");
-var db;
 request = request(testUtils.url);
 
 var APP_KEY = "";
@@ -12,9 +11,6 @@ var APP_ID = "";
 var DEVICE_ID = "1234567890";
 
 describe('Testing user merge scenarios', function() {
-    before('Create db connection', async function(done) {
-        db = await pluginManager.dbConnection("countly");
-    });
     describe('Single user (anonymous and then logged in with merge) single device', function() {
         describe('Anonymous user session', function() {
             it('should success', function(done) {
@@ -38,7 +34,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify user', function() {
             it('should have user data', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '1').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '1');
                     user.should.have.property("uid", '1');
                     user.should.have.property("d", "Samsung S7");
@@ -67,7 +63,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify anonymous user', function() {
             it('should not exist', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '1').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     should.not.exist(user);
                     done();
                 });
@@ -76,7 +72,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify logged in user', function() {
             it('should have user data', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '2').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '2');
                     user.should.have.property("uid", '2');
                     user.should.have.property("d", "Samsung S7");
@@ -108,7 +104,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify user', function() {
             it('should have user data', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '3').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '3');
                     user.should.have.property("uid", '3');
                     user.should.have.property("d", "iPad");
@@ -136,7 +132,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify anonymous user', function() {
             it('should not exist', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '3').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     should.not.exist(user);
                     done();
                 });
@@ -145,7 +141,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify logged in user', function() {
             it('should have user data', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '2').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '2');
                     user.should.have.property("uid", '2');
                     user.should.have.property("d", "iPad");
@@ -177,7 +173,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify user', function() {
             it('should have user data', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '4').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '4');
                     user.should.have.property("uid", '4');
                     user.should.have.property("d", "Sony Xperia");
@@ -206,7 +202,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify user', function() {
             it('should have user data', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '5').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '5');
                     user.should.have.property("uid", '5');
                     user.should.have.property("d", "iPhone");
@@ -234,7 +230,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify anonymous user', function() {
             it('should not exist', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '4').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     should.not.exist(user);
                     done();
                 });
@@ -243,7 +239,7 @@ describe('Testing user merge scenarios', function() {
         describe('Verify logged in user', function() {
             it('should have user data', function(done) {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '5').digest('hex');
-                db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '5');
                     user.should.have.property("uid", '5');
                     user.should.have.property("d", "iPhone");
@@ -269,7 +265,6 @@ describe('Testing user merge scenarios', function() {
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
                         done();
-                        db.close();
                     });
             });
         });

@@ -10,21 +10,22 @@ var APP_ID = "";
 var APP_KEY = "";
 
 describe('Retrieve API-KEY', function() {
+    before('Create db connection', async function() {
+        testUtils.db = await plugins.dbConnection("countly");
+        testUtils.client = testUtils.db.client;
+    });
     it('should create user', function(done) {
-        plugins.dbConnection().then((db) => {
-            db.collection("members").findOne({global_admin: true}, function(err, member) {
-                if (err) {
-                    return done(err);
-                }
-                member.should.have.property('api_key');
-                TEMP_KEY = member["api_key"];
-                testUtils.set("TEMP_KEY", member["api_key"]);
-                //generate data for new user, to tear it down later
-                testUtils.username = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-                testUtils.email = testUtils.username + "@test.test";
-                db.close();
-                done();
-            });
+        testUtils.db.collection("members").findOne({global_admin: true}, function(err, member) {
+            if (err) {
+                return done(err);
+            }
+            member.should.have.property('api_key');
+            TEMP_KEY = member["api_key"];
+            testUtils.set("TEMP_KEY", member["api_key"]);
+            //generate data for new user, to tear it down later
+            testUtils.username = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+            testUtils.email = testUtils.username + "@test.test";
+            done();
         });
     });
 });
