@@ -3,7 +3,6 @@ var should = require('should');
 var testUtils = require("../../../test/testUtils");
 //var request = request(testUtils.url);
 var request = request.agent(testUtils.url);
-var plugins = require("../../pluginManager");
 var path = require("path");
 var fs = require("fs"),
     readline = require('readline'),

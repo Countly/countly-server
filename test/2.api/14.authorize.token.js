@@ -11,7 +11,6 @@ var API_KEY_ADMIN = "";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
 
-var plugins = require("../../plugins/pluginManager");
 var authorize = require('../../api/utils/authorizer.js');
 
 var testowner = "";

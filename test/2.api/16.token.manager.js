@@ -3,7 +3,6 @@ var should = require('should');
 var testUtils = require("../testUtils");
 request = request(testUtils.url);
 
-var plugins = require("../../plugins/pluginManager");
 var crypto = require('crypto');
 var API_KEY_ADMIN = "";
 var API_KEY_USER = "";

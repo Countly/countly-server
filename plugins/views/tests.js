@@ -2,7 +2,6 @@ var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request.agent(testUtils.url);
-var plugins = require("./../pluginManager");
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
@@ -800,7 +799,7 @@ describe('Testing views plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 20 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });

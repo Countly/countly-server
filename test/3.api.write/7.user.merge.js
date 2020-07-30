@@ -2,7 +2,6 @@ var request = require('supertest');
 var should = require('should');
 var crypto = require('crypto');
 var testUtils = require("../testUtils");
-var pluginManager = require("../../plugins/pluginManager.js");
 request = request(testUtils.url);
 
 var APP_KEY = "";
