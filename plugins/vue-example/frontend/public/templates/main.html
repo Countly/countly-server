@@ -1,10 +1,7 @@
 <div>
-    <cly-tabs id="basic-tabs" initial-tab="table-tab" @tab-changed="refresh">
-        <cly-tab v-bind:name='i18nMap["vue-example.table"]' id="table-tab">
-            <table-view></table-view>
-        </cly-tab>
-        <cly-tab v-bind:name='i18nMap["vue-example.time-graph"]' id="chart-tab">
-            <cly-time-graph v-bind:data="randomNumbers"></cly-time-graph>
-        </cly-tab>
+    <cly-tabs id="basic-tabs" initial-tab="chart-tab">
+        <table-view v-bind:name='i18nMap["vue-example.table"]' id="table-tab"></table-view>
+        <tg-view v-bind:name='i18nMap["vue-example.time-graph"]' id="chart-tab"></tg-view>
+        <table-view v-bind:name='i18nMap["vue-example.table"]' id="table2-tab"></table-view>
     </cly-tabs>
 </div>

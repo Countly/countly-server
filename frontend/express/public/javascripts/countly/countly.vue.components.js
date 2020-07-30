@@ -206,15 +206,7 @@
             });
         },
         methods: {
-            refresh: function() {
-                var warning = ["Countly refresh mixin is used, but not handled.", this];
-                if (console.warn) {
-                    console.warn.apply(this, warning);
-                }
-                else {
-                    console.log.apply(this, warning);
-                }
-            }
+            refresh: function() {}
         }
     };
 
@@ -231,9 +223,23 @@
         }
     };
 
+    var refreshOnActiveMixin = {
+        watch: {
+            isActive: function(newState) {
+                if (newState) {
+                    this.refresh();
+                }
+            }
+        },
+        methods: {
+            refresh: function() {}
+        }
+    };
+
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
-        'i18n': i18nMixin
+        'refreshOnActive': refreshOnActiveMixin,
+        'i18n': i18nMixin,
     };
 
     var _globalVuexStore = new Vuex.Store();
@@ -317,8 +323,34 @@
         }
     });
 
+    var countlyBaseView = Vue.extend({
+        mixins: [
+            _mixins.autoRefresh,
+            _mixins.i18n
+        ],
+        props: {
+            name: { type: String, default: null},
+            id: { type: String, default: null }
+        },
+        computed: {
+            isActive: function() {
+                if (!this.id || !this.$parent || !this.$parent.currentViewId) {
+                    return true;
+                }
+                return this.$parent.currentViewId === this.id;
+            },
+            vName: function() {
+                return this.name;
+            },
+            vId: function() {
+                return this.id;
+            }
+        }
+    });
+
     var _views = {
-        BackboneWrapper: countlyVueWrapperView
+        BackboneWrapper: countlyVueWrapperView,
+        BaseView: countlyBaseView
     };
 
     window.countlyVue = {
@@ -371,63 +403,36 @@
     });
 
     Vue.component("cly-tabs", {
-        template: '<div class="cly-vue-tabs"><ul class="cly-vue-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.tId)" v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+        template: '<div class="cly-vue-tabs"><ul class="cly-vue-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.vId)" v-html="tab.vName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
         mixins: [
             _mixins.i18n
         ],
         data: function() {
             return {
                 tabs: [],
-                activeTabId: '',
+                currentViewId: '',
             };
         },
         props: {
             initialTab: { default: null },
         },
         methods: {
-            setTab: function(tId) {
-                this.activeTabId = tId;
+            setTab: function(vId) {
+                this.currentViewId = vId;
             }
         },
         created: function() {
             this.tabs = this.$children;
-        },
-        mounted: function() {
             if (this.initialTab) {
-                this.activeTabId = this.initialTab;
+                this.currentViewId = this.initialTab;
             }
             else if (this.tabs.length > 0) {
-                this.activeTabId = this.tabs[0].tId;
+                this.currentViewId = this.tabs[0].vId;
             }
         },
         watch: {
-            activeTabId: function(newId) {
-                this.tabs.forEach(function(tab) {
-                    if (tab.tId === newId) {
-                        tab.isActive = true;
-                    }
-                    else {
-                        tab.isActive = false;
-                    }
-                });
+            currentViewId: function(newId) {
                 this.$emit("tab-changed", newId);
-            }
-        }
-    });
-
-    Vue.component("cly-tab", {
-        template: '<div v-show="isActive" class="cly-vue-tab"><slot/></div>',
-        props: {
-            name: { required: true },
-            id: { required: true },
-            isActive: { default: false },
-        },
-        computed: {
-            tName: function() {
-                return this.name;
-            },
-            tId: function() {
-                return this.id;
             }
         }
     });

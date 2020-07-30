@@ -1,10 +1,7 @@
 /*global app, countlyVue, countlyVueExample */
 
-var TableExampleView = {
+var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
-    mixins: [
-        countlyVue.mixins.i18n
-    ],
     computed: {
         tableRows: function() {
             return this.$store.getters["vueExample/pairs"];
@@ -13,7 +10,7 @@ var TableExampleView = {
     data: function() {
         return {
             targetName: "John Doe",
-            targetValue: 10,
+            targetValue: 0,
             tableColumns: [
                 {
                     "sType": "string",
@@ -30,34 +27,37 @@ var TableExampleView = {
         add: function() {
             this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
             this.targetName = "";
-            this.targetValue = 0;
+            this.targetValue += 1;
         }
     }
-};
+});
 
-var MainView = {
-    template: '#vue-example-main-template',
+var TimeGraphView = countlyVue.views.BaseView.extend({
+    template: '#vue-example-tg-template',
     mixins: [
-        countlyVue.mixins.autoRefresh,
-        countlyVue.mixins.i18n
+        countlyVue.mixins.refreshOnActive
     ],
     computed: {
         randomNumbers: function() {
             return this.$store.getters["vueExample/randomNumbers"];
         }
     },
-    components: {
-        "table-view": TableExampleView
-    },
     methods: {
         refresh: function() {
-            this.$store.dispatch("vueExample/updateRandomArray");
+            if (this.isActive) {
+                this.$store.dispatch("vueExample/updateRandomArray");
+            }
         }
     },
-    mounted: function() {
-        this.refresh();
+});
+
+var MainView = countlyVue.views.BaseView.extend({
+    template: '#vue-example-main-template',
+    components: {
+        "table-view": TableView,
+        "tg-view": TimeGraphView
     }
-};
+});
 
 var vuex = [{
     clyModel: countlyVueExample
@@ -70,6 +70,7 @@ var exampleView = new countlyVue.views.BackboneWrapper({
         namespace: 'vue-example',
         mapping: {
             'table-template': '/vue-example/templates/table.html',
+            'tg-template': '/vue-example/templates/tg.html',
             'main-template': '/vue-example/templates/main.html'
         }
     }
