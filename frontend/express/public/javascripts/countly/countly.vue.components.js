@@ -437,6 +437,17 @@
         }
     });
 
+    Vue.component("cly-blank-view", countlyBaseView.extend({
+        template: '<div v-show="isActive"><slot/></div>'
+    }));
+
+    Vue.component("cly-panel", {
+        template: '<div class="widget"><div class="widget-header"><div class="left"><div class="title">{{title}}</div></div></div><div class="widget-content help-zone-vb"><slot/></div></div>',
+        props: {
+            title: { type: String, required: true }
+        },
+    });
+
     Vue.component("cly-time-graph", {
         template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
         props: {
