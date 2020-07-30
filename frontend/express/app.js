@@ -17,7 +17,7 @@ var versionInfo = require('./version.info'),
     COUNTLY_HELPCENTER_LINK = (typeof versionInfo.helpCenterLink === "undefined") ? true : (typeof versionInfo.helpCenterLink === "string") ? versionInfo.helpCenterLink : (typeof versionInfo.helpCenterLink === "boolean") ? versionInfo.helpCenterLink : true,
     COUNTLY_FEATUREREQUEST_LINK = (typeof versionInfo.featureRequestLink === "undefined") ? true : (typeof versionInfo.featureRequestLink === "string") ? versionInfo.featureRequestLink : (typeof versionInfo.featureRequestLink === "boolean") ? versionInfo.featureRequestLink : true,
     express = require('express'),
-    SkinStore = require('connect-mongoskin'),
+    SkinStore = require('./libs/connect-mongo.js'),
     expose = require('./libs/express-expose.js'),
     dollarDefender = require('./libs/dollar-defender.js')({
         message: "Dollar sign is not allowed in keys",
