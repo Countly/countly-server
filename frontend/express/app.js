@@ -141,70 +141,70 @@ if (countlyConfig.web && countlyConfig.web.track === "all") {
 
 var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
 
-
-plugins.dbConnection(countlyConfig).then(function(countlyDb) {
-//reference for consistency between app and api processes
-    common.db = countlyDb;
-    membersUtility.db = countlyDb;
+Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_fs")]).then(function(dbs) {
+    var countlyDb = dbs[0];
+    //reference for consistency between app and api processes
+    membersUtility.db = common.db = countlyDb;
+    countlyFs.setHandler(dbs[1]);
 
     //checking remote configuration
     membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
     /**
-* Create sha1 hash string
-* @param {string} str - string to hash
-* @param {boolean} addSalt - should salt be added
-* @returns {string} hashed string
-**/
+    * Create sha1 hash string
+    * @param {string} str - string to hash
+    * @param {boolean} addSalt - should salt be added
+    * @returns {string} hashed string
+    **/
     function sha1Hash(str, addSalt) {
         var salt = (addSalt) ? new Date().getTime() : "";
         return crypto.createHmac('sha1', salt + "").update(str + "").digest('hex');
     }
 
     /**
-* Create sha512 hash string
-* @param {string} str - string to hash
-* @param {boolean} addSalt - should salt be added
-* @returns {string} hashed string
-**/
+    * Create sha512 hash string
+    * @param {string} str - string to hash
+    * @param {boolean} addSalt - should salt be added
+    * @returns {string} hashed string
+    **/
     function sha512Hash(str, addSalt) {
         var salt = (addSalt) ? new Date().getTime() : "";
         return crypto.createHmac('sha512', salt + "").update(str + "").digest('hex');
     }
 
     /**
-* Create argon2 hash string
-* @param {string} str - string to hash
-* @returns {promise} hash promise
-**/
+    * Create argon2 hash string
+    * @param {string} str - string to hash
+    * @returns {promise} hash promise
+    **/
     function argon2Hash(str) {
         return argon2.hash(str);
     }
 
     /**
-* Verify argon2 hash string
-* @param {string} hashedStr - argon2 hashed string
-* @param {string} str - string for verify
-* @returns {promise} verify promise
-**/
+    * Verify argon2 hash string
+    * @param {string} hashedStr - argon2 hashed string
+    * @param {string} str - string for verify
+    * @returns {promise} verify promise
+    **/
     function verifyArgon2Hash(hashedStr, str) {
         return argon2.verify(hashedStr, str);
     }
 
     /**
- * Is hashed string argon2?
- * @param {string} hashedStr | argon2 hashed string
- * @returns {boolean} return true if string hashed by argon2
- */
+    * Is hashed string argon2?
+    * @param {string} hashedStr | argon2 hashed string
+    * @returns {boolean} return true if string hashed by argon2
+    */
     function isArgon2Hash(hashedStr) {
         return hashedStr.includes("$argon2");
     }
 
     /**
- * Verify member for Argon2 Hash
- * @param {string} username | User name
- * @param {password} password | Password string
- * @param {Function} callback | Callback function
- */
+    * Verify member for Argon2 Hash
+    * @param {string} username | User name
+    * @param {password} password | Password string
+    * @param {Function} callback | Callback function
+    */
     function verifyMemberArgon2Hash(username, password, callback) {
         var secret = countlyConfig.passwordSecret || "";
         password = password + secret;
@@ -246,29 +246,29 @@ plugins.dbConnection(countlyConfig).then(function(countlyDb) {
     }
 
     /**
-* Update user password to new sha512 hash
-* @param {string} id - id of the user document
-* @param {string} password - password to hash
-**/
+    * Update user password to new sha512 hash
+    * @param {string} id - id of the user document
+    * @param {string} password - password to hash
+    **/
     function updateUserPasswordToArgon2(id, password) {
         countlyDb.collection('members').update({ _id: id}, { $set: { password: password}});
     }
 
     /**
-* Check if user is global admin
-* @param {object} req - request object
-* @returns {boolean} true if global admin
-**/
+    * Check if user is global admin
+    * @param {object} req - request object
+    * @returns {boolean} true if global admin
+    **/
     function isGlobalAdmin(req) {
         return (req.session.gadm);
     }
 
     /**
-* Sort array by list of
-* @param {array} arrayToSort - array to sort
-* @param {array} sortList - list of values by which to sort
-* @returns {array} sorted array
-**/
+    * Sort array by list of
+    * @param {array} arrayToSort - array to sort
+    * @param {array} sortList - list of values by which to sort
+    * @returns {array} sorted array
+    **/
     function sortBy(arrayToSort, sortList) {
         if (!sortList.length) {
             return arrayToSort;
@@ -320,10 +320,10 @@ plugins.dbConnection(countlyConfig).then(function(countlyDb) {
     var curTheme = countlyConfig.web.theme || "";
 
     /**
-* Load theme files
-* @param {string} theme - theme name
-* @param {function} callback - when loading files done
-**/
+    * Load theme files
+    * @param {string} theme - theme name
+    * @param {function} callback - when loading files done
+    **/
     app.loadThemeFiles = function(theme, callback) {
         if (!loadedThemes[theme]) {
             var tempThemeFiles = {css: [], js: []};
@@ -388,10 +388,10 @@ plugins.dbConnection(countlyConfig).then(function(countlyDb) {
     });
 
     /**
-* Add headers to request
-* @param {object} req - request object
-* @param {object} res - response object
-**/
+    * Add headers to request
+    * @param {object} req - request object
+    * @param {object} res - response object
+    **/
     function add_headers(req, res) {
         if (countlyConfig.web.secure_cookies) {
         //we can't detect if it uses https behind nginx, without specific nginx configuration, so we assume it does
@@ -796,16 +796,16 @@ plugins.dbConnection(countlyConfig).then(function(countlyDb) {
     });
 
     /**
-* Render dashboard
-* @param {object} req - request object
-* @param {object} res - response object
-* @param {function} next - callback for next middleware
-* @param {object} member - dashboard member document
-* @param {array} adminOfApps - list of apps member is admin of
-* @param {array} userOfApps - list of apps member is user of
-* @param {object} countlyGlobalApps - all apps user has any access to, where key is app id and value is app document
-* @param {object} countlyGlobalAdminApps - all apps user has write access to, where key is app id and value is app document
-**/
+    * Render dashboard
+    * @param {object} req - request object
+    * @param {object} res - response object
+    * @param {function} next - callback for next middleware
+    * @param {object} member - dashboard member document
+    * @param {array} adminOfApps - list of apps member is admin of
+    * @param {array} userOfApps - list of apps member is user of
+    * @param {object} countlyGlobalApps - all apps user has any access to, where key is app id and value is app document
+    * @param {object} countlyGlobalAdminApps - all apps user has write access to, where key is app id and value is app document
+    **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings);
         configs.export_limit = plugins.getConfig("api").export_limit;
@@ -1206,11 +1206,11 @@ plugins.dbConnection(countlyConfig).then(function(countlyDb) {
     });
 
     app.get(countlyConfig.path + '/api-key', function(req, res, next) {
-    /**
-    * Handles unauthorized access attempt
-    * @param {object} response - response object
-    * @returns {void} void
-    **/
+        /**
+        * Handles unauthorized access attempt
+        * @param {object} response - response object
+        * @returns {void} void
+        **/
         function unauthorized(response) {
             response.set('WWW-Authenticate', 'Basic realm=Authorization Required');
             return response.status(401).send("-1");
