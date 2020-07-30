@@ -41,7 +41,7 @@ describe('Testing event settings', function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
-            dbdrill = testUtils.client.db("countly_drill")
+            dbdrill = testUtils.client.db("countly_drill");
             var params = [
                 {"key": "test1", "count": 1},
                 {"key": "test2", "count": 1, "sum": 5, "dur": 10}];
