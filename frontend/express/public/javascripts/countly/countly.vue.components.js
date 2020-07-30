@@ -215,11 +215,6 @@
             i18n: function() {
                 return jQuery.i18n.prop.apply(null, arguments);
             }
-        },
-        data: function() {
-            return {
-                i18nMap: jQuery.i18n.map
-            };
         }
     };
 
