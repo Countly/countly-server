@@ -18,6 +18,15 @@ const STATUS = {
         PAUSED: 5,
         WAITING: 6
     },
+    STATUS_MAP = {
+        0: "SCHEDULED",
+        1: "RUNNING",
+        2: "DONE",
+        3: "CANCELLED",
+        4: "ABORTED",
+        5: "PAUSED",
+        6: "WAITING"
+    },
     ERROR = {
         CRASH: 'crash',
         TIMEOUT: 'timeout'
@@ -1096,5 +1105,6 @@ module.exports = {
     IPCFaçadeJob: IPCFaçadeJob,
     TransientJob: TransientJob,
     STATUS: STATUS,
+    STATUS_MAP: STATUS_MAP,
     debounce: debounce
 };

@@ -21,7 +21,7 @@
     "assistant"
   ],
   "dependencies": {
-    "rss-parser": "3.8.0"
+    "rss-parser": "3.9.0"
   },
   "private": true
 }
