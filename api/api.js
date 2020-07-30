@@ -213,7 +213,6 @@ plugins.dbConnection().then(function(db) {
     else {
         console.log("Starting worker", process.pid, "parent:", process.ppid);
         const taskManager = require('./utils/taskmanager.js');
-        common.db = plugins.dbConnection(countlyConfig);
 
         common.cache = new CacheWorker(common.db);
         common.cache.start();

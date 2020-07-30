@@ -1,5 +1,4 @@
-var pluginManager = require('../../../../plugins/pluginManager.js'),
-    countlyDb = pluginManager.dbConnection();
+var pluginManager = require('../../../../plugins/pluginManager.js');
 
 async function sequence(arr, f, def = 0) {
     return await arr.reduce(async(promise, item) => {
@@ -24,8 +23,7 @@ function split(data, batch) {
     }
     return chunks;
 }
-
-countlyDb.onOpened(() => {
+pluginManager.dbConnection().then((countlyDb) => {
     countlyDb._native.listCollections().toArray((err, names) => {
         if (names) {
             names = names.map(n => n.name).filter(n => n.indexOf('push_') === 0 && n.indexOf('_') === n.lastIndexOf('_'));

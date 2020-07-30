@@ -649,15 +649,16 @@ var pluginManager = function pluginManager() {
         var self = this;
         if (finishedSyncing) {
             finishedSyncing = false;
-            var db = self.dbConnection();
-            db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
-                if (!err) {
-                    configs = res;
-                    self.checkPlugins(db, function() {
-                        db.close();
-                        finishedSyncing = true;
-                    });
-                }
+            self.dbConnection().then((db) => {
+                db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+                    if (!err) {
+                        configs = res;
+                        self.checkPlugins(db, function() {
+                            db.close();
+                            finishedSyncing = true;
+                        });
+                    }
+                });
             });
         }
     };
@@ -1113,7 +1114,7 @@ var pluginManager = function pluginManager() {
             //we are in worker
             maxPoolSize = 100;
         }
-        if (process.argv[1].endsWith('executor.js')) {
+        if (process.argv[1] && process.argv[1].endsWith('executor.js')) {
             maxPoolSize = 3;
         }
         if (typeof config === "string") {

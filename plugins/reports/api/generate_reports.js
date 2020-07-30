@@ -45,57 +45,58 @@ function convertToTimezone(props) {
     props.r_minute = minute;
 }
 
-var countlyDb = plugins.dbConnection();
-//load configs
-plugins.loadConfigs(countlyDb, function() {
-    var appCache = {};
-    countlyDb.collection("members").find().toArray(function(err, res) {
-        var arr = [];
-        for (var i = 0; i < res.length; i++) {
-            if (!res[i].global_admin) {
-                arr.push({emails: [res[i].email], apps: res[i].admin_of || [], metrics: {"analytics": true, "revenue": true, "push": true, "crash": true }, frequency: "daily", hour: 17, minute: 0, day: 1, timezone: "Etc/GMT", user: res[i]._id});
-            }
-        }
-        async.map(arr, function(report, done) {
-            /**
-             * insert report to db
-             */
-            function insertReport() {
-                convertToTimezone(report);
-                countlyDb.collection("reports").insert(report, function() {
-                    console.log("created", report);
-                    done(null, null);
-                });
-            }
-            var app_id = report.apps[0];
-            if (app_id) {
-                if (typeof appCache[app_id] !== "undefined") {
-                    report.timezone = appCache[app_id].timezone;
-                    insertReport();
+plugins.dbConnection().then((countlyDb) => {
+    //load configs
+    plugins.loadConfigs(countlyDb, function() {
+        var appCache = {};
+        countlyDb.collection("members").find().toArray(function(err, res) {
+            var arr = [];
+            for (var i = 0; i < res.length; i++) {
+                if (!res[i].global_admin) {
+                    arr.push({emails: [res[i].email], apps: res[i].admin_of || [], metrics: {"analytics": true, "revenue": true, "push": true, "crash": true }, frequency: "daily", hour: 17, minute: 0, day: 1, timezone: "Etc/GMT", user: res[i]._id});
                 }
-                else {
-                    countlyDb.collection("apps").findOne({_id: countlyDb.ObjectID(app_id)}, function(err2, app) {
-                        if (err2) {
-                            console.log(err2);
-                        }
-                        appCache[app_id] = app;
-                        report.timezone = appCache[app_id].timezone;
-                        insertReport();
+            }
+            async.map(arr, function(report, done) {
+                /**
+                * insert report to db
+                */
+                function insertReport() {
+                    convertToTimezone(report);
+                    countlyDb.collection("reports").insert(report, function() {
+                        console.log("created", report);
+                        done(null, null);
                     });
                 }
-            }
-            else {
-                insertReport();
-            }
-        }, function() {
-            console.log("all reports generated");
-            countlyDb.close();
-            process.exit();
+                var app_id = report.apps[0];
+                if (app_id) {
+                    if (typeof appCache[app_id] !== "undefined") {
+                        report.timezone = appCache[app_id].timezone;
+                        insertReport();
+                    }
+                    else {
+                        countlyDb.collection("apps").findOne({_id: countlyDb.ObjectID(app_id)}, function(err2, app) {
+                            if (err2) {
+                                console.log(err2);
+                            }
+                            appCache[app_id] = app;
+                            report.timezone = appCache[app_id].timezone;
+                            insertReport();
+                        });
+                    }
+                }
+                else {
+                    insertReport();
+                }
+            }, function() {
+                console.log("all reports generated");
+                countlyDb.close();
+                process.exit();
+            });
         });
+        /*//send report
+        reports.sendReport(countlyDb, myArgs[0], function(err, res){
+            //close db to stop process
+            countlyDb.close();
+        });*/
     });
-    /*//send report
-    reports.sendReport(countlyDb, myArgs[0], function(err, res){
-        //close db to stop process
-        countlyDb.close();
-    });*/
 });

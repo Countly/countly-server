@@ -1,8 +1,7 @@
 var pluginManager = require('../../../../plugins/pluginManager.js'),
-    async = require('async'),
-    countlyDb = pluginManager.dbConnection();
+    async = require('async');
 
-(function(){
+pluginManager.dbConnection().then((countlyDb) => {
 
     var dataTransferStatus = false,
         liveDisabledStatus = false,
@@ -196,4 +195,4 @@ var pluginManager = require('../../../../plugins/pluginManager.js'),
     }
     
     execute();
-})();
+});

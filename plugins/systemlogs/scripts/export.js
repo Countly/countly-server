@@ -19,8 +19,7 @@ else {
         console.log("[");
     }
     localize.getProperties("en", function(err, properties) {
-        var db = plugins.dbConnection("countly");
-        db.onOpened(function() {
+        plugins.dbConnection().then((db) => {
             plugins.loadConfigs(db, function() {
                 var cursor = db._native.collection("systemlogs").find({ts: {$gte: date.unix()}});
                 var returned = false;
