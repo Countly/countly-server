@@ -7,7 +7,7 @@ const EventEmitter = require('events'),
     ipc = require('./ipc.js'),
     log = require('../../utils/log.js')('jobs:job'),
     retry = require('./retry.js'),
-    ObjectID = require('mongoskin').ObjectID;
+    ObjectID = require('mongodb').ObjectID;
 
 const STATUS = {
         SCHEDULED: 0,

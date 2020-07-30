@@ -14,11 +14,12 @@ class Handle {
     /** constructor **/
     constructor() {
         log.i('Starting job handle in %d', process.pid);
-        this.db = manager.singleDefaultConnection();
-        this.classes = {}; // {'job name': Constructor}
-        this.files = {}; // {'ping': '/usr/local/countly/api/jobs/ping.js'}
-        scan(this.db, this.files, this.classes);
-
+        manager.singleDefaultConnection().then((db) => {
+            this.db = db;
+            this.classes = {}; // {'job name': Constructor}
+            this.files = {}; // {'ping': '/usr/local/countly/api/jobs/ping.js'}
+            scan(this.db, this.files, this.classes);
+        });
     }
 
     /**

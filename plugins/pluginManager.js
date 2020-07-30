@@ -1,6 +1,6 @@
 var plugins = require('./plugins.json', 'dont-enclose'),
     pluginsApis = {},
-    mongo = require('mongoskin'),
+    mongodb = require('mongodb'),
     cluster = require('cluster'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
@@ -1105,7 +1105,7 @@ var pluginManager = function pluginManager() {
     * @param {object} config - connection configs
     * @returns {object} db connection params
     **/
-    this.dbConnection = function(config) {
+    this.dbConnection = async function(config) {
         var db, maxPoolSize = 10;
         var mngr = this;
 
@@ -1222,8 +1222,17 @@ var pluginManager = function pluginManager() {
             connection: dbName,
             options: dbOptions
         });
-
-        var countlyDb = mongo.db(dbName, dbOptions);
+        const client = new mongodb.MongoClient(dbName, dbOptions);
+        try {
+            await client.connect();
+        }
+        catch (ex) {
+            logDbRead.e("Error connecting to database", ex);
+            //exit to retry to reconnect on restart
+            process.exit(1);
+            return;
+        }
+        var countlyDb = client.db(db_name);
         countlyDb._cly_debug = {
             db: db_name,
             connection: dbName,
@@ -1231,11 +1240,10 @@ var pluginManager = function pluginManager() {
         };
 
         logDbRead.d("New connection %j", countlyDb._cly_debug);
-        countlyDb._emitter.setMaxListeners(0);
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
                 try {
-                    return mongo.ObjectID(id);
+                    return mongodb.ObjectID(id);
                 }
                 catch (ex) {
                     logDbRead.i("Incorrect Object ID %j", ex);
@@ -1252,23 +1260,16 @@ var pluginManager = function pluginManager() {
         };
         countlyDb.on('error', console.log);
         countlyDb.onOpened = function(callback) {
-            if (countlyDb.isOpen()) {
-                callback();
-            }
-            else {
-                countlyDb._emitter.once('open', function() {
-                    callback();
-                });
-            }
+            callback();
         };
-
-        countlyDb.onOpened(function() {
-            mngr.dispatch("/db/connected", {
-                db: db_name,
-                instance: countlyDb,
-                connection: dbName,
-                options: dbOptions
-            });
+        countlyDb._native = countlyDb;
+        countlyDb.client = client;
+        countlyDb.close = client.close.bind(client);
+        mngr.dispatch("/db/connected", {
+            db: db_name,
+            instance: countlyDb,
+            connection: dbName,
+            options: dbOptions
         });
 
         countlyDb.admin().buildInfo({}, (err, result) => {
@@ -1279,7 +1280,6 @@ var pluginManager = function pluginManager() {
 
         var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session"];
 
-        countlyDb.s = {};
         countlyDb._collection_cache = {};
         //overwrite some methods
         countlyDb._collection = countlyDb.collection;
@@ -1309,6 +1309,10 @@ var pluginManager = function pluginManager() {
 
             //overwrite with retry policy
             var retryifNeeded = function(callback, retry, e, data) {
+                //we cannot enforce callback, to make it return promise
+                if (!callback) {
+                    return;
+                }
                 return function(err, res) {
                     if (err) {
                         if (retry && err.code === 11000) {
@@ -1453,6 +1457,10 @@ var pluginManager = function pluginManager() {
 
             //overwrite with write logging
             var logForWrites = function(callback, e, data) {
+                //we cannot enforce callback, to make it return promise
+                if (!callback) {
+                    return;
+                }
                 return function(err, res) {
                     if (err) {
                         if (!(data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
@@ -1527,6 +1535,10 @@ var pluginManager = function pluginManager() {
 
             //overwrite with read logging
             var logForReads = function(callback, e, data) {
+                //we cannot enforce callback, to make it return promise
+                if (!callback) {
+                    return;
+                }
                 return function(err, res) {
                     if (err) {
                         logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
@@ -1636,7 +1648,7 @@ var pluginManager = function pluginManager() {
                 var cursor = this._find(query, options);
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
-                    cursor._toArray(logForReads(callback, e, copyArguments(args, "find")));
+                    return cursor._toArray(logForReads(callback, e, copyArguments(args, "find")));
                 };
                 return cursor;
             };
