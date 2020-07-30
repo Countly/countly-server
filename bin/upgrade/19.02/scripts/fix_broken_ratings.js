@@ -2,8 +2,7 @@ var pluginManager = require('../../../../plugins/pluginManager.js'),
     async = require('async'),
     crypto = require('crypto');
 
-
-Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_drill")]).then(function(countlyDB,countlyDrillDB){
+Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_drill")]).then(function([countlyDB,countlyDrillDB]){
     countlyDb.collection('apps').find({}).toArray(function(errAppFind, apps) {
         if (!apps || errAppFind) {
             console.log('No apps to fix');
