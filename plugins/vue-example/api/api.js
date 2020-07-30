@@ -8,7 +8,7 @@ var common = require('../../../api/utils/common.js'),
             var params = ob.params;
             var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
             validateUserForDataReadAPI(params, function() {
-                common.returnOutput(params, [...Array(10)].map(() => Math.floor(Math.random() * 9)));
+                common.returnOutput(params, [...Array(30)].map(() => Math.floor(Math.random() * 9)));
             });
             return true;
         }

@@ -330,7 +330,7 @@
     // New components
 
     Vue.component("cly-datatable", {
-        template: '<table ref="dtable" cellpadding="0" cellspacing="0" class="cly-vue cly-datatable-wrapper d-table"></table>',
+        template: '<table ref="dtable" cellpadding="0" cellspacing="0" class="cly-vue-datatable-wrapper d-table"></table>',
         data: function() {
             return {
                 isInitialized: false,
@@ -371,7 +371,10 @@
     });
 
     Vue.component("cly-tabs", {
-        template: '<div class="cly-vue cly-tabs"><ul class="cly-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.tId)" v-html="tab.tName"></a></li></ul><div class="cly-tabs-container"><slot/></div></div>',
+        template: '<div class="cly-vue-tabs"><ul class="cly-vue-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.tId)" v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+        mixins: [
+            _mixins.i18n
+        ],
         data: function() {
             return {
                 tabs: [],
@@ -407,12 +410,13 @@
                         tab.isActive = false;
                     }
                 });
+                this.$emit("tab-changed", newId);
             }
         }
     });
 
     Vue.component("cly-tab", {
-        template: '<div v-show="isActive" class="cly-tab"><slot/></div>',
+        template: '<div v-show="isActive" class="cly-vue-tab"><slot/></div>',
         props: {
             name: { required: true },
             id: { required: true },
@@ -426,6 +430,51 @@
                 return this.id;
             }
         }
+    });
+
+    Vue.component("cly-time-graph", {
+        template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
+        props: {
+            data: { required: true }
+        },
+        mounted: function() {
+            this.render();
+        },
+        methods: {
+            render: function() {
+
+                if ($(this.$refs.container).is(":hidden")) {
+                    // no need to render if hidden
+                    return;
+                }
+
+                var mapped = this.data.map(function(val, idx) {
+                    return [idx + 1, val];
+                });
+
+                var prev = this.data.map(function(val, idx) {
+                    return [idx + 1, val / 2];
+                });
+
+                var points = [{
+                    "data": prev,
+                    "label": "Total Sessions",
+                    "color": "#DDDDDD",
+                    "mode": "ghost"
+                }, {
+                    "data": mapped,
+                    "label": "Total Sessions",
+                    "color": "#52A3EF"
+                }];
+
+                countlyCommon.drawTimeGraph(points, $(this.$refs.container));
+            },
+        },
+        watch: {
+            data: function() {
+                this.render();
+            }
+        },
     });
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

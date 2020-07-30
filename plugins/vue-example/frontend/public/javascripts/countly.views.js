@@ -53,6 +53,9 @@ var MainView = {
         refresh: function() {
             this.$store.dispatch("vueExample/updateRandomArray");
         }
+    },
+    mounted: function() {
+        this.refresh();
     }
 };
 
