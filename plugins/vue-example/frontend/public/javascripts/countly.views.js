@@ -41,11 +41,18 @@ var MainView = {
         countlyVue.mixins.autoRefresh,
         countlyVue.mixins.i18n
     ],
+    computed: {
+        randomNumbers: function() {
+            return this.$store.getters["vueExample/randomNumbers"];
+        }
+    },
     components: {
         "table-view": TableExampleView
     },
     methods: {
-        refresh: function() {}
+        refresh: function() {
+            this.$store.dispatch("vueExample/updateRandomArray");
+        }
     }
 };
 
