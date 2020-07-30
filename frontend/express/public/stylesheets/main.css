@@ -3800,6 +3800,10 @@ color:#E95C6C; transition:color 1s;
 .clip { max-height: 60px; line-height: 20px; text-overflow: ellipsis; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;}
 .clip.nothing { color: #bbb;}
 
+#jobs-menu:hover svg g {
+    fill: #fff;
+}
+
 .cly-menu-component .menu-toggler{
     cursor: pointer;
     padding: 6px 9px;

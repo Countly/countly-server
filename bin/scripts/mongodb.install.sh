@@ -146,6 +146,20 @@ EOF
     message_ok "Disabled transparent hugepages"
 }
 
+function fix_mongod_service_type () {
+    if [[ ! $(/sbin/init --version) =~ upstart ]]; then
+        SERVICE_FILE_PATH=$(systemctl status mongod | grep "loaded" | awk -F';' '{print $1}' | awk -F'(' '{print $2}')
+
+        if grep -q "Type=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/Type=/d" "${SERVICE_FILE_PATH}"
+        fi
+
+        sed -i "s#\[Service\]#\[Service\]\nType=simple#g" "${SERVICE_FILE_PATH}"
+
+        systemctl daemon-reload
+	fi 2> /dev/null
+}
+
 function message_warning () {
     echo -e "\e[1m[\e[91m!\e[97m]\e[0m $1"
 }
@@ -330,6 +344,9 @@ function mongodb_check() {
             message_warning "Command timedatectl not found"
         fi
     fi
+
+    #change mongod systemd service type to 'simple' to prevent systemd timeout interrupt on wiredtiger's long boot
+    fix_mongod_service_type
 
     echo -e "\nSome of changes may need reboot!\n"
 }
