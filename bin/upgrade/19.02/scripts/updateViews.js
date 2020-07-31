@@ -207,7 +207,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                     }, function(err) {
                         var allSegments = Object.keys(newObj);
                         Promise.each(allSegments, function(ss) {
-                            return new Promise(function(resolve1, reject1) {
+                            return new Promise(async function(resolve1, reject1) {
                                 var colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
                                 if (ss !== 'no-segment') {
                                     colName = "app_viewdata" + crypto.createHash('sha1').update(ss + appID).digest('hex');
