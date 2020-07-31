@@ -240,7 +240,7 @@ pluginManager.dbConnection().then((countlyDb) => {
             }).then(function() {
                 Promise.each(month_docs, function(monthObject) {
                     console.log("processing" + monthObject._id);
-                    return new Promise(function(resolve, reject) {
+                    return new Promise(async function(resolve, reject) {
                         var newObj = {};
                         var newObj2 = {};
     
@@ -412,7 +412,7 @@ pluginManager.dbConnection().then((countlyDb) => {
         var batch = 50000;
         var rightNow = Date.now();
         var ids = [];
-        countlyDb.collection('app_views' + appID).count({dataMoved: {$ne: true}}, function(err, total) {
+        countlyDb.collection('app_views' + appID).count({dataMoved: {$ne: true}}, async function(err, total) {
             if (total === 0) {
                 console.log("Users processed in " + (Date.now() - rightNow) / 1000 + " seconds");
                 done();
