@@ -3804,6 +3804,22 @@ color:#E95C6C; transition:color 1s;
     fill: #fff;
 }
 
+.view-more::after {
+    content: url('../images/dashboard/vm-arrow.svg');
+    background-repeat: no-repeat;
+    position: relative;
+    top: 2px;
+    margin-left: 5px;
+}
+
+.view-more:hover::after {
+    content: url('../images/dashboard/vm-arrow-hover.svg');
+    background-repeat: no-repeat;
+}
+
+.view-more:hover {
+    color: #2FA732;
+}
 .cly-menu-component .menu-toggler{
     cursor: pointer;
     padding: 6px 9px;
