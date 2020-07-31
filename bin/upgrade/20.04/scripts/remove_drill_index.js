@@ -1,6 +1,5 @@
 var async = require('async'),
-    crypto = require('crypto'),
-    plugins = require('../../../../plugins/pluginManager.js');
+    crypto = require('crypto');
 
 console.log("Removing drill indexes");
 

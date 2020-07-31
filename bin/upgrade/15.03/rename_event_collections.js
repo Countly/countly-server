@@ -1,7 +1,6 @@
 console.log("renaming event collections " + new Date());
 
 var	common = require('../../../api/utils/common.js'),
-    countlyConfig = require('../../../api/config.js'),
     plugins = require('../../../plugins/pluginManager.js'),
     async = require('async'),
     crypto = require('crypto');

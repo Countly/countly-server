@@ -221,9 +221,11 @@ pluginManager.dbConnection().then((countlyDb) => {
                                 }
                                 if (bulk.length > 0) {
                                     try {
-                                        await bulk.execute().catch(function(err){});
+                                        await bulk.execute();
                                     }
-                                    catch (e) {}
+                                    catch (e) {
+                                        console.log(e);
+                                    }
                                 }
                                 resolve1();
                             });

@@ -31,7 +31,7 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 async function install() {
-    let db = await pluginManager.dbConnection();
+    let db = await pluginManager.dbConnection(),
         apps = db.collection('apps').find(),
         ret;
 
