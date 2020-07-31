@@ -225,6 +225,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param {@function} callback - callback function
     */
     function getAggregatedData(collectionName, params, settings, callback) {
+        settings = settings || {};
         var app_id = settings.app_id;
         var pipeline = [];
         var period = params.qstring.period || '30days';
