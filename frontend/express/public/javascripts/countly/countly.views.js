@@ -1,4 +1,4 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation */
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation, JobsView, JobDetailView */
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
@@ -2314,7 +2314,7 @@ window.ManageAppsView = countlyView.extend({
                     else {
                         accordionContent.removeClass("overflow-visible");
                     }
-                }, 300);
+                }, 400);
             });
             /** function creates users manage links
              * @param {array} users -  list of users
@@ -6356,7 +6356,6 @@ window.LongTaskView = countlyView.extend({
     },
     refresh: function() {
         this.dtable.fnDraw(false);
-
     },
     addErrorTooltips: function() {
         $("#data-table").on('mouseenter mouseleave', ".have_error_message", function() {
@@ -6966,6 +6965,225 @@ window.TokenManagerView = countlyView.extend({
     }
 });
 
+window.JobsView = countlyView.extend({
+    initialize: function() {},
+    beforeRender: function() {
+        if (this.template) {
+            return true;
+        }
+        else {
+            var self = this;
+            return $.when(T.render('/templates/jobs.html', function(src) {
+                self.template = src;
+            })).then(function() {});
+        }
+    },
+    renderCommon: function() {
+        this.templateData = {
+            "page-title": jQuery.i18n.map["sidebar.management.jobs"]
+        };
+        $(this.el).html(this.template(this.templateData));
+        this.renderTable();
+    },
+    refresh: function() {
+        this.dtable.fnDraw(false);
+    },
+    renderTable: function() {
+        var self = this;
+        this.dtable = $('#jobs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaSorting": [[ 0, "asc" ]],
+            "bServerSide": true,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=jobs",
+            "fnServerData": function(sSource, aoData, fnCallback) {
+                $.ajax({
+                    "type": "POST",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": function(data) {
+                        fnCallback(data);
+                    }
+                });
+            },
+            "fnRowCallback": function(nRow, aData) {
+                $(nRow).attr("id", aData.name);
+            },
+            "aoColumns": [
+                {
+                    "mData": function(row) {
+                        return row.name;
+                    },
+                    "sType": "string",
+                    "bSortable": true,
+                    "bSearchable": true,
+                    "sTitle": jQuery.i18n.map["jobs.job-name"]
+                },
+                {
+                    "mData": function(row) {
+                        return row.schedule;
+                    },
+                    "sType": "string",
+                    "bSortable": false,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-schedule"]
+                },
+                {
+                    "mData": function(row) {
+                        return countlyCommon.getDate(row.next) + " " + countlyCommon.getTime(row.next);
+                    },
+                    "sType": "format-ago",
+                    "bSortable": true,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-next-run"]
+                },
+                {
+                    "mData": function(row) {
+                        return countlyCommon.formatTimeAgo(row.finished);
+                    },
+                    "sType": "format-ago",
+                    "bSortable": true,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-last-run"]
+                },
+                {
+                    "mData": function(row) {
+                        return row.status;
+                    },
+                    "sType": "string",
+                    "bSortable": true,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-status"]
+                },
+                {
+                    "mData": function(row) {
+                        return row.total;
+                    },
+                    "sType": "numeric",
+                    "bSortable": true,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-total-scheduled"]
+                }
+            ],
+        }));
+        self.dtable.fnSort([ [0, 'asc'] ]);
+        self.dtable.stickyTableHeaders();
+        $('#jobs-table tbody').on("click", "tr", function() {
+            var name = $(this).attr("id");
+            if (name) {
+                window.location.hash = "/manage/jobs/" + name;
+            }
+        });
+    },
+});
+
+window.JobDetailView = countlyView.extend({
+    initialize: function() {},
+    beforeRender: function() {
+        if (this.template) {
+            return true;
+        }
+        else {
+            var self = this;
+            return $.when(T.render('/templates/jobs.html', function(src) {
+                self.template = src;
+            })).then(function() {});
+        }
+    },
+
+    renderCommon: function() {
+        this.templateData = {
+            "page-title": this.name
+        };
+        $(this.el).html(this.template(this.templateData));
+        this.renderTable();
+    },
+    refresh: function() {
+        this.dtable.fnDraw(false);
+    },
+    renderTable: function() {
+        var self = this;
+        this.dtable = $('#jobs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaSorting": [[ 3, "desc" ]],
+            "bFilter": false,
+            "bServerSide": true,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=jobs&name=" + self.name,
+            "fnServerData": function(sSource, aoData, fnCallback) {
+                $.ajax({
+                    "type": "POST",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": function(data) {
+                        fnCallback(data);
+                    }
+                });
+            },
+            "aoColumns": [
+                {
+                    "mData": function(row) {
+                        return row.schedule;
+                    },
+                    "sType": "string",
+                    "bSortable": false,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-schedule"]
+                },
+                {
+                    "mData": function(row) {
+                        return countlyCommon.getDate(row.next) + " " + countlyCommon.getTime(row.next);
+                    },
+                    "sType": "format-ago",
+                    "bSortable": true,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-next-run"]
+                },
+                {
+                    "mData": function(row) {
+                        return countlyCommon.formatTimeAgo(row.finished);
+                    },
+                    "sType": "format-ago",
+                    "bSortable": true,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-last-run"]
+                },
+                {
+                    "mData": function(row) {
+                        return row.status;
+                    },
+                    "sType": "string",
+                    "bSortable": true,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-status"]
+                },
+                {
+                    "mData": function(row) {
+                        return "<pre>" + JSON.stringify(row.data, null, 2) + "</pre>";
+                    },
+                    "sType": "string",
+                    "bSortable": false,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.job-data"]
+                },
+                {
+                    "mData": function(row) {
+                        return (row.duration / 1000) + 's';
+                    },
+                    "sType": "string",
+                    "bSortable": true,
+                    "bSearchable": false,
+                    "sTitle": jQuery.i18n.map["jobs.run-duration"]
+                },
+            ],
+        }));
+        self.dtable.fnSort([ [3, 'desc'] ]);
+        self.dtable.stickyTableHeaders();
+        $(self.el).prepend('<a class="back back-link"><span>' + jQuery.i18n.map["jobs.back-to-jobs-list"] + '</span></a>');
+        $(self.el).find(".back").click(function() {
+            app.back("/manage/jobs");
+        });
+    },
+});
+
+
+
 $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
     if (countlyGlobal.auth_token) {
@@ -7003,6 +7221,8 @@ app.longTaskView = new LongTaskView();
 app.DownloadView = new DownloadView();
 app.TokenManagerView = new TokenManagerView();
 app.VersionHistoryView = new VersionHistoryView();
+app.jobsView = new JobsView();
+app.jobDetailView = new JobDetailView();
 
 app.route("/analytics/sessions", "sessions", function() {
     this.renderWhenReady(this.sessionView);
@@ -7093,6 +7313,13 @@ app.route("/analytics/events/:subpageid", "events", function(subpageid) {
     else {
         this.renderWhenReady(this.eventsView);
     }
+});
+app.route("/manage/jobs", "manageJobs", function() {
+    this.renderWhenReady(this.jobsView);
+});
+app.route("/manage/jobs/:name", "manageJobName", function(name) {
+    this.jobDetailView.name = name;
+    this.renderWhenReady(this.jobDetailView);
 });
 
 app.addAppSwitchCallback(function(appId) {
