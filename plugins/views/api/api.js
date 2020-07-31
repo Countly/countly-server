@@ -225,6 +225,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param {@function} callback - callback function
     */
     function getAggregatedData(collectionName, params, settings, callback) {
+        settings = settings || {};
         var app_id = settings.app_id;
         var pipeline = [];
         var period = params.qstring.period || '30days';
@@ -285,9 +286,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var last_pushed = "";
         var selectMap = {};
         var projector;
-        if (settings && settings.onlyIDs) {
-            pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
-        }
+
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
             for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
@@ -344,11 +343,17 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector[settings.levels.daily[i]] = {$sum: {$switch: {branches: branches2, default: 0}}};
             }
             pipeline.push({$match: {$or: month_array}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             pipeline.push({$group: projector});
         }
         else if (period === "month") { //this year
             curmonth = periodObj.activePeriod;
             pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + ":0"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
 
             var groupBy1 = {_id: "$vw"};
             for (let i = 0; i < settings.levels.monthly.length; i++) {
@@ -370,6 +375,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var monthNumber = curmonth.split(':');
             var thisYear = now.format('YYYY');
             pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
 
             var groupBy0 = {_id: "$vw"};
             for (let i = 0; i < settings.levels.daily.length; i++) {
@@ -387,6 +395,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             curmonth = this_date[0] + ":" + this_date[1];
             var curday = this_date[2];
             pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + "_m"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             var p_a = {vw: true, _id: "$vw"};
 
             for (let i = 0; i < settings.levels.daily.length; i++) {
@@ -478,6 +489,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector[settings.levels.daily[i]] = {$sum: {$switch: {branches: branches02, default: 0}}};
             }
             pipeline.push({$match: {$or: month_array}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             pipeline.push({$group: projector});
 
         }
