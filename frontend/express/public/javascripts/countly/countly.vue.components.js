@@ -329,10 +329,7 @@
         },
         computed: {
             isActive: function() {
-                if (!this.id || !this.$parent || !this.$parent.currentViewId) {
-                    return true;
-                }
-                return this.$parent.currentViewId === this.id;
+                return this.$parent.isActive !== false;
             },
             vName: function() {
                 return this.name;
@@ -398,43 +395,62 @@
     });
 
     Vue.component("cly-tabs", {
-        template: '<div class="cly-vue-tabs"><ul class="cly-vue-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.vId)" v-html="tab.vName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+        template: '<div class="cly-vue-tabs"><ul class="cly-vue-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.tId)" v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
         mixins: [
             _mixins.i18n
         ],
         data: function() {
             return {
                 tabs: [],
-                currentViewId: '',
+                currentTabId: '',
             };
         },
         props: {
             initialTab: { default: null },
         },
         methods: {
-            setTab: function(vId) {
-                this.currentViewId = vId;
+            setTab: function(tId) {
+                this.currentTabId = tId;
             }
         },
         created: function() {
             this.tabs = this.$children;
             if (this.initialTab) {
-                this.currentViewId = this.initialTab;
+                this.currentTabId = this.initialTab;
             }
             else if (this.tabs.length > 0) {
-                this.currentViewId = this.tabs[0].vId;
+                this.currentTabId = this.tabs[0].tId;
             }
         },
         watch: {
-            currentViewId: function(newId) {
+            currentTabId: function(newId) {
                 this.$emit("tab-changed", newId);
             }
         }
     });
 
-    Vue.component("cly-blank-view", countlyBaseView.extend({
-        template: '<div v-show="isActive"><slot/></div>'
-    }));
+    Vue.component("cly-tab", {
+        template: '<div v-show="isActive"><slot/></div>',
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            name: { type: String, default: null},
+            id: { type: String, default: null },
+
+        },
+        computed: {
+            isActive: function() {
+                return this.$parent.currentTabId === this.id;
+            },
+            tName: function() {
+                return this.name;
+            },
+            tId: function() {
+                return this.id;
+            }
+        }
+    });
 
     Vue.component("cly-panel", {
         template: '<div class="widget"><div class="widget-header"><div class="left"><div class="title">{{title}}</div></div></div><div class="widget-content help-zone-vb"><slot/></div></div>',
