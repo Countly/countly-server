@@ -455,7 +455,7 @@
     });
 
     Vue.component("cly-panel", {
-        template: '<div class="widget"><div class="widget-header"><div class="left"><div class="title">{{title}}</div></div></div><div class="widget-content help-zone-vb"><slot/></div></div>',
+        template: '<div class="cly-vue-panel widget"><div class="widget-header"><div class="left"><div class="title">{{title}}</div></div></div><div class="widget-content help-zone-vb"><slot/></div></div>',
         props: {
             title: { type: String, required: true }
         },
@@ -497,7 +497,7 @@
                 }];
 
                 countlyCommon.drawTimeGraph(points, $(this.$refs.container));
-            },
+            }
         },
         watch: {
             data: function() {

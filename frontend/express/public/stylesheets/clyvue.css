@@ -63,6 +63,9 @@
 /* time graph */
 
 .cly-vue-time-graph{
-    width: 100%;
-    height: 500px;
+    width: auto;
+    height: 350px;
 }
+
+.cly-vue-time-graph{ font-family:Oswald; font-size:14px; margin:30px }
+.cly-vue-time-graph .legendLabel{ font-family:Ubuntu; font-size:14px; }

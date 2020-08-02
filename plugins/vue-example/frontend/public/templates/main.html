@@ -1,18 +1,4 @@
-<div>
-    <cly-tabs id="basic-tabs">
-        <cly-tab v-bind:name='i18n("vue-example.table")' id="table-tab">
-            <table-view></table-view>
-        </cly-tab>
-        <cly-tab v-bind:name='i18n("vue-example.time-graph")' id="chart-tab">
-            <tg-view></tg-view>
-        </cly-tab>
-        <cly-tab v-bind:name='i18n("vue-example.table")' id="table2-tab">
-            <table-view></table-view>
-        </cly-tab>
-        <cly-tab name='Blank' id="blank-tab">
-            <cly-panel title="Vue Example">
-                Hello world.
-            </cly-panel>
-        </cly-tab>
-    </cly-tabs>
+<div class="vue-example-wrapper">
+    <tg-view></tg-view>
+    <table-view></table-view>
 </div>
