@@ -218,9 +218,9 @@
         }
     };
 
-    var refreshOnActiveMixin = {
+    var refreshOnParentActiveMixin = {
         watch: {
-            isActive: function(newState) {
+            isParentActive: function(newState) {
                 if (newState) {
                     this.refresh();
                 }
@@ -233,7 +233,7 @@
 
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
-        'refreshOnActive': refreshOnActiveMixin,
+        'refreshOnParentActive': refreshOnParentActiveMixin,
         'i18n': i18nMixin,
     };
 
@@ -328,7 +328,7 @@
             id: { type: String, default: null }
         },
         computed: {
-            isActive: function() {
+            isParentActive: function() {
                 return this.$parent.isActive !== false;
             },
             vName: function() {

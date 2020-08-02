@@ -35,7 +35,7 @@ var TableView = countlyVue.views.BaseView.extend({
 var TimeGraphView = countlyVue.views.BaseView.extend({
     template: '#vue-example-tg-template',
     mixins: [
-        countlyVue.mixins.refreshOnActive
+        countlyVue.mixins.refreshOnParentActive
     ],
     computed: {
         randomNumbers: function() {
@@ -44,7 +44,9 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch("vueExample/updateRandomArray");
+            if (this.isParentActive) {
+                this.$store.dispatch("vueExample/updateRandomArray");
+            }
         }
     },
     mounted: function(){
