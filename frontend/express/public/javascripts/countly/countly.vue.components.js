@@ -414,11 +414,13 @@
             }
         },
         created: function() {
-            this.tabs = this.$children;
             if (this.initialTab) {
                 this.currentTabId = this.initialTab;
             }
-            else if (this.tabs.length > 0) {
+        },
+        mounted: function() {
+            this.tabs = this.$children;
+            if (this.currentTabId === '' && this.tabs.length > 0) {
                 this.currentTabId = this.tabs[0].tId;
             }
         },

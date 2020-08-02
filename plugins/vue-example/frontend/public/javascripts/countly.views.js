@@ -44,11 +44,12 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     methods: {
         refresh: function() {
-            if (this.isActive) {
-                this.$store.dispatch("vueExample/updateRandomArray");
-            }
+            this.$store.dispatch("vueExample/updateRandomArray");
         }
     },
+    mounted: function(){
+        this.refresh();
+    }
 });
 
 var MainView = countlyVue.views.BaseView.extend({
