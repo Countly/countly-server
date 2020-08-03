@@ -483,13 +483,7 @@
                         </div>\
                         <div class="inst-date-picker" v-show="isOpened">\
                             <div class="date-selector-buttons">\
-                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'yesterday\'}" @click="setPeriod(\'yesterday\')">{{yesterdayLabel}}</div>\
-                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'hour\'}" @click="setPeriod(\'hour\')">{{i18n("common.today")}}</div>\
-                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'7days\'}" @click="setPeriod(\'7days\')">{{i18n("taskmanager.last-7days")}}</div>\
-                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'30days\'}" @click="setPeriod(\'30days\')">{{i18n("taskmanager.last-30days")}}</div>\
-                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'60days\'}" @click="setPeriod(\'60days\')">{{i18n("taskmanager.last-60days")}}</div>\
-                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'day\'}" @click="setPeriod(\'day\')">{{dayLabel}}</div>\
-                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'month\'}" @click="setPeriod(\'month\')">{{monthLabel}}</div>\
+                                <div class="button date-selector" v-for="item in fixedPeriods" :key="item.value" v-bind:class="{active: currentPeriod == item.value}" @click="setPeriod(item.value)">{{item.name}}</div>\
                                 <div class="button-container">\
                                     <div class="icon-button green inst-date-submit" @click="applyPeriod()">{{i18n("common.apply")}}</div>\
                                     <div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}</div>\
@@ -526,9 +520,15 @@
                 isOpened: false,
 
                 // UI constants
-                monthLabel: '',
-                dayLabel: '',
-                yesterdayLabel: '',
+                fixedPeriods: [
+                    {name: moment().subtract(1, "days").format("Do"), value: "yesterday"},
+                    {name: this.i18n("common.today"), value: "hour"},
+                    {name: this.i18n("taskmanager.last-7days"), value: "7days"},
+                    {name: this.i18n("taskmanager.last-30days"), value: "30days"},
+                    {name: this.i18n("taskmanager.last-60days"), value: "60days"},
+                    {name: moment().format("MMMM, YYYY"), value: "day"},
+                    {name: moment().year(), value: "month"},
+                ],
 
                 // Datepicker handles
                 dateTo: null,
@@ -540,7 +540,6 @@
             };
         },
         mounted: function() {
-            this._init();
             this._initPickers();
         },
         computed: {
@@ -552,11 +551,6 @@
             }
         },
         methods: {
-            _init: function() {
-                this.monthLabel = moment().year();
-                this.dayLabel = moment().format("MMMM, YYYY");
-                this.yesterdayLabel = moment().subtract(1, "days").format("Do");
-            },
             _initPickers: function() {
                 var self = this;
                 self.dateTo = $(this.$refs.instDateTo).datepicker({
