@@ -485,7 +485,7 @@
                             <div class="date-selector-buttons">\
                                 <div class="button date-selector" v-for="item in fixedPeriods" :key="item.value" v-bind:class="{active: currentPeriod == item.value}" @click="setPeriod(item.value)">{{item.name}}</div>\
                                 <div class="button-container">\
-                                    <div class="icon-button green inst-date-submit" @click="applyPeriod()">{{i18n("common.apply")}}</div>\
+                                    <div class="icon-button green inst-date-submit" @click="setCustomPeriod()">{{i18n("common.apply")}}</div>\
                                     <div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}</div>\
                                 </div>\
                             </div>\
@@ -624,21 +624,27 @@
             },
             toggle: function() {
                 this.isOpened = !this.isOpened;
-                this.onToggle();
             },
             cancel: function() {
                 this.isOpened = false;
             },
-            applyPeriod: function() {
-
-            },
             setCustomPeriod: function() {
-
+                var self = this;
+                if (!self.dateFromSelected && !self.dateToSelected) {
+                    return false;
+                }
+                this.setPeriod([
+                    self.dateFromSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected),
+                    self.dateToSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateToSelected) + 24 * 60 * 60 * 1000 - 1
+                ]);
             },
             setPeriod: function(newPeriod) {
                 console.log(newPeriod);
-            },
-            onToggle: function() {
+                this.isOpened = false;
+            }
+        },
+        watch: {
+            isOpened: function() {
                 var date,
                     self = this;
 
