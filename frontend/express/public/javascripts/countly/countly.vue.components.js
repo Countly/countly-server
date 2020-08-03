@@ -455,16 +455,48 @@
     });
 
     Vue.component("cly-panel", {
-        template: '<div class="cly-vue-panel widget"><div class="widget-header"><div class="left"><div class="title">{{title}}</div></div></div><div class="widget-content help-zone-vb"><slot/></div></div>',
+        template: '<div class="cly-vue-panel widget">\
+                        <div class="widget-header">\
+                            <div class="left">\
+                                <div class="title">{{title}}</div>\
+                            </div>\
+                            <div class="right">\
+                                <cly-global-date-selector></cly-global-date-selector>\
+                            </div>\
+                        </div>\
+                        <div class="widget-content help-zone-vb">\
+                            <slot/>\
+                        </div>\
+                    </div>',
         props: {
             title: { type: String, required: true }
         },
     });
 
+    Vue.component("cly-global-date-selector", {
+        template: "#template-cly-vue-global-date-selector",
+        mixins: [
+            _mixins.i18n
+        ],
+        data: function(){
+            return {
+                currentRange: "",
+                isOpened: false
+            }
+        },
+        methods: {
+            toggle: function() {
+                this.isOpened = !this.isOpened;
+            }
+        }
+    })
+
     Vue.component("cly-time-graph", {
         template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
         props: {
-            data: { required: true }
+            data: function(){ 
+                return { required: true }
+            }
         },
         mounted: function() {
             this.render();
