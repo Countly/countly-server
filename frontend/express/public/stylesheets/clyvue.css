@@ -97,14 +97,14 @@
 .cly-vue-global-date-selector .calendar .up {display:none;}
 .cly-vue-global-date-selector .calendar.active .up { display:block;}
 .cly-vue-global-date-selector .calendar.active .down {display:none;}
-.cly-vue-global-date-selector .calendar-block .calendar-input-field { float: right; width: 100px; padding: 9px 9px 9px 9px; font-size: 13px; line-height:13px; text-align:center; border:none; background-color: #1b2732; color: #ffffff; margin: 0 10px; border-radius:2px; border: 1px solid #1b2732; }
+.cly-vue-global-date-selector .calendar-block .calendar-input-field { float: right; width: 100px; padding: 9px 9px 9px 9px; font-size: 13px; line-height:13px; text-align:center; border:none; background-color: #1b2732; color: #ffffff; margin: 0 10px; border-radius:2px; border: 1px solid #1b2732; height: 16px; }
 .cly-vue-global-date-selector .calendar-block .calendar-input-field:hover {
     border: 1px solid #243544;
 }
 .cly-vue-global-date-selector .calendar-block span.date-input-label {float: right; text-transform: uppercase; color: #d2d2d1; margin-top:11px; font: 12px Ubuntu,Helvetica,sans-serif;}
-.cly-vue-global-date-selector .inst-date-picker, .date-picker { white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
-.cly-vue-global-date-selector .inst-date-picker .calendar-container, .date-picker .calendar-container { overflow:auto; padding:10px 5px; margin-right:200px; }
-.cly-vue-global-date-selector .inst-date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar { vertical-align: top; margin-bottom:10px; }
+.cly-vue-global-date-selector .inst-date-picker/*, .date-picker*/ { white-space:nowrap; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
+.cly-vue-global-date-selector .inst-date-picker .calendar-container/*, .date-picker .calendar-container*/ { overflow:auto; padding:10px 5px; margin-right:200px; }
+.cly-vue-global-date-selector .inst-date-picker .calendar-container .calendar/*, .date-picker .calendar-container .calendar*/ { vertical-align: top; margin-bottom:10px; }
 .cly-vue-global-date-selector .inst-date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
 .cly-vue-global-date-selector .inst-date-picker .button-container { overflow:auto; position:absolute; right: 20px; bottom: 15px;}
 .cly-vue-global-date-selector .inst-date-picker .button-container .icon-button { padding: 7px 10px; float: right }

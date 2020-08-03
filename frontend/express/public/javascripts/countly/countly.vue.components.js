@@ -474,28 +474,207 @@
     });
 
     Vue.component("cly-global-date-selector", {
-        template: "#template-cly-vue-global-date-selector",
-        mixins: [
+        template: '<div class="cly-vue-global-date-selector help-zone-vs">\
+                        <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
+                            <i class="material-icons">{{currentPeriodLabel}}</i>\
+                            <span class="inst-selected-date"></span>\
+                            <span class="down ion-chevron-down"></span>\
+                            <span class="up ion-chevron-up"></span>\
+                        </div>\
+                        <div class="inst-date-picker" v-show="isOpened">\
+                            <div class="date-selector-buttons">\
+                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'yesterday\'}" @click="setPeriod(\'yesterday\')">{{yesterdayLabel}}</div>\
+                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'hour\'}" @click="setPeriod(\'hour\')">{{i18n("common.today")}}</div>\
+                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'7days\'}" @click="setPeriod(\'7days\')">{{i18n("taskmanager.last-7days")}}</div>\
+                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'30days\'}" @click="setPeriod(\'30days\')">{{i18n("taskmanager.last-30days")}}</div>\
+                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'60days\'}" @click="setPeriod(\'60days\')">{{i18n("taskmanager.last-60days")}}</div>\
+                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'day\'}" @click="setPeriod(\'day\')">{{dayLabel}}</div>\
+                                <div class="button date-selector" v-bind:class="{active: currentPeriod == \'month\'}" @click="setPeriod(\'month\')">{{monthLabel}}</div>\
+                                <div class="button-container">\
+                                    <div class="icon-button green inst-date-submit" @click="applyPeriod()">{{i18n("common.apply")}}</div>\
+                                    <div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}</div>\
+                                </div>\
+                            </div>\
+                            <div class="calendar-container">\
+                                <table>\
+                                    <tr>\
+                                        <td class="calendar-block">\
+                                            <div class="calendar inst-date-from" ref="instDateFrom"></div>\
+                                        </td>\
+                                        <td class="calendar-block">\
+                                            <div class="calendar inst-date-to" ref="instDateTo"></div>\
+                                        </td>\
+                                    </tr>\
+                                    <tr>\
+                                        <td class="calendar-block">\
+                                            <input type="text" class="calendar-input-field inst-date-from-input" ref="instDateFromInput"></input><span class="date-input-label">{{i18n("common.from")}}</span>\
+                                        </td>\
+                                        <td class="calendar-block">\
+                                            <input type="text" class="calendar-input-field inst-date-to-input" ref="instDateToInput"></input><span class="date-input-label">{{i18n("common.to")}}</span>\
+                                        </td>\
+                                    </tr>\
+                                </table>\
+                            </div>\
+                        </div>\
+                    </div>',
+        mixins: [
             _mixins.i18n
         ],
-        data: function(){
+        data: function() {
             return {
-                currentRange: "",
-                isOpened: false
+                // UI state
+                isOpened: false,
+
+                // UI constants
+                monthLabel: '',
+                dayLabel: '',
+                yesterdayLabel: '',
+
+                // Datepicker handles
+                dateTo: null,
+                dateFrom: null,
+
+                // Picked values
+                dateToSelected: null,
+                dateFromSelected: null,
+            };
+        },
+        mounted: function() {
+            this._init();
+            this._initPickers();
+        },
+        computed: {
+            currentPeriod: function() {
+                return "month";
+            },
+            currentPeriodLabel: function() {
+                return "";
             }
         },
         methods: {
+            _init: function() {
+                this.monthLabel = moment().year();
+                this.dayLabel = moment().format("MMMM, YYYY");
+                this.yesterdayLabel = moment().subtract(1, "days").format("Do");
+            },
+            _initPickers: function() {
+                var self = this;
+                self.dateTo = $(this.$refs.instDateTo).datepicker({
+                    numberOfMonths: 1,
+                    showOtherMonths: true,
+                    maxDate: moment().toDate(),
+                    onSelect: function(selectedDate) {
+                        var instance = $(this).data("datepicker"),
+                            date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+                        date.setHours(0, 0, 0, 0);
+                        if (date.getTime() < self.dateFromSelected) {
+                            self.dateFromSelected = date.getTime();
+                        }
+                        $(self.$refs.instDateToInput).val(moment(date).format("MM/DD/YYYY"));
+                        self.dateFrom.datepicker("option", "maxDate", date);
+                        self.dateToSelected = date.getTime();
+                    },
+                    beforeShowDay: function(date) {
+                        var ts = date.getTime();
+                        if (ts < moment($(self.$refs.instDateToInput).val(), "MM/DD/YYYY") && ts >= moment($(self.$refs.instDateFromInput).val(), "MM/DD/YYYY")) {
+                            return [true, "in-range", ""];
+                        }
+                        else {
+                            return [true, "", ""];
+                        }
+                    }
+                });
+
+                self.dateFrom = $(this.$refs.instDateFrom).datepicker({
+                    numberOfMonths: 1,
+                    showOtherMonths: true,
+                    maxDate: moment().subtract(1, 'days').toDate(),
+                    onSelect: function(selectedDate) {
+                        var instance = $(this).data("datepicker"),
+                            date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+                        date.setHours(0, 0, 0, 0);
+                        if (date.getTime() > self.dateToSelected) {
+                            self.dateToSelected = date.getTime();
+                        }
+                        $(self.$refs.instDateFromInput).val(moment(date).format("MM/DD/YYYY"));
+                        self.dateTo.datepicker("option", "minDate", date);
+                        self.dateFromSelected = date.getTime();
+                    },
+                    beforeShowDay: function(date) {
+                        var ts = date.getTime();
+                        if (ts <= moment($(self.$refs.instDateToInput).val(), "MM/DD/YYYY") && ts > moment($(self.$refs.instDateFromInput).val(), "MM/DD/YYYY")) {
+                            return [true, "in-range", ""];
+                        }
+                        else {
+                            return [true, "", ""];
+                        }
+                    }
+                });
+
+                $.datepicker.setDefaults($.datepicker.regional[""]);
+                self.dateTo.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                self.dateFrom.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+            },
             toggle: function() {
                 this.isOpened = !this.isOpened;
+                this.onToggle();
+            },
+            cancel: function() {
+                this.isOpened = false;
+            },
+            applyPeriod: function() {
+
+            },
+            setCustomPeriod: function() {
+
+            },
+            setPeriod: function(newPeriod) {
+                console.log(newPeriod);
+            },
+            onToggle: function() {
+                var date,
+                    self = this;
+
+                if (self.dateToSelected) {
+                    date = new Date(self.dateToSelected);
+                    self.dateTo.datepicker("setDate", date);
+                    self.dateFrom.datepicker("option", "maxDate", date);
+                }
+                else {
+                    date = new Date();
+                    date.setHours(0, 0, 0, 0);
+                    self.dateToSelected = date.getTime();
+                    self.dateTo.datepicker("setDate", new Date(self.dateToSelected));
+                    self.dateFrom.datepicker("option", "maxDate", new Date(self.dateToSelected));
+                }
+
+                if (self.dateFromSelected) {
+                    date = new Date(self.dateFromSelected);
+                    self.dateFrom.datepicker("setDate", date);
+                    self.dateTo.datepicker("option", "minDate", date);
+                }
+                else {
+                    var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
+                    extendDate.setHours(0, 0, 0, 0);
+                    self.dateFrom.datepicker("setDate", extendDate);
+                    self.dateFromSelected = extendDate.getTime();
+                    self.dateTo.datepicker("option", "minDate", new Date(self.dateFromSelected));
+                }
+
+                $(self.$refs.instDateFromInput).val(moment(self.dateFrom.datepicker("getDate"), "MM-DD-YYYY").format("MM/DD/YYYY"));
+                $(self.$refs.instDateToInput).val(moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").format("MM/DD/YYYY"));
+
+                self.dateTo.datepicker("refresh");
+                self.dateFrom.datepicker("refresh");
             }
         }
-    })
+    });
 
     Vue.component("cly-time-graph", {
         template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
         props: {
-            data: function(){ 
-                return { required: true }
+            data: function() {
+                return { required: true };
             }
         },
         mounted: function() {
