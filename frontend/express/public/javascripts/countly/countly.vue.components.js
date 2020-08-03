@@ -576,10 +576,6 @@
                         var instance = $(this).data("datepicker"),
                             date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
                         date.setHours(0, 0, 0, 0);
-                        if (date.getTime() < self.dateFromSelected) {
-                            self.dateFromSelected = date.getTime();
-                        }
-                        self.dateFrom.datepicker("option", "maxDate", date);
                         self.dateToSelected = date.getTime();
                     },
                     beforeShowDay: function(date) {
@@ -601,10 +597,6 @@
                         var instance = $(this).data("datepicker"),
                             date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
                         date.setHours(0, 0, 0, 0);
-                        if (date.getTime() > self.dateToSelected) {
-                            self.dateToSelected = date.getTime();
-                        }
-                        self.dateTo.datepicker("option", "minDate", date);
                         self.dateFromSelected = date.getTime();
                     },
                     beforeShowDay: function(date) {
@@ -644,6 +636,22 @@
             }
         },
         watch: {
+            dateFromSelected: function(newValue) {
+                var date = new Date(newValue),
+                    self = this;
+                if (newValue > self.dateToSelected) {
+                    self.dateToSelected = newValue;
+                }
+                self.dateTo.datepicker("option", "minDate", date);
+            },
+            dateToSelected: function(newValue) {
+                var date = new Date(newValue),
+                    self = this;
+                if (newValue < self.dateFromSelected) {
+                    self.dateFromSelected = newValue;
+                }
+                self.dateFrom.datepicker("option", "maxDate", date);
+            },
             isOpened: function() {
                 var date,
                     self = this;
@@ -651,27 +659,23 @@
                 if (self.dateToSelected) {
                     date = new Date(self.dateToSelected);
                     self.dateTo.datepicker("setDate", date);
-                    self.dateFrom.datepicker("option", "maxDate", date);
                 }
                 else {
                     date = new Date();
                     date.setHours(0, 0, 0, 0);
                     self.dateToSelected = date.getTime();
                     self.dateTo.datepicker("setDate", new Date(self.dateToSelected));
-                    self.dateFrom.datepicker("option", "maxDate", new Date(self.dateToSelected));
                 }
 
                 if (self.dateFromSelected) {
                     date = new Date(self.dateFromSelected);
                     self.dateFrom.datepicker("setDate", date);
-                    self.dateTo.datepicker("option", "minDate", date);
                 }
                 else {
                     var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
                     extendDate.setHours(0, 0, 0, 0);
                     self.dateFrom.datepicker("setDate", extendDate);
                     self.dateFromSelected = extendDate.getTime();
-                    self.dateTo.datepicker("option", "minDate", new Date(self.dateFromSelected));
                 }
 
                 self.dateTo.datepicker("refresh");
