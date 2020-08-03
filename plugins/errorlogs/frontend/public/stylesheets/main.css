@@ -1,5 +1,7 @@
 .errorlogs{margin-top: -16px;}
 .errorlogs .ui-tabs{border-radius: 0; border: 1px solid #d0d0d0;}
+.errorlogs .ui-tabs li{width: 100%;}
+
 .errorlogs .ui-tabs .errorlog.ui-tabs-panel{background-color: #fff;}
 .errorlog pre{width:100%; max-height: 1000px; overflow: auto; white-space: pre-wrap; font-size:11px;}
 .errorlogs .ui-widget-content .ui-state-default{color: #646464; font-size: 16px; font-family:Ubuntu;}

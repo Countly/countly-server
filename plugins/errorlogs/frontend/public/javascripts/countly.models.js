@@ -2,7 +2,8 @@
 (function(countlyErrorLogs, $) {
 
     //Private Properties
-    var _data = {};
+    var _list = [];
+    var _logCache = {};
 
     //Public Methods
     countlyErrorLogs.initialize = function() {
@@ -11,16 +12,42 @@
             url: countlyCommon.API_PARTS.data.r + "/errorlogs",
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                "bytes": 100000
+                "bytes": 1
             },
             success: function(json) {
-                _data = json;
+                _list = [];
+                for (var k in json) {
+                    _list.push({name: k + " Log", value: k});
+                }
             }
         });
     };
 
-    countlyErrorLogs.getData = function() {
-        return _data;
+    countlyErrorLogs.getLogNameList = function() {
+        return _list;
+    };
+
+    countlyErrorLogs.getLogCached = function() {
+        return _logCache;
+    };
+
+    countlyErrorLogs.getLogByName = function(logName, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/errorlogs",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "bytes": 100000,
+                "log": logName
+            },
+            success: function(data) {
+                _logCache = {};
+                _logCache[logName] = data;
+            },
+            complete: function() {
+                callback && callback();
+            }
+        });
     };
 
     countlyErrorLogs.del = function(id) {
