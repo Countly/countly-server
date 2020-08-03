@@ -501,10 +501,10 @@
                                     </tr>\
                                     <tr>\
                                         <td class="calendar-block">\
-                                            <input type="text" class="calendar-input-field inst-date-from-input" ref="instDateFromInput"></input><span class="date-input-label">{{i18n("common.from")}}</span>\
+                                            <input type="text" class="calendar-input-field inst-date-from-input" v-bind:value="dateFromLabel"></input><span class="date-input-label">{{i18n("common.from")}}</span>\
                                         </td>\
                                         <td class="calendar-block">\
-                                            <input type="text" class="calendar-input-field inst-date-to-input" ref="instDateToInput"></input><span class="date-input-label">{{i18n("common.to")}}</span>\
+                                            <input type="text" class="calendar-input-field inst-date-to-input" v-bind:value="dateToLabel"></input><span class="date-input-label">{{i18n("common.to")}}</span>\
                                         </td>\
                                     </tr>\
                                 </table>\
@@ -539,6 +539,15 @@
                 dateFromSelected: null,
             };
         },
+        created: function() {
+            var periodObj = countlyCommon.getPeriod(),
+                self = this;
+
+            if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
+                self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
+                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
+            }
+        },
         mounted: function() {
             this._initPickers();
         },
@@ -548,6 +557,12 @@
             },
             currentPeriodLabel: function() {
                 return "";
+            },
+            dateFromLabel: function() {
+                return moment(this.dateFromSelected).format("MM/DD/YYYY");
+            },
+            dateToLabel: function() {
+                return moment(this.dateToSelected).format("MM/DD/YYYY");
             }
         },
         methods: {
@@ -564,13 +579,12 @@
                         if (date.getTime() < self.dateFromSelected) {
                             self.dateFromSelected = date.getTime();
                         }
-                        $(self.$refs.instDateToInput).val(moment(date).format("MM/DD/YYYY"));
                         self.dateFrom.datepicker("option", "maxDate", date);
                         self.dateToSelected = date.getTime();
                     },
                     beforeShowDay: function(date) {
                         var ts = date.getTime();
-                        if (ts < moment($(self.$refs.instDateToInput).val(), "MM/DD/YYYY") && ts >= moment($(self.$refs.instDateFromInput).val(), "MM/DD/YYYY")) {
+                        if (ts < moment(self.dateToLabel, "MM/DD/YYYY") && ts >= moment(self.dateFromLabel, "MM/DD/YYYY")) {
                             return [true, "in-range", ""];
                         }
                         else {
@@ -590,13 +604,12 @@
                         if (date.getTime() > self.dateToSelected) {
                             self.dateToSelected = date.getTime();
                         }
-                        $(self.$refs.instDateFromInput).val(moment(date).format("MM/DD/YYYY"));
                         self.dateTo.datepicker("option", "minDate", date);
                         self.dateFromSelected = date.getTime();
                     },
                     beforeShowDay: function(date) {
                         var ts = date.getTime();
-                        if (ts <= moment($(self.$refs.instDateToInput).val(), "MM/DD/YYYY") && ts > moment($(self.$refs.instDateFromInput).val(), "MM/DD/YYYY")) {
+                        if (ts <= moment(self.dateToLabel, "MM/DD/YYYY") && ts > moment(self.dateFromLabel, "MM/DD/YYYY")) {
                             return [true, "in-range", ""];
                         }
                         else {
@@ -654,9 +667,6 @@
                     self.dateFromSelected = extendDate.getTime();
                     self.dateTo.datepicker("option", "minDate", new Date(self.dateFromSelected));
                 }
-
-                $(self.$refs.instDateFromInput).val(moment(self.dateFrom.datepicker("getDate"), "MM-DD-YYYY").format("MM/DD/YYYY"));
-                $(self.$refs.instDateToInput).val(moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").format("MM/DD/YYYY"));
 
                 self.dateTo.datepicker("refresh");
                 self.dateFrom.datepicker("refresh");
