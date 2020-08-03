@@ -906,8 +906,12 @@ namespace apns {
 					for (size_t i = 0; i < frame->settings.niv; ++i) {
 						// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: got setting " << frame->settings.iv[i].settings_id << ": " << frame->settings.iv[i].value << " in " << uv_thread_self());
 						if (frame->settings.iv[i].settings_id == NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS) {
-							obj->stats.sending_max = frame->settings.iv[i].value;
-							LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
+							if (frame->settings.iv[i].value <= 100 || obj->stats.sending > 0) {
+								obj->stats.sending_max = frame->settings.iv[i].value;
+								LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
+							} else {
+								LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: won't sending_max to " << frame->settings.iv[i].value << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
+							}
 						}
 					}
 					if (obj->h2_sem) {
@@ -997,6 +1001,9 @@ namespace apns {
 						std::string status_string((const char *)value, valuelen);
 						try {
 							int status = std::atoi(status_string.c_str());
+							if (status != 200 && status != 410) {
+								LOG_DEBUG("CONN " << stream->id << " returned " << status);
+							}
 							if (status == 410) {
 								status = -200;
 							}
@@ -1004,6 +1011,7 @@ namespace apns {
 						} catch (const std::invalid_argument &e) {
 							stream->status = -1;
 						}
+
 
 						// // LOG_DEBUG("CONN " << uv_thread_self() << ": nghttp2_session_callbacks_set_on_header_callback block ");
 						// uv_mutex_lock(stream->obj->main_mutex);
@@ -1044,12 +1052,12 @@ namespace apns {
 		nghttp2_session_callbacks_del(callbacks);
 
 		nghttp2_settings_entry iv[] = {
-			{NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, 1000},
+			{NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, 100},
 			{NGHTTP2_SETTINGS_INITIAL_WINDOW_SIZE, NGHTTP2_INITIAL_WINDOW_SIZE}
 			// {NGHTTP2_SETTINGS_HEADER_TABLE_SIZE, 4096},
 			// {NGHTTP2_SETTINGS_ENABLE_PUSH, 0}
 		};
-		obj->stats.sending_max = 1000;
+		obj->stats.sending_max = 100;
 
 		// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending SETTINGS");
 		int rv = nghttp2_submit_settings(obj->session, NGHTTP2_FLAG_NONE, iv, 1);
