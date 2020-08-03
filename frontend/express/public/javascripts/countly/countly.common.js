@@ -144,6 +144,14 @@
             else {
                 countlyCommon.periodObj = calculatePeriodObj(period);
             }
+
+            if (window.countlyVue && window.countlyVue.vuex) {
+                currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.commit("countlyCommon/setPeriod", period);
+                }
+            }
+
             if (window.app && window.app.recordEvent) {
                 window.app.recordEvent({
                     "key": "period-change",

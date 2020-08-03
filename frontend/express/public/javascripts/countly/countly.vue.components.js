@@ -237,7 +237,26 @@
         'i18n': i18nMixin,
     };
 
-    var _globalVuexStore = new Vuex.Store();
+    var _globalVuexStore = new Vuex.Store({
+        modules: {
+            countlyCommon: {
+                namespaced: true,
+                state: {
+                    period: countlyCommon.getPeriod()
+                },
+                getters: {
+                    period: function(state) {
+                        return state.period;
+                    }
+                },
+                mutations: {
+                    setPeriod: function(state, period) {
+                        state.period = period;
+                    }
+                }
+            }
+        }
+    });
 
     var _vuex = {
         getGlobalStore: function() {
@@ -311,6 +330,10 @@
                         return h(self.component);
                     }
                 }
+            });
+
+            self.vueInstance.$on("cly-date-change", function(){
+                self.vueInstance.$emit("cly-refresh");
             });
         },
         destroy: function() {
@@ -553,7 +576,7 @@
         },
         computed: {
             currentPeriod: function() {
-                return "month";
+                return this.$store.getters["countlyCommon/period"];
             },
             currentPeriodLabel: function() {
                 return "";
@@ -631,7 +654,8 @@
                 ]);
             },
             setPeriod: function(newPeriod) {
-                console.log(newPeriod);
+                countlyCommon.setPeriod(newPeriod);
+                this.$root.$emit("cly-date-change");
                 this.isOpened = false;
             }
         },
