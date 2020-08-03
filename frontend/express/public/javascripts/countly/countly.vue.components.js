@@ -242,16 +242,29 @@
             countlyCommon: {
                 namespaced: true,
                 state: {
-                    period: countlyCommon.getPeriod()
+                    period: countlyCommon.getPeriod(),
+                    periodLabel: countlyCommon.getDateRangeForCalendar()
                 },
                 getters: {
                     period: function(state) {
                         return state.period;
+                    },
+                    periodLabel: function(state) {
+                        return state.periodLabel;
                     }
                 },
                 mutations: {
                     setPeriod: function(state, period) {
                         state.period = period;
+                    },
+                    setPeriodLabel: function(state, periodLabel) {
+                        state.periodLabel = periodLabel;
+                    }
+                },
+                actions: {
+                    updatePeriod: function(context, obj){
+                        context.commit("setPeriod", obj.period);
+                        context.commit("setPeriodLabel", obj.label);
                     }
                 }
             }
@@ -499,8 +512,8 @@
     Vue.component("cly-global-date-selector", {
         template: '<div class="cly-vue-global-date-selector help-zone-vs">\
                         <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
-                            <i class="material-icons">{{currentPeriodLabel}}</i>\
-                            <span class="inst-selected-date"></span>\
+                            <i class="material-icons">date_range</i>\
+                            <span class="inst-selected-date">{{currentPeriodLabel}}</span>\
                             <span class="down ion-chevron-down"></span>\
                             <span class="up ion-chevron-up"></span>\
                         </div>\
@@ -579,7 +592,7 @@
                 return this.$store.getters["countlyCommon/period"];
             },
             currentPeriodLabel: function() {
-                return "";
+                return this.$store.getters["countlyCommon/periodLabel"];
             },
             dateFromLabel: function() {
                 return moment(this.dateFromSelected).format("MM/DD/YYYY");
