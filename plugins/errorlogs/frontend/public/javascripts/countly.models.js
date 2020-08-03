@@ -45,7 +45,9 @@
                 _logCache[logName] = data;
             },
             complete: function() {
-                callback && callback();
+                if (callback) {
+                    callback();
+                }
             }
         });
     };
