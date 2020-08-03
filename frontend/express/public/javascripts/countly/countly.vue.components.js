@@ -575,7 +575,9 @@
                 dateFromSelected: null,
             };
         },
-        created: function() {
+        mounted: function() {
+            this._initPickers();
+
             var periodObj = countlyCommon.getPeriod(),
                 self = this;
 
@@ -583,9 +585,14 @@
                 self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
                 self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
             }
-        },
-        mounted: function() {
-            this._initPickers();
+            else {
+                var date = new Date();
+                date.setHours(0, 0, 0, 0);
+                self.dateToSelected = date.getTime();
+                var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
+                extendDate.setHours(0, 0, 0, 0);
+                self.dateFromSelected = extendDate.getTime();
+            }
         },
         computed: {
             currentPeriod: function() {
@@ -680,6 +687,7 @@
                     self.dateToSelected = newValue;
                 }
                 self.dateTo.datepicker("option", "minDate", date);
+                self.dateFrom.datepicker("setDate", date);
             },
             dateToSelected: function(newValue) {
                 var date = new Date(newValue),
@@ -688,33 +696,10 @@
                     self.dateFromSelected = newValue;
                 }
                 self.dateFrom.datepicker("option", "maxDate", date);
+                self.dateTo.datepicker("setDate", date);
             },
             isOpened: function() {
-                var date,
-                    self = this;
-
-                if (self.dateToSelected) {
-                    date = new Date(self.dateToSelected);
-                    self.dateTo.datepicker("setDate", date);
-                }
-                else {
-                    date = new Date();
-                    date.setHours(0, 0, 0, 0);
-                    self.dateToSelected = date.getTime();
-                    self.dateTo.datepicker("setDate", new Date(self.dateToSelected));
-                }
-
-                if (self.dateFromSelected) {
-                    date = new Date(self.dateFromSelected);
-                    self.dateFrom.datepicker("setDate", date);
-                }
-                else {
-                    var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
-                    extendDate.setHours(0, 0, 0, 0);
-                    self.dateFrom.datepicker("setDate", extendDate);
-                    self.dateFromSelected = extendDate.getTime();
-                }
-
+                var self = this;
                 self.dateTo.datepicker("refresh");
                 self.dateFrom.datepicker("refresh");
             }
