@@ -431,6 +431,9 @@
         },
         mounted: function() {
             this.initialize();
+        },
+        beforeDestroy: function() {
+            this.tableInstance.fnDestroy();
         }
     });
 
@@ -583,6 +586,20 @@
                 dateToLabel: '',
             };
         },
+        computed: {
+            currentPeriod: function() {
+                return this.$store.getters["countlyCommon/period"];
+            },
+            currentPeriodLabel: function() {
+                return this.$store.getters["countlyCommon/periodLabel"];
+            },
+            toInternal: function(){
+                return this.dateToSelected;
+            },
+            fromInternal: function(){
+                return this.dateFromSelected;
+            }
+        },
         mounted: function() {
             this._initPickers();
 
@@ -600,20 +617,6 @@
                 var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
                 extendDate.setHours(0, 0, 0, 0);
                 self.dateFromSelected = extendDate.getTime();
-            }
-        },
-        computed: {
-            currentPeriod: function() {
-                return this.$store.getters["countlyCommon/period"];
-            },
-            currentPeriodLabel: function() {
-                return this.$store.getters["countlyCommon/periodLabel"];
-            },
-            toInternal: function(){
-                return this.dateToSelected;
-            },
-            fromInternal: function(){
-                return this.dateFromSelected;
             }
         },
         methods: {
@@ -705,10 +708,6 @@
                 }
             }
         },
-        beforeDestroy: function() {
-            this.dateTo.datepicker('hide').datepicker('destroy');
-            this.dateFrom.datepicker('hide').datepicker('destroy');
-        },
         watch: {
             dateFromSelected: function(newValue) {
                 var date = new Date(newValue),
@@ -735,6 +734,10 @@
                 self.dateTo.datepicker("refresh");
                 self.dateFrom.datepicker("refresh");
             }
+        },
+        beforeDestroy: function() {
+            this.dateTo.datepicker('hide').datepicker('destroy');
+            this.dateFrom.datepicker('hide').datepicker('destroy');
         }
     });
 
