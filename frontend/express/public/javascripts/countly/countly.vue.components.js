@@ -622,24 +622,34 @@
         methods: {
             _initPickers: function() {
                 var self = this;
+
+                var _onSelect = function(instance, selectedDate) {
+                    var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+                    date.setHours(0, 0, 0, 0);
+                    return date.getTime();
+                }
+
+                var _beforeShowDay = function(date, testFn) {
+                    var ts = date.getTime();
+                    if (testFn(ts)) {
+                        return [true, "in-range", ""];
+                    }
+                    else {
+                        return [true, "", ""];
+                    }
+                }
+
                 self.dateTo = $(this.$refs.instDateTo).datepicker({
                     numberOfMonths: 1,
                     showOtherMonths: true,
                     maxDate: moment().toDate(),
                     onSelect: function(selectedDate) {
-                        var instance = $(this).data("datepicker"),
-                            date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-                        date.setHours(0, 0, 0, 0);
-                        self.dateToSelected = date.getTime();
+                        self.dateToSelected = _onSelect($(this).data("datepicker"), selectedDate);
                     },
                     beforeShowDay: function(date) {
-                        var ts = date.getTime();
-                        if (ts < self.toInternal && ts >= self.fromInternal) {
-                            return [true, "in-range", ""];
-                        }
-                        else {
-                            return [true, "", ""];
-                        }
+                        return _beforeShowDay(date, function(ts) {
+                            return ts < self.toInternal && ts >= self.fromInternal;
+                        });
                     }
                 });
 
@@ -648,19 +658,12 @@
                     showOtherMonths: true,
                     maxDate: moment().subtract(1, 'days').toDate(),
                     onSelect: function(selectedDate) {
-                        var instance = $(this).data("datepicker"),
-                            date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-                        date.setHours(0, 0, 0, 0);
-                        self.dateFromSelected = date.getTime();
+                        self.dateFromSelected = _onSelect($(this).data("datepicker"), selectedDate);
                     },
                     beforeShowDay: function(date) {
-                        var ts = date.getTime();
-                        if (ts <= self.toInternal && ts > self.fromInternal) {
-                            return [true, "in-range", ""];
-                        }
-                        else {
-                            return [true, "", ""];
-                        }
+                        return _beforeShowDay(date, function(ts) {
+                            return ts <= self.toInternal && ts > self.fromInternal;
+                        });
                     }
                 });
 
