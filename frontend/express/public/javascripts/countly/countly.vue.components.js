@@ -318,8 +318,8 @@
         },
         refresh: function() {
             var self = this;
-            if (self.vueInstance) {
-                self.vueInstance.$emit("cly-refresh");
+            if (self.vm) {
+                self.vm.$emit("cly-refresh");
             }
         },
         afterRender: function() {
@@ -332,7 +332,7 @@
                 });
             }
 
-            self.vueInstance = new Vue({
+            self.vm = new Vue({
                 el: el,
                 store: _vuex.getGlobalStore(),
                 render: function(h) {
@@ -345,12 +345,16 @@
                 }
             });
 
-            self.vueInstance.$on("cly-date-change", function(){
-                self.vueInstance.$emit("cly-refresh");
+            self.vm.$on("cly-date-change", function(){
+                self.vm.$emit("cly-refresh");
             });
         },
         destroy: function() {
-            this.elementsToBeRendered = [];
+            var self = this;
+            self.elementsToBeRendered = [];
+            if (self.vm) {
+                self.vm.$destroy();
+            }
         }
     });
 
@@ -497,7 +501,7 @@
                                 <div class="title">{{title}}</div>\
                             </div>\
                             <div class="right">\
-                                <cly-global-date-selector></cly-global-date-selector>\
+                                <cly-global-date-selector v-once></cly-global-date-selector>\
                             </div>\
                         </div>\
                         <div class="widget-content help-zone-vb">\
