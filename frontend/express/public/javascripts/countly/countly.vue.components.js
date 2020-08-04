@@ -604,6 +604,12 @@
             },
             currentPeriodLabel: function() {
                 return this.$store.getters["countlyCommon/periodLabel"];
+            },
+            toInternal: function(){
+                return this.dateToSelected;
+            },
+            fromInternal: function(){
+                return this.dateFromSelected;
             }
         },
         methods: {
@@ -621,7 +627,7 @@
                     },
                     beforeShowDay: function(date) {
                         var ts = date.getTime();
-                        if (ts < self.dateToSelected && ts >= self.dateFromSelected) {
+                        if (ts < self.toInternal && ts >= self.fromInternal) {
                             return [true, "in-range", ""];
                         }
                         else {
@@ -642,7 +648,7 @@
                     },
                     beforeShowDay: function(date) {
                         var ts = date.getTime();
-                        if (ts <= self.dateToSelected && ts > self.dateFromSelected) {
+                        if (ts <= self.toInternal && ts > self.fromInternal) {
                             return [true, "in-range", ""];
                         }
                         else {
@@ -696,8 +702,8 @@
             }
         },
         beforeDestroy: function() {
-          this.dateTo.datepicker('hide').datepicker('destroy');
-          this.dateFrom.datepicker('hide').datepicker('destroy');
+            this.dateTo.datepicker('hide').datepicker('destroy');
+            this.dateFrom.datepicker('hide').datepicker('destroy');
         },
         watch: {
             dateFromSelected: function(newValue) {
