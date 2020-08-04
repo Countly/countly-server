@@ -537,10 +537,10 @@
                                     </tr>\
                                     <tr>\
                                         <td class="calendar-block">\
-                                            <input type="text" class="calendar-input-field inst-date-from-input" v-bind:value="dateFromLabel"></input><span class="date-input-label">{{i18n("common.from")}}</span>\
+                                            <input type="text" class="calendar-input-field inst-date-from-input" v-model="dateFromLabel" @keyup.enter="dateFromInputSubmit"></input><span class="date-input-label">{{i18n("common.from")}}</span>\
                                         </td>\
                                         <td class="calendar-block">\
-                                            <input type="text" class="calendar-input-field inst-date-to-input" v-bind:value="dateToLabel"></input><span class="date-input-label">{{i18n("common.to")}}</span>\
+                                            <input type="text" class="calendar-input-field inst-date-to-input" v-model="dateToLabel" @keyup.enter="dateToInputSubmit"></input><span class="date-input-label">{{i18n("common.to")}}</span>\
                                         </td>\
                                     </tr>\
                                 </table>\
@@ -573,6 +573,10 @@
                 // Picked values
                 dateToSelected: null,
                 dateFromSelected: null,
+
+                // Labels
+                dateFromLabel: '',
+                dateToLabel: '',
             };
         },
         mounted: function() {
@@ -600,12 +604,6 @@
             },
             currentPeriodLabel: function() {
                 return this.$store.getters["countlyCommon/periodLabel"];
-            },
-            dateFromLabel: function() {
-                return moment(this.dateFromSelected).format("MM/DD/YYYY");
-            },
-            dateToLabel: function() {
-                return moment(this.dateToSelected).format("MM/DD/YYYY");
             }
         },
         methods: {
@@ -623,7 +621,7 @@
                     },
                     beforeShowDay: function(date) {
                         var ts = date.getTime();
-                        if (ts < moment(self.dateToLabel, "MM/DD/YYYY") && ts >= moment(self.dateFromLabel, "MM/DD/YYYY")) {
+                        if (ts < self.dateToSelected && ts >= self.dateFromSelected) {
                             return [true, "in-range", ""];
                         }
                         else {
@@ -644,7 +642,7 @@
                     },
                     beforeShowDay: function(date) {
                         var ts = date.getTime();
-                        if (ts <= moment(self.dateToLabel, "MM/DD/YYYY") && ts > moment(self.dateFromLabel, "MM/DD/YYYY")) {
+                        if (ts <= self.dateToSelected && ts > self.dateFromSelected) {
                             return [true, "in-range", ""];
                         }
                         else {
@@ -677,7 +675,29 @@
                 countlyCommon.setPeriod(newPeriod);
                 this.$root.$emit("cly-date-change");
                 this.isOpened = false;
+            },
+            dateFromInputSubmit: function() {
+                var date = moment(this.dateFromLabel, "MM/DD/YYYY");
+                if (date.format("MM/DD/YYYY") === this.dateFromLabel) {
+                    this.dateFromSelected = date.valueOf();
+                }
+                else {
+                    this.dateFromLabel = moment(this.dateFromSelected).format("MM/DD/YYYY");
+                }
+            },
+            dateToInputSubmit: function() {
+                var date = moment(this.dateToLabel, "MM/DD/YYYY");
+                if (date.format("MM/DD/YYYY") === this.dateToLabel) {
+                    this.dateToSelected = date.valueOf();
+                }
+                else {
+                    this.dateToLabel = moment(this.dateToSelected).format("MM/DD/YYYY");
+                }
             }
+        },
+        beforeDestroy: function() {
+          this.dateTo.datepicker('hide').datepicker('destroy');
+          this.dateFrom.datepicker('hide').datepicker('destroy');
         },
         watch: {
             dateFromSelected: function(newValue) {
@@ -688,6 +708,7 @@
                 }
                 self.dateTo.datepicker("option", "minDate", date);
                 self.dateFrom.datepicker("setDate", date);
+                self.dateFromLabel = moment(newValue).format("MM/DD/YYYY");
             },
             dateToSelected: function(newValue) {
                 var date = new Date(newValue),
@@ -697,6 +718,7 @@
                 }
                 self.dateFrom.datepicker("option", "maxDate", date);
                 self.dateTo.datepicker("setDate", date);
+                self.dateToLabel = moment(newValue).format("MM/DD/YYYY");
             },
             isOpened: function() {
                 var self = this;
