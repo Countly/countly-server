@@ -2312,6 +2312,7 @@ app.addPageScript("/users/#", function() {
                     app.activeView.shouldLoadCrashes = true;
                     if (app.activeView.dtablecrashes) {
                         app.activeView.dtablecrashes.fnDraw(false);
+                        app.activeView.dtablecrashes.stickyTableHeaders();
                     }
                 }
             }

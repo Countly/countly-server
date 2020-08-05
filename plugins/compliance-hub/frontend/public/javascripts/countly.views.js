@@ -672,6 +672,7 @@ app.addPageScript("/users/#", function() {
                     app.activeView.shouldLoadConsents = true;
                     if (app.activeView.dtableconsents) {
                         app.activeView.dtableconsents.fnDraw(false);
+                        app.activeView.dtableconsents.stickyTableHeaders();
                     }
                 }
             }
