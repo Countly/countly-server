@@ -2010,10 +2010,10 @@ const processRequest = (params) => {
  * @param {function} done - callbck when processing done
  */
 const processRequestData = (params, app, done) => {
-    
+
     if (plugins.getConfig("api", params.app && params.app.plugins, true).post_processing) {
-        var ob = {params:params, updates: []};
-        plugins.dispatch("/sdk/user_properties", ob, function(){
+        var ob = {params: params, updates: []};
+        plugins.dispatch("/sdk/user_properties", ob, function() {
             var update = {};
             for (let i = 0; i < ob.updates.length; i++) {
                 for (let key in ob.updates[i]) {
@@ -2025,13 +2025,13 @@ const processRequestData = (params, app, done) => {
                     }
                 }
             }
-            common.updateAppUser(params, update, function(){
+            common.updateAppUser(params, update, function() {
                 plugins.dispatch("/session/retention", {
                     params: params,
                     user: params.app_user,
                     isNewUser: params.app_user.fs ? true : false
                 });
-                plugins.dispatch("/sdk/data_ingestion", {params:params}, function(){
+                plugins.dispatch("/sdk/data_ingestion", {params: params}, function() {
                     if (!params.res.finished) {
                         common.returnMessage(params, 200, 'Success');
                     }
@@ -2056,7 +2056,7 @@ const processRequestData = (params, app, done) => {
             else if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.bulk) {
                 common.returnMessage(params, 200, 'Success');
             }
-    
+
             if (countlyApi.data.usage.processLocationRequired(params)) {
                 countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
             }
@@ -2371,7 +2371,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
             });
         });
-        
+
         var config = plugins.getConfig("api", params.app && params.app.plugins, true);
         if (!config.safe && !config.post_processing && !params.res.finished) {
             common.returnMessage(params, 200, 'Success');

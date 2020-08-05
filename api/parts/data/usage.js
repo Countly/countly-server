@@ -1197,31 +1197,31 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
     return true;
 }
 
-plugins.register("/sdk/user_properties", function(ob){
+plugins.register("/sdk/user_properties", function(ob) {
     var params = ob.params;
     var userProps = {};
     var update = {};
     var config = plugins.getConfig("api", params.app && params.app.plugins, true);
-    
+
     if (params.qstring.tz) {
         var tz = parseInt(params.qstring.tz);
         if (isNaN(tz)) {
             userProps.tz = tz;
         }
     }
-    
+
     if (params.qstring.country_code) {
         userProps.cc = params.qstring.country_code;
     }
-    
+
     if (params.qstring.region) {
         userProps.rgn = params.qstring.region;
     }
-    
+
     if (params.qstring.city) {
         userProps.cty = params.qstring.city;
     }
-    
+
     if (params.qstring.location) {
         var coords = (params.qstring.location + "").split(',');
         if (coords.length === 2) {
@@ -1240,7 +1240,7 @@ plugins.register("/sdk/user_properties", function(ob){
             }
         }
     }
-    
+
     if (params.qstring.begin_session && params.qstring.location === "") {
         //user opted out of location tracking
         userProps.cc = userProps.rgn = userProps.cty = 'Unknown';
@@ -1261,11 +1261,11 @@ plugins.register("/sdk/user_properties", function(ob){
                 if (!userProps.cc && data.country) {
                     userProps.cc = data.country;
                 }
-                
+
                 if (!userProps.rgn && data.region) {
                     userProps.rgn = data.region;
                 }
-                
+
                 if (!userProps.cty && data.city) {
                     userProps.cty = data.city;
                 }
@@ -1289,12 +1289,12 @@ plugins.register("/sdk/user_properties", function(ob){
             log.e('Error in geoip: %j', e);
         }
     }
-    
+
     //if we have metrics, let's process metrics
     if (params.qstring.metrics) {
         var up = {};
         var predefinedMetrics = usage.getPredefinedMetrics(params, up);
-    
+
         for (var i = 0; i < predefinedMetrics.length; i++) {
             for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
                 var tmpMetric = predefinedMetrics[i].metrics[j],
@@ -1305,15 +1305,15 @@ plugins.register("/sdk/user_properties", function(ob){
                 else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
                     recvMetricValue = params.qstring.metrics[tmpMetric.name];
                 }
-    
+
                 // We check if city data logging is on and user's country is the configured country of the app
                 if (tmpMetric.name === "city" && (config.city_data === false || params.app_cc !== params.user.country)) {
                     continue;
                 }
-    
+
                 if (recvMetricValue) {
                     var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
-    
+
                     // Assign properties to app_users document of the current user
                     if (params.app_user[tmpMetric.short_code] !== escapedMetricVal) {
                         up[tmpMetric.short_code] = escapedMetricVal;
@@ -1321,8 +1321,8 @@ plugins.register("/sdk/user_properties", function(ob){
                 }
             }
         }
-        
-        if (Object.keys(up).length){
+
+        if (Object.keys(up).length) {
             for (let key in up) {
                 userProps[key] = up[key];
             }
@@ -1331,39 +1331,39 @@ plugins.register("/sdk/user_properties", function(ob){
             }
         }
     }
-    
+
     if (params.qstring.session_duration) {
         var session_duration = parseInt(params.qstring.session_duration),
             session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
-    
+
         if (session_duration) {
             if (session_duration_limit && session_duration > session_duration_limit) {
                 session_duration = session_duration_limit;
             }
-    
+
             if (session_duration < 0) {
                 session_duration = 30;
             }
-            
+
             if (!update.$inc) {
                 update.$inc = {};
             }
-    
+
             update.$inc.sd = session_duration;
             update.$inc.tsd = session_duration;
         }
     }
-    
+
     //if session began
     if (params.qstring.begin_session) {
         var lastEndSession = params.app_user[common.dbUserMap.last_end_session_timestamp];
-            
+
         if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
             userProps[common.dbUserMap.has_ongoing_session] = true;
         }
-        
+
         userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
-        
+
         if (params.app_user.mt || userProps.mt) {
             userProps.mt = false;
         }
@@ -1371,9 +1371,9 @@ plugins.register("/sdk/user_properties", function(ob){
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < config.session_cooldown) {
             plugins.dispatch("/session/extend", {params: params});
         }
-        else { 
+        else {
             userProps.lsid = params.request_hash;
-            
+
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
                 //process duration from unproperly ended previous session
                 plugins.dispatch("/session/post", {
@@ -1382,7 +1382,7 @@ plugins.register("/sdk/user_properties", function(ob){
                     end_session: false
                 });
             }
-            
+
             plugins.dispatch("/session/begin", {
                 params: params,
                 isNewUser: isNewUser
@@ -1404,7 +1404,7 @@ plugins.register("/sdk/user_properties", function(ob){
             if (!update.$inc) {
                 update.$inc = {};
             }
-    
+
             update.$inc.sc = 1;
         }
     }
@@ -1447,7 +1447,7 @@ plugins.register("/sdk/user_properties", function(ob){
             delete userProps[key];
         }
     }
-    
+
     if (Object.keys(userProps).length) {
         update.$set = userProps;
     }
