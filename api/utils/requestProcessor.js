@@ -2010,29 +2010,61 @@ const processRequest = (params) => {
  * @param {function} done - callbck when processing done
  */
 const processRequestData = (params, app, done) => {
-    plugins.dispatch("/i", {
-        params: params,
-        app: app
-    }, () => {
-        if (params.qstring.events) {
-            if (params.promises) {
-                params.promises.push(countlyApi.data.events.processEvents(params));
+    
+    if (plugins.getConfig("api", params.app && params.app.plugins, true).post_processing) {
+        var ob = {params:params, updates: []};
+        plugins.dispatch("/sdk/user_properties", ob, function(){
+            var update = {};
+            for (let i = 0; i < ob.updates.length; i++) {
+                for (let key in ob.updates[i]) {
+                    if (!update[key]) {
+                        update[key] = ob.updates[i][key];
+                    }
+                    else {
+                        update[key] = Object.assign(update[key], ob.updates[i][key]);
+                    }
+                }
+            }
+            common.updateAppUser(params, update, function(){
+                plugins.dispatch("/session/retention", {
+                    params: params,
+                    user: params.app_user,
+                    isNewUser: params.app_user.fs ? true : false
+                });
+                plugins.dispatch("/sdk/data_ingestion", {params:params}, function(){
+                    if (!params.res.finished) {
+                        common.returnMessage(params, 200, 'Success');
+                    }
+                });
+            });
+        });
+    }
+    else {
+        //regular flow
+        plugins.dispatch("/i", {
+            params: params,
+            app: app
+        }, () => {
+            if (params.qstring.events) {
+                if (params.promises) {
+                    params.promises.push(countlyApi.data.events.processEvents(params));
+                }
+                else {
+                    countlyApi.data.events.processEvents(params);
+                }
+            }
+            else if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.bulk) {
+                common.returnMessage(params, 200, 'Success');
+            }
+    
+            if (countlyApi.data.usage.processLocationRequired(params)) {
+                countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
             }
             else {
-                countlyApi.data.events.processEvents(params);
+                continueProcessingRequestData(params, done);
             }
-        }
-        else if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.bulk) {
-            common.returnMessage(params, 200, 'Success');
-        }
-
-        if (countlyApi.data.usage.processLocationRequired(params)) {
-            countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
-        }
-        else {
-            continueProcessingRequestData(params, done);
-        }
-    });
+        });
+    }
 };
 
 /**
@@ -2242,14 +2274,14 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
             params.app_user = user || {};
 
+            let payload = params.href.substr(3) || "";
+            if (params.req.method.toLowerCase() === 'post') {
+                payload += params.req.body;
+            }
+            params.request_hash = common.crypto.createHash('sha512').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
                 //check unique millisecond timestamp, if it is the same as the last request had,
                 //then we are having duplicate request, due to sudden connection termination
-                let payload = params.href.substr(3) || "";
-                if (params.req.method.toLowerCase() === 'post') {
-                    payload += params.req.body;
-                }
-                params.request_hash = common.crypto.createHash('sha512').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
                 if (params.app_user.last_req === params.request_hash) {
                     params.cancelRequest = "Duplicate request";
                 }
@@ -2305,7 +2337,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                             else {
                                 //cannot create uid, so cannot process request now
                                 console.log("Cannot create uid", err, uid);
-                                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                                if (!params.res.finished) {
                                     common.returnMessage(params, 400, "Cannot create uid");
                                 }
                             }
@@ -2331,7 +2363,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     }
                 }
                 else {
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                    if (!params.res.finished) {
                         common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
@@ -2339,7 +2371,9 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
             });
         });
-        if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+        
+        var config = plugins.getConfig("api", params.app && params.app.plugins, true);
+        if (!config.safe && !config.post_processing && !params.res.finished) {
             common.returnMessage(params, 200, 'Success');
             return;
         }
@@ -2595,8 +2629,8 @@ const restartRequest = (params, done, try_times) => {
     }
     if (try_times > 5) {
         console.log("Too many retries", try_times);
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-            common.returnMessage(params, 400, "Cannot process request");
+        if (!params.res.finished) {
+            common.returnMessage(params, 400, "Cannot process request. Too many retries");
         }
         return;
     }

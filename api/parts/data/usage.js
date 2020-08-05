@@ -1197,4 +1197,265 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
     return true;
 }
 
+plugins.register("/sdk/user_properties", function(ob){
+    var params = ob.params;
+    var userProps = {};
+    var update = {};
+    var config = plugins.getConfig("api", params.app && params.app.plugins, true);
+    
+    if (params.qstring.tz) {
+        var tz = parseInt(params.qstring.tz);
+        if (isNaN(tz)) {
+            userProps.tz = tz;
+        }
+    }
+    
+    if (params.qstring.country_code) {
+        userProps.cc = params.qstring.country_code;
+    }
+    
+    if (params.qstring.region) {
+        userProps.rgn = params.qstring.region;
+    }
+    
+    if (params.qstring.city) {
+        userProps.cty = params.qstring.city;
+    }
+    
+    if (params.qstring.location) {
+        var coords = (params.qstring.location + "").split(',');
+        if (coords.length === 2) {
+            var lat = parseFloat(coords[0]),
+                lon = parseFloat(coords[1]);
+
+            if (!isNaN(lat) && !isNaN(lon)) {
+                userProps.loc = {
+                    gps: true,
+                    geo: {
+                        type: 'Point',
+                        coordinates: [lon, lat]
+                    },
+                    date: params.time.mstimestamp
+                };
+            }
+        }
+    }
+    
+    if (params.qstring.begin_session && params.qstring.location === "") {
+        //user opted out of location tracking
+        userProps.cc = userProps.rgn = userProps.cty = 'Unknown';
+        if (userProps.loc) {
+            delete userProps.loc;
+        }
+        if (params.app_user.loc) {
+            if (!update.$unset) {
+                update.$unset = {};
+            }
+            update.$unset = {loc: 1};
+        }
+    }
+    else if (params.qstring.begin_session && params.qstring.location !== "") {
+        try {
+            var data = geoip.lookup(params.ip_address);
+            if (data) {
+                if (!userProps.cc && data.country) {
+                    userProps.cc = data.country;
+                }
+                
+                if (!userProps.rgn && data.region) {
+                    userProps.rgn = data.region;
+                }
+                
+                if (!userProps.cty && data.city) {
+                    userProps.cty = data.city;
+                }
+
+                if (!userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
+                    // only override lat/lon if no recent gps location exists in user document
+                    if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
+                        userProps.loc = {
+                            gps: false,
+                            geo: {
+                                type: 'Point',
+                                coordinates: [data.ll[1], data.ll[0]]
+                            },
+                            date: params.time.mstimestamp
+                        };
+                    }
+                }
+            }
+        }
+        catch (e) {
+            log.e('Error in geoip: %j', e);
+        }
+    }
+    
+    //if we have metrics, let's process metrics
+    if (params.qstring.metrics) {
+        var up = {};
+        var predefinedMetrics = usage.getPredefinedMetrics(params, up);
+    
+        for (var i = 0; i < predefinedMetrics.length; i++) {
+            for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+                var tmpMetric = predefinedMetrics[i].metrics[j],
+                    recvMetricValue = null;
+                if (tmpMetric.is_user_prop) {
+                    recvMetricValue = params.user[tmpMetric.name];
+                }
+                else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
+                    recvMetricValue = params.qstring.metrics[tmpMetric.name];
+                }
+    
+                // We check if city data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "city" && (config.city_data === false || params.app_cc !== params.user.country)) {
+                    continue;
+                }
+    
+                if (recvMetricValue) {
+                    var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+    
+                    // Assign properties to app_users document of the current user
+                    if (params.app_user[tmpMetric.short_code] !== escapedMetricVal) {
+                        up[tmpMetric.short_code] = escapedMetricVal;
+                    }
+                }
+            }
+        }
+        
+        if (Object.keys(up).length){
+            for (let key in up) {
+                userProps[key] = up[key];
+            }
+            if (!params.app_user.mt) {
+                userProps.mt = true;
+            }
+        }
+    }
+    
+    if (params.qstring.session_duration) {
+        var session_duration = parseInt(params.qstring.session_duration),
+            session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
+    
+        if (session_duration) {
+            if (session_duration_limit && session_duration > session_duration_limit) {
+                session_duration = session_duration_limit;
+            }
+    
+            if (session_duration < 0) {
+                session_duration = 30;
+            }
+            
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+    
+            update.$inc.sd = session_duration;
+            update.$inc.tsd = session_duration;
+        }
+    }
+    
+    //if session began
+    if (params.qstring.begin_session) {
+        var lastEndSession = params.app_user[common.dbUserMap.last_end_session_timestamp];
+            
+        if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
+            userProps[common.dbUserMap.has_ongoing_session] = true;
+        }
+        
+        userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
+        
+        if (params.app_user.mt || userProps.mt) {
+            userProps.mt = false;
+        }
+        //check when last session ended and if it was less than cooldown
+        if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < config.session_cooldown) {
+            plugins.dispatch("/session/extend", {params: params});
+        }
+        else { 
+            userProps.lsid = params.request_hash;
+            
+            if (params.app_user[common.dbUserMap.has_ongoing_session]) {
+                //process duration from unproperly ended previous session
+                plugins.dispatch("/session/post", {
+                    params: params,
+                    dbAppUser: params.app_user,
+                    end_session: false
+                });
+            }
+            
+            plugins.dispatch("/session/begin", {
+                params: params,
+                isNewUser: isNewUser
+            });
+
+            //new session
+            var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
+
+            if (isNewUser) {
+                userProps[common.dbUserMap.first_seen] = params.time.timestamp;
+                userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+            }
+            else {
+                if (parseInt(params.app_user[common.dbUserMap.last_seen], 10) < params.time.timestamp) {
+                    userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+                }
+            }
+
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+    
+            update.$inc.sc = 1;
+        }
+    }
+    else if (params.qstring.end_session) {
+        // check if request is too old, ignore it
+        if (params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - config.session_cooldown) {
+            userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
+            if (params.app_user[common.dbUserMap.has_ongoing_session]) {
+                if (!update.$unset) {
+                    update.$unset = {};
+                }
+                update.$unset[common.dbUserMap.has_ongoing_session] = "";
+            }
+            setTimeout(function() {
+                //need to query app user again to get data modified by another request
+                common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
+                    if (!dbAppUser || err) {
+                        return;
+                    }
+                    //if new session did not start during cooldown, then we can post process this session
+                    if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
+                        plugins.dispatch("/session/end", {
+                            params: params,
+                            dbAppUser: dbAppUser
+                        });
+                        plugins.dispatch("/session/post", {
+                            params: params,
+                            dbAppUser: dbAppUser,
+                            end_session: true
+                        });
+                    }
+                });
+            }, config.session_cooldown);
+        }
+    }
+
+    //do not write values that are already assignd to user
+    for (var key in userProps) {
+        if (userProps[key] === params.app_user[key]) {
+            delete userProps[key];
+        }
+    }
+    
+    if (Object.keys(userProps).length) {
+        update.$set = userProps;
+    }
+
+    if (Object.keys(update).length) {
+        ob.updates.push(update);
+    }
+});
+
+
 module.exports = usage;
