@@ -93,62 +93,88 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <div class="title" data-localize="user-settings.change-password"></div>
+                                    <div class="title" data-localize="configs.password"></div>
                                 </td>
                                 <td>
-                                    <div class="input">
-                                        <input id="old_pwd" type="password" placeholder="Old password..." data-localize="placeholder.old-password" />
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="title" data-localize="placeholder.new-password"></div>
-                                </td>
-                                <td>
-                                    <div class="input">
-                                        <input id="new_pwd" type="password" placeholder="New password..." data-localize="placeholder.new-password" />
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="title" data-localize="placeholder.new-password"></div>
-                                </td>
-                                <td>
-                                    <div class="input">
-                                        <input id="re_new_pwd" type="password" placeholder="Again..." data-localize="placeholder.again" />
-                                    </div>
+                                    <div class='icon-button delete-app' id="user-configuration-change-password" data-localize="user-settings.change-password"></div>
                                 </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
                 {{/if}} {{{configs}}}
-                
-                {{#if user}}
-                <tr>
-                    <td data-localize="user-settigs.delete-account"></td>
-                    <td>
-                        <table class="d-table help-zone-vb " cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td><div class="title" data-localize="management-users.password"></div>
-                                </td>
-                                <td style='padding-bottom: 19px;'>
-                                    <span  id='password-input-mandatory-warning' data-localize="user-settings.password-mandatory"></span>
-                                    <div class="input">
-                                        <input id="delete_account_password" type="password" placeholder="..." data-localize="management-users.password" />
-                                        <div class='icon-button red delete-app' id="delete-user-account-button" data-localize="user-settigs.delete-account"></div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                {{/if}}
             </table>
 
             <div id="empty-search-result" style="display: none" data-localize="configs.no-search-result">There aren’t any configurations matching your search.</div>
+        </div>
+    </div>
+</div>
+
+<div class="user-config-danger-zone">
+    <div id="configs-table-widget">
+        {{#if user}}
+        <tr>
+            <td data-localize="user-settigs.delete-account"></td>
+            <td>
+                <table class="d-table help-zone-vb " cellpadding="0" cellspacing="0">
+                    <tr id="danger-table-row">
+                        <td id='danger-table-td'>
+                            <span data-localize="configs.danger-zone"></span>
+                        </td>
+                        <td id="danger-table-description">
+                            <div class="title" data-localize="user-settigs.delete-account"></div>
+                            <div class="danger-zone-description" data-localize="configs.cannot-be-undone"></div>
+                            <div class="danger-zone-description" id="danger-zone-description-second" data-localize="configs.will-permanently-delete"></div>
+                        </td>
+                        <td style='padding-bottom: 19px;'>
+                            <div class="input">
+                                <div class='icon-button delete-app' id="delete-user-account-button" data-localize="user-settigs.delete-account"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        {{/if}}
+    </div>
+</div>
+
+<div class="user-configuration-modal" id="user-change-password-modal">
+    <div class="user-configuration-modal-body">
+        <div class="title-section">
+            <span class="popup-title" data-localize="configs.change-password"></span>
+            <p class="popup-description" data-localize="configs.password-specification"></p>    
+        </div>
+        <div class="input section">
+            <input type="password" id="old_pwd" placeholder="Enter your old password" class="user-password-change-modal-input">
+            <input id="new_pwd" placeholder="Enter your new password" type="password" class="user-password-change-modal-input">
+            <input id="re_new_pwd" placeholder="Enter your new password again" type="password" class="user-password-change-modal-input">
+        </div>
+        <div class="action-section">
+            <button class="popup-action-transparent-btn hide-user-configuration-modal" data-localize="configs.cancel"></button>
+            <button class="popup-action-green-btn" id="change-user-password" data-localize="configs.change-password"></button>
+        </div>
+    </div>
+</div>
+
+<div class="user-configuration-modal" id="user-account-delete-modal">
+    <div class="user-configuration-modal-body">
+        <div class="title-section">
+            <span class="popup-title" data-localize="configs.delete-account"></span>
+            <span class="popup-description">
+                <ul>
+                    <li data-localize="configs.cannot-be-undone"></li>
+                    <li data-localize="configs.will-permanently-delete"></li>
+                </ul>
+                <span data-localize="configs.confirm-for-delete"></span>
+            </span>    
+        </div>
+        <div class="input section">
+            <input type="password" id="delete_account_password" placeholder="Enter your password" class="user-password-change-modal-input">
+        </div>
+        <div class="action-section">
+            <button class="popup-action-transparent-btn hide-user-configuration-modal" data-localize="configs.cancel"></button>
+            <button class="popup-action-red-btn" id="delete-user-account" data-localize="configs.delete-my-account"></button>
         </div>
     </div>
 </div>
