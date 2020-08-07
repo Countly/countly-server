@@ -891,7 +891,7 @@ window.ConfigurationsView = countlyView.extend({
             $("#delete_account_password").keyup(function() {
                 $('#password-input-mandatory-warning').css('visibility', 'hidden');
             });
-            
+
             $("#delete-user-account").click(function() {
                 var pv = $("#delete_account_password").val();
                 pv = pv.trim();
@@ -913,8 +913,7 @@ window.ConfigurationsView = countlyView.extend({
                             else if (msg === 'password not valid' || msg === 'password mandatory' || msg === 'global admin limit') {
                                 $('#overlay').show();
                                 $('#user-account-delete-modal').show();
-                                var msg1 = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"};
-                                CountlyHelpers.notify(msg1);
+                                CountlyHelpers.notify({title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"});
                             }
                             else if (err === true) {
                                 $('#overlay').show();
@@ -926,7 +925,6 @@ window.ConfigurationsView = countlyView.extend({
                     }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["common.yes"]], { title: jQuery.i18n.map["user-settings.delete-account-title"], image: "delete-user" });
                 }
             });
-            
 
 
             $('#search-box').off('input').on('input', function() {
@@ -1075,7 +1073,7 @@ window.ConfigurationsView = countlyView.extend({
                 var re_new_pwd = $('.user-configuration-modal #re_new_pwd').val();
 
                 if (old_pwd.length > 0 && new_pwd.length > 0 && re_new_pwd.length > 0) {
-                    $('#configs-apply-changes').trigger('click');    
+                    $('#configs-apply-changes').trigger('click');
                 }
                 else {
                     CountlyHelpers.notify({
