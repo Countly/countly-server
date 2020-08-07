@@ -1253,6 +1253,11 @@ var pluginManager = function pluginManager() {
      *  @returns {Db} wrapped database connection
      */
     this.wrapDatabase = function(countlyDb, client, dbName, dbConnectionString, dbOptions) {
+        if (countlyDb._wrapped) {
+            return countlyDb;
+        }
+
+        countlyDb._wrapped = true;
         var mngr = this;
         countlyDb._cly_debug = {
             db: dbName,
