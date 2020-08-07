@@ -721,11 +721,13 @@ class CacheMaster {
  */
 function createCollection(db, name, size = 1e7) {
     return new Promise((resolve, reject) => {
-        db.createCollection(name, {capped: true, size: size}, (e, col) => {
-            if (e) {
+        db.createCollection(name, {capped: true, size: size}, (e) => {
+            if (e && e.codeName !== "NamespaceExists") {
                 log.e(`Error while creating capped collection ${name}:`, e);
                 return reject(e);
             }
+            
+            let col = db.collection(name);
 
             col.find().sort({_id: -1}).limit(1).toArray((err, arr) => {
                 if (err) {
