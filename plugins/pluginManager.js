@@ -470,6 +470,7 @@ var pluginManager = function pluginManager() {
                     }
                     catch (error) {
                         promise = Promise.reject(error);
+                        console.error(error.stack);
                     }
                     if (promise) {
                         used = true;

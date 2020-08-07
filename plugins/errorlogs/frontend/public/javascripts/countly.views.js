@@ -7,19 +7,36 @@ window.ErrorLogsView = countlyView.extend({
         var self = this;
         return $.when(T.render('/errorlogs/templates/logs.html', function(src) {
             self.template = src;
-        }), countlyErrorLogs.initialize()).then(function() {});
+        }), countlyErrorLogs.initialize()).then(function() {
+            var logNames = countlyErrorLogs.getLogNameList();
+            if (logNames.length > 0) {
+                countlyErrorLogs.getLogByName(logNames[0].value);
+            }
+        });
     },
     renderCommon: function(isRefresh) {
-        var data = countlyErrorLogs.getData();
+        var cachedLog = countlyErrorLogs.getLogCached();
         var download = countlyGlobal.path + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=";
         this.templateData = {
             "page-title": jQuery.i18n.map["errorlogs.title"],
             download: download,
-            logs: data
+            logs: cachedLog
         };
         var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            var logList = countlyErrorLogs.getLogNameList();
+            $("#logger-selector").clySelectSetItems(logList);
+            var currentLog = Object.keys(cachedLog);
+            if (currentLog.length > 0) {
+                $("#logger-selector").clySelectSetSelection(currentLog[0], currentLog[0] + " Log");
+            }
+            $("#logger-selector").off("cly-select-change").on("cly-select-change", function(e, selected) {
+                countlyErrorLogs.getLogByName(selected, function() {
+                    self.renderCommon();
+                    app.localize();
+                });
+            });
             $("#tabs").tabs();
             $(".btn-clear-log").on("click", function() {
                 var id = $(this).data("id");
@@ -30,8 +47,10 @@ window.ErrorLogsView = countlyView.extend({
                     $.when(countlyErrorLogs.del(id)).then(function(resData) {
                         if (resData.result === "Success") {
                             $.when(countlyErrorLogs.initialize()).then(function() {
-                                self.renderCommon();
-                                app.localize();
+                                countlyErrorLogs.getLogByName(id, function() {
+                                    self.renderCommon();
+                                    app.localize();
+                                });
                             });
                         }
                         else {
