@@ -1234,15 +1234,15 @@ var pluginManager = function pluginManager() {
             process.exit(1);
             return;
         }
-        
+
         client._db = client.db;
-        
-        client.db = function(database, options){
+
+        client.db = function(database, options) {
             return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
-        }
+        };
         return client.db(db_name);
-    }
-    
+    };
+
     /**
      *  Wrap db object with our compatability layer
      *  @param {Db} countlyDb - database connection
