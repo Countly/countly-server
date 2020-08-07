@@ -1234,10 +1234,29 @@ var pluginManager = function pluginManager() {
             process.exit(1);
             return;
         }
-        var countlyDb = client.db(db_name);
+        
+        client._db = client.db;
+        
+        client.db = function(database, options){
+            return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
+        }
+        return client.db(db_name);
+    }
+    
+    /**
+     *  Wrap db object with our compatability layer
+     *  @param {Db} countlyDb - database connection
+     *  @param {MongoClient} client - database client connection
+     *  @param {string} dbName - database name
+     *  @param {string} dbConnectionString - database connection string
+     *  @param {Object} dbOptions - database connection options
+     *  @returns {Db} wrapped database connection
+     */
+    this.wrapDatabase = function(countlyDb, client, dbName, dbConnectionString, dbOptions) {
+        var mngr = this;
         countlyDb._cly_debug = {
-            db: db_name,
-            connection: dbName,
+            db: dbName,
+            connection: dbConnectionString,
             options: dbOptions
         };
 
@@ -1268,9 +1287,9 @@ var pluginManager = function pluginManager() {
         countlyDb.client = client;
         countlyDb.close = client.close.bind(client);
         mngr.dispatch("/db/connected", {
-            db: db_name,
+            db: dbName,
             instance: countlyDb,
-            connection: dbName,
+            connection: dbConnectionString,
             options: dbOptions
         });
 
@@ -1375,7 +1394,7 @@ var pluginManager = function pluginManager() {
                 }
 
                 mngr.dispatch("/db/readAndUpdate", {
-                    db: db_name,
+                    db: dbName,
                     operation: "findAndModify",
                     collection: collection,
                     query: query,
@@ -1419,7 +1438,7 @@ var pluginManager = function pluginManager() {
                     }
 
                     mngr.dispatch("/db/update", {
-                        db: db_name,
+                        db: dbName,
                         operation: name,
                         collection: collection,
                         query: selector,
@@ -1511,7 +1530,7 @@ var pluginManager = function pluginManager() {
                     }
 
                     mngr.dispatch("/db/write", {
-                        db: db_name,
+                        db: dbName,
                         operation: name,
                         collection: collection,
                         query: selector,
@@ -1583,7 +1602,7 @@ var pluginManager = function pluginManager() {
                     }
 
                     mngr.dispatch("/db/read", {
-                        db: db_name,
+                        db: dbName,
                         operation: name,
                         collection: collection,
                         query: query,
@@ -1635,7 +1654,7 @@ var pluginManager = function pluginManager() {
                     options = options || {};
                 }
                 mngr.dispatch("/db/read", {
-                    db: db_name,
+                    db: dbName,
                     operation: "find",
                     collection: collection,
                     query: query,

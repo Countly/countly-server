@@ -726,7 +726,7 @@ function createCollection(db, name, size = 1e7) {
                 log.e(`Error while creating capped collection ${name}:`, e);
                 return reject(e);
             }
-            
+
             let col = db.collection(name);
 
             col.find().sort({_id: -1}).limit(1).toArray((err, arr) => {
