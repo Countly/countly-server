@@ -1330,6 +1330,27 @@ var pluginManager = function pluginManager() {
                 return data;
             }
 
+            /**
+             *  Method to log promise errors
+             *  @param {Promise} promise - Promise object
+             *  @param {Error} e - Error for tracing
+             *  @param {Object} data - arguments and calling method
+             *  @returns {Promise} Promise to handle
+             */
+            function handlePromiseErrors(promise, e, data) {
+                if (promise && promise.then) {
+                    return promise.catch(function(err) {
+                        logDbWrite.e("Error in promise from " + collection + " %j %s %j", data, err, err);
+                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                        if (e) {
+                            logDbWrite.e(e.stack);
+                        }
+                        throw err;
+                    });
+                }
+                return promise;
+            }
+
             //get original collection object
             var ob = this._collection(collection, opts, done);
 
@@ -1358,9 +1379,6 @@ var pluginManager = function pluginManager() {
                                 if (callback) {
                                     callback(err, res);
                                 }
-                                else {
-                                    logDbWrite.d("Without Callback");
-                                }
                             }
                         }
                         else {
@@ -1374,16 +1392,10 @@ var pluginManager = function pluginManager() {
                             if (callback) {
                                 callback(err, res);
                             }
-                            else {
-                                logDbWrite.d("Without Callback");
-                            }
                         }
                     }
                     else if (callback) {
                         callback(err, res);
-                    }
-                    else {
-                        logDbWrite.d("Without Callback");
                     }
                 };
             };
@@ -1420,14 +1432,14 @@ var pluginManager = function pluginManager() {
                 if (options.upsert) {
                     var self = this;
 
-                    return this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
                         logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                         logDbWrite.d("From connection %j", countlyDb._cly_debug);
                         self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(args, "findAndModify")));
-                    }, e, copyArguments(arguments, "findAndModify")));
+                    }, e, copyArguments(arguments, "findAndModify"))), e, copyArguments(arguments, "findAndModify"));
                 }
                 else {
-                    return this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify"))), e, copyArguments(arguments, "findAndModify"));
                 }
             };
 
@@ -1463,14 +1475,14 @@ var pluginManager = function pluginManager() {
                     if (options.upsert) {
                         var self = this;
 
-                        return this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
+                        return handlePromiseErrors(this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
                             logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
                             logDbWrite.d("From connection %j", countlyDb._cly_debug);
                             self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(args, name)));
-                        }, e, copyArguments(arguments, name)));
+                        }, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
                     }
                     else {
-                        return this["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                        return handlePromiseErrors(this["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
                     }
                 };
             };
@@ -1514,12 +1526,6 @@ var pluginManager = function pluginManager() {
                     if (callback) {
                         callback(err, res);
                     }
-                    else {
-                        logDbWrite.d("Without Callback");
-                        /*if (e) {
-                            logDbWrite.e(e.stack);
-                        }*/
-                    }
                 };
             };
 
@@ -1550,7 +1556,7 @@ var pluginManager = function pluginManager() {
 
                     logDbWrite.d(name + " " + collection + " %j %j" + at, selector, options);
                     logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                    return this["_" + name](selector, options, logForWrites(callback, e, copyArguments(arguments, name)));
+                    return handlePromiseErrors(this["_" + name](selector, options, logForWrites(callback, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
                 };
             };
             overwriteDefaultWrite(ob, "deleteOne");
@@ -1588,9 +1594,6 @@ var pluginManager = function pluginManager() {
                         else {
                             callback(err, res);
                         }
-                    }
-                    else {
-                        logDbRead.d("Without Callback");
                     }
                 };
             };
@@ -1632,7 +1635,7 @@ var pluginManager = function pluginManager() {
                     }
                     logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
                     logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    return this["_" + name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
+                    return handlePromiseErrors(this["_" + name](query, options, logForReads(callback, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
                 };
             };
 
@@ -1674,7 +1677,7 @@ var pluginManager = function pluginManager() {
                 var cursor = this._find(query, options);
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
-                    return cursor._toArray(logForReads(callback, e, copyArguments(args, "find")));
+                    return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "find"))), e, copyArguments(arguments, "find"));
                 };
                 return cursor;
             };
