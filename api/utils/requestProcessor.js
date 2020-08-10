@@ -1787,6 +1787,9 @@ const processRequest = (params) => {
                 }
 
                 switch (params.qstring.method) {
+                case 'jobs':
+                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
+                    break;
                 case 'total_users':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
