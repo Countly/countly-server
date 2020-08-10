@@ -2012,6 +2012,10 @@ const processRequest = (params) => {
 const processRequestData = (params, app, done) => {
 
     if (plugins.getConfig("api", params.app && params.app.plugins, true).post_processing) {
+
+        //preserve time for user's previous session
+        params.previous_session = params.app_user.ls;
+
         var ob = {params: params, updates: []};
         plugins.dispatch("/sdk/user_properties", ob, function() {
             var update = {};
@@ -2035,6 +2039,11 @@ const processRequestData = (params, app, done) => {
                     if (!params.res.finished) {
                         common.returnMessage(params, 200, 'Success');
                     }
+                    //process the rest of the plugins as usual
+                    plugins.dispatch("/i", {
+                        params: params,
+                        app: app
+                    });
                 });
             });
         });
