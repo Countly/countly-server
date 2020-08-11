@@ -585,7 +585,7 @@
                 pendingInit: false,
                 tableInstance: null,
                 optionItems: [],
-                focusedKey: null
+                focusedRow: null
             };
         },
         computed: {
@@ -655,8 +655,8 @@
                             self.$nextTick(function() {
                                 CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
                                 $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
-                                    var key = $(data.target).parents("tr").data("key");
-                                    self.focusedKey = key;
+                                    var rowData = $(data.target).parents("tr").data("cly-row-data");
+                                    self.focusedRow = rowData;
                                 });
                             });
                         }
@@ -665,8 +665,7 @@
                     },
                     "fnRowCallback": function(nRow, aData) {
                         var rowEl = $(nRow);
-                        var key = self.keyFn(aData);
-                        rowEl.attr("data-key", key);
+                        rowEl.data("cly-row-data", aData);
                     },
                 }));
 
@@ -681,7 +680,11 @@
                 }
             },
             optionEvent: function(eventName) {
-                this.$emit(eventName, this.focusedKey);
+                var key = null;
+                if (this.keyFn) {
+                    key = this.keyFn(this.focusedRow);
+                }
+                this.$emit(eventName, this.focusedRow, key);
             }
         },
         watch: {

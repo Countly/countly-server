@@ -57,6 +57,10 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
             this.targetName = "";
             this.targetValue += 1;
+        },
+        onDelete: function(/*row, key*/) {
+        },
+        onShow: function(/*row, key*/) {
         }
     }
 });
