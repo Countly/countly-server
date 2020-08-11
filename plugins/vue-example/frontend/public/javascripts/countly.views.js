@@ -47,7 +47,10 @@ var TableView = countlyVue.views.BaseView.extend({
                             label: "Delete",
                             action: "delete-record"
                         }
-                    ]
+                    ],
+                    dt: {
+                        "sWidth": "3%"
+                    }
                 }
             ]
         };
