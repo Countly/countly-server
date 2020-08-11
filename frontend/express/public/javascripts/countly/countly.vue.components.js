@@ -606,8 +606,11 @@
         methods: {
             initialize: function() {
                 this.pendingInit = true;
-                var self = this;
-                var nativeColumns = this.columns.map(function(column) {
+
+                var self = this,
+                    nativeColumns = [];
+
+                this.columns.forEach(function(column) {
                     var nativeColumn = null;
                     if (!column.type || column.type === "default") {
                         nativeColumn = {
@@ -625,10 +628,18 @@
                             nativeColumn.sTitle = column.options.title;
                         }
                         nativeColumn.mData = function(row) {
-                            return row[column.options.fieldKey];
+                            return row[column.fieldKey];
                         };
                     }
                     else if (column.type === "options") {
+                        if (self.hasOptions) {
+                            //disallow multiple options
+                            return;
+                        }
+                        if (!column.items || column.items.length === 0) {
+                            //ignore empty lists;
+                            return;
+                        }
                         self.optionItems = column.items;
                         nativeColumn = {
                             "mData": function() {
@@ -643,7 +654,7 @@
                     if (column.dt) {
                         _.extend(nativeColumn, column.dt);
                     }
-                    return nativeColumn;
+                    nativeColumns.push(nativeColumn);
                 });
 
                 this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {

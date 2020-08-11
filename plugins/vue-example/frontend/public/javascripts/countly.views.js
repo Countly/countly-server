@@ -17,8 +17,8 @@ var TableView = countlyVue.views.BaseView.extend({
             tableColumns: [
                 {
                     type: "field",
+                    fieldKey: "_id",
                     options: {
-                        fieldKey: "_id",
                         title: "ID"
                     },
                     dt: {
@@ -27,8 +27,8 @@ var TableView = countlyVue.views.BaseView.extend({
                 },
                 {
                     type: "field",
+                    fieldKey: "name",
                     options: {
-                        fieldKey: "name",
                         dataType: "string",
                         title: "Name"
                     },
@@ -38,8 +38,8 @@ var TableView = countlyVue.views.BaseView.extend({
                 },
                 {
                     type: "field",
+                    fieldKey: "value",
                     options: {
-                        fieldKey: "value",
                         dataType: "numeric",
                         title: "Value"
                     },
