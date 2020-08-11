@@ -18,6 +18,16 @@ var TableView = countlyVue.views.BaseView.extend({
                 {
                     type: "field",
                     options: {
+                        fieldKey: "_id",
+                        title: "ID"
+                    },
+                    dt: {
+                        "sWidth": "3%"
+                    },
+                },
+                {
+                    type: "field",
+                    options: {
                         fieldKey: "name",
                         dataType: "string",
                         title: "Name"
@@ -61,7 +71,8 @@ var TableView = countlyVue.views.BaseView.extend({
             this.targetName = "";
             this.targetValue += 1;
         },
-        onDelete: function(/*row, key*/) {
+        onDelete: function(row) {
+            this.$store.commit("vueExample/deletePairById", row._id);
         },
         onShow: function(/*row, key*/) {
         }

@@ -27,6 +27,11 @@
                         state.pairs.push({_id: state.id, name: obj.name, value: obj.value});
                         state.id++;
                     },
+                    deletePairById: function(state, _id) {
+                        state.pairs = state.pairs.filter(function(val) {
+                            return val._id !== _id;
+                        });
+                    },
                     setRandomNumbers: function(state, obj) {
                         state.randomNumbers = obj;
                     }
