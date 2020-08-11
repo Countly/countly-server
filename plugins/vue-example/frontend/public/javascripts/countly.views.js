@@ -49,7 +49,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
             }
         }
     },
-    mounted: function(){
+    mounted: function() {
         this.refresh();
     }
 });

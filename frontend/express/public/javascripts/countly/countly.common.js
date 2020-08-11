@@ -154,7 +154,7 @@
             }
 
             if (window.countlyVue && window.countlyVue.vuex) {
-                currentStore = window.countlyVue.vuex.getGlobalStore();
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
                 if (currentStore) {
                     currentStore.dispatch("countlyCommon/updatePeriod", {period: period, label: countlyCommon.getDateRangeForCalendar()});
                 }

@@ -441,7 +441,7 @@
                     }
                 },
                 actions: {
-                    updatePeriod: function(context, obj){
+                    updatePeriod: function(context, obj) {
                         context.commit("setPeriod", obj.period);
                         context.commit("setPeriodLabel", obj.label);
                     }
@@ -524,7 +524,7 @@
                 }
             });
 
-            self.vm.$on("cly-date-change", function(){
+            self.vm.$on("cly-date-change", function() {
                 self.vm.$emit("cly-refresh");
             });
         },
@@ -581,7 +581,12 @@
             };
         },
         props: {
-            rows: { type: Array, default: [] },
+            rows: { 
+                type: Array, 
+                default: function() {
+                    return [];
+                }
+            },
             columns: { type: Array }
         },
         methods: {
@@ -772,10 +777,10 @@
             currentPeriodLabel: function() {
                 return this.$store.getters["countlyCommon/periodLabel"];
             },
-            toInternal: function(){
+            toInternal: function() {
                 return this.dateToSelected;
             },
-            fromInternal: function(){
+            fromInternal: function() {
                 return this.dateFromSelected;
             }
         },
@@ -806,7 +811,7 @@
                     var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
                     date.setHours(0, 0, 0, 0);
                     return date.getTime();
-                }
+                };
 
                 var _beforeShowDay = function(date, testFn) {
                     var ts = date.getTime();
@@ -816,7 +821,7 @@
                     else {
                         return [true, "", ""];
                     }
-                }
+                };
 
                 self.dateTo = $(this.$refs.instDateTo).datepicker({
                     numberOfMonths: 1,
