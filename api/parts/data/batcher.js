@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 const plugins = require('../../../plugins/pluginManager.js');
-const log = require('../../utils/logger.js')("batcher");
+const log = require('../../utils/log.js')("batcher");
 
 /**
  *  Class for batching database operations for aggregated data 
@@ -49,7 +49,7 @@ class Batcher extends EventEmitter {
             }
             this.data[collection] = {};
             try {
-                await this.collection.bulkWrite(queries, {ordered: false});
+                await this.db.collection(collection).bulkWrite(queries, {ordered: false});
                 this.emit("flushed");
             }
             catch (ex) {
