@@ -1,0 +1,126 @@
+/* tabs component */
+
+.cly-vue-tabs .cly-vue-tabs-list{
+    background-image: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    margin-top: -1px;
+    height: 40px;
+    border: none;
+    background-color: transparent;
+    padding-left: 12px;
+    margin-bottom: 5px;
+}
+
+.cly-vue-tabs .cly-vue-tabs-list li{
+    text-decoration: none;
+    color: #FFF;
+    font-size: 12px;
+    text-align: center;
+    box-shadow: none;
+    list-style: none;
+    float: left;
+    position: relative;
+    top: 1px;
+    white-space: nowrap;
+    margin: 0;
+    background-color: #f8f8f8;
+    border-radius: 0;
+    border: none;
+    background-image: none;
+    padding: 0;
+    border-top: 3px solid #f8f8f8;
+    border-bottom: none !important;
+    width: auto;
+    margin-right: 30px;
+}
+
+.cly-vue-tabs .cly-vue-tabs-list li a{
+    cursor: pointer;
+    display: block;
+    float: none;
+    font-family: Ubuntu;
+    text-transform: uppercase;
+    background-color: transparent;
+    color: #666;
+    padding: 0px 0px 6px 0px;
+    font-size: 15px;
+}
+
+.cly-vue-tabs .cly-vue-tabs-list li.is-active a {
+    color: #333;
+    border-bottom: 2px solid #19cc63 !important;
+}
+/*
+.cly-vue-tabs. .cly-vue-tabs-container{
+
+}
+
+.cly-vue-tabs. .cly-vue-tabs-container .cly-vue-tab{
+*/
+
+/* time graph */
+
+.cly-vue-time-graph{
+    width: auto;
+    height: 350px;
+}
+
+.cly-vue-time-graph{ font-family:Oswald; font-size:14px; margin:30px }
+.cly-vue-time-graph .legendLabel{ font-family:Ubuntu; font-size:14px; }
+
+
+/* global date selector */
+
+.cly-vue-global-date-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:6px; padding-right:0; user-select:none; position: relative; }
+.cly-vue-global-date-selector .button { visibility: visible; cursor:pointer; user-select:none; padding:7px 5px 7px 5px; margin-right:-1px; color: #ffffff; font-size:13px; line-height:13px; }
+.date-selector-buttons {background-color: #03060c; width: 160px; position:absolute; right:0; top:0; padding: 0px 20px;margin: 0px -3px 0 0; border-top-right-radius:2px; border-bottom-right-radius:2px; height:100%}
+.date-selector-buttons .button:nth-child(1) { margin-top:20px;}
+.widget-header:hover .cly-vue-global-date-selector .button { visibility: visible; }
+.cly-vue-global-date-selector .date-buttons-container { float: left;}
+.cly-vue-global-date-selector .date-buttons-container .button:first-child { border-top-left-radius:2px; border-bottom-left-radius:2px; }
+.cly-vue-global-date-selector .date-buttons-container .button:last-child { border-top-right-radius:2px; border-bottom-right-radius:2px; border-right:1px solid #D0D0D0; }
+.cly-vue-global-date-selector .button:hover { background-color:#1b2732; }
+.cly-vue-global-date-selector .button:active  { background-color:#1b2732; }
+.cly-vue-global-date-selector .button.active { background-color:#1b2732; }
+.cly-vue-global-date-selector>.calendar { background-color:#f9f9f9; border:1px solid #D0D0D0; color:#767676; cursor:pointer; float:right; border-radius:2px; margin:0 5px 0 13px; height:27px; text-align: center; padding: 0px 30px 0px 30px; min-width:200px; text-align:left}
+.cly-vue-global-date-selector>.calendar:hover { background-color:#F9F9F9; }
+.cly-vue-global-date-selector>.calendar i {font-size: 18px; position:absolute; top: 12px; left:26px;}
+.cly-vue-global-date-selector .calendar .up, .cly-vue-global-date-selector .calendar .down {
+    position: absolute;
+    right: 16px;
+    top:15px;
+    color:#767676;
+}
+.cly-vue-global-date-selector .calendar-block { vertical-align: top;}
+.cly-vue-global-date-selector .calendar .up {display:none;}
+.cly-vue-global-date-selector .calendar.active .up { display:block;}
+.cly-vue-global-date-selector .calendar.active .down {display:none;}
+.cly-vue-global-date-selector .calendar-block .calendar-input-field { float: right; width: 100px; padding: 9px 9px 9px 9px; font-size: 13px; line-height:13px; text-align:center; border:none; background-color: #1b2732; color: #ffffff; margin: 0 10px; border-radius:2px; border: 1px solid #1b2732; height: 16px; }
+.cly-vue-global-date-selector .calendar-block .calendar-input-field:hover {
+    border: 1px solid #243544;
+}
+.cly-vue-global-date-selector .calendar-block span.date-input-label {float: right; text-transform: uppercase; color: #d2d2d1; margin-top:11px; font: 12px Ubuntu,Helvetica,sans-serif;}
+.cly-vue-global-date-selector .inst-date-picker/*, .date-picker*/ { white-space:nowrap; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
+.cly-vue-global-date-selector .inst-date-picker .calendar-container/*, .date-picker .calendar-container*/ { overflow:auto; padding:10px 5px; margin-right:200px; }
+.cly-vue-global-date-selector .inst-date-picker .calendar-container .calendar/*, .date-picker .calendar-container .calendar*/ { vertical-align: top; margin-bottom:10px; }
+.cly-vue-global-date-selector .inst-date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
+.cly-vue-global-date-selector .inst-date-picker .button-container { overflow:auto; position:absolute; right: 20px; bottom: 15px;}
+.cly-vue-global-date-selector .inst-date-picker .button-container .icon-button { padding: 7px 10px; float: right }
+.cly-vue-global-date-selector .inst-date-picker .in-range a{
+    background: rgba(46, 167, 50, 0.6);
+    border-radius: 2px;
+    margin: 1px;
+    padding: 4px;
+}
+.cly-vue-global-date-selector .inst-date-picker .in-range a.ui-state-hover {
+    background:#1b2732;
+}
+
+.cly-vue-global-date-selector .inst-date-picker .ui-datepicker-title {
+    font-size:13px;
+}
+
+.cly-vue-global-date-selector .inst-date-picker:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #03060c; right: 9px; top: -11px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; }
+.cly-vue-global-date-selector .inst-selected-date {font-size:13px; color:#767676; line-height:28px; }

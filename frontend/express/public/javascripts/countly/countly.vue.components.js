@@ -1,4 +1,5 @@
-/* global countlyCommon, moment, jQuery, Vue */
+/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers */
+
 (function(CountlyVueComponents, $) {
 
     /**
@@ -370,6 +371,608 @@
         unbind: function(el) {
             document.body.removeEventListener('click', el.clickOutsideEvent);
         }
+    });
+
+    /*
+        Countly + Vue.js
+    */
+
+    var autoRefreshMixin = {
+        mounted: function() {
+            var self = this;
+            this.$root.$on("cly-refresh", function() {
+                self.refresh();
+            });
+        },
+        methods: {
+            refresh: function() {}
+        }
+    };
+
+    var i18nMixin = {
+        methods: {
+            i18n: function() {
+                return jQuery.i18n.prop.apply(null, arguments);
+            }
+        }
+    };
+
+    var refreshOnParentActiveMixin = {
+        watch: {
+            isParentActive: function(newState) {
+                if (newState) {
+                    this.refresh();
+                }
+            }
+        },
+        methods: {
+            refresh: function() {}
+        }
+    };
+
+    var _mixins = {
+        'autoRefresh': autoRefreshMixin,
+        'refreshOnParentActive': refreshOnParentActiveMixin,
+        'i18n': i18nMixin,
+    };
+
+    var _globalVuexStore = new Vuex.Store({
+        modules: {
+            countlyCommon: {
+                namespaced: true,
+                state: {
+                    period: countlyCommon.getPeriod(),
+                    periodLabel: countlyCommon.getDateRangeForCalendar()
+                },
+                getters: {
+                    period: function(state) {
+                        return state.period;
+                    },
+                    periodLabel: function(state) {
+                        return state.periodLabel;
+                    }
+                },
+                mutations: {
+                    setPeriod: function(state, period) {
+                        state.period = period;
+                    },
+                    setPeriodLabel: function(state, periodLabel) {
+                        state.periodLabel = periodLabel;
+                    }
+                },
+                actions: {
+                    updatePeriod: function(context, obj) {
+                        context.commit("setPeriod", obj.period);
+                        context.commit("setPeriodLabel", obj.label);
+                    }
+                }
+            }
+        }
+    });
+
+    var _vuex = {
+        getGlobalStore: function() {
+            return _globalVuexStore;
+        },
+        registerGlobally: function(wrapper, force) {
+            var store = _globalVuexStore;
+            if (!store.hasModule(wrapper.name) || force) {
+                store.registerModule(wrapper.name, wrapper.module);
+            }
+        }
+    };
+
+    var countlyVueWrapperView = countlyView.extend({
+        constructor: function(opts) {
+            this.component = opts.component;
+            this.defaultArgs = opts.defaultArgs;
+            this.vuex = opts.vuex;
+            this.templates = opts.templates;
+            this.elementsToBeRendered = [];
+        },
+        beforeRender: function() {
+            var self = this;
+            if (this.templates) {
+                var templatesDeferred = [];
+                for (var name in this.templates.mapping) {
+                    var fileName = this.templates.mapping[name];
+                    var elementId = self.templates.namespace + "-" + name;
+                    templatesDeferred.push(function(fName, elId) {
+                        return T.get(fName, function(src) {
+                            self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
+                        });
+                    }(fileName, elementId));
+                }
+                return $.when.apply(null, templatesDeferred);
+            }
+            return true;
+        },
+        renderCommon: function(isRefresh) {
+            if (!isRefresh) {
+                $(this.el).html("<div class='vue-wrapper'></div><div id='vue-templates'></div>");
+                this.elementsToBeRendered.forEach(function(el) {
+                    $("#vue-templates").append(el);
+                });
+            }
+        },
+        refresh: function() {
+            var self = this;
+            if (self.vm) {
+                self.vm.$emit("cly-refresh");
+            }
+        },
+        afterRender: function() {
+            var el = $(this.el).find('.vue-wrapper').get(0),
+                self = this;
+
+            if (self.vuex) {
+                self.vuex.forEach(function(item) {
+                    _vuex.registerGlobally(item.clyModel.getVuexModule());
+                });
+            }
+
+            self.vm = new Vue({
+                el: el,
+                store: _vuex.getGlobalStore(),
+                render: function(h) {
+                    if (self.defaultArgs) {
+                        return h(self.component, { attrs: self.defaultArgs });
+                    }
+                    else {
+                        return h(self.component);
+                    }
+                }
+            });
+
+            self.vm.$on("cly-date-change", function() {
+                self.vm.$emit("cly-refresh");
+            });
+        },
+        destroy: function() {
+            var self = this;
+            self.elementsToBeRendered = [];
+            if (self.vm) {
+                self.vm.$destroy();
+            }
+        }
+    });
+
+    var countlyBaseView = Vue.extend({
+        mixins: [
+            _mixins.autoRefresh,
+            _mixins.i18n
+        ],
+        props: {
+            name: { type: String, default: null},
+            id: { type: String, default: null }
+        },
+        computed: {
+            isParentActive: function() {
+                return this.$parent.isActive !== false;
+            },
+            vName: function() {
+                return this.name;
+            },
+            vId: function() {
+                return this.id;
+            }
+        }
+    });
+
+    var _views = {
+        BackboneWrapper: countlyVueWrapperView,
+        BaseView: countlyBaseView
+    };
+
+    window.countlyVue = {
+        mixins: _mixins,
+        vuex: _vuex,
+        views: _views
+    };
+
+    // New components
+
+    Vue.component("cly-datatable", {
+        template: '<table ref="dtable" cellpadding="0" cellspacing="0" class="cly-vue-datatable-wrapper d-table"></table>',
+        data: function() {
+            return {
+                isInitialized: false,
+                tableInstance: null
+            };
+        },
+        props: {
+            rows: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            columns: { type: Array }
+        },
+        methods: {
+            initialize: function() {
+                this.isInitialized = false;
+                this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {
+                    "aaData": this.rows,
+                    "aoColumns": this.columns
+                }));
+                this.tableInstance.stickyTableHeaders();
+                this.isInitialized = true;
+            },
+            refresh: function() {
+                if (this.isInitialized) {
+                    CountlyHelpers.refreshTable(this.tableInstance, this.rows);
+                }
+                else {
+                    this.initialize();
+                }
+            }
+        },
+        watch: {
+            rows: function() {
+                this.refresh();
+            }
+        },
+        mounted: function() {
+            this.initialize();
+        },
+        beforeDestroy: function() {
+            this.tableInstance.fnDestroy();
+        }
+    });
+
+    Vue.component("cly-tabs", {
+        template: '<div class="cly-vue-tabs"><ul class="cly-vue-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.tId)" v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+        mixins: [
+            _mixins.i18n
+        ],
+        data: function() {
+            return {
+                tabs: [],
+                currentTabId: '',
+            };
+        },
+        props: {
+            initialTab: { default: null },
+        },
+        methods: {
+            setTab: function(tId) {
+                this.currentTabId = tId;
+            }
+        },
+        created: function() {
+            if (this.initialTab) {
+                this.currentTabId = this.initialTab;
+            }
+        },
+        mounted: function() {
+            this.tabs = this.$children;
+            if (this.currentTabId === '' && this.tabs.length > 0) {
+                this.currentTabId = this.tabs[0].tId;
+            }
+        },
+        watch: {
+            currentTabId: function(newId) {
+                this.$emit("tab-changed", newId);
+            }
+        }
+    });
+
+    Vue.component("cly-tab", {
+        template: '<div v-show="isActive"><slot/></div>',
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            name: { type: String, default: null},
+            id: { type: String, default: null },
+
+        },
+        computed: {
+            isActive: function() {
+                return this.$parent.currentTabId === this.id;
+            },
+            tName: function() {
+                return this.name;
+            },
+            tId: function() {
+                return this.id;
+            }
+        }
+    });
+
+    Vue.component("cly-panel", {
+        template: '<div class="cly-vue-panel widget">\
+                        <div class="widget-header">\
+                            <div class="left">\
+                                <div class="title">{{title}}</div>\
+                            </div>\
+                            <div class="right">\
+                                <cly-global-date-selector v-once></cly-global-date-selector>\
+                            </div>\
+                        </div>\
+                        <div class="widget-content help-zone-vb">\
+                            <slot/>\
+                        </div>\
+                    </div>',
+        props: {
+            title: { type: String, required: true }
+        },
+    });
+
+    Vue.component("cly-global-date-selector", {
+        template: '<div class="cly-vue-global-date-selector help-zone-vs">\
+                        <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
+                            <i class="material-icons">date_range</i>\
+                            <span class="inst-selected-date">{{currentPeriodLabel}}</span>\
+                            <span class="down ion-chevron-down"></span>\
+                            <span class="up ion-chevron-up"></span>\
+                        </div>\
+                        <div class="inst-date-picker" v-show="isOpened">\
+                            <div class="date-selector-buttons">\
+                                <div class="button date-selector" v-for="item in fixedPeriods" :key="item.value" v-bind:class="{active: currentPeriod == item.value}" @click="setPeriod(item.value)">{{item.name}}</div>\
+                                <div class="button-container">\
+                                    <div class="icon-button green inst-date-submit" @click="setCustomPeriod()">{{i18n("common.apply")}}</div>\
+                                    <div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}</div>\
+                                </div>\
+                            </div>\
+                            <div class="calendar-container">\
+                                <table>\
+                                    <tr>\
+                                        <td class="calendar-block">\
+                                            <div class="calendar inst-date-from" ref="instDateFrom"></div>\
+                                        </td>\
+                                        <td class="calendar-block">\
+                                            <div class="calendar inst-date-to" ref="instDateTo"></div>\
+                                        </td>\
+                                    </tr>\
+                                    <tr>\
+                                        <td class="calendar-block">\
+                                            <input type="text" class="calendar-input-field inst-date-from-input" v-model="dateFromLabel" @keyup.enter="dateFromInputSubmit"></input><span class="date-input-label">{{i18n("common.from")}}</span>\
+                                        </td>\
+                                        <td class="calendar-block">\
+                                            <input type="text" class="calendar-input-field inst-date-to-input" v-model="dateToLabel" @keyup.enter="dateToInputSubmit"></input><span class="date-input-label">{{i18n("common.to")}}</span>\
+                                        </td>\
+                                    </tr>\
+                                </table>\
+                            </div>\
+                        </div>\
+                    </div>',
+        mixins: [
+            _mixins.i18n
+        ],
+        data: function() {
+            return {
+                // UI state
+                isOpened: false,
+
+                // UI constants
+                fixedPeriods: [
+                    {name: moment().subtract(1, "days").format("Do"), value: "yesterday"},
+                    {name: this.i18n("common.today"), value: "hour"},
+                    {name: this.i18n("taskmanager.last-7days"), value: "7days"},
+                    {name: this.i18n("taskmanager.last-30days"), value: "30days"},
+                    {name: this.i18n("taskmanager.last-60days"), value: "60days"},
+                    {name: moment().format("MMMM, YYYY"), value: "day"},
+                    {name: moment().year(), value: "month"},
+                ],
+
+                // Datepicker handles
+                dateTo: null,
+                dateFrom: null,
+
+                // Picked values
+                dateToSelected: null,
+                dateFromSelected: null,
+
+                // Labels
+                dateFromLabel: '',
+                dateToLabel: '',
+            };
+        },
+        computed: {
+            currentPeriod: function() {
+                return this.$store.getters["countlyCommon/period"];
+            },
+            currentPeriodLabel: function() {
+                return this.$store.getters["countlyCommon/periodLabel"];
+            },
+            toInternal: function() {
+                return this.dateToSelected;
+            },
+            fromInternal: function() {
+                return this.dateFromSelected;
+            }
+        },
+        mounted: function() {
+            this._initPickers();
+
+            var periodObj = countlyCommon.getPeriod(),
+                self = this;
+
+            if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
+                self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
+                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
+            }
+            else {
+                var date = new Date();
+                date.setHours(0, 0, 0, 0);
+                self.dateToSelected = date.getTime();
+                var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
+                extendDate.setHours(0, 0, 0, 0);
+                self.dateFromSelected = extendDate.getTime();
+            }
+        },
+        methods: {
+            _initPickers: function() {
+                var self = this;
+
+                var _onSelect = function(instance, selectedDate) {
+                    var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+                    date.setHours(0, 0, 0, 0);
+                    return date.getTime();
+                };
+
+                var _beforeShowDay = function(date, testFn) {
+                    var ts = date.getTime();
+                    if (testFn(ts)) {
+                        return [true, "in-range", ""];
+                    }
+                    else {
+                        return [true, "", ""];
+                    }
+                };
+
+                self.dateTo = $(this.$refs.instDateTo).datepicker({
+                    numberOfMonths: 1,
+                    showOtherMonths: true,
+                    maxDate: moment().toDate(),
+                    onSelect: function(selectedDate) {
+                        self.dateToSelected = _onSelect($(this).data("datepicker"), selectedDate);
+                    },
+                    beforeShowDay: function(date) {
+                        return _beforeShowDay(date, function(ts) {
+                            return ts < self.toInternal && ts >= self.fromInternal;
+                        });
+                    }
+                });
+
+                self.dateFrom = $(this.$refs.instDateFrom).datepicker({
+                    numberOfMonths: 1,
+                    showOtherMonths: true,
+                    maxDate: moment().subtract(1, 'days').toDate(),
+                    onSelect: function(selectedDate) {
+                        self.dateFromSelected = _onSelect($(this).data("datepicker"), selectedDate);
+                    },
+                    beforeShowDay: function(date) {
+                        return _beforeShowDay(date, function(ts) {
+                            return ts <= self.toInternal && ts > self.fromInternal;
+                        });
+                    }
+                });
+
+                $.datepicker.setDefaults($.datepicker.regional[""]);
+                self.dateTo.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                self.dateFrom.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+            },
+            toggle: function() {
+                this.isOpened = !this.isOpened;
+            },
+            cancel: function() {
+                this.isOpened = false;
+            },
+            setCustomPeriod: function() {
+                var self = this;
+                if (!self.dateFromSelected && !self.dateToSelected) {
+                    return false;
+                }
+                this.setPeriod([
+                    self.dateFromSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected),
+                    self.dateToSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateToSelected) + 24 * 60 * 60 * 1000 - 1
+                ]);
+            },
+            setPeriod: function(newPeriod) {
+                countlyCommon.setPeriod(newPeriod);
+                this.$root.$emit("cly-date-change");
+                this.isOpened = false;
+            },
+            dateFromInputSubmit: function() {
+                var date = moment(this.dateFromLabel, "MM/DD/YYYY");
+                if (date.format("MM/DD/YYYY") === this.dateFromLabel) {
+                    this.dateFromSelected = date.valueOf();
+                }
+                else {
+                    this.dateFromLabel = moment(this.dateFromSelected).format("MM/DD/YYYY");
+                }
+            },
+            dateToInputSubmit: function() {
+                var date = moment(this.dateToLabel, "MM/DD/YYYY");
+                if (date.format("MM/DD/YYYY") === this.dateToLabel) {
+                    this.dateToSelected = date.valueOf();
+                }
+                else {
+                    this.dateToLabel = moment(this.dateToSelected).format("MM/DD/YYYY");
+                }
+            }
+        },
+        watch: {
+            dateFromSelected: function(newValue) {
+                var date = new Date(newValue),
+                    self = this;
+                if (newValue > self.dateToSelected) {
+                    self.dateToSelected = newValue;
+                }
+                self.dateTo.datepicker("option", "minDate", date);
+                self.dateFrom.datepicker("setDate", date);
+                self.dateFromLabel = moment(newValue).format("MM/DD/YYYY");
+            },
+            dateToSelected: function(newValue) {
+                var date = new Date(newValue),
+                    self = this;
+                if (newValue < self.dateFromSelected) {
+                    self.dateFromSelected = newValue;
+                }
+                self.dateFrom.datepicker("option", "maxDate", date);
+                self.dateTo.datepicker("setDate", date);
+                self.dateToLabel = moment(newValue).format("MM/DD/YYYY");
+            },
+            isOpened: function() {
+                var self = this;
+                self.dateTo.datepicker("refresh");
+                self.dateFrom.datepicker("refresh");
+            }
+        },
+        beforeDestroy: function() {
+            this.dateTo.datepicker('hide').datepicker('destroy');
+            this.dateFrom.datepicker('hide').datepicker('destroy');
+        }
+    });
+
+    Vue.component("cly-time-graph", {
+        template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
+        props: {
+            data: function() {
+                return { required: true };
+            }
+        },
+        mounted: function() {
+            this.render();
+        },
+        methods: {
+            render: function() {
+
+                if ($(this.$refs.container).is(":hidden")) {
+                    // no need to render if hidden
+                    return;
+                }
+
+                var mapped = this.data.map(function(val, idx) {
+                    return [idx + 1, val];
+                });
+
+                var prev = this.data.map(function(val, idx) {
+                    return [idx + 1, val / 2];
+                });
+
+                var points = [{
+                    "data": prev,
+                    "label": "Total Sessions",
+                    "color": "#DDDDDD",
+                    "mode": "ghost"
+                }, {
+                    "data": mapped,
+                    "label": "Total Sessions",
+                    "color": "#52A3EF"
+                }];
+
+                countlyCommon.drawTimeGraph(points, $(this.$refs.container));
+            }
+        },
+        watch: {
+            data: function() {
+                this.render();
+            }
+        },
     });
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

@@ -144,12 +144,20 @@
             else {
                 countlyCommon.periodObj = calculatePeriodObj(period);
             }
+
             if (window.app && window.app.recordEvent) {
                 window.app.recordEvent({
                     "key": "period-change",
                     "count": 1,
                     "segmentation": {is_custom: Array.isArray(period)}
                 });
+            }
+
+            if (window.countlyVue && window.countlyVue.vuex) {
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.dispatch("countlyCommon/updatePeriod", {period: period, label: countlyCommon.getDateRangeForCalendar()});
+                }
             }
 
             if (noSet) {
