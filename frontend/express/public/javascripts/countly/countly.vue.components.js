@@ -581,8 +581,8 @@
             };
         },
         props: {
-            rows: { 
-                type: Array, 
+            rows: {
+                type: Array,
                 default: function() {
                     return [];
                 }
