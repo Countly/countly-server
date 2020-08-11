@@ -1,5 +1,5 @@
-.errorlogs{padding: 16px;border: 1px solid #D0D0D0;background-color: #fff;}
-.errorlogs .pre-block{padding:16px; background-color: #fff;}
+.errorlogs{padding: 16px; padding-right:0px; border: 1px solid #D0D0D0;background-color: #fff;}
+.errorlogs .pre-block{padding:16px; padding-right:5px; background-color: #fff;}
 .errorlogs pre{max-height: 1000px; overflow: auto; white-space: pre-wrap; font-size:11px; background-color:#fff;}
 .error-log-selector-block {
     height: 58px;
