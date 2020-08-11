@@ -10,6 +10,7 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
+const Batcher = require('./parts/data/bacther.js');
 
 var t = ["countly:", "api"];
 
@@ -60,7 +61,8 @@ plugins.setConfigs("api", {
     offline_mode: false,
     reports_regenerate_interval: 3600,
     send_test_email: "",
-    post_processing: false
+    post_processing: false,
+    batch_period: 10
 });
 
 /**
@@ -216,6 +218,8 @@ else {
 
     common.cache = new CacheWorker(common.db);
     common.cache.start();
+    
+    common.writeBatcher = new Batcher(common.db);
 
     //since process restarted mark running tasks as errored
     taskManager.errorResults({db: common.db});
