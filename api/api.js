@@ -10,7 +10,7 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
-const Batcher = require('./parts/data/bacther.js');
+const Batcher = require('./parts/data/batcher.js');
 
 var t = ["countly:", "api"];
 
