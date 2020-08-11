@@ -1994,7 +1994,7 @@ const processRequest = (params) => {
             }
         }
         else {
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+            if (!params.res.finished) {
                 common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
             }
             common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
@@ -2011,49 +2011,29 @@ const processRequest = (params) => {
  */
 const processRequestData = (params, app, done) => {
 
-    if (plugins.getConfig("api", params.app && params.app.plugins, true).post_processing) {
+    //preserve time for user's previous session
+    params.previous_session = params.app_user.ls;
 
-        //preserve time for user's previous session
-        params.previous_session = params.app_user.ls;
-
-        var ob = {params: params, updates: []};
-        plugins.dispatch("/sdk/user_properties", ob, function() {
-            var update = {};
-            for (let i = 0; i < ob.updates.length; i++) {
-                for (let key in ob.updates[i]) {
-                    if (!update[key]) {
-                        update[key] = ob.updates[i][key];
-                    }
-                    else {
-                        update[key] = Object.assign(update[key], ob.updates[i][key]);
-                    }
+    var ob = {params: params, updates: []};
+    plugins.dispatch("/sdk/user_properties", ob, function() {
+        var update = {};
+        for (let i = 0; i < ob.updates.length; i++) {
+            for (let key in ob.updates[i]) {
+                if (!update[key]) {
+                    update[key] = ob.updates[i][key];
+                }
+                else {
+                    update[key] = Object.assign(update[key], ob.updates[i][key]);
                 }
             }
-            common.updateAppUser(params, update, function() {
-                plugins.dispatch("/session/retention", {
-                    params: params,
-                    user: params.app_user,
-                    isNewUser: params.app_user.fs ? true : false
-                });
-                plugins.dispatch("/sdk/data_ingestion", {params: params}, function() {
-                    if (!params.res.finished) {
-                        common.returnMessage(params, 200, 'Success');
-                    }
-                    //process the rest of the plugins as usual
-                    plugins.dispatch("/i", {
-                        params: params,
-                        app: app
-                    });
-                });
+        }
+        console.log("update", JSON.stringify(update));
+        common.updateAppUser(params, update, function() {
+            plugins.dispatch("/session/retention", {
+                params: params,
+                user: params.app_user,
+                isNewUser: params.app_user.fs ? true : false
             });
-        });
-    }
-    else {
-        //regular flow
-        plugins.dispatch("/i", {
-            params: params,
-            app: app
-        }, () => {
             if (params.qstring.events) {
                 if (params.promises) {
                     params.promises.push(countlyApi.data.events.processEvents(params));
@@ -2062,18 +2042,21 @@ const processRequestData = (params, app, done) => {
                     countlyApi.data.events.processEvents(params);
                 }
             }
-            else if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.bulk) {
-                common.returnMessage(params, 200, 'Success');
-            }
-
-            if (countlyApi.data.usage.processLocationRequired(params)) {
-                countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
-            }
-            else {
-                continueProcessingRequestData(params, done);
-            }
+            //process the rest of the plugins as usual
+            plugins.dispatch("/i", {
+                params: params,
+                app: app
+            });
+            plugins.dispatch("/sdk/data_ingestion", {params: params}, function() {
+                if (!params.res.finished) {
+                    common.returnMessage(params, 200, 'Success');
+                }
+                if (done) {
+                    done();
+                }
+            });
         });
-    }
+    });
 };
 
 /**
@@ -2108,53 +2091,6 @@ const processFetchRequest = (params, app, done) => {
 
         return done ? done() : false;
     });
-};
-
-/**
- * Continue Processing Request Data
- * @param {params} params - params object
- * @param {function} done - callbck when processing done
- * @returns {void} void
- */
-const continueProcessingRequestData = (params, done) => {
-    if (params.qstring.begin_session) {
-        countlyApi.data.usage.beginUserSession(params, done);
-    }
-    else {
-        if (params.qstring.metrics) {
-            countlyApi.data.usage.processMetrics(params);
-        }
-        if (params.qstring.end_session) {
-            if (params.qstring.session_duration) {
-                countlyApi.data.usage.processSessionDuration(params, () => {
-                    countlyApi.data.usage.endUserSession(params, done);
-                });
-            }
-            else {
-                countlyApi.data.usage.endUserSession(params, done);
-            }
-        }
-        else if (params.qstring.session_duration) {
-            countlyApi.data.usage.processSessionDuration(params, () => {
-                return done ? done() : false;
-            });
-        }
-        else {
-            //update lac only on real change (Artem TM)
-            //common.updateAppUser(params, {$set: {lac: params.time.mstimestamp}});
-
-            // begin_session, session_duration and end_session handle incrementing request count in usage.js
-            const dbDateIds = common.getDateIds(params),
-                updateUsers = {};
-
-            common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
-            const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert': true}, () => {
-            });
-
-            return done ? done() : false;
-        }
-    }
 };
 
 /**
@@ -2380,12 +2316,6 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
             });
         });
-
-        var config = plugins.getConfig("api", params.app && params.app.plugins, true);
-        if (!config.safe && !config.post_processing && !params.res.finished) {
-            common.returnMessage(params, 200, 'Success');
-            return;
-        }
     });
 };
 

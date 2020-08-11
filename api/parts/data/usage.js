@@ -98,181 +98,6 @@ function locFromGeoip(loc, ip_address) {
 }
 
 /**
-* Update location in user's document
-* @param {params} params - params object
-* @param {boolean} optout - delete and do not store location for user
-* @param {object} loc - location object    
-* @param {number} loc.lat - lattitude    
-* @param {number} loc.lon - longitude 
-* @param {string} loc.country - country 
-* @param {string} loc.city - city
-* @param {string} loc.tz - timezone
-**/
-function updateLoc(params, optout, loc) {
-    var update = {}, substantialChange = false;
-
-    loc.gps = loc.gps || false;
-    if (optout) {
-        loc.country = loc.region = loc.city = 'Unknown';
-        update.$unset = {loc: 1};
-    }
-    else {
-        if (loc.country && loc.region && loc.region.length) {
-            loc.region = loc.country + "-" + loc.region;
-        }
-        else {
-            loc.region = 'Unknown';
-        }
-
-        if (!loc.country) {
-            loc.country = loc.city = 'Unknown';
-        }
-        else if (!loc.city) {
-            loc.city = 'Unknown';
-        }
-    }
-
-    params.user.country = loc.country;
-    params.user.region = loc.region;
-    params.user.city = loc.city;
-
-    if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false) {
-        params.user.city = loc.city = 'Unknown';
-    }
-
-    if (!params.app_user || params.app_user[common.dbUserMap.country_code] !== loc.country) {
-        update.$set = {[common.dbUserMap.country_code]: loc.country};
-    }
-    if (!params.app_user || params.app_user[common.dbUserMap.city] !== loc.city) {
-        if (!update.$set) {
-            update.$set = {};
-        }
-        update.$set[common.dbUserMap.city] = loc.city;
-    }
-    if (!params.app_user || params.app_user[common.dbUserMap.region] !== loc.region) {
-        if (!update.$set) {
-            update.$set = {};
-        }
-        update.$set[common.dbUserMap.region] = loc.region;
-    }
-    if (!params.app_user || (loc.tz !== undefined && params.app_user.tz !== loc.tz)) {
-        if (!update.$set) {
-            update.$set = {};
-        }
-        update.$set.tz = loc.tz;
-    }
-
-    if (!optout) {
-        substantialChange = substantialChange || !params.app_user || !params.app_user.loc || !params.app_user.loc.gps;
-        if (loc.lat !== undefined && (loc.gps || substantialChange || (params.time.mstimestamp - params.app_user.loc.date) > 7 * 24 * 3600)) {
-            // only override lat/lon if no recent gps location exists in user document
-            if (!update.$set) {
-                update.$set = {};
-            }
-            update.$set.loc = params.user.loc = {
-                gps: loc.gps,
-                geo: {
-                    type: 'Point',
-                    coordinates: [loc.lon, loc.lat]
-                },
-                date: params.time.mstimestamp
-            };
-        }
-        else if (loc.lat === undefined) {
-            // no lat/lon, using existing one if any (assuming dev uses gps)
-            params.user.loc = params.app_user.loc;
-        }
-    }
-
-    if (update.$set || update.$unset) {
-        common.updateAppUser(params, update, true);
-    }
-}
-
-/**
-* Check if location should be processed from params
-* @param {params} params - params object
-* @returns {boolean} true if location should be processed, false if it should not
-**/
-usage.processLocationRequired = function(params) {
-    return !params.user.locationProcessed && ('location' in params.qstring || 'country_code' in params.qstring || 'city' in params.qstring || 'tz' in params.qstring || (params.qstring.begin_session && params.ip_address));
-};
-
-/**
-* Process location information from params
-* @param {params} params - params object
-* @returns {Promise} promise which resolves upon completeing processing
-**/
-usage.processLocation = function(params) {
-    params.user.locationProcessed = true;
-
-    if ('tz' in params.qstring) {
-        params.user.tz = parseInt(params.qstring.tz);
-        if (isNaN(params.user.tz)) {
-            delete params.user.tz;
-        }
-    }
-
-    // only tz, no location
-    if (params.user.tz !== undefined && !('location' in params.qstring || 'country_code' in params.qstring || 'city' in params.qstring || (params.qstring.begin_session && params.ip_address))) {
-        if (params.user.tz !== params.app_user.tz) {
-            common.updateAppUser(params, {$set: {tz: params.user.tz}}, true);
-        }
-        return Promise.resolve();
-    }
-
-    return new Promise(resolve => {
-        var loc = {
-            country: params.qstring.country_code,
-            city: params.qstring.city,
-            tz: params.user.tz
-        };
-
-        if ('location' in params.qstring) {
-            if (params.qstring.location) {
-                var coords = (params.qstring.location + "").split(',');
-                if (coords.length === 2) {
-                    var lat = parseFloat(coords[0]),
-                        lon = parseFloat(coords[1]);
-
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                        loc.lat = lat;
-                        loc.lon = lon;
-                    }
-                }
-            }
-            else {
-                updateLoc(params, true, loc);
-                return resolve();
-            }
-        }
-
-        if (loc.lat !== undefined || (loc.country && loc.city)) {
-            locFromGeocoder(params, loc).then(loc2 => {
-                if (loc2.city && loc2.country && loc2.lat !== undefined) {
-                    updateLoc(params, false, loc2);
-                    return resolve();
-                }
-                else {
-                    loc2.city = loc2.country === undefined ? undefined : loc2.city;
-                    loc2.country = loc2.city === undefined ? undefined : loc2.country;
-                    locFromGeoip(loc2, params.ip_address).then(loc3 => {
-                        updateLoc(params, false, loc3);
-                        return resolve();
-                    });
-                }
-            });
-        }
-        else {
-            locFromGeoip(loc, params.ip_address).then(loc2 => {
-                updateLoc(params, false, loc2);
-                return resolve();
-            });
-        }
-    });
-};
-
-/**
  * Set Location information in params but donot update it in users document
  * @param  {params} params - params object
  * @returns {Promise} promise which resolves upon completeing processing
@@ -333,139 +158,6 @@ usage.setLocation = function(params) {
 };
 
 /**
- * Set user location in params
- * @param  {params} params - params object
- * @param  {object} loc - location info
- */
-usage.setUserLocation = function(params, loc) {
-    params.user.country = loc.country;
-    params.user.region = loc.region;
-    params.user.city = plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false ? undefined : loc.city;
-};
-
-/**
-* Process begin_session=1 calls
-* @param {params} params - params object
-* @param {function} done - callback when done
-**/
-usage.beginUserSession = function(params, done) {
-    var dbAppUser = params.app_user;
-    if (dbAppUser) {
-        var lastTs = dbAppUser[common.dbUserMap.last_end_session_timestamp] || dbAppUser[common.dbUserMap.last_begin_session_timestamp];
-        if (!lastTs || (params.time.timestamp - lastTs) > plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
-            //process duration from unproperly ended previous session
-            plugins.dispatch("/session/post", {
-                params: params,
-                dbAppUser: dbAppUser,
-                end_session: false
-            });
-            if (dbAppUser && dbAppUser[common.dbUserMap.session_duration]) {
-                processSessionDurationRange(dbAppUser[common.dbUserMap.session_duration], params, function() {
-                    processUserSession(dbAppUser, params, done);
-                });
-            }
-            else {
-                processUserSession(dbAppUser, params, done);
-            }
-        }
-        else {
-            processUserSession(dbAppUser, params, done);
-        }
-    }
-    else {
-        processUserSession(dbAppUser, params, done);
-    }
-};
-
-/**
-* Process end_session=1 calls
-* @param {params} params - params object
-* @param {function} done - callback when done
-* @returns {void} void
-**/
-usage.endUserSession = function(params, done) {
-    //check if end_session is not too old and ignore if it is
-    if (params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit) {
-        // As soon as we receive the end_session we set the timestamp
-        // This timestamp is used inside processUserSession
-        var userProps = {};
-        userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
-        params.app_user[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
-
-        common.updateAppUser(params, {'$set': userProps});
-
-        setTimeout(function() {
-            //need to query app user again to get data modified by another request
-            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
-                if (!dbAppUser || err) {
-                    return done ? done() : false;
-                }
-
-                var lastBeginSession = dbAppUser[common.dbUserMap.last_begin_session_timestamp],
-                    currDateWithoutTimestamp = new Date();
-
-                // We can't use the params.time.timestamp since we are inside a setTimeout
-                // and we need the actual timestamp
-                currDateWithoutTimestamp.setTimezone(params.appTimezone);
-                var currTimestamp = Math.round(currDateWithoutTimestamp.getTime() / 1000);
-
-
-                // If ongoing session flag is set and there is a 11 second difference between the current
-                // timestamp and the timestamp when the last begin_session received then remove the flag
-                // to let the next end_session complete the session
-                if (dbAppUser[common.dbUserMap.has_ongoing_session] && (currTimestamp - lastBeginSession) > 11) {
-                    var remUserProps = {};
-                    remUserProps[common.dbUserMap.has_ongoing_session] = 1;
-                    common.updateAppUser(params, {'$unset': remUserProps}, function() {
-                        endSession(true);
-                    });
-                }
-                else {
-                    endSession();
-                }
-                /**
-                * End session for real instead of extending it due to cooldown
-                * @param {boolean} overrideFlag - override check and end session, else will check if sesion should end
-                * @returns {void} void
-                **/
-                function endSession(overrideFlag) {
-                    // If user does not have an ongoing session end it
-                    // Ongoing session flag is set inside processUserSession
-                    if (overrideFlag || !dbAppUser[common.dbUserMap.has_ongoing_session]) {
-
-                        plugins.dispatch("/session/end", {
-                            params: params,
-                            dbAppUser: dbAppUser
-                        });
-                        plugins.dispatch("/session/post", {
-                            params: params,
-                            dbAppUser: dbAppUser,
-                            end_session: true
-                        });
-
-                        // If the user does not exist in the app_users collection or she does not have any
-                        // previous session duration stored than we dont need to calculate the session
-                        // duration range for this user.
-                        if (dbAppUser[common.dbUserMap.session_duration]) {
-                            processSessionDurationRange(dbAppUser[common.dbUserMap.session_duration], params, done);
-                        }
-                        else {
-                            return done ? done() : false;
-                        }
-                    }
-                    else {
-                        return done ? done() : false;
-                    }
-                }
-            });
-        }, 10000);
-    }
-    else {
-        return done ? done() : false;
-    }
-};
-
-/**
 * Process session_duration calls
 * @param {params} params - params object
 * @param {function} callback - callback when done
@@ -489,23 +181,16 @@ usage.processSessionDuration = function(params, callback) {
 
         var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
         var dbDateIds = common.getDateIds(params);
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function() {});
 
-        var update = {
-            '$inc': {
-                'sd': session_duration,
-                'tsd': session_duration
-            }
-        };
-        common.updateAppUser(params, update, function() {
-            plugins.dispatch("/session/duration", {
-                params: params,
-                session_duration: session_duration
-            });
-            if (callback) {
-                callback();
-            }
+        common.writeBatcher("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+
+        plugins.dispatch("/session/duration", {
+            params: params,
+            session_duration: session_duration
         });
+        if (callback) {
+            callback();
+        }
     }
 };
 
@@ -716,18 +401,17 @@ function processSessionDurationRange(totalSessionDuration, params, done) {
     common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
     common.fillTimeObjectZero(params, updateUsersZero, common.dbMap.durations + '.' + calculatedDurationRange);
     var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function() {});
+    common.writeBatcher("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
     var update = {
         '$inc': updateUsersZero,
         '$set': {}
     };
     update.$set['meta_v2.d-ranges.' + calculatedDurationRange] = true;
-    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, update, function() {});
+    common.writeBatcher("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
 
-    // sd: session duration. common.dbUserMap is not used here for readability purposes.
-    common.updateAppUser(params, {'$set': {'sd': 0}}, function() {
-        return done ? done() : false;
-    });
+    if (done) {
+        done();
+    }
 }
 
 /**
@@ -758,7 +442,6 @@ function processUserSession(dbAppUser, params, done) {
         uniqueLevels = [],
         uniqueLevelsZero = [],
         uniqueLevelsMonth = [],
-        isNewUser = false,
         zeroObjUpdate = [],
         monthObjUpdate = [],
         dbDateIds = common.getDateIds(params);
@@ -775,25 +458,6 @@ function processUserSession(dbAppUser, params, done) {
             secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
             secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
             secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
-
-        // If the last end_session is received less than 15 seconds ago we will ignore
-        // current begin_session request and mark this user as having an ongoing session
-        var lastEndSession = dbAppUser[common.dbUserMap.last_end_session_timestamp];
-
-        if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
-            plugins.dispatch("/session/extend", {params: params});
-
-            var userProps = {};
-            userProps[common.dbUserMap.has_ongoing_session] = true;
-            userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
-
-            common.updateAppUser(params, {$set: userProps});
-
-            if (done) {
-                done();
-            }
-            return true;
-        }
 
         if (dbAppUser.cc !== params.user.country) {
             monthObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
@@ -871,15 +535,8 @@ function processUserSession(dbAppUser, params, done) {
                 updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
             }
         }
-
-        plugins.dispatch("/session/begin", {
-            params: params,
-            isNewUser: isNewUser
-        });
     }
     else {
-        isNewUser = true;
-
         // User is not found in app_users collection so this means she is both a new and unique user.
         zeroObjUpdate.push(common.dbMap.unique);
         monthObjUpdate.push(common.dbMap.new);
@@ -896,11 +553,6 @@ function processUserSession(dbAppUser, params, done) {
         monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
 
         usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
-
-        plugins.dispatch("/session/begin", {
-            params: params,
-            isNewUser: isNewUser
-        });
     }
 
     usersMeta['meta_v2.countries.' + (params.user.country || "Unknown")] = true;
@@ -917,23 +569,23 @@ function processUserSession(dbAppUser, params, done) {
         if (Object.keys(updateUsersZero).length) {
             updateObjZero.$inc = updateUsersZero;
         }
-
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, updateObjZero, {'upsert': true}, function() {});
+        common.writeBatcher("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, updateObjZero);
     }
     if (Object.keys(updateUsersMonth).length) {
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {
+        common.writeBatcher("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {
             $set: {
                 m: dbDateIds.month,
                 a: params.app_id + ""
             },
             '$inc': updateUsersMonth
-        }, {'upsert': true}, function() {});
+        });
     }
 
     plugins.dispatch("/session/user", {
         params: params,
         dbAppUser: dbAppUser
     });
+
     processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params, done);
 }
 
@@ -1145,27 +797,19 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
                         }
 
                         if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                            common.db.collection(predefinedMetrics[i].db).update({'_id': tmpZeroId}, updateObjZero, {'upsert': true}, function() {});
+                            common.writeBatcher(predefinedMetrics[i].db, tmpZeroId, updateObjZero);
                         }
 
-                        common.db.collection(predefinedMetrics[i].db).update({'_id': tmpMonthId}, {
+                        common.writeBatcher(predefinedMetrics[i].db, tmpMonthId, {
                             $set: {
                                 m: dateIds.month,
                                 a: params.app_id + ""
                             },
                             '$inc': tmpTimeObjMonth
-                        }, {'upsert': true}, function() {});
+                        });
                     }
                 }
             }
-        }
-
-        // sc: session count. common.dbUserMap is not used here for readability purposes.
-        // mt: metric type - provided by session
-        var update = {'$inc': {'sc': 1}};
-        if (Object.keys(userProps).length) {
-            userProps.mt = false;
-            update.$set = userProps;
         }
 
         if (!isNewUser) {
@@ -1181,17 +825,9 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
             }
         }
 
-        common.updateAppUser(params, update, function() {
-            //Perform user retention analysis
-            plugins.dispatch("/session/retention", {
-                params: params,
-                user: user,
-                isNewUser: isNewUser
-            });
-            if (done) {
-                done();
-            }
-        });
+        if (done) {
+            done();
+        }
     });
 
     return true;
@@ -1201,6 +837,7 @@ plugins.register("/sdk/user_properties", function(ob) {
     var params = ob.params;
     var userProps = {};
     var update = {};
+    params.user = {};
     var config = plugins.getConfig("api", params.app && params.app.plugins, true);
 
     if (params.qstring.tz) {
@@ -1290,6 +927,11 @@ plugins.register("/sdk/user_properties", function(ob) {
         }
     }
 
+    params.user.country = userProps.cc || "Unknown";
+    params.user.city = userProps.cty || "Unknown";
+
+    //TODO: process other geo location, like reverse lookup
+
     //if we have metrics, let's process metrics
     if (params.qstring.metrics) {
         var up = {};
@@ -1328,6 +970,7 @@ plugins.register("/sdk/user_properties", function(ob) {
             }
             if (!params.app_user.mt) {
                 userProps.mt = true;
+                params.app_user.mt = true;
             }
         }
     }
@@ -1351,6 +994,9 @@ plugins.register("/sdk/user_properties", function(ob) {
 
             update.$inc.sd = session_duration;
             update.$inc.tsd = session_duration;
+            params.app_user.sd = (params.app_user.sd || 0) + session_duration;
+
+            usage.processSessionDuration();
         }
     }
 
@@ -1366,6 +1012,7 @@ plugins.register("/sdk/user_properties", function(ob) {
 
         if (params.app_user.mt || userProps.mt) {
             userProps.mt = false;
+            params.app_user.mt = false;
         }
         //check when last session ended and if it was less than cooldown
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < config.session_cooldown) {
@@ -1375,13 +1022,17 @@ plugins.register("/sdk/user_properties", function(ob) {
             userProps.lsid = params.request_hash;
 
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
+                processSessionDurationRange(params.app_user.sd || 0, params);
+
                 //process duration from unproperly ended previous session
                 plugins.dispatch("/session/post", {
                     params: params,
                     dbAppUser: params.app_user,
                     end_session: false
                 });
+                userProps.sd = 0;
             }
+            processUserSession(params.app_user, params);
 
             plugins.dispatch("/session/begin", {
                 params: params,
@@ -1426,6 +1077,8 @@ plugins.register("/sdk/user_properties", function(ob) {
                     }
                     //if new session did not start during cooldown, then we can post process this session
                     if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
+                        processSessionDurationRange(params.app_user.sd || 0, params);
+                        processUserSession(params.app_user, params);
                         plugins.dispatch("/session/end", {
                             params: params,
                             dbAppUser: dbAppUser
@@ -1435,10 +1088,19 @@ plugins.register("/sdk/user_properties", function(ob) {
                             dbAppUser: dbAppUser,
                             end_session: true
                         });
+                        common.updateAppUser(params, {'$set': {'sd': 0}});
                     }
                 });
             }, config.session_cooldown);
         }
+    }
+    else if (!params.qstring.session_duration) {
+        const dbDateIds = common.getDateIds(params),
+            updateUsers = {};
+
+        common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
+        const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+        common.writeBatcher("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
     }
 
     //do not write values that are already assignd to user
@@ -1456,6 +1118,5 @@ plugins.register("/sdk/user_properties", function(ob) {
         ob.updates.push(update);
     }
 });
-
 
 module.exports = usage;
