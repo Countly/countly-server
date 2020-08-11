@@ -218,7 +218,7 @@ else {
 
     common.cache = new CacheWorker(common.db);
     common.cache.start();
-    
+
     common.writeBatcher = new Batcher(common.db);
 
     //since process restarted mark running tasks as errored

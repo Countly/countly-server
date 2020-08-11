@@ -10,9 +10,8 @@ const log = require('../../utils/log.js')("batcher");
  */
 class Batcher extends EventEmitter {
     /**
-     *  Create batche instance
+     *  Create batcher instance
      *  @param {Db} db - database object
-     *  @param {String} collection - name of the collection on which to apply operations
      */
     constructor(db) {
         super();
@@ -74,11 +73,14 @@ class Batcher extends EventEmitter {
     /**
      *  Run all pending database queries
      */
-    async flushAll() {
+    flushAll() {
+        let promises = [];
         for (let collection in this.data) {
-            this.flush(collection);
+            promises.push(this.flush(collection));
         }
-        this.schedule();
+        Promise.all(promises).finally(() => {
+            this.schedule();
+        });
     }
 
     /**
