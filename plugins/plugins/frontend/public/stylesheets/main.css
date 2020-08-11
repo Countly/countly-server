@@ -164,8 +164,9 @@
     font-size: 13px;
     padding-top: 8px
 }
+
 #configs-table-widget {
-    border: 2px solid #d0d0d0;
+    border: 1px solid #d0d0d0;
     border-radius: 2px;
 }
 
@@ -178,7 +179,7 @@
 }
 
 #sticky-config-header {
-	border-bottom: 2px solid #d0d0d0;
+	border-bottom: 1px solid #d0d0d0;
 }
 
 #sticky-config-header > div {
@@ -440,7 +441,7 @@
 .user-configuration-modal .user-password-change-modal-input {
     border-radius: 2px;
     margin: 0;
-    font: 14px Ubuntu,Helvetica,sans-serif;
+    font: 13px Ubuntu,Helvetica,sans-serif;
     padding: 5px;
     border: 1px solid #D0D0D0;
     width: calc(100% - 10px);
@@ -476,7 +477,7 @@
     border: none;
     color: black;
     background-color: white;
-    padding: 8px 12px;
+    padding: 7px 12px;
     margin-right: 10px;
     cursor: pointer;
     font-family: Ubuntu;
@@ -487,7 +488,7 @@
     background-color: #2FA732;
     border-radius: 2px;
     color: white;
-    padding: 8px 12px;
+    padding: 7px 12px;
     cursor: pointer;
     font-family: Ubuntu;
 }
@@ -498,6 +499,6 @@
     border-radius: 2px;
     background-color: #D63E40;
     color: white;
-    padding: 8px 12px;
+    padding: 7px 12px;
     font-family: Ubuntu;
 }
