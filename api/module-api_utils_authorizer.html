@@ -176,7 +176,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line158">line 158</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line162">line 162</a>
     </li></ul></dd>
     
 
@@ -407,7 +407,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line376">line 376</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line392">line 392</a>
     </li></ul></dd>
     
 
@@ -615,7 +615,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line187">line 187</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line191">line 191</a>
     </li></ul></dd>
     
 
@@ -892,7 +892,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line366">line 366</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line382">line 382</a>
     </li></ul></dd>
     
 
@@ -1001,7 +1001,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line134">line 134</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line138">line 138</a>
     </li></ul></dd>
     
 
@@ -1232,7 +1232,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line26">line 26</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line27">line 27</a>
     </li></ul></dd>
     
 
@@ -1640,6 +1640,45 @@
 
         <tr>
             
+                <td class="name"><code>temporary</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>If logged in with temporary token. Doesn't kill other sessions on logout.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>callback</code></td>
             
 
@@ -1717,7 +1756,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line346">line 346</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line357">line 357</a>
     </li></ul></dd>
     
 
@@ -1994,7 +2033,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line359">line 359</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line370">line 370</a>
     </li></ul></dd>
     
 
@@ -2259,7 +2298,7 @@
 
     
 
-    <h4 class="name" id="~verify_token"><span class="type-signature">(inner) </span>verify_token<span class="signature">(options, return_owner)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~verify_token"><span class="type-signature">(inner) </span>verify_token<span class="signature">(options, return_owner, return_data)</span><span class="type-signature"></span></h4>
 
     
 
@@ -2271,7 +2310,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line229">line 229</a>
+        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line234">line 234</a>
     </li></ul></dd>
     
 
@@ -2510,6 +2549,29 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>return_data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>states if in callback all token data should be returned.</p></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -2551,7 +2613,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Tue Aug 11 2020 11:18:33 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Tue Aug 11 2020 11:34:56 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
