@@ -396,7 +396,6 @@ function processSessionDurationRange(totalSessionDuration, params, done) {
         }
     }
 
-    monthObjUpdate.push(common.dbMap.events);
     monthObjUpdate.push(common.dbMap.durations + '.' + calculatedDurationRange);
     common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
     common.fillTimeObjectZero(params, updateUsersZero, common.dbMap.durations + '.' + calculatedDurationRange);
@@ -925,6 +924,15 @@ plugins.register("/sdk/user_properties", function(ob) {
         catch (e) {
             log.e('Error in geoip: %j', e);
         }
+        if (!userProps.cc) {
+            userProps.cc = "Unknown";
+        }
+        if (!userProps.cty) {
+            userProps.cty = "Unknown";
+        }
+        if (!userProps.rgn) {
+            userProps.rgn = "Unknown";
+        }
     }
 
     params.user.country = userProps.cc || "Unknown";
@@ -996,7 +1004,7 @@ plugins.register("/sdk/user_properties", function(ob) {
             update.$inc.tsd = session_duration;
             params.app_user.sd = (params.app_user.sd || 0) + session_duration;
 
-            usage.processSessionDuration();
+            usage.processSessionDuration(params);
         }
     }
 
@@ -1078,7 +1086,6 @@ plugins.register("/sdk/user_properties", function(ob) {
                     //if new session did not start during cooldown, then we can post process this session
                     if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
                         processSessionDurationRange(params.app_user.sd || 0, params);
-                        processUserSession(params.app_user, params);
                         plugins.dispatch("/session/end", {
                             params: params,
                             dbAppUser: dbAppUser
@@ -1094,7 +1101,8 @@ plugins.register("/sdk/user_properties", function(ob) {
             }, config.session_cooldown);
         }
     }
-    else if (!params.qstring.session_duration) {
+
+    if (!params.qstring.begin_session && !params.qstring.session_duration) {
         const dbDateIds = common.getDateIds(params),
             updateUsers = {};
 

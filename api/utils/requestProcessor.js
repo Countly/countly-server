@@ -2027,7 +2027,7 @@ const processRequestData = (params, app, done) => {
                 }
             }
         }
-        console.log("update", JSON.stringify(update));
+
         common.updateAppUser(params, update, function() {
             plugins.dispatch("/session/retention", {
                 params: params,
