@@ -1,6 +1,6 @@
 .errorlogs{padding: 16px;border: 1px solid #D0D0D0;background-color: #fff;}
-.errorlogs .pre-block{padding:16px; background-color: #ebebeb;}
-.errorlogs pre{max-height: 1000px; overflow: auto; white-space: pre-wrap; font-size:11px; background-color:#ebebeb;}
+.errorlogs .pre-block{padding:16px; background-color: #fff;}
+.errorlogs pre{max-height: 1000px; overflow: auto; white-space: pre-wrap; font-size:11px; background-color:#fff;}
 .error-log-selector-block {
     height: 58px;
     border: 1px solid #D0D0D0;
@@ -26,6 +26,7 @@
     width: 300px !important;
     outline: none;
     padding-top: 0px !important;
+    float: left;
 }
 
 .errorlog-selector-block .section #logger-selector .select-items {
