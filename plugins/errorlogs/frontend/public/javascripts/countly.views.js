@@ -12,7 +12,7 @@ window.ErrorLogsView = countlyView.extend({
             if (logNames.length > 0) {
                 return countlyErrorLogs.getLogByName(logNames[0].value);
             }
-        }).then(() => {});;
+        });
     },
     renderCommon: function(isRefresh) {
         var cachedLog = countlyErrorLogs.getLogCached();
