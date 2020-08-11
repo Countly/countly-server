@@ -11,6 +11,9 @@ var TableView = countlyVue.views.BaseView.extend({
         return {
             targetName: "John Doe",
             targetValue: 0,
+            tableKeyFn: function(row) {
+                return row._id;
+            },
             tableColumns: [
                 {
                     type: "field",

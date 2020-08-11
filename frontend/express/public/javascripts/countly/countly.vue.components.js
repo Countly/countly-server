@@ -574,8 +574,8 @@
 
     Vue.component("cly-datatable", {
         template: '<div class="cly-vue-datatable-wrapper" ref="wrapper">\
-                        <div class="cly-button-menu" tabindex="1" v-if="hasOptions">\
-                            <a class="item" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
+                        <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
+                            <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
                         </div>\
                         <table ref="dtable" cellpadding="0" cellspacing="0" class="d-table"></table>\
                     </div>',
@@ -584,7 +584,8 @@
                 isInitialized: false,
                 pendingInit: false,
                 tableInstance: null,
-                optionItems: []
+                optionItems: [],
+                focusedKey: null
             };
         },
         computed: {
@@ -599,7 +600,8 @@
                     return [];
                 }
             },
-            columns: { type: Array }
+            columns: { type: Array },
+            keyFn: { type: Function, default: null}
         },
         methods: {
             initialize: function() {
@@ -652,11 +654,20 @@
                         if (self.hasOptions) {
                             self.$nextTick(function() {
                                 CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
+                                $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
+                                    var key = $(data.target).parents("tr").data("key");
+                                    self.focusedKey = key;
+                                });
                             });
                         }
                         self.isInitialized = true;
                         self.pendingInit = false;
-                    }
+                    },
+                    "fnRowCallback": function(nRow, aData) {
+                        var rowEl = $(nRow);
+                        var key = self.keyFn(aData);
+                        rowEl.attr("data-key", key);
+                    },
                 }));
 
                 this.tableInstance.stickyTableHeaders();
@@ -668,6 +679,9 @@
                 else if (!this.isInitialized && !this.pendingInit) {
                     this.initialize();
                 }
+            },
+            optionEvent: function(eventName) {
+                this.$emit(eventName, this.focusedKey);
             }
         },
         watch: {

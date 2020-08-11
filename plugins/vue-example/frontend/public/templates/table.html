@@ -9,7 +9,11 @@
                 </div>
                 <hr/>
                 <div>
-                    <cly-datatable v-bind:rows="tableRows" v-bind:columns="tableColumns"></cly-datatable>
+                    <cly-datatable
+                        v-bind:rows="tableRows"
+                        v-bind:columns="tableColumns"
+                        v-bind:keyFn="tableKeyFn">
+                    </cly-datatable>
                 </div>
             </cly-panel>
         </cly-tab>

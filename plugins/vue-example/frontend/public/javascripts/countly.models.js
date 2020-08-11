@@ -11,7 +11,8 @@
                 namespaced: true,
                 state: {
                     pairs: [],
-                    randomNumbers: []
+                    randomNumbers: [],
+                    id: 0
                 },
                 getters: {
                     pairs: function(state) {
@@ -23,7 +24,8 @@
                 },
                 mutations: {
                     addPair: function(state, obj) {
-                        state.pairs.push({name: obj.name, value: obj.value});
+                        state.pairs.push({_id: state.id, name: obj.name, value: obj.value});
+                        state.id++;
                     },
                     setRandomNumbers: function(state, obj) {
                         state.randomNumbers = obj;
