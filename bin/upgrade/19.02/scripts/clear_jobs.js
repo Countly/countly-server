@@ -1,4 +1,5 @@
-var pluginManager = require('../../../../plugins/pluginManager.js'),
-    countlyDb = pluginManager.dbConnection();
+var pluginManager = require('../../../../plugins/pluginManager.js');
 
-countlyDb.collection('jobs').deleteMany({}, function(err, res) { countlyDb.close();});
+pluginManager.dbConnection().then((countlyDb) => {
+    countlyDb.collection('jobs').deleteMany({}, function(err, res) { countlyDb.close();});
+});
