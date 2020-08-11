@@ -23,7 +23,7 @@
                 },
                 mutations: {
                     addPair: function(state, obj) {
-                        state.pairs.push([obj.name, obj.value]);
+                        state.pairs.push({name: obj.name, value: obj.value});
                     },
                     setRandomNumbers: function(state, obj) {
                         state.randomNumbers = obj;

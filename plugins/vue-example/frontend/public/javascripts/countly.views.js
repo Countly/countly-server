@@ -13,12 +13,38 @@ var TableView = countlyVue.views.BaseView.extend({
             targetValue: 0,
             tableColumns: [
                 {
-                    "sType": "string",
-                    "sTitle": "Name"
+                    type: "field",
+                    options: {
+                        fieldKey: "name",
+                        dataType: "string",
+                        title: "Name"
+                    },
+                    dt: {
+                        "sWidth": "20%"
+                    },
                 },
                 {
-                    "sType": "numeric",
-                    "sTitle": "Total"
+                    type: "field",
+                    options: {
+                        fieldKey: "value",
+                        dataType: "numeric",
+                        title: "Value"
+                    },
+                },
+                {
+                    type: "options",
+                    items: [
+                        {
+                            icon: "fa fa-eye",
+                            label: "View",
+                            action: "show-record"
+                        },
+                        {
+                            icon: "fa fa-trash",
+                            label: "Delete",
+                            action: "delete-record"
+                        }
+                    ]
                 }
             ]
         };
