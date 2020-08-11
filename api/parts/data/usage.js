@@ -182,7 +182,7 @@ usage.processSessionDuration = function(params, callback) {
         var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
         var dbDateIds = common.getDateIds(params);
 
-        common.writeBatcher("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
 
         plugins.dispatch("/session/duration", {
             params: params,
@@ -401,13 +401,13 @@ function processSessionDurationRange(totalSessionDuration, params, done) {
     common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
     common.fillTimeObjectZero(params, updateUsersZero, common.dbMap.durations + '.' + calculatedDurationRange);
     var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-    common.writeBatcher("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+    common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
     var update = {
         '$inc': updateUsersZero,
         '$set': {}
     };
     update.$set['meta_v2.d-ranges.' + calculatedDurationRange] = true;
-    common.writeBatcher("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
+    common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
 
     if (done) {
         done();
@@ -569,10 +569,10 @@ function processUserSession(dbAppUser, params, done) {
         if (Object.keys(updateUsersZero).length) {
             updateObjZero.$inc = updateUsersZero;
         }
-        common.writeBatcher("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, updateObjZero);
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, updateObjZero);
     }
     if (Object.keys(updateUsersMonth).length) {
-        common.writeBatcher("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {
             $set: {
                 m: dbDateIds.month,
                 a: params.app_id + ""
@@ -797,10 +797,10 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
                         }
 
                         if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                            common.writeBatcher(predefinedMetrics[i].db, tmpZeroId, updateObjZero);
+                            common.writeBatcher.add(predefinedMetrics[i].db, tmpZeroId, updateObjZero);
                         }
 
-                        common.writeBatcher(predefinedMetrics[i].db, tmpMonthId, {
+                        common.writeBatcher.add(predefinedMetrics[i].db, tmpMonthId, {
                             $set: {
                                 m: dateIds.month,
                                 a: params.app_id + ""
@@ -1100,7 +1100,7 @@ plugins.register("/sdk/user_properties", function(ob) {
 
         common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
         const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-        common.writeBatcher("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
     }
 
     //do not write values that are already assignd to user

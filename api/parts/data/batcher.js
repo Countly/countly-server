@@ -115,7 +115,7 @@ class Batcher extends EventEmitter {
      *  @param {string} id - id of the document
      *  @param {object} operation - operation
      */
-    set(collection, id, operation) {
+    add(collection, id, operation) {
         if (!this.data[collection]) {
             this.data[collection] = {};
         }
