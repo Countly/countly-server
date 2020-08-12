@@ -371,13 +371,19 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     }
                     eventSegments[collection + "." + zeroId].m = zeroId.split(".")[0];
                     eventSegments[collection + "." + zeroId].s = "no-segment";
-                    common.db.collection(collection).update({'_id': "no-segment_" + zeroId.replace(".", "_")}, {$set: eventSegments[collection + "." + zeroId]}, {'upsert': true}, function() {});
+                    /*OLD
+					common.db.collection(collection).update({'_id': "no-segment_" + zeroId.replace(".", "_")}, {$set: eventSegments[collection + "." + zeroId]}, {'upsert': true}, function() {});
+					OLD end*/
+                    //New send to batcher
+                    common.writeBatcher.add(collection, "no-segment_" + zeroId.replace(".", "_"), {$set: eventSegments[collection + "." + zeroId]});
+                    //end new
                 }
             }
 
             for (let segment in eventCollections[collection]) {
                 let collIdSplits = segment.split("."),
                     collId = segment.replace(/\./g, "_");
+                /* OLD
                 common.db.collection(collection).update({'_id': collId}, {
                     $set: {
                         "m": collIdSplits[1],
@@ -385,6 +391,17 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     },
                     "$inc": eventCollections[collection][segment]
                 }, {'upsert': true}, function() {});
+				OLd end*/
+
+                //New send to batcher
+                common.writeBatcher.add(collection, collId, {
+                    $set: {
+                        "m": collIdSplits[1],
+                        "s": collIdSplits[0]
+                    },
+                    "$inc": eventCollections[collection][segment]
+                });
+                //end new
             }
         }
     }
@@ -432,8 +449,14 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 });
             }
         }
+        for (var k = 0; k < eventDocs.length; k++) {
+            common.writeBatcher.add(eventDocs[k].collection, eventDocs[k]._id, eventDocs[k].updateObj);
+        }
+        if (!params.bulk) {
+            common.returnMessage(params, 200, 'Success');
+        }
 
-        async.map(eventDocs, updateEventDb, function(err, eventUpdateResults) {
+        /*async.map(eventDocs, updateEventDb, function(err, eventUpdateResults) {
             var needRollback = false;
 
             for (let i = 0; i < eventUpdateResults.length; i++) {
@@ -453,7 +476,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             else if (!params.bulk) {
                 common.returnMessage(params, 200, 'Success');
             }
-        });
+        });*/
     }
 
     if (events.length) {
@@ -484,7 +507,12 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             }
         }
 
+        /* OLD
         common.db.collection('events').update({'_id': params.app_id}, eventSegmentList, {'upsert': true}, function() {});
+		OLD end*/
+        //New send to batcher
+        common.writeBatcher.add('events', common.db.ObjectID(params.app_id), eventSegmentList);
+        //end new
     }
     done();
 }
@@ -527,7 +555,7 @@ function mergeEvents(firstObj, secondObj) {
 * @param {object} eventDoc - document with information about event
 * @param {function} callback - to call when update done
 **/
-function updateEventDb(eventDoc, callback) {
+/*function updateEventDb(eventDoc, callback) {
     common.db.collection(eventDoc.collection).update({'_id': eventDoc._id}, eventDoc.updateObj, {
         'upsert': true,
         'safe': true
@@ -545,14 +573,14 @@ function updateEventDb(eventDoc, callback) {
             });
         }
     });
-}
+}*/
 
 /**
 * Rollback already updated events in case error happened and we have safe api enabled
 * @param {object} eventUpdateResult - db result object of updating event document
 * @param {function} callback - to call when rollback done
 **/
-function rollbackEventDb(eventUpdateResult, callback) {
+/*function rollbackEventDb(eventUpdateResult, callback) {
     if (eventUpdateResult.status === "failed") {
         callback(null, {});
     }
@@ -567,14 +595,14 @@ function rollbackEventDb(eventUpdateResult, callback) {
             callback(true, {});
         }
     }
-}
+}*/
 
 /**
 * Invert updated object to deduct updated values
 * @param {object} obj - object with properties and values to deduct
 * @returns {object} inverted update object, to deduct inserted values
 **/
-function getInvertedValues(obj) {
+/*function getInvertedValues(obj) {
     var invObj = {};
 
     for (var objProp in obj) {
@@ -582,6 +610,6 @@ function getInvertedValues(obj) {
     }
 
     return invObj;
-}
+}*/
 
 module.exports = countlyEvents;
