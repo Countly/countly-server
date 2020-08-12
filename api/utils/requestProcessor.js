@@ -2175,7 +2175,6 @@ const processBulkRequest = (i, requests, params) => {
  * @returns {void} void
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
-    var sourceType = "WriteAPI";
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
@@ -2208,7 +2207,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        if (!checksumSaltVerification(params, sourceType)) {
+        if (!checksumSaltVerification(params)) {
             return done ? done() : false;
         }
 
@@ -2217,6 +2216,11 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         }
 
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
+            if (err2) {
+                common.returnMessage(params, 400, 'Cannot get app user');
+                params.cancelRequest = "Cannot get app user or no Database connection";
+                return done ? done() : false;
+            }
             params.app_user = user || {};
 
             let payload = params.href.substr(3) || "";
@@ -2247,65 +2251,16 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             }, () => {
                 plugins.dispatch("/sdk/log", {params: params});
                 if (!params.cancelRequest) {
-                    if (!params.app_user.uid) {
-                        //first time we see this user, we need to id him with uid
-                        countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
-                            if (uid) {
-                                params.app_user.uid = uid;
-                                if (!params.app_user._id) {
-                                    //if document was not yet created
-                                    //we try to insert one with uid
-                                    //even if paralel request already inserted uid
-                                    //this insert will fail
-                                    //but we will retry again and fetch new inserted document
-                                    common.db.collection('app_users' + params.app_id).insert({
-                                        _id: params.app_user_id,
-                                        uid: uid,
-                                        did: params.qstring.device_id
-                                    }, {ignore_errors: [11000]}, function() {
-                                        restartRequest(params, done, try_times);
-                                    });
-                                }
-                                else {
-                                    //document was created, but has no uid
-                                    //here we add uid only if it does not exist in db
-                                    //so if paralel request inserted it, we will not overwrite it
-                                    //and retrieve that uid on retry
-                                    common.db.collection('app_users' + params.app_id).update({
-                                        _id: params.app_user_id,
-                                        uid: {$exists: false}
-                                    }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
-                                        restartRequest(params, done, try_times);
-                                    });
-                                }
+                    processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
+                        if (userErr) {
+                            if (!params.res.finished) {
+                                common.returnMessage(params, 400, userErr);
                             }
-                            else {
-                                //cannot create uid, so cannot process request now
-                                console.log("Cannot create uid", err, uid);
-                                if (!params.res.finished) {
-                                    common.returnMessage(params, 400, "Cannot create uid");
-                                }
-                            }
-                        });
-                    }
-                    //check if device id was changed
-                    else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-                        const old_id = common.crypto.createHash('sha1')
-                            .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                            .digest('hex');
-
-                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
-                            //remove old device ID and retry request
-                            params.qstring.old_device_id = null;
-                            restartRequest(params, done, try_times);
-                        });
-
-                        //do not proceed with request
-                        return false;
-                    }
-                    else {
-                        processRequestData(params, app, done);
-                    }
+                        }
+                        else {
+                            processRequestData(params, app, done);
+                        }
+                    });
                 }
                 else {
                     if (!params.res.finished) {
@@ -2327,7 +2282,6 @@ const validateAppForWriteAPI = (params, done, try_times) => {
  * @returns {function} done - done callback
  */
 const validateAppForFetchAPI = (params, done, try_times) => {
-    var sourceType = "FetchAPI";
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
@@ -2346,7 +2300,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        if (!checksumSaltVerification(params, sourceType)) {
+        if (!checksumSaltVerification(params)) {
             return done ? done() : false;
         }
 
@@ -2363,7 +2317,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
             }
         }
 
-        var parallelTasks = [countlyApi.data.usage.setLocation.bind(null, params)];
+        var parallelTasks = [countlyApi.data.usage.setLocation(params)];
 
         var processThisUser = true;
 
@@ -2378,107 +2332,102 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         }
 
         if (!processThisUser) {
-            parallelTasks.push(fetchAppUser.bind(null, params));
+            parallelTasks.push(fetchAppUser(params));
         }
         else {
-            parallelTasks.push(processUser.bind(null, params, done, try_times));
+            parallelTasks.push(fetchAppUser(params).then(() => {
+                processUser(params, validateAppForFetchAPI, done, try_times);
+            }));
         }
 
         Promise.all(
-            parallelTasks.map((func) => func())).then(() => {
-            processFetchRequest(params, app, done);
-        }).catch(() => {
-            processFetchRequest(params, app, done);
-        });
+            parallelTasks
+        )
+            .catch((error) => {
+                console.error(error);
+            })
+            .finally(() => {
+                processFetchRequest(params, app, done);
+            });
     });
 };
+
 /**
  * @param  {object} params - params object
+ * @param  {function} initiator - function which initiated request
  * @param  {function} done - callback when processing done
  * @param  {number} try_times - how many times request was retried
  * @returns {Promise} - resolved
  */
-function processUser(params, done, try_times) {
+function processUser(params, initiator, done, try_times) {
     return new Promise((resolve) => {
-        fetchAppUser(params).then(() => {
-            if (!params.app_user.uid) {
-                //first time we see this user, we need to id him with uid
-                countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
-                    if (uid) {
-                        params.app_user.uid = uid;
-                        if (!params.app_user._id) {
-                            //if document was not yet created
-                            //we try to insert one with uid
-                            //even if paralel request already inserted uid
-                            //this insert will fail
-                            //but we will retry again and fetch new inserted document
-                            common.db.collection('app_users' + params.app_id).insert({
-                                _id: params.app_user_id,
-                                uid: uid,
-                                did: params.qstring.device_id
-                            }, {ignore_errors: [11000]}, function() {
-                                restartFetchRequest(params, done, try_times, function() {
-                                    return resolve();
-                                });
-                            });
-                        }
-                        else {
-                            //document was created, but has no uid
-                            //here we add uid only if it does not exist in db
-                            //so if paralel request inserted it, we will not overwrite it
-                            //and retrieve that uid on retry
-                            common.db.collection('app_users' + params.app_id).update({
-                                _id: params.app_user_id,
-                                uid: {$exists: false}
-                            }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
-                                restartFetchRequest(params, done, try_times, function() {
-                                    return resolve();
-                                });
-                            });
-                        }
+        if (!params.app_user.uid) {
+            //first time we see this user, we need to id him with uid
+            countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
+                if (uid) {
+                    params.app_user.uid = uid;
+                    if (!params.app_user._id) {
+                        //if document was not yet created
+                        //we try to insert one with uid
+                        //even if paralel request already inserted uid
+                        //this insert will fail
+                        //but we will retry again and fetch new inserted document
+                        common.db.collection('app_users' + params.app_id).insert({
+                            _id: params.app_user_id,
+                            uid: uid,
+                            did: params.qstring.device_id
+                        }, {ignore_errors: [11000]}, function() {
+                            restartRequest(params, initiator, done, try_times, resolve);
+                        });
                     }
                     else {
-                        //cannot create uid
-                        return resolve();
+                        //document was created, but has no uid
+                        //here we add uid only if it does not exist in db
+                        //so if paralel request inserted it, we will not overwrite it
+                        //and retrieve that uid on retry
+                        common.db.collection('app_users' + params.app_id).update({
+                            _id: params.app_user_id,
+                            uid: {$exists: false}
+                        }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
+                            restartRequest(params, initiator, done, try_times, resolve);
+                        });
                     }
-                });
-            }
-            //check if device id was changed
-            else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-                const old_id = common.crypto.createHash('sha1')
-                    .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                    .digest('hex');
+                }
+                else {
+                    //cannot create uid, so cannot process request now
+                    console.log("Cannot create uid", err, uid);
+                    resolve("Cannot create uid");
+                }
+            });
+        }
+        //check if device id was changed
+        else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+            const old_id = common.crypto.createHash('sha1')
+                .update(params.qstring.app_key + params.qstring.old_device_id + "")
+                .digest('hex');
 
-                countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
-                    //remove old device ID and retry request
-                    params.old_device_id = params.qstring.old_device_id; //Preserving old device id for logger
-                    params.qstring.old_device_id = null;
-                    restartFetchRequest(params, done, try_times, function() {
-                        return resolve();
-                    });
-                });
-            }
-            else {
-                return resolve();
-            }
-        });
+            countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
+                //remove old device ID and retry request
+                params.qstring.old_device_id = null;
+                restartRequest(params, initiator, done, try_times, resolve);
+            });
+        }
+        else {
+            resolve();
+        }
     });
 }
+
 /**
  * @param  {object} params - params object
  * @param  {String} type - source type
  * @param  {Function} done - done callback
  * @returns {Function} - done or boolean value
  */
-const checksumSaltVerification = (params, type) => {
+const checksumSaltVerification = (params) => {
     if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
         const payloads = [];
-        if (type === "WriteAPI") {
-            payloads.push(params.href.substr(3));
-        }
-        else if (type === "FetchAPI") {
-            payloads.push(params.href.substr(7));
-        }
+        payloads.push(params.href.substr(params.fullPath.length + 1));
 
         if (params.req.method.toLowerCase() === 'post') {
             payloads.push(params.req.body);
@@ -2555,11 +2504,13 @@ const ignorePossibleDevices = (params) => {
 /**
  * Restart Request
  * @param {params} params - params object
+ * @param {function} initiator - function which initiated request
  * @param {function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
+ * @param {function} fail - callback when restart limit reached
  * @returns {void} void
  */
-const restartRequest = (params, done, try_times) => {
+const restartRequest = (params, initiator, done, try_times, fail) => {
     if (!try_times) {
         try_times = 1;
     }
@@ -2568,37 +2519,14 @@ const restartRequest = (params, done, try_times) => {
     }
     if (try_times > 5) {
         console.log("Too many retries", try_times);
-        if (!params.res.finished) {
-            common.returnMessage(params, 400, "Cannot process request. Too many retries");
+        if (typeof fail === "function") {
+            fail("Cannot process request. Too many retries");
         }
         return;
     }
     params.retry_request = true;
     //retry request
-    validateAppForWriteAPI(params, done, try_times);
-};
-
-/**
- * Restart Fetch Request
- * @param {params} params - params object
- * @param {function} done - callback when processing done
- * @param {number} try_times - how many times request was retried
- * @param {function} cb - callback when restart limit reached
- * @returns {void} void
- */
-const restartFetchRequest = (params, done, try_times, cb) => {
-    if (!try_times) {
-        try_times = 1;
-    }
-    else {
-        try_times++;
-    }
-    if (try_times > 5) {
-        return cb();
-    }
-    params.retry_request = true;
-    //retry request
-    validateAppForFetchAPI(params, done, try_times);
+    initiator(params, done, try_times);
 };
 
 /**

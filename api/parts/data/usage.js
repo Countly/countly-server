@@ -158,6 +158,17 @@ usage.setLocation = function(params) {
 };
 
 /**
+ * Set user location in params
+ * @param  {params} params - params object
+ * @param  {object} loc - location info
+ */
+usage.setUserLocation = function(params, loc) {
+    params.user.country = loc.country;
+    params.user.region = loc.region;
+    params.user.city = plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false ? undefined : loc.city;
+};
+
+/**
 * Process session_duration calls
 * @param {params} params - params object
 * @param {function} callback - callback when done
