@@ -288,48 +288,6 @@ usage.getPredefinedMetrics = function(params, userProps) {
 };
 
 /**
-* Process &metrics from requests
-* @param {params} params - params object
-**/
-usage.processMetrics = function(params) {
-    var userProps = {};
-    var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
-    var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
-
-    for (var i = 0; i < predefinedMetrics.length; i++) {
-        for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
-            var tmpMetric = predefinedMetrics[i].metrics[j],
-                recvMetricValue = null;
-            if (tmpMetric.is_user_prop) {
-                recvMetricValue = params.user[tmpMetric.name];
-            }
-            else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
-                recvMetricValue = params.qstring.metrics[tmpMetric.name];
-            }
-
-            // We check if city data logging is on and user's country is the configured country of the app
-            if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
-                continue;
-            }
-
-            if (recvMetricValue) {
-                var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
-
-                // Assign properties to app_users document of the current user
-                if (isNewUser || (!isNewUser && params.app_user[tmpMetric.short_code] !== escapedMetricVal)) {
-                    userProps[tmpMetric.short_code] = escapedMetricVal;
-                }
-            }
-        }
-    }
-
-    if (Object.keys(userProps).length) {
-        userProps.mt = true;
-        common.updateAppUser(params, {"$set": userProps});
-    }
-};
-
-/**
  * Process all metrics and return
  * @param  {params} params - params object
  * @returns {object} params
@@ -351,9 +309,15 @@ usage.returnAllProcessedMetrics = function(params) {
                 recvMetricValue = params.qstring.metrics[tmpMetric.name];
             }
 
-            var escapedMetricVal = recvMetricValue ? (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":") : recvMetricValue;
+            // We check if city data logging is on and user's country is the configured country of the app
+            if (tmpMetric.name === "city" && (plugins.getConfig("api").city_data === false || params.app_cc !== params.user.country)) {
+                continue;
+            }
 
-            processedMetrics[tmpMetric.short_code] = escapedMetricVal;
+            if (recvMetricValue) {
+                var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+                processedMetrics[tmpMetric.short_code] = escapedMetricVal;
+            }
         }
     }
 
@@ -942,43 +906,11 @@ plugins.register("/sdk/user_properties", function(ob) {
 
     //if we have metrics, let's process metrics
     if (params.qstring.metrics) {
-        var up = {};
-        var predefinedMetrics = usage.getPredefinedMetrics(params, up);
-
-        for (var i = 0; i < predefinedMetrics.length; i++) {
-            for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
-                var tmpMetric = predefinedMetrics[i].metrics[j],
-                    recvMetricValue = null;
-                if (tmpMetric.is_user_prop) {
-                    recvMetricValue = params.user[tmpMetric.name];
-                }
-                else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
-                    recvMetricValue = params.qstring.metrics[tmpMetric.name];
-                }
-
-                // We check if city data logging is on and user's country is the configured country of the app
-                if (tmpMetric.name === "city" && (config.city_data === false || params.app_cc !== params.user.country)) {
-                    continue;
-                }
-
-                if (recvMetricValue) {
-                    var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
-
-                    // Assign properties to app_users document of the current user
-                    if (params.app_user[tmpMetric.short_code] !== escapedMetricVal) {
-                        up[tmpMetric.short_code] = escapedMetricVal;
-                    }
-                }
-            }
-        }
+        var up = usage.returnAllProcessedMetrics(params);
 
         if (Object.keys(up).length) {
             for (let key in up) {
                 userProps[key] = up[key];
-            }
-            if (!params.app_user.mt) {
-                userProps.mt = true;
-                params.app_user.mt = true;
             }
         }
     }
