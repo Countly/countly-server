@@ -91,12 +91,7 @@ plugins.setConfigs("crashes", {
         });
     });
     //check app metric
-    plugins.register("/session/metrics", function(ob) {
-        var apiPath = ob.params.apiPath;
-        if (apiPath !== "/i") {
-            return;
-        }
-
+    plugins.register("/sdk/user_properties", function(ob) {
         return new Promise(function(resolve) {
             var params = ob.params;
             if (!params.qstring.crash && params.qstring.metrics && params.qstring.metrics._app_version) {
