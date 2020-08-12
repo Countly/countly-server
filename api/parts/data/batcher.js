@@ -39,8 +39,8 @@ class Batcher extends EventEmitter {
                 if (Object.keys(this.data[collection][key]).length) {
                     queries.push({
                         updateOne: {
-                            filter: {_id: key},
-                            update: this.data[collection][key],
+                            filter: {_id: this.data[collection][key].id},
+                            update: this.data[collection][key].value,
                             upsert: true
                         }
                     });
@@ -59,11 +59,11 @@ class Batcher extends EventEmitter {
                 for (let i = 0; i < queries.length; i++) {
                     //if we don't have anything for this document yet just use query
                     if (!this.data[collection][queries[i].updateOne.filter._id]) {
-                        this.data[collection][queries[i].updateOne.filter._id] = queries[i].updateOne.update;
+                        this.data[collection][queries[i].updateOne.filter._id] = {id: queries[i].updateOne.filter._id, value: queries[i].updateOne.update};
                     }
                     else {
                         //if we have, then we can try to merge query back in
-                        this.data[collection][queries[i].updateOne.filter._id] = mergeQuery(queries[i].updateOne.update, this.data[collection][queries[i].updateOne.filter._id]);
+                        this.data[collection][queries[i].updateOne.filter._id].value = mergeQuery(queries[i].updateOne.update, this.data[collection][queries[i].updateOne.filter._id].value);
                     }
                 }
             }
@@ -104,9 +104,9 @@ class Batcher extends EventEmitter {
             this.data[collection] = {};
         }
         if (!this.data[collection][id]) {
-            this.data[collection][id] = {};
+            this.data[collection][id] = {id: id, value: {}};
         }
-        return this.data[collection][id];
+        return this.data[collection][id].value;
     }
 
     /**
@@ -120,10 +120,10 @@ class Batcher extends EventEmitter {
             this.data[collection] = {};
         }
         if (!this.data[collection][id]) {
-            this.data[collection][id] = operation;
+            this.data[collection][id] = {id: id, value: operation};
         }
         else {
-            this.data[collection][id] = mergeQuery(this.data[collection][id], operation);
+            this.data[collection][id].value = mergeQuery(this.data[collection][id].value, operation);
         }
         if (!plugins.getConfig("api").post_processing) {
             this.flush(collection);
