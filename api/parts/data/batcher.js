@@ -148,6 +148,22 @@ function mergeQuery(ob1, ob2) {
                     ob1[key][val] = ob2[key][val];
                 }
             }
+			else if (key === "$addToSet") {
+                for (let val in ob2[key]) {
+					if( typeof ob1[key][val] !== 'object') {
+						ob1[key][val] = {'$each': [ob1[key][val]]};
+					}
+					
+					if(typeof ob2[key][val] === 'object' && ob2[key][val]['$each']){
+						for(var p=0; p<ob2[key][val]['$each'].length; p++) {
+							ob1[key][val]['$each'].push(ob2[key][val]['$each'][p]);
+						}
+					}
+					else {
+						ob1[key][val]['$each'].push(ob2[key][val]);
+					}
+                }
+            }
             else if (key === "$inc") {
                 for (let val in ob2[key]) {
                     ob1[key][val] = ob1[key][val] || 0;
