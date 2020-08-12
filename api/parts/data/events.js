@@ -449,13 +449,12 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 });
             }
         }
-        console.log(eventDocs);
         for (var k = 0; k < eventDocs.length; k++) {
             common.writeBatcher.add(eventDocs[k].collection, eventDocs[k]._id, eventDocs[k].updateObj);
         }
-		if (!params.bulk) {
-			common.returnMessage(params, 200, 'Success');
-		}
+        if (!params.bulk) {
+            common.returnMessage(params, 200, 'Success');
+        }
 
         /*async.map(eventDocs, updateEventDb, function(err, eventUpdateResults) {
             var needRollback = false;
