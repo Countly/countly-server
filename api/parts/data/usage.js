@@ -783,7 +783,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
         
                 { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
             */
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && metricChanges.uid && !params.app_user.mt) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && metricChanges.uid && params.qstring.begin_session) {
                 common.db.collection('metric_changes' + params.app_id).insert(metricChanges, function() {});
             }
         }
@@ -934,10 +934,14 @@ plugins.register("/sdk/user_properties", function(ob) {
 
             update.$inc.sd = session_duration;
             update.$inc.tsd = session_duration;
-            params.app_user.sd = (params.app_user.sd || 0) + session_duration;
+            params.session_duration = (params.app_user.sd || 0) + session_duration;
 
             usage.processSessionDuration(params);
         }
+    }
+
+    if (!params.session_duration) {
+        params.session_duration = params.app_user.sd || 0;
     }
 
     //if session began
@@ -950,10 +954,6 @@ plugins.register("/sdk/user_properties", function(ob) {
 
         userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
 
-        if (params.app_user.mt || userProps.mt) {
-            userProps.mt = false;
-            params.app_user.mt = false;
-        }
         //check when last session ended and if it was less than cooldown
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < config.session_cooldown) {
             plugins.dispatch("/session/extend", {params: params});
@@ -962,7 +962,7 @@ plugins.register("/sdk/user_properties", function(ob) {
             userProps.lsid = params.request_hash;
 
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                processSessionDurationRange(params.app_user.sd || 0, params);
+                processSessionDurationRange(params.session_duration || 0, params);
 
                 //process duration from unproperly ended previous session
                 plugins.dispatch("/session/post", {
@@ -1017,7 +1017,7 @@ plugins.register("/sdk/user_properties", function(ob) {
                     }
                     //if new session did not start during cooldown, then we can post process this session
                     if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
-                        processSessionDurationRange(params.app_user.sd || 0, params);
+                        processSessionDurationRange(params.session_duration || 0, params);
                         plugins.dispatch("/session/end", {
                             params: params,
                             dbAppUser: dbAppUser
