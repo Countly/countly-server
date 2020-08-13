@@ -124,3 +124,10 @@
 
 .cly-vue-global-date-selector .inst-date-picker:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #03060c; right: 9px; top: -11px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; }
 .cly-vue-global-date-selector .inst-selected-date {font-size:13px; color:#767676; line-height:28px; }
+
+/* datatable */
+
+.cly-vue-datatable-wrapper .cly-button-menu .fa{
+    margin-right:7px;
+    width:13px;
+}

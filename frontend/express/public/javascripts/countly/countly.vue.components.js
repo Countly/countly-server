@@ -1,4 +1,4 @@
-/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers */
+/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _ */
 
 (function(CountlyVueComponents, $) {
 
@@ -573,12 +573,25 @@
     // New components
 
     Vue.component("cly-datatable", {
-        template: '<table ref="dtable" cellpadding="0" cellspacing="0" class="cly-vue-datatable-wrapper d-table"></table>',
+        template: '<div class="cly-vue-datatable-wrapper" ref="wrapper">\
+                        <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
+                            <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
+                        </div>\
+                        <table ref="dtable" cellpadding="0" cellspacing="0" class="d-table"></table>\
+                    </div>',
         data: function() {
             return {
                 isInitialized: false,
-                tableInstance: null
+                pendingInit: false,
+                tableInstance: null,
+                optionItems: [],
+                focusedRow: null
             };
+        },
+        computed: {
+            hasOptions: function() {
+                return this.optionItems.length > 0;
+            }
         },
         props: {
             rows: {
@@ -587,25 +600,105 @@
                     return [];
                 }
             },
-            columns: { type: Array }
+            columns: { type: Array },
+            keyFn: { type: Function, default: null}
         },
         methods: {
             initialize: function() {
-                this.isInitialized = false;
+                this.pendingInit = true;
+
+                var self = this,
+                    nativeColumns = [];
+
+                this.columns.forEach(function(column) {
+                    var nativeColumn = null;
+                    if (!column.type || column.type === "default") {
+                        nativeColumn = {
+                            "mData": function() {
+                                return '';
+                            }
+                        };
+                    }
+                    else if (column.type === "field") {
+                        nativeColumn = {};
+                        if (column.options.dataType) {
+                            nativeColumn.sType = column.options.dataType;
+                        }
+                        if (column.options.title) {
+                            nativeColumn.sTitle = column.options.title;
+                        }
+                        nativeColumn.mData = function(row) {
+                            return row[column.fieldKey];
+                        };
+                    }
+                    else if (column.type === "options") {
+                        if (self.hasOptions) {
+                            //disallow multiple options
+                            return;
+                        }
+                        var checkedItems = (column.items || []).filter(function(item) {
+                            return !item.disabled;
+                        });
+                        if (checkedItems.length === 0) {
+                            //ignore empty lists;
+                            return;
+                        }
+                        self.optionItems = checkedItems;
+                        nativeColumn = {
+                            "mData": function() {
+                                return '<a class="cly-list-options"></a>';
+                            },
+                            "sType": "string",
+                            "sTitle": "",
+                            "sClass": "shrink center",
+                            bSortable: false
+                        };
+                    }
+                    if (column.dt) {
+                        _.extend(nativeColumn, column.dt);
+                    }
+                    nativeColumns.push(nativeColumn);
+                });
+
                 this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {
                     "aaData": this.rows,
-                    "aoColumns": this.columns
+                    "aoColumns": nativeColumns,
+                    "fnInitComplete": function(oSettings, json) {
+                        $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+                        if (self.hasOptions) {
+                            self.$nextTick(function() {
+                                CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
+                                $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
+                                    var rowData = $(data.target).parents("tr").data("cly-row-data");
+                                    self.focusedRow = rowData;
+                                });
+                            });
+                        }
+                        self.isInitialized = true;
+                        self.pendingInit = false;
+                    },
+                    "fnRowCallback": function(nRow, aData) {
+                        var rowEl = $(nRow);
+                        rowEl.data("cly-row-data", aData);
+                    },
                 }));
+
                 this.tableInstance.stickyTableHeaders();
-                this.isInitialized = true;
             },
             refresh: function() {
-                if (this.isInitialized) {
+                if (this.isInitialized && !this.pendingInit) {
                     CountlyHelpers.refreshTable(this.tableInstance, this.rows);
                 }
-                else {
+                else if (!this.isInitialized && !this.pendingInit) {
                     this.initialize();
                 }
+            },
+            optionEvent: function(eventName) {
+                var key = null;
+                if (this.keyFn) {
+                    key = this.keyFn(this.focusedRow);
+                }
+                this.$emit(eventName, this.focusedRow, key);
             }
         },
         watch: {
