@@ -2,7 +2,7 @@
 .errorlogs .pre-block{padding:16px; padding-right:5px; background-color: #fff;}
 .errorlogs pre{max-height: 1000px; overflow: auto; white-space: pre-wrap; font-size:11px; background-color:#fff;}
 .error-log-selector-block {
-    height: 58px;
+    height: 60px;
     border: 1px solid #D0D0D0;
     border-bottom: none;
     background-color: #ECECEC;
@@ -14,7 +14,6 @@
     display: inline-block;
     margin: 0 16px;
     flex-grow: 1;
-    margin-top: 6px;
 }
 
 .error-log-selector-block .right {
@@ -22,15 +21,32 @@
     flex-shrink: 1;
 }
 
-.errorlog-selector-block .section #logger-selector {
+.errorlog-selector-block .section #error-logger-selector {
     width: 300px !important;
     outline: none;
-    padding-top: 0px !important;
     float: left;
 }
-
-.errorlog-selector-block .section #logger-selector .select-items {
+.error-log-selector-block .icon-button{
+}
+.errorlog-selector-block .section #error-logger-selector .select-items {
     width: 300px !important;
 }
 
 .routename-errorlogs .btn-header { margin-top: 0px !important;}
+.routename-errorlogs .widget-header {background-color: unset !important;  border: unset !important;}
+.routename-errorlogs pre::-webkit-scrollbar {
+    width: 10px;
+}
+
+.routename-errorlogs pre::-webkit-scrollbar-thumb {
+  border-radius: 5px !important;
+  background-color: rgba(113,113,113,1) !important;
+  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5) !important;
+
+}
+
+.routename-errorlogs pre::-webkit-scrollbar-track{
+    margin-top: 10px;
+    display: hidden;
+}
+

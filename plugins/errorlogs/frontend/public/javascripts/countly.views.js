@@ -27,11 +27,11 @@ window.ErrorLogsView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             var logList = countlyErrorLogs.getLogNameList();
-            $("#logger-selector").clySelectSetItems(logList);
+            $("#error-logger-selector").clySelectSetItems(logList);
             if (cachedLog.name) {
-                $("#logger-selector").clySelectSetSelection(cachedLog.name, cachedLog.name + " Log");
+                $("#error-logger-selector").clySelectSetSelection(cachedLog.name, cachedLog.name + " Log");
             }
-            $("#logger-selector").off("cly-select-change").on("cly-select-change", function(e, selected) {
+            $("#error-logger-selector").off("cly-select-change").on("cly-select-change", function(e, selected) {
                 countlyErrorLogs.getLogByName(selected, function() {
                     self.renderCommon();
                     app.localize();
