@@ -125,7 +125,7 @@ class Batcher extends EventEmitter {
         else {
             this.data[collection][id].value = mergeQuery(this.data[collection][id].value, operation);
         }
-        if (!plugins.getConfig("api").post_processing) {
+        if (!plugins.getConfig("api").batch_processing) {
             this.flush(collection);
         }
     }

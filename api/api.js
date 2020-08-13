@@ -61,7 +61,7 @@ plugins.setConfigs("api", {
     offline_mode: false,
     reports_regenerate_interval: 3600,
     send_test_email: "",
-    post_processing: false,
+    batch_processing: false,
     batch_period: 10
 });
 
