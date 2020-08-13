@@ -1424,16 +1424,17 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
                 update.$addToSet[i] = {$each: tmpSet[i]};
             }
         }
-        common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, update, {'upsert': true}, function() {});
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.zero, update);
+
     }
     if (Object.keys(updateUsersMonth).length) {
-        common.db.collection(collection).update({'_id': id + "_" + dbDateIds.month}, {
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.month, {
             $set: {
                 m: dbDateIds.month,
                 a: params.app_id + ""
             },
             '$inc': updateUsersMonth
-        }, {'upsert': true}, function() {});
+        });
     }
 };
 
@@ -1482,16 +1483,16 @@ common.recordMetric = function(params, props) {
                 update.$addToSet[i] = {$each: tmpSet[i]};
             }
         }
-        common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.zero}, update, {'upsert': true}, function() {});
+        common.writeBatcher.add(props.collection, props.id + "_" + dbDateIds.zero, update);
     }
     if (Object.keys(updateUsersMonth).length) {
-        common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.month}, {
+        common.writeBatcher.add(props.collection, props.id + "_" + dbDateIds.month, {
             $set: {
                 m: dbDateIds.month,
                 a: params.app_id + ""
             },
             '$inc': updateUsersMonth
-        }, {'upsert': true}, function() {});
+        });
     }
 };
 
