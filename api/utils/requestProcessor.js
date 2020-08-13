@@ -2028,12 +2028,15 @@ const processRequestData = (params, app, done) => {
             }
         }
 
+        var newUser = params.app_user.fs ? false : true;
         common.updateAppUser(params, update, function() {
-            plugins.dispatch("/session/retention", {
-                params: params,
-                user: params.app_user,
-                isNewUser: params.app_user.fs ? true : false
-            });
+            if (params.qstring.begin_session) {
+                plugins.dispatch("/session/retention", {
+                    params: params,
+                    user: params.app_user,
+                    isNewUser: newUser
+                });
+            }
             if (params.qstring.events) {
                 if (params.promises) {
                     params.promises.push(countlyApi.data.events.processEvents(params));
@@ -2264,7 +2267,8 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
                 else {
                     if (!params.res.finished) {
-                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                        common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                        //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     return done ? done() : false;
