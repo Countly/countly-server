@@ -57,7 +57,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=sessions')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": [ '0' ]}, f: { '0': 2, '1': 1 }, ds: {'0': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
                     });
             });
         });
@@ -67,7 +67,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=users')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": [ '0' ]}, f: { '0': 2, '1': 1 }, ds: {'0': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
                     });
             });
         });
@@ -77,7 +77,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=locations')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": [ '0' ]}, f: { '0': 2, '1': 1 }, ds: {'0': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
                     });
             });
         });
