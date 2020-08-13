@@ -2014,7 +2014,7 @@ const processRequestData = (params, app, done) => {
     //preserve time for user's previous session
     params.previous_session = params.app_user.ls;
 
-    var ob = {params: params, updates: []};
+    var ob = {params: params, app: app, updates: []};
     plugins.dispatch("/sdk/user_properties", ob, function() {
         var update = {};
         for (let i = 0; i < ob.updates.length; i++) {
