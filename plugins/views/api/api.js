@@ -1191,10 +1191,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
                     common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
                     var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function() {});
+                    common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
                     var update = {'$inc': updateUsersZero, '$set': {}};
                     update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
-                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, update, function() {});
+                    common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
 
                     if (user.lv) {
                         var segmentation = {name: user.lv.replace(/^\$/, "").replace(/\./g, "&#46;"), exit: 1};
@@ -1469,7 +1469,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
         }
         if (save_structure) {
-            common.db.collection('views').update({'_id': params.app_id}, {'$set': addToSetRules}, {'upsert': true}, function() {});
+            common.writeBatcher.add('views', common.db.objectID(params.app_id), {'$set': addToSetRules});
         }
         var dateIds = common.getDateIds(params);
         for (let i = 0; i < segmentList.length; i++) {
@@ -1602,7 +1602,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (Object.keys(tmpTimeObjZero).length) {
                     update.$inc = tmpTimeObjZero;
                 }
-                common.db.collection(colName).update({'_id': tmpZeroId}, update, {'upsert': true}, function() {});
+                common.writeBatcher.add(colName, tmpZeroId, update);
             }
 
             //month document
@@ -1616,8 +1616,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (Object.keys(monthSmallerUpdate).length) {
                     update2.$inc = monthSmallerUpdate;
                 }
-                common.db.collection(colName).update({'_id': tmpMonthId}, update, {'upsert': true}, function() {});
-                common.db.collection(colName).update({'_id': tmpMonthId + "_m"}, update2, {'upsert': true}, function() {});
+                common.writeBatcher.add(colName, tmpMonthId, update);
+                common.writeBatcher.add(colName, tmpMonthId + "_m", update2);
             }
         }
     }
