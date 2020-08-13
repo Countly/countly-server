@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample */
+/*global app, countlyVue, countlyVueExample, countlyGlobal, countlyCommon */
 
 var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
@@ -50,12 +50,13 @@ var TableView = countlyVue.views.BaseView.extend({
                         {
                             icon: "fa fa-eye",
                             label: "View",
-                            action: "show-record"
+                            action: "show-record",
                         },
                         {
                             icon: "fa fa-trash",
                             label: "Delete",
-                            action: "delete-record"
+                            action: "delete-record",
+                            disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
                         }
                     ],
                     dt: {

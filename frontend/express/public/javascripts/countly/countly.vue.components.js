@@ -636,11 +636,14 @@
                             //disallow multiple options
                             return;
                         }
-                        if (!column.items || column.items.length === 0) {
+                        var checkedItems = (column.items || []).filter(function(item) {
+                            return !item.disabled;
+                        });
+                        if (checkedItems.length === 0) {
                             //ignore empty lists;
                             return;
                         }
-                        self.optionItems = column.items;
+                        self.optionItems = checkedItems;
                         nativeColumn = {
                             "mData": function() {
                                 return '<a class="cly-list-options"></a>';
