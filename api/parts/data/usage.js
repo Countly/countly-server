@@ -970,7 +970,7 @@ plugins.register("/sdk/user_properties", function(ob) {
             plugins.dispatch("/session/extend", {params: params});
         }
         else {
-            userProps.lsid = params.request_hash;
+            userProps.lsid = params.request_hash + "_" + params.app_user.uid + "_" + params.time.mstimestamp;
 
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
                 processSessionDurationRange(params.session_duration || 0, params);
@@ -979,6 +979,7 @@ plugins.register("/sdk/user_properties", function(ob) {
                 plugins.dispatch("/session/post", {
                     params: params,
                     dbAppUser: params.app_user,
+                    session_duration: params.session_duration,
                     end_session: false
                 });
                 userProps.sd = 0;
@@ -1012,37 +1013,36 @@ plugins.register("/sdk/user_properties", function(ob) {
     }
     else if (params.qstring.end_session) {
         // check if request is too old, ignore it
-        if (params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - config.session_cooldown) {
-            userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
-            if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                if (!update.$unset) {
-                    update.$unset = {};
-                }
-                update.$unset[common.dbUserMap.has_ongoing_session] = "";
+        userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
+        if (params.app_user[common.dbUserMap.has_ongoing_session]) {
+            if (!update.$unset) {
+                update.$unset = {};
             }
-            setTimeout(function() {
-                //need to query app user again to get data modified by another request
-                common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
-                    if (!dbAppUser || err) {
-                        return;
-                    }
-                    //if new session did not start during cooldown, then we can post process this session
-                    if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
-                        processSessionDurationRange(params.session_duration || 0, params);
-                        plugins.dispatch("/session/end", {
-                            params: params,
-                            dbAppUser: dbAppUser
-                        });
-                        plugins.dispatch("/session/post", {
-                            params: params,
-                            dbAppUser: dbAppUser,
-                            end_session: true
-                        });
-                        common.updateAppUser(params, {'$set': {'sd': 0}});
-                    }
-                });
-            }, config.session_cooldown);
+            update.$unset[common.dbUserMap.has_ongoing_session] = "";
         }
+        setTimeout(function() {
+            //need to query app user again to get data modified by another request
+            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
+                if (!dbAppUser || err) {
+                    return;
+                }
+                //if new session did not start during cooldown, then we can post process this session
+                if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
+                    processSessionDurationRange(params.session_duration || 0, params);
+                    plugins.dispatch("/session/end", {
+                        params: params,
+                        dbAppUser: dbAppUser
+                    });
+                    plugins.dispatch("/session/post", {
+                        params: params,
+                        dbAppUser: dbAppUser,
+                        session_duration: params.session_duration,
+                        end_session: true
+                    });
+                    common.updateAppUser(params, {'$set': {'sd': 0}});
+                }
+            });
+        }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);
     }
 
     if (!params.qstring.begin_session && !params.qstring.session_duration) {
