@@ -1469,7 +1469,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
         }
         if (save_structure) {
-            common.writeBatcher.add('views', common.db.objectID(params.app_id), {'$set': addToSetRules});
+            common.writeBatcher.add('views', common.db.ObjectID(params.app_id), {'$set': addToSetRules});
         }
         var dateIds = common.getDateIds(params);
         for (let i = 0; i < segmentList.length; i++) {
