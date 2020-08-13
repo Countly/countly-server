@@ -441,10 +441,10 @@
 .user-configuration-modal .user-password-change-modal-input {
     border-radius: 2px;
     margin: 0;
-    font: 13px Ubuntu,Helvetica,sans-serif;
-    padding: 5px;
+    font: 14px Ubuntu,Helvetica,sans-serif;
+    padding: 8px;
     border: 1px solid #D0D0D0;
-    width: calc(100% - 10px);
+    width: calc(100% - 16px);
     margin-top: 10px;
 }
 
@@ -475,22 +475,31 @@
 
 .popup-action-transparent-btn {
     border: none;
-    color: black;
-    background-color: white;
-    padding: 7px 12px;
+    color: #929292;
+    text-decoration: underline;
+    background-color: #ffffff;
+    padding: 12px;
     margin-right: 10px;
     cursor: pointer;
-    font-family: Ubuntu;
+    font: 12px Ubuntu,Helvetica,sans-serif;
 }
 
 .popup-action-green-btn {
-    border:none;
-    background-color: #2FA732;
+    background-color: #2EB52B;
+    color: #ffffff;
     border-radius: 2px;
-    color: white;
-    padding: 7px 12px;
+    float: none;
+    border: none;
+    padding: 12px;
+    box-shadow: none;
+    display: inline-block;
+    margin: 0;
+    min-height: 14px;
     cursor: pointer;
-    font-family: Ubuntu;
+    font: 12px Ubuntu,Helvetica,sans-serif;
+    line-height: 15px;
+    overflow: auto;
+    margin-left: 8px;
 }
 
 .popup-action-red-btn {
@@ -499,6 +508,8 @@
     border-radius: 2px;
     background-color: #D63E40;
     color: white;
-    padding: 7px 12px;
-    font-family: Ubuntu;
+    min-height: 14px;
+    padding: 12px;
+    font: 12px Ubuntu,Helvetica,sans-serif;
+    line-height: 15px;
 }
