@@ -651,7 +651,31 @@
                             "sType": "string",
                             "sTitle": "",
                             "sClass": "shrink center",
-                            bSortable: false
+                            "bSortable": false
+                        };
+                    }
+                    else if (column.type === "checkbox") {
+                        nativeColumn = {
+                            "mData": function(row, type) {
+                                if (type === "display") {
+                                    var stringBuffer = ['<div class="on-off-switch">'];
+                                    var rowId = "row-" + self.keyFn(row);
+                                    if (row.enabled) {
+                                        stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '" checked>');
+                                    }
+                                    else {
+                                        stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '">');
+                                    }
+                                    stringBuffer.push('<label class="on-off-switch-label" for="' + rowId + '"></label>');
+                                    stringBuffer.push('</div>');
+                                    return stringBuffer.join('');
+                                }
+                                else {
+                                    return row[column.fieldKey];
+                                }
+                            },
+                            "sType": "string",
+                            "sClass": "shrink"
                         };
                     }
                     if (column.dt) {

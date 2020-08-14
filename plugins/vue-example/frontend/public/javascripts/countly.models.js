@@ -24,7 +24,7 @@
                 },
                 mutations: {
                     addPair: function(state, obj) {
-                        state.pairs.push({_id: state.id, name: obj.name, value: obj.value});
+                        state.pairs.push({_id: state.id, status: false, name: obj.name, value: obj.value});
                         state.id++;
                     },
                     deletePairById: function(state, _id) {

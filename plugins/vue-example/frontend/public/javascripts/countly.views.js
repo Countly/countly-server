@@ -16,6 +16,18 @@ var TableView = countlyVue.views.BaseView.extend({
             },
             tableColumns: [
                 {
+                    type: "checkbox",
+                    fieldKey: "status",
+                    mutation: function(/*newValue*/) {
+                    },
+                    options: {
+                        title: "Status"
+                    },
+                    dt: {
+                        "sWidth": "10%"
+                    }
+                },
+                {
                     type: "field",
                     fieldKey: "_id",
                     options: {
