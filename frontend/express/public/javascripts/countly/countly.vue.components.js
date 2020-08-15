@@ -700,12 +700,11 @@
                     "aoColumns": nativeColumns,
                     "fnInitComplete": function(oSettings, json) {
                         $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
-                        if (self.hasOptions) {
-                            self.$nextTick(function() {
-                                CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
-                            });
-                        }
-                        self.initializeEventAdapter();
+                        self.$nextTick(function() {
+                            CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
+                            self.initializeEventAdapter();
+                        });
+
                         self.isInitialized = true;
                         self.pendingInit = false;
                     },
@@ -719,10 +718,13 @@
             },
             initializeEventAdapter: function(){
                 var self = this;
-                $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
-                    var rowData = $(data.target).parents("tr").data("cly-row-data");
-                    self.focusedRow = rowData;
-                });
+
+                if (self.hasOptions) {
+                    $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
+                        var rowData = $(data.target).parents("tr").data("cly-row-data");
+                        self.focusedRow = rowData;
+                    });
+                }
                 $(self.$refs.dtable).find("tbody").on("change", ".on-off-switch input", function(e){
                     var colEl = $(this).parents("td.cly-dt-col");
                     var colId = colEl.attr("class").split(/\s+/).filter(function(cls){
