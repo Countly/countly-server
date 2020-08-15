@@ -1,4 +1,5 @@
 const EventEmitter = require('events');
+const cluster = require('cluster');
 const plugins = require('../../../plugins/pluginManager.js');
 const log = require('../../utils/log.js')("batcher");
 
@@ -116,17 +117,23 @@ class Batcher extends EventEmitter {
      *  @param {object} operation - operation
      */
     add(collection, id, operation) {
-        if (!this.data[collection]) {
-            this.data[collection] = {};
-        }
-        if (!this.data[collection][id]) {
-            this.data[collection][id] = {id: id, value: operation};
+        let config = plugins.getConfig("api");
+        if (!config.batch_on_master || cluster.isMaster) {
+            if (!this.data[collection]) {
+                this.data[collection] = {};
+            }
+            if (!this.data[collection][id]) {
+                this.data[collection][id] = {id: id, value: operation};
+            }
+            else {
+                this.data[collection][id].value = mergeQuery(this.data[collection][id].value, operation);
+            }
+            if (!config.batch_processing) {
+                this.flush(collection);
+            }
         }
         else {
-            this.data[collection][id].value = mergeQuery(this.data[collection][id].value, operation);
-        }
-        if (!plugins.getConfig("api").batch_processing) {
-            this.flush(collection);
+            process.send({ cmd: "batch_write", data: {collection, id, operation} });
         }
     }
 }

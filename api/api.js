@@ -20,6 +20,7 @@ if (cluster.isMaster) {
         log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
     }
     common.db = plugins.dbConnection();
+    common.writeBatcher = new Batcher(common.db);
     t.push("master");
     t.push("node");
     t.push(process.argv[1]);
@@ -62,6 +63,7 @@ plugins.setConfigs("api", {
     reports_regenerate_interval: 3600,
     send_test_email: "",
     batch_processing: false,
+    batch_on_master: false,
     batch_period: 10
 });
 
@@ -162,6 +164,10 @@ const passToMaster = (worker) => {
         }
         else if (msg.cmd === "endPlugins") {
             plugins.stopSyncing();
+        }
+        else if (msg.cmd === "batch_write") {
+            const {collection, id, operation} = msg.data;
+            common.writeBatcher.add(collection, id, operation);
         }
         else if (msg.cmd === "dispatch" && msg.event) {
             workers.forEach((w) => {
