@@ -2030,6 +2030,9 @@ const processRequestData = (params, app, done) => {
 
         var newUser = params.app_user.fs ? false : true;
         common.updateAppUser(params, update, function() {
+            if (!plugins.getConfig("api").safe && !params.res.finished) {
+                common.returnMessage(params, 200, 'Success');
+            }
             if (params.qstring.begin_session) {
                 plugins.dispatch("/session/retention", {
                     params: params,
