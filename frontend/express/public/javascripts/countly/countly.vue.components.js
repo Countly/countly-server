@@ -585,7 +585,9 @@
                 pendingInit: false,
                 tableInstance: null,
                 optionItems: [],
-                focusedRow: null
+                focusedRow: null,
+                columnEvents: null,
+                lastCol: 0
             };
         },
         computed: {
@@ -609,6 +611,8 @@
 
                 var self = this,
                     nativeColumns = [];
+
+                self.columnEvents = {};
 
                 this.columns.forEach(function(column) {
                     var nativeColumn = null;
@@ -677,10 +681,21 @@
                             "sType": "string",
                             "sClass": "shrink"
                         };
+                        if (column.onChanged){
+                            self.columnEvents["cly-dt-col-" + self.lastCol] = {
+                                onChanged: column.onChanged
+                            }
+                        }
                     }
                     if (column.dt) {
                         _.extend(nativeColumn, column.dt);
                     }
+
+                    if (!nativeColumn.sClass) {
+                        nativeColumn.sClass = "";
+                    }
+                    nativeColumn.sClass += " cly-dt-col cly-dt-col-" + self.lastCol;
+                    self.lastCol++;
                     nativeColumns.push(nativeColumn);
                 });
 
@@ -692,12 +707,9 @@
                         if (self.hasOptions) {
                             self.$nextTick(function() {
                                 CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
-                                $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
-                                    var rowData = $(data.target).parents("tr").data("cly-row-data");
-                                    self.focusedRow = rowData;
-                                });
                             });
                         }
+                        self.initializeEventAdapter();
                         self.isInitialized = true;
                         self.pendingInit = false;
                     },
@@ -709,6 +721,24 @@
 
                 this.tableInstance.stickyTableHeaders();
             },
+            initializeEventAdapter: function(){
+                var self = this;
+                $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
+                    var rowData = $(data.target).parents("tr").data("cly-row-data");
+                    self.focusedRow = rowData;
+                });
+                $(self.$refs.dtable).find("tbody").on("change", ".on-off-switch input", function(e){
+                    var colEl = $(this).parents("td.cly-dt-col");
+                    var classList = colEl.attr("class");
+                    var colId = classList.split(/\s+/).filter(function(cls){
+                        return cls.startsWith("cly-dt-col-");
+                    })[0];
+                    if (self.columnEvents[colId] && self.columnEvents[colId].onChanged) {
+                        var rowEl = $(this).parents("tr");
+                        self.columnEvents[colId].onChanged($(this).is(":checked"), rowEl.data("cly-row-data"));
+                    }
+                })
+            },
             refresh: function() {
                 if (this.isInitialized && !this.pendingInit) {
                     CountlyHelpers.refreshTable(this.tableInstance, this.rows);
@@ -718,11 +748,7 @@
                 }
             },
             optionEvent: function(eventName) {
-                var key = null;
-                if (this.keyFn) {
-                    key = this.keyFn(this.focusedRow);
-                }
-                this.$emit(eventName, this.focusedRow, key);
+                this.$emit(eventName, this.focusedRow);
             }
         },
         watch: {

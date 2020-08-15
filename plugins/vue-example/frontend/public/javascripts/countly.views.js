@@ -18,7 +18,7 @@ var TableView = countlyVue.views.BaseView.extend({
                 {
                     type: "checkbox",
                     fieldKey: "status",
-                    mutation: function(/*newValue*/) {
+                    onChanged: function(newValue, row) {
                     },
                     options: {
                         title: "Status"
