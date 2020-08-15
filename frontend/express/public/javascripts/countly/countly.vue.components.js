@@ -616,12 +616,8 @@
 
                 this.columns.forEach(function(column) {
                     var nativeColumn = null;
-                    if (!column.type || column.type === "default") {
-                        nativeColumn = {
-                            "mData": function() {
-                                return '';
-                            }
-                        };
+                    if (!column.type) {
+                        return;
                     }
                     else if (column.type === "field") {
                         nativeColumn = {};
@@ -735,7 +731,13 @@
                     })[0];
                     if (self.columnEvents[colId] && self.columnEvents[colId].onChanged) {
                         var rowEl = $(this).parents("tr");
-                        self.columnEvents[colId].onChanged($(this).is(":checked"), rowEl.data("cly-row-data"));
+                        var cbx = $(this);
+                        var newValue = $(this).is(":checked");
+                        self.columnEvents[colId].onChanged(newValue, rowEl.data("cly-row-data"), function(revert) {
+                            if (revert) {
+                                cbx.prop("checked", !newValue);
+                            }
+                        });
                     }
                 })
             },

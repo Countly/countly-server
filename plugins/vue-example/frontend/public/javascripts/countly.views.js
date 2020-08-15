@@ -18,7 +18,10 @@ var TableView = countlyVue.views.BaseView.extend({
                 {
                     type: "checkbox",
                     fieldKey: "status",
-                    onChanged: function(newValue, row) {
+                    onChanged: function(newValue, row, callback) {
+                        setTimeout(function(){
+                            callback(true);
+                        }, 1000);
                     },
                     options: {
                         title: "Status"
