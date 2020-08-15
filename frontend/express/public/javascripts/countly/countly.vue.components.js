@@ -660,7 +660,7 @@
                                 if (type === "display") {
                                     var stringBuffer = ['<div class="on-off-switch">'];
                                     var rowId = "row-" + self.keyFn(row);
-                                    if (row.enabled) {
+                                    if (row[column.fieldKey]) {
                                         stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '" checked>');
                                     }
                                     else {
@@ -725,8 +725,7 @@
                 });
                 $(self.$refs.dtable).find("tbody").on("change", ".on-off-switch input", function(e){
                     var colEl = $(this).parents("td.cly-dt-col");
-                    var classList = colEl.attr("class");
-                    var colId = classList.split(/\s+/).filter(function(cls){
+                    var colId = colEl.attr("class").split(/\s+/).filter(function(cls){
                         return cls.startsWith("cly-dt-col-");
                     })[0];
                     if (self.columnEvents[colId] && self.columnEvents[colId].onChanged) {

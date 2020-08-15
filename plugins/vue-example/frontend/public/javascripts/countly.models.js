@@ -32,6 +32,14 @@
                             return val._id !== _id;
                         });
                     },
+                    setStatus: function(state, obj) {
+                        var target = state.pairs.filter(function(val) {
+                            return val._id === obj._id;
+                        });
+                        if (target.length > 0){
+                            Vue.set(target[0], "status", obj.value);
+                        }
+                    },
                     setRandomNumbers: function(state, obj) {
                         state.randomNumbers = obj;
                     }
