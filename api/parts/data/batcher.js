@@ -205,32 +205,20 @@ class ReadBatcher extends EventEmitter {
     }
 
     /**
-     *  Update all cache
+     *  Check all cache
      */
-    updateAll() {
-        let promises = [];
+    checkAll() {
         for (let collection in this.data) {
             if (Object.keys(this.data[collection]).length) {
                 for (let id in this.data[collection]) {
                     if (this.data[collection][id].last_used < Date.now() - this.ttl) {
                         delete this.data[collection][id];
                     }
-                    else if (this.data[collection][id].last_updated < Date.now() - this.period) {
-                        promises.push(this.getData(collection, id, this.data[collection][id].query, this.data[collection][id].projection, this.data[collection][id].multi));
-                    }
                 }
             }
         }
 
-        /**
-         *  Make all promises settle
-         *  @param {Promise} p - promise tp setle
-         *  @returns {Promise} promise
-         */
-        const reflect = p => p.then(v => ({v, status: "fulfilled" }), e => ({e, status: "rejected" }));
-        Promise.all(promises.map(reflect)).finally(() => {
-            this.schedule();
-        });
+        this.schedule();
     }
 
     /**
@@ -239,7 +227,7 @@ class ReadBatcher extends EventEmitter {
     schedule() {
         setTimeout(() => {
             this.loadConfig();
-            this.updateAll();
+            this.checkAll();
         }, this.period);
     }
 
@@ -266,7 +254,7 @@ class ReadBatcher extends EventEmitter {
             this.data[collection] = {};
         }
 
-        if (!this.data[collection][id]) {
+        if (!this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
             return this.getData(collection, id, query, projection, multi)
                 .then((data) => {
                     if (typeof callback === "function") {
