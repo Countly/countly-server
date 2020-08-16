@@ -646,7 +646,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
     * @param {function} callback - callback when done
     **/
     function fetchMeta(id, callback) {
-        common.db.collection(metaToFetch[id].coll).findOne({'_id': metaToFetch[id].id}, {meta_v2: 1}, function(err, metaDoc) {
+        common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err, metaDoc) => {
             var retObj = metaDoc || {};
             retObj.coll = metaToFetch[id].coll;
             callback(null, retObj);

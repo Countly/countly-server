@@ -10,7 +10,7 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
-const Batcher = require('./parts/data/batcher.js');
+const {WriteBatcher, ReadBatcher} = require('./parts/data/batcher.js');
 
 var t = ["countly:", "api"];
 
@@ -20,7 +20,8 @@ if (cluster.isMaster) {
         log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
     }
     common.db = plugins.dbConnection();
-    common.writeBatcher = new Batcher(common.db);
+    common.writeBatcher = new WriteBatcher(common.db);
+    common.readBatcher = new ReadBatcher(common.db);
     t.push("master");
     t.push("node");
     t.push(process.argv[1]);
@@ -64,7 +65,11 @@ plugins.setConfigs("api", {
     send_test_email: "",
     batch_processing: false,
     batch_on_master: false,
-    batch_period: 10
+    batch_period: 10,
+    batch_read_processing: false,
+    batch_read_on_master: false,
+    batch_read_ttl: 60,
+    batch_read_period: 60
 });
 
 /**
@@ -225,7 +230,8 @@ else {
     common.cache = new CacheWorker(common.db);
     common.cache.start();
 
-    common.writeBatcher = new Batcher(common.db);
+    common.writeBatcher = new WriteBatcher(common.db);
+    common.readBatcher = new ReadBatcher(common.db);
 
     //since process restarted mark running tasks as errored
     taskManager.errorResults({db: common.db});

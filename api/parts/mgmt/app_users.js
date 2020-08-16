@@ -440,10 +440,11 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
                     app_id: app_id,
                     oldUser: oldAppUser,
                     newUser: newAppUserP
+                }, function() {
+                    if (callback) {
+                        callback(err, res);
+                    }
                 });
-                if (callback) {
-                    callback(err, res);
-                }
             });
         });
     }

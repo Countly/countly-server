@@ -22,11 +22,11 @@ countlyEvents.processEvents = function(params) {
         for (let i = 1; i < 32; i++) {
             forbiddenSegValues.push(i + "");
         }
-        common.db.collection("events").findOne({'_id': params.app_id}, {
+        common.readBatcher.getOne("events", {'_id': params.app_id}, {
             list: 1,
             segments: 1,
             omitted_segments: 1
-        }, function(err, eventColl) {
+        }, (err, eventColl) => {
             var appEvents = [],
                 appSegments = {},
                 metaToFetch = {},
@@ -164,7 +164,7 @@ countlyEvents.processEvents = function(params) {
             * @param {function} callback - for result
             **/
             function fetchEventMeta(id, callback) {
-                common.db.collection(metaToFetch[id].coll).findOne({'_id': metaToFetch[id].id}, {meta_v2: 1}, function(err2, eventMetaDoc) {
+                common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err2, eventMetaDoc) => {
                     var retObj = eventMetaDoc || {};
                     retObj.coll = metaToFetch[id].coll;
 
@@ -371,29 +371,14 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     }
                     eventSegments[collection + "." + zeroId].m = zeroId.split(".")[0];
                     eventSegments[collection + "." + zeroId].s = "no-segment";
-                    /*OLD
-					common.db.collection(collection).update({'_id': "no-segment_" + zeroId.replace(".", "_")}, {$set: eventSegments[collection + "." + zeroId]}, {'upsert': true}, function() {});
-					OLD end*/
-                    //New send to batcher
                     common.writeBatcher.add(collection, "no-segment_" + zeroId.replace(".", "_"), {$set: eventSegments[collection + "." + zeroId]});
-                    //end new
                 }
             }
 
             for (let segment in eventCollections[collection]) {
                 let collIdSplits = segment.split("."),
                     collId = segment.replace(/\./g, "_");
-                /* OLD
-                common.db.collection(collection).update({'_id': collId}, {
-                    $set: {
-                        "m": collIdSplits[1],
-                        "s": collIdSplits[0]
-                    },
-                    "$inc": eventCollections[collection][segment]
-                }, {'upsert': true}, function() {});
-				OLd end*/
 
-                //New send to batcher
                 common.writeBatcher.add(collection, collId, {
                     $set: {
                         "m": collIdSplits[1],
@@ -401,7 +386,6 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     },
                     "$inc": eventCollections[collection][segment]
                 });
-                //end new
             }
         }
     }
@@ -507,12 +491,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             }
         }
 
-        /* OLD
-        common.db.collection('events').update({'_id': params.app_id}, eventSegmentList, {'upsert': true}, function() {});
-		OLD end*/
-        //New send to batcher
         common.writeBatcher.add('events', common.db.ObjectID(params.app_id), eventSegmentList);
-        //end new
     }
     done();
 }

@@ -1,15 +1,14 @@
 const EventEmitter = require('events');
-const cluster = require('cluster');
 const plugins = require('../../../plugins/pluginManager.js');
 const log = require('../../utils/log.js')("batcher");
 
 /**
  *  Class for batching database operations for aggregated data 
  *  @example
- *  let batcher = new Batcher(common.db);
+ *  let batcher = new WriteBatcher(common.db);
  *  batcher.set("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});
  */
-class Batcher extends EventEmitter {
+class WriteBatcher extends EventEmitter {
     /**
      *  Create batcher instance
      *  @param {Db} db - database object
@@ -26,7 +25,10 @@ class Batcher extends EventEmitter {
      *  Reloads server configs
      */
     loadConfig() {
-        this.period = plugins.getConfig("api").batch_period;
+        let config = plugins.getConfig("api");
+        this.period = config.batch_period * 1000;
+        this.process = config.batch_processing;
+        this.shared = config.batch_on_master;
     }
 
     /**
@@ -91,7 +93,7 @@ class Batcher extends EventEmitter {
         setTimeout(() => {
             this.loadConfig();
             this.flushAll();
-        }, this.period * 1000);
+        }, this.period);
     }
 
     /**
@@ -117,8 +119,7 @@ class Batcher extends EventEmitter {
      *  @param {object} operation - operation
      */
     add(collection, id, operation) {
-        let config = plugins.getConfig("api");
-        if (!config.batch_on_master || cluster.isMaster) {
+        if (!this.shared) {
             if (!this.data[collection]) {
                 this.data[collection] = {};
             }
@@ -128,13 +129,233 @@ class Batcher extends EventEmitter {
             else {
                 this.data[collection][id].value = mergeQuery(this.data[collection][id].value, operation);
             }
-            if (!config.batch_processing) {
+            if (!this.process) {
                 this.flush(collection);
             }
         }
         else {
             process.send({ cmd: "batch_write", data: {collection, id, operation} });
         }
+    }
+}
+
+/**
+ *  Class for caching read from database
+ *  @example
+ *  let batcher = new ReadBatcher(common.db);
+ *  let promise = batcher.getOne("events", {"_id":"5689b386909ee5c"});
+ */
+class ReadBatcher extends EventEmitter {
+    /**
+     *  Create batcher instance
+     *  @param {Db} db - database object
+     */
+    constructor(db) {
+        super();
+        this.db = db;
+        this.data = {};
+        this.loadConfig();
+        this.schedule();
+    }
+
+    /**
+     *  Reloads server configs
+     */
+    loadConfig() {
+        let config = plugins.getConfig("api");
+        this.period = config.batch_read_period * 1000;
+        this.ttl = config.batch_read_ttl * 1000;
+        this.process = config.batch_read_processing;
+    }
+
+    /**
+     *  Get data from database
+     *  @param {string} collection - name of the collection for which to write data
+     *  @param {string} id - id of cache
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {bool} multi - true if multiple documents
+     *  @returns {Promise} promise
+     */
+    getData(collection, id, query, projection, multi) {
+        return new Promise((resolve, reject) => {
+            if (multi) {
+                this.db.collection(collection).find(query, projection).toArray((err, res) => {
+                    if (!err && res) {
+                        this.cache(collection, id, query, projection, res, true);
+                        resolve(res);
+                    }
+                    else {
+                        reject(err);
+                    }
+                });
+            }
+            else {
+                this.db.collection(collection).findOne(query, projection, (err, res) => {
+                    if (!err && res) {
+                        this.cache(collection, id, query, projection, res, false);
+                        resolve(res);
+                    }
+                    else {
+                        reject(err);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     *  Update all cache
+     */
+    updateAll() {
+        let promises = [];
+        for (let collection in this.data) {
+            if (Object.keys(this.data[collection]).length) {
+                for (let id in this.data[collection]) {
+                    if (this.data[collection][id].last_used < Date.now() - this.ttl) {
+                        delete this.data[collection][id];
+                    }
+                    else if (this.data[collection][id].last_updated < Date.now() - this.period) {
+                        promises.push(this.getData(collection, id, this.data[collection][id].query, this.data[collection][id].projection, this.data[collection][id].multi));
+                    }
+                }
+            }
+        }
+
+        /**
+         *  Make all promises settle
+         *  @param {Promise} p - promise tp setle
+         *  @returns {Promise} promise
+         */
+        const reflect = p => p.then(v => ({v, status: "fulfilled" }), e => ({e, status: "rejected" }));
+        Promise.all(promises.map(reflect)).finally(() => {
+            this.schedule();
+        });
+    }
+
+    /**
+     *  Schedule next flush
+     */
+    schedule() {
+        setTimeout(() => {
+            this.loadConfig();
+            this.updateAll();
+        }, this.period);
+    }
+
+
+    /**
+     *  Get data from cache or from db and cache it
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {bool} multi - true if multiple documents
+     *  @param {function=} callback - optional to get result, or else will return promise
+     *  @returns {Promise} if callback not passed, returns promise
+     */
+    async get(collection, query, projection, multi, callback) {
+        if (typeof projection === "function") {
+            callback = projection;
+            projection = {};
+        }
+        if (!projection) {
+            projection = {};
+        }
+        var id = JSON.stringify(query);
+        if (!this.data[collection]) {
+            this.data[collection] = {};
+        }
+
+        if (!this.data[collection][id]) {
+            return this.getData(collection, id, query, projection, multi)
+                .then((data) => {
+                    if (typeof callback === "function") {
+                        return callback(null, data);
+                    }
+                    return data;
+                })
+                .catch((err) => {
+                    if (typeof callback === "function") {
+                        return callback(err);
+                    }
+                    else {
+                        throw err;
+                    }
+                });
+        }
+        else {
+            this.data[collection][id].last_used = Date.now();
+            return promiseOrCallback(null, this.data[collection][id].data, callback);
+        }
+    }
+
+    /**
+     *  Get single document from cache or from db and cache it
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {function=} callback - optional to get result, or else will return promise
+     *  @returns {Promise} if callback not passed, returns promise
+     */
+    getOne(collection, query, projection, callback) {
+        return this.get(collection, query, projection, false, callback);
+    }
+
+    /**
+     *  Get multiple document from cache or from db and cache it
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {function=} callback - optional to get result, or else will return promise
+     *  @returns {Promise} if callback not passed, returns promise
+     */
+    getMany(collection, query, projection, callback) {
+        return this.get(collection, query, projection, true, callback);
+    }
+
+    /**
+     *  Cache data read from database
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} id - id of the cache
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {object} data - data from database
+     *  @param {bool} multi - true if multiple documents
+     */
+    cache(collection, id, query, projection, data, multi) {
+        if (this.process) {
+            this.data[collection][id] = {
+                query: query,
+                data: data,
+                projection: projection,
+                last_used: Date.now(),
+                last_updated: Date.now(),
+                multi: multi
+            };
+        }
+    }
+}
+
+/**
+ *  Return promise or callback based on params
+ *  @param {Error} err - error if any
+ *  @param {object} data - data to pass
+ *  @param {function=} callback - callback to call
+ *  @returns {Promise} Returned promise
+ */
+function promiseOrCallback(err, data, callback) {
+    if (typeof callback === "function") {
+        return callback(err, data);
+    }
+    else {
+        return new Promise((resolve, reject) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(data);
+            }
+        });
     }
 }
 
@@ -201,4 +422,4 @@ function mergeQuery(ob1, ob2) {
     return ob1;
 }
 
-module.exports = Batcher;
+module.exports = {WriteBatcher, ReadBatcher};

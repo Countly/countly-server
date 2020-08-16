@@ -2185,7 +2185,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         return done ? done() : false;
     }
 
-    common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
+    common.readBatcher.getOne("apps", {'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
