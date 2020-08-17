@@ -834,7 +834,9 @@
                                 <div class="title">{{title}}</div>\
                             </div>\
                             <div class="right">\
-                                <cly-global-date-selector v-once></cly-global-date-selector>\
+                                <slot name="right-top">\
+                                    <cly-global-date-selector v-once v-if="dateSelector"></cly-global-date-selector>\
+                                </slot>\
                             </div>\
                         </div>\
                         <div class="widget-content help-zone-vb">\
@@ -842,7 +844,8 @@
                         </div>\
                     </div>',
         props: {
-            title: { type: String, required: true }
+            title: { type: String, required: true },
+            dateSelector: { type: Boolean, required: false, default: true },
         },
     });
 
