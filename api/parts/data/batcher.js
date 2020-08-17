@@ -268,7 +268,26 @@ class ReadBatcher extends EventEmitter {
             if (!this.data[collection]) {
                 this.data[collection] = {};
             }
-            if (!this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
+
+            var good_projection = true;
+            if (this.data[collection][id] && (this.data[collection][id].projection || projection)) {
+                var keysSaved = Object.keys(this.data[collection][id].projection);
+                if (keysSaved.length > 0) {
+                    projection = projection || {};
+                    var keysNew = Object.keys(projection);
+                    if (keysNew.length > 0) {
+                        for (let p = 0; p < keysNew.length; p++) {
+                            if (keysSaved.indexOf(keysNew[p]) === -1) {
+                                good_projection = false;
+                            }
+                        }
+                    }
+                    else {
+                        good_projection = false;
+                    }
+                }
+            }
+            if (!good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
                 return this.getData(collection, id, query, projection, multi);
             }
             else {
