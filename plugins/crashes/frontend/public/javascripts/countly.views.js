@@ -2308,12 +2308,14 @@ app.addPageScript("/users/#", function() {
         app.activeView.tabs.on("tabsactivate", function(event, ui) {
             if (ui && ui.newPanel) {
                 var tab = ($(ui.newPanel).attr("id") + "").replace("usertab-", "");
-                if (tab === "crashes" && !app.activeView.shouldLoadCrashes) {
-                    app.activeView.shouldLoadCrashes = true;
-                    if (app.activeView.dtablecrashes) {
-                        app.activeView.dtablecrashes.fnDraw(false);
-                        app.activeView.dtablecrashes.stickyTableHeaders();
+                if (tab === "crashes") {
+                    if (!app.activeView.shouldLoadCrashes) {
+                        app.activeView.shouldLoadCrashes = true;
+                        if (app.activeView.dtablecrashes) {
+                            app.activeView.dtablecrashes.fnDraw(false);
+                        }
                     }
+                    app.activeView.dtablecrashes.stickyTableHeaders();
                 }
             }
         });

@@ -668,12 +668,14 @@ app.addPageScript("/users/#", function() {
         app.activeView.tabs.on("tabsactivate", function(event, ui) {
             if (ui && ui.newPanel) {
                 var tab = ($(ui.newPanel).attr("id") + "").replace("usertab-", "");
-                if (tab === "consent" && !app.activeView.shouldLoadConsents) {
-                    app.activeView.shouldLoadConsents = true;
-                    if (app.activeView.dtableconsents) {
-                        app.activeView.dtableconsents.fnDraw(false);
-                        app.activeView.dtableconsents.stickyTableHeaders();
+                if (tab === "consent") {
+                    if (!app.activeView.shouldLoadConsents) {
+                        app.activeView.shouldLoadConsents = true;
+                        if (app.activeView.dtableconsents) {
+                            app.activeView.dtableconsents.fnDraw(false);
+                        }
                     }
+                    app.activeView.dtableconsents.stickyTableHeaders();
                 }
             }
         });
