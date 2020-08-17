@@ -82,7 +82,7 @@ var TableView = countlyVue.views.BaseView.extend({
             availableRadio: [
                 {text: "Type 1", value: 1},
                 {text: "Type 2", value: 2},
-                {text: "Type 3", value: 3},
+                {text: "Type 3", value: 3, description: "Some description..."},
             ]
         };
     },

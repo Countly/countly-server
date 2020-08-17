@@ -36,8 +36,12 @@
         </cly-tab>
         <cly-tab name='Radio' id="radio-tab">
             <cly-panel title="Vue Example" v-bind:date-selector="false">
-                <cly-radio v-bind:items="availableRadio" v-model="selectedRadio"></cly-radio>
-                {{selectedRadio}}
+                <div class="example-cell">
+                    <cly-radio v-bind:items="availableRadio" v-model="selectedRadio"></cly-radio>
+                </div>
+                <div class="example-cell">
+                    Selected value: {{selectedRadio}}
+                </div>
             </cly-panel>
         </cly-tab>
     </cly-tabs>
