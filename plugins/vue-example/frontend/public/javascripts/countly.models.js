@@ -1,4 +1,4 @@
-/*global $, countlyCommon */
+/*global $, countlyCommon, Vue */
 
 (function(countlyVueExample) {
 
@@ -24,13 +24,21 @@
                 },
                 mutations: {
                     addPair: function(state, obj) {
-                        state.pairs.push({_id: state.id, name: obj.name, value: obj.value});
+                        state.pairs.push({_id: state.id, status: false, name: obj.name, value: obj.value});
                         state.id++;
                     },
                     deletePairById: function(state, _id) {
                         state.pairs = state.pairs.filter(function(val) {
                             return val._id !== _id;
                         });
+                    },
+                    setStatus: function(state, obj) {
+                        var target = state.pairs.filter(function(val) {
+                            return val._id === obj._id;
+                        });
+                        if (target.length > 0) {
+                            Vue.set(target[0], "status", obj.value);
+                        }
                     },
                     setRandomNumbers: function(state, obj) {
                         state.randomNumbers = obj;

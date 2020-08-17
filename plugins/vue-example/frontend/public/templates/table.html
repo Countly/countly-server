@@ -2,26 +2,33 @@
     <cly-tabs id="basic-tabs">
         <cly-tab v-bind:name='i18n("vue-example.table")' id="table-tab">
             <cly-panel title="Vue Example">
-                <div>
-                    <input v-model="targetName"></input>
-                    <input v-model.numeric="targetValue"></input>
-                    <button v-on:click="add">{{i18n("vue-example.add-new-row")}}</button>    
-                </div>
-                <hr/>
-                <div>
-                    <cly-datatable
-                        v-bind:rows="tableRows"
-                        v-bind:columns="tableColumns"
-                        v-bind:keyFn="tableKeyFn"
-                        v-on:delete-record="onDelete"
-                        v-on:show-record="onShow"
-                        >
-                    </cly-datatable>
-                </div>
+                <template slot="default">
+                    <div>
+                        <input v-model="targetName"></input>
+                        <input v-model.numeric="targetValue"></input>
+                        <button v-on:click="add">{{i18n("vue-example.add-new-row")}}</button>
+                    </div>
+                    <hr/>
+                    <div>
+                        <cly-datatable
+                            v-bind:rows="tableRows"
+                            v-bind:columns="tableColumns"
+                            v-bind:keyFn="tableKeyFn"
+                            v-on:delete-record="onDelete"
+                            v-on:show-record="onShow">
+                        </cly-datatable>
+                    </div>
+                </template>
+                <template slot="right-top">
+                    <cly-global-date-selector></cly-global-date-selector>
+                </template>
+                <template slot="left-top">
+                    <div class="header-title title small">Vue Example</div>
+                </template>
             </cly-panel>
         </cly-tab>
         <cly-tab name='Blank' id="blank-tab">
-            <cly-panel title="Vue Example">
+            <cly-panel title="Vue Example" v-bind:date-selector="false">
                 <div style="padding:30px">
                     <pre>{{tableRows}}</pre>
                 </div>

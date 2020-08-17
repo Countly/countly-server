@@ -8,6 +8,7 @@ var TableView = countlyVue.views.BaseView.extend({
         }
     },
     data: function() {
+        var self = this;
         return {
             targetName: "John Doe",
             targetValue: 0,
@@ -15,6 +16,19 @@ var TableView = countlyVue.views.BaseView.extend({
                 return row._id;
             },
             tableColumns: [
+                {
+                    type: "checkbox",
+                    fieldKey: "status",
+                    onChanged: function(newValue, row) {
+                        self.$store.commit("vueExample/setStatus", {_id: row._id, value: newValue});
+                    },
+                    options: {
+                        title: "Status"
+                    },
+                    dt: {
+                        "sWidth": "10%"
+                    }
+                },
                 {
                     type: "field",
                     fieldKey: "_id",

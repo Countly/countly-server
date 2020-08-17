@@ -585,7 +585,9 @@
                 pendingInit: false,
                 tableInstance: null,
                 optionItems: [],
-                focusedRow: null
+                focusedRow: null,
+                columnEvents: null,
+                lastCol: 0
             };
         },
         computed: {
@@ -610,14 +612,12 @@
                 var self = this,
                     nativeColumns = [];
 
+                self.columnEvents = {};
+
                 this.columns.forEach(function(column) {
                     var nativeColumn = null;
-                    if (!column.type || column.type === "default") {
-                        nativeColumn = {
-                            "mData": function() {
-                                return '';
-                            }
-                        };
+                    if (!column.type) {
+                        return;
                     }
                     else if (column.type === "field") {
                         nativeColumn = {};
@@ -651,12 +651,47 @@
                             "sType": "string",
                             "sTitle": "",
                             "sClass": "shrink center",
-                            bSortable: false
+                            "bSortable": false
                         };
+                    }
+                    else if (column.type === "checkbox") {
+                        nativeColumn = {
+                            "mData": function(row, type) {
+                                if (type === "display") {
+                                    var stringBuffer = ['<div class="on-off-switch">'];
+                                    var rowId = "row-" + self.keyFn(row);
+                                    if (row[column.fieldKey]) {
+                                        stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '" checked>');
+                                    }
+                                    else {
+                                        stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '">');
+                                    }
+                                    stringBuffer.push('<label class="on-off-switch-label" for="' + rowId + '"></label>');
+                                    stringBuffer.push('</div>');
+                                    return stringBuffer.join('');
+                                }
+                                else {
+                                    return row[column.fieldKey];
+                                }
+                            },
+                            "sType": "string",
+                            "sClass": "shrink"
+                        };
+                        if (column.onChanged) {
+                            self.columnEvents["cly-dt-col-" + self.lastCol] = {
+                                onChanged: column.onChanged
+                            };
+                        }
                     }
                     if (column.dt) {
                         _.extend(nativeColumn, column.dt);
                     }
+
+                    if (!nativeColumn.sClass) {
+                        nativeColumn.sClass = "";
+                    }
+                    nativeColumn.sClass += " cly-dt-col cly-dt-col-" + self.lastCol;
+                    self.lastCol++;
                     nativeColumns.push(nativeColumn);
                 });
 
@@ -665,15 +700,11 @@
                     "aoColumns": nativeColumns,
                     "fnInitComplete": function(oSettings, json) {
                         $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
-                        if (self.hasOptions) {
-                            self.$nextTick(function() {
-                                CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
-                                $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
-                                    var rowData = $(data.target).parents("tr").data("cly-row-data");
-                                    self.focusedRow = rowData;
-                                });
-                            });
-                        }
+                        self.$nextTick(function() {
+                            CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
+                            self.initializeEventAdapter();
+                        });
+
                         self.isInitialized = true;
                         self.pendingInit = false;
                     },
@@ -685,6 +716,32 @@
 
                 this.tableInstance.stickyTableHeaders();
             },
+            initializeEventAdapter: function() {
+                var self = this;
+
+                if (self.hasOptions) {
+                    $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
+                        var rowData = $(data.target).parents("tr").data("cly-row-data");
+                        self.focusedRow = rowData;
+                    });
+                }
+                $(self.$refs.dtable).find("tbody").on("change", ".on-off-switch input", function() {
+                    var colEl = $(this).parents("td.cly-dt-col");
+                    var colId = colEl.attr("class").split(/\s+/).filter(function(cls) {
+                        return cls.startsWith("cly-dt-col-");
+                    })[0];
+                    if (self.columnEvents[colId] && self.columnEvents[colId].onChanged) {
+                        var rowEl = $(this).parents("tr");
+                        var cbx = $(this);
+                        var newValue = $(this).is(":checked");
+                        self.columnEvents[colId].onChanged(newValue, rowEl.data("cly-row-data"), function(revert) {
+                            if (revert) {
+                                cbx.prop("checked", !newValue);
+                            }
+                        });
+                    }
+                });
+            },
             refresh: function() {
                 if (this.isInitialized && !this.pendingInit) {
                     CountlyHelpers.refreshTable(this.tableInstance, this.rows);
@@ -694,11 +751,7 @@
                 }
             },
             optionEvent: function(eventName) {
-                var key = null;
-                if (this.keyFn) {
-                    key = this.keyFn(this.focusedRow);
-                }
-                this.$emit(eventName, this.focusedRow, key);
+                this.$emit(eventName, this.focusedRow);
             }
         },
         watch: {
@@ -778,10 +831,16 @@
         template: '<div class="cly-vue-panel widget">\
                         <div class="widget-header">\
                             <div class="left">\
-                                <div class="title">{{title}}</div>\
+                                <div>\
+                                    <slot name="left-top">\
+                                        <div class="title">{{title}}</div>\
+                                    </slot>\
+                                </div>\
                             </div>\
                             <div class="right">\
-                                <cly-global-date-selector v-once></cly-global-date-selector>\
+                                <slot name="right-top">\
+                                    <cly-global-date-selector v-once v-if="dateSelector"></cly-global-date-selector>\
+                                </slot>\
                             </div>\
                         </div>\
                         <div class="widget-content help-zone-vb">\
@@ -789,7 +848,8 @@
                         </div>\
                     </div>',
         props: {
-            title: { type: String, required: true }
+            title: { type: String, required: true },
+            dateSelector: { type: Boolean, required: false, default: true },
         },
     });
 
@@ -885,7 +945,7 @@
 
             if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
                 self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
-                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
+                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10)) - 24 * 60 * 60 * 1000 + 1;
             }
             else {
                 var date = new Date();
