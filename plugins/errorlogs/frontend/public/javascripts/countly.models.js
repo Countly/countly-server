@@ -41,7 +41,7 @@
                 "log": logName
             },
             success: function(data) {
-                _logCache = {name:logName, data: data};
+                _logCache = {name: logName, data: data};
             },
             complete: function() {
                 if (callback) {
