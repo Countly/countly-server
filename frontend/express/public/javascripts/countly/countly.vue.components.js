@@ -831,7 +831,11 @@
         template: '<div class="cly-vue-panel widget">\
                         <div class="widget-header">\
                             <div class="left">\
-                                <div class="title">{{title}}</div>\
+                                <div>\
+                                    <slot name="left-top">\
+                                        <div class="title">{{title}}</div>\
+                                    </slot>\
+                                </div>\
                             </div>\
                             <div class="right">\
                                 <slot name="right-top">\
