@@ -77,6 +77,12 @@ var TableView = countlyVue.views.BaseView.extend({
                         "sWidth": "3%"
                     }
                 }
+            ],
+            selectedRadio: 2,
+            availableRadio: [
+                {text: "Type 1", value: 1},
+                {text: "Type 2", value: 2},
+                {text: "Type 3", value: 3},
             ]
         };
     },

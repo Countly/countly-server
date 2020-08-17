@@ -1128,4 +1128,25 @@
         },
     });
 
+    Vue.component("cly-radio", {
+        template: '<div class="cly-vue-radio">\
+                        <div class="radio-wrapper">\
+                            <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
+                                <div class="box"></div>\
+                                <div class="text">{{item.text}}</div>\
+                                <div class="description">{{item.description}}</div>\
+                            </div>\
+                        </div>\
+                   </div>',
+        props: {
+            value: {required: true},
+            items: {required: true}
+        },
+        methods: {
+            setValue: function(e) {
+                this.$emit('input', e)
+            }
+        }
+    });
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
