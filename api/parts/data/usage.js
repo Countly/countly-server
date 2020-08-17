@@ -967,7 +967,17 @@ plugins.register("/sdk/user_properties", function(ob) {
 
         //check when last session ended and if it was less than cooldown
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < config.session_cooldown) {
-            plugins.dispatch("/session/extend", {params: params});
+            let updates = [];
+            plugins.dispatch("/session/extend", {
+                params: params,
+                dbAppUser: params.app_user,
+                updates: updates
+            });
+            if (updates.length) {
+                for (let i = 0; i < updates.length; i++) {
+                    ob.updates.push(updates[i]);
+                }
+            }
         }
         else {
             userProps.lsid = params.request_hash + "_" + params.app_user.uid + "_" + params.time.mstimestamp;
@@ -993,13 +1003,22 @@ plugins.register("/sdk/user_properties", function(ob) {
             }
             processUserSession(params.app_user, params);
 
+            //new session
+            var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
+
+            let updates = [];
             plugins.dispatch("/session/begin", {
                 params: params,
+                dbAppUser: params.app_user,
+                updates: updates,
                 isNewUser: isNewUser
             });
 
-            //new session
-            var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
+            if (updates.length) {
+                for (let i = 0; i < updates.length; i++) {
+                    ob.updates.push(updates[i]);
+                }
+            }
 
             if (isNewUser) {
                 userProps[common.dbUserMap.first_seen] = params.time.timestamp;
