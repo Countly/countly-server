@@ -1267,6 +1267,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             }
                         }
                     }
+                    else if (currE.key === "[CLY]_action") {
+                        haveViews = true;
+                    }
                 }
                 if (haveViews) {
                     common.db.collection("views").findOne({'_id': params.app_id}, {}, function(err3, viewInfo) {
