@@ -1244,10 +1244,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                 //do this before to make sure they are not processed before duration is added
                 var current_views = {};
+                var haveViews = false;
 
                 for (var p = 0; p < params.qstring.events.length; p++) {
                     var currE = params.qstring.events[p];
                     if (currE.key === "[CLY]_view") {
+                        haveViews = true;
                         if (currE.segmentation && currE.segmentation.name) {
                             currE.dur = Math.round(currE.dur || currE.segmentation.dur || 0);
                             if (currE.dur && (currE.dur + "").length >= 10) {
@@ -1265,39 +1267,47 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             }
                         }
                     }
+                    else if (currE.key === "[CLY]_action") {
+                        haveViews = true;
+                    }
                 }
-                common.db.collection("views").findOne({'_id': params.app_id}, {}, function(err3, viewInfo) {
-                    params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                        if (currEvent.timestamp) {
-                            params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
-                        }
-                        if (currEvent.key === "[CLY]_view") {
-                            if (currEvent.segmentation && currEvent.segmentation.name) {
-                                currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
-                                //bug from SDK possibly reporting timestamp instead of duration
-                                if (currEvent.dur && (currEvent.dur + "").length >= 10) {
-                                    currEvent.dur = 0;
-                                }
-                                processView(params, currEvent, viewInfo);
+                if (haveViews) {
+                    common.db.collection("views").findOne({'_id': params.app_id}, {}, function(err3, viewInfo) {
+                        params.qstring.events = params.qstring.events.filter(function(currEvent) {
+                            if (currEvent.timestamp) {
+                                params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
                             }
-                            return false;
-                        }
-                        else if (currEvent.key === "[CLY]_action") {
-                            if (currEvent.segmentation && (currEvent.segmentation.name || currEvent.segmentation.view) && currEvent.segmentation.type && currEvent.segmentation.type === 'scroll') {
-                                currEvent.scroll = 0;
-                                if (currEvent.segmentation.y && currEvent.segmentation.height) {
-                                    var height = parseInt(currEvent.segmentation.height, 10);
-                                    if (height !== 0) {
-                                        currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / height;
+                            if (currEvent.key === "[CLY]_view") {
+                                if (currEvent.segmentation && currEvent.segmentation.name) {
+                                    currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
+                                    //bug from SDK possibly reporting timestamp instead of duration
+                                    if (currEvent.dur && (currEvent.dur + "").length >= 10) {
+                                        currEvent.dur = 0;
                                     }
+                                    processView(params, currEvent, viewInfo);
                                 }
-                                processView(params, currEvent, viewInfo);
+                                return false;
                             }
-                        }
-                        return true;
+                            else if (currEvent.key === "[CLY]_action") {
+                                if (currEvent.segmentation && (currEvent.segmentation.name || currEvent.segmentation.view) && currEvent.segmentation.type && currEvent.segmentation.type === 'scroll') {
+                                    currEvent.scroll = 0;
+                                    if (currEvent.segmentation.y && currEvent.segmentation.height) {
+                                        var height = parseInt(currEvent.segmentation.height, 10);
+                                        if (height !== 0) {
+                                            currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / height;
+                                        }
+                                    }
+                                    processView(params, currEvent, viewInfo);
+                                }
+                            }
+                            return true;
+                        });
+                        resolve();
                     });
+                }
+                else {
                     resolve();
-                });
+                }
             }
             else {
                 resolve();
