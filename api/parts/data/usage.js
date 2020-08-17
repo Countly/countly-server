@@ -976,12 +976,19 @@ plugins.register("/sdk/user_properties", function(ob) {
                 processSessionDurationRange(params.session_duration || 0, params);
 
                 //process duration from unproperly ended previous session
+                let updates = [];
                 plugins.dispatch("/session/post", {
                     params: params,
                     dbAppUser: params.app_user,
+                    updates: updates,
                     session_duration: params.session_duration,
                     end_session: false
                 });
+                if (updates.length) {
+                    for (let i = 0; i < updates.length; i++) {
+                        ob.updates.push(updates[i]);
+                    }
+                }
                 userProps.sd = 0;
             }
             processUserSession(params.app_user, params);
@@ -1029,17 +1036,33 @@ plugins.register("/sdk/user_properties", function(ob) {
                 //if new session did not start during cooldown, then we can post process this session
                 if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
                     processSessionDurationRange(params.session_duration || 0, params);
+                    let updates = [];
                     plugins.dispatch("/session/end", {
                         params: params,
-                        dbAppUser: dbAppUser
+                        dbAppUser: dbAppUser,
+                        updates: updates
                     });
                     plugins.dispatch("/session/post", {
                         params: params,
                         dbAppUser: dbAppUser,
+                        updates: updates,
                         session_duration: params.session_duration,
                         end_session: true
                     });
-                    common.updateAppUser(params, {'$set': {'sd': 0}});
+
+                    updates.push({$set: {sd: 0}});
+                    let updateUser = {};
+                    for (let i = 0; i < updates.length; i++) {
+                        for (let key in updates[i]) {
+                            if (!updateUser[key]) {
+                                updateUser[key] = updates[i][key];
+                            }
+                            else {
+                                updateUser[key] = Object.assign(updateUser[key], updates[i][key]);
+                            }
+                        }
+                    }
+                    common.updateAppUser(params, updateUser);
                 }
             });
         }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);

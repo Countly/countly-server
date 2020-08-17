@@ -258,7 +258,7 @@ plugins.setConfigs("crashes", {
             }
 
             if (Object.keys(update).length) {
-                common.updateAppUser(params, {$set: update});
+                ob.updates.push({$set: update});
             }
         }
     });

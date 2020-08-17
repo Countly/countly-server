@@ -1153,84 +1153,72 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     });
 
     plugins.register("/session/post", function(ob) {
-        return new Promise(function(resolve) {
-            var params = ob.params;
-            var dbAppUser = ob.dbAppUser;
-            if (dbAppUser && dbAppUser.vc) {
-                var user = params.app_user;
-                if (user && user.vc) {
-                    var ranges = [
-                            [0, 2],
-                            [3, 5],
-                            [6, 10],
-                            [11, 15],
-                            [16, 30],
-                            [31, 50],
-                            [51, 100]
-                        ],
-                        rangesMax = 101,
-                        calculatedRange,
-                        updateUsers = {},
-                        updateUsersZero = {},
-                        dbDateIds = common.getDateIds(params),
-                        monthObjUpdate = [];
+        var params = ob.params;
+        var user = params.app_user;
+        if (user && user.vc) {
+            var ranges = [
+                    [0, 2],
+                    [3, 5],
+                    [6, 10],
+                    [11, 15],
+                    [16, 30],
+                    [31, 50],
+                    [51, 100]
+                ],
+                rangesMax = 101,
+                calculatedRange,
+                updateUsers = {},
+                updateUsersZero = {},
+                dbDateIds = common.getDateIds(params),
+                monthObjUpdate = [];
 
-                    if (user.vc >= rangesMax) {
-                        calculatedRange = (ranges.length) + '';
+            if (user.vc >= rangesMax) {
+                calculatedRange = (ranges.length) + '';
+            }
+            else {
+                for (var i = 0; i < ranges.length; i++) {
+                    if (user.vc <= ranges[i][1] && user.vc >= ranges[i][0]) {
+                        calculatedRange = i + '';
+                        break;
                     }
-                    else {
-                        for (var i = 0; i < ranges.length; i++) {
-                            if (user.vc <= ranges[i][1] && user.vc >= ranges[i][0]) {
-                                calculatedRange = i + '';
-                                break;
-                            }
-                        }
+                }
+            }
+
+            monthObjUpdate.push('vc.' + calculatedRange);
+            common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
+            common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
+            var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+            common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+            var update = {'$inc': updateUsersZero, '$set': {}};
+            update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
+            common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
+
+            if (user.lv) {
+                var segmentation = {name: user.lv.replace(/^\$/, "").replace(/\./g, "&#46;"), exit: 1};
+                common.db.collection('app_viewsmeta' + params.app_id).findAndModify({'view': segmentation.name}, {}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
+                    if (err) {
+                        log.e(err);
                     }
-
-                    monthObjUpdate.push('vc.' + calculatedRange);
-                    common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
-                    common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
-                    var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-                    common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
-                    var update = {'$inc': updateUsersZero, '$set': {}};
-                    update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
-                    common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
-
-                    if (user.lv) {
-                        var segmentation = {name: user.lv.replace(/^\$/, "").replace(/\./g, "&#46;"), exit: 1};
-                        common.db.collection('app_viewsmeta' + params.app_id).findAndModify({'view': segmentation.name}, {}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
-                            if (err) {
-                                log.e(err);
+                    if (view && view.value) {
+                        common.db.collection('app_userviews' + params.app_id).findOne({'_id': user.uid}, function(err2, view2) {
+                            var LastTime = 0;
+                            if (view2 && view2[view.value._id]) {
+                                LastTime = view2[view.value._id].ts;
                             }
-                            if (view && view.value) {
-                                common.db.collection('app_userviews' + params.app_id).findOne({'_id': user.uid}, function(err2, view2) {
-                                    var LastTime = 0;
-                                    if (view2 && view2[view.value._id]) {
-                                        LastTime = view2[view.value._id].ts;
-                                    }
-                                    if (ob.end_session || LastTime && params.time.timestamp - LastTime < 60) {
-                                        if (parseInt(user.vc) === 1) {
-                                            segmentation.bounce = 1;
-                                        }
-                                        params.viewsNamingMap = params.viewsNamingMap || {};
-                                        params.viewsNamingMap[segmentation.name] = view.value._id;
-                                        recordMetrics(params, {"viewAlias": view.value._id, key: "[CLY]_view", segmentation: segmentation}, user);
-                                    }
-                                });
+                            if (ob.end_session || LastTime && params.time.timestamp - LastTime < 60) {
+                                if (parseInt(user.vc) === 1) {
+                                    segmentation.bounce = 1;
+                                }
+                                params.viewsNamingMap = params.viewsNamingMap || {};
+                                params.viewsNamingMap[segmentation.name] = view.value._id;
+                                recordMetrics(params, {"viewAlias": view.value._id, key: "[CLY]_view", segmentation: segmentation}, user);
                             }
                         });
                     }
-                    common.updateAppUser(params, {$set: {vc: 0}});
-                    resolve();
-                }
-                else {
-                    resolve();
-                }
+                });
             }
-            else {
-                resolve();
-            }
-        });
+            ob.updates.push({$set: {vc: 0}});
+        }
     });
 
     plugins.register("/i", function(ob) {
