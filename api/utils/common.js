@@ -2001,17 +2001,20 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
-        common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {
-            new: true,
-            upsert: true
-        }, function(err, res) {
-            if (!err && res && res.value) {
-                params.app_user = res.value;
-            }
-            if (callback) {
+        if (callback) {
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {
+                new: true,
+                upsert: true
+            }, function(err, res) {
+                if (!err && res && res.value) {
+                    params.app_user = res.value;
+                }
                 callback(err, res);
-            }
-        });
+            });
+        }
+        else {
+            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, update, {upsert: true}, function() {});
+        }
     }
     else if (callback) {
         callback();
