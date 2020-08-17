@@ -174,6 +174,15 @@ const passToMaster = (worker) => {
             const {collection, id, operation} = msg.data;
             common.writeBatcher.add(collection, id, operation);
         }
+        else if (msg.cmd === "batch_read") {
+            const {collection, query, projection, multi, msgId} = msg.data;
+            common.readBatcher.get(collection, query, projection, multi).then((data) => {
+                worker.send({ cmd: "batch_read", data: {msgId, data} });
+            })
+                .catch((err) => {
+                    worker.send({ cmd: "batch_read", data: {msgId, err} });
+                });
+        }
         else if (msg.cmd === "dispatch" && msg.event) {
             workers.forEach((w) => {
                 w.send(msg);

@@ -1,4 +1,6 @@
 const EventEmitter = require('events');
+const crypto = require('crypto');
+const cluster = require('cluster');
 const plugins = require('../../../plugins/pluginManager.js');
 const log = require('../../utils/log.js')("batcher");
 
@@ -17,8 +19,10 @@ class WriteBatcher extends EventEmitter {
         super();
         this.db = db;
         this.data = {};
-        this.loadConfig();
-        this.schedule();
+        plugins.loadConfigs(db, () => {
+            this.loadConfig();
+            this.schedule();
+        });
     }
 
     /**
@@ -154,8 +158,25 @@ class ReadBatcher extends EventEmitter {
         super();
         this.db = db;
         this.data = {};
-        this.loadConfig();
-        this.schedule();
+        this.promises = {};
+        plugins.loadConfigs(db, () => {
+            this.loadConfig();
+            this.schedule();
+        });
+
+        if (!cluster.isMaster) {
+            process.on("message", (msg) => {
+                if (msg.cmd === "batch_read" && msg.data && msg.data.msgId && this.promises[msg.data.msgId]) {
+                    if (msg.data.data) {
+                        this.promises[msg.data.msgId].resolve(msg.data.data);
+                    }
+                    else {
+                        this.promises[msg.data.msgId].reject(msg.data.err);
+                    }
+                    delete this.promises[msg.data.msgId];
+                }
+            });
+        }
     }
 
     /**
@@ -166,6 +187,7 @@ class ReadBatcher extends EventEmitter {
         this.period = config.batch_read_period * 1000;
         this.ttl = config.batch_read_ttl * 1000;
         this.process = config.batch_read_processing;
+        this.onMaster = config.batch_read_on_master;
     }
 
     /**
@@ -238,42 +260,30 @@ class ReadBatcher extends EventEmitter {
      *  @param {string} query - query for the document
      *  @param {string} projection - which fields to return
      *  @param {bool} multi - true if multiple documents
-     *  @param {function=} callback - optional to get result, or else will return promise
-     *  @returns {Promise} if callback not passed, returns promise
+     *  @returns {Promise} promise
      */
-    async get(collection, query, projection, multi, callback) {
-        if (typeof projection === "function") {
-            callback = projection;
-            projection = {};
-        }
-        if (!projection) {
-            projection = {};
-        }
-        var id = JSON.stringify(query);
-        if (!this.data[collection]) {
-            this.data[collection] = {};
-        }
-
-        if (!this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
-            return this.getData(collection, id, query, projection, multi)
-                .then((data) => {
-                    if (typeof callback === "function") {
-                        return callback(null, data);
-                    }
-                    return data;
-                })
-                .catch((err) => {
-                    if (typeof callback === "function") {
-                        return callback(err);
-                    }
-                    else {
-                        throw err;
-                    }
+    get(collection, query, projection, multi) {
+        if (!this.onMaster || cluster.isMaster) {
+            var id = JSON.stringify(query);
+            if (!this.data[collection]) {
+                this.data[collection] = {};
+            }
+            if (!this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
+                return this.getData(collection, id, query, projection, multi);
+            }
+            else {
+                this.data[collection][id].last_used = Date.now();
+                return new Promise((resolve) => {
+                    resolve(this.data[collection][id].data);
                 });
+            }
         }
         else {
-            this.data[collection][id].last_used = Date.now();
-            return promiseOrCallback(null, this.data[collection][id].data, callback);
+            return new Promise((resolve, reject) => {
+                let msgId = getId();
+                this.promises[msgId] = {resolve, reject};
+                process.send({ cmd: "batch_read", data: {collection, query, projection, multi, msgId} });
+            });
         }
     }
 
@@ -286,7 +296,14 @@ class ReadBatcher extends EventEmitter {
      *  @returns {Promise} if callback not passed, returns promise
      */
     getOne(collection, query, projection, callback) {
-        return this.get(collection, query, projection, false, callback);
+        if (typeof projection === "function") {
+            callback = projection;
+            projection = {};
+        }
+        if (!projection) {
+            projection = {};
+        }
+        return promiseOrCallback(this.get(collection, query, projection, false), callback);
     }
 
     /**
@@ -298,7 +315,14 @@ class ReadBatcher extends EventEmitter {
      *  @returns {Promise} if callback not passed, returns promise
      */
     getMany(collection, query, projection, callback) {
-        return this.get(collection, query, projection, true, callback);
+        if (typeof projection === "function") {
+            callback = projection;
+            projection = {};
+        }
+        if (!projection) {
+            projection = {};
+        }
+        return promiseOrCallback(this.get(collection, query, projection, true), callback);
     }
 
     /**
@@ -326,25 +350,20 @@ class ReadBatcher extends EventEmitter {
 
 /**
  *  Return promise or callback based on params
- *  @param {Error} err - error if any
- *  @param {object} data - data to pass
+ *  @param {Promise} promise - promise for data
  *  @param {function=} callback - callback to call
  *  @returns {Promise} Returned promise
  */
-function promiseOrCallback(err, data, callback) {
+function promiseOrCallback(promise, callback) {
     if (typeof callback === "function") {
-        return callback(err, data);
+        return promise.then(function(data) {
+            callback(null, data);
+        })
+            .catch(function(err) {
+                callback(err, null);
+            });
     }
-    else {
-        return new Promise((resolve, reject) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                resolve(data);
-            }
-        });
-    }
+    return promise;
 }
 
 /**
@@ -408,6 +427,14 @@ function mergeQuery(ob1, ob2) {
     }
 
     return ob1;
+}
+
+/**
+ *  Generate random id
+ *  @returns {string} randomly generated id
+ */
+function getId() {
+    return crypto.randomBytes(16).toString("hex");
 }
 
 module.exports = {WriteBatcher, ReadBatcher};
