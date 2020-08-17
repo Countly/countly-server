@@ -47,19 +47,10 @@ countlyEvents.processEvents = function(params) {
                 }
             }
 
-            var userProps = {};
-
             for (let i = 0; i < params.qstring.events.length; i++) {
                 var currEvent = params.qstring.events[i],
                     shortEventName = "",
                     eventCollectionName = "";
-
-                if (currEvent.key === "[CLY]_orientation") {
-                    if (currEvent.segmentation && currEvent.segmentation.mode) {
-                        userProps.ornt = currEvent.segmentation.mode;
-                    }
-                    continue;
-                }
 
                 if (!currEvent.segmentation) {
                     continue;
@@ -130,10 +121,6 @@ countlyEvents.processEvents = function(params) {
 
                     }
                 }
-            }
-
-            if (Object.keys(userProps).length) {
-                common.updateAppUser(params, {$set: userProps}, true);
             }
 
             async.map(Object.keys(metaToFetch), fetchEventMeta, function(err2, eventMetaDocs) {

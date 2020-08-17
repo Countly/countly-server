@@ -1054,6 +1054,17 @@ plugins.register("/sdk/user_properties", function(ob) {
         common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
     }
 
+    if (params.qstring.events) {
+        for (let i = 0; i < params.qstring.events.length; i++) {
+            let currEvent = params.qstring.events[i];
+            if (currEvent.key === "[CLY]_orientation") {
+                if (currEvent.segmentation && currEvent.segmentation.mode) {
+                    userProps.ornt = currEvent.segmentation.mode;
+                }
+            }
+        }
+    }
+
     //do not write values that are already assignd to user
     for (var key in userProps) {
         if (userProps[key] === params.app_user[key]) {

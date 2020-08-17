@@ -2013,6 +2013,8 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             });
         }
         else {
+            // using updateOne costs less than findAndModify, so we should use this 
+            // when acknowledging writes and updated information is not relevant (aka callback is not passed)
             common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, update, {upsert: true}, function() {});
         }
     }
