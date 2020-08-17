@@ -10,7 +10,7 @@ window.ErrorLogsView = countlyView.extend({
         }), countlyErrorLogs.initialize()).then(function() {
             var logNames = countlyErrorLogs.getLogNameList();
             if (logNames.length > 0) {
-                countlyErrorLogs.getLogByName(logNames[0].value);
+                return countlyErrorLogs.getLogByName(logNames[0].value);
             }
         });
     },
@@ -20,18 +20,18 @@ window.ErrorLogsView = countlyView.extend({
         this.templateData = {
             "page-title": jQuery.i18n.map["errorlogs.title"],
             download: download,
-            logs: cachedLog
+            logName: cachedLog.name,
+            logData: cachedLog.data,
         };
         var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             var logList = countlyErrorLogs.getLogNameList();
-            $("#logger-selector").clySelectSetItems(logList);
-            var currentLog = Object.keys(cachedLog);
-            if (currentLog.length > 0) {
-                $("#logger-selector").clySelectSetSelection(currentLog[0], currentLog[0] + " Log");
+            $("#error-logger-selector").clySelectSetItems(logList);
+            if (cachedLog.name) {
+                $("#error-logger-selector").clySelectSetSelection(cachedLog.name, cachedLog.name + " Log");
             }
-            $("#logger-selector").off("cly-select-change").on("cly-select-change", function(e, selected) {
+            $("#error-logger-selector").off("cly-select-change").on("cly-select-change", function(e, selected) {
                 countlyErrorLogs.getLogByName(selected, function() {
                     self.renderCommon();
                     app.localize();
