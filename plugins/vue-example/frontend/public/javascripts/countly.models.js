@@ -1,4 +1,4 @@
-/*global $, countlyCommon */
+/*global $, countlyCommon, Vue */
 
 (function(countlyVueExample) {
 
@@ -36,7 +36,7 @@
                         var target = state.pairs.filter(function(val) {
                             return val._id === obj._id;
                         });
-                        if (target.length > 0){
+                        if (target.length > 0) {
                             Vue.set(target[0], "status", obj.value);
                         }
                     },

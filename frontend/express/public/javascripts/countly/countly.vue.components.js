@@ -677,10 +677,10 @@
                             "sType": "string",
                             "sClass": "shrink"
                         };
-                        if (column.onChanged){
+                        if (column.onChanged) {
                             self.columnEvents["cly-dt-col-" + self.lastCol] = {
                                 onChanged: column.onChanged
-                            }
+                            };
                         }
                     }
                     if (column.dt) {
@@ -716,7 +716,7 @@
 
                 this.tableInstance.stickyTableHeaders();
             },
-            initializeEventAdapter: function(){
+            initializeEventAdapter: function() {
                 var self = this;
 
                 if (self.hasOptions) {
@@ -725,9 +725,9 @@
                         self.focusedRow = rowData;
                     });
                 }
-                $(self.$refs.dtable).find("tbody").on("change", ".on-off-switch input", function(e){
+                $(self.$refs.dtable).find("tbody").on("change", ".on-off-switch input", function() {
                     var colEl = $(this).parents("td.cly-dt-col");
-                    var colId = colEl.attr("class").split(/\s+/).filter(function(cls){
+                    var colId = colEl.attr("class").split(/\s+/).filter(function(cls) {
                         return cls.startsWith("cly-dt-col-");
                     })[0];
                     if (self.columnEvents[colId] && self.columnEvents[colId].onChanged) {
@@ -740,7 +740,7 @@
                             }
                         });
                     }
-                })
+                });
             },
             refresh: function() {
                 if (this.isInitialized && !this.pendingInit) {
@@ -938,7 +938,7 @@
 
             if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
                 self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
-                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
+                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10)) - 24 * 60 * 60 * 1000 + 1;
             }
             else {
                 var date = new Date();
