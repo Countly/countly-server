@@ -583,16 +583,21 @@
             return {
                 isInitialized: false,
                 pendingInit: false,
+                nLocks: 0,
                 tableInstance: null,
                 optionItems: [],
                 focusedRow: null,
                 columnEvents: null,
-                lastCol: 0
+                lastCol: 0,
+                finalizedNativeColumns: null
             };
         },
         computed: {
             hasOptions: function() {
                 return this.optionItems.length > 0;
+            },
+            isLocked: function() {
+                return this.nLocks > 0;
             }
         },
         props: {
@@ -620,15 +625,10 @@
                         return;
                     }
                     else if (column.type === "field") {
-                        nativeColumn = {};
-                        if (column.options.dataType) {
-                            nativeColumn.sType = column.options.dataType;
-                        }
-                        if (column.options.title) {
-                            nativeColumn.sTitle = column.options.title;
-                        }
-                        nativeColumn.mData = function(row) {
-                            return row[column.fieldKey];
+                        nativeColumn = {
+                            "mData": function(row) {
+                                return row[column.fieldKey];
+                            }
                         };
                     }
                     else if (column.type === "options") {
@@ -649,7 +649,6 @@
                                 return '<a class="cly-list-options"></a>';
                             },
                             "sType": "string",
-                            "sTitle": "",
                             "sClass": "shrink center",
                             "bSortable": false
                         };
@@ -675,14 +674,26 @@
                                 }
                             },
                             "sType": "string",
-                            "sClass": "shrink"
+                            "sClass": "shrink",
+                            "bSortable": false
                         };
-                        if (column.onChanged) {
+                        if (column.onChange) {
                             self.columnEvents["cly-dt-col-" + self.lastCol] = {
-                                onChanged: column.onChanged
+                                onChange: column.onChange
                             };
                         }
                     }
+
+                    if (column.options) {
+                        // default mappings to dt
+                        if (column.options.dataType) {
+                            nativeColumn.sType = column.options.dataType;
+                        }
+                        if (column.options.title) {
+                            nativeColumn.sTitle = column.options.title;
+                        }
+                    }
+
                     if (column.dt) {
                         _.extend(nativeColumn, column.dt);
                     }
@@ -694,6 +705,8 @@
                     self.lastCol++;
                     nativeColumns.push(nativeColumn);
                 });
+
+                this.finalizedNativeColumns = nativeColumns;
 
                 this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {
                     "aaData": this.rows,
@@ -710,6 +723,7 @@
                     },
                     "fnRowCallback": function(nRow, aData) {
                         var rowEl = $(nRow);
+                        rowEl.attr("data-cly-row-id", self.keyFn(aData));
                         rowEl.data("cly-row-data", aData);
                     },
                 }));
@@ -730,11 +744,11 @@
                     var colId = colEl.attr("class").split(/\s+/).filter(function(cls) {
                         return cls.startsWith("cly-dt-col-");
                     })[0];
-                    if (self.columnEvents[colId] && self.columnEvents[colId].onChanged) {
+                    if (self.columnEvents[colId] && self.columnEvents[colId].onChange) {
                         var rowEl = $(this).parents("tr");
                         var cbx = $(this);
                         var newValue = $(this).is(":checked");
-                        self.columnEvents[colId].onChanged(newValue, rowEl.data("cly-row-data"), function(revert) {
+                        self.columnEvents[colId].onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
                             if (revert) {
                                 cbx.prop("checked", !newValue);
                             }
@@ -743,6 +757,10 @@
                 });
             },
             refresh: function() {
+                if (this.isLocked) {
+                    // for pending undo operations
+                    return;
+                }
                 if (this.isInitialized && !this.pendingInit) {
                     CountlyHelpers.refreshTable(this.tableInstance, this.rows);
                 }
@@ -750,8 +768,47 @@
                     this.initialize();
                 }
             },
-            optionEvent: function(eventName) {
-                this.$emit(eventName, this.focusedRow);
+            softAction: function(row, message, callbacks) {
+                var self = this;
+                self.nLocks++;
+                var undoRow = $("<tr><td class='undo-row' colspan='" + self.finalizedNativeColumns.length + "'>" + message + "&nbsp;<a>" + jQuery.i18n.map["common.undo"] + "</a></td></tr>");
+                var triggeringRow = $(self.tableInstance).find('tbody tr[data-cly-row-id=' + self.keyFn(row) + ']');
+                triggeringRow.after(undoRow);
+                triggeringRow.hide();
+                var commitWrapped = function() {
+                    undoRow.remove();
+                    self.nLocks--;
+                    callbacks.commit();
+                    self.refresh();
+                };
+                var commitTimeout = setTimeout(commitWrapped, 2000);
+                undoRow.find('a').click(function() {
+                    clearTimeout(commitTimeout);
+                    undoRow.remove();
+                    self.nLocks--;
+                    triggeringRow.show();
+                    if (callbacks.undo) {
+                        callbacks.undo();
+                    }
+                });
+            },
+            optionEvent: function(action) {
+                var self = this;
+                if (action.undo) {
+                    var focusedRef = this.focusedRow;
+                    this.$emit(action.event, focusedRef, function(goAhead) {
+                        if (goAhead) {
+                            self.softAction(focusedRef, action.undo.message, {
+                                commit: function() {
+                                    self.$emit(action.undo.commit, focusedRef);
+                                }
+                            });
+                        }
+                    });
+                }
+                else {
+                    this.$emit(action.event, this.focusedRow);
+                }
             }
         },
         watch: {
@@ -1126,6 +1183,27 @@
                 this.render();
             }
         },
+    });
+
+    Vue.component("cly-radio", {
+        template: '<div class="cly-vue-radio">\
+                        <div class="radio-wrapper">\
+                            <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
+                                <div class="box"></div>\
+                                <div class="text">{{item.text}}</div>\
+                                <div class="description">{{item.description}}</div>\
+                            </div>\
+                        </div>\
+                   </div>',
+        props: {
+            value: {required: true},
+            items: {required: true}
+        },
+        methods: {
+            setValue: function(e) {
+                this.$emit('input', e);
+            }
+        }
     });
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

@@ -14,6 +14,7 @@
                             v-bind:rows="tableRows"
                             v-bind:columns="tableColumns"
                             v-bind:keyFn="tableKeyFn"
+                            v-on:try-delete-record="onTryDelete"
                             v-on:delete-record="onDelete"
                             v-on:show-record="onShow">
                         </cly-datatable>
@@ -31,6 +32,16 @@
             <cly-panel title="Vue Example" v-bind:date-selector="false">
                 <div style="padding:30px">
                     <pre>{{tableRows}}</pre>
+                </div>
+            </cly-panel>
+        </cly-tab>
+        <cly-tab name='Radio' id="radio-tab">
+            <cly-panel title="Vue Example" v-bind:date-selector="false">
+                <div class="example-cell">
+                    <cly-radio v-bind:items="availableRadio" v-model="selectedRadio"></cly-radio>
+                </div>
+                <div class="example-cell">
+                    Selected value: {{selectedRadio}}
                 </div>
             </cly-panel>
         </cly-tab>

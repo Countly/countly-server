@@ -1,3 +1,11 @@
 .vue-example-wrapper .dataTables_wrapper{
     margin: 0px;
 }
+
+.vue-example-wrapper .example-cell{
+    margin: 20px;
+    width: 46%;
+    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+}
