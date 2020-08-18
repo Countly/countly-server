@@ -794,11 +794,12 @@
             optionEvent: function(action) {
                 var self = this;
                 if (action.undo) {
-                    this.$emit(action.event, this.focusedRow, function(goAhead) {
+                    var focusedRef = this.focusedRow;
+                    this.$emit(action.event, focusedRef, function(goAhead) {
                         if (goAhead) {
-                            self.softAction(self.focusedRow, action.undo.message, {
+                            self.softAction(focusedRef, action.undo.message, {
                                 commit: function() {
-                                    self.$emit(action.undo.commit, self.focusedRow);
+                                    self.$emit(action.undo.commit, focusedRef);
                                 }
                             });
                         }
