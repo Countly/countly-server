@@ -583,7 +583,7 @@
             return {
                 isInitialized: false,
                 pendingInit: false,
-                isLocked: false,
+                nLocks: 0,
                 tableInstance: null,
                 optionItems: [],
                 focusedRow: null,
@@ -595,6 +595,9 @@
         computed: {
             hasOptions: function() {
                 return this.optionItems.length > 0;
+            },
+            isLocked: function() {
+                return this.nLocks > 0;
             }
         },
         props: {
@@ -767,14 +770,14 @@
             },
             softAction: function(row, message, callbacks) {
                 var self = this;
-                self.isLocked = true;
+                self.nLocks++;
                 var undoRow = $("<tr><td class='undo-row' colspan='" + self.finalizedNativeColumns.length + "'>" + message + "&nbsp;<a>" + jQuery.i18n.map["common.undo"] + "</a></td></tr>");
                 var triggeringRow = $(self.tableInstance).find('tbody tr[data-cly-row-id=' + self.keyFn(row) + ']');
                 triggeringRow.after(undoRow);
                 triggeringRow.hide();
                 var commitWrapped = function() {
                     undoRow.remove();
-                    self.isLocked = false;
+                    self.nLocks--;
                     callbacks.commit();
                     if (!self.isLocked) {
                         self.refresh();
@@ -784,7 +787,7 @@
                 undoRow.find('a').click(function() {
                     clearTimeout(commitTimeout);
                     undoRow.remove();
-                    self.isLocked = false;
+                    self.nLocks--;
                     triggeringRow.show();
                     if (callbacks.undo) {
                         callbacks.undo();
