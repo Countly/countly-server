@@ -779,9 +779,7 @@
                     undoRow.remove();
                     self.nLocks--;
                     callbacks.commit();
-                    if (!self.isLocked) {
-                        self.refresh();
-                    }
+                    self.refresh();
                 };
                 var commitTimeout = setTimeout(commitWrapped, 2000);
                 undoRow.find('a').click(function() {
