@@ -677,9 +677,9 @@
                             "sType": "string",
                             "sClass": "shrink"
                         };
-                        if (column.onChanged) {
+                        if (column.onChange) {
                             self.columnEvents["cly-dt-col-" + self.lastCol] = {
-                                onChanged: column.onChanged
+                                onChange: column.onChange
                             };
                         }
                     }
@@ -730,11 +730,11 @@
                     var colId = colEl.attr("class").split(/\s+/).filter(function(cls) {
                         return cls.startsWith("cly-dt-col-");
                     })[0];
-                    if (self.columnEvents[colId] && self.columnEvents[colId].onChanged) {
+                    if (self.columnEvents[colId] && self.columnEvents[colId].onChange) {
                         var rowEl = $(this).parents("tr");
                         var cbx = $(this);
                         var newValue = $(this).is(":checked");
-                        self.columnEvents[colId].onChanged(newValue, rowEl.data("cly-row-data"), function(revert) {
+                        self.columnEvents[colId].onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
                             if (revert) {
                                 cbx.prop("checked", !newValue);
                             }

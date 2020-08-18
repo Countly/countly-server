@@ -19,7 +19,7 @@ var TableView = countlyVue.views.BaseView.extend({
                 {
                     type: "checkbox",
                     fieldKey: "status",
-                    onChanged: function(newValue, row) {
+                    onChange: function(newValue, row) {
                         self.$store.commit("vueExample/setStatus", {_id: row._id, value: newValue});
                     },
                     options: {
