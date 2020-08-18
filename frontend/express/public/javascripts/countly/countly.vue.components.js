@@ -620,15 +620,10 @@
                         return;
                     }
                     else if (column.type === "field") {
-                        nativeColumn = {};
-                        if (column.options.dataType) {
-                            nativeColumn.sType = column.options.dataType;
-                        }
-                        if (column.options.title) {
-                            nativeColumn.sTitle = column.options.title;
-                        }
-                        nativeColumn.mData = function(row) {
-                            return row[column.fieldKey];
+                        nativeColumn = {
+                            "mData": function(row) {
+                                return row[column.fieldKey];
+                            }
                         };
                     }
                     else if (column.type === "options") {
@@ -649,7 +644,6 @@
                                 return '<a class="cly-list-options"></a>';
                             },
                             "sType": "string",
-                            "sTitle": "",
                             "sClass": "shrink center",
                             "bSortable": false
                         };
@@ -675,7 +669,8 @@
                                 }
                             },
                             "sType": "string",
-                            "sClass": "shrink"
+                            "sClass": "shrink",
+                            "bSortable": false
                         };
                         if (column.onChange) {
                             self.columnEvents["cly-dt-col-" + self.lastCol] = {
@@ -683,6 +678,17 @@
                             };
                         }
                     }
+
+                    if (column.options) {
+                        // default mappings to dt
+                        if (column.options.dataType) {
+                            nativeColumn.sType = column.options.dataType;
+                        }
+                        if (column.options.title) {
+                            nativeColumn.sTitle = column.options.title;
+                        }
+                    }
+
                     if (column.dt) {
                         _.extend(nativeColumn, column.dt);
                     }
