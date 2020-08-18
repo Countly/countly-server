@@ -583,11 +583,13 @@
             return {
                 isInitialized: false,
                 pendingInit: false,
+                isLocked: false,
                 tableInstance: null,
                 optionItems: [],
                 focusedRow: null,
                 columnEvents: null,
-                lastCol: 0
+                lastCol: 0,
+                finalizedNativeColumns: null
             };
         },
         computed: {
@@ -701,6 +703,8 @@
                     nativeColumns.push(nativeColumn);
                 });
 
+                this.finalizedNativeColumns = nativeColumns;
+
                 this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {
                     "aaData": this.rows,
                     "aoColumns": nativeColumns,
@@ -716,6 +720,7 @@
                     },
                     "fnRowCallback": function(nRow, aData) {
                         var rowEl = $(nRow);
+                        rowEl.attr("data-cly-row-id", self.keyFn(aData));
                         rowEl.data("cly-row-data", aData);
                     },
                 }));
@@ -749,6 +754,10 @@
                 });
             },
             refresh: function() {
+                if (this.isLocked) {
+                    // for pending undo operations
+                    return;
+                }
                 if (this.isInitialized && !this.pendingInit) {
                     CountlyHelpers.refreshTable(this.tableInstance, this.rows);
                 }
@@ -756,8 +765,48 @@
                     this.initialize();
                 }
             },
-            optionEvent: function(eventName) {
-                this.$emit(eventName, this.focusedRow);
+            softAction: function(row, message, callbacks) {
+                var self = this;
+                self.isLocked = true;
+                var undoRow = $("<tr><td class='undo-row' colspan='" + self.finalizedNativeColumns.length + "'>" + message + "&nbsp;<a>" + jQuery.i18n.map["common.undo"] + "</a></td></tr>");
+                var triggeringRow = $(self.tableInstance).find('tbody tr[data-cly-row-id=' + self.keyFn(row) + ']');
+                triggeringRow.after(undoRow);
+                triggeringRow.hide();
+                var commitWrapped = function() {
+                    undoRow.remove();
+                    self.isLocked = false;
+                    callbacks.commit();
+                    if (!self.isLocked) {
+                        self.refresh();
+                    }
+                };
+                var commitTimeout = setTimeout(commitWrapped, 2000);
+                undoRow.find('a').click(function() {
+                    clearTimeout(commitTimeout);
+                    undoRow.remove();
+                    self.isLocked = false;
+                    triggeringRow.show();
+                    if (callbacks.undo) {
+                        callbacks.undo();
+                    }
+                });
+            },
+            optionEvent: function(action) {
+                var self = this;
+                if (action.undo) {
+                    this.$emit(action.event, this.focusedRow, function(goAhead) {
+                        if (goAhead) {
+                            self.softAction(self.focusedRow, action.undo.message, {
+                                commit: function() {
+                                    self.$emit(action.undo.commit, self.focusedRow);
+                                }
+                            });
+                        }
+                    });
+                }
+                else {
+                    this.$emit(action.event, this.focusedRow);
+                }
             }
         },
         watch: {
@@ -1150,7 +1199,7 @@
         },
         methods: {
             setValue: function(e) {
-                this.$emit('input', e)
+                this.$emit('input', e);
             }
         }
     });

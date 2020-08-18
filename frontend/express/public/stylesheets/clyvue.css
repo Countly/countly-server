@@ -132,6 +132,9 @@
     width:13px;
 }
 
+.cly-vue-datatable-wrapper .undo-row{ text-align: center; padding: 10px; background-color: #ffeded; color: #2b2b2b; margin : 5px 0px; }
+.cly-vue-datatable-wrapper .undo-row a { font-weight: 500; text-decoration: underline; cursor:pointer }
+
 /* radio */
 
 .cly-vue-radio .radio-wrapper {

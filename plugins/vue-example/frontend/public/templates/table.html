@@ -14,6 +14,7 @@
                             v-bind:rows="tableRows"
                             v-bind:columns="tableColumns"
                             v-bind:keyFn="tableKeyFn"
+                            v-on:try-delete-record="onTryDelete"
                             v-on:delete-record="onDelete"
                             v-on:show-record="onShow">
                         </cly-datatable>

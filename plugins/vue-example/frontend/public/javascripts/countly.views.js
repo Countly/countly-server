@@ -62,14 +62,20 @@ var TableView = countlyVue.views.BaseView.extend({
                     type: "options",
                     items: [
                         {
-                            icon: "fa fa-eye",
-                            label: "View",
-                            action: "show-record",
+                            icon: "fa fa-trash",
+                            label: "Delete",
+                            action: {"event": "delete-record"},
                         },
                         {
                             icon: "fa fa-trash",
-                            label: "Delete",
-                            action: "delete-record",
+                            label: "Delete (with undo)",
+                            action: {
+                                "event": "try-delete-record",
+                                "undo": {
+                                    "commit": "delete-record",
+                                    "message": "You deleted a record."
+                                }
+                            },
                             disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
                         }
                     ],
@@ -91,6 +97,9 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
             this.targetName = "";
             this.targetValue += 1;
+        },
+        onTryDelete: function(row, callback) {
+            callback(true);
         },
         onDelete: function(row) {
             this.$store.commit("vueExample/deletePairById", row._id);
