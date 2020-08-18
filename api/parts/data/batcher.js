@@ -253,12 +253,38 @@ class ReadBatcher extends EventEmitter {
         }, this.period);
     }
 
+    /**
+	* Gets list of keys from projection object which are included
+	*  @param {object} projection - which fields to return
+	*  @returns {object} {keys - list of keys, have_projection - true if projection not empty}
+	*/
+    keysFromProjectionObject(projection) {
+        var keysSaved = [];
+        var have_projection = false;
+        projection = projection || {};
+
+        if (projection.projection && typeof projection.projection === 'object') {
+            projection = projection.projection;
+        }
+
+        if (projection.fields && typeof projection.fields === 'object') {
+            projection = projection.fields;
+        }
+
+        for (var k in projection) {
+            have_projection = true;
+            if (projection[k] === 1) {
+                keysSaved.push(k);
+            }
+        }
+        return {"keys": keysSaved, "have_projection": have_projection};
+    }
 
     /**
      *  Get data from cache or from db and cache it
      *  @param {string} collection - name of the collection where to update data
-     *  @param {string} query - query for the document
-     *  @param {string} projection - which fields to return
+     *  @param {object} query - query for the document
+     *  @param {object} projection - which fields to return
      *  @param {bool} multi - true if multiple documents
      *  @returns {Promise} promise
      */
@@ -268,11 +294,33 @@ class ReadBatcher extends EventEmitter {
             if (!this.data[collection]) {
                 this.data[collection] = {};
             }
-            if (!this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
+            var good_projection = true;
+            var keysSaved = this.keysFromProjectionObject(this.data[collection][id] && this.data[collection][id].projection);
+            var keysNew = this.keysFromProjectionObject(projection);
+
+            if (this.data[collection][id] && (keysSaved.have_projection || keysNew.have_projection)) {
+                if (keysSaved.have_projection) {
+                    for (let p = 0; p < keysNew.keys.length; p++) {
+                        if (keysSaved.keys.indexOf(keysNew.keys[p]) === -1) {
+                            good_projection = false;
+                            keysSaved.keys.push(keysNew.keys[p]);
+                        }
+                    }
+                }
+                if (!good_projection) {
+                    projection = {};
+                    for (var p = 0; p < keysSaved.keys.length; p++) {
+                        projection[keysSaved.keys[p]] = 1;
+                    }
+                }
+            }
+
+            if (!good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
                 return this.getData(collection, id, query, projection, multi);
             }
             else {
                 this.data[collection][id].last_used = Date.now();
+
                 return new Promise((resolve) => {
                     resolve(this.data[collection][id].data);
                 });
