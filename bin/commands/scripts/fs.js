@@ -1,4 +1,5 @@
 var countlyFs = require("../../../api/utils/countlyFs");
+var pluginManager = require("../../../plugins/pluginManager");
 var fs = require("fs");
 var path = require("path");
 var async = require("async");
@@ -100,16 +101,19 @@ var conversions = {
     "gridfs": {"fs": gridfs2fs}
 };
 
-if (myArgs[0] == "migrate") {
-    if (myArgs[1] && myArgs[2] && conversions[myArgs[1]] && conversions[myArgs[1]][myArgs[2]]) {
-        conversions[myArgs[1]][myArgs[2]]();
+pluginManager.dbConnection("countly_fs").then((db) => {
+    countlyFs.setHandler(db);
+    if (myArgs[0] == "migrate") {
+        if (myArgs[1] && myArgs[2] && conversions[myArgs[1]] && conversions[myArgs[1]][myArgs[2]]) {
+            conversions[myArgs[1]][myArgs[2]]();
+        }
+        else {
+            console.log("Storage from", myArgs[1], "to", myArgs[2], "not supported");
+            countlyFs.getHandler().close();
+        }
     }
     else {
-        console.log("Storage from", myArgs[1], "to", myArgs[2], "not supported");
+        console.log("Command", myArgs[0], "not supported");
         countlyFs.getHandler().close();
     }
-}
-else {
-    console.log("Command", myArgs[0], "not supported");
-    countlyFs.getHandler().close();
-}
+});

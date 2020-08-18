@@ -428,25 +428,6 @@ const moment = require('moment-timezone');
         }
     };
 
-    /**
-     * @param {database} givenDb db link
-     * @param {function} callback callback
-     */
-    function checkIfDbOpened(givenDb, callback) {
-        if (givenDb.isOpen()) {
-            callback();
-        }
-        else {
-            givenDb._emitter.once('open', function(err) {
-                if (!_.isUndefined(err) && err !== null) {
-                    log.e('Failure in checkIfDbOpened, err:[%j]', err);
-                }
-                log.e('Trying to pass "null" dataBatch in doNotificationShowAmountUpdateBulk');
-                callback();
-            });
-        }
-    }
-
     const doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback) {
         //log.d('About to do doNotificationShowAmountUpdateBulk');
 
@@ -468,21 +449,18 @@ const moment = require('moment-timezone');
             return;
         }
 
-        checkIfDbOpened(db, function() {
-            const nativeDb = db._native;
-            nativeDb.collection(db_name_config, {}, function(err, collection) {
-                const bulk = collection.initializeUnorderedBulkOp();
+        db.collection(db_name_config, {}, function(err, collection) {
+            const bulk = collection.initializeUnorderedBulkOp();
 
-                dataBatch.forEach(function(batchElem) {
-                    bulk.find({_id: batchElem.appID}).upsert().update({$inc: batchElem.updateQuery});
-                });
+            dataBatch.forEach(function(batchElem) {
+                bulk.find({_id: batchElem.appID}).upsert().update({$inc: batchElem.updateQuery});
+            });
 
-                bulk.execute(function(errCheckDbOpened, resCheckDbOpened) {
-                    log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', errCheckDbOpened, resCheckDbOpened);
-                    if (callback !== null) {
-                        callback(errCheckDbOpened, resCheckDbOpened);
-                    }
-                });
+            bulk.execute(function(errCheckDbOpened, resCheckDbOpened) {
+                log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', errCheckDbOpened, resCheckDbOpened);
+                if (callback !== null) {
+                    callback(errCheckDbOpened, resCheckDbOpened);
+                }
             });
         });
     };
@@ -611,12 +589,6 @@ const moment = require('moment-timezone');
                         assistantGlobalCommon.appsData = result_apps_data;
                         require("./assistantJobGeneral").prepareNotifications(countlyDb, assistantGlobalCommon).then(function(err) {
                             seriesCallback(err);
-                        });
-                    },
-                    function(seriesCallback) {
-                        log.d('Waiting for db connection');
-                        checkIfDbOpened(countlyDb, function() {
-                            seriesCallback();
                         });
                     },
                     function(seriesCallback) {

@@ -136,24 +136,21 @@ var plugin = {},
                 var limit = plugins.getConfig("api", params.app && params.app.plugins, true).event_limit;
                 var overLimit = eventData.list.count > limit;
 
-                common.db.onOpened(function() {
-                    var bulk = common.db._native.collection(collectionName).initializeUnorderedBulkOp();
+                var bulk = common.db.collection(collectionName).initializeUnorderedBulkOp();
 
+                Object.keys(query).forEach(function(key) {
+                    var queryObject = query[key];
+                    var s = queryObject.update.$set.s;
 
-                    Object.keys(query).forEach(function(key) {
-                        var queryObject = query[key];
-                        var s = queryObject.update.$set.s;
-
-                        if (s === "[CLY]_session" || !overLimit || (overLimit && eventData.list.indexOf(s) >= 0)) {
-                            bulk.find(queryObject.criteria).upsert().updateOne(queryObject.update);
-                        }
-                    });
-
-
-                    if (bulk.length > 0) {
-                        bulk.execute(function() {});
+                    if (s === "[CLY]_session" || !overLimit || (overLimit && eventData.list.indexOf(s) >= 0)) {
+                        bulk.find(queryObject.criteria).upsert().updateOne(queryObject.update);
                     }
                 });
+
+
+                if (bulk.length > 0) {
+                    bulk.execute(function() {});
+                }
             });
         }
 

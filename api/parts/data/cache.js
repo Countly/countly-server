@@ -721,38 +721,33 @@ class CacheMaster {
  */
 function createCollection(db, name, size = 1e7) {
     return new Promise((resolve, reject) => {
-        db.onOpened(() => {
-            if (!db._native) {
-                return setTimeout(() => {
-                    createCollection(db, name, size).then(resolve, reject);
-                }, 1000);
+        db.createCollection(name, {capped: true, size: size}, (e) => {
+            if (e && e.codeName !== "NamespaceExists") {
+                log.e(`Error while creating capped collection ${name}:`, e);
+                return reject(e);
             }
-            db._native.createCollection(name, {capped: true, size: size}, (e, col) => {
-                if (e) {
-                    log.e(`Error while creating capped collection ${name}:`, e);
-                    return reject(e);
-                }
 
-                col.find().sort({_id: -1}).limit(1).toArray((err, arr) => {
-                    if (err) {
-                        log.e(`Error while looking for last record in ${name}:`, err);
-                        return reject(err);
-                    }
-                    if (arr && arr.length) {
-                        log.d('Last change id %s', arr[0]._id);
-                        resolve([col, arr[0]._id]);
-                    }
-                    else {
-                        col.insertOne({first: true}, (error, res) => {
-                            if (error) {
-                                log.e(`Error while looking for last record in ${name}:`, error);
-                                return reject(e);
-                            }
-                            log.d('Inserted first change id %s', res.insertedId);
-                            resolve([col, res.insertedId]);
-                        });
-                    }
-                });
+            let col = db.collection(name);
+
+            col.find().sort({_id: -1}).limit(1).toArray((err, arr) => {
+                if (err) {
+                    log.e(`Error while looking for last record in ${name}:`, err);
+                    return reject(err);
+                }
+                if (arr && arr.length) {
+                    log.d('Last change id %s', arr[0]._id);
+                    resolve([col, arr[0]._id]);
+                }
+                else {
+                    col.insertOne({first: true}, (error, res) => {
+                        if (error) {
+                            log.e(`Error while looking for last record in ${name}:`, error);
+                            return reject(e);
+                        }
+                        log.d('Inserted first change id %s', res.insertedId);
+                        resolve([col, res.insertedId]);
+                    });
+                }
             });
         });
     });

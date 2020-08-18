@@ -360,7 +360,7 @@ exports.fromDatabase = function(options) {
         query: options.query
     });
 
-    var cursor = options.db._native.collection(options.collection).find(options.query, {"projection": options.projection});
+    var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
     if (options.sort) {
         cursor.sort(options.sort);
     }
