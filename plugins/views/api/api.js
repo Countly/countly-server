@@ -1152,6 +1152,74 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         return false;
     });
 
+    /**
+	* @param   {object} params - params object
+     * @param  {string} collection - collection name
+	 * @param  {object} query - query object
+	 * @param  {object} update - update object(for find and modify)
+	 * @param  {object} options - db options object
+	 * @param  {function} callback - callback function
+     */
+    function getViewNameObject(params, collection, query, update, options, callback) {
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).batch_read_processing === true) {
+            common.readBatcher.getOne(collection, query, (err, view) => {
+                if (view) {
+                    var good_value = true;
+                    if (update && update.$set) {
+                        for (var k in update.$set) {
+                            if (common.getDescendantProp(view, k) !== update.$set[k]) {
+                                good_value = false;
+                            }
+                        }
+                    }
+                    if (good_value) { //current record have same values - so keep them
+                        callback(err, view);
+                    }
+                    else { //current record has different values - find and modify;
+                        common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
+                            callback(err2, view2);
+                        });
+                    }
+                }
+                else {
+                    if (err) {
+                        callback(err, view);
+                    }
+                    if (update) {
+                        //we have no error and have no data - so we don't have record. Run find and modify
+                        common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
+                            if (view2 && view2.value) {
+                                callback(err, view2.value);
+                            }
+                            else {
+                                callback(err, null);
+                            }
+                        });
+                    }
+                    else {
+                        callback(err, view);
+                    }
+                }
+            });
+        }
+        else { //no batch processing. run as before.
+            if (update) {
+                common.db.collection(collection).findAndModify(query, {}, update, options, function(err, view) {
+                    if (view && view.value) {
+                        callback(err, view.value);
+                    }
+                    else {
+                        callback(err, null);
+                    }
+                });
+            }
+            else {
+                common.db.collection(collection).findOne(query, function(err, view) {
+                    callback(err, view);
+                });
+            }
+        }
+    }
     plugins.register("/session/post", function(ob) {
         var params = ob.params;
         var user = params.app_user;
@@ -1195,23 +1263,23 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
             if (user.lv) {
                 var segmentation = {name: user.lv.replace(/^\$/, "").replace(/\./g, "&#46;"), exit: 1};
-                common.db.collection('app_viewsmeta' + params.app_id).findAndModify({'view': segmentation.name}, {}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
+                getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
                     if (err) {
                         log.e(err);
                     }
-                    if (view && view.value) {
+                    if (view) {
                         common.db.collection('app_userviews' + params.app_id).findOne({'_id': user.uid}, function(err2, view2) {
                             var LastTime = 0;
-                            if (view2 && view2[view.value._id]) {
-                                LastTime = view2[view.value._id].ts;
+                            if (view2 && view2[view._id]) {
+                                LastTime = view2[view._id].ts;
                             }
                             if (ob.end_session || LastTime && params.time.timestamp - LastTime < 60) {
                                 if (parseInt(user.vc) === 1) {
                                     segmentation.bounce = 1;
                                 }
                                 params.viewsNamingMap = params.viewsNamingMap || {};
-                                params.viewsNamingMap[segmentation.name] = view.value._id;
-                                recordMetrics(params, {"viewAlias": view.value._id, key: "[CLY]_view", segmentation: segmentation}, user);
+                                params.viewsNamingMap[segmentation.name] = view._id;
+                                recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
                             }
                         });
                     }
@@ -1221,7 +1289,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
     });
 
-    plugins.register("/i", function(ob) {
+    plugins.register("/sdk/user_properties", function(ob) {
         return new Promise(function(resolve) {
             var params = ob.params;
             if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
@@ -1233,7 +1301,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 //do this before to make sure they are not processed before duration is added
                 var current_views = {};
                 var haveViews = false;
-
+                var update;
                 for (var p = 0; p < params.qstring.events.length; p++) {
                     var currE = params.qstring.events[p];
                     if (currE.key === "[CLY]_view") {
@@ -1253,6 +1321,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     params.qstring.events[p].dur = 0; //not use duration from this one anymore;
                                 }
                             }
+                            //App Users update
+                            update = {$set: {lv: currE.segmentation.name}};
+                            if (currE.segmentation.visit) {
+                                update.$inc = {vc: 1};
+                                update.$max = {lvt: params.time.timestamp};
+                            }
+                            ob.updates.push(update);
+
                         }
                     }
                     else if (currE.key === "[CLY]_action") {
@@ -1260,7 +1336,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                 }
                 if (haveViews) {
-                    common.db.collection("views").findOne({'_id': params.app_id}, {}, function(err3, viewInfo) {
+                    common.readBatcher.getOne("views", {'_id': common.db.ObjectID(params.app_id)}, (err3, viewInfo) => {
                         params.qstring.events = params.qstring.events.filter(function(currEvent) {
                             if (currEvent.timestamp) {
                                 params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
@@ -1342,13 +1418,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param  {Object} viewInfo - Object with info about segmentation
      */
     function processView(params, currEvent, viewInfo) {
-        var update = {$set: {lv: currEvent.segmentation.name}};
-        if (currEvent.segmentation.visit) {
-            update.$inc = {vc: 1};
-            update.$max = {lvt: params.time.timestamp};
-        }
-        common.updateAppUser(params, update);
-        //getting this view base data
         var updateData = {};
 
 
@@ -1372,11 +1441,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (total >= plugins.getConfig("views").view_limit) {
                     options.upsert = false;
                 }
-
-                common.db.collection('app_viewsmeta' + params.app_id).findAndModify(query, {}, {$set: updateData}, options, function(err, view) {
-                    if (view && view.value && view.value._id) {
-                        params.viewsNamingMap[currEvent.segmentation.name] = view.value._id;
-                        var escapedMetricVal = common.db.encode(view.value._id + "");
+                getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, {$set: updateData}, options, function(err, view) {
+                    if (view && view._id) {
+                        params.viewsNamingMap[currEvent.segmentation.name] = view._id;
+                        var escapedMetricVal = common.db.encode(view._id + "");
                         currEvent.viewAlias = escapedMetricVal;
                         processingData(currEvent, params, viewInfo);
                     }
@@ -1385,7 +1453,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         else if (currEvent.segmentation.view) {
             query = {$or: [{'view': currEvent.segmentation.view}, {'url': currEvent.segmentation.view}]};
-            common.db.collection('app_viewsmeta' + params.app_id).findOne(query, function(err, view) {
+            getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, null, null, function(err, view) {
                 if (view) {
                     currEvent.viewAlias = common.db.encode(view._id + "");
                     processingData(currEvent, params, viewInfo);
