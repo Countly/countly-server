@@ -1333,14 +1333,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                     else if (currE.key === "[CLY]_action") {
                         haveViews = true;
-                        if (currE.segmentation && currE.segmentation.name) {
-                            update = {$set: {lv: currE.segmentation.name}};
-                            if (currE.segmentation.visit) {
-                                update.$inc = {vc: 1};
-                                update.$max = {lvt: params.time.timestamp};
-                            }
-                            ob.updates.push(update);
-                        }
                     }
                 }
                 if (haveViews) {
