@@ -46,6 +46,28 @@
                         Selected value: {{selectedRadio}}
                     </div>
                 </div>
+                <div class="example-component">
+                    <div class="example-cell">
+                        Checkbox (flag)
+                    </div>
+                    <div class="example-cell">
+                        <cly-check v-bind:label="'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'" v-model="selectedCheckFlag"></cly-check>
+                    </div>
+                    <div class="example-cell">
+                        Selected value: {{selectedCheckFlag}}
+                    </div>
+                </div>
+                <div class="example-component">
+                    <div class="example-cell">
+                        Checkbox (list)
+                    </div>
+                    <div class="example-cell">
+                        <cly-check-list v-bind:items="availableCheck" v-model="selectedCheck"></cly-check-list>
+                    </div>
+                    <div class="example-cell">
+                        Selected value: {{selectedCheck}}
+                    </div>
+                </div>
             </cly-panel>
         </cly-tab>
     </cly-tabs>

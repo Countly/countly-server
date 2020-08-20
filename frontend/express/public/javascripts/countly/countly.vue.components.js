@@ -1244,4 +1244,54 @@
         }
     });
 
+
+    Vue.component("cly-check", {
+        template: '<div class="cly-vue-check">\
+                        <div class="check-wrapper">\
+                            <input type="checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
+                            <label v-bind:for="\'cb_\'">{{label}}</label>\
+                        </div>\
+                    </div>',
+        props: {
+            value: {required: true, type: Boolean},
+            label: {type: String}
+        },
+        methods: {
+            setValue: function(e) {
+                this.$emit('input', e);
+            }
+        }
+    });
+
+
+    Vue.component("cly-check-list", {
+        template: '<div class="cly-vue-check">\
+                        <div class="check-wrapper">\
+                            <template v-for="(item, i) in items" :key="i">\
+                                <input type="checkbox" v-bind:id="\'cb_\' + i" v-bind:value="item.value" v-model="internalValue">\
+                                <label v-bind:for="\'cb_\' + i">{{item.text}}</label>\
+                            </template>\
+                        </div>\
+                    </div>',
+        props: {
+            value: {required: true},
+            items: {required: true},
+        },
+        data: function() {
+            return {
+                internalValue: this.value
+            };
+        },
+        methods: {
+            setValue: function(e) {
+                this.$emit('input', e);
+            }
+        },
+        watch: {
+            internalValue: function() {
+                this.setValue(this.internalValue);
+            }
+        }
+    });
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
