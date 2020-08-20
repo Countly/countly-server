@@ -59,6 +59,26 @@ var TableView = countlyVue.views.BaseView.extend({
                     },
                 },
                 {
+                    type: "raw",
+                    options: {
+                        dataType: "numeric",
+                        title: "Value"
+                    },
+                    viewFn: function(row, type) {
+                        if (type === "display") {
+                            var stringBuffer = ['<div class="on-off-switch">'];
+                            stringBuffer.push("<strong>My value is ");
+                            stringBuffer.push(row.value);
+                            stringBuffer.push('</strong>');
+                            stringBuffer.push('</div>');
+                            return stringBuffer.join('');
+                        }
+                        else {
+                            return row.value;
+                        }
+                    }
+                },
+                {
                     type: "options",
                     items: [
                         {

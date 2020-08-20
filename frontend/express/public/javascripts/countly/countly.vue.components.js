@@ -683,6 +683,11 @@
                             };
                         }
                     }
+                    else if (column.type === "raw") {
+                        nativeColumn = {
+                            "mData": column.viewFn
+                        };
+                    }
 
                     if (column.options) {
                         // default mappings to dt
