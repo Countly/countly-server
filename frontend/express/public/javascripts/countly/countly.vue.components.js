@@ -793,22 +793,18 @@
                 });
             },
             optionEvent: function(action) {
-                var self = this;
-                if (action.undo) {
-                    var focusedRef = this.focusedRow;
-                    this.$emit(action.event, focusedRef, function(goAhead) {
-                        if (goAhead) {
-                            self.softAction(focusedRef, action.undo.message, {
-                                commit: function() {
-                                    self.$emit(action.undo.commit, focusedRef);
-                                }
-                            });
-                        }
-                    });
-                }
-                else {
-                    this.$emit(action.event, this.focusedRow);
-                }
+                var self = this,
+                    focusedRef = this.focusedRow;
+
+                this.$emit(action.event, focusedRef, function(options) {
+                    if (options.undo) {
+                        self.softAction(focusedRef, options.undo.message, {
+                            commit: function() {
+                                self.$emit(options.undo.commit, focusedRef);
+                            }
+                        });
+                    }
+                });
             }
         },
         watch: {
