@@ -4,8 +4,7 @@ var testUtils = require("../testUtils");
 request = request(testUtils.url);
 
 var plugins = require("../../plugins/pluginManager");
-var db = plugins.dbConnection();
-
+var dbdrill;
 var crypto = require('crypto');
 var API_KEY_ADMIN = "";
 var API_KEY_USER = "";
@@ -35,12 +34,14 @@ function generate_data(z) {
             });
     });
 }
+
 describe('Testing event settings', function() {
     describe('setting test data', function() {
         it('create test events', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
+            dbdrill = testUtils.client.db("countly_drill");
             var params = [
                 {"key": "test1", "count": 1},
                 {"key": "test2", "count": 1, "sum": 5, "dur": 10}];
@@ -288,7 +289,7 @@ describe('Testing event settings', function() {
 
         it('checking for segmentation in  collections(test3)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
-            db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["my_segment", "my_segment2"]}}).toArray(function(err, res) {
+            testUtils.db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["my_segment", "my_segment2"]}}).toArray(function(err, res) {
                 if (res.length > 0) {
                     done();
                 }
@@ -301,7 +302,7 @@ describe('Testing event settings', function() {
 
         it('checking for segmentation in  collections(t1)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
-            db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["s"]}}).toArray(function(err, res) {
+            testUtils.db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["s"]}}).toArray(function(err, res) {
                 if (res.length > 0) {
                     done();
                 }
@@ -315,7 +316,6 @@ describe('Testing event settings', function() {
         /*if(plugins.isPluginEnabled('drill'))
         {
             it('check if biglist is created ', function(done){
-                var dbdrill = plugins.dbConnection('countly_drill');
                 var event = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
                 dbdrill.collection("drill_meta" + APP_ID).findOne({_id:{$in:["meta_"+event+"_sg.s"]}},function(err,res) {
                     if(res)
@@ -364,7 +364,7 @@ describe('Testing event settings', function() {
 
         it('checking for segmentation in  collections(test3)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
-            db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["my_segment"]}}).toArray(function(err, res) {
+            testUtils.db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["my_segment"]}}).toArray(function(err, res) {
                 if (res.length == 0) {
                     done();
                 }
@@ -376,7 +376,6 @@ describe('Testing event settings', function() {
 
         if (plugins.isPluginEnabled('drill')) {
             it('checking if drill db ', function(done) {
-                var dbdrill = plugins.dbConnection('countly_drill');
                 var event = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
                 dbdrill.collection("drill_meta" + APP_ID).findOne({_id: "meta_" + event}, function(err, res) {
                     res.should.have.property("sg", {"my_segment": {"type": "s"}, "my_segment2": {"type": "l", "values": {"value": true}}});
@@ -428,7 +427,7 @@ describe('Testing event settings', function() {
 
         it('checking for segmentation in  collections(test3)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
-            db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["my_segment"]}}).toArray(function(err, res) {
+            testUtils.db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["my_segment"]}}).toArray(function(err, res) {
                 if (res.length == 0) {
                     done();
                 }
@@ -479,7 +478,7 @@ describe('Testing event settings', function() {
 
         it('checking for segmentation in  collections(t1)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
-            db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["s"]}}).toArray(function(err, res) {
+            testUtils.db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["s"]}}).toArray(function(err, res) {
                 if (res.length == 0) {
                     done();
                 }
@@ -490,7 +489,6 @@ describe('Testing event settings', function() {
         });
         if (plugins.isPluginEnabled('drill')) {
             it('checking if drill db ', function(done) {
-                var dbdrill = plugins.dbConnection('countly_drill');
                 var event = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
                 dbdrill.collection("drill_meta" + APP_ID).findOne({_id: "meta_" + event}, function(err, res) {
                     res.should.have.property("sg", {"s": {"type": "s"}});
@@ -499,7 +497,6 @@ describe('Testing event settings', function() {
             });
 
             it('check if biglist removed ', function(done) {
-                var dbdrill = plugins.dbConnection('countly_drill');
                 var event = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
                 dbdrill.collection("drill_meta" + APP_ID).findOne({_id: {$in: ["meta_" + event + "_sg.s"]}}, function(err, res) {
                     if (!res) {

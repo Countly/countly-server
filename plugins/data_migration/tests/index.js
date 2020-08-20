@@ -3,7 +3,6 @@ var should = require('should');
 var testUtils = require("../../../test/testUtils");
 //var request = request(testUtils.url);
 var request = request.agent(testUtils.url);
-var plugins = require("../../pluginManager");
 var path = require("path");
 var fs = require("fs"),
     readline = require('readline'),
@@ -17,7 +16,7 @@ var APP_ID = "";
 
 var testapp = "";
 var test_export_id = "";
-var db = plugins.dbConnection();
+
 //Validating empty upload+ logging in
 
 var TIMEOUT_FOR_DATA_MIGRATION_TEST = 10000;
@@ -360,7 +359,7 @@ describe("Testing data migration plugin", function() {
         });
 
         it("Setting up data to emulate running export", function(done) {
-            db.collection("data_migrations").update({_id: test_export_id}, {$set: {"status": "progress"}}, {upsert: true}, function(err, res) {
+            testUtils.db.collection("data_migrations").update({_id: test_export_id}, {$set: {"status": "progress"}}, {upsert: true}, function(err, res) {
                 if (err) {
                     done(err);
                 }
@@ -860,7 +859,7 @@ describe("Testing data migration plugin", function() {
         });
 
         it('delete collection', function(done) {
-            db.collection("data_migrations").drop(function(err, res) {
+            testUtils.db.collection("data_migrations").drop(function(err, res) {
                 if (err) {
                     return done(err);
                 }
@@ -883,7 +882,6 @@ describe("Testing data migration plugin", function() {
                     }
                     var ob = JSON.parse(res.text);
                     (ob.result).should.be.exactly("You don't have any exports");
-                    db.close();
                     done();
                 });
         });

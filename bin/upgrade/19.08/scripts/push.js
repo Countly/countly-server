@@ -5,8 +5,7 @@
 var fs = require('fs'),
     path = require('path'),
     pluginManager = require('../../../../plugins/pluginManager.js'),
-    N = require('../../../../plugins/push/api/parts/note.js'),
-    db = pluginManager.dbConnection();
+    N = require('../../../../plugins/push/api/parts/note.js');
 
 console.log('Installing push plugin');
 
@@ -31,16 +30,8 @@ process.on('unhandledRejection', (reason, p) => {
     process.exit(1);
 });
 
-function awaitDb() {
-    return new Promise(res => {
-        db.onOpened(() => {
-            res(db._native);
-        });
-    });
-}
-
 async function install() {
-    let db = await awaitDb(),
+    let db = await pluginManager.dbConnection(),
         apps = db.collection('apps').find(),
         ret;
 

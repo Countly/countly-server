@@ -105,9 +105,7 @@ var plugin = {},
                     setTimeout(getServerStats, timeout);
                 });
             };
-            common.db.onOpened(function() {
-                getServerStats();
-            });
+            getServerStats();
         }
     });
 }(plugin));

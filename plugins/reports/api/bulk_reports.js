@@ -3,7 +3,7 @@
 var plugins = require('../../pluginManager.js'),
     async = require("async"),
     reports = require("./reports");
-var countlyDb = plugins.dbConnection();
+plugins.dbConnection().then((countlyDb) => {
 //load configs
 plugins.loadConfigs(countlyDb, function(){
     var cache = {};
@@ -39,4 +39,5 @@ plugins.loadConfigs(countlyDb, function(){
             process.exit();
         });
     })
+});
 });*/

@@ -10,7 +10,7 @@ var TableView = countlyVue.views.BaseView.extend({
     data: function() {
         var self = this;
         return {
-            targetName: "John Doe",
+            targetName: "",
             targetValue: 0,
             tableKeyFn: function(row) {
                 return row._id;
@@ -36,7 +36,7 @@ var TableView = countlyVue.views.BaseView.extend({
                         title: "ID"
                     },
                     dt: {
-                        "sWidth": "3%"
+                        "sWidth": "4%"
                     },
                 },
                 {
@@ -47,7 +47,7 @@ var TableView = countlyVue.views.BaseView.extend({
                         title: "Name"
                     },
                     dt: {
-                        "sWidth": "20%"
+                        "sWidth": "15%"
                     },
                 },
                 {
@@ -57,6 +57,35 @@ var TableView = countlyVue.views.BaseView.extend({
                         dataType: "numeric",
                         title: "Value"
                     },
+                    dt: {
+                        "sWidth": "15%"
+                    },
+                },
+                {
+                    type: "raw",
+                    options: {
+                        dataType: "numeric",
+                        title: "Custom"
+                    },
+                    viewFn: function(row, type) {
+                        if (type === "display") {
+                            var stringBuffer = ['<div class="on-off-switch">'];
+                            stringBuffer.push("<strong><div class='custom-action-trigger'>Click to delete this</strong></div>");
+                            stringBuffer.push('</div>');
+                            return stringBuffer.join('');
+                        }
+                        else {
+                            return row.value;
+                        }
+                    },
+                    customActions: [{
+                        selector: ".custom-action-trigger",
+                        event: "click",
+                        action: {"event": "try-delete-record"}
+                    }],
+                    dt: {
+                        "sWidth": "15%"
+                    }
                 },
                 {
                     type: "options",
@@ -69,13 +98,7 @@ var TableView = countlyVue.views.BaseView.extend({
                         {
                             icon: "fa fa-trash",
                             label: "Delete (with undo)",
-                            action: {
-                                "event": "try-delete-record",
-                                "undo": {
-                                    "commit": "delete-record",
-                                    "message": "You deleted a record."
-                                }
-                            },
+                            action: {"event": "try-delete-record"},
                             disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
                         }
                     ],
@@ -84,22 +107,35 @@ var TableView = countlyVue.views.BaseView.extend({
                     }
                 }
             ],
+            typedText: 'Type sth...',
             selectedRadio: 2,
             availableRadio: [
-                {text: "Type 1", value: 1},
-                {text: "Type 2", value: 2},
-                {text: "Type 3", value: 3, description: "Some description..."},
+                {label: "Type 1", value: 1},
+                {label: "Type 2", value: 2},
+                {label: "Type 3", value: 3, description: "Some description..."},
+            ],
+            selectedCheckFlag: true,
+            selectedCheck: [1, 2],
+            availableCheck: [
+                {label: "Type 1", value: 1},
+                {label: "Type 2", value: 2},
+                {label: "Type 3", value: 3},
             ]
         };
     },
     methods: {
         add: function() {
-            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
-            this.targetName = "";
+            this.targetName = "Your data, your rules.";
             this.targetValue += 1;
+            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
         },
         onTryDelete: function(row, callback) {
-            callback(true);
+            callback({
+                "undo": {
+                    "commit": "delete-record",
+                    "message": "You deleted a record."
+                }
+            });
         },
         onDelete: function(row) {
             this.$store.commit("vueExample/deletePairById", row._id);

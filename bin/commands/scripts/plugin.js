@@ -5,19 +5,20 @@ var manager = require('../../../plugins/pluginManager.js'),
 var plugins = manager.getPlugins();
 var myArgs = process.argv.slice(2);
 function save_changes(data) {
-    var db = manager.dbConnection();
-    manager.loadConfigs(db, function() {
-        if (manager.getConfig("api").sync_plugins) {
-            manager.updateConfigs(db, "plugins", data, function() {
+    manager.dbConnection().then((db) => {
+        manager.loadConfigs(db, function() {
+            if (manager.getConfig("api").sync_plugins) {
+                manager.updateConfigs(db, "plugins", data, function() {
+                    db.close();
+                });
+            }
+            else {
                 db.close();
+            }
+            var dir = path.resolve(__dirname, '../../../plugins/plugins.json');
+            fs.writeFile(dir, JSON.stringify(plugins), 'utf8', function() {
+                console.log("Changes saved");
             });
-        }
-        else {
-            db.close();
-        }
-        var dir = path.resolve(__dirname, '../../../plugins/plugins.json');
-        fs.writeFile(dir, JSON.stringify(plugins), 'utf8', function() {
-            console.log("Changes saved");
         });
     });
 }

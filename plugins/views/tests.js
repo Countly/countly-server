@@ -2,8 +2,6 @@ var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request.agent(testUtils.url);
-var plugins = require("./../pluginManager");
-var db = plugins.dbConnection();
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
@@ -547,7 +545,7 @@ describe('Testing views plugin', function() {
     describe('Validating user merging', function() {
         it('getting Info about users', function(done) {
 
-            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
                         userObject[res[k].userinfo[0].did] = res[k];
@@ -576,7 +574,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -611,7 +609,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -647,7 +645,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -727,7 +725,7 @@ describe('Testing views plugin', function() {
                     var isSet = false;
                     for (var k = 0; k < resDecoded.aaData.length; k++) {
                         if (resDecoded.aaData[k].view == 'testview9Ze') {
-                            if (resDecoded.aaData[k].domain[db.encode("www.kakis.lv")] && resDecoded.aaData[k].domain[db.encode("www.kakis.lv")] == true) {
+                            if (resDecoded.aaData[k].domain[testUtils.db.encode("www.kakis.lv")] && resDecoded.aaData[k].domain[testUtils.db.encode("www.kakis.lv")] == true) {
                                 done();
                                 isSet = true;
                             }
@@ -801,12 +799,8 @@ describe('Testing views plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 20 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
-        });
-        it('closing db', function(done) {
-            db.close();
-            done();
         });
     });
 

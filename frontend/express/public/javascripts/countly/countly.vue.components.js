@@ -572,7 +572,7 @@
 
     // New components
 
-    Vue.component("cly-datatable", {
+    Vue.component("cly-datatable-w", {
         template: '<div class="cly-vue-datatable-wrapper" ref="wrapper">\
                         <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
                             <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
@@ -587,7 +587,7 @@
                 tableInstance: null,
                 optionItems: [],
                 focusedRow: null,
-                columnEvents: null,
+                customActions: null,
                 lastCol: 0,
                 finalizedNativeColumns: null
             };
@@ -617,7 +617,7 @@
                 var self = this,
                     nativeColumns = [];
 
-                self.columnEvents = {};
+                self.customActions = [];
 
                 this.columns.forEach(function(column) {
                     var nativeColumn = null;
@@ -678,9 +678,48 @@
                             "bSortable": false
                         };
                         if (column.onChange) {
-                            self.columnEvents["cly-dt-col-" + self.lastCol] = {
-                                onChange: column.onChange
-                            };
+                            self.customActions.push({
+                                "selector": ".on-off-switch-checkbox",
+                                "event": "change",
+                                "_columnSelector": ".cly-dt-col-" + self.lastCol,
+                                "_handlerFn": function() {
+                                    var rowEl = $(this).parents("tr");
+                                    var cbx = $(this);
+                                    var newValue = $(this).is(":checked");
+                                    column.onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
+                                        if (revert) {
+                                            cbx.prop("checked", !newValue);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                    else if (column.type === "raw") {
+                        nativeColumn = {
+                            "mData": column.viewFn
+                        };
+                        if (column.customActions) {
+                            column.customActions.forEach(function(customAction) {
+                                self.customActions.push({
+                                    "selector": customAction.selector,
+                                    "event": customAction.event,
+                                    "_columnSelector": ".cly-dt-col-" + self.lastCol,
+                                    "_handlerFn": function() {
+                                        var rowEl = $(this).parents("tr");
+                                        var rowData = rowEl.data("cly-row-data");
+                                        self.$emit(customAction.action.event, rowData, function(options) {
+                                            if (options.undo) {
+                                                self.softAction(rowData, options.undo.message, {
+                                                    commit: function() {
+                                                        self.$emit(options.undo.commit, rowData);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            });
                         }
                     }
 
@@ -739,21 +778,11 @@
                         self.focusedRow = rowData;
                     });
                 }
-                $(self.$refs.dtable).find("tbody").on("change", ".on-off-switch input", function() {
-                    var colEl = $(this).parents("td.cly-dt-col");
-                    var colId = colEl.attr("class").split(/\s+/).filter(function(cls) {
-                        return cls.startsWith("cly-dt-col-");
-                    })[0];
-                    if (self.columnEvents[colId] && self.columnEvents[colId].onChange) {
-                        var rowEl = $(this).parents("tr");
-                        var cbx = $(this);
-                        var newValue = $(this).is(":checked");
-                        self.columnEvents[colId].onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
-                            if (revert) {
-                                cbx.prop("checked", !newValue);
-                            }
-                        });
-                    }
+                self.customActions.forEach(function(customAction) {
+                    $(self.$refs.dtable).find("tbody").on(
+                        customAction.event,
+                        customAction._columnSelector + " " + customAction.selector,
+                        customAction._handlerFn);
                 });
             },
             refresh: function() {
@@ -793,22 +822,18 @@
                 });
             },
             optionEvent: function(action) {
-                var self = this;
-                if (action.undo) {
-                    var focusedRef = this.focusedRow;
-                    this.$emit(action.event, focusedRef, function(goAhead) {
-                        if (goAhead) {
-                            self.softAction(focusedRef, action.undo.message, {
-                                commit: function() {
-                                    self.$emit(action.undo.commit, focusedRef);
-                                }
-                            });
-                        }
-                    });
-                }
-                else {
-                    this.$emit(action.event, this.focusedRow);
-                }
+                var self = this,
+                    focusedRef = this.focusedRow;
+
+                this.$emit(action.event, focusedRef, function(options) {
+                    if (options.undo) {
+                        self.softAction(focusedRef, options.undo.message, {
+                            commit: function() {
+                                self.$emit(options.undo.commit, focusedRef);
+                            }
+                        });
+                    }
+                });
             }
         },
         watch: {
@@ -896,7 +921,7 @@
                             </div>\
                             <div class="right">\
                                 <slot name="right-top">\
-                                    <cly-global-date-selector v-once v-if="dateSelector"></cly-global-date-selector>\
+                                    <cly-global-date-selector-w v-once v-if="dateSelector"></cly-global-date-selector-w>\
                                 </slot>\
                             </div>\
                         </div>\
@@ -910,7 +935,7 @@
         },
     });
 
-    Vue.component("cly-global-date-selector", {
+    Vue.component("cly-global-date-selector-w", {
         template: '<div class="cly-vue-global-date-selector help-zone-vs">\
                         <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
                             <i class="material-icons">date_range</i>\
@@ -1138,7 +1163,7 @@
         }
     });
 
-    Vue.component("cly-time-graph", {
+    Vue.component("cly-time-graph-w", {
         template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
         props: {
             data: function() {
@@ -1190,7 +1215,7 @@
                         <div class="radio-wrapper">\
                             <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
                                 <div class="box"></div>\
-                                <div class="text">{{item.text}}</div>\
+                                <div class="text">{{item.label}}</div>\
                                 <div class="description">{{item.description}}</div>\
                             </div>\
                         </div>\
@@ -1202,6 +1227,71 @@
         methods: {
             setValue: function(e) {
                 this.$emit('input', e);
+            }
+        }
+    });
+
+
+    Vue.component("cly-text-field", {
+        template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">',
+        props: {
+            value: {required: true}
+        },
+        methods: {
+            setValue: function(e) {
+                this.$emit('input', e);
+            }
+        }
+    });
+
+
+    Vue.component("cly-check", {
+        template: '<div class="cly-vue-check">\
+                        <div class="check-wrapper">\
+                            <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
+                            <label class="switch-theme-label" v-bind:for="\'cb_\'"></label>\
+                            <span class="switch-theme-text">{{label}}</span>\
+                        </div>\
+                    </div>',
+        props: {
+            value: {required: true, type: Boolean},
+            label: {type: String}
+        },
+        methods: {
+            setValue: function(e) {
+                this.$emit('input', e);
+            }
+        }
+    });
+
+
+    Vue.component("cly-check-list", {
+        template: '<div class="cly-vue-check">\
+                        <template v-for="(item, i) in items" :key="i">\
+                            <div class="check-wrapper">\
+                                <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\' + i" v-bind:value="item.value" v-model="internalValue">\
+                                <label class="switch-theme-label" v-bind:for="\'cb_\' + i"></label>\
+                                <span class="switch-theme-text">{{item.label}}</span>\
+                            </div>\
+                        </template>\
+                    </div>',
+        props: {
+            value: {required: true},
+            items: {required: true},
+        },
+        data: function() {
+            return {
+                internalValue: this.value
+            };
+        },
+        methods: {
+            setValue: function(e) {
+                this.$emit('input', e);
+            }
+        },
+        watch: {
+            internalValue: function() {
+                this.setValue(this.internalValue);
             }
         }
     });
