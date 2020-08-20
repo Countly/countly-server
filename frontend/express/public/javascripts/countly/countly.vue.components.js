@@ -1231,4 +1231,17 @@
         }
     });
 
+
+    Vue.component("cly-text-field", {
+        template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">',
+        props: {
+            value: {required: true}
+        },
+        methods: {
+            setValue: function(e) {
+                this.$emit('input', e);
+            }
+        }
+    });
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

@@ -10,7 +10,7 @@ var TableView = countlyVue.views.BaseView.extend({
     data: function() {
         var self = this;
         return {
-            targetName: "John Doe",
+            targetName: "",
             targetValue: 0,
             tableKeyFn: function(row) {
                 return row._id;
@@ -36,7 +36,7 @@ var TableView = countlyVue.views.BaseView.extend({
                         title: "ID"
                     },
                     dt: {
-                        "sWidth": "3%"
+                        "sWidth": "4%"
                     },
                 },
                 {
@@ -47,7 +47,7 @@ var TableView = countlyVue.views.BaseView.extend({
                         title: "Name"
                     },
                     dt: {
-                        "sWidth": "20%"
+                        "sWidth": "15%"
                     },
                 },
                 {
@@ -57,12 +57,15 @@ var TableView = countlyVue.views.BaseView.extend({
                         dataType: "numeric",
                         title: "Value"
                     },
+                    dt: {
+                        "sWidth": "15%"
+                    },
                 },
                 {
                     type: "raw",
                     options: {
                         dataType: "numeric",
-                        title: "Value"
+                        title: "Custom"
                     },
                     viewFn: function(row, type) {
                         if (type === "display") {
@@ -79,7 +82,10 @@ var TableView = countlyVue.views.BaseView.extend({
                         selector: ".custom-action-trigger",
                         event: "click",
                         action: {"event": "try-delete-record"}
-                    }]
+                    }],
+                    dt: {
+                        "sWidth": "15%"
+                    }
                 },
                 {
                     type: "options",
@@ -102,6 +108,7 @@ var TableView = countlyVue.views.BaseView.extend({
                 }
             ],
             selectedRadio: 2,
+            typedText: 'Type sth...',
             availableRadio: [
                 {text: "Type 1", value: 1},
                 {text: "Type 2", value: 2},
@@ -111,9 +118,9 @@ var TableView = countlyVue.views.BaseView.extend({
     },
     methods: {
         add: function() {
-            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
-            this.targetName = "";
+            this.targetName = "Your data, your rules.";
             this.targetValue += 1;
+            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
         },
         onTryDelete: function(row, callback) {
             callback({
