@@ -572,7 +572,7 @@
 
     // New components
 
-    Vue.component("cly-datatable", {
+    Vue.component("cly-datatable-w", {
         template: '<div class="cly-vue-datatable-wrapper" ref="wrapper">\
                         <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
                             <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
@@ -921,7 +921,7 @@
                             </div>\
                             <div class="right">\
                                 <slot name="right-top">\
-                                    <cly-global-date-selector v-once v-if="dateSelector"></cly-global-date-selector>\
+                                    <cly-global-date-selector-w v-once v-if="dateSelector"></cly-global-date-selector-w>\
                                 </slot>\
                             </div>\
                         </div>\
@@ -935,7 +935,7 @@
         },
     });
 
-    Vue.component("cly-global-date-selector", {
+    Vue.component("cly-global-date-selector-w", {
         template: '<div class="cly-vue-global-date-selector help-zone-vs">\
                         <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
                             <i class="material-icons">date_range</i>\
@@ -1163,7 +1163,7 @@
         }
     });
 
-    Vue.component("cly-time-graph", {
+    Vue.component("cly-time-graph-w", {
         template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
         props: {
             data: function() {

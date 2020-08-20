@@ -10,18 +10,18 @@
                     </div>
                     <hr/>
                     <div>
-                        <cly-datatable
+                        <cly-datatable-w
                             v-bind:rows="tableRows"
                             v-bind:columns="tableColumns"
                             v-bind:keyFn="tableKeyFn"
                             v-on:try-delete-record="onTryDelete"
                             v-on:delete-record="onDelete"
                             v-on:show-record="onShow">
-                        </cly-datatable>
+                        </cly-datatable-w>
                     </div>
                 </template>
                 <template slot="right-top">
-                    <cly-global-date-selector></cly-global-date-selector>
+                    <cly-global-date-selector-w></cly-global-date-selector-w>
                 </template>
                 <template slot="left-top">
                     <div class="header-title title small">Vue Example</div>
