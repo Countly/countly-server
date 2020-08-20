@@ -1215,7 +1215,7 @@
                         <div class="radio-wrapper">\
                             <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
                                 <div class="box"></div>\
-                                <div class="text">{{item.text}}</div>\
+                                <div class="text">{{item.label}}</div>\
                                 <div class="description">{{item.description}}</div>\
                             </div>\
                         </div>\
@@ -1248,8 +1248,9 @@
     Vue.component("cly-check", {
         template: '<div class="cly-vue-check">\
                         <div class="check-wrapper">\
-                            <input type="checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
-                            <label v-bind:for="\'cb_\'">{{label}}</label>\
+                            <input type="checkbox" class="on-off-switch-checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
+                            <label class="on-off-switch-label" v-bind:for="\'cb_\'"></label>\
+                            <span class="text">{{label}}</span>\
                         </div>\
                     </div>',
         props: {
@@ -1266,12 +1267,13 @@
 
     Vue.component("cly-check-list", {
         template: '<div class="cly-vue-check">\
-                        <div class="check-wrapper">\
-                            <template v-for="(item, i) in items" :key="i">\
-                                <input type="checkbox" v-bind:id="\'cb_\' + i" v-bind:value="item.value" v-model="internalValue">\
-                                <label v-bind:for="\'cb_\' + i">{{item.text}}</label>\
-                            </template>\
-                        </div>\
+                        <template v-for="(item, i) in items" :key="i">\
+                            <div class="check-wrapper">\
+                                <input type="checkbox" class="on-off-switch-checkbox" v-bind:id="\'cb_\' + i" v-bind:value="item.value" v-model="internalValue">\
+                                <label class="on-off-switch-label" v-bind:for="\'cb_\' + i"></label>\
+                                <span class="text">{{item.label}}</span>\
+                            </div>\
+                        </template>\
                     </div>',
         props: {
             value: {required: true},

@@ -187,3 +187,28 @@
     margin-left: 20px;
     color: #9c9c9c;
 }
+
+/* check */
+
+.cly-vue-check .check-wrapper{
+    position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: middle;
+    margin-bottom: 5px;
+}
+
+.cly-vue-check .check-wrapper .text {
+    display: inline-block;
+    opacity: 1;
+    font-size: 12px;
+    color: #444;
+    vertical-align: top;
+    margin-top: 3px;
+    margin-left: 8px;
+    line-height: 12px;
+    cursor: pointer;
+}
