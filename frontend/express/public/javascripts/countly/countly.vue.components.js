@@ -1248,9 +1248,9 @@
     Vue.component("cly-check", {
         template: '<div class="cly-vue-check">\
                         <div class="check-wrapper">\
-                            <input type="checkbox" class="on-off-switch-checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
-                            <label class="on-off-switch-label" v-bind:for="\'cb_\'"></label>\
-                            <span class="text">{{label}}</span>\
+                            <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
+                            <label class="switch-theme-label" v-bind:for="\'cb_\'"></label>\
+                            <span class="switch-theme-text">{{label}}</span>\
                         </div>\
                     </div>',
         props: {
@@ -1269,9 +1269,9 @@
         template: '<div class="cly-vue-check">\
                         <template v-for="(item, i) in items" :key="i">\
                             <div class="check-wrapper">\
-                                <input type="checkbox" class="on-off-switch-checkbox" v-bind:id="\'cb_\' + i" v-bind:value="item.value" v-model="internalValue">\
-                                <label class="on-off-switch-label" v-bind:for="\'cb_\' + i"></label>\
-                                <span class="text">{{item.label}}</span>\
+                                <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\' + i" v-bind:value="item.value" v-model="internalValue">\
+                                <label class="switch-theme-label" v-bind:for="\'cb_\' + i"></label>\
+                                <span class="switch-theme-text">{{item.label}}</span>\
                             </div>\
                         </template>\
                     </div>',
