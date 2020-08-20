@@ -67,16 +67,19 @@ var TableView = countlyVue.views.BaseView.extend({
                     viewFn: function(row, type) {
                         if (type === "display") {
                             var stringBuffer = ['<div class="on-off-switch">'];
-                            stringBuffer.push("<strong>My value is ");
-                            stringBuffer.push(row.value);
-                            stringBuffer.push('</strong>');
+                            stringBuffer.push("<strong><div class='custom-action-trigger'>Click to delete this</strong></div>");
                             stringBuffer.push('</div>');
                             return stringBuffer.join('');
                         }
                         else {
                             return row.value;
                         }
-                    }
+                    },
+                    customActions: [{
+                        selector: ".custom-action-trigger",
+                        event: "click",
+                        action: {"event": "try-delete-record"}
+                    }]
                 },
                 {
                     type: "options",

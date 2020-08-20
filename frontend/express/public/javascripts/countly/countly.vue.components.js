@@ -587,7 +587,7 @@
                 tableInstance: null,
                 optionItems: [],
                 focusedRow: null,
-                columnEvents: null,
+                customActions: null,
                 lastCol: 0,
                 finalizedNativeColumns: null
             };
@@ -617,7 +617,7 @@
                 var self = this,
                     nativeColumns = [];
 
-                self.columnEvents = {};
+                self.customActions = [];
 
                 this.columns.forEach(function(column) {
                     var nativeColumn = null;
@@ -678,15 +678,49 @@
                             "bSortable": false
                         };
                         if (column.onChange) {
-                            self.columnEvents["cly-dt-col-" + self.lastCol] = {
-                                onChange: column.onChange
-                            };
+                            self.customActions.push({
+                                "selector": ".on-off-switch-checkbox",
+                                "event": "change",
+                                "_columnSelector": ".cly-dt-col-" + self.lastCol,
+                                "_handlerFn": function() {
+                                    var rowEl = $(this).parents("tr");
+                                    var cbx = $(this);
+                                    var newValue = $(this).is(":checked");
+                                    column.onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
+                                        if (revert) {
+                                            cbx.prop("checked", !newValue);
+                                        }
+                                    });
+                                }
+                            });
                         }
                     }
                     else if (column.type === "raw") {
                         nativeColumn = {
                             "mData": column.viewFn
                         };
+                        if (column.customActions) {
+                            column.customActions.forEach(function(customAction) {
+                                self.customActions.push({
+                                    "selector": customAction.selector,
+                                    "event": customAction.event,
+                                    "_columnSelector": ".cly-dt-col-" + self.lastCol,
+                                    "_handlerFn": function() {
+                                        var rowEl = $(this).parents("tr");
+                                        var rowData = rowEl.data("cly-row-data");
+                                        self.$emit(customAction.action.event, rowData, function(options) {
+                                            if (options.undo) {
+                                                self.softAction(rowData, options.undo.message, {
+                                                    commit: function() {
+                                                        self.$emit(options.undo.commit, rowData);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
                     }
 
                     if (column.options) {
@@ -744,21 +778,11 @@
                         self.focusedRow = rowData;
                     });
                 }
-                $(self.$refs.dtable).find("tbody").on("change", ".on-off-switch input", function() {
-                    var colEl = $(this).parents("td.cly-dt-col");
-                    var colId = colEl.attr("class").split(/\s+/).filter(function(cls) {
-                        return cls.startsWith("cly-dt-col-");
-                    })[0];
-                    if (self.columnEvents[colId] && self.columnEvents[colId].onChange) {
-                        var rowEl = $(this).parents("tr");
-                        var cbx = $(this);
-                        var newValue = $(this).is(":checked");
-                        self.columnEvents[colId].onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
-                            if (revert) {
-                                cbx.prop("checked", !newValue);
-                            }
-                        });
-                    }
+                self.customActions.forEach(function(customAction) {
+                    $(self.$refs.dtable).find("tbody").on(
+                        customAction.event,
+                        customAction._columnSelector + " " + customAction.selector,
+                        customAction._handlerFn);
                 });
             },
             refresh: function() {
