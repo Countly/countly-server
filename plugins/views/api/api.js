@@ -1385,18 +1385,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param  {Object} params - Default parameters object
      * @param  {Object} viewInfo - Object with info about segmentation
      */
-    function processingData(currEvent, params, viewInfo) {
-        if (currEvent.key === "[CLY]_view") {
-            if (currEvent.segmentation.visit) {
-                params.views.push(currEvent);
-                var events = [currEvent];
-                plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: events});
-            }
-            else {
-                if (currEvent.dur) {
-                    plugins.dispatch("/view/duration", {params: params, duration: currEvent.dur, viewName: currEvent.viewAlias});
-                }
-            }
+    function processingData(currEvent, params, viewInfo) { //only on cly_view
+        if (currEvent.segmentation.visit) {
+            params.views.push(currEvent);
+            var events = [currEvent];
+            plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: events});
+        }
+        if (currEvent.dur) {
+            plugins.dispatch("/view/duration", {params: params, duration: currEvent.dur, viewName: currEvent.viewAlias});
         }
         //geting all segment info
         if (currEvent.segmentation.visit) {
@@ -1446,7 +1442,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         params.viewsNamingMap[currEvent.segmentation.name] = view._id;
                         var escapedMetricVal = common.db.encode(view._id + "");
                         currEvent.viewAlias = escapedMetricVal;
-                        processingData(currEvent, params, viewInfo);
+                        if (currEvent.key === "[CLY]_view") {
+                            processingData(currEvent, params, viewInfo);
+                        }
+                        else {
+                            recordMetrics(params, currEvent, params.app_user, null, viewInfo);
+                        }
                     }
                 });
             });
@@ -1456,7 +1457,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, null, null, function(err, view) {
                 if (view) {
                     currEvent.viewAlias = common.db.encode(view._id + "");
-                    processingData(currEvent, params, viewInfo);
+                    if (currEvent.key === "[CLY]_view") {
+                        processingData(currEvent, params, viewInfo);
+                    }
+                    else {
+                        recordMetrics(params, currEvent, params.app_user, null, viewInfo);
+                    }
                 }
             });
         }
@@ -1564,7 +1570,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 escapedMetricVal = escapedMetricVal + ".";//adding dot to work also when there is no segment
             }
 
-            if (currEvent.segmentation.visit) {
+            if (currEvent.segmentation.visit && currEvent.key === '[CLY]_view') {
                 monthObjUpdate.push(escapedMetricVal + common.dbMap.total);
                 tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + common.dbMap.total] = 1;
                 if (view && view[viewName] && typeof view[viewName] === 'object') {
