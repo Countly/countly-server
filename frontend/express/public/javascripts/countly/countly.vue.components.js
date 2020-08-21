@@ -1169,6 +1169,7 @@
             dataPoints: { required: true, type: Array, default: [] },
             bucket: { required: false, default: null },
             overrideBucket: { required: false, default: null },
+            frozen: {required: true, type: Boolean},
             configPaths: { required: true },
             configSmall: { required: false, default: false },
             configOptions: { required: false, default: null }
@@ -1197,7 +1198,7 @@
         methods: {
             refresh: function() {
 
-                if ($(this.$refs.container).is(":hidden") || !this.hasData) {
+                if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
                     // no need to refresh if hidden
                     return;
                 }
@@ -1275,6 +1276,11 @@
         watch: {
             dataPoints: function() {
                 this.refresh();
+            },
+            frozen: function(newValue) {
+                if (!newValue) {
+                    this.refresh();
+                }
             }
         }
     });
@@ -1295,6 +1301,7 @@
         props: {
             dataPoints: { required: true, type: Array, default: [] },
             graphType: { required: false, type: String, default: "bar" },
+            frozen: {required: true, type: Boolean},
             configOptions: { required: false, default: null }
         },
         data: function() {
@@ -1313,7 +1320,7 @@
         methods: {
             refresh: function() {
 
-                if ($(this.$refs.container).is(":hidden") || !this.hasData) {
+                if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
                     // no need to refresh if hidden
                     return;
                 }
@@ -1330,6 +1337,11 @@
             },
             graphType: function() {
                 this.refresh();
+            },
+            frozen: function(newValue) {
+                if (!newValue) {
+                    this.refresh();
+                }
             }
         }
     });

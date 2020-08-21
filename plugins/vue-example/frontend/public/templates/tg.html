@@ -4,7 +4,8 @@
             <cly-panel title="Time Graph">
                 <cly-time-graph-w
                     v-bind:data-points="randomNumbers"
-                    v-bind:config-paths="paths">
+                    v-bind:config-paths="paths"
+                    v-bind:frozen="activeTab !== 'time-tab'">
                 </cly-time-graph-w>
             </cly-panel>
         </cly-tab>
@@ -12,7 +13,8 @@
             <cly-panel title="Graph">
                 <cly-graph-w
                     v-bind:data-points="graphData"
-                    v-bind:graph-type="'pie'">
+                    v-bind:graph-type="'pie'"
+                    v-bind:frozen="activeTab !== 'graph-tab'">
                 </cly-graph-w>
             </cly-panel>
         </cly-tab>
