@@ -62,13 +62,19 @@
 
 /* time graph */
 
-.cly-vue-time-graph{
+.cly-vue-time-graph .graph-container{
     width: auto;
     height: 350px;
 }
 
 .cly-vue-time-graph{ font-family:Oswald; font-size:14px; margin:30px }
 .cly-vue-time-graph .legendLabel{ font-family:Ubuntu; font-size:14px; }
+
+.cly-vue-graph-no-data { height:100%; position:relative; }
+.cly-vue-graph-no-data .inner { user-select:none; text-align: center; position: absolute; width: 400px; left: 50%; margin-left: -200px; height: 64px; margin-top: -40px; top: 50%;}
+    .cly-vue-graph-no-data .inner .icon { display: inline-block; width: 60px; height: 60px; background-image: url("../images/dashboard/graph-no-data.svg"); background-size: contain; margin-right: 20px; background-repeat: no-repeat; }
+    .cly-vue-graph-no-data .inner .text { cursor:default; display: inline-block; color: #a2a2a2; vertical-align: text-bottom; margin-bottom: 23px; font-size: 16px; }
+
 
 
 /* global date selector */

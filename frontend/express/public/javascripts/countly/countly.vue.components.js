@@ -1164,7 +1164,18 @@
     });
 
     Vue.component("cly-time-graph-w", {
-        template: '<div ref="container" class="cly-vue-time-graph graph-component"></div>',
+        mixins: [
+            _mixins.i18n
+        ],
+        template: '<div class="cly-vue-time-graph">\
+                        <div ref="container" class="graph-container"></div>\
+                        <div class="cly-vue-graph-no-data" v-if="!hasData">\
+                            <div class="inner">\
+                                <div class="icon"></div>\
+                                <div class="text">{{i18n("common.graph.no-data")}}</div>\
+                            </div>\
+                        </div>\
+                    </div>',
         props: {
             dataPoints: { required: true, type: Array, default: [] },
             bucket: { required: false, default: null },
@@ -1180,14 +1191,25 @@
                 small: JSON.parse(JSON.stringify(this.configSmall))
             };
         },
+        computed: {
+            hasData: function() {
+                if (this.dataPoints.length === 0) {
+                    return false;
+                }
+                if (this.dataPoints[0].length === 0) {
+                    return false;
+                }
+                return true;
+            }
+        },
         mounted: function() {
-            this.render();
+            this.refresh();
         },
         methods: {
-            render: function() {
+            refresh: function() {
 
-                if ($(this.$refs.container).is(":hidden") || this.dataPoints.length === 0) {
-                    // no need to render if hidden
+                if ($(this.$refs.container).is(":hidden") || !this.hasData) {
+                    // no need to refresh if hidden
                     return;
                 }
 
@@ -1211,7 +1233,7 @@
         },
         watch: {
             dataPoints: function() {
-                this.render();
+                this.refresh();
             }
         },
     });
