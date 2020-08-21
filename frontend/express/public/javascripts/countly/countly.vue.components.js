@@ -1166,8 +1166,23 @@
     Vue.component("cly-time-graph-w", {
         template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
         props: {
-            data: function() {
+            dataPoints: function() {
                 return { required: true };
+            },
+            paths: function() {
+                return { required: true };
+            },
+            bucket: function() {
+                return { required: false, default: null };
+            },
+            overrideBucket: function() {
+                return { required: false, default: null };
+            },
+            small: function() {
+                return { required: false, default: false };
+            },
+            options: function() {
+                return { required: false, default: null };
             }
         },
         mounted: function() {
@@ -1176,35 +1191,30 @@
         methods: {
             render: function() {
 
-                if ($(this.$refs.container).is(":hidden")) {
+                if ($(this.$refs.container).is(":hidden") || !this.dataPoints) {
                     // no need to render if hidden
                     return;
                 }
 
-                var mapped = this.data.map(function(val, idx) {
-                    return [idx + 1, val];
+                var self = this;
+
+                var points = this.dataPoints.map(function(path, pathIdx) {
+                    var series = path.map(function(val, idx) {
+                        return [idx + 1, val];
+                    });
+                    var pathCopy = _.extend({}, self.paths[pathIdx]);
+                    pathCopy.data = series;
+                    return pathCopy;
                 });
 
-                var prev = this.data.map(function(val, idx) {
-                    return [idx + 1, val / 2];
-                });
-
-                var points = [{
-                    "data": prev,
-                    "label": "Total Sessions",
-                    "color": "#DDDDDD",
-                    "mode": "ghost"
-                }, {
-                    "data": mapped,
-                    "label": "Total Sessions",
-                    "color": "#52A3EF"
-                }];
-
-                countlyCommon.drawTimeGraph(points, $(this.$refs.container));
+                countlyCommon.drawTimeGraph(points, $(this.$refs.container), this.bucket, this.overrideBucket, this.small, null, this.options);
             }
         },
         watch: {
-            data: function() {
+            dataPoints: function() {
+                this.render();
+            },
+            paths: function() {
                 this.render();
             }
         },

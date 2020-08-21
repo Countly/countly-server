@@ -41,7 +41,9 @@
                         }
                     },
                     setRandomNumbers: function(state, obj) {
-                        state.randomNumbers = obj;
+                        state.randomNumbers = [obj, obj.map(function(x) {
+                            return x / 2;
+                        })];
                     }
                 },
                 actions: {

@@ -150,6 +150,18 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     mixins: [
         countlyVue.mixins.refreshOnParentActive
     ],
+    data: function() {
+        return {
+            paths: [{
+                "label": "Previous Period",
+                "color": "#DDDDDD",
+                "mode": "ghost"
+            }, {
+                "label": "Total Sessions",
+                "color": "#52A3EF"
+            }]
+        };
+    },
     computed: {
         randomNumbers: function() {
             return this.$store.getters["vueExample/randomNumbers"];
