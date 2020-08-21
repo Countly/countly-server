@@ -123,7 +123,7 @@ class WriteBatcher extends EventEmitter {
      *  @param {object} operation - operation
      */
     add(collection, id, operation) {
-        if (!this.shared) {
+        if (!this.shared || cluster.isMaster) {
             if (!this.data[collection]) {
                 this.data[collection] = {};
             }
