@@ -856,32 +856,21 @@
         ],
         data: function() {
             return {
-                tabs: [],
-                currentTabId: '',
+                tabs: []
             };
         },
         props: {
-            initialTab: { default: null },
+            value: { default: null },
         },
         methods: {
             setTab: function(tId) {
-                this.currentTabId = tId;
-            }
-        },
-        created: function() {
-            if (this.initialTab) {
-                this.currentTabId = this.initialTab;
+                this.$emit("input", tId);
             }
         },
         mounted: function() {
             this.tabs = this.$children;
-            if (this.currentTabId === '' && this.tabs.length > 0) {
-                this.currentTabId = this.tabs[0].tId;
-            }
-        },
-        watch: {
-            currentTabId: function(newId) {
-                this.$emit("tab-changed", newId);
+            if (!this.value) {
+                this.$emit("input", this.tabs[0].tId);
             }
         }
     });
@@ -898,7 +887,7 @@
         },
         computed: {
             isActive: function() {
-                return this.$parent.currentTabId === this.id;
+                return this.$parent.value === this.id;
             },
             tName: function() {
                 return this.name;

@@ -68,7 +68,7 @@
                         })).then(function(json) {
                             context.commit("setRandomNumbers", json);
                         }, function() {
-                            /* handle error */;
+                            /* handle error */
                         });
                     }
                 }

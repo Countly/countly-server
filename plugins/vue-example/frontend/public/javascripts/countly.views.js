@@ -12,6 +12,7 @@ var TableView = countlyVue.views.BaseView.extend({
         return {
             targetName: "",
             targetValue: 0,
+            activeTab: null,
             tableKeyFn: function(row) {
                 return row._id;
             },
@@ -159,7 +160,8 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
             }, {
                 "label": "Total Sessions",
                 "color": "#52A3EF"
-            }]
+            }],
+            activeTab: null
         };
     },
     computed: {
