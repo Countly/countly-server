@@ -1164,26 +1164,21 @@
     });
 
     Vue.component("cly-time-graph-w", {
-        template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
+        template: '<div ref="container" class="cly-vue-time-graph graph-component"></div>',
         props: {
-            dataPoints: function() {
-                return { required: true };
-            },
-            paths: function() {
-                return { required: true };
-            },
-            bucket: function() {
-                return { required: false, default: null };
-            },
-            overrideBucket: function() {
-                return { required: false, default: null };
-            },
-            small: function() {
-                return { required: false, default: false };
-            },
-            options: function() {
-                return { required: false, default: null };
-            }
+            dataPoints: { required: true, type: Array, default: [] },
+            bucket: { required: false, default: null },
+            overrideBucket: { required: false, default: null },
+            configPaths: { required: true },
+            configSmall: { required: false, default: false },
+            configOptions: { required: false, default: null }
+        },
+        data: function() {
+            return {
+                options: JSON.parse(JSON.stringify(this.configOptions)),
+                paths: JSON.parse(JSON.stringify(this.configPaths)),
+                small: JSON.parse(JSON.stringify(this.configSmall))
+            };
         },
         mounted: function() {
             this.render();
@@ -1191,7 +1186,7 @@
         methods: {
             render: function() {
 
-                if ($(this.$refs.container).is(":hidden") || !this.dataPoints) {
+                if ($(this.$refs.container).is(":hidden") || this.dataPoints.length === 0) {
                     // no need to render if hidden
                     return;
                 }
@@ -1207,14 +1202,15 @@
                     return pathCopy;
                 });
 
-                countlyCommon.drawTimeGraph(points, $(this.$refs.container), this.bucket, this.overrideBucket, this.small, null, this.options);
+                countlyCommon.drawTimeGraph(points,
+                    $(this.$refs.container),
+                    this.bucket, this.overrideBucket,
+                    this.small, null,
+                    this.options);
             }
         },
         watch: {
             dataPoints: function() {
-                this.render();
-            },
-            paths: function() {
                 this.render();
             }
         },
