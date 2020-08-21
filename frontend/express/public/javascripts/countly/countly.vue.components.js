@@ -1224,11 +1224,63 @@
                     return pathCopy;
                 });
 
+                var plot = $(this.$refs.container).data("plot");
+                if (plot) {
+                    plot.getPlaceholder().unbind("resize", self._onResize);
+                }
+
                 countlyCommon.drawTimeGraph(points,
                     $(this.$refs.container),
                     this.bucket, this.overrideBucket,
                     this.small, null,
                     this.options);
+
+                setTimeout(function() {
+                    self.initializeResizer();
+                }, 0);
+            },
+            initializeResizer: function() {
+                var plot = $(this.$refs.container).data("plot");
+                plot.getPlaceholder().resize(this._onResize);
+            },
+            _onResize: function() {
+                var self = this,
+                    plot = $(this.$refs.container).data("plot"),
+                    placeholder = plot.getPlaceholder();
+
+                if (placeholder.width() === 0 || placeholder.height() === 0) {
+                    return;
+                }
+
+                // plot.resize();
+                // plot.setupGrid();
+                // plot.draw();
+
+                var graphWidth = plot.width();
+
+                $(self.$refs.container).find(".graph-key-event-label").each(function() {
+                    var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+
+                    if (o.left <= 15) {
+                        o.left = 15;
+                    }
+
+                    if (o.left >= (graphWidth - 15)) {
+                        o.left = (graphWidth - 15);
+                    }
+
+                    $(this).css({
+                        left: o.left
+                    });
+                });
+
+                $(self.$refs.container).find(".graph-note-label").each(function() {
+                    var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+
+                    $(this).css({
+                        left: o.left
+                    });
+                });
             }
         },
         watch: {
