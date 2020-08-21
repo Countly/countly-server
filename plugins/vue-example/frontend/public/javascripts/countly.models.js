@@ -12,6 +12,13 @@
                 state: {
                     pairs: [],
                     randomNumbers: [],
+                    graphData: {
+                        "dp": [
+                            {"data": [[0, 20]], "label": "Test1", "color": "#52A3EF"},
+                            {"data": [[0, 30]], "label": "Test2", "color": "#FF8700"},
+                            {"data": [[0, 50]], "label": "Test3", "color": "#0EC1B9"}
+                        ]
+                    },
                     id: 0
                 },
                 getters: {
@@ -20,6 +27,9 @@
                     },
                     randomNumbers: function(state) {
                         return state.randomNumbers;
+                    },
+                    graphData: function(state) {
+                        return state.graphData;
                     }
                 },
                 mutations: {
@@ -58,7 +68,7 @@
                         })).then(function(json) {
                             context.commit("setRandomNumbers", json);
                         }, function() {
-                            /* handle error */
+                            /* handle error */;
                         });
                     }
                 }

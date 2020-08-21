@@ -1287,7 +1287,62 @@
             dataPoints: function() {
                 this.refresh();
             }
+        }
+    });
+
+    Vue.component("cly-graph-w", {
+        mixins: [
+            _mixins.i18n
+        ],
+        template: '<div class="cly-vue-graph">\
+                        <div ref="container" class="graph-container"></div>\
+                        <div class="cly-vue-graph-no-data" v-if="!hasData">\
+                            <div class="inner">\
+                                <div class="icon"></div>\
+                                <div class="text">{{i18n("common.graph.no-data")}}</div>\
+                            </div>\
+                        </div>\
+                    </div>',
+        props: {
+            dataPoints: { required: true, type: Array, default: [] },
+            graphType: { required: false, type: String, default: "bar" },
+            configOptions: { required: false, default: null }
         },
+        data: function() {
+            return {
+                options: JSON.parse(JSON.stringify(this.configOptions))
+            };
+        },
+        computed: {
+            hasData: function() {
+                return !!this.dataPoints;
+            }
+        },
+        mounted: function() {
+            this.refresh();
+        },
+        methods: {
+            refresh: function() {
+
+                if ($(this.$refs.container).is(":hidden") || !this.hasData) {
+                    // no need to refresh if hidden
+                    return;
+                }
+
+                countlyCommon.drawGraph(this.dataPoints,
+                    $(this.$refs.container),
+                    this.graphType,
+                    this.options);
+            }
+        },
+        watch: {
+            dataPoints: function() {
+                this.refresh();
+            },
+            graphType: function() {
+                this.refresh();
+            }
+        }
     });
 
     Vue.component("cly-radio", {
@@ -1311,7 +1366,6 @@
         }
     });
 
-
     Vue.component("cly-text-field", {
         template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">',
         props: {
@@ -1323,7 +1377,6 @@
             }
         }
     });
-
 
     Vue.component("cly-check", {
         template: '<div class="cly-vue-check">\
@@ -1343,7 +1396,6 @@
             }
         }
     });
-
 
     Vue.component("cly-check-list", {
         template: '<div class="cly-vue-check">\

@@ -1,8 +1,20 @@
 <div>
-    <cly-panel title="Vue Example">
-        <cly-time-graph-w 
-            v-bind:data-points="randomNumbers"
-            v-bind:config-paths="paths">
-        </cly-time-graph-w>
-    </cly-panel>
+    <cly-tabs id="basic-tabs2">
+        <cly-tab name='Time Graph' id="time-tab">
+            <cly-panel title="Time Graph">
+                <cly-time-graph-w
+                    v-bind:data-points="randomNumbers"
+                    v-bind:config-paths="paths">
+                </cly-time-graph-w>
+            </cly-panel>
+        </cly-tab>
+        <cly-tab name='Graph' id="graph-tab">
+            <cly-panel title="Graph">
+                <cly-graph-w
+                    v-bind:data-points="graphData"
+                    v-bind:graph-type="'pie'">
+                </cly-graph-w>
+            </cly-panel>
+        </cly-tab>
+    </cly-tabs>
 </div>

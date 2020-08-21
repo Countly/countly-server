@@ -165,6 +165,9 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     computed: {
         randomNumbers: function() {
             return this.$store.getters["vueExample/randomNumbers"];
+        },
+        graphData: function() {
+            return this.$store.getters["vueExample/graphData"];
         }
     },
     methods: {
