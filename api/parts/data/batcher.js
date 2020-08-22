@@ -316,18 +316,23 @@ class ReadBatcher extends EventEmitter {
             }
 
             if (!good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
-                this.data[collection][id] = {
-                    query: query,
-                    promise: this.getData(collection, id, query, projection, multi),
-                    projection: projection,
-                    last_used: Date.now(),
-                    last_updated: Date.now(),
-                    multi: multi
-                };
-                return this.data[collection][id].promise;
+                if (this.process) {
+                    this.data[collection][id] = {
+                        query: query,
+                        promise: this.getData(collection, id, query, projection, multi),
+                        projection: projection,
+                        last_used: Date.now(),
+                        last_updated: Date.now(),
+                        multi: multi
+                    };
+                    return this.data[collection][id].promise;
+                }
+                else {
+                    return this.getData(collection, id, query, projection, multi);
+                }
             }
             //we already have a read for this
-            else if (this.data[collection][id].promise) {
+            else if (this.data[collection][id] && this.data[collection][id].promise) {
                 return this.data[collection][id].promise;
             }
             else {
