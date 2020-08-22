@@ -68,7 +68,7 @@ plugins.setConfigs("api", {
     batch_period: 10,
     batch_read_processing: false,
     batch_read_on_master: false,
-    batch_read_ttl: 60,
+    batch_read_ttl: 600,
     batch_read_period: 60
 });
 
