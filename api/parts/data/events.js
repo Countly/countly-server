@@ -25,12 +25,14 @@ countlyEvents.processEvents = function(params) {
         common.readBatcher.getOne("events", {'_id': params.app_id}, {
             list: 1,
             segments: 1,
-            omitted_segments: 1
+            omitted_segments: 1,
+            whitelisted_segments: 1
         }, (err, eventColl) => {
             var appEvents = [],
                 appSegments = {},
                 metaToFetch = {},
                 omitted_segments = {},
+                whitelisted_segments = {},
                 pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
 
             if (!err && eventColl) {
@@ -44,6 +46,10 @@ countlyEvents.processEvents = function(params) {
 
                 if (eventColl.omitted_segments) {
                     omitted_segments = eventColl.omitted_segments;
+                }
+
+                if (eventColl.whitelisted_segments) {
+                    whitelisted_segments = eventColl.whitelisted_segments;
                 }
             }
 
@@ -83,6 +89,11 @@ countlyEvents.processEvents = function(params) {
                         }
                         //check if segment should be ommited
                         if (omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey) !== -1) {
+                            continue;
+                        }
+
+                        //check if whitelisted is set and this one not in whitelist
+                        if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
                             continue;
                         }
 
@@ -142,7 +153,7 @@ countlyEvents.processEvents = function(params) {
                     }
                 }
 
-                processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, resolve);
+                processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, whitelisted_segments, resolve);
             });
 
             /**
@@ -169,9 +180,10 @@ countlyEvents.processEvents = function(params) {
 * @param {object} appSgValues - object in format [collection][document_id][segment] and array of values as value for inserting in database
 * @param {params} params - params object
 * @param {array} omitted_segments - array of segments to omit
+* @param {array} whitelisted_segments - array of segments to keep
 * @param {function} done - callback function to call when done processing
 **/
-function processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, done) {
+function processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, whitelisted_segments, done) {
     var events = [],
         eventCollections = {},
         eventSegments = {},
@@ -262,6 +274,10 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 }
                 //check if segment should be ommited
                 if (omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey) !== -1) {
+                    continue;
+                }
+
+                if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
                     continue;
                 }
 

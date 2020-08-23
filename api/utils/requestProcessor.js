@@ -648,6 +648,75 @@ const processRequest = (params) => {
             }
             case '/i/events': {
                 switch (paths[3]) {
+                case 'whitelist_segments':
+                {
+                    validateUserForWrite(params, function() {
+                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
+                            if (err) {
+                                common.returnMessage(params, 400, err);
+                                return;
+                            }
+                            else if (!event) {
+                                common.returnMessage(params, 400, "Could not find record in event collection");
+                                return;
+                            }
+
+                            //rewrite whitelisted
+                            if (params.qstring.whitelisted_segments && params.qstring.whitelisted_segments !== "") {
+                                try {
+                                    params.qstring.whitelisted_segments = JSON.parse(params.qstring.whitelisted_segments);
+                                }
+                                catch (SyntaxError) {
+                                    params.qstring.whitelisted_segments = {}; console.log('Parse ' + params.qstring.whitelisted_segments + ' JSON failed', params.req.url, params.req.body);
+                                }
+
+                                var update = {};
+                                var whObj = params.qstring.whitelisted_segments;
+                                for (let k in whObj) {
+                                    if (Array.isArray(whObj[k]) && whObj[k].length > 0) {
+                                        update.$set = update.$set || {};
+                                        update.$set["whitelisted_segments." + k] = whObj[k];
+                                    }
+                                    else {
+                                        update.$unset = update.$unset || {};
+                                        update.$unset["whitelisted_segments." + k] = true;
+                                    }
+                                }
+
+                                common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, update, function(err2) {
+                                    if (err2) {
+                                        common.returnMessage(params, 400, err2);
+                                    }
+                                    else {
+                                        var data_arr = {update: {}};
+                                        if (update.$set) {
+                                            data_arr.update.$set = update.$set;
+                                        }
+
+                                        if (update.$unset) {
+                                            data_arr.update.$unset = update.$unset;
+                                        }
+                                        data_arr.update = JSON.stringify(data_arr.update);
+                                        common.returnMessage(params, 200, 'Success');
+                                        plugins.dispatch("/systemlogs", {
+                                            params: params,
+                                            action: "segments_whitelisted_for_events",
+                                            data: data_arr
+                                        });
+                                    }
+                                });
+
+                            }
+                            else {
+                                common.returnMessage(params, 400, "Value for 'whitelisted_segments' missing");
+                                return;
+                            }
+
+
+                        });
+                    });
+                    break;
+                }
                 case 'edit_map':
                 {
                     if (!params.qstring.app_id) {
