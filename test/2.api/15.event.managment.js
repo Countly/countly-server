@@ -512,11 +512,11 @@ describe('Testing event settings', function() {
             });
         }
     });
-	
-	
-	describe('whitelisting segment ', function() {
+
+
+    describe('whitelisting segment ', function() {
         it('whitelist_segments for t5', function(done) {
-            var overview = {"t5": ["s","s1","s2"]};
+            var overview = {"t5": ["s", "s1", "s2"]};
             request
                 .get('/i/events/whitelist_segments?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + "&whitelisted_segments=" + JSON.stringify(overview))
                 .expect(200)
@@ -546,20 +546,20 @@ describe('Testing event settings', function() {
                         ob.should.have.property("overview", []);
                         ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": []});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
-						ob.should.have.property("whitelisted_segments", { "t5": ["s","s1","s2"]});
+                        ob.should.have.property("whitelisted_segments", { "t5": ["s", "s1", "s2"]});
                         done();
                     });
             }, 0);
         });
 
-        
+
     });
-	
-	describe('whitelisting segment ', function() {
+
+    describe('whitelisting segment ', function() {
         it('whitelist_segments for t5', function(done) {
-            var overview = {"t5": ["s","s1","s2"]};
-			
-			console.log('/i/events/whitelist_segments?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + "&whitelisted_segments=" + JSON.stringify(overview));
+            var overview = {"t5": ["s", "s1", "s2"]};
+
+            console.log('/i/events/whitelist_segments?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + "&whitelisted_segments=" + JSON.stringify(overview));
             request
                 .get('/i/events/whitelist_segments?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&whitelisted_segments=' + JSON.stringify(overview))
                 .expect(200)
@@ -589,19 +589,19 @@ describe('Testing event settings', function() {
                         ob.should.have.property("overview", []);
                         ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": []});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
-						ob.should.have.property("whitelisted_segments", { "t5": ["s","s1","s2"]});
+                        ob.should.have.property("whitelisted_segments", { "t5": ["s", "s1", "s2"]});
                         done();
                     });
             }, 0);
         });
 
-        
+
     });
-	
-	
-	describe('validate if whitelisting works', function() {
+
+
+    describe('validate if whitelisting works', function() {
         it('create test events', function(done) {
-            var params = [ {"key": "t5", "count": 1, "sum": 5, "dur": 10, "segmentation": {"bad_segment": "value","s":"good_value"}}];
+            var params = [ {"key": "t5", "count": 1, "sum": 5, "dur": 10, "segmentation": {"bad_segment": "value", "s": "good_value"}}];
 
             request
                 .get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + "&events=" + JSON.stringify(params))
@@ -631,9 +631,9 @@ describe('Testing event settings', function() {
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
-                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5":["s"]});
+                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
-						ob.should.have.property("whitelisted_segments", { "t5": ["s","s1","s2"]});
+                        ob.should.have.property("whitelisted_segments", { "t5": ["s", "s1", "s2"]});
                         done();
                     });
             }, 0);
@@ -653,8 +653,8 @@ describe('Testing event settings', function() {
 
     });
 
-    
-	describe('remove whitelisting ', function() {
+
+    describe('remove whitelisting ', function() {
         it('whitelist_segments for t5', function(done) {
             var overview = {"t5": []};
             request
@@ -681,21 +681,21 @@ describe('Testing event settings', function() {
                         ob.list.sort();
                         ob.should.have.property("overview", []);
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
-                        ob.should.have.property("list", ["t1", "t5","test1", "test3"]);
+                        ob.should.have.property("list", ["t1", "t5", "test1", "test3"]);
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
-                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5":["s"]});
+                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
-						ob.should.have.property("whitelisted_segments", {});
+                        ob.should.have.property("whitelisted_segments", {});
                         done();
                     });
             }, 0);
         });
     });
-	
-	describe('validate if whitelisting not broken now', function() {
+
+    describe('validate if whitelisting not broken now', function() {
         it('create test events', function(done) {
-            var params = [ {"key": "t5", "count": 1, "sum": 5, "dur": 10, "segmentation": {"bad_segment": "value","s":"good_value"}}];
+            var params = [ {"key": "t5", "count": 1, "sum": 5, "dur": 10, "segmentation": {"bad_segment": "value", "s": "good_value"}}];
 
             request
                 .get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + "&events=" + JSON.stringify(params))
@@ -725,17 +725,17 @@ describe('Testing event settings', function() {
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
-                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5":["s","bad_segment"]});
+                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s", "bad_segment"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
-						ob.should.have.property("whitelisted_segments", {});
+                        ob.should.have.property("whitelisted_segments", {});
                         done();
                     });
             }, 0);
         });
 
     });
-	
-	describe('cleanup', function() {
+
+    describe('cleanup', function() {
         it('should reset app', function(done) {
             var params = {"app_id": APP_ID, "period": "reset"};
             request
