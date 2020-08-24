@@ -79,13 +79,14 @@ class WriteBatcher extends EventEmitter {
 
     /**
      *  Run all pending database queries
+     *  @returns {Promise} promise
      */
     flushAll() {
         let promises = [];
         for (let collection in this.data) {
             promises.push(this.flush(collection));
         }
-        Promise.all(promises).finally(() => {
+        return Promise.all(promises).finally(() => {
             this.schedule();
         });
     }

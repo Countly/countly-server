@@ -122,6 +122,41 @@ plugins.setConfigs('logs', {
 plugins.init();
 
 /**
+ *  Trying to gracefully handle the batch state
+ *  @param {number} code - error code
+ */
+async function storeBatchedData(code) {
+    try {
+        await common.writeBatcher.flushAll();
+        console.log("Successfully stored batch state");
+    }
+    catch (ex) {
+        console.log("Could not store batch state");
+    }
+    process.exit(code);
+}
+
+/**
+ *  Handle before exit for gracefull close
+ */
+process.on('beforeExit', (code) => {
+    console.log('Received exit, trying to save batch state: ', code);
+    storeBatchedData(code);
+});
+
+/**
+ *  Handle exit events for gracefull close
+ */
+['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
+    'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
+].forEach(function(sig) {
+    process.on(sig, async function() {
+        storeBatchedData(sig);
+        console.log('Got signal: ' + sig);
+    });
+});
+
+/**
  * Uncaught Exception Handler
  */
 process.on('uncaughtException', (err) => {
@@ -130,7 +165,7 @@ process.on('uncaughtException', (err) => {
         log.e('Logging caught exception');
     }
     console.trace();
-    process.exit(1);
+    storeBatchedData(1);
 });
 
 /**
@@ -258,7 +293,6 @@ else {
 
     process.on('exit', () => {
         console.log('Exiting due to master exited');
-        process.exit(1);
     });
 
     plugins.dispatch("/worker", {common: common});
