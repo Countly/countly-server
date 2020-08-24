@@ -856,32 +856,21 @@
         ],
         data: function() {
             return {
-                tabs: [],
-                currentTabId: '',
+                tabs: []
             };
         },
         props: {
-            initialTab: { default: null },
+            value: { default: null },
         },
         methods: {
             setTab: function(tId) {
-                this.currentTabId = tId;
-            }
-        },
-        created: function() {
-            if (this.initialTab) {
-                this.currentTabId = this.initialTab;
+                this.$emit("input", tId);
             }
         },
         mounted: function() {
             this.tabs = this.$children;
-            if (this.currentTabId === '' && this.tabs.length > 0) {
-                this.currentTabId = this.tabs[0].tId;
-            }
-        },
-        watch: {
-            currentTabId: function(newId) {
-                this.$emit("tab-changed", newId);
+            if (!this.value) {
+                this.$emit("input", this.tabs[0].tId);
             }
         }
     });
@@ -898,7 +887,7 @@
         },
         computed: {
             isActive: function() {
-                return this.$parent.currentTabId === this.id;
+                return this.$parent.value === this.id;
             },
             tName: function() {
                 return this.name;
@@ -1164,50 +1153,209 @@
     });
 
     Vue.component("cly-time-graph-w", {
-        template: '<div ref="container" class="cly-vue-time-graph graph-component no-data"></div>',
+        mixins: [
+            _mixins.i18n
+        ],
+        template: '<div class="cly-vue-time-graph">\
+                        <div ref="container" class="graph-container"></div>\
+                        <div class="cly-vue-graph-no-data" v-if="!hasData">\
+                            <div class="inner">\
+                                <div class="icon"></div>\
+                                <div class="text">{{i18n("common.graph.no-data")}}</div>\
+                            </div>\
+                        </div>\
+                    </div>',
         props: {
-            data: function() {
-                return { required: true };
+            dataPoints: {
+                required: true,
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            bucket: { required: false, default: null },
+            overrideBucket: { required: false, default: null },
+            frozen: {required: true, type: Boolean},
+            configPaths: { required: true },
+            configSmall: { required: false, default: false },
+            configOptions: { required: false, default: null }
+        },
+        data: function() {
+            return {
+                options: JSON.parse(JSON.stringify(this.configOptions)),
+                paths: JSON.parse(JSON.stringify(this.configPaths)),
+                small: JSON.parse(JSON.stringify(this.configSmall))
+            };
+        },
+        computed: {
+            hasData: function() {
+                if (this.dataPoints.length === 0) {
+                    return false;
+                }
+                if (this.dataPoints[0].length === 0) {
+                    return false;
+                }
+                return true;
             }
         },
         mounted: function() {
-            this.render();
+            this.refresh();
         },
         methods: {
-            render: function() {
+            refresh: function() {
 
-                if ($(this.$refs.container).is(":hidden")) {
-                    // no need to render if hidden
+                if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
+                    // no need to refresh if hidden
                     return;
                 }
 
-                var mapped = this.data.map(function(val, idx) {
-                    return [idx + 1, val];
+                var self = this;
+
+                var points = this.dataPoints.map(function(path, pathIdx) {
+                    var series = path.map(function(val, idx) {
+                        return [idx + 1, val];
+                    });
+                    var pathCopy = _.extend({}, self.paths[pathIdx]);
+                    pathCopy.data = series;
+                    return pathCopy;
                 });
 
-                var prev = this.data.map(function(val, idx) {
-                    return [idx + 1, val / 2];
+                var plot = $(this.$refs.container).data("plot");
+                if (plot) {
+                    plot.getPlaceholder().unbind("resize", self._onResize);
+                }
+
+                countlyCommon.drawTimeGraph(points,
+                    $(this.$refs.container),
+                    this.bucket, this.overrideBucket,
+                    this.small, null,
+                    this.options);
+
+                setTimeout(function() {
+                    self.initializeResizer();
+                }, 0);
+            },
+            initializeResizer: function() {
+                var plot = $(this.$refs.container).data("plot");
+                plot.getPlaceholder().resize(this._onResize);
+            },
+            _onResize: function() {
+                var self = this,
+                    plot = $(this.$refs.container).data("plot"),
+                    placeholder = plot.getPlaceholder();
+
+                if (placeholder.width() === 0 || placeholder.height() === 0) {
+                    return;
+                }
+
+                // plot.resize();
+                // plot.setupGrid();
+                // plot.draw();
+
+                var graphWidth = plot.width();
+
+                $(self.$refs.container).find(".graph-key-event-label").each(function() {
+                    var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+
+                    if (o.left <= 15) {
+                        o.left = 15;
+                    }
+
+                    if (o.left >= (graphWidth - 15)) {
+                        o.left = (graphWidth - 15);
+                    }
+
+                    $(this).css({
+                        left: o.left
+                    });
                 });
 
-                var points = [{
-                    "data": prev,
-                    "label": "Total Sessions",
-                    "color": "#DDDDDD",
-                    "mode": "ghost"
-                }, {
-                    "data": mapped,
-                    "label": "Total Sessions",
-                    "color": "#52A3EF"
-                }];
+                $(self.$refs.container).find(".graph-note-label").each(function() {
+                    var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
 
-                countlyCommon.drawTimeGraph(points, $(this.$refs.container));
+                    $(this).css({
+                        left: o.left
+                    });
+                });
             }
         },
         watch: {
-            data: function() {
-                this.render();
+            dataPoints: function() {
+                this.refresh();
+            },
+            frozen: function(newValue) {
+                if (!newValue) {
+                    this.refresh();
+                }
+            }
+        }
+    });
+
+    Vue.component("cly-graph-w", {
+        mixins: [
+            _mixins.i18n
+        ],
+        template: '<div class="cly-vue-graph">\
+                        <div ref="container" class="graph-container"></div>\
+                        <div class="cly-vue-graph-no-data" v-if="!hasData">\
+                            <div class="inner">\
+                                <div class="icon"></div>\
+                                <div class="text">{{i18n("common.graph.no-data")}}</div>\
+                            </div>\
+                        </div>\
+                    </div>',
+        props: {
+            dataPoints: {
+                required: true,
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            graphType: { required: false, type: String, default: "bar" },
+            frozen: {required: true, type: Boolean},
+            configOptions: { required: false, default: null }
+        },
+        data: function() {
+            return {
+                options: JSON.parse(JSON.stringify(this.configOptions))
+            };
+        },
+        computed: {
+            hasData: function() {
+                return !!this.dataPoints;
             }
         },
+        mounted: function() {
+            this.refresh();
+        },
+        methods: {
+            refresh: function() {
+
+                if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
+                    // no need to refresh if hidden
+                    return;
+                }
+
+                countlyCommon.drawGraph(this.dataPoints,
+                    $(this.$refs.container),
+                    this.graphType,
+                    this.options);
+            }
+        },
+        watch: {
+            dataPoints: function() {
+                this.refresh();
+            },
+            graphType: function() {
+                this.refresh();
+            },
+            frozen: function(newValue) {
+                if (!newValue) {
+                    this.refresh();
+                }
+            }
+        }
     });
 
     Vue.component("cly-radio", {
@@ -1231,7 +1379,6 @@
         }
     });
 
-
     Vue.component("cly-text-field", {
         template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">',
         props: {
@@ -1243,7 +1390,6 @@
             }
         }
     });
-
 
     Vue.component("cly-check", {
         template: '<div class="cly-vue-check">\
@@ -1263,7 +1409,6 @@
             }
         }
     });
-
 
     Vue.component("cly-check-list", {
         template: '<div class="cly-vue-check">\

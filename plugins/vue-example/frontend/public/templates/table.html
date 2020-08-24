@@ -1,5 +1,5 @@
 <div>
-    <cly-tabs id="basic-tabs">
+    <cly-tabs id="basic-tabs" v-model="activeTab">
         <cly-tab v-bind:name='i18n("vue-example.table")' id="table-tab">
             <cly-panel title="DataTable" v-bind:date-selector="false">
                 <div>

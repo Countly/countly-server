@@ -12,6 +12,7 @@ var TableView = countlyVue.views.BaseView.extend({
         return {
             targetName: "",
             targetValue: 0,
+            activeTab: null,
             tableKeyFn: function(row) {
                 return row._id;
             },
@@ -150,9 +151,25 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     mixins: [
         countlyVue.mixins.refreshOnParentActive
     ],
+    data: function() {
+        return {
+            paths: [{
+                "label": "Previous Period",
+                "color": "#DDDDDD",
+                "mode": "ghost"
+            }, {
+                "label": "Total Sessions",
+                "color": "#52A3EF"
+            }],
+            activeTab: null
+        };
+    },
     computed: {
         randomNumbers: function() {
             return this.$store.getters["vueExample/randomNumbers"];
+        },
+        graphData: function() {
+            return this.$store.getters["vueExample/graphData"];
         }
     },
     methods: {
