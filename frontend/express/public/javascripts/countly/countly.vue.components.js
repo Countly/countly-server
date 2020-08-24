@@ -1166,7 +1166,13 @@
                         </div>\
                     </div>',
         props: {
-            dataPoints: { required: true, type: Array, default: [] },
+            dataPoints: {
+                required: true,
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
             bucket: { required: false, default: null },
             overrideBucket: { required: false, default: null },
             frozen: {required: true, type: Boolean},
@@ -1299,7 +1305,13 @@
                         </div>\
                     </div>',
         props: {
-            dataPoints: { required: true, type: Array, default: [] },
+            dataPoints: {
+                required: true,
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
             graphType: { required: false, type: String, default: "bar" },
             frozen: {required: true, type: Boolean},
             configOptions: { required: false, default: null }
