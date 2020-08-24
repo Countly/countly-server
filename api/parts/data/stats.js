@@ -6,7 +6,7 @@
 /** @lends module:api/parts/data/stats */
 var stats = {},
     async = require('async');
-
+var common = require("../../utils/common.js");
 var countlyDb;
 /**
 * Get overal server data
@@ -110,7 +110,7 @@ function getTotalUsers(callback, apps) {
         });
     }
     else {
-        countlyDb.collection("apps").find({}, {_id: 1}).toArray(function(err, allApps) {
+        common.readBatcher.getMany("apps", {}, {_id: 1}, function(err, allApps) {
             if (err || !allApps) {
                 callback(0, 0);
             }
