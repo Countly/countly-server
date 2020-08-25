@@ -559,6 +559,9 @@
         }
     });
 
+    var countlyBaseComponent = Vue.extend({
+    });
+
     var _views = {
         BackboneWrapper: countlyVueWrapperView,
         BaseView: countlyBaseView
@@ -572,7 +575,7 @@
 
     // New components
 
-    Vue.component("cly-datatable-w", {
+    Vue.component("cly-datatable-w", countlyBaseComponent.extend({
         template: '<div class="cly-vue-datatable-wrapper" ref="wrapper">\
                         <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
                             <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
@@ -847,9 +850,9 @@
         beforeDestroy: function() {
             this.tableInstance.fnDestroy();
         }
-    });
+    }));
 
-    Vue.component("cly-tabs", {
+    Vue.component("cly-tabs", countlyBaseComponent.extend({
         template: '<div class="cly-vue-tabs" v-bind:class="[themeClass]"><ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]"><li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
         mixins: [
             _mixins.i18n
@@ -885,9 +888,9 @@
                 this.$emit("input", this.tabs[0].tId);
             }
         }
-    });
+    }));
 
-    Vue.component("cly-tab", {
+    Vue.component("cly-tab", countlyBaseComponent.extend({
         template: '<div v-if="isActive || alwaysMounted"><div v-show="isActive"><slot/></div></div>',
         mixins: [
             _mixins.i18n
@@ -908,9 +911,9 @@
                 return this.id;
             }
         }
-    });
+    }));
 
-    Vue.component("cly-panel", {
+    Vue.component("cly-panel", countlyBaseComponent.extend({
         template: '<div class="cly-vue-panel widget">\
                         <div class="widget-header">\
                             <div class="left">\
@@ -934,9 +937,9 @@
             title: { type: String, required: true },
             dateSelector: { type: Boolean, required: false, default: true },
         },
-    });
+    }));
 
-    Vue.component("cly-global-date-selector-w", {
+    Vue.component("cly-global-date-selector-w", countlyBaseComponent.extend({
         template: '<div class="cly-vue-global-date-selector help-zone-vs">\
                         <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
                             <i class="material-icons">date_range</i>\
@@ -1162,9 +1165,9 @@
             this.dateTo.datepicker('hide').datepicker('destroy');
             this.dateFrom.datepicker('hide').datepicker('destroy');
         }
-    });
+    }));
 
-    Vue.component("cly-time-graph-w", {
+    Vue.component("cly-time-graph-w", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -1307,9 +1310,9 @@
                 }
             }
         }
-    });
+    }));
 
-    Vue.component("cly-graph-w", {
+    Vue.component("cly-graph-w", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -1374,9 +1377,9 @@
                 }
             }
         }
-    });
+    }));
 
-    Vue.component("cly-radio", {
+    Vue.component("cly-radio", countlyBaseComponent.extend({
         template: '<div class="cly-vue-radio">\
                         <div class="radio-wrapper">\
                             <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
@@ -1395,9 +1398,9 @@
                 this.$emit('input', e);
             }
         }
-    });
+    }));
 
-    Vue.component("cly-text-field", {
+    Vue.component("cly-text-field", countlyBaseComponent.extend({
         template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">',
         props: {
             value: {required: true}
@@ -1407,9 +1410,9 @@
                 this.$emit('input', e);
             }
         }
-    });
+    }));
 
-    Vue.component("cly-check", {
+    Vue.component("cly-check", countlyBaseComponent.extend({
         template: '<div class="cly-vue-check">\
                         <div class="check-wrapper">\
                             <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
@@ -1426,9 +1429,9 @@
                 this.$emit('input', e);
             }
         }
-    });
+    }));
 
-    Vue.component("cly-check-list", {
+    Vue.component("cly-check-list", countlyBaseComponent.extend({
         template: '<div class="cly-vue-check">\
                         <template v-for="(item, i) in items" :key="i">\
                             <div class="check-wrapper">\
@@ -1457,6 +1460,6 @@
                 this.setValue(this.internalValue);
             }
         }
-    });
+    }));
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
