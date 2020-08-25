@@ -445,11 +445,17 @@
     padding: 8px;
     border: 1px solid #D0D0D0;
     width: calc(100% - 16px);
-    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-top:4px;
 }
 
 .user-configuration-modal .action-section {
-    margin-top: 30px;
+    margin-top: 20px;
+    text-align: right;
+}
+
+#user-account-delete-modal .action-section {
+    margin-top: 45px;
     text-align: right;
 }
 
@@ -458,7 +464,8 @@
 }
 
 #user-account-delete-modal .input-section {
-	height: 40px;
+	margin-top: 20px;
+    height: 40px;
 }
 
 .user-configuration-modal {
@@ -475,8 +482,7 @@
 
 .popup-action-transparent-btn {
     border: none;
-    color: #929292;
-    text-decoration: underline;
+    color: #000000;
     background-color: #ffffff;
     padding: 12px;
     margin-right: 10px;
@@ -512,4 +518,15 @@
     padding: 12px;
     font: 12px Ubuntu,Helvetica,sans-serif;
     line-height: 15px;
+}
+
+.user-configuration-modal .popup-input-label {
+    font-family: Ubuntu;
+    font-size: 13px;
+    color: #717171;
+    margin-top: 8px;
+}
+
+.user-configuration-modal input::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #B9B9B9;
 }

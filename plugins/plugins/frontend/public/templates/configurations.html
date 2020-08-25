@@ -144,11 +144,14 @@
         <div class="title-section">
             <span class="popup-title" data-localize="configs.change-password"></span>
             <p class="popup-description" data-localize="configs.password-specification-1"></p>
-            <p class="popup-description-next" data-localize="configs.password-specification-2"></p>    
+            <p class="popup-description-next" data-localize="configs.password-specification-2"></p>  
         </div>
-        <div class="input section">
+        <div class="input-section">
+        	<label for="old_pwd" class="popup-input-label" data-localize="configs.current-password"></label>
             <input type="password" id="old_pwd" placeholder="Enter your old password" class="user-password-change-modal-input">
+            <label for="new_pwd" class="popup-input-label" data-localize="configs.new-password"></label>
             <input id="new_pwd" placeholder="Enter your new password" type="password" class="user-password-change-modal-input">
+            <label for="re_new_pwd" class="popup-input-label" data-localize="configs.confirmation"></label>
             <input id="re_new_pwd" placeholder="Enter your new password again" type="password" class="user-password-change-modal-input">
         </div>
         <div class="action-section">
@@ -170,7 +173,8 @@
                 <span data-localize="configs.confirm-for-delete"></span>
             </span>    
         </div>
-        <div class="input section">
+        <div class="input-section">
+        	<label for="re_new_pwd" class="popup-input-label" data-localize="configs.confirmation"></label>
             <input type="password" id="delete_account_password" placeholder="Enter your password" class="user-password-change-modal-input">
         </div>
         <div class="action-section">
