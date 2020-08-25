@@ -290,7 +290,7 @@
 
 /* check */
 
-.cly-vue-check .check-wrapper{
+.cly-vue-check.check-switch-skin .check-wrapper{
     position: relative;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -301,11 +301,11 @@
     margin-bottom: 5px;
 }
 
-.cly-vue-check .check-wrapper .check-switch-skin-checkbox:checked + .check-switch-skin-label {
+.cly-vue-check.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label {
     background-color: #2EB52B;
 }
 
-.cly-vue-check .check-wrapper .check-switch-skin-label {
+.cly-vue-check.check-switch-skin .check-wrapper .check-label {
     display: inline-block;
     overflow: hidden;
     cursor: pointer;
@@ -318,12 +318,12 @@
     width: 32px;
     vertical-align: bottom;
 }
-.cly-vue-check .check-wrapper .check-switch-skin-checkbox:checked + .check-switch-skin-label:before {
+.cly-vue-check.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label:before {
     left: 17px;
     box-shadow: 0 1px 1px 0 #157313;
 }
 
-.cly-vue-check .check-wrapper .check-switch-skin-label:before {
+.cly-vue-check.check-switch-skin .check-wrapper .check-label:before {
     content: "";
     display: block;
     width: 12px;
@@ -338,11 +338,11 @@
     transition: all 0.3s ease-in 0s;
     box-shadow: 0 1px 1px 0 #8e8e8e;
 }
-.cly-vue-check .check-wrapper .check-switch-skin-checkbox {
+.cly-vue-check.check-switch-skin .check-wrapper .check-checkbox {
     display: none;
 }
 
-.cly-vue-check .check-wrapper .check-switch-skin-text {
+.cly-vue-check.check-switch-skin .check-wrapper .check-text {
     display: inline-block;
     opacity: 1;
     font-size: 12px;
