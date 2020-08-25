@@ -1390,8 +1390,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      *  @param {number} set - amount to set
      */
     function checkViewQuery(updates, inc, set) {
-        console.log("data", inc, set);
-        console.log("before", updates);
         var needUpdate = true;
         for (let i = 0; i < updates.length; i++) {
             if (inc && updates[i] && updates[i].$set && typeof updates[i].$set.vc === "number") {
@@ -1413,7 +1411,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 updates.push({$inc: {vc: inc}});
             }
         }
-        console.log("after", updates);
     }
 
     /**
