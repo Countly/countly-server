@@ -289,7 +289,7 @@
 }
 
 /* check */
-
+.cly-vue-check.check-tick-skin .check-wrapper,
 .cly-vue-check.check-switch-skin .check-wrapper{
     position: relative;
     -webkit-user-select: none;
@@ -318,6 +318,7 @@
     width: 32px;
     vertical-align: bottom;
 }
+
 .cly-vue-check.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label:before {
     left: 17px;
     box-shadow: 0 1px 1px 0 #157313;
@@ -338,10 +339,17 @@
     transition: all 0.3s ease-in 0s;
     box-shadow: 0 1px 1px 0 #8e8e8e;
 }
+
+.cly-vue-check.check-tick-skin .check-wrapper .check-label {
+    color: #2FA732;
+}
+
+.cly-vue-check.check-tick-skin .check-wrapper .check-checkbox,
 .cly-vue-check.check-switch-skin .check-wrapper .check-checkbox {
     display: none;
 }
 
+.cly-vue-check.check-tick-skin .check-wrapper .check-text,
 .cly-vue-check.check-switch-skin .check-wrapper .check-text {
     display: inline-block;
     opacity: 1;

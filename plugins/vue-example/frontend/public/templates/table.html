@@ -52,6 +52,7 @@
                     </div>
                     <div class="example-cell">
                         <cly-check v-bind:label="'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'" v-model="selectedCheckFlag"></cly-check>
+                        <cly-check skin="tick" v-bind:label="'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'" v-model="selectedCheckFlag"></cly-check>
                     </div>
                     <div class="example-cell">
                         Selected value: {{selectedCheckFlag}}
@@ -63,6 +64,7 @@
                     </div>
                     <div class="example-cell">
                         <cly-check-list v-bind:items="availableCheck" v-model="selectedCheck"></cly-check-list>
+                        <cly-check-list skin="tick" v-bind:items="availableCheck" v-model="selectedCheck"></cly-check-list>
                     </div>
                     <div class="example-cell">
                         Selected value: {{selectedCheck}}

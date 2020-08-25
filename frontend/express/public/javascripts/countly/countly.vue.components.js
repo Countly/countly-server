@@ -1427,7 +1427,7 @@
         template: '<div class="cly-vue-check" v-bind:class="[skinClass]">\
                         <div class="check-wrapper">\
                             <input type="checkbox" class="check-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
-                            <label class="check-label" v-bind:for="componentId + \'-cb\'"></label>\
+                            <label v-bind:class="labelClass" v-bind:for="componentId + \'-cb\'"></label>\
                             <span class="check-text">{{label}}</span>\
                         </div>\
                     </div>',
@@ -1442,11 +1442,27 @@
                     return "check-" + this.skin + "-skin";
                 }
                 return "check-switch-skin";
+            },
+            labelClass: function() {
+                return this.getClass(this.value);
             }
         },
         methods: {
             setValue: function(e) {
                 this.$emit('input', e);
+            },
+            getClass: function(value) {
+                var classes = ["check-label"];
+                if (this.skin === "tick") {
+                    classes.push("fa");
+                    if (value) {
+                        classes.push("fa-check-square");
+                    }
+                    else {
+                        classes.push("fa-square-o");
+                    }
+                }
+                return classes;
             }
         }
     }));
