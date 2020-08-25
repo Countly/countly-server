@@ -5,8 +5,9 @@
 
 /** @lends module:api/parts/data/stats */
 var stats = {},
-    async = require('async');
-var common = require("../../utils/common.js");
+    async = require('async'),
+    common = require("../../utils/common.js");
+
 var countlyDb;
 /**
 * Get overal server data
@@ -93,9 +94,9 @@ stats.getUser = function(db, user, callback) {
 **/
 function getTotalUsers(callback, apps) {
     /**
-     *  Process result of reading apps
-     *  @param {Error} err - DB error
-     *  @param {Array} allApps - list of apps
+     *  Process app result
+     *  @param {Error} err - database error
+     *  @param {Array} allApps - array of apps
      */
     function processApps(err, allApps) {
         if (err || !allApps) {
@@ -139,7 +140,7 @@ function getTotalUsers(callback, apps) {
             common.readBatcher.getMany("apps", {}, {_id: 1}, processApps);
         }
         else {
-            common.readBatcher.getMany("apps", {}, {_id: 1}, processApps);
+            countlyDb.collection("apps").find({}, {_id: 1}).toArray(processApps);
         }
     }
 }
