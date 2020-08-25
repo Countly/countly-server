@@ -153,6 +153,7 @@
 .cly-vue-graph .graph-container{
     width: auto;
     height: 350px;
+    margin: 30px;
 }
 
 .cly-vue-graph-no-data { height:100%; position:relative; }

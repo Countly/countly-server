@@ -1,23 +1,23 @@
 <div>
     <cly-tabs id="basic-tabs2" v-model="activeTab">
         <cly-tab name='Graph' id="graph-tab" v-bind:always-mounted="false">
-            <cly-panel title="Graph">
+            <cly-panel title="Graph" v-bind:date-selector="false">
                 <cly-tabs id="graph-sub-tabs" v-model="activeGraphTab" theme="graphs">
                     <cly-tab name='Pie Graph' id="sub-graph-tab1" v-bind:always-mounted="false">
                         <cly-graph-w
-                            v-bind:data-points="graphData"
+                            v-bind:data-points="pieData"
                             graph-type="pie">
                         </cly-graph-w>
                     </cly-tab>
                     <cly-tab name='Bar Graph' id="sub-graph-tab2" v-bind:always-mounted="false">
                         <cly-graph-w
-                            v-bind:data-points="graphData"
+                            v-bind:data-points="barData"
                             graph-type="bar">
                         </cly-graph-w>
                     </cly-tab>
                     <cly-tab name='Line Graph' id="sub-graph-tab3" v-bind:always-mounted="false">
                         <cly-graph-w
-                            v-bind:data-points="graphData"
+                            v-bind:data-points="lineData"
                             graph-type="line">
                         </cly-graph-w>
                     </cly-tab>

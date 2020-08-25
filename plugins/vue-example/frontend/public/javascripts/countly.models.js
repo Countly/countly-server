@@ -12,12 +12,24 @@
                 state: {
                     pairs: [],
                     randomNumbers: [],
-                    graphData: {
+                    pieData: {
                         "dp": [
                             {"data": [[0, 20]], "label": "Test1", "color": "#52A3EF"},
-                            {"data": [[0, 30]], "label": "Test2", "color": "#FF8700"},
+                            {"data": [[0, 10]], "label": "Test2", "color": "#FF8700"},
                             {"data": [[0, 50]], "label": "Test3", "color": "#0EC1B9"}
                         ]
+                    },
+                    lineData: {
+                        "dp": [
+                            {"data": [[-1, null], [0, 20], [1, 10], [2, 40], [3, null]], "label": "Value", "color": "#52A3EF"},
+                        ],
+                        "ticks": [[-1, ""], [0, "Test1"], [1, "Test2"], [2, "Test3"], [3, ""]]
+                    },
+                    barData: {
+                        "dp": [
+                            {"data": [[-1, null], [0, 20], [1, 10], [2, 40], [3, null]], "label": "Value", "color": "#52A3EF"},
+                        ],
+                        "ticks": [[-1, ""], [0, "Test1"], [1, "Test2"], [2, "Test3"], [3, ""]]
                     },
                     id: 0
                 },
@@ -28,8 +40,14 @@
                     randomNumbers: function(state) {
                         return state.randomNumbers;
                     },
-                    graphData: function(state) {
-                        return state.graphData;
+                    pieData: function(state) {
+                        return state.pieData;
+                    },
+                    barData: function(state) {
+                        return state.barData;
+                    },
+                    lineData: function(state) {
+                        return state.lineData;
                     }
                 },
                 mutations: {
