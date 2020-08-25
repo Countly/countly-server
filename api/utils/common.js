@@ -1906,6 +1906,21 @@ common.checkPromise = function(func, count, interval) {
     });
 };
 
+
+common.fixIncAndSetClashes = function(query) {
+    if (query.$inc && query.$set) {
+        for (var key in query.$inc) {
+            if (typeof query.$set[key] !== 'undefined') {
+                query.$set[key] = query.$set[key] + query.$inc[key];
+                delete query.$inc[key];
+            }
+        }
+        if (Object.keys(query.$inc).length === 0) {
+            delete query.$inc;
+        }
+    }
+    return query;
+};
 /**
 * Single method to update app_users document for specific user for SDK requests
 * @param {params} params - params object
@@ -2002,7 +2017,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         }
 
         if (callback) {
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.fixIncAndSetClashes(update), {
                 new: true,
                 upsert: true
             }, function(err, res) {
@@ -2015,7 +2030,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         else {
             // using updateOne costs less than findAndModify, so we should use this 
             // when acknowledging writes and updated information is not relevant (aka callback is not passed)
-            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, update, {upsert: true}, function() {});
+            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, common.fixIncAndSetClashes(update), {upsert: true}, function() {});
         }
     }
     else if (callback) {
