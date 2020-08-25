@@ -92,6 +92,31 @@ stats.getUser = function(db, user, callback) {
 * @param {array=} apps - provide array of apps to fetch data for, else will fetch data for all apps
 **/
 function getTotalUsers(callback, apps) {
+    /**
+     *  Process result of reading apps
+     *  @param {Error} err - DB error
+     *  @param {Array} allApps - list of apps
+     */
+    function processApps(err, allApps) {
+        if (err || !allApps) {
+            callback(0, 0);
+        }
+        else {
+            async.map(allApps, getUserCountForApp, function(err2, results) {
+                if (err2) {
+                    callback(0, 0);
+                }
+
+                var userCount = 0;
+
+                for (let i = 0; i < results.length; i++) {
+                    userCount += results[i] || 0;
+                }
+
+                callback(userCount, allApps.length);
+            });
+        }
+    }
     if (typeof apps !== "undefined") {
         async.map(apps, function(app, done) {
             getUserCountForApp({_id: app}, done);
@@ -110,26 +135,12 @@ function getTotalUsers(callback, apps) {
         });
     }
     else {
-        common.readBatcher.getMany("apps", {}, {_id: 1}, function(err, allApps) {
-            if (err || !allApps) {
-                callback(0, 0);
-            }
-            else {
-                async.map(allApps, getUserCountForApp, function(err2, results) {
-                    if (err2) {
-                        callback(0, 0);
-                    }
-
-                    var userCount = 0;
-
-                    for (let i = 0; i < results.length; i++) {
-                        userCount += results[i] || 0;
-                    }
-
-                    callback(userCount, allApps.length);
-                });
-            }
-        });
+        if (common.readBatcher) {
+            common.readBatcher.getMany("apps", {}, {_id: 1}, processApps);
+        }
+        else {
+            common.readBatcher.getMany("apps", {}, {_id: 1}, processApps);
+        }
     }
 }
 

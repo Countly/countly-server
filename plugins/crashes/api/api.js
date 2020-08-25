@@ -129,7 +129,7 @@ plugins.setConfigs("crashes", {
             };
             var dbAppUser = params.app_user;
             var latest_version = params.qstring.metrics._app_version.replace(/\./g, ":");
-            if (typeof dbAppUser.hadFatalCrash !== "undefined" && typeof dbAppUser.hadNonfatalCrash !== "undefined" && typeof dbAppUser.av !== "undefined" && common.versionCompare(latest_version, dbAppUser.av) > 0) {
+            if ((typeof dbAppUser.hadFatalCrash !== "undefined" || typeof dbAppUser.hadNonfatalCrash !== "undefined") && typeof dbAppUser.av !== "undefined" && common.versionCompare(latest_version, dbAppUser.av) > 0) {
                 common.db.collection('app_crashusers' + params.app_id).find({uid: dbAppUser.uid}, {group: 1, _id: 0}).toArray(function(err, res) {
                     if (res && res.length) {
                         var crashes = [];
