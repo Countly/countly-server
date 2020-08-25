@@ -291,7 +291,7 @@ class ReadBatcher extends EventEmitter {
      */
     get(collection, query, projection, multi) {
         if (!this.onMaster || cluster.isMaster) {
-            var id = JSON.stringify(query);
+            var id = JSON.stringify(query) + "_" + multi;
             if (!this.data[collection]) {
                 this.data[collection] = {};
             }
