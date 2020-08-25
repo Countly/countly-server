@@ -880,9 +880,9 @@
         computed: {
             themeClass: function() {
                 if (["main", "graphs"].indexOf(this.theme) > -1) {
-                    return this.theme + "-theme";
+                    return "tabs-" + this.theme + "-skin";
                 }
-                return "main-theme";
+                return "tabs-main-skin";
             },
             numberOfTabsClass: function() {
                 return "tabs-" + this.tabs.length;
@@ -1426,9 +1426,9 @@
     Vue.component("cly-check", countlyBaseComponent.extend({
         template: '<div class="cly-vue-check">\
                         <div class="check-wrapper">\
-                            <input type="checkbox" class="switch-theme-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
-                            <label class="switch-theme-label" v-bind:for="componentId + \'-cb\'"></label>\
-                            <span class="switch-theme-text">{{label}}</span>\
+                            <input type="checkbox" class="check-switch-skin-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
+                            <label class="check-switch-skin-label" v-bind:for="componentId + \'-cb\'"></label>\
+                            <span class="check-switch-skin-text">{{label}}</span>\
                         </div>\
                     </div>',
         props: {
@@ -1446,9 +1446,9 @@
         template: '<div class="cly-vue-check">\
                         <template v-for="(item, i) in items" :key="i">\
                             <div class="check-wrapper">\
-                                <input type="checkbox" class="switch-theme-checkbox" v-bind:id="componentId + \'-cb-\' + i" v-bind:value="item.value" v-model="internalValue">\
-                                <label class="switch-theme-label" v-bind:for="componentId + \'-cb-\' + i"></label>\
-                                <span class="switch-theme-text">{{item.label}}</span>\
+                                <input type="checkbox" class="check-switch-skin-checkbox" v-bind:id="componentId + \'-cb-\' + i" v-bind:value="item.value" v-model="internalValue">\
+                                <label class="check-switch-skin-label" v-bind:for="componentId + \'-cb-\' + i"></label>\
+                                <span class="check-switch-skin-text">{{item.label}}</span>\
                             </div>\
                         </template>\
                     </div>',
