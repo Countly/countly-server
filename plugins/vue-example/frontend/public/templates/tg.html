@@ -1,20 +1,18 @@
 <div>
     <cly-tabs id="basic-tabs2" v-model="activeTab">
-        <cly-tab name='Time Graph' id="time-tab">
+        <cly-tab name='Time Graph' id="time-tab" v-bind:always-mounted="false">
             <cly-panel title="Time Graph">
                 <cly-time-graph-w
                     v-bind:data-points="randomNumbers"
-                    v-bind:config-paths="paths"
-                    v-bind:frozen="activeTab !== 'time-tab'">
+                    v-bind:config-paths="paths">
                 </cly-time-graph-w>
             </cly-panel>
         </cly-tab>
-        <cly-tab name='Graph' id="graph-tab">
+        <cly-tab name='Graph' id="graph-tab" v-bind:always-mounted="false">
             <cly-panel title="Graph">
                 <cly-graph-w
                     v-bind:data-points="graphData"
-                    v-bind:graph-type="'pie'"
-                    v-bind:frozen="activeTab !== 'graph-tab'">
+                    v-bind:graph-type="'pie'">
                 </cly-graph-w>
             </cly-panel>
         </cly-tab>

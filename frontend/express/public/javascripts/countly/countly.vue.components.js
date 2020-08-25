@@ -876,14 +876,14 @@
     });
 
     Vue.component("cly-tab", {
-        template: '<div v-show="isActive"><slot/></div>',
+        template: '<div v-if="isActive || alwaysMounted"><div v-show="isActive"><slot/></div></div>',
         mixins: [
             _mixins.i18n
         ],
         props: {
             name: { type: String, default: null},
             id: { type: String, default: null },
-
+            alwaysMounted: { type: Boolean, default: true }
         },
         computed: {
             isActive: function() {
@@ -1175,7 +1175,7 @@
             },
             bucket: { required: false, default: null },
             overrideBucket: { required: false, default: null },
-            frozen: {required: true, type: Boolean},
+            frozen: {default: false, type: Boolean},
             configPaths: { required: true },
             configSmall: { required: false, default: false },
             configOptions: { required: false, default: null }
@@ -1220,10 +1220,7 @@
                     return pathCopy;
                 });
 
-                var plot = $(this.$refs.container).data("plot");
-                if (plot) {
-                    plot.getPlaceholder().unbind("resize", self._onResize);
-                }
+                this.unbindResizer();
 
                 countlyCommon.drawTimeGraph(points,
                     $(this.$refs.container),
@@ -1238,6 +1235,12 @@
             initializeResizer: function() {
                 var plot = $(this.$refs.container).data("plot");
                 plot.getPlaceholder().resize(this._onResize);
+            },
+            unbindResizer: function() {
+                var plot = $(this.$refs.container).data("plot");
+                if (plot) {
+                    plot.getPlaceholder().unbind("resize", this._onResize);
+                }
             },
             _onResize: function() {
                 var self = this,
@@ -1279,6 +1282,9 @@
                 });
             }
         },
+        beforeDestroy: function() {
+            this.unbindResizer();
+        },
         watch: {
             dataPoints: function() {
                 this.refresh();
@@ -1313,7 +1319,7 @@
                 }
             },
             graphType: { required: false, type: String, default: "bar" },
-            frozen: {required: true, type: Boolean},
+            frozen: {default: false, type: Boolean},
             configOptions: { required: false, default: null }
         },
         data: function() {
