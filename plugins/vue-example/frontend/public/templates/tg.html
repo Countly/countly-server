@@ -1,19 +1,35 @@
 <div>
     <cly-tabs id="basic-tabs2" v-model="activeTab">
+        <cly-tab name='Graph' id="graph-tab" v-bind:always-mounted="false">
+            <cly-panel title="Graph">
+                <cly-tabs id="graph-sub-tabs" v-model="activeGraphTab" theme="graphs">
+                    <cly-tab name='Pie Graph' id="sub-graph-tab1" v-bind:always-mounted="false">
+                        <cly-graph-w
+                            v-bind:data-points="graphData"
+                            graph-type="pie">
+                        </cly-graph-w>
+                    </cly-tab>
+                    <cly-tab name='Bar Graph' id="sub-graph-tab2" v-bind:always-mounted="false">
+                        <cly-graph-w
+                            v-bind:data-points="graphData"
+                            graph-type="bar">
+                        </cly-graph-w>
+                    </cly-tab>
+                    <cly-tab name='Line Graph' id="sub-graph-tab3" v-bind:always-mounted="false">
+                        <cly-graph-w
+                            v-bind:data-points="graphData"
+                            graph-type="line">
+                        </cly-graph-w>
+                    </cly-tab>
+                </cly-tabs>
+            </cly-panel>
+        </cly-tab>
         <cly-tab name='Time Graph' id="time-tab" v-bind:always-mounted="false">
             <cly-panel title="Time Graph">
                 <cly-time-graph-w
                     v-bind:data-points="randomNumbers"
                     v-bind:config-paths="paths">
                 </cly-time-graph-w>
-            </cly-panel>
-        </cly-tab>
-        <cly-tab name='Graph' id="graph-tab" v-bind:always-mounted="false">
-            <cly-panel title="Graph">
-                <cly-graph-w
-                    v-bind:data-points="graphData"
-                    v-bind:graph-type="'pie'">
-                </cly-graph-w>
             </cly-panel>
         </cly-tab>
     </cly-tabs>

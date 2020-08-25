@@ -161,7 +161,8 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
                 "label": "Total Sessions",
                 "color": "#52A3EF"
             }],
-            activeTab: null
+            activeTab: null,
+            activeGraphTab: null
         };
     },
     computed: {

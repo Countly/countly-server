@@ -850,7 +850,7 @@
     });
 
     Vue.component("cly-tabs", {
-        template: '<div class="cly-vue-tabs"><ul class="cly-vue-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.tId)" v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+        template: '<div class="cly-vue-tabs" v-bind:class="[themeClass]"><ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]"><li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
         mixins: [
             _mixins.i18n
         ],
@@ -861,6 +861,18 @@
         },
         props: {
             value: { default: null },
+            theme: { default: "main", type: String}
+        },
+        computed: {
+            themeClass: function() {
+                if (["main", "graphs"].indexOf(this.theme) > -1) {
+                    return this.theme + "-theme";
+                }
+                return "main-theme";
+            },
+            numberOfTabsClass: function() {
+                return "tabs-" + this.tabs.length;
+            }
         },
         methods: {
             setTab: function(tId) {
