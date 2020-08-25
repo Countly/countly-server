@@ -559,7 +559,18 @@
         }
     });
 
+    var _uniqueComponentId = 0;
+
     var countlyBaseComponent = Vue.extend({
+        beforeCreate: function() {
+            this.ucid = _uniqueComponentId.toString();
+            _uniqueComponentId += 1;
+        },
+        computed: {
+            componentId: function() {
+                return "cly-cmp-" + _uniqueComponentId;
+            }
+        }
     });
 
     var _views = {
@@ -661,7 +672,7 @@
                             "mData": function(row, type) {
                                 if (type === "display") {
                                     var stringBuffer = ['<div class="on-off-switch">'];
-                                    var rowId = "row-" + self.keyFn(row);
+                                    var rowId = self.componentId + "-row-" + self.keyFn(row);
                                     if (row[column.fieldKey]) {
                                         stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '" checked>');
                                     }
@@ -1415,8 +1426,8 @@
     Vue.component("cly-check", countlyBaseComponent.extend({
         template: '<div class="cly-vue-check">\
                         <div class="check-wrapper">\
-                            <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
-                            <label class="switch-theme-label" v-bind:for="\'cb_\'"></label>\
+                            <input type="checkbox" class="switch-theme-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
+                            <label class="switch-theme-label" v-bind:for="componentId + \'-cb\'"></label>\
                             <span class="switch-theme-text">{{label}}</span>\
                         </div>\
                     </div>',
@@ -1435,8 +1446,8 @@
         template: '<div class="cly-vue-check">\
                         <template v-for="(item, i) in items" :key="i">\
                             <div class="check-wrapper">\
-                                <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\' + i" v-bind:value="item.value" v-model="internalValue">\
-                                <label class="switch-theme-label" v-bind:for="\'cb_\' + i"></label>\
+                                <input type="checkbox" class="switch-theme-checkbox" v-bind:id="componentId + \'-cb-\' + i" v-bind:value="item.value" v-model="internalValue">\
+                                <label class="switch-theme-label" v-bind:for="componentId + \'-cb-\' + i"></label>\
                                 <span class="switch-theme-text">{{item.label}}</span>\
                             </div>\
                         </template>\
