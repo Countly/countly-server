@@ -2363,4 +2363,68 @@ common.sanitizeFilename = (filename, replacement = "") => {
         .replace(/^\.+/, replacement);
 };
 
+
+/**
+ *  Merge 2 mongodb update queries
+ *  @param {object} ob1 - existing database update query
+ *  @param {object} ob2 - addition to database update query
+ *  @returns {object} merged database update query
+ */
+common.mergeQuery = function(ob1, ob2) {
+    if (ob2) {
+        for (let key in ob2) {
+            if (!ob1[key]) {
+                ob1[key] = ob2[key];
+            }
+            else if (key === "$set" || key === "$setOnInsert" || key === "$unset") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob2[key][val];
+                }
+            }
+            else if (key === "$addToSet") {
+                for (let val in ob2[key]) {
+                    if (typeof ob1[key][val] !== 'object') {
+                        ob1[key][val] = {'$each': [ob1[key][val]]};
+                    }
+
+                    if (typeof ob2[key][val] === 'object' && ob2[key][val].$each) {
+                        for (var p = 0; p < ob2[key][val].$each.length; p++) {
+                            ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                        }
+                    }
+                    else {
+                        ob1[key][val].$each.push(ob2[key][val]);
+                    }
+                }
+            }
+            else if (key === "$inc") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob1[key][val] || 0;
+                    ob1[key][val] += ob2[key][val];
+                }
+            }
+            else if (key === "$mul") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob1[key][val] || 0;
+                    ob1[key][val] *= ob2[key][val];
+                }
+            }
+            else if (key === "$min") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob1[key][val] || ob2[key][val];
+                    ob1[key][val] = Math.min(ob1[key][val], ob2[key][val]);
+                }
+            }
+            else if (key === "$max") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob1[key][val] || ob2[key][val];
+                    ob1[key][val] = Math.max(ob1[key][val], ob2[key][val]);
+                }
+            }
+        }
+    }
+
+    return ob1;
+};
+
 module.exports = common;

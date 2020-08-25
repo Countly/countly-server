@@ -2087,16 +2087,8 @@ const processRequestData = (params, app, done) => {
     plugins.dispatch("/sdk/user_properties", ob, function() {
         var update = {};
         for (let i = 0; i < ob.updates.length; i++) {
-            for (let key in ob.updates[i]) {
-                if (!update[key]) {
-                    update[key] = ob.updates[i][key];
-                }
-                else {
-                    update[key] = Object.assign(update[key], ob.updates[i][key]);
-                }
-            }
+            update = common.mergeQuery(update, ob.updates[i]);
         }
-
         var newUser = params.app_user.fs ? false : true;
         common.updateAppUser(params, update, function() {
             if (!plugins.getConfig("api").safe && !params.res.finished) {

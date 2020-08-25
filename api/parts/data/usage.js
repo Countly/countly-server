@@ -967,17 +967,11 @@ plugins.register("/sdk/user_properties", function(ob) {
 
         //check when last session ended and if it was less than cooldown
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < config.session_cooldown) {
-            let updates = [];
             plugins.dispatch("/session/extend", {
                 params: params,
                 dbAppUser: params.app_user,
-                updates: updates
+                updates: ob.updates
             });
-            if (updates.length) {
-                for (let i = 0; i < updates.length; i++) {
-                    ob.updates.push(updates[i]);
-                }
-            }
         }
         else {
             userProps.lsid = params.request_hash + "_" + params.app_user.uid + "_" + params.time.mstimestamp;
@@ -986,19 +980,13 @@ plugins.register("/sdk/user_properties", function(ob) {
                 processSessionDurationRange(params.session_duration || 0, params);
 
                 //process duration from unproperly ended previous session
-                let updates = [];
                 plugins.dispatch("/session/post", {
                     params: params,
                     dbAppUser: params.app_user,
-                    updates: updates,
+                    updates: ob.updates,
                     session_duration: params.session_duration,
                     end_session: false
                 });
-                if (updates.length) {
-                    for (let i = 0; i < updates.length; i++) {
-                        ob.updates.push(updates[i]);
-                    }
-                }
                 userProps.sd = 0;
             }
             processUserSession(params.app_user, params);
@@ -1006,19 +994,12 @@ plugins.register("/sdk/user_properties", function(ob) {
             //new session
             var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
 
-            let updates = [];
             plugins.dispatch("/session/begin", {
                 params: params,
                 dbAppUser: params.app_user,
-                updates: updates,
+                updates: ob.updates,
                 isNewUser: isNewUser
             });
-
-            if (updates.length) {
-                for (let i = 0; i < updates.length; i++) {
-                    ob.updates.push(updates[i]);
-                }
-            }
 
             if (isNewUser) {
                 userProps[common.dbUserMap.first_seen] = params.time.timestamp;
@@ -1072,14 +1053,7 @@ plugins.register("/sdk/user_properties", function(ob) {
                     updates.push({$set: {sd: 0}});
                     let updateUser = {};
                     for (let i = 0; i < updates.length; i++) {
-                        for (let key in updates[i]) {
-                            if (!updateUser[key]) {
-                                updateUser[key] = updates[i][key];
-                            }
-                            else {
-                                updateUser[key] = Object.assign(updateUser[key], updates[i][key]);
-                            }
-                        }
+                        updateUser = common.mergeQuery(updateUser, updates[i]);
                     }
                     common.updateAppUser(params, updateUser);
                 }
