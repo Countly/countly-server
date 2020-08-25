@@ -1906,6 +1906,52 @@ common.checkPromise = function(func, count, interval) {
     });
 };
 
+common.clearClashingQueryOperations = function(query) {
+    var map = {};
+    var field;
+    for (var opp in query) {
+        for (field in query[opp]) {
+            map[field] = (map[field] || 0) + 1;
+        }
+    }
+    var badPaths = [];
+    var allPaths = Object.keys(map);
+    for (var z = 0; z < allPaths.length; z++) {
+        for (var p = z + 1; p < allPaths.length; p++) {
+            if (allPaths[z].startsWith(allPaths[p] + ".")) {
+                map[allPaths[z]]++;
+                map[allPaths[p]]++;
+            }
+        }
+    }
+
+    for (var path in map) {
+        if (map[path] > 1) {
+            badPaths.push(path);
+        }
+    }
+    if (badPaths.length > 0) {
+        var droppedOp = [];
+        var st = JSON.stringify(query);
+
+        for (var op in query) {
+            for (field in query[op]) {
+                if (badPaths.indexOf(field) > -1) {
+                    droppedOp.push("{" + op + ":{" + field + ":" + JSON.stringify(query[op][field]) + "}}");
+                    delete query[op][field];
+
+                    if (Object.keys(query[op]).length === 0) {
+
+                        delete query[op];
+                    }
+                }
+            }
+        }
+        console.log("Conflicting operations. Query:" + st + " OPS:" + droppedOp.join(",") + " Resulted query:" + JSON.stringify(query));
+    }
+    return query;
+
+};
 /**
 * Single method to update app_users document for specific user for SDK requests
 * @param {params} params - params object
@@ -2002,7 +2048,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         }
 
         if (callback) {
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
                 upsert: true
             }, function(err, res) {
@@ -2015,7 +2061,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         else {
             // using updateOne costs less than findAndModify, so we should use this 
             // when acknowledging writes and updated information is not relevant (aka callback is not passed)
-            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, update, {upsert: true}, function() {});
+            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {upsert: true}, function() {});
         }
     }
     else if (callback) {
