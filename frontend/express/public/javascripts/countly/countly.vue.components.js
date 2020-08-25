@@ -864,7 +864,7 @@
     }));
 
     Vue.component("cly-tabs", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-tabs" v-bind:class="[themeClass]"><ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]"><li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+        template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]"><ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]"><li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
         mixins: [
             _mixins.i18n
         ],
@@ -875,12 +875,12 @@
         },
         props: {
             value: { default: null },
-            theme: { default: "main", type: String}
+            skin: { default: "main", type: String}
         },
         computed: {
-            themeClass: function() {
-                if (["main", "graphs"].indexOf(this.theme) > -1) {
-                    return "tabs-" + this.theme + "-skin";
+            skinClass: function() {
+                if (["main", "graphs"].indexOf(this.skin) > -1) {
+                    return "tabs-" + this.skin + "-skin";
                 }
                 return "tabs-main-skin";
             },
