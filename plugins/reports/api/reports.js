@@ -198,13 +198,44 @@ var metrics = {
                                     });
                                 }
                                 else {
-                                    fetch.getTimeObj(metric, params, {db: db}, function(output) {
-                                        fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
-                                            output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
-                                            output.prev_correction = fetch.formatTotalUsersObj(dbTotalUsersObj, null, true);
-                                            done2(null, {metric: metric, data: output});
+                                    // process in reports plugin
+                                    if (["users", "revenue"].indexOf(metric) >= 0) {
+                                        fetch.getTimeObj(metric, params, {db: db}, function(output) {
+                                            fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
+                                                output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
+                                                output.prev_correction = fetch.formatTotalUsersObj(dbTotalUsersObj, null, true);
+                                                done2(null, {metric: metric, data: output});
+                                            });
                                         });
-                                    });
+                                    }
+                                    else {
+                                        // process outside reports plugin
+                                        if(!this.cancelReportCall) {
+                                            this.cancelReportCall = {};
+                                        }
+                                        plugins.dispatch("/email/report", {
+                                            params: {
+                                                db: db,
+                                                report: report,
+                                                member: member,
+                                                moment: moment,
+                                                app: params.app,
+                                            },
+                                            metric: metric,
+                                            reportAPICallback: (err, data) => {
+                                                clearTimeout(this.cancelReportCall[metric]);
+                                                if(err) {
+                                                    done2(err, null);
+                                                } else {
+                                                    done2(err, {plugin_metric: metric, data:data });
+                                                }
+                                            },
+                                        }, );
+                                        // set plugin report dispatch max duration to 30s
+                                        this.cancelReportCall[metric] = setTimeout(()=> {
+                                            done2();
+                                        }, 30000)
+                                    }
                                 }
                             }
                         }
@@ -228,15 +259,24 @@ var metrics = {
                                     }
                                     events = events || {};
                                     events.list = events.list || [];
+                                    if (report.selectedEvents) {
+                                        events.list = events.list.filter((e)=>{
+                                            return report.selectedEvents.indexOf(`${app._id}***${e}`) > -1;
+                                        });
+                                    }
                                     const metricIterator = metricIteratorCurryFunc(params2);
                                     async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err1, results) {
                                         if (err1) {
                                             console.log(err1);
                                         }
                                         app.results = {};
+                                        app.plugin_metrics= {};
                                         for (var i = 0; i < results.length; i++) {
                                             if (results[i] && results[i].metric) {
                                                 app.results[results[i].metric] = results[i].data;
+                                            }
+                                            if(results[i] && results[i].plugin_metric) {
+                                                app.plugin_metrics[results[i].plugin_metric] = results[i].data;
                                             }
                                         }
                                         if (!cache[app_id]) {
@@ -540,6 +580,9 @@ var metrics = {
                             collections["events." + events[j]] = true;
                         }
                     }
+                }
+                else {
+                    collections[i] = true;
                 }
             }
         }

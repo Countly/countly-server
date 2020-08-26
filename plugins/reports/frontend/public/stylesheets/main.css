@@ -235,3 +235,7 @@
 .edit-menu.reports-menu .item{
   padding: 8px 8px;
 }
+#reports-widget-drawer .time-and-zone {
+    display: flex;
+    flex-direction: row;
+}

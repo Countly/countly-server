@@ -4,9 +4,15 @@
     jQuery
  */
 (function(countlyReporting, $) {
-
     //Private Properties
     var _data = {};
+    var _metrics= [
+        {name: jQuery.i18n.map["reports.analytics"], value: "analytics"},
+        {name: jQuery.i18n.map["reports.events"], value: "events"},
+        {name: jQuery.i18n.map["reports.revenue"], value: "revenue"},
+        {name: jQuery.i18n.map["reports.crash"], value: "crash"},
+    ];
+
     //Public Methods
     countlyReporting.initialize = function() {
         return $.ajax({
@@ -94,5 +100,18 @@
             }
         }
         return null;
+    };
+
+    countlyReporting.addMetric = function(m) {
+        var existed = _metrics.filter(function(item) {
+            return item.value === m.value; 
+        });
+        if (existed.length === 0) {
+            _metrics.push(m);
+        }
+    };
+
+    countlyReporting.getMetrics = function() {
+        return _metrics;
     };
 }(window.countlyReporting = window.countlyReporting || {}, jQuery));
