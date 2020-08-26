@@ -3,6 +3,7 @@
     CountlyHelpers,
     countlyGlobal,
     countlyView,
+    countlyEvent,
     ReportingView,
     countlyReporting,
     jQuery,
@@ -338,7 +339,7 @@ window.ReportingView = countlyView.extend({
         $("#reports-multi-app-dropdown").clyMultiSelectSetItems(apps);
 
         $("#reports-multi-metrics-dropdown").clyMultiSelectSetItems(countlyReporting.getMetrics());
-       
+
         $('#reports-widge-close').off("click").on("click", function() {
             $("#reports-widget-drawer").removeClass("open");
         });
@@ -477,33 +478,34 @@ window.ReportingView = countlyView.extend({
 
         $("#reports-multi-app-dropdown").on("cly-multi-select-change", function() {
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-            var apps =  $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
-            self.loadEventsForApps(apps);
+            var selectedApps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
+            self.loadEventsForApps(selectedApps);
             self.checkEventsSectionView();
 
         });
-        self.loadEventsForApps = function(apps) {
-            countlyDashboards.getEventsForApps(apps, function(eventData) {
+        self.loadEventsForApps = function(targetApps) {
+            countlyEvent.getEventsForApps(targetApps, function(eventData) {
                 $("#reports-multi-events-dropdown").clyMultiSelectSetItems(eventData);
             });
-        }
-        
+        };
+
         self.checkEventsSectionView = function() {
             var selectedMetrics = $('#reports-multi-metrics-dropdown').clyMultiSelectGetSelection();
-            var apps =  $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
+            var selectedApps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
             var eventsSection = $("#reports-widget-drawer .details .include-events").closest(".section");
 
-            if(selectedMetrics.indexOf("events") > -1 && apps.length > 0) {
+            if (selectedMetrics.indexOf("events") > -1 && selectedApps.length > 0) {
                 eventsSection.show();
-            } else {
+            }
+            else {
                 eventsSection.hide();
             }
-        }
+        };
 
-        $("#reports-widget-drawer .details .include-metrics").on("cly-multi-select-change",function(e){
+        $("#reports-widget-drawer .details .include-metrics").on("cly-multi-select-change", function() {
             self.checkEventsSectionView();
         });
-        $("#reports-multi-events-dropdown").on("cly-multi-select-change", function(e) {
+        $("#reports-multi-events-dropdown").on("cly-multi-select-change", function() {
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
 
@@ -617,7 +619,7 @@ window.ReportingView = countlyView.extend({
             $("#reports-widget-drawer .details #reports-timezone-dropdown").closest(".section").show();
             $("#reports-widget-drawer .details #report-types").closest(".section").show();
 
-            
+
             if ($("#weekly-option").hasClass("selected")) {
                 $("#reports-dow-section").show();
             }
@@ -693,26 +695,25 @@ window.ReportingView = countlyView.extend({
 
                 $("#reports-multi-app-dropdown").clyMultiSelectSetSelection(appSelected);
 
-                var selectedMetrics = []
-                var metricOptions = countlyReporting.getMetrics(); 
+                var selectedMetrics = [];
+                var metricOptions = countlyReporting.getMetrics();
                 metricOptions.forEach(function(m) {
-                   if (data.metrics[m.value] === true) {
+                    if (data.metrics[m.value] === true) {
                         selectedMetrics.push(m);
-                   }
+                    }
                 });
                 $("#reports-multi-metrics-dropdown").clyMultiSelectSetSelection(selectedMetrics);
 
-                if (data.metrics["events"] > -1) {
+                if (data.metrics.events > -1) {
                     var eventsSelected = data.selectedEvents || [];
                     var options = eventsSelected.map(function(e) {
                         var elements = e.split("***");
-                        var appId = elements[0];
+                        var targetAppId = elements[0];
                         var eventName = elements[1];
-                        var displayName = eventName + "(" + countlyGlobal.apps[appId].name + ")"; 
+                        var displayName = eventName + "(" + countlyGlobal.apps[targetAppId].name + ")";
 
-                        return {value: e, name:displayName}; 
+                        return {value: e, name: displayName};
                     });
-                    console.log("eee", options)
                     $("#reports-multi-events-dropdown").clyMultiSelectSetSelection(options);
                 }
             }
@@ -799,8 +800,8 @@ window.ReportingView = countlyView.extend({
                 selectedMetrics.forEach(function(m) {
                     settings.metrics[m] = true;
                 });
-                if(selectedMetrics.indexOf("events") > -1) {
-                    settings.selectedEvents =  $("#reports-multi-events-dropdown").clyMultiSelectGetSelection();
+                if (selectedMetrics.indexOf("events") > -1) {
+                    settings.selectedEvents = $("#reports-multi-events-dropdown").clyMultiSelectGetSelection();
                 }
 
                 settings.apps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();

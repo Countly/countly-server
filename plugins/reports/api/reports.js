@@ -210,7 +210,7 @@ var metrics = {
                                     }
                                     else {
                                         // process outside reports plugin
-                                        if(!this.cancelReportCall) {
+                                        if (!this.cancelReportCall) {
                                             this.cancelReportCall = {};
                                         }
                                         plugins.dispatch("/email/report", {
@@ -222,19 +222,20 @@ var metrics = {
                                                 app: params.app,
                                             },
                                             metric: metric,
-                                            reportAPICallback: (err, data) => {
+                                            reportAPICallback: (callErr, callData) => {
                                                 clearTimeout(this.cancelReportCall[metric]);
-                                                if(err) {
-                                                    done2(err, null);
-                                                } else {
-                                                    done2(err, {plugin_metric: metric, data:data });
+                                                if (callErr) {
+                                                    done2(callErr, null);
+                                                }
+                                                else {
+                                                    done2(null, {plugin_metric: metric, data: callData});
                                                 }
                                             },
-                                        }, );
+                                        },);
                                         // set plugin report dispatch max duration to 30s
                                         this.cancelReportCall[metric] = setTimeout(()=> {
                                             done2();
-                                        }, 30000)
+                                        }, 30000);
                                     }
                                 }
                             }
@@ -270,12 +271,12 @@ var metrics = {
                                             console.log(err1);
                                         }
                                         app.results = {};
-                                        app.plugin_metrics= {};
+                                        app.plugin_metrics = {};
                                         for (var i = 0; i < results.length; i++) {
                                             if (results[i] && results[i].metric) {
                                                 app.results[results[i].metric] = results[i].data;
                                             }
-                                            if(results[i] && results[i].plugin_metric) {
+                                            if (results[i] && results[i].plugin_metric) {
                                                 app.plugin_metrics[results[i].plugin_metric] = results[i].data;
                                             }
                                         }
