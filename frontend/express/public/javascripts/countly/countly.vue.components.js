@@ -1478,15 +1478,15 @@
             skin: { default: "switch", type: String}
         },
         computed: {
-            uncompressed: function (){
+            uncompressed: function() {
                 return this.getUncompressed();
             }
         },
         methods: {
             getUncompressed: function() {
                 var self = this;
-                return this.items.map(function(item){
-                    return self.value.indexOf(item.value)>-1;
+                return this.items.map(function(item) {
+                    return self.value.indexOf(item.value) > -1;
                 });
             },
             setValue: function(value, status) {
@@ -1499,7 +1499,7 @@
                 else if (!status && self.value.indexOf(value) > -1) {
                     newArray = self.value.slice().filter(function(item) {
                         return item !== value;
-                    })
+                    });
                 }
                 if (newArray) {
                     this.$emit('input', newArray);
