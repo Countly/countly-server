@@ -1031,4 +1031,106 @@
         _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation]) ? _activeSegmentationObj[_activeSegmentation] : [];
     }
 
+    // cached global events map;
+    var eventMaps = {};
+
+    /**
+     * Deferred function to get events for target appids
+     * @param  {Array} appIds - app ids
+     * @param  {function} callback- callback style provided
+     * @returns {Promise} - deferred promise
+     */
+    countlyEvent.getEventsForApps = function(appIds, callback) {
+        /**
+         * Deferred function to get events
+         * @param  {String} appId - app id
+         * @param  {Array} results - results array
+         * @returns {Promise} - deferred promise
+         */
+        function getEventsDfd(appId, results) {
+            var dfd = jQuery.Deferred();
+
+            if (eventMaps[appId]) {
+                results.push(eventMaps[appId]);
+                dfd.resolve();
+            }
+            else {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": appId,
+                        "method": "get_events",
+                        "timestamp": +new Date()
+                    },
+                    dataType: "json",
+                    success: function(data) {
+                        if (data && data._id) {
+                            eventMaps[data._id] = data;
+                        }
+
+                        results.push(data);
+                        dfd.resolve();
+                    }
+                });
+            }
+
+            return dfd.promise();
+        }
+        if (!appIds || appIds.length === 0) {
+            callback([]);
+            return;
+        }
+
+        var requests = [],
+            results = [],
+            i = 0;
+
+        for (i = 0; i < appIds.length; i++) {
+            requests.push(getEventsDfd(appIds[i], results));
+        }
+
+        $.when.apply(null, requests).done(function() {
+            var ret = [];
+            for (i = 0; i < results.length; i++) {
+                extractEvents(results[i], ret);
+            }
+
+            callback(ret);
+        });
+
+        /**
+         * Function to extract event
+         * @param  {Array} data - data array
+         * @param  {Array} returnArray - return data array
+         */
+        function extractEvents(data, returnArray) {
+            /**
+             * Function to get the events long name
+             * @param  {String} eventKey - event name
+             * @param  {Object} eventMap - event map object
+             * @returns {String} event name
+             */
+            function getEventLongName(eventKey, eventMap) {
+                var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+                if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
+                    return eventMap[mapKey].name;
+                }
+                else {
+                    return eventKey;
+                }
+            }
+            var eventData = (_.isArray(data)) ? data[0] : data;
+            if (eventData && eventData.list) {
+                for (var j = 0; j < eventData.list.length; j++) {
+                    var eventNamePostfix = (appIds.length > 1) ? " (" + ((countlyGlobal.apps[eventData._id] && countlyGlobal.apps[eventData._id].name) || "Unknown") + ")" : "";
+
+                    returnArray.push({
+                        value: eventData._id + "***" + eventData.list[j],
+                        name: getEventLongName(eventData.list[j], eventData.map) + eventNamePostfix
+                    });
+                }
+            }
+        }
+    };
 }(window.countlyEvent = window.countlyEvent || {}, jQuery));
