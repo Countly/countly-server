@@ -1428,7 +1428,7 @@
                         <div class="check-wrapper">\
                             <input type="checkbox" class="check-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
                             <label v-bind:class="labelClass" v-bind:for="componentId + \'-cb\'"></label>\
-                            <span class="check-text">{{label}}</span>\
+                            <span class="check-text" @click="setValue(!value)">{{label}}</span>\
                         </div>\
                     </div>',
         props: {
@@ -1468,41 +1468,42 @@
     }));
 
     Vue.component("cly-check-list", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-check" v-bind:class="[skinClass]">\
-                        <template v-for="(item, i) in items" :key="i">\
-                            <div class="check-wrapper">\
-                                <input type="checkbox" class="check-checkbox" v-bind:id="componentId + \'-cb-\' + i" v-bind:value="item.value" v-model="internalValue">\
-                                <label class="check-label" v-bind:for="componentId + \'-cb-\' + i"></label>\
-                                <span class="check-text">{{item.label}}</span>\
-                            </div>\
-                        </template>\
-                    </div>',
+        template: '<div class="cly-vue-check-list">\
+                      <cly-check v-for="(item, i) in items" :key="i" v-bind:skin="skin" v-bind:label="item.label" v-bind:value="uncompressed[i]" v-on:input="setValue(item.value, $event)">\
+                      </cly-check>\
+                  </div>',
         props: {
             value: {required: true},
             items: {required: true},
             skin: { default: "switch", type: String}
         },
         computed: {
-            skinClass: function() {
-                if (["switch", "tick"].indexOf(this.skin) > -1) {
-                    return "check-" + this.skin + "-skin";
-                }
-                return "check-switch-skin";
+            uncompressed: function (){
+                return this.getUncompressed();
             }
-        },
-        data: function() {
-            return {
-                internalValue: this.value
-            };
         },
         methods: {
-            setValue: function(e) {
-                this.$emit('input', e);
-            }
-        },
-        watch: {
-            internalValue: function() {
-                this.setValue(this.internalValue);
+            getUncompressed: function() {
+                var self = this;
+                return this.items.map(function(item){
+                    return self.value.indexOf(item.value)>-1;
+                });
+            },
+            setValue: function(value, status) {
+                var self = this;
+                var newArray = null;
+                if (status && self.value.indexOf(value) === -1) {
+                    newArray = self.value.slice();
+                    newArray.push(value);
+                }
+                else if (!status && self.value.indexOf(value) > -1) {
+                    newArray = self.value.slice().filter(function(item) {
+                        return item !== value;
+                    })
+                }
+                if (newArray) {
+                    this.$emit('input', newArray);
+                }
             }
         }
     }));

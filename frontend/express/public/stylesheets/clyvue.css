@@ -342,6 +342,7 @@
 
 .cly-vue-check.check-tick-skin .check-wrapper .check-label {
     color: #2FA732;
+    cursor: pointer;
 }
 
 .cly-vue-check.check-tick-skin .check-wrapper .check-checkbox,
