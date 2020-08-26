@@ -21,6 +21,72 @@
             </select>
         </div>
 
+
+        <div class="section">
+            <div class="label" data-localize="reports.report-type"></div>
+            <div id="report-types">
+                <div class="opts">
+                    <div data-report-type="core" class="opt cly-grid-3 selected">
+                        <div class="inner">
+                            <span class="icon core"></span>
+                            <span data-localize="reports.core"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize='reports.apps_desc'></div>
+            <div id="reports-multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='reports.Select_apps'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize='reports.include-metrics'></div>
+            <div class="include-metrics">
+                <div id="reports-multi-metrics-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                             <div class="text">
+                                    <div class="default-text" data-localize='reports.Select_metrics'></div>
+                             </div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square" style="width: 100%;"></div>
+                </div>
+            </div> 
+        </div>
+        <div class="section" style="display:none; margin-bottom:50px;">
+            <div class="label" data-localize='reports.include-events'>Select events to include</div>
+            <div class="include-events">
+                <div id="reports-multi-events-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                             <div class="text">
+                                    <div class="default-text" data-localize='reports.Select_events'>Select Events</div>
+                             </div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-type-related-options">
+        </div>
+
         <div class="section">
             <div class="label" data-localize='reports.frequency' ></div>
             <div id="reports-frequency" class="checks">
@@ -59,100 +125,33 @@
 
         <div class="section">
             <div class="label" data-localize='reports.time_desc' ></div>
-            <div id="reports-time-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize='reports.select_time'></div>
+            <div class="time-and-zone">
+                <div id="reports-time-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">
+                                <div class="default-text" data-localize='reports.select_time'></div>
+                            </div>
                         </div>
+                        <div class="right combo"></div>
                     </div>
-                    <div class="right combo"></div>
+                    <div class="select-items square" style="width: 100%;"></div>
                 </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="label" data-localize='reports.timezone' ></div>
-            <div id="reports-timezone-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize='reports.select_timezone'></div>
+                <div id="reports-timezone-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">
+                                <div class="default-text" data-localize='reports.select_timezone'></div>
+                            </div>
                         </div>
+                        <div class="right combo"></div>
                     </div>
-                    <div class="right combo"></div>
+                    <div class="select-items square" style="width: 100%;"></div>
                 </div>
-                <div class="select-items square" style="width: 100%;"></div>
             </div>
+
         </div>
 
-        <div class="section">
-            <div class="label" data-localize="reports.report-type"></div>
-            <div id="report-types">
-                <div class="opts">
-                    <div data-report-type="core" class="opt cly-grid-3 selected">
-                        <div class="inner">
-                            <span class="icon core"></span>
-                            <span data-localize="reports.core"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="label" data-localize='reports.apps_desc'></div>
-            <div id="reports-multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize='reports.Select_apps'></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-
-        <div class="section" style="margin-bottom:50px">
-            <div class="label" data-localize='reports.include-metrics'></div>
-            <div class="include-metrics">
-                <div class="metrics-checkbox-line">
-                    <label class="container">
-                        <input id="reports-metrics-analytics"  type="checkbox" style=" width: 10px; height:10px;">
-                        <span class="fa check-green fa-square-o"></span>
-                        <span data-localize='reports.analytics'></span>
-                    </label>
-                </div>
-                <div class="metrics-checkbox-line">
-                    <label class="container">
-                            <input id="reports-metrics-revenue"  type="checkbox">
-                            <span class="fa check-green fa-square-o"></span>
-                            <span data-localize='reports.revenue'></span>
-                    </label>
-                </div>
-            </div>
-            <div class="include-metrics">
-                <div class="metrics-checkbox-line">
-                    <label class="container">
-                            <input id="reports-metrics-events"  type="checkbox">
-                            <span class="fa check-green fa-square-o"></span>
-                            <span data-localize='reports.events'></span>
-
-                    </label>
-                </div>
-                <div class="metrics-checkbox-line">
-                    <label class="container">
-                            <input id="reports-metrics-crash"  type="checkbox">
-                            <span class="fa check-green fa-square-o"></span>
-                            <span data-localize='reports.crash'></span>
-
-                    </label>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="buttons">
