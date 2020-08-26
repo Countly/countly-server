@@ -239,7 +239,6 @@ var metricProps = {
                                                 }
                                             },
                                         },);
-                                        
                                     }
                                 }
                             }
