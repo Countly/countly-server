@@ -537,7 +537,21 @@
         }
     });
 
-    var countlyBaseView = Vue.extend({
+    var _uniqueComponentId = 0;
+
+    var countlyBaseComponent = Vue.extend({
+        beforeCreate: function() {
+            this.ucid = _uniqueComponentId.toString();
+            _uniqueComponentId += 1;
+        },
+        computed: {
+            componentId: function() {
+                return "cly-cmp-" + _uniqueComponentId;
+            }
+        }
+    });
+
+    var countlyBaseView = countlyBaseComponent.extend({
         mixins: [
             _mixins.autoRefresh,
             _mixins.i18n
@@ -555,20 +569,6 @@
             },
             vId: function() {
                 return this.id;
-            }
-        }
-    });
-
-    var _uniqueComponentId = 0;
-
-    var countlyBaseComponent = Vue.extend({
-        beforeCreate: function() {
-            this.ucid = _uniqueComponentId.toString();
-            _uniqueComponentId += 1;
-        },
-        computed: {
-            componentId: function() {
-                return "cly-cmp-" + _uniqueComponentId;
             }
         }
     });
