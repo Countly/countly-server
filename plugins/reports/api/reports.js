@@ -210,9 +210,10 @@ var metrics = {
                                     }
                                     else {
                                         // process outside reports plugin
-                                        if (!this.cancelReportCall) {
-                                            this.cancelReportCall = {};
-                                        }
+                                        // set plugin report dispatch max duration to 30s
+                                        const cancelReportCallTimeout = setTimeout(() => {
+                                            done2("cancel report plugin dispatcher", null);
+                                        }, 30000);
                                         plugins.dispatch("/email/report", {
                                             params: {
                                                 db: db,
@@ -223,8 +224,9 @@ var metrics = {
                                             },
                                             metric: metric,
                                             reportAPICallback: (callErr, callData) => {
-                                                clearTimeout(this.cancelReportCall[metric]);
+                                                clearTimeout(cancelReportCallTimeout);
                                                 if (callErr) {
+                                                    log.e('Error during report plugin dispatch: %j', callErr);
                                                     done2(callErr, null);
                                                 }
                                                 else {
@@ -232,10 +234,7 @@ var metrics = {
                                                 }
                                             },
                                         },);
-                                        // set plugin report dispatch max duration to 30s
-                                        this.cancelReportCall[metric] = setTimeout(()=> {
-                                            done2();
-                                        }, 30000);
+                                        
                                     }
                                 }
                             }
