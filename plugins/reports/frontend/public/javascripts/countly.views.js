@@ -339,7 +339,7 @@ window.ReportingView = countlyView.extend({
         $("#reports-multi-app-dropdown").clyMultiSelectSetItems(apps);
 
         $("#reports-multi-metrics-dropdown").clyMultiSelectSetItems(countlyReporting.getMetrics());
-       
+
         $('#reports-widge-close').off("click").on("click", function() {
             $("#reports-widget-drawer").removeClass("open");
         });

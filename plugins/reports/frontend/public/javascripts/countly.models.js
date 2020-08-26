@@ -104,7 +104,7 @@
 
     countlyReporting.addMetric = function(m) {
         var existed = _metrics.filter(function(item) {
-            return item.value === m.value; 
+            return item.value === m.value;
         });
         if (existed.length === 0) {
             _metrics.push(m);
