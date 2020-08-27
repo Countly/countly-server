@@ -126,9 +126,35 @@
         height:100%;
         position:relative; 
 
-        .inner { user-select:none; text-align: center; position: absolute; width: 400px; left: 50%; margin-left: -200px; height: 64px; margin-top: -40px; top: 50%;}
-        .inner .icon { display: inline-block; width: 60px; height: 60px; background-image: url("../images/dashboard/graph-no-data.svg"); background-size: contain; margin-right: 20px; background-repeat: no-repeat; }
-        .inner .text { cursor:default; display: inline-block; color: #a2a2a2; vertical-align: text-bottom; margin-bottom: 23px; font-size: 16px; }
+        .inner { 
+            user-select:none; 
+            text-align: center; 
+            position: absolute; 
+            width: 400px; 
+            left: 50%; 
+            margin-left: -200px; 
+            height: 64px; 
+            margin-top: -40px; 
+            top: 50%;
+
+            .icon { 
+                display: inline-block; 
+                width: 60px; 
+                height: 60px; 
+                background-image: url("../images/dashboard/graph-no-data.svg"); 
+                background-size: contain; 
+                margin-right: 20px; 
+                background-repeat: no-repeat; 
+            }
+            .text { 
+                cursor:default; 
+                display: inline-block; 
+                color: #a2a2a2; 
+                vertical-align: text-bottom; 
+                margin-bottom: 23px; 
+                font-size: 16px; 
+            }
+        }
     }
    
     // time graph
@@ -166,9 +192,11 @@
         .date-buttons-container { float: left;}
         .date-buttons-container .button:first-child { border-top-left-radius:2px; border-bottom-left-radius:2px; }
         .date-buttons-container .button:last-child { border-top-right-radius:2px; border-bottom-right-radius:2px; border-right:1px solid #D0D0D0; }
+        
         .button:hover { background-color:#1b2732; }
         .button:active  { background-color:#1b2732; }
         .button.active { background-color:#1b2732; }
+
         >.calendar { background-color:#f9f9f9; border:1px solid #D0D0D0; color:#767676; cursor:pointer; float:right; border-radius:2px; margin:0 5px 0 13px; height:27px; text-align: center; padding: 0px 30px 0px 30px; min-width:200px; text-align:left}
         >.calendar:hover { background-color:#F9F9F9; }
         >.calendar i {font-size: 18px; position:absolute; top: 12px; left:26px;}
@@ -178,36 +206,80 @@
             top:15px;
             color:#767676;
         }
-        .calendar-block { vertical-align: top;}
         .calendar .up {display:none;}
         .calendar.active .up { display:block;}
         .calendar.active .down {display:none;}
+        
+        .calendar-block { vertical-align: top;}
         .calendar-block .calendar-input-field { float: right; width: 100px; padding: 9px 9px 9px 9px; font-size: 13px; line-height:13px; text-align:center; border:none; background-color: #1b2732; color: #ffffff; margin: 0 10px; border-radius:2px; border: 1px solid #1b2732; height: 16px; }
         .calendar-block .calendar-input-field:hover {
             border: 1px solid #243544;
         }
         .calendar-block span.date-input-label {float: right; text-transform: uppercase; color: #d2d2d1; margin-top:11px; font: 12px Ubuntu,Helvetica,sans-serif;}
-        .inst-date-picker/*, .date-picker*/ { white-space:nowrap; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
-        .inst-date-picker .calendar-container/*, .date-picker .calendar-container*/ { overflow:auto; padding:10px 5px; margin-right:200px; }
-        .inst-date-picker .calendar-container .calendar/*, .date-picker .calendar-container .calendar*/ { vertical-align: top; margin-bottom:10px; }
-        .inst-date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
-        .inst-date-picker .button-container { overflow:auto; position:absolute; right: 20px; bottom: 15px;}
-        .inst-date-picker .button-container .icon-button { padding: 7px 10px; float: right }
-        .inst-date-picker .in-range a{
-            background: rgba(46, 167, 50, 0.6);
-            border-radius: 2px;
-            margin: 1px;
-            padding: 4px;
+        
+        .inst-date-picker { 
+            white-space:nowrap; 
+            position:absolute; 
+            z-index:1000; 
+            padding:2px 3px 6px 3px; 
+            background-color:#0b131a; 
+            border-radius:2px; 
+            right: 2px; 
+            top: 41px; 
+            .calendar-container { 
+                overflow:auto; 
+                padding:10px 5px; 
+                margin-right:200px; 
+                .calendar { 
+                    vertical-align: top; 
+                    margin-bottom:10px; 
+                    &:nth-child(2) { 
+                        margin-right:0; 
+                    }
+                }
+            }
+            .button-container { 
+                overflow:auto; 
+                position:absolute; 
+                right: 20px; 
+                bottom: 15px;
+                .icon-button { 
+                    padding: 7px 10px; 
+                    float: right 
+                }
+            }
+            .in-range {
+                a {
+                    background: rgba(46, 167, 50, 0.6);
+                    border-radius: 2px;
+                    margin: 1px;
+                    padding: 4px;
+                    &.ui-state-hover {
+                        background:#1b2732;
+                    }
+                }
+            }
+            .ui-datepicker-title {
+                font-size:13px;
+            }
+            &:before { 
+                border: 6px solid rgba(194, 225, 245, 0); 
+                border-bottom-color: #03060c; 
+                right: 9px; 
+                top: -11px; 
+                content: " "; 
+                height: 0; 
+                width: 0; 
+                position: absolute; 
+                pointer-events: none; 
+            }
+        
         }
-        .inst-date-picker .in-range a.ui-state-hover {
-            background:#1b2732;
+        .inst-selected-date {
+            font-size:13px; 
+            color:#767676; 
+            line-height:28px; 
         }
-
-        .inst-date-picker .ui-datepicker-title {
-            font-size:13px;
-        }
-        .inst-date-picker:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #03060c; right: 9px; top: -11px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; }
-        .inst-selected-date {font-size:13px; color:#767676; line-height:28px; }
     }
     
     // datatable

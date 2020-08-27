@@ -269,9 +269,6 @@
   top: 15px;
   color: #767676;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar-block {
-  vertical-align: top;
-}
 .cly-vue-theme-clydef .cly-vue-global-date-selector .calendar .up {
   display: none;
 }
@@ -280,6 +277,9 @@
 }
 .cly-vue-theme-clydef .cly-vue-global-date-selector .calendar.active .down {
   display: none;
+}
+.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar-block {
+  vertical-align: top;
 }
 .cly-vue-theme-clydef .cly-vue-global-date-selector .calendar-block .calendar-input-field {
   float: right;
