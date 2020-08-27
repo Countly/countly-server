@@ -587,7 +587,7 @@
     // New components
 
     Vue.component("cly-datatable-w", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-datatable" ref="wrapper">\
+        template: '<div class="cly-vue-datatable-w" ref="wrapper">\
                         <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
                             <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
                         </div>\
@@ -962,7 +962,7 @@
     }));
 
     Vue.component("cly-global-date-selector-w", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-global-date-selector help-zone-vs">\
+        template: '<div class="cly-vue-global-date-selector-w help-zone-vs">\
                         <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
                             <i class="material-icons">date_range</i>\
                             <span class="inst-selected-date">{{currentPeriodLabel}}</span>\
@@ -1193,7 +1193,7 @@
         mixins: [
             _mixins.i18n
         ],
-        template: '<div class="cly-vue-time-graph">\
+        template: '<div class="cly-vue-time-graph-w">\
                         <div ref="container" class="graph-container"></div>\
                         <div class="cly-vue-graph-no-data" v-if="!hasData">\
                             <div class="inner">\
@@ -1338,7 +1338,7 @@
         mixins: [
             _mixins.i18n
         ],
-        template: '<div class="cly-vue-graph">\
+        template: '<div class="cly-vue-graph-w">\
                         <div ref="container" class="graph-container"></div>\
                         <div class="cly-vue-graph-no-data" v-if="!hasData">\
                             <div class="inner">\

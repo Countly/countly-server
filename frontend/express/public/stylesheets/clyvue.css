@@ -134,7 +134,7 @@
   background-color: #FFF;
   border-bottom: none;
 }
-.cly-vue-theme-clydef .cly-vue-graph .graph-container {
+.cly-vue-theme-clydef .cly-vue-graph-w .graph-container {
   width: auto;
   height: 350px;
   margin: 30px;
@@ -171,20 +171,20 @@
   margin-bottom: 23px;
   font-size: 16px;
 }
-.cly-vue-theme-clydef .cly-vue-time-graph {
+.cly-vue-theme-clydef .cly-vue-time-graph-w {
   font-family: Oswald;
   font-size: 14px;
   margin: 30px;
 }
-.cly-vue-theme-clydef .cly-vue-time-graph .graph-container {
+.cly-vue-theme-clydef .cly-vue-time-graph-w .graph-container {
   width: auto;
   height: 350px;
 }
-.cly-vue-theme-clydef .cly-vue-time-graph .legendLabel {
+.cly-vue-theme-clydef .cly-vue-time-graph-w .legendLabel {
   font-family: Ubuntu;
   font-size: 14px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w {
   float: right;
   font: 13px Ubuntu, Helvetica, sans-serif;
   line-height: 111%;
@@ -194,7 +194,7 @@
   user-select: none;
   position: relative;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .button {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .button {
   visibility: visible;
   cursor: pointer;
   user-select: none;
@@ -204,10 +204,10 @@
   font-size: 13px;
   line-height: 13px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .button:active, .cly-vue-theme-clydef .cly-vue-global-date-selector .button.active, .cly-vue-theme-clydef .cly-vue-global-date-selector .button:hover {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .button:active, .cly-vue-theme-clydef .cly-vue-global-date-selector-w .button.active, .cly-vue-theme-clydef .cly-vue-global-date-selector-w .button:hover {
   background-color: #1b2732;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .date-selector-buttons {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .date-selector-buttons {
   background-color: #03060c;
   width: 160px;
   position: absolute;
@@ -219,22 +219,22 @@
   border-bottom-right-radius: 2px;
   height: 100%;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .date-selector-buttons .button:nth-child(1) {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .date-selector-buttons .button:nth-child(1) {
   margin-top: 20px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .date-buttons-container {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .date-buttons-container {
   float: left;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .date-buttons-container .button:first-child {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .date-buttons-container .button:first-child {
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .date-buttons-container .button:last-child {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .date-buttons-container .button:last-child {
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
   border-right: 1px solid #D0D0D0;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w > .calendar {
   background-color: #f9f9f9;
   border: 1px solid #D0D0D0;
   color: #767676;
@@ -248,34 +248,34 @@
   min-width: 200px;
   text-align: left;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar:hover {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w > .calendar:hover {
   background-color: #F9F9F9;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar i {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w > .calendar i {
   font-size: 18px;
   position: absolute;
   top: 12px;
   left: 26px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar .up, .cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar .down {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w > .calendar .up, .cly-vue-theme-clydef .cly-vue-global-date-selector-w > .calendar .down {
   position: absolute;
   right: 16px;
   top: 15px;
   color: #767676;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar .up {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w > .calendar .up {
   display: none;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar.active .up {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w > .calendar.active .up {
   display: block;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar.active .down {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w > .calendar.active .down {
   display: none;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar-block {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .calendar-block {
   vertical-align: top;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar-block .calendar-input-field {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .calendar-block .calendar-input-field {
   float: right;
   width: 100px;
   padding: 9px 9px 9px 9px;
@@ -290,17 +290,17 @@
   border: 1px solid #1b2732;
   height: 16px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar-block .calendar-input-field:hover {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .calendar-block .calendar-input-field:hover {
   border: 1px solid #243544;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar-block span.date-input-label {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .calendar-block span.date-input-label {
   float: right;
   text-transform: uppercase;
   color: #d2d2d1;
   margin-top: 11px;
   font: 12px Ubuntu, Helvetica, sans-serif;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker {
   white-space: nowrap;
   position: absolute;
   z-index: 1000;
@@ -310,41 +310,41 @@
   right: 2px;
   top: 41px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker .calendar-container {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker .calendar-container {
   overflow: auto;
   padding: 10px 5px;
   margin-right: 200px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker .calendar-container .calendar {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker .calendar-container .calendar {
   vertical-align: top;
   margin-bottom: 10px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker .calendar-container .calendar:nth-child(2) {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker .calendar-container .calendar:nth-child(2) {
   margin-right: 0;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker .button-container {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker .button-container {
   overflow: auto;
   position: absolute;
   right: 20px;
   bottom: 15px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker .button-container .icon-button {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker .button-container .icon-button {
   padding: 7px 10px;
   float: right;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker .in-range a {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker .in-range a {
   background: rgba(46, 167, 50, 0.6);
   border-radius: 2px;
   margin: 1px;
   padding: 4px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker .in-range a.ui-state-hover {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker .in-range a.ui-state-hover {
   background: #1b2732;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker .ui-datepicker-title {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker .ui-datepicker-title {
   font-size: 13px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-date-picker:before {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-date-picker:before {
   border: 6px solid rgba(194, 225, 245, 0);
   border-bottom-color: #03060c;
   right: 9px;
@@ -355,28 +355,28 @@
   position: absolute;
   pointer-events: none;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .inst-selected-date {
+.cly-vue-theme-clydef .cly-vue-global-date-selector-w .inst-selected-date {
   font-size: 13px;
   color: #767676;
   line-height: 28px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .cly-button-menu .fa {
+.cly-vue-theme-clydef .cly-vue-datatable-w .cly-button-menu .fa {
   margin-right: 7px;
   width: 13px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .undo-row {
+.cly-vue-theme-clydef .cly-vue-datatable-w .undo-row {
   text-align: center;
   padding: 10px;
   background-color: #ffeded;
   color: #2b2b2b;
   margin: 5px 0px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .undo-row a {
+.cly-vue-theme-clydef .cly-vue-datatable-w .undo-row a {
   font-weight: 500;
   text-decoration: underline;
   cursor: pointer;
 }
-.cly-vue-theme-clydef .cly-vue-datatable table.d-table-vue-wrapper {
+.cly-vue-theme-clydef .cly-vue-datatable-w table.d-table-vue-wrapper {
   width: 100%;
   padding: 0;
   margin: 0;
@@ -385,10 +385,10 @@
   border-left: 1px solid #D0D0D0;
   border-right: 1px solid #D0D0D0;
 }
-.cly-vue-theme-clydef .cly-vue-datatable table.d-table-vue-wrapper:not(.no-fix) {
+.cly-vue-theme-clydef .cly-vue-datatable-w table.d-table-vue-wrapper:not(.no-fix) {
   table-layout: fixed;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper th {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper th {
   padding: 11px 10px 10px 10px;
   color: #484848;
   font-weight: normal;
@@ -400,82 +400,82 @@
   background-color: #F3F3F3;
   border-top: 1px solid #D0D0D0;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper th:first-child {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper th:first-child {
   border-left: none;
   border-top-left-radius: 7px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper th:last-child {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper th:last-child {
   border-top-right-radius: 7px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper thead tr {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper thead tr {
   background-color: transparent;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper td {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper td {
   padding: 10px 10px;
   margin: 0;
   color: #6B6B6B;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper td:first-child {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper td:first-child {
   border-left: none;
   font-weight: normal;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr {
   font-size: 15px;
   line-height: 12px;
   background-color: #fff;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr:first-child {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr:first-child {
   border-top: none;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr:last-child {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr:last-child {
   border-bottom: none;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr:nth-child(even) {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr:nth-child(even) {
   background-color: #F9F9F9;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr:hover {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr:hover {
   background-color: #F1F1F1;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr td.dataTables_empty:hover {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr td.dataTables_empty:hover {
   background-color: #FFFFFF;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr:last-child td {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr:last-child td {
   border-bottom: none;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr:last-child td:first-child {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr:last-child td:first-child {
   border-bottom-left-radius: 7px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr:last-child td:last-child {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr:last-child td:last-child {
   border-bottom-right-radius: 7px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper .table-no-data {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper .table-no-data {
   text-align: center;
   font: 15px Ubuntu, Helvetica, sans-serif;
   line-height: 111%;
   padding: 20px;
   color: #CCC;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper .table-no-data:hover {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper .table-no-data:hover {
   background-color: #FFF;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper .shrink {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper .shrink {
   width: 1%;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper .center {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper .center {
   text-align: center;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper .right {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper .right {
   text-align: right;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr[id] {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr[id] {
   cursor: pointer;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper tr.selected {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper tr.selected {
   background-color: #FFE4C9;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper input[type=text],
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper input[type=number],
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper textarea {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper input[type=text],
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper input[type=number],
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper textarea {
   border-radius: 2px;
   margin: 0;
   font: 14px Ubuntu, Helvetica, sans-serif;
@@ -484,10 +484,10 @@
   border: 1px solid #D0D0D0;
   width: 274px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper textarea {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper textarea {
   max-width: 274px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper input[type=password] {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper input[type=password] {
   border-radius: 2px;
   margin: 0;
   font: 14px Ubuntu, Helvetica, sans-serif;
@@ -496,35 +496,35 @@
   border: 1px solid #D0D0D0;
   width: 274px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal {
   border-radius: 0;
   border: 1px solid #D0D0D0;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal tr:hover {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal tr:hover {
   background-color: #FFF;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal tr:nth-child(even):hover {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal tr:nth-child(even):hover {
   background-color: #FBFBFB;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal td:first-child {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal td:first-child {
   color: #636363;
   width: 155px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal tr:last-child td {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal tr:last-child td {
   border-radius: 0;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal td {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal td {
   border-bottom: 1px solid #ececec;
   padding: 12px;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal tr,
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal tr:hover,
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal tr:nth-child(even),
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal tr:nth-child(even):hover {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal tr,
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal tr:hover,
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal tr:nth-child(even),
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal tr:nth-child(even):hover {
   background-color: #FFF;
 }
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal .populate-demo-data td,
-.cly-vue-theme-clydef .cly-vue-datatable .d-table-vue-wrapper.horizontal td td {
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal .populate-demo-data td,
+.cly-vue-theme-clydef .cly-vue-datatable-w .d-table-vue-wrapper.horizontal td td {
   border-bottom: none;
 }
 .cly-vue-theme-clydef .cly-vue-radio .radio-wrapper {
