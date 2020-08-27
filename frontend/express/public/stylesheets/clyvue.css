@@ -175,9 +175,8 @@
 
 .cly-vue-global-date-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:6px; padding-right:0; user-select:none; position: relative; }
 .cly-vue-global-date-selector .button { visibility: visible; cursor:pointer; user-select:none; padding:7px 5px 7px 5px; margin-right:-1px; color: #ffffff; font-size:13px; line-height:13px; }
-.date-selector-buttons {background-color: #03060c; width: 160px; position:absolute; right:0; top:0; padding: 0px 20px;margin: 0px -3px 0 0; border-top-right-radius:2px; border-bottom-right-radius:2px; height:100%}
-.date-selector-buttons .button:nth-child(1) { margin-top:20px;}
-.widget-header:hover .cly-vue-global-date-selector .button { visibility: visible; }
+.cly-vue-global-date-selector .date-selector-buttons {background-color: #03060c; width: 160px; position:absolute; right:0; top:0; padding: 0px 20px;margin: 0px -3px 0 0; border-top-right-radius:2px; border-bottom-right-radius:2px; height:100%}
+.cly-vue-global-date-selector .date-selector-buttons .button:nth-child(1) { margin-top:20px;}
 .cly-vue-global-date-selector .date-buttons-container { float: left;}
 .cly-vue-global-date-selector .date-buttons-container .button:first-child { border-top-left-radius:2px; border-bottom-left-radius:2px; }
 .cly-vue-global-date-selector .date-buttons-container .button:last-child { border-top-right-radius:2px; border-bottom-right-radius:2px; border-right:1px solid #D0D0D0; }
