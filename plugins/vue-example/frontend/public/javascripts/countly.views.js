@@ -195,7 +195,8 @@ var MainView = countlyVue.views.BaseView.extend({
     template: '#vue-example-main-template',
     components: {
         "table-view": TableView,
-        "tg-view": TimeGraphView
+        "tg-view": TimeGraphView,
+        "example-drawer": countlyVue.components.BaseDrawer
     }
 });
 

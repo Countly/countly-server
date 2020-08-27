@@ -573,6 +573,24 @@
         }
     });
 
+    var _components = {
+        BaseDrawer: countlyBaseComponent.extend({
+            template: '<div class="cly-vue-drawer open">\
+                            <div class="title">\
+                                <span id="drawer-title"></span>\
+                                <div class="close">\
+                                    <i class="ion-ios-close-empty"></i>\
+                                </div>\
+                            </div>\
+                            <div class="details">\
+                                <slot></slot>\
+                            </div>\
+                            <div class="buttons">\
+                            </div>\
+                        </div>',
+        })
+    }
+
     var _views = {
         BackboneWrapper: countlyVueWrapperView,
         BaseView: countlyBaseView
@@ -581,7 +599,8 @@
     window.countlyVue = {
         mixins: _mixins,
         vuex: _vuex,
-        views: _views
+        views: _views,
+        components: _components
     };
 
     // New components
