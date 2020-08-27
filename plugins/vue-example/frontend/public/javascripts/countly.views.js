@@ -198,7 +198,15 @@ var MainView = countlyVue.views.BaseView.extend({
     components: {
         "table-view": TableView,
         "tg-view": TimeGraphView,
-        "example-drawer": countlyVue.components.BaseDrawer
+        "example-drawer": countlyVue.components.BaseDrawer.extend({
+            methods: {
+                onStateChange: function(newState) {
+                    if (!newState._id) {
+                        this.title = "Create New Record";
+                    }
+                }
+            }
+        })
     }
 });
 

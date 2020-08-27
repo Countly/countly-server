@@ -417,19 +417,19 @@
                     drawers: names.reduce(function(acc, val) {
                         acc[val] = {
                             opened: false,
-                            state: {}
+                            edited: {}
                         };
                         return acc;
                     }, {})
                 };
             },
             methods: {
-                openDrawer: function(name, state) {
-                    this.loadDrawer(name, state);
+                openDrawer: function(name, edited) {
+                    this.loadDrawer(name, edited);
                     this.drawers[name].opened = true;
                 },
-                loadDrawer: function(name, state) {
-                    this.drawers[name].state = state || {};
+                loadDrawer: function(name, edited) {
+                    this.drawers[name].edited = edited || {};
                 },
                 closeDrawer: function(name) {
                     this.drawers[name].opened = false;
@@ -606,7 +606,7 @@
         BaseDrawer: countlyBaseComponent.extend({
             template: '<div class="cly-vue-drawer" v-bind:class="{open: opened}">\
                             <div class="title">\
-                                <span id="drawer-title"></span>\
+                                <span id="drawer-title">{{title}}</span>\
                                 <div class="close" v-on:click="tryClosing">\
                                     <i class="ion-ios-close-empty"></i>\
                                 </div>\
@@ -619,11 +619,27 @@
                         </div>',
             props: {
                 opened: {type: Boolean, required: true},
-                state: {type: Object}
+                edited: {type: Object}
+            },
+            data: function() {
+                return {
+                    title: '',
+                    internalEdited: this.copyOfEdited()
+                };
             },
             methods: {
                 tryClosing: function() {
                     this.$emit("close");
+                },
+                copyOfEdited: function() {
+                    return JSON.parse(JSON.stringify(this.edited));
+                },
+                onStateChange: function() { }
+            },
+            watch: {
+                edited: function() {
+                    this.internalEdited = this.copyOfEdited();
+                    this.onStateChange(this.internalEdited);
                 }
             }
         })
