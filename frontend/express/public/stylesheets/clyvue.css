@@ -227,13 +227,13 @@
 
 /* datatable */
 
-.cly-vue-datatable-wrapper .cly-button-menu .fa{
+.cly-vue-datatable .cly-button-menu .fa{
     margin-right:7px;
     width:13px;
 }
 
-.cly-vue-datatable-wrapper .undo-row{ text-align: center; padding: 10px; background-color: #ffeded; color: #2b2b2b; margin : 5px 0px; }
-.cly-vue-datatable-wrapper .undo-row a { font-weight: 500; text-decoration: underline; cursor:pointer }
+.cly-vue-datatable .undo-row{ text-align: center; padding: 10px; background-color: #ffeded; color: #2b2b2b; margin : 5px 0px; }
+.cly-vue-datatable .undo-row a { font-weight: 500; text-decoration: underline; cursor:pointer }
 
 /* radio */
 

@@ -587,7 +587,7 @@
     // New components
 
     Vue.component("cly-datatable-w", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-datatable-wrapper" ref="wrapper">\
+        template: '<div class="cly-vue-datatable" ref="wrapper">\
                         <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
                             <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
                         </div>\
