@@ -204,6 +204,9 @@
   font-size: 13px;
   line-height: 13px;
 }
+.cly-vue-theme-clydef .cly-vue-global-date-selector .button:active, .cly-vue-theme-clydef .cly-vue-global-date-selector .button.active, .cly-vue-theme-clydef .cly-vue-global-date-selector .button:hover {
+  background-color: #1b2732;
+}
 .cly-vue-theme-clydef .cly-vue-global-date-selector .date-selector-buttons {
   background-color: #03060c;
   width: 160px;
@@ -231,15 +234,6 @@
   border-bottom-right-radius: 2px;
   border-right: 1px solid #D0D0D0;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .button:hover {
-  background-color: #1b2732;
-}
-.cly-vue-theme-clydef .cly-vue-global-date-selector .button:active {
-  background-color: #1b2732;
-}
-.cly-vue-theme-clydef .cly-vue-global-date-selector .button.active {
-  background-color: #1b2732;
-}
 .cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar {
   background-color: #f9f9f9;
   border: 1px solid #D0D0D0;
@@ -263,19 +257,19 @@
   top: 12px;
   left: 26px;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar .up, .cly-vue-theme-clydef .cly-vue-global-date-selector .calendar .down {
+.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar .up, .cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar .down {
   position: absolute;
   right: 16px;
   top: 15px;
   color: #767676;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar .up {
+.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar .up {
   display: none;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar.active .up {
+.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar.active .up {
   display: block;
 }
-.cly-vue-theme-clydef .cly-vue-global-date-selector .calendar.active .down {
+.cly-vue-theme-clydef .cly-vue-global-date-selector > .calendar.active .down {
   display: none;
 }
 .cly-vue-theme-clydef .cly-vue-global-date-selector .calendar-block {

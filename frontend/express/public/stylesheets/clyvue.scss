@@ -186,37 +186,73 @@
         user-select:none; 
         position: relative;
 
-        .button { visibility: visible; cursor:pointer; user-select:none; padding:7px 5px 7px 5px; margin-right:-1px; color: #ffffff; font-size:13px; line-height:13px; }
-        .date-selector-buttons {background-color: #03060c; width: 160px; position:absolute; right:0; top:0; padding: 0px 20px;margin: 0px -3px 0 0; border-top-right-radius:2px; border-bottom-right-radius:2px; height:100%}
-        .date-selector-buttons .button:nth-child(1) { margin-top:20px;}
-        .date-buttons-container { float: left;}
-        .date-buttons-container .button:first-child { border-top-left-radius:2px; border-bottom-left-radius:2px; }
-        .date-buttons-container .button:last-child { border-top-right-radius:2px; border-bottom-right-radius:2px; border-right:1px solid #D0D0D0; }
+        .button { 
+            visibility: visible; 
+            cursor:pointer; 
+            user-select:none; 
+            padding:7px 5px 7px 5px; 
+            margin-right:-1px; 
+            color: #ffffff; 
+            font-size:13px; 
+            line-height:13px;
+            &:active, &.active, &:hover { background-color:#1b2732; }
+        }
         
-        .button:hover { background-color:#1b2732; }
-        .button:active  { background-color:#1b2732; }
-        .button.active { background-color:#1b2732; }
+        .date-selector-buttons {
+            background-color: #03060c; width: 160px; position:absolute; right:0; top:0; padding: 0px 20px;margin: 0px -3px 0 0; border-top-right-radius:2px; border-bottom-right-radius:2px; height:100%;
+            .button:nth-child(1) { margin-top:20px;}
+        }
 
-        >.calendar { background-color:#f9f9f9; border:1px solid #D0D0D0; color:#767676; cursor:pointer; float:right; border-radius:2px; margin:0 5px 0 13px; height:27px; text-align: center; padding: 0px 30px 0px 30px; min-width:200px; text-align:left}
-        >.calendar:hover { background-color:#F9F9F9; }
-        >.calendar i {font-size: 18px; position:absolute; top: 12px; left:26px;}
-        .calendar .up, .calendar .down {
-            position: absolute;
-            right: 16px;
-            top:15px;
-            color:#767676;
+        .date-buttons-container { 
+            float: left;
+            .button:first-child { border-top-left-radius:2px; border-bottom-left-radius:2px; }
+            .button:last-child { border-top-right-radius:2px; border-bottom-right-radius:2px; border-right:1px solid #D0D0D0; }
         }
-        .calendar .up {display:none;}
-        .calendar.active .up { display:block;}
-        .calendar.active .down {display:none;}
-        
-        .calendar-block { vertical-align: top;}
-        .calendar-block .calendar-input-field { float: right; width: 100px; padding: 9px 9px 9px 9px; font-size: 13px; line-height:13px; text-align:center; border:none; background-color: #1b2732; color: #ffffff; margin: 0 10px; border-radius:2px; border: 1px solid #1b2732; height: 16px; }
-        .calendar-block .calendar-input-field:hover {
-            border: 1px solid #243544;
+
+        >.calendar { 
+            background-color:#f9f9f9; border:1px solid #D0D0D0; color:#767676; cursor:pointer; float:right; border-radius:2px; margin:0 5px 0 13px; height:27px; text-align: center; padding: 0px 30px 0px 30px; min-width:200px; text-align:left;
+            &:hover { background-color:#F9F9F9; }
+            i {font-size: 18px; position:absolute; top: 12px; left:26px;}
+            .up, .down {
+                position: absolute;
+                right: 16px;
+                top:15px;
+                color:#767676;
+            }
+            .up {display:none;}
+            &.active .up { display:block;}
+            &.active .down {display:none;}
         }
-        .calendar-block span.date-input-label {float: right; text-transform: uppercase; color: #d2d2d1; margin-top:11px; font: 12px Ubuntu,Helvetica,sans-serif;}
         
+        .calendar-block {
+             vertical-align: top;
+             .calendar-input-field { 
+                float: right; 
+                width: 100px; 
+                padding: 9px 9px 9px 9px; 
+                font-size: 13px; 
+                line-height:13px; 
+                text-align:center; 
+                border:none; 
+                background-color: #1b2732; 
+                color: #ffffff; 
+                margin: 0 10px; 
+                border-radius:2px; 
+                border: 1px solid #1b2732; 
+                height: 16px; 
+            }
+            .calendar-input-field:hover {
+                border: 1px solid #243544;
+            }
+            span.date-input-label {
+                float: right; 
+                text-transform: uppercase; 
+                color: #d2d2d1; 
+                margin-top:11px; 
+                font: 12px Ubuntu,Helvetica,sans-serif;
+            }
+        }
+
         .inst-date-picker { 
             white-space:nowrap; 
             position:absolute; 
@@ -275,6 +311,7 @@
             }
         
         }
+
         .inst-selected-date {
             font-size:13px; 
             color:#767676; 
