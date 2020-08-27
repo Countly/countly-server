@@ -864,7 +864,16 @@
     }));
 
     Vue.component("cly-tabs", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]"><ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]"><li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+        template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]">\
+                        <ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]">\
+                            <li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}">\
+                                <a v-html="tab.tName"></a>\
+                            </li>\
+                        </ul>\
+                        <div class="cly-vue-tabs-container">\
+                            <slot/>\
+                        </div>\
+                    </div>',
         mixins: [
             _mixins.i18n
         ],
@@ -902,7 +911,9 @@
     }));
 
     Vue.component("cly-content", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-content" v-if="isActive || alwaysMounted"><div v-show="isActive"><slot/></div></div>',
+        template: '<div class="cly-vue-content" v-if="isActive || alwaysMounted">\
+                        <div v-show="isActive"><slot/></div>\
+                    </div>',
         mixins: [
             _mixins.i18n
         ],
