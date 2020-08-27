@@ -489,7 +489,7 @@
         },
         renderCommon: function(isRefresh) {
             if (!isRefresh) {
-                $(this.el).html("<div class='vue-wrapper'></div><div id='vue-templates'></div>");
+                $(this.el).html("<div class='cly-vue-theme-clydef'><div class='vue-wrapper'></div><div id='vue-templates'></div></div>");
                 this.elementsToBeRendered.forEach(function(el) {
                     $("#vue-templates").append(el);
                 });
