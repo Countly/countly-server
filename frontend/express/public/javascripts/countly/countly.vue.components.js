@@ -591,7 +591,7 @@
                         <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
                             <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
                         </div>\
-                        <table ref="dtable" cellpadding="0" cellspacing="0" class="d-table"></table>\
+                        <table ref="dtable" cellpadding="0" cellspacing="0" class="d-table-vue-wrapper"></table>\
                     </div>',
         data: function() {
             return {

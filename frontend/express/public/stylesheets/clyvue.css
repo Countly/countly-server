@@ -235,6 +235,49 @@
 .cly-vue-datatable .undo-row{ text-align: center; padding: 10px; background-color: #ffeded; color: #2b2b2b; margin : 5px 0px; }
 .cly-vue-datatable .undo-row a { font-weight: 500; text-decoration: underline; cursor:pointer }
 
+.cly-vue-datatable table.d-table-vue-wrapper { width:100%; padding:0; margin:0; border-radius:2px; margin-bottom:20px; border-left: 1px solid #D0D0D0; border-right: 1px solid #D0D0D0; }
+.cly-vue-datatable table.d-table-vue-wrapper:not(.no-fix) { table-layout:fixed; }
+.cly-vue-datatable .d-table-vue-wrapper  th { padding:11px 10px 10px 10px; color:#484848; font-weight:normal; font-size:11px; text-transform: uppercase; line-height:12px; text-align:left; border-bottom:1px solid #E2E2E2; background-color:#F3F3F3; border-top: 1px solid #D0D0D0; }
+.cly-vue-datatable .d-table-vue-wrapper  th:first-child { border-left:none; border-top-left-radius:7px; }
+.cly-vue-datatable .d-table-vue-wrapper  th:last-child { border-top-right-radius:7px; }
+.cly-vue-datatable .d-table-vue-wrapper  thead tr { background-color:transparent; }
+.cly-vue-datatable .d-table-vue-wrapper  td { padding:10px 10px; margin:0; color:#6B6B6B; }
+.cly-vue-datatable .d-table-vue-wrapper  td:first-child { border-left:none; font-weight:normal; }
+.cly-vue-datatable .d-table-vue-wrapper  tr { font-size:15px; line-height:12px; background-color:#fff}
+.cly-vue-datatable .d-table-vue-wrapper  tr:first-child { border-top:none; }
+.cly-vue-datatable .d-table-vue-wrapper  tr:last-child { border-bottom:none; }
+.cly-vue-datatable .d-table-vue-wrapper  tr:nth-child(even){ background-color:#F9F9F9}
+.cly-vue-datatable .d-table-vue-wrapper  tr:hover { background-color:#F1F1F1; }
+.cly-vue-datatable .d-table-vue-wrapper  tr td.dataTables_empty:hover { background-color:#FFFFFF; }
+.cly-vue-datatable .d-table-vue-wrapper  tr:last-child td { border-bottom:none; }
+.cly-vue-datatable .d-table-vue-wrapper  tr:last-child td:first-child { border-bottom-left-radius:7px; }
+.cly-vue-datatable .d-table-vue-wrapper  tr:last-child td:last-child { border-bottom-right-radius:7px; }
+.cly-vue-datatable .d-table-vue-wrapper .table-no-data { text-align:center; font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:20px; color:#CCC; }
+.cly-vue-datatable .d-table-vue-wrapper .table-no-data:hover { background-color:#FFF; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal { border-radius:0; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal  tr:hover { background-color:#FFF; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal  tr:nth-child(even):hover { background-color:#FBFBFB; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal td:first-child { color: #636363; width:155px; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal tr:last-child td { border-radius:0; }
+.cly-vue-datatable .d-table-vue-wrapper .shrink {width: 1%;}
+.cly-vue-datatable .d-table-vue-wrapper .center{text-align: center;}
+.cly-vue-datatable .d-table-vue-wrapper .right{text-align: right;}
+.cly-vue-datatable .d-table-vue-wrapper tr[id] { cursor: pointer; }
+.cly-vue-datatable .d-table-vue-wrapper tr.selected {background-color: #FFE4C9;}
+.cly-vue-datatable .d-table-vue-wrapper input[type=text],
+.cly-vue-datatable .d-table-vue-wrapper input[type=number],
+.cly-vue-datatable .d-table-vue-wrapper textarea { border-radius:2px; margin:0; font:14px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px; border:1px solid #D0D0D0; width:274px; }
+.cly-vue-datatable .d-table-vue-wrapper textarea { max-width: 274px; }
+.cly-vue-datatable .d-table-vue-wrapper input[type=password] { border-radius:2px; margin:0; font:14px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px; border:1px solid #D0D0D0; width:274px; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal { border:1px solid #D0D0D0; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal td { border-bottom:1px solid #ececec; padding: 12px; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal tr,
+.cly-vue-datatable .d-table-vue-wrapper.horizontal tr:hover,
+.cly-vue-datatable .d-table-vue-wrapper.horizontal tr:nth-child(even),
+.cly-vue-datatable .d-table-vue-wrapper.horizontal tr:nth-child(even):hover { background-color: #FFF; }
+.cly-vue-datatable .d-table-vue-wrapper.horizontal .populate-demo-data td,
+.cly-vue-datatable .d-table-vue-wrapper.horizontal td td { border-bottom:none; }
+
 /* radio */
 
 .cly-vue-radio .radio-wrapper {
