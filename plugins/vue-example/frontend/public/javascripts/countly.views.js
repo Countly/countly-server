@@ -126,9 +126,10 @@ var TableView = countlyVue.views.BaseView.extend({
     },
     methods: {
         add: function() {
-            this.targetName = "Your data, your rules.";
+            /*this.targetName = "Your data, your rules.";
             this.targetValue += 1;
-            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
+            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});*/
+            this.$emit("open-drawer", "main", {});
         },
         onTryDelete: function(row, callback) {
             callback({
@@ -193,6 +194,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
 
 var MainView = countlyVue.views.BaseView.extend({
     template: '#vue-example-main-template',
+    mixins: [countlyVue.mixins.hasDrawers(["main"])],
     components: {
         "table-view": TableView,
         "tg-view": TimeGraphView,

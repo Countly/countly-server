@@ -410,10 +410,39 @@
         }
     };
 
+    var hasDrawersMixin = function(names) {
+        return {
+            data: function() {
+                return {
+                    drawers: names.reduce(function(acc, val) {
+                        acc[val] = {
+                            opened: false,
+                            state: {}
+                        };
+                        return acc;
+                    }, {})
+                };
+            },
+            methods: {
+                openDrawer: function(name, state) {
+                    this.loadDrawer(name, state);
+                    this.drawers[name].opened = true;
+                },
+                loadDrawer: function(name, state) {
+                    this.drawers[name].state = state || {};
+                },
+                closeDrawer: function(name) {
+                    this.drawers[name].opened = false;
+                }
+            }
+        };
+    };
+
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
         'i18n': i18nMixin,
+        'hasDrawers': hasDrawersMixin
     };
 
     var _globalVuexStore = new Vuex.Store({
@@ -575,10 +604,10 @@
 
     var _components = {
         BaseDrawer: countlyBaseComponent.extend({
-            template: '<div class="cly-vue-drawer open">\
+            template: '<div class="cly-vue-drawer" v-bind:class="{open: opened}">\
                             <div class="title">\
                                 <span id="drawer-title"></span>\
-                                <div class="close">\
+                                <div class="close" v-on:click="tryClosing">\
                                     <i class="ion-ios-close-empty"></i>\
                                 </div>\
                             </div>\
@@ -588,8 +617,17 @@
                             <div class="buttons">\
                             </div>\
                         </div>',
+            props: {
+                opened: {type: Boolean, required: true},
+                state: {type: Object}
+            },
+            methods: {
+                tryClosing: function() {
+                    this.$emit("close");
+                }
+            }
         })
-    }
+    };
 
     var _views = {
         BackboneWrapper: countlyVueWrapperView,

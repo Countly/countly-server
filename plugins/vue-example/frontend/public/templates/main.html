@@ -1,7 +1,10 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
     <tg-view></tg-view>
-    <table-view></table-view>
-    <example-drawer>
+    <table-view v-on:open-drawer="openDrawer"></table-view>
+    <example-drawer
+        v-on:close="closeDrawer('main')"
+        v-bind:opened="drawers.main.opened"
+        v-bind:state="drawers.main.state">
         <cly-content>
         </cly-content>
     </example-drawer>
