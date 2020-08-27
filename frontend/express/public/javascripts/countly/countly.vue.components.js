@@ -489,7 +489,7 @@
         },
         renderCommon: function(isRefresh) {
             if (!isRefresh) {
-                $(this.el).html("<div class='vue-wrapper'></div><div id='vue-templates'></div>");
+                $(this.el).html("<div class='cly-vue-theme-clydef'><div class='vue-wrapper'></div><div id='vue-templates'></div></div>");
                 this.elementsToBeRendered.forEach(function(el) {
                     $("#vue-templates").append(el);
                 });
@@ -587,11 +587,11 @@
     // New components
 
     Vue.component("cly-datatable-w", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-datatable-wrapper" ref="wrapper">\
+        template: '<div class="cly-vue-datatable-w" ref="wrapper">\
                         <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
                             <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
                         </div>\
-                        <table ref="dtable" cellpadding="0" cellspacing="0" class="d-table"></table>\
+                        <table ref="dtable" cellpadding="0" cellspacing="0" class="d-table-vue-wrapper"></table>\
                     </div>',
         data: function() {
             return {
@@ -864,7 +864,16 @@
     }));
 
     Vue.component("cly-tabs", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]"><ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]"><li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+        template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]">\
+                        <ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]">\
+                            <li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}">\
+                                <a v-html="tab.tName"></a>\
+                            </li>\
+                        </ul>\
+                        <div class="cly-vue-tabs-container">\
+                            <slot/>\
+                        </div>\
+                    </div>',
         mixins: [
             _mixins.i18n
         ],
@@ -901,8 +910,10 @@
         }
     }));
 
-    Vue.component("cly-tab", countlyBaseComponent.extend({
-        template: '<div v-if="isActive || alwaysMounted"><div v-show="isActive"><slot/></div></div>',
+    Vue.component("cly-content", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-content" v-if="isActive || alwaysMounted">\
+                        <div v-show="isActive"><slot/></div>\
+                    </div>',
         mixins: [
             _mixins.i18n
         ],
@@ -951,7 +962,7 @@
     }));
 
     Vue.component("cly-global-date-selector-w", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-global-date-selector help-zone-vs">\
+        template: '<div class="cly-vue-global-date-selector-w help-zone-vs">\
                         <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
                             <i class="material-icons">date_range</i>\
                             <span class="inst-selected-date">{{currentPeriodLabel}}</span>\
@@ -1182,7 +1193,7 @@
         mixins: [
             _mixins.i18n
         ],
-        template: '<div class="cly-vue-time-graph">\
+        template: '<div class="cly-vue-time-graph-w">\
                         <div ref="container" class="graph-container"></div>\
                         <div class="cly-vue-graph-no-data" v-if="!hasData">\
                             <div class="inner">\
@@ -1327,7 +1338,7 @@
         mixins: [
             _mixins.i18n
         ],
-        template: '<div class="cly-vue-graph">\
+        template: '<div class="cly-vue-graph-w">\
                         <div ref="container" class="graph-container"></div>\
                         <div class="cly-vue-graph-no-data" v-if="!hasData">\
                             <div class="inner">\
