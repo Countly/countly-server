@@ -579,18 +579,12 @@
   margin-left: 20px;
   color: #9c9c9c;
 }
-.cly-vue-theme-clydef .cly-vue-check.check-tick-skin .check-wrapper, .cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper {
-  position: relative;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  text-align: left;
-  white-space: nowrap;
-  vertical-align: middle;
-  margin-bottom: 5px;
-}
 .cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label {
   background-color: #2EB52B;
+}
+.cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label:before {
+  left: 17px;
+  box-shadow: 0 1px 1px 0 #157313;
 }
 .cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-label {
   display: inline-block;
@@ -604,10 +598,6 @@
   transition: background-color 0.3s ease-in;
   width: 32px;
   vertical-align: bottom;
-}
-.cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label:before {
-  left: 17px;
-  box-shadow: 0 1px 1px 0 #157313;
 }
 .cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-label:before {
   content: "";
@@ -628,10 +618,20 @@
   color: #2FA732;
   cursor: pointer;
 }
-.cly-vue-theme-clydef .cly-vue-check.check-tick-skin .check-wrapper .check-checkbox, .cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-checkbox {
+.cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper, .cly-vue-theme-clydef .cly-vue-check.check-tick-skin .check-wrapper {
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+  margin-bottom: 5px;
+}
+.cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-checkbox, .cly-vue-theme-clydef .cly-vue-check.check-tick-skin .check-wrapper .check-checkbox {
   display: none;
 }
-.cly-vue-theme-clydef .cly-vue-check.check-tick-skin .check-wrapper .check-text, .cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-text {
+.cly-vue-theme-clydef .cly-vue-check.check-switch-skin .check-wrapper .check-text, .cly-vue-theme-clydef .cly-vue-check.check-tick-skin .check-wrapper .check-text {
   display: inline-block;
   opacity: 1;
   font-size: 12px;

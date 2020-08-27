@@ -401,78 +401,83 @@
 
     // check
     .cly-vue-check {
-        &.check-tick-skin .check-wrapper,
-        &.check-switch-skin .check-wrapper{
-            position: relative;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            text-align: left;
-            white-space: nowrap;
-            vertical-align: middle;
-            margin-bottom: 5px;
+
+        &.check-switch-skin {
+            .check-wrapper {
+                .check-checkbox:checked + .check-label {
+                    background-color: #2EB52B;
+                    &:before {
+                        left: 17px;
+                        box-shadow: 0 1px 1px 0 #157313;
+                    }
+                }
+                .check-label {
+                    display: inline-block;
+                    overflow: hidden;
+                    cursor: pointer;
+                    height: 19px;
+                    padding: 0;
+                    line-height: 26px;
+                    border-radius: 24px;
+                    background-color: #d0d0d0;
+                    transition: background-color 0.3s ease-in;
+                    width: 32px;
+                    vertical-align: bottom;
+                    &:before {
+                        content: "";
+                        display: block;
+                        width: 12px;
+                        height: 12px;
+                        margin: 3px 0 0 0;
+                        background: #FFFFFF;
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        left: 3px;
+                        border-radius: 24px;
+                        transition: all 0.3s ease-in 0s;
+                        box-shadow: 0 1px 1px 0 #8e8e8e;
+                    }            
+                }
+            }
         }
 
-        &.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label {
-            background-color: #2EB52B;
+        &.check-tick-skin {
+             .check-wrapper {
+                 .check-label {
+                    color: #2FA732;
+                    cursor: pointer;
+                }
+            }
         }
 
-        &.check-switch-skin .check-wrapper .check-label {
-            display: inline-block;
-            overflow: hidden;
-            cursor: pointer;
-            height: 19px;
-            padding: 0;
-            line-height: 26px;
-            border-radius: 24px;
-            background-color: #d0d0d0;
-            transition: background-color 0.3s ease-in;
-            width: 32px;
-            vertical-align: bottom;
-        }
-
-        &.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label:before {
-            left: 17px;
-            box-shadow: 0 1px 1px 0 #157313;
-        }
-
-        &.check-switch-skin .check-wrapper .check-label:before {
-            content: "";
-            display: block;
-            width: 12px;
-            height: 12px;
-            margin: 3px 0 0 0;
-            background: #FFFFFF;
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 3px;
-            border-radius: 24px;
-            transition: all 0.3s ease-in 0s;
-            box-shadow: 0 1px 1px 0 #8e8e8e;
-        }
-
-        &.check-tick-skin .check-wrapper .check-label {
-            color: #2FA732;
-            cursor: pointer;
-        }
-
-        &.check-tick-skin .check-wrapper .check-checkbox,
-        &.check-switch-skin .check-wrapper .check-checkbox {
-            display: none;
-        }
-
-        &.check-tick-skin .check-wrapper .check-text,
-        &.check-switch-skin .check-wrapper .check-text {
-            display: inline-block;
-            opacity: 1;
-            font-size: 12px;
-            color: #444;
-            vertical-align: top;
-            margin-top: 3px;
-            margin-left: 8px;
-            line-height: 12px;
-            cursor: pointer;
+        &.check-switch-skin, &.check-tick-skin{
+            .check-wrapper{
+                position: relative;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                text-align: left;
+                white-space: nowrap;
+                vertical-align: middle;
+                margin-bottom: 5px;
+                
+                .check-checkbox {
+                    display: none;
+                }
+                
+                .check-text {
+                    display: inline-block;
+                    opacity: 1;
+                    font-size: 12px;
+                    color: #444;
+                    vertical-align: top;
+                    margin-top: 3px;
+                    margin-left: 8px;
+                    line-height: 12px;
+                    cursor: pointer;
+                }
+            }
         }
     }
 }
