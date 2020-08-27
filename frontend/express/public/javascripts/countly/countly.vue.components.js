@@ -537,7 +537,21 @@
         }
     });
 
-    var countlyBaseView = Vue.extend({
+    var _uniqueComponentId = 0;
+
+    var countlyBaseComponent = Vue.extend({
+        beforeCreate: function() {
+            this.ucid = _uniqueComponentId.toString();
+            _uniqueComponentId += 1;
+        },
+        computed: {
+            componentId: function() {
+                return "cly-cmp-" + _uniqueComponentId;
+            }
+        }
+    });
+
+    var countlyBaseView = countlyBaseComponent.extend({
         mixins: [
             _mixins.autoRefresh,
             _mixins.i18n
@@ -572,7 +586,7 @@
 
     // New components
 
-    Vue.component("cly-datatable-w", {
+    Vue.component("cly-datatable-w", countlyBaseComponent.extend({
         template: '<div class="cly-vue-datatable-wrapper" ref="wrapper">\
                         <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
                             <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
@@ -658,7 +672,7 @@
                             "mData": function(row, type) {
                                 if (type === "display") {
                                     var stringBuffer = ['<div class="on-off-switch">'];
-                                    var rowId = "row-" + self.keyFn(row);
+                                    var rowId = self.componentId + "-row-" + self.keyFn(row);
                                     if (row[column.fieldKey]) {
                                         stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '" checked>');
                                     }
@@ -847,10 +861,10 @@
         beforeDestroy: function() {
             this.tableInstance.fnDestroy();
         }
-    });
+    }));
 
-    Vue.component("cly-tabs", {
-        template: '<div class="cly-vue-tabs"><ul class="cly-vue-tabs-list"><li v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a @click="setTab(tab.tId)" v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
+    Vue.component("cly-tabs", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]"><ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]"><li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}"><a v-html="tab.tName"></a></li></ul><div class="cly-vue-tabs-container"><slot/></div></div>',
         mixins: [
             _mixins.i18n
         ],
@@ -861,6 +875,18 @@
         },
         props: {
             value: { default: null },
+            skin: { default: "main", type: String}
+        },
+        computed: {
+            skinClass: function() {
+                if (["main", "graphs"].indexOf(this.skin) > -1) {
+                    return "tabs-" + this.skin + "-skin";
+                }
+                return "tabs-main-skin";
+            },
+            numberOfTabsClass: function() {
+                return "tabs-" + this.tabs.length;
+            }
         },
         methods: {
             setTab: function(tId) {
@@ -873,17 +899,17 @@
                 this.$emit("input", this.tabs[0].tId);
             }
         }
-    });
+    }));
 
-    Vue.component("cly-tab", {
-        template: '<div v-show="isActive"><slot/></div>',
+    Vue.component("cly-tab", countlyBaseComponent.extend({
+        template: '<div v-if="isActive || alwaysMounted"><div v-show="isActive"><slot/></div></div>',
         mixins: [
             _mixins.i18n
         ],
         props: {
             name: { type: String, default: null},
             id: { type: String, default: null },
-
+            alwaysMounted: { type: Boolean, default: true }
         },
         computed: {
             isActive: function() {
@@ -896,9 +922,9 @@
                 return this.id;
             }
         }
-    });
+    }));
 
-    Vue.component("cly-panel", {
+    Vue.component("cly-panel", countlyBaseComponent.extend({
         template: '<div class="cly-vue-panel widget">\
                         <div class="widget-header">\
                             <div class="left">\
@@ -922,9 +948,9 @@
             title: { type: String, required: true },
             dateSelector: { type: Boolean, required: false, default: true },
         },
-    });
+    }));
 
-    Vue.component("cly-global-date-selector-w", {
+    Vue.component("cly-global-date-selector-w", countlyBaseComponent.extend({
         template: '<div class="cly-vue-global-date-selector help-zone-vs">\
                         <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
                             <i class="material-icons">date_range</i>\
@@ -1150,9 +1176,9 @@
             this.dateTo.datepicker('hide').datepicker('destroy');
             this.dateFrom.datepicker('hide').datepicker('destroy');
         }
-    });
+    }));
 
-    Vue.component("cly-time-graph-w", {
+    Vue.component("cly-time-graph-w", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -1175,7 +1201,7 @@
             },
             bucket: { required: false, default: null },
             overrideBucket: { required: false, default: null },
-            frozen: {required: true, type: Boolean},
+            frozen: {default: false, type: Boolean},
             configPaths: { required: true },
             configSmall: { required: false, default: false },
             configOptions: { required: false, default: null }
@@ -1220,10 +1246,7 @@
                     return pathCopy;
                 });
 
-                var plot = $(this.$refs.container).data("plot");
-                if (plot) {
-                    plot.getPlaceholder().unbind("resize", self._onResize);
-                }
+                this.unbindResizer();
 
                 countlyCommon.drawTimeGraph(points,
                     $(this.$refs.container),
@@ -1238,6 +1261,12 @@
             initializeResizer: function() {
                 var plot = $(this.$refs.container).data("plot");
                 plot.getPlaceholder().resize(this._onResize);
+            },
+            unbindResizer: function() {
+                var plot = $(this.$refs.container).data("plot");
+                if (plot) {
+                    plot.getPlaceholder().unbind("resize", this._onResize);
+                }
             },
             _onResize: function() {
                 var self = this,
@@ -1279,6 +1308,9 @@
                 });
             }
         },
+        beforeDestroy: function() {
+            this.unbindResizer();
+        },
         watch: {
             dataPoints: function() {
                 this.refresh();
@@ -1289,9 +1321,9 @@
                 }
             }
         }
-    });
+    }));
 
-    Vue.component("cly-graph-w", {
+    Vue.component("cly-graph-w", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -1313,7 +1345,7 @@
                 }
             },
             graphType: { required: false, type: String, default: "bar" },
-            frozen: {required: true, type: Boolean},
+            frozen: {default: false, type: Boolean},
             configOptions: { required: false, default: null }
         },
         data: function() {
@@ -1356,9 +1388,9 @@
                 }
             }
         }
-    });
+    }));
 
-    Vue.component("cly-radio", {
+    Vue.component("cly-radio", countlyBaseComponent.extend({
         template: '<div class="cly-vue-radio">\
                         <div class="radio-wrapper">\
                             <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
@@ -1377,9 +1409,9 @@
                 this.$emit('input', e);
             }
         }
-    });
+    }));
 
-    Vue.component("cly-text-field", {
+    Vue.component("cly-text-field", countlyBaseComponent.extend({
         template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">',
         props: {
             value: {required: true}
@@ -1389,56 +1421,91 @@
                 this.$emit('input', e);
             }
         }
-    });
+    }));
 
-    Vue.component("cly-check", {
-        template: '<div class="cly-vue-check">\
+    Vue.component("cly-check", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-check" v-bind:class="[skinClass]">\
                         <div class="check-wrapper">\
-                            <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\'" :checked="value" v-on:input="setValue($event.target.checked)">\
-                            <label class="switch-theme-label" v-bind:for="\'cb_\'"></label>\
-                            <span class="switch-theme-text">{{label}}</span>\
+                            <input type="checkbox" class="check-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
+                            <label v-bind:class="labelClass" v-bind:for="componentId + \'-cb\'"></label>\
+                            <span class="check-text" @click="setValue(!value)">{{label}}</span>\
                         </div>\
                     </div>',
         props: {
             value: {required: true, type: Boolean},
-            label: {type: String}
+            label: {type: String},
+            skin: { default: "switch", type: String}
+        },
+        computed: {
+            skinClass: function() {
+                if (["switch", "tick"].indexOf(this.skin) > -1) {
+                    return "check-" + this.skin + "-skin";
+                }
+                return "check-switch-skin";
+            },
+            labelClass: function() {
+                return this.getClass(this.value);
+            }
         },
         methods: {
             setValue: function(e) {
                 this.$emit('input', e);
+            },
+            getClass: function(value) {
+                var classes = ["check-label"];
+                if (this.skin === "tick") {
+                    classes.push("fa");
+                    if (value) {
+                        classes.push("fa-check-square");
+                    }
+                    else {
+                        classes.push("fa-square-o");
+                    }
+                }
+                return classes;
             }
         }
-    });
+    }));
 
-    Vue.component("cly-check-list", {
-        template: '<div class="cly-vue-check">\
-                        <template v-for="(item, i) in items" :key="i">\
-                            <div class="check-wrapper">\
-                                <input type="checkbox" class="switch-theme-checkbox" v-bind:id="\'cb_\' + i" v-bind:value="item.value" v-model="internalValue">\
-                                <label class="switch-theme-label" v-bind:for="\'cb_\' + i"></label>\
-                                <span class="switch-theme-text">{{item.label}}</span>\
-                            </div>\
-                        </template>\
-                    </div>',
+    Vue.component("cly-check-list", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-check-list">\
+                      <cly-check v-for="(item, i) in items" :key="i" v-bind:skin="skin" v-bind:label="item.label" v-bind:value="uncompressed[i]" v-on:input="setValue(item.value, $event)">\
+                      </cly-check>\
+                  </div>',
         props: {
             value: {required: true},
             items: {required: true},
+            skin: { default: "switch", type: String}
         },
-        data: function() {
-            return {
-                internalValue: this.value
-            };
+        computed: {
+            uncompressed: function() {
+                return this.getUncompressed();
+            }
         },
         methods: {
-            setValue: function(e) {
-                this.$emit('input', e);
-            }
-        },
-        watch: {
-            internalValue: function() {
-                this.setValue(this.internalValue);
+            getUncompressed: function() {
+                var self = this;
+                return this.items.map(function(item) {
+                    return self.value.indexOf(item.value) > -1;
+                });
+            },
+            setValue: function(value, status) {
+                var self = this;
+                var newArray = null;
+                if (status && self.value.indexOf(value) === -1) {
+                    newArray = self.value.slice();
+                    newArray.push(value);
+                }
+                else if (!status && self.value.indexOf(value) > -1) {
+                    newArray = self.value.slice().filter(function(item) {
+                        return item !== value;
+                    });
+                }
+                if (newArray) {
+                    this.$emit('input', newArray);
+                }
             }
         }
-    });
+    }));
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

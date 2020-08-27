@@ -161,15 +161,22 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
                 "label": "Total Sessions",
                 "color": "#52A3EF"
             }],
-            activeTab: null
+            activeTab: null,
+            activeGraphTab: null
         };
     },
     computed: {
         randomNumbers: function() {
             return this.$store.getters["vueExample/randomNumbers"];
         },
-        graphData: function() {
-            return this.$store.getters["vueExample/graphData"];
+        barData: function() {
+            return this.$store.getters["vueExample/barData"];
+        },
+        pieData: function() {
+            return this.$store.getters["vueExample/pieData"];
+        },
+        lineData: function() {
+            return this.$store.getters["vueExample/lineData"];
         }
     },
     methods: {

@@ -1,6 +1,6 @@
 /* tabs component */
 
-.cly-vue-tabs .cly-vue-tabs-list{
+.cly-vue-tabs.tabs-main-skin > .cly-vue-tabs-list{
     background-image: none;
     padding: 0;
     margin: 0;
@@ -13,7 +13,7 @@
     margin-bottom: 5px;
 }
 
-.cly-vue-tabs .cly-vue-tabs-list li{
+.cly-vue-tabs.tabs-main-skin > .cly-vue-tabs-list li{
     text-decoration: none;
     color: #FFF;
     font-size: 12px;
@@ -36,7 +36,7 @@
     margin-right: 30px;
 }
 
-.cly-vue-tabs .cly-vue-tabs-list li a{
+.cly-vue-tabs.tabs-main-skin > .cly-vue-tabs-list li a{
     cursor: pointer;
     display: block;
     float: none;
@@ -48,10 +48,98 @@
     font-size: 15px;
 }
 
-.cly-vue-tabs .cly-vue-tabs-list li.is-active a {
+.cly-vue-tabs.tabs-main-skin > .cly-vue-tabs-list li.is-active a {
     color: #333;
     border-bottom: 2px solid #19cc63 !important;
 }
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list {
+    margin: 0px;
+    padding: 0px;
+    height: 30px;
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list li {
+    float: left;
+    position: relative;
+    cursor: pointer;
+    padding-top: 7px;
+    font-size: 12px;
+    line-height: 111%;
+    color: #969696;
+    box-shadow: none;
+    border: none;
+    list-style: none;
+    text-align: center;
+    border-left: 1px solid #D0D0D0;
+    border-bottom: 1px solid #D0D0D0;
+    background-color: #F9F9F9;
+    height: 23px;
+    vertical-align: middle;
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-1 li {
+    width: calc(100% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-2 li {
+    width: calc(50% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-3 li {
+    width: calc(33.333333334% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-4 li {
+    width: calc(25% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-5 li {
+    width: calc(20% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-6 li {
+    width: calc(16.666666667% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-7 li {
+    width: calc(14.285714286% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-8 li {
+    width: calc(12.5% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-9 li {
+    width: calc(11.111111111% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-10 li {
+    width: calc(10% - 1px);
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list li:first-of-type {
+    border-left: 0;
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list li a {
+    padding-top: 2px;
+    padding-bottom: 3px;
+    font-size: 10px;
+    color: #666666;
+    text-transform: uppercase;
+    max-width: 156px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 auto;
+    white-space: nowrap;
+}
+
+.cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list li.is-active {
+    background-color: #FFF;
+    border-bottom: none;
+}
+
 /*
 .cly-vue-tabs. .cly-vue-tabs-container{
 
@@ -65,6 +153,7 @@
 .cly-vue-graph .graph-container{
     width: auto;
     height: 350px;
+    margin: 30px;
 }
 
 .cly-vue-graph-no-data { height:100%; position:relative; }
@@ -200,8 +289,8 @@
 }
 
 /* check */
-
-.cly-vue-check .check-wrapper{
+.cly-vue-check.check-tick-skin .check-wrapper,
+.cly-vue-check.check-switch-skin .check-wrapper{
     position: relative;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -212,11 +301,11 @@
     margin-bottom: 5px;
 }
 
-.cly-vue-check .check-wrapper .switch-theme-checkbox:checked + .switch-theme-label {
+.cly-vue-check.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label {
     background-color: #2EB52B;
 }
 
-.cly-vue-check .check-wrapper .switch-theme-label {
+.cly-vue-check.check-switch-skin .check-wrapper .check-label {
     display: inline-block;
     overflow: hidden;
     cursor: pointer;
@@ -229,12 +318,13 @@
     width: 32px;
     vertical-align: bottom;
 }
-.cly-vue-check .check-wrapper .switch-theme-checkbox:checked + .switch-theme-label:before {
+
+.cly-vue-check.check-switch-skin .check-wrapper .check-checkbox:checked + .check-label:before {
     left: 17px;
     box-shadow: 0 1px 1px 0 #157313;
 }
 
-.cly-vue-check .check-wrapper .switch-theme-label:before {
+.cly-vue-check.check-switch-skin .check-wrapper .check-label:before {
     content: "";
     display: block;
     width: 12px;
@@ -249,11 +339,19 @@
     transition: all 0.3s ease-in 0s;
     box-shadow: 0 1px 1px 0 #8e8e8e;
 }
-.cly-vue-check .check-wrapper .switch-theme-checkbox {
+
+.cly-vue-check.check-tick-skin .check-wrapper .check-label {
+    color: #2FA732;
+    cursor: pointer;
+}
+
+.cly-vue-check.check-tick-skin .check-wrapper .check-checkbox,
+.cly-vue-check.check-switch-skin .check-wrapper .check-checkbox {
     display: none;
 }
 
-.cly-vue-check .check-wrapper .switch-theme-text {
+.cly-vue-check.check-tick-skin .check-wrapper .check-text,
+.cly-vue-check.check-switch-skin .check-wrapper .check-text {
     display: inline-block;
     opacity: 1;
     font-size: 12px;
