@@ -901,8 +901,8 @@
         }
     }));
 
-    Vue.component("cly-tab", countlyBaseComponent.extend({
-        template: '<div v-if="isActive || alwaysMounted"><div v-show="isActive"><slot/></div></div>',
+    Vue.component("cly-content", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-content" v-if="isActive || alwaysMounted"><div v-show="isActive"><slot/></div></div>',
         mixins: [
             _mixins.i18n
         ],
