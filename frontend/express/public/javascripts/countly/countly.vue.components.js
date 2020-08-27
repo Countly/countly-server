@@ -1519,4 +1519,20 @@
         }
     }));
 
+    Vue.component("cly-button", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-button" v-on="$listeners" v-bind:class="[skinClass]">{{label}}</div>',
+        props: {
+            label: {type: String},
+            skin: { default: "green", type: String}
+        },
+        computed: {
+            skinClass: function() {
+                if (this.skin === "green") {
+                    return "button-green-skin";
+                }
+                return null;
+            }
+        }
+    }));
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

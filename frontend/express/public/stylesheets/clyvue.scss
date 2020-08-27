@@ -517,4 +517,23 @@
             }
         }
     }
+
+    //button 
+    .cly-vue-button{
+        min-height: 14px;
+        cursor: pointer;
+        float: left;
+        padding: 7px 12px;
+        border-radius: 2px;
+        font: 12px Ubuntu,Helvetica,sans-serif;
+        line-height: 15px;
+        overflow: auto;
+        margin-left: 8px;
+        
+        &.button-green-skin {
+            background-color: #2EB52B;
+            color: #FFF;
+            box-shadow: inset 0 0 0 1px #2EB52B;
+        }
+    }
 }
