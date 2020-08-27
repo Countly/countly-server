@@ -1,118 +1,118 @@
 
 .cly-vue-theme-clydef {
-    /* tabs component */
+    // tabs component
     .cly-vue-tabs {
-        &.tabs-main-skin > .cly-vue-tabs-list{
-            background-image: none;
-            padding: 0;
-            margin: 0;
-            border-radius: 0;
-            margin-top: -1px;
-            height: 40px;
-            border: none;
-            background-color: transparent;
-            padding-left: 12px;
-            margin-bottom: 5px;
-        }
+        &.tabs-main-skin {
+            >.cly-vue-tabs-list{
+                background-image: none;
+                padding: 0;
+                margin: 0;
+                border-radius: 0;
+                margin-top: -1px;
+                height: 40px;
+                border: none;
+                background-color: transparent;
+                padding-left: 12px;
+                margin-bottom: 5px;
+                li {
+                    text-decoration: none;
+                    color: #FFF;
+                    font-size: 12px;
+                    text-align: center;
+                    box-shadow: none;
+                    list-style: none;
+                    float: left;
+                    position: relative;
+                    top: 1px;
+                    white-space: nowrap;
+                    margin: 0;
+                    background-color: #f8f8f8;
+                    border-radius: 0;
+                    border: none;
+                    background-image: none;
+                    padding: 0;
+                    border-top: 3px solid #f8f8f8;
+                    border-bottom: none !important;
+                    width: auto;
+                    margin-right: 30px;
+                    a {
+                        cursor: pointer;
+                        display: block;
+                        float: none;
+                        font-family: Ubuntu;
+                        text-transform: uppercase;
+                        background-color: transparent;
+                        color: #666;
+                        padding: 0px 0px 6px 0px;
+                        font-size: 15px;
+                    }
 
-        &.tabs-main-skin > .cly-vue-tabs-list li{
-            text-decoration: none;
-            color: #FFF;
-            font-size: 12px;
-            text-align: center;
-            box-shadow: none;
-            list-style: none;
-            float: left;
-            position: relative;
-            top: 1px;
-            white-space: nowrap;
-            margin: 0;
-            background-color: #f8f8f8;
-            border-radius: 0;
-            border: none;
-            background-image: none;
-            padding: 0;
-            border-top: 3px solid #f8f8f8;
-            border-bottom: none !important;
-            width: auto;
-            margin-right: 30px;
-        }
-
-        &.tabs-main-skin > .cly-vue-tabs-list li a{
-            cursor: pointer;
-            display: block;
-            float: none;
-            font-family: Ubuntu;
-            text-transform: uppercase;
-            background-color: transparent;
-            color: #666;
-            padding: 0px 0px 6px 0px;
-            font-size: 15px;
-        }
-
-        &.tabs-main-skin > .cly-vue-tabs-list li.is-active a {
-            color: #333;
-            border-bottom: 2px solid #19cc63 !important;
-        }
-
-        &.tabs-graphs-skin > .cly-vue-tabs-list {
-            margin: 0px;
-            padding: 0px;
-            height: 30px;
-        }
-
-        &.tabs-graphs-skin > .cly-vue-tabs-list li {
-            float: left;
-            position: relative;
-            cursor: pointer;
-            padding-top: 7px;
-            font-size: 12px;
-            line-height: 111%;
-            color: #969696;
-            box-shadow: none;
-            border: none;
-            list-style: none;
-            text-align: center;
-            border-left: 1px solid #D0D0D0;
-            border-bottom: 1px solid #D0D0D0;
-            background-color: #F9F9F9;
-            height: 23px;
-            vertical-align: middle;
-        }
-
-        @for $i from 1 through 15 {
-            $proportional_w: 100 / $i + '%';
-
-            &.tabs-graphs-skin > .cly-vue-tabs-list.tabs-#{$i} li {
-                width: calc(#{$proportional_w} - 1px);
+                    &.is-active a {
+                        color: #333;
+                        border-bottom: 2px solid #19cc63 !important;
+                    }
+                }
             }
         }
 
+        &.tabs-graphs-skin {
+            > .cly-vue-tabs-list {
+                margin: 0px;
+                padding: 0px;
+                height: 30px;
 
-        &.tabs-graphs-skin > .cly-vue-tabs-list li:first-of-type {
-            border-left: 0;
-        }
+                @for $i from 1 through 15 {
+                    $proportional_w: 100 / $i + '%';
 
-        &.tabs-graphs-skin > .cly-vue-tabs-list li a {
-            padding-top: 2px;
-            padding-bottom: 3px;
-            font-size: 10px;
-            color: #666666;
-            text-transform: uppercase;
-            max-width: 156px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin: 0 auto;
-            white-space: nowrap;
-        }
+                    &.tabs-#{$i} li {
+                        width: calc(#{$proportional_w} - 1px);
+                    }
+                }
+                
+                li {
+                    float: left;
+                    position: relative;
+                    cursor: pointer;
+                    padding-top: 7px;
+                    font-size: 12px;
+                    line-height: 111%;
+                    color: #969696;
+                    box-shadow: none;
+                    border: none;
+                    list-style: none;
+                    text-align: center;
+                    border-left: 1px solid #D0D0D0;
+                    border-bottom: 1px solid #D0D0D0;
+                    background-color: #F9F9F9;
+                    height: 23px;
+                    vertical-align: middle;
 
-        &.tabs-graphs-skin > .cly-vue-tabs-list li.is-active {
-            background-color: #FFF;
-            border-bottom: none;
+                    &:first-of-type {
+                        border-left: 0;
+                    }
+                    a {
+                        padding-top: 2px;
+                        padding-bottom: 3px;
+                        font-size: 10px;
+                        color: #666666;
+                        text-transform: uppercase;
+                        max-width: 156px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        margin: 0 auto;
+                        white-space: nowrap;
+                    }
+
+                    &.is-active {
+                        background-color: #FFF;
+                        border-bottom: none;
+                    }
+                }
+            }
         }
     }
 
-    /* graph */
+    // graph
     .cly-vue-graph {
         .graph-container{
             width: auto;
@@ -131,7 +131,7 @@
         .inner .text { cursor:default; display: inline-block; color: #a2a2a2; vertical-align: text-bottom; margin-bottom: 23px; font-size: 16px; }
     }
    
-    /* time graph */
+    // time graph
     .cly-vue-time-graph {
 
         font-family:Oswald; 
@@ -149,7 +149,7 @@
         }
     }
 
-    /* global date selector */
+    // global date selector
     .cly-vue-global-date-selector{
         float:right; 
         font:13px Ubuntu,Helvetica,sans-serif; 
@@ -210,7 +210,7 @@
         .inst-selected-date {font-size:13px; color:#767676; line-height:28px; }
     }
     
-    /* datatable */
+    // datatable
     .cly-vue-datatable {
 
         .cly-button-menu .fa{
@@ -272,10 +272,10 @@
 
     }
 
-    /* radio */
+    // radio
     .cly-vue-radio {
         .radio-wrapper {
-            
+
             border: 1px solid #d0d0d0;
             border-radius: 2px;
     
@@ -327,7 +327,7 @@
         }
     }
 
-    /* check */
+    // check
     .cly-vue-check {
         &.check-tick-skin .check-wrapper,
         &.check-switch-skin .check-wrapper{

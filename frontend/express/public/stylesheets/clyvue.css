@@ -1,12 +1,3 @@
-.cly-vue-theme-clydef {
-  /* tabs component */
-  /* graph */
-  /* time graph */
-  /* global date selector */
-  /* datatable */
-  /* radio */
-  /* check */
-}
 .cly-vue-theme-clydef .cly-vue-tabs.tabs-main-skin > .cly-vue-tabs-list {
   background-image: none;
   padding: 0;
@@ -61,24 +52,6 @@
   padding: 0px;
   height: 30px;
 }
-.cly-vue-theme-clydef .cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list li {
-  float: left;
-  position: relative;
-  cursor: pointer;
-  padding-top: 7px;
-  font-size: 12px;
-  line-height: 111%;
-  color: #969696;
-  box-shadow: none;
-  border: none;
-  list-style: none;
-  text-align: center;
-  border-left: 1px solid #D0D0D0;
-  border-bottom: 1px solid #D0D0D0;
-  background-color: #F9F9F9;
-  height: 23px;
-  vertical-align: middle;
-}
 .cly-vue-theme-clydef .cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-1 li {
   width: calc(100% - 1px);
 }
@@ -123,6 +96,24 @@
 }
 .cly-vue-theme-clydef .cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list.tabs-15 li {
   width: calc(6.6666666667% - 1px);
+}
+.cly-vue-theme-clydef .cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list li {
+  float: left;
+  position: relative;
+  cursor: pointer;
+  padding-top: 7px;
+  font-size: 12px;
+  line-height: 111%;
+  color: #969696;
+  box-shadow: none;
+  border: none;
+  list-style: none;
+  text-align: center;
+  border-left: 1px solid #D0D0D0;
+  border-bottom: 1px solid #D0D0D0;
+  background-color: #F9F9F9;
+  height: 23px;
+  vertical-align: middle;
 }
 .cly-vue-theme-clydef .cly-vue-tabs.tabs-graphs-skin > .cly-vue-tabs-list li:first-of-type {
   border-left: 0;
