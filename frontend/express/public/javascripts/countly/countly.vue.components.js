@@ -606,7 +606,7 @@
         BaseDrawer: countlyBaseComponent.extend({
             template: '<div class="cly-vue-drawer" v-bind:class="{open: opened}">\
                             <div class="title">\
-                                <span id="drawer-title">{{title}}</span>\
+                                <span>{{title}}</span>\
                                 <div class="close" v-on:click="tryClosing">\
                                     <i class="ion-ios-close-empty"></i>\
                                 </div>\
@@ -968,6 +968,9 @@
             },
             numberOfTabsClass: function() {
                 return "tabs-" + this.tabs.length;
+            },
+            activeContentId: function(){
+                return this.value;
             }
         },
         methods: {
@@ -997,7 +1000,7 @@
         },
         computed: {
             isActive: function() {
-                return this.$parent.value === this.id;
+                return this.$parent.activeContentId === this.id;
             },
             tName: function() {
                 return this.name;
