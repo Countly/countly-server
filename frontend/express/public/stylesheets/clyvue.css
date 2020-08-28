@@ -660,6 +660,9 @@
 .cly-vue-theme-clydef .cly-vue-button:hover {
   opacity: 0.8;
 }
+.cly-vue-theme-clydef .cly-vue-button.disabled {
+  opacity: 0.5;
+}
 .cly-vue-theme-clydef .cly-vue-drawer {
   position: fixed;
   width: 600px;
