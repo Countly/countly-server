@@ -411,7 +411,7 @@
     };
 
     var hasDrawersMixin = function(names) {
-        if (!Array.isArray(names)){
+        if (!Array.isArray(names)) {
             names = [names];
         }
 
@@ -656,7 +656,7 @@
                     }
                     return null;
                 },
-                isCurrentStepValid: function(){
+                isCurrentStepValid: function() {
                     if (!Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
                         // No validation scenario defined
                         return true;
@@ -1069,7 +1069,7 @@
         data: function() {
             return {
                 isContent: true
-            }
+            };
         },
         computed: {
             isActive: function() {
@@ -1676,7 +1676,7 @@
             disabled: {type: Boolean, default: false}
         },
         computed: {
-            activeClasses: function(){
+            activeClasses: function() {
                 var classes = [this.skinClass];
                 if (this.disabled) {
                     classes.push("disabled");
