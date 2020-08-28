@@ -540,6 +540,9 @@
             background-color: #FDFDFD;
             box-shadow: inset 0 0 0 1px #DCDCDC;
         }
+        &:hover{
+            opacity: 0.8;
+        }
     }
 
     //drawer
@@ -547,15 +550,6 @@
         position:fixed; width:600px; height:100%; right:0; transform: translateX(600px); transition:transform 0.3s; top:0; background-color: #f9f9f9; border-left:1px solid #d0d0d0; z-index: 10001; box-sizing:border-box; padding-top:58px; padding-bottom:120px;
         &.open { transform: translateX(0); transition:transform 0.3s; }
         
-        .buttons { 
-            position: absolute; right:0; width:410px; padding: 20px; bottom: 0; 
-            position: relative; background-color: #fff; border-top: 1px solid #ECECED; width: 100%; padding: 20px 20px; margin: 0; left: 0; right: 0; box-sizing: border-box; bottom: 0;
-            .cly-vue-button { 
-                float:none; font-size: 15px; text-align: center; padding: 12px; margin:0;
-                &.disabled { cursor: auto; }
-            }
-        }
-
         .cly-vue-button.disabled { cursor: auto; }
 
         .title {
@@ -564,22 +558,6 @@
                 position: absolute; right:20px; top:9px; font-size: 42px; color:#9c9c9c; transition:color 1s; cursor: pointer;
                 &:hover { color:#333; transition:color 1s; }
             }
-        }
-
-        .details { 
-            padding: 20px; height:100%; float:none; overflow-y:auto;
-            .section { 
-                margin-bottom: 25px; 
-                .label { font-size: 12px; margin-bottom: 8px; color:#636363; }
-                > .description { font-size: 11px; margin-top: 4px; color: #9c9c9c; line-height: 17px; }
-                input[type=text].input { width: 100%; box-sizing: border-box; border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; }
-            }
-        }
-
-        .panel { 
-            background-color: #ffffff; border: 1px solid #D0D0D0; font-size: 13px; border-radius: 2px; 
-            .panel-heading { padding: 8px 20px; background-color: #ECECEC; color: #636363; text-transform: uppercase; border-bottom: 1px solid #D0D0D0; font-weight: 500; }
-            .panel-body { padding: 20px; position: relative; }
         }
 
         .steps-header {
@@ -640,6 +618,43 @@
                     .done-icon {
                         display: inline;
                     }
+                }
+            }
+        }
+
+        .details { 
+            padding: 20px; height:100%; float:none; overflow-y:auto;
+            .section { 
+                margin-bottom: 25px; 
+                .label { font-size: 12px; margin-bottom: 8px; color:#636363; }
+                > .description { font-size: 11px; margin-top: 4px; color: #9c9c9c; line-height: 17px; }
+                input[type=text].input { width: 100%; box-sizing: border-box; border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; }
+            }
+        }
+
+        .panel { 
+            background-color: #ffffff; border: 1px solid #D0D0D0; font-size: 13px; border-radius: 2px; 
+            .panel-heading { padding: 8px 20px; background-color: #ECECEC; color: #636363; text-transform: uppercase; border-bottom: 1px solid #D0D0D0; font-weight: 500; }
+            .panel-body { padding: 20px; position: relative; }
+        }
+
+        .buttons { 
+            position: absolute; right:0; width:410px; padding: 20px; bottom: 0; 
+            position: relative; background-color: #fff; border-top: 1px solid #ECECED; width: 100%; padding: 20px 20px; margin: 0; left: 0; right: 0; box-sizing: border-box; bottom: 0;
+            overflow: auto;
+            .cly-vue-button { 
+                float:none; font-size: 15px; text-align: center; padding: 12px; margin:0;
+                &.button-light-skin{
+                    box-shadow: none;
+                    background-color: #fff;
+                }
+            }
+
+            &.multi-step{
+                .cly-vue-button {
+                    float: right;
+                    font-size: 14px;
+                    padding: 12px 22px;
                 }
             }
         }

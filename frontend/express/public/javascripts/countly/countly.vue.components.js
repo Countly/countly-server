@@ -623,9 +623,9 @@
                             <div class="details">\
                                 <slot></slot>\
                             </div>\
-                            <div class="buttons" v-if="isMultiStep">\
-                                <div id="previous-step" @click="prevStep" v-if="currentStepIndex > 0" class="icon-button light">Previous step</div>\
-                                <div id="next-step" @click="nextStep" class="icon-button green">Next step</div>\
+                            <div class="buttons multi-step" v-if="isMultiStep">\
+                                <cly-button @click="nextStep" skin="green" label="Next step"></cly-button>\
+                                <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" label="Previous step"></cly-button>\
                             </div>\
                         </div>',
             props: {
@@ -678,7 +678,9 @@
                 afterEditedObjectChanged: function() { },
             },
             mounted: function() {
-                this.stepContents = this.$children;
+                this.stepContents = this.$children.filter(function(child) {
+                    return child.isContent;
+                });
                 this.setStep(this.stepContents[0].tId);
             },
             watch: {
@@ -1042,6 +1044,11 @@
             name: { type: String, default: null},
             id: { type: String, default: null },
             alwaysMounted: { type: Boolean, default: true }
+        },
+        data: function() {
+            return {
+                isContent: true
+            }
         },
         computed: {
             isActive: function() {
@@ -1648,10 +1655,10 @@
         },
         computed: {
             skinClass: function() {
-                if (this.skin === "green") {
-                    return "button-green-skin";
+                if (["green", "light"].indexOf(this.skin) > -1) {
+                    return "button-" + this.skin + "-skin";
                 }
-                return null;
+                return "button-light-skin";
             }
         }
     }));
