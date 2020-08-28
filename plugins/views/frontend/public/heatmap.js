@@ -7,7 +7,6 @@
         clickMap,
         scrollMap;
 
-    Countly.app_key = window.location.pathname.split("/")[2];
     Countly._internals.loadCSS(Countly.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
         Countly._internals.loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function() {
             document.body.style.position = "relative";
