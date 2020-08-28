@@ -126,7 +126,11 @@ var TableView = countlyVue.views.BaseView.extend({
     },
     methods: {
         add: function() {
-            this.$emit("open-drawer", "main", {});
+            this.$emit("open-drawer", "main", {
+                "step1": false,
+                "step2": true,
+                "step3": false
+            });
         },
         onTryDelete: function(row, callback) {
             callback({

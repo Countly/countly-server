@@ -626,7 +626,7 @@
                                 </div>\
                             </div>\
                             <div class="details">\
-                                <slot></slot>\
+                                <slot :editedObject="editedObject"></slot>\
                             </div>\
                             <div class="buttons multi-step" v-if="isMultiStep">\
                                 <cly-button @click="nextStep" skin="green" label="Next step"></cly-button>\
@@ -1052,7 +1052,8 @@
         props: {
             name: { type: String, default: null},
             id: { type: String, default: null },
-            alwaysMounted: { type: Boolean, default: true }
+            alwaysMounted: { type: Boolean, default: true },
+            isValid:  { type: Boolean, default: true }
         },
         data: function() {
             return {

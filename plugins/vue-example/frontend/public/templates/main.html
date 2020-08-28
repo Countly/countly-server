@@ -2,11 +2,32 @@
     <tg-view></tg-view>
     <table-view v-on:open-drawer="openDrawer"></table-view>
     <example-drawer v-on:close="closeDrawer" v-bind="drawers.main">
-        <cly-content id="step1" name="First Step">
-        </cly-content>
-        <cly-content id="step2" name="Second Step">
-        </cly-content>
-        <cly-content id="step3" name="Final Step">
-        </cly-content>
+        <template slot-scope="{ editedObject }">
+            <cly-content id="step1" name="First Step" v-bind:is-valid="editedObject.step1">
+                <br>
+                <br>
+                <br>
+                <pre>
+                    {{editedObject}}
+                </pre>
+                <cly-check v-model="editedObject.step1" label="Step is valid."></cly-check>
+            </cly-content>
+            <cly-content id="step2" name="Second Step" v-bind:is-valid="editedObject.step2"><br>
+                <br>
+                <br>
+                <pre>
+                    {{editedObject}}
+                </pre>
+                <cly-check v-model="editedObject.step2" label="Step is valid."></cly-check>
+            </cly-content>
+            <cly-content id="step3" name="Final Step" v-bind:is-valid="editedObject.step3"><br>
+                <br>
+                <br>
+                <pre>
+                    {{editedObject}}
+                </pre>
+                <cly-check v-model="editedObject.step3" label="Step is valid."></cly-check>
+            </cly-content>
+        </template>
     </example-drawer>
 </div>
