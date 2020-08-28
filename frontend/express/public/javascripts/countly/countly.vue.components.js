@@ -414,7 +414,7 @@
         if (!Array.isArray(names)){
             names = [names];
         }
-        
+
         return {
             data: function() {
                 return {
@@ -1487,9 +1487,9 @@
         props: {
             dataPoints: {
                 required: true,
-                type: Array,
+                type: Object,
                 default: function() {
-                    return [];
+                    return {};
                 }
             },
             graphType: { required: false, type: String, default: "bar" },
