@@ -627,6 +627,9 @@
                                 <cly-button @click="nextStep" skin="green" label="Next step"></cly-button>\
                                 <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" label="Previous step"></cly-button>\
                             </div>\
+                            <div class="buttons single-step" v-if="!isMultiStep">\
+                                <cly-button @click="nextStep" skin="green" label="Save changes"></cly-button>\
+                            </div>\
                         </div>',
             props: {
                 isOpened: {type: Boolean, required: true},
