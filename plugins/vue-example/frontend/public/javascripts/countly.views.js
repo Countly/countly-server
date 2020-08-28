@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyGlobal, countlyCommon */
+/*global app, countlyVue, countlyVueExample, countlyGlobal, countlyCommon, validators */
 
 var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
