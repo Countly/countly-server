@@ -1,4 +1,33 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
     <tg-view></tg-view>
-    <table-view></table-view>
+    <table-view v-on:open-drawer="openDrawer"></table-view>
+    <example-drawer v-on:close="closeDrawer" v-bind="drawers.main">
+        <template slot-scope="{ editedObject, $v }">
+            <cly-content id="step1" name="First Step">
+                <br>
+                <br>
+                <br>
+                <pre>
+                    {{editedObject}}
+                </pre>
+                <cly-check v-model="$v.editedObject.step1.$model" label="Step is valid."></cly-check>
+            </cly-content>
+            <cly-content id="step2" name="Second Step"><br>
+                <br>
+                <br>
+                <pre>
+                    {{editedObject}}
+                </pre>
+                <cly-check v-model="$v.editedObject.step2.$model" label="Step is valid."></cly-check>
+            </cly-content>
+            <cly-content id="step3" name="Final Step"><br>
+                <br>
+                <br>
+                <pre>
+                    {{editedObject}}
+                </pre>
+                <cly-check v-model="$v.editedObject.step3.$model" label="Step is valid."></cly-check>
+            </cly-content>
+        </template>
+    </example-drawer>
 </div>

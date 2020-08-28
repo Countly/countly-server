@@ -636,5 +636,211 @@
   line-height: 12px;
   cursor: pointer;
 }
+.cly-vue-theme-clydef .cly-vue-button {
+  min-height: 14px;
+  cursor: pointer;
+  float: left;
+  padding: 7px 12px;
+  border-radius: 2px;
+  font: 12px Ubuntu, Helvetica, sans-serif;
+  line-height: 15px;
+  overflow: auto;
+  margin-left: 8px;
+}
+.cly-vue-theme-clydef .cly-vue-button.button-green-skin {
+  background-color: #2EB52B;
+  color: #FFF;
+  box-shadow: inset 0 0 0 1px #2EB52B;
+}
+.cly-vue-theme-clydef .cly-vue-button.button-light-skin {
+  color: #717171;
+  background-color: #FDFDFD;
+  box-shadow: inset 0 0 0 1px #DCDCDC;
+}
+.cly-vue-theme-clydef .cly-vue-button:hover {
+  opacity: 0.8;
+}
+.cly-vue-theme-clydef .cly-vue-button.disabled {
+  opacity: 0.5;
+}
+.cly-vue-theme-clydef .cly-vue-drawer {
+  position: fixed;
+  width: 600px;
+  height: 100%;
+  right: 0;
+  transform: translateX(600px);
+  transition: transform 0.3s;
+  top: 0;
+  background-color: #f9f9f9;
+  border-left: 1px solid #d0d0d0;
+  z-index: 10001;
+  box-sizing: border-box;
+  padding-top: 58px;
+  padding-bottom: 120px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer.open {
+  transform: translateX(0);
+  transition: transform 0.3s;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .cly-vue-button.disabled {
+  cursor: auto;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .title {
+  position: absolute;
+  padding: 20px;
+  font-size: 20px;
+  color: #636363;
+  background-color: #FFF;
+  width: 100%;
+  top: 0px;
+  box-sizing: border-box;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .title .close {
+  position: absolute;
+  right: 20px;
+  top: 9px;
+  font-size: 42px;
+  color: #9c9c9c;
+  transition: color 1s;
+  cursor: pointer;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .title .close:hover {
+  color: #333;
+  transition: color 1s;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header {
+  background-color: #fff;
+  height: 55px;
+  width: 100%;
+  top: 64px;
+  position: absolute;
+  border-top: 1px solid #F9F9F9;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label {
+  height: 100%;
+  width: 20%;
+  text-align: center;
+  cursor: pointer;
+  background-color: #fff;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label .wrapper {
+  margin-top: 20px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label .wrapper .index {
+  font-size: 20px;
+  color: #c0c0c0;
+  vertical-align: middle;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label .wrapper .text {
+  color: #c0c0c0;
+  font-size: 15px;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label .wrapper .done-icon {
+  vertical-align: middle;
+  font-size: 20px;
+  color: #13b94d;
+  display: none;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.active {
+  border-bottom: 2px solid #13b94d;
+  z-index: 1000;
+  border-top: 1px solid #F9F9F9;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.active .text, .cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.active .index {
+  color: #000;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.passed .index {
+  display: none;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.passed .done-icon {
+  display: inline;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .details {
+  padding: 20px;
+  height: 100%;
+  float: none;
+  overflow-y: auto;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .details .section {
+  margin-bottom: 25px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .details .section .label {
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: #636363;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .details .section > .description {
+  font-size: 11px;
+  margin-top: 4px;
+  color: #9c9c9c;
+  line-height: 17px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .details .section input[type=text].input {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 2px;
+  border: 1px solid #d6d6d6;
+  outline: none;
+  padding: 7px;
+  font-size: 12px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .panel {
+  background-color: #ffffff;
+  border: 1px solid #D0D0D0;
+  font-size: 13px;
+  border-radius: 2px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .panel .panel-heading {
+  padding: 8px 20px;
+  background-color: #ECECEC;
+  color: #636363;
+  text-transform: uppercase;
+  border-bottom: 1px solid #D0D0D0;
+  font-weight: 500;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .panel .panel-body {
+  padding: 20px;
+  position: relative;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .buttons {
+  position: absolute;
+  right: 0;
+  width: 410px;
+  padding: 20px;
+  bottom: 0;
+  position: relative;
+  background-color: #fff;
+  border-top: 1px solid #ECECED;
+  width: 100%;
+  padding: 20px 20px;
+  margin: 0;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  bottom: 0;
+  overflow: auto;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .buttons .cly-vue-button {
+  float: none;
+  font-size: 15px;
+  text-align: center;
+  padding: 12px;
+  margin: 0;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .buttons .cly-vue-button.button-light-skin {
+  box-shadow: none;
+  background-color: #fff;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .buttons.multi-step .cly-vue-button {
+  float: right;
+  font-size: 14px;
+  padding: 12px 22px;
+}
 
 /*# sourceMappingURL=clyvue.css.map */

@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyGlobal, countlyCommon */
+/*global app, countlyVue, countlyVueExample, countlyGlobal, countlyCommon, validators */
 
 var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
@@ -126,9 +126,11 @@ var TableView = countlyVue.views.BaseView.extend({
     },
     methods: {
         add: function() {
-            this.targetName = "Your data, your rules.";
-            this.targetValue += 1;
-            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});
+            this.$emit("open-drawer", "main", {
+                "step1": false,
+                "step2": true,
+                "step3": false
+            });
         },
         onTryDelete: function(row, callback) {
             callback({
@@ -191,11 +193,56 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     }
 });
 
+var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
+    computed: {
+        stepValidations: function() {
+            return {
+                "step1": !this.$v.editedObject.step1.$anyError,
+                "step2": !this.$v.editedObject.step2.$anyError,
+                "step3": !this.$v.editedObject.step3.$anyError
+            };
+        }
+    },
+    methods: {
+        afterEditedObjectChanged: function(newState) {
+            if (!newState._id) {
+                this.title = "Create New Record";
+            }
+        },
+        onSave: function() {
+            /*this.targetName = "Your data, your rules.";
+            this.targetValue += 1;
+            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});*/
+        }
+    },
+    validations: {
+        editedObject: {
+            step1: {
+                sameAs: validators.sameAs(function() {
+                    return true;
+                })
+            },
+            step2: {
+                sameAs: validators.sameAs(function() {
+                    return true;
+                })
+            },
+            step3: {
+                sameAs: validators.sameAs(function() {
+                    return true;
+                })
+            }
+        }
+    }
+});
+
 var MainView = countlyVue.views.BaseView.extend({
     template: '#vue-example-main-template',
+    mixins: [countlyVue.mixins.hasDrawers("main")],
     components: {
         "table-view": TableView,
-        "tg-view": TimeGraphView
+        "tg-view": TimeGraphView,
+        "example-drawer": ExampleDrawer
     }
 });
 

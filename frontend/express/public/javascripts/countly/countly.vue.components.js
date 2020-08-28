@@ -377,6 +377,8 @@
         Countly + Vue.js
     */
 
+    Vue.use(window.vuelidate.default);
+
     var autoRefreshMixin = {
         mounted: function() {
             var self = this;
@@ -410,10 +412,44 @@
         }
     };
 
+    var hasDrawersMixin = function(names) {
+        if (!Array.isArray(names)) {
+            names = [names];
+        }
+
+        return {
+            data: function() {
+                return {
+                    drawers: names.reduce(function(acc, val) {
+                        acc[val] = {
+                            name: val,
+                            isOpened: false,
+                            editedObject: {}
+                        };
+                        return acc;
+                    }, {})
+                };
+            },
+            methods: {
+                openDrawer: function(name, editedObject) {
+                    this.loadDrawer(name, editedObject);
+                    this.drawers[name].isOpened = true;
+                },
+                loadDrawer: function(name, editedObject) {
+                    this.drawers[name].editedObject = editedObject || {};
+                },
+                closeDrawer: function(name) {
+                    this.drawers[name].isOpened = false;
+                }
+            }
+        };
+    };
+
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
         'i18n': i18nMixin,
+        'hasDrawers': hasDrawersMixin
     };
 
     var _globalVuexStore = new Vuex.Store({
@@ -573,6 +609,114 @@
         }
     });
 
+    var _components = {
+        BaseDrawer: countlyBaseComponent.extend({
+            template: '<div class="cly-vue-drawer" v-bind:class="{open: isOpened}">\
+                            <div class="title">\
+                                <span>{{title}}</span>\
+                                <div class="close" v-on:click="tryClosing">\
+                                    <i class="ion-ios-close-empty"></i>\
+                                </div>\
+                            </div>\
+                            <div class="steps-header" v-if="isMultiStep">\
+                                <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
+                                    <div class="wrapper">\
+                                        <span class="index">{{i + 1}}</span>\
+                                        <span class="done-icon"><i class="fa fa-check"></i></span>\
+                                        <span class="text">{{currentContent.name}}</span>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                            <div class="details">\
+                                <slot :editedObject="editedObject" :$v="$v"></slot>\
+                            </div>\
+                            <div class="buttons multi-step" v-if="isMultiStep">\
+                                <cly-button v-bind:disabled="!isCurrentStepValid" @click="nextStep" skin="green" label="Next step"></cly-button>\
+                                <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" label="Previous step"></cly-button>\
+                            </div>\
+                            <div class="buttons single-step" v-if="!isMultiStep">\
+                                <cly-button v-bind:disabled="!isCurrentStepValid" @click="submit" skin="green" label="Save changes"></cly-button>\
+                            </div>\
+                        </div>',
+            props: {
+                isOpened: {type: Boolean, required: true},
+                editedObject: {type: Object},
+                name: {type: String, required: true}
+            },
+            data: function() {
+                return {
+                    title: '',
+                    internalEdited: this.copyOfEdited(),
+                    currentStepIndex: 0,
+                    stepContents: []
+                };
+            },
+            computed: {
+                activeContentId: function() {
+                    if (this.activeContent) {
+                        return this.activeContent.tId;
+                    }
+                    return null;
+                },
+                isCurrentStepValid: function() {
+                    if (!Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
+                        // No validation scenario defined
+                        return true;
+                    }
+                    return this.stepValidations[this.activeContentId];
+                },
+                activeContent: function() {
+                    if (this.currentStepIndex > this.stepContents.length - 1) {
+                        return null;
+                    }
+                    return this.stepContents[this.currentStepIndex];
+                },
+                isMultiStep: function() {
+                    return this.stepContents.length > 1;
+                }
+            },
+            methods: {
+                tryClosing: function() {
+                    this.$emit("close", this.name);
+                },
+                copyOfEdited: function() {
+                    return JSON.parse(JSON.stringify(this.editedObject));
+                },
+                setStep: function(newIndex) {
+                    if (newIndex >= 0 && newIndex < this.stepContents.length) {
+                        this.currentStepIndex = newIndex;
+                    }
+                },
+                prevStep: function() {
+                    this.setStep(this.currentStepIndex - 1);
+                },
+                nextStep: function() {
+                    this.$v.$touch();
+                    if (this.isCurrentStepValid) {
+                        this.setStep(this.currentStepIndex + 1);
+                    }
+                },
+                submit: function() {
+
+                },
+                afterEditedObjectChanged: function() { },
+            },
+            mounted: function() {
+                this.stepContents = this.$children.filter(function(child) {
+                    return child.isContent;
+                });
+                this.setStep(this.stepContents[0].tId);
+            },
+            watch: {
+                editedObject: function() {
+                    this.internalEdited = this.copyOfEdited();
+                    this.afterEditedObjectChanged(this.internalEdited);
+                    this.$v.$reset();
+                }
+            }
+        })
+    };
+
     var _views = {
         BackboneWrapper: countlyVueWrapperView,
         BaseView: countlyBaseView
@@ -581,7 +725,8 @@
     window.countlyVue = {
         mixins: _mixins,
         vuex: _vuex,
-        views: _views
+        views: _views,
+        components: _components
     };
 
     // New components
@@ -895,6 +1040,9 @@
             },
             numberOfTabsClass: function() {
                 return "tabs-" + this.tabs.length;
+            },
+            activeContentId: function() {
+                return this.value;
             }
         },
         methods: {
@@ -922,9 +1070,14 @@
             id: { type: String, default: null },
             alwaysMounted: { type: Boolean, default: true }
         },
+        data: function() {
+            return {
+                isContent: true
+            };
+        },
         computed: {
             isActive: function() {
-                return this.$parent.value === this.id;
+                return this.$parent.activeContentId === this.id;
             },
             tName: function() {
                 return this.name;
@@ -1350,9 +1503,9 @@
         props: {
             dataPoints: {
                 required: true,
-                type: Array,
+                type: Object,
                 default: function() {
-                    return [];
+                    return {};
                 }
             },
             graphType: { required: false, type: String, default: "bar" },
@@ -1515,6 +1668,30 @@
                 if (newArray) {
                     this.$emit('input', newArray);
                 }
+            }
+        }
+    }));
+
+    Vue.component("cly-button", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-button" v-bind:class="activeClasses" v-on="$listeners">{{label}}</div>',
+        props: {
+            label: {type: String},
+            skin: { default: "green", type: String},
+            disabled: {type: Boolean, default: false}
+        },
+        computed: {
+            activeClasses: function() {
+                var classes = [this.skinClass];
+                if (this.disabled) {
+                    classes.push("disabled");
+                }
+                return classes;
+            },
+            skinClass: function() {
+                if (["green", "light"].indexOf(this.skin) > -1) {
+                    return "button-" + this.skin + "-skin";
+                }
+                return "button-light-skin";
             }
         }
     }));

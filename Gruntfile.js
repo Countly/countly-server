@@ -53,8 +53,10 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/dropzone.js',
                     'frontend/express/public/javascripts/utils/webfont.js',
                     'frontend/express/public/javascripts/utils/selectize.min.js',
-                    'frontend/express/public/javascripts/utils/vue.min.js',
-                    'frontend/express/public/javascripts/utils/vuex.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vuex.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vuelidate.min.js',
+                    'frontend/express/public/javascripts/utils/vue/validators.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/simpleUpload.min.js',
@@ -65,7 +67,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
-                    'frontend/express/public/javascripts/utils/vuedraggable.umd.min.js'
+                    'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
