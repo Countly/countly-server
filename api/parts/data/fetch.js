@@ -1767,7 +1767,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             //Fixing meta  to be escaped.(Because return output will escape keys and make values incompatable)
             for (let i in mergedDataObj.meta) {
                 for (var p = 0; p < mergedDataObj.meta[i].length; p++) {
-                    mergedDataObj.meta[i][p] = mergedDataObj.meta[i][p].replace(new RegExp("\"", "g"), '&quot;');
+                    if (mergedDataObj.meta[i][p] && typeof mergedDataObj.meta[i][p] === 'string') {
+                        mergedDataObj.meta[i][p] = mergedDataObj.meta[i][p].replace(new RegExp("\"", "g"), '&quot;');
+                    }
                 }
             }
             //truncate large meta on refresh		
