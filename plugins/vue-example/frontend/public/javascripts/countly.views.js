@@ -197,9 +197,9 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
     computed: {
         stepValidations: function() {
             return {
-                "step1": this.editedObject.step1,
-                "step2": this.editedObject.step2,
-                "step3": this.editedObject.step3
+                "step1": !this.$v.editedObject.step1.$anyError,
+                "step2": !this.$v.editedObject.step2.$anyError,
+                "step3": !this.$v.editedObject.step3.$anyError
             };
         }
     },
@@ -213,6 +213,25 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
             /*this.targetName = "Your data, your rules.";
             this.targetValue += 1;
             this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});*/
+        }
+    },
+    validations: {
+        editedObject: {
+            step1: {
+                sameAs: validators.sameAs(function() {
+                    return true;
+                })
+            },
+            step2: {
+                sameAs: validators.sameAs(function() {
+                    return true;
+                })
+            },
+            step3: {
+                sameAs: validators.sameAs(function() {
+                    return true;
+                })
+            }
         }
     }
 });

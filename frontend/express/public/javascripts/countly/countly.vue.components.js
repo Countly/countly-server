@@ -377,6 +377,8 @@
         Countly + Vue.js
     */
 
+    Vue.use(window.vuelidate.default);
+
     var autoRefreshMixin = {
         mounted: function() {
             var self = this;
@@ -626,7 +628,7 @@
                                 </div>\
                             </div>\
                             <div class="details">\
-                                <slot :editedObject="editedObject"></slot>\
+                                <slot :editedObject="editedObject" :$v="$v"></slot>\
                             </div>\
                             <div class="buttons multi-step" v-if="isMultiStep">\
                                 <cly-button v-bind:disabled="!isCurrentStepValid" @click="nextStep" skin="green" label="Next step"></cly-button>\
@@ -689,6 +691,7 @@
                     this.setStep(this.currentStepIndex - 1);
                 },
                 nextStep: function() {
+                    this.$v.$touch();
                     if (this.isCurrentStepValid) {
                         this.setStep(this.currentStepIndex + 1);
                     }
@@ -708,6 +711,7 @@
                 editedObject: function() {
                     this.internalEdited = this.copyOfEdited();
                     this.afterEditedObjectChanged(this.internalEdited);
+                    this.$v.$reset();
                 }
             }
         })
