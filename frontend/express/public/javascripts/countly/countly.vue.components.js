@@ -615,6 +615,8 @@
                                 <slot></slot>\
                             </div>\
                             <div class="buttons">\
+                                <div id="previous-step" @click="prevStep" class="icon-button light">Previous step</div>\
+                                <div id="next-step" @click="nextStep" class="icon-button green">Next step</div>\
                             </div>\
                         </div>',
             props: {
@@ -624,8 +626,18 @@
             data: function() {
                 return {
                     title: '',
-                    internalEdited: this.copyOfEdited()
+                    internalEdited: this.copyOfEdited(),
+                    currentStepIndex: 0,
+                    stepContents: []
                 };
+            },
+            computed: {
+                activeContentId: function() {
+                    if (this.currentStepIndex > this.stepContents.length - 1) {
+                        return null;
+                    }
+                    return this.stepContents[this.currentStepIndex].tId;
+                },
             },
             methods: {
                 tryClosing: function() {
@@ -634,7 +646,22 @@
                 copyOfEdited: function() {
                     return JSON.parse(JSON.stringify(this.editedObject));
                 },
-                afterEditedObjectChanged: function() { }
+                setStep: function(newIndex) {
+                    if (newIndex >= 0 && newIndex < this.stepContents.length) {
+                        this.currentStepIndex = newIndex;
+                    }
+                },
+                prevStep: function() {
+                    this.setStep(this.currentStepIndex - 1);
+                },
+                nextStep: function() {
+                    this.setStep(this.currentStepIndex + 1);
+                },
+                afterEditedObjectChanged: function() { },
+            },
+            mounted: function() {
+                this.stepContents = this.$children;
+                this.setStep(this.stepContents[0].tId);
             },
             watch: {
                 editedObject: function() {
