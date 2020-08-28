@@ -633,7 +633,7 @@
                                 <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" label="Previous step"></cly-button>\
                             </div>\
                             <div class="buttons single-step" v-if="!isMultiStep">\
-                                <cly-button @click="nextStep" skin="green" label="Save changes"></cly-button>\
+                                <cly-button v-bind:disabled="!isCurrentStepValid" @click="submit" skin="green" label="Save changes"></cly-button>\
                             </div>\
                         </div>',
             props: {
@@ -692,6 +692,9 @@
                     if (this.isCurrentStepValid) {
                         this.setStep(this.currentStepIndex + 1);
                     }
+                },
+                submit: function() {
+
                 },
                 afterEditedObjectChanged: function() { },
             },
