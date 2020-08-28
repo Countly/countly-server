@@ -196,7 +196,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
                 this.title = "Create New Record";
             }
         },
-        onSave: function(){
+        onSave: function() {
             /*this.targetName = "Your data, your rules.";
             this.targetValue += 1;
             this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});*/

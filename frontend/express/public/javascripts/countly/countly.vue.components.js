@@ -611,11 +611,20 @@
                                     <i class="ion-ios-close-empty"></i>\
                                 </div>\
                             </div>\
+                            <div class="steps-header" v-if="isMultiStep">\
+                                <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
+                                    <div class="wrapper">\
+                                        <span class="index">{{i + 1}}</span>\
+                                        <span class="done-icon"><i class="fa fa-check"></i></span>\
+                                        <span class="text">{{currentContent.name}}</span>\
+                                    </div>\
+                                </div>\
+                            </div>\
                             <div class="details">\
                                 <slot></slot>\
                             </div>\
-                            <div class="buttons">\
-                                <div id="previous-step" @click="prevStep" class="icon-button light">Previous step</div>\
+                            <div class="buttons" v-if="isMultiStep">\
+                                <div id="previous-step" @click="prevStep" v-if="currentStepIndex > 0" class="icon-button light">Previous step</div>\
                                 <div id="next-step" @click="nextStep" class="icon-button green">Next step</div>\
                             </div>\
                         </div>',
@@ -633,11 +642,20 @@
             },
             computed: {
                 activeContentId: function() {
+                    if (this.activeContent) {
+                        return this.activeContent.tId;
+                    }
+                    return null;
+                },
+                activeContent: function() {
                     if (this.currentStepIndex > this.stepContents.length - 1) {
                         return null;
                     }
-                    return this.stepContents[this.currentStepIndex].tId;
+                    return this.stepContents[this.currentStepIndex];
                 },
+                isMultiStep: function() {
+                    return this.stepContents.length > 1;
+                }
             },
             methods: {
                 tryClosing: function() {
@@ -996,7 +1014,7 @@
             numberOfTabsClass: function() {
                 return "tabs-" + this.tabs.length;
             },
-            activeContentId: function(){
+            activeContentId: function() {
                 return this.value;
             }
         },

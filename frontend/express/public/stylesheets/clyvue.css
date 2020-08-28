@@ -652,12 +652,17 @@
   color: #FFF;
   box-shadow: inset 0 0 0 1px #2EB52B;
 }
+.cly-vue-theme-clydef .cly-vue-button.button-light-skin {
+  color: #717171;
+  background-color: #FDFDFD;
+  box-shadow: inset 0 0 0 1px #DCDCDC;
+}
 .cly-vue-theme-clydef .cly-vue-drawer {
   position: fixed;
-  width: 450px;
+  width: 600px;
   height: 100%;
   right: 0;
-  transform: translateX(450px);
+  transform: translateX(600px);
   transition: transform 0.3s;
   top: 0;
   background-color: #f9f9f9;
@@ -770,6 +775,59 @@
 .cly-vue-theme-clydef .cly-vue-drawer .panel .panel-body {
   padding: 20px;
   position: relative;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header {
+  background-color: #fff;
+  height: 55px;
+  width: 100%;
+  top: 64px;
+  position: absolute;
+  border-top: 1px solid #F9F9F9;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label {
+  height: 100%;
+  width: 20%;
+  text-align: center;
+  cursor: pointer;
+  background-color: #fff;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label .wrapper {
+  margin-top: 20px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label .wrapper .index {
+  font-size: 20px;
+  color: #c0c0c0;
+  vertical-align: middle;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label .wrapper .text {
+  color: #c0c0c0;
+  font-size: 15px;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label .wrapper .done-icon {
+  vertical-align: middle;
+  font-size: 20px;
+  color: #13b94d;
+  display: none;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.active {
+  border-bottom: 2px solid #13b94d;
+  z-index: 1000;
+  border-top: 1px solid #F9F9F9;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.active .text, .cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.active .index {
+  color: #000;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.passed .index {
+  display: none;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .steps-header .label.passed .done-icon {
+  display: inline;
 }
 
 /*# sourceMappingURL=clyvue.css.map */

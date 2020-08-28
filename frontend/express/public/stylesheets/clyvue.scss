@@ -535,11 +535,16 @@
             color: #FFF;
             box-shadow: inset 0 0 0 1px #2EB52B;
         }
+        &.button-light-skin {
+            color: #717171;
+            background-color: #FDFDFD;
+            box-shadow: inset 0 0 0 1px #DCDCDC;
+        }
     }
 
     //drawer
     .cly-vue-drawer {
-        position:fixed; width:450px; height:100%; right:0; transform: translateX(450px); transition:transform 0.3s; top:0; background-color: #f9f9f9; border-left:1px solid #d0d0d0; z-index: 10001; box-sizing:border-box; padding-top:58px; padding-bottom:120px;
+        position:fixed; width:600px; height:100%; right:0; transform: translateX(600px); transition:transform 0.3s; top:0; background-color: #f9f9f9; border-left:1px solid #d0d0d0; z-index: 10001; box-sizing:border-box; padding-top:58px; padding-bottom:120px;
         &.open { transform: translateX(0); transition:transform 0.3s; }
         
         .buttons { 
@@ -575,6 +580,68 @@
             background-color: #ffffff; border: 1px solid #D0D0D0; font-size: 13px; border-radius: 2px; 
             .panel-heading { padding: 8px 20px; background-color: #ECECEC; color: #636363; text-transform: uppercase; border-bottom: 1px solid #D0D0D0; font-weight: 500; }
             .panel-body { padding: 20px; position: relative; }
+        }
+
+        .steps-header {
+            background-color: #fff;
+            height: 55px;
+            width: 100%;
+            top: 64px;
+            position: absolute;
+            border-top: 1px solid #F9F9F9;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            .label {
+                
+                height: 100%;
+                width: 20%;
+                text-align: center;
+                cursor: pointer;
+                background-color: #fff;
+
+                .wrapper {
+
+                    margin-top:20px;
+
+                    .index {
+                        font-size: 20px;
+                        color: #c0c0c0;
+                        vertical-align: middle;
+                    }
+                    .text {
+                        color: #c0c0c0;
+                        font-size: 15px;
+                        vertical-align: middle;
+                        margin-left: 8px;
+                    }
+                    .done-icon {
+                        vertical-align: middle;
+                        font-size: 20px;
+                        color: #13b94d;
+                        display: none;
+                    }
+                }
+
+                &.active {
+                    border-bottom: 2px solid #13b94d;
+                    z-index: 1000;
+                    border-top: 1px solid #F9F9F9;
+                    .text, .index {
+                        color: #000;
+                    }
+                }
+
+                &.passed {
+                    .index {
+                        display: none;
+                    }
+                    .done-icon {
+                        display: inline;
+                    }
+                }
+            }
         }
     }
 }
