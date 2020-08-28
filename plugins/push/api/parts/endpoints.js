@@ -1332,12 +1332,13 @@ function cachedData(note) {
                     credsToRemove.push(oldid);
                 }
 
+                const key = data.file.substring(data.file.indexOf(',') + 1);
                 credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
                     return common.dbPromise('credentials', 'insertOne', {
                         _id: id,
                         type: data.type,
                         platform: N.Platform.IOS,
-                        key: data.file.substring(data.file.indexOf(',') + 1),
+                        key: key,
                         secret: data.type === C.CRED_TYPE[N.Platform.IOS].UNIVERSAL ? data.pass : [data.key, data.team, data.bundle].join('[CLY]'),
                         seq: seq && seq + 1000000 || 0
                     });

@@ -345,6 +345,19 @@
                 "success": function(response) {
                     document.getElementsByClassName("success-modal-content")[0].style.display = "block";
                     document.getElementsByClassName("modal-content")[0].style.display = "none";
+                    // reset feedback popup after 10 seconds
+                    setTimeout(function() {
+                        document.getElementsByClassName("success-modal-content")[0].style.display = "none";
+                        document.getElementsByClassName("modal-content")[0].style.display = "block";
+                        addClass(sendButton, 'disabled-send-button');
+                        removeClass(sendButton, 'send-button');
+                        document.getElementById('countly-feedback-comment-textarea').value = "";
+                        document.getElementById('contact-me-email').value = "";
+                        for (var i = 0; i < 5; i++) {
+                            $($('.rating-emotion')[i]).attr('src', 'star-rating/images/star-rating/' + i + '_gray.svg');
+                            $($('.rating-emotion')[i]).css({'transform':'scale(1.0)'});
+                        }    
+                    }, 10000);
                 },
                 "error": function(e) {
                 }
