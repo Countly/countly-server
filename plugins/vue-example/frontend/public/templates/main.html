@@ -1,11 +1,8 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
     <tg-view></tg-view>
     <table-view v-on:open-drawer="openDrawer"></table-view>
-    <example-drawer
-        v-on:close="closeDrawer('main')"
-        v-bind:opened="drawers.main.opened"
-        v-bind:edited="drawers.main.edited">
-        <cly-content>
+    <example-drawer v-on:close="closeDrawer('main')" v-bind:isOpened="drawers.main.isOpened" v-bind:editedObject="drawers.main.editedObject">
+        <cly-content id="step1" name="First Step">
         </cly-content>
     </example-drawer>
 </div>

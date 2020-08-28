@@ -126,9 +126,6 @@ var TableView = countlyVue.views.BaseView.extend({
     },
     methods: {
         add: function() {
-            /*this.targetName = "Your data, your rules.";
-            this.targetValue += 1;
-            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});*/
             this.$emit("open-drawer", "main", {});
         },
         onTryDelete: function(row, callback) {
@@ -192,21 +189,28 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     }
 });
 
+var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
+    methods: {
+        afterEditedObjectChanged: function(newState) {
+            if (!newState._id) {
+                this.title = "Create New Record";
+            }
+        },
+        onSave: function(){
+            /*this.targetName = "Your data, your rules.";
+            this.targetValue += 1;
+            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});*/
+        }
+    }
+});
+
 var MainView = countlyVue.views.BaseView.extend({
     template: '#vue-example-main-template',
     mixins: [countlyVue.mixins.hasDrawers(["main"])],
     components: {
         "table-view": TableView,
         "tg-view": TimeGraphView,
-        "example-drawer": countlyVue.components.BaseDrawer.extend({
-            methods: {
-                onStateChange: function(newState) {
-                    if (!newState._id) {
-                        this.title = "Create New Record";
-                    }
-                }
-            }
-        })
+        "example-drawer": ExampleDrawer
     }
 });
 

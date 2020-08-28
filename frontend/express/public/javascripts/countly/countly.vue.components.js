@@ -416,23 +416,23 @@
                 return {
                     drawers: names.reduce(function(acc, val) {
                         acc[val] = {
-                            opened: false,
-                            edited: {}
+                            isOpened: false,
+                            editedObject: {}
                         };
                         return acc;
                     }, {})
                 };
             },
             methods: {
-                openDrawer: function(name, edited) {
-                    this.loadDrawer(name, edited);
-                    this.drawers[name].opened = true;
+                openDrawer: function(name, editedObject) {
+                    this.loadDrawer(name, editedObject);
+                    this.drawers[name].isOpened = true;
                 },
-                loadDrawer: function(name, edited) {
-                    this.drawers[name].edited = edited || {};
+                loadDrawer: function(name, editedObject) {
+                    this.drawers[name].editedObject = editedObject || {};
                 },
                 closeDrawer: function(name) {
-                    this.drawers[name].opened = false;
+                    this.drawers[name].isOpened = false;
                 }
             }
         };
@@ -604,7 +604,7 @@
 
     var _components = {
         BaseDrawer: countlyBaseComponent.extend({
-            template: '<div class="cly-vue-drawer" v-bind:class="{open: opened}">\
+            template: '<div class="cly-vue-drawer" v-bind:class="{open: isOpened}">\
                             <div class="title">\
                                 <span>{{title}}</span>\
                                 <div class="close" v-on:click="tryClosing">\
@@ -618,8 +618,8 @@
                             </div>\
                         </div>',
             props: {
-                opened: {type: Boolean, required: true},
-                edited: {type: Object}
+                isOpened: {type: Boolean, required: true},
+                editedObject: {type: Object}
             },
             data: function() {
                 return {
@@ -632,14 +632,14 @@
                     this.$emit("close");
                 },
                 copyOfEdited: function() {
-                    return JSON.parse(JSON.stringify(this.edited));
+                    return JSON.parse(JSON.stringify(this.editedObject));
                 },
-                onStateChange: function() { }
+                afterEditedObjectChanged: function() { }
             },
             watch: {
-                edited: function() {
+                editedObject: function() {
                     this.internalEdited = this.copyOfEdited();
-                    this.onStateChange(this.internalEdited);
+                    this.afterEditedObjectChanged(this.internalEdited);
                 }
             }
         })
