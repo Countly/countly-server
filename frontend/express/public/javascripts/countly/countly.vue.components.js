@@ -411,11 +411,16 @@
     };
 
     var hasDrawersMixin = function(names) {
+        if (!Array.isArray(names)){
+            names = [names];
+        }
+        
         return {
             data: function() {
                 return {
                     drawers: names.reduce(function(acc, val) {
                         acc[val] = {
+                            name: val,
                             isOpened: false,
                             editedObject: {}
                         };
@@ -633,7 +638,8 @@
                         </div>',
             props: {
                 isOpened: {type: Boolean, required: true},
-                editedObject: {type: Object}
+                editedObject: {type: Object},
+                name: {type: String, required: true}
             },
             data: function() {
                 return {
@@ -662,7 +668,7 @@
             },
             methods: {
                 tryClosing: function() {
-                    this.$emit("close");
+                    this.$emit("close", this.name);
                 },
                 copyOfEdited: function() {
                     return JSON.parse(JSON.stringify(this.editedObject));

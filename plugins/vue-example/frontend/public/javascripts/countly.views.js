@@ -206,7 +206,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
 
 var MainView = countlyVue.views.BaseView.extend({
     template: '#vue-example-main-template',
-    mixins: [countlyVue.mixins.hasDrawers(["main"])],
+    mixins: [countlyVue.mixins.hasDrawers("main")],
     components: {
         "table-view": TableView,
         "tg-view": TimeGraphView,
