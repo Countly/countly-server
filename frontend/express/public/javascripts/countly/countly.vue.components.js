@@ -629,7 +629,7 @@
                                 <slot :editedObject="editedObject"></slot>\
                             </div>\
                             <div class="buttons multi-step" v-if="isMultiStep">\
-                                <cly-button @click="nextStep" skin="green" label="Next step"></cly-button>\
+                                <cly-button v-bind:disabled="!isCurrentStepValid" @click="nextStep" skin="green" label="Next step"></cly-button>\
                                 <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" label="Previous step"></cly-button>\
                             </div>\
                             <div class="buttons single-step" v-if="!isMultiStep">\
@@ -655,6 +655,13 @@
                         return this.activeContent.tId;
                     }
                     return null;
+                },
+                isCurrentStepValid: function(){
+                    if (!Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
+                        // No validation scenario defined
+                        return true;
+                    }
+                    return this.stepValidations[this.activeContentId];
                 },
                 activeContent: function() {
                     if (this.currentStepIndex > this.stepContents.length - 1) {
@@ -682,7 +689,9 @@
                     this.setStep(this.currentStepIndex - 1);
                 },
                 nextStep: function() {
-                    this.setStep(this.currentStepIndex + 1);
+                    if (this.isCurrentStepValid) {
+                        this.setStep(this.currentStepIndex + 1);
+                    }
                 },
                 afterEditedObjectChanged: function() { },
             },
@@ -1052,8 +1061,7 @@
         props: {
             name: { type: String, default: null},
             id: { type: String, default: null },
-            alwaysMounted: { type: Boolean, default: true },
-            isValid:  { type: Boolean, default: true }
+            alwaysMounted: { type: Boolean, default: true }
         },
         data: function() {
             return {
@@ -1658,12 +1666,20 @@
     }));
 
     Vue.component("cly-button", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-button" v-on="$listeners" v-bind:class="[skinClass]">{{label}}</div>',
+        template: '<div class="cly-vue-button" v-bind:class="activeClasses" v-on="$listeners">{{label}}</div>',
         props: {
             label: {type: String},
-            skin: { default: "green", type: String}
+            skin: { default: "green", type: String},
+            disabled: {type: Boolean, default: false}
         },
         computed: {
+            activeClasses: function(){
+                var classes = [this.skinClass];
+                if (this.disabled) {
+                    classes.push("disabled");
+                }
+                return classes;
+            },
             skinClass: function() {
                 if (["green", "light"].indexOf(this.skin) > -1) {
                     return "button-" + this.skin + "-skin";

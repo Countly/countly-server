@@ -194,6 +194,15 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
 });
 
 var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
+    computed: {
+        stepValidations: function(){
+            return {
+                "step1": this.editedObject.step1,
+                "step2": this.editedObject.step2,
+                "step3": this.editedObject.step3
+            }
+        }
+    },
     methods: {
         afterEditedObjectChanged: function(newState) {
             if (!newState._id) {

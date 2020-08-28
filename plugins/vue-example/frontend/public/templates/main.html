@@ -3,7 +3,7 @@
     <table-view v-on:open-drawer="openDrawer"></table-view>
     <example-drawer v-on:close="closeDrawer" v-bind="drawers.main">
         <template slot-scope="{ editedObject }">
-            <cly-content id="step1" name="First Step" v-bind:is-valid="editedObject.step1">
+            <cly-content id="step1" name="First Step">
                 <br>
                 <br>
                 <br>
@@ -12,7 +12,7 @@
                 </pre>
                 <cly-check v-model="editedObject.step1" label="Step is valid."></cly-check>
             </cly-content>
-            <cly-content id="step2" name="Second Step" v-bind:is-valid="editedObject.step2"><br>
+            <cly-content id="step2" name="Second Step"><br>
                 <br>
                 <br>
                 <pre>
@@ -20,7 +20,7 @@
                 </pre>
                 <cly-check v-model="editedObject.step2" label="Step is valid."></cly-check>
             </cly-content>
-            <cly-content id="step3" name="Final Step" v-bind:is-valid="editedObject.step3"><br>
+            <cly-content id="step3" name="Final Step"><br>
                 <br>
                 <br>
                 <pre>
