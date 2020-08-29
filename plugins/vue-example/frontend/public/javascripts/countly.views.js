@@ -193,7 +193,8 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
     computed: {
         stepValidations: function() {
             return {
-                "step1": !(this.$v.editedObject.name.$invalid || this.$v.editedObject.field1.$invalid || this.$v.editedObject.field2.$invalid)
+                "step1": !(this.$v.editedObject.name.$invalid || this.$v.editedObject.field1.$invalid || this.$v.editedObject.field2.$invalid),
+                "step3": !(this.$v.editedObject.selectedProps.$invalid)
             };
         }
     },
@@ -235,6 +236,10 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
             field2: {
                 required: validators.required
             },
+            selectedProps: {
+                required: validators.required,
+                minLength: validators.minLength(1)
+            }
         }
     }
 });
