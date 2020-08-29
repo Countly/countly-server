@@ -1,32 +1,77 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
     <tg-view></tg-view>
     <table-view v-on:open-drawer="openDrawer"></table-view>
-    <example-drawer v-on:close="closeDrawer" v-bind="drawers.main">
-        <template slot-scope="{ editedObject, $v }">
+    <example-drawer v-on:close="closeDrawer" v-on:submit="onDrawerSubmit" v-bind="drawers.main">
+        <template slot-scope="{ editedObject, $v, constants }">
             <cly-content id="step1" name="First Step">
-                <br>
-                <br>
-                <br>
-                <pre>
-                    {{editedObject}}
-                </pre>
-                <cly-check v-model="$v.editedObject.step1.$model" label="Step is valid."></cly-check>
+                <div class="section">
+                    <div class="label">Name</div> 
+                    <div>
+                        <cly-text-field v-model="$v.editedObject.name.$model"></cly-text-field>
+                        <div class="validation-error" v-if="$v.editedObject.name.$anyError">Name is required.</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="panel">
+                        <div class="panel-heading">Fields</div>
+                        <div class="panel-body">
+                            <div class="label">Field 1</div> 
+                            <div>
+                                <cly-text-field v-model="$v.editedObject.field1.$model"></cly-text-field>
+                                <div class="validation-error" v-if="$v.editedObject.field1.$anyError">Field 1 is required.</div>
+                            </div>
+                            <br>
+                            <div class="label">Field 2</div> 
+                            <div>
+                                <cly-text-field v-model="$v.editedObject.field2.$model"></cly-text-field>
+                                <div class="validation-error" v-if="$v.editedObject.field2.$anyError">Field 2 is required.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section">
+                    <pre>
+                        {{editedObject}}
+                    </pre>
+                </div>
             </cly-content>
-            <cly-content id="step2" name="Second Step"><br>
-                <br>
-                <br>
-                <pre>
-                    {{editedObject}}
-                </pre>
-                <cly-check v-model="$v.editedObject.step2.$model" label="Step is valid."></cly-check>
+            <cly-content id="step2" name="Second Step">
+                <div class="section">
+                    <div class="label">Description</div> 
+                    <div>
+                        <cly-text-field v-model="editedObject.description"></cly-text-field>
+                    </div>
+                </div>
+                <div class="section">
+                    <pre>
+                        {{editedObject}}
+                    </pre>
+                </div>
             </cly-content>
-            <cly-content id="step3" name="Final Step"><br>
-                <br>
-                <br>
-                <pre>
-                    {{editedObject}}
-                </pre>
-                <cly-check v-model="$v.editedObject.step3.$model" label="Step is valid."></cly-check>
+            <cly-content id="step3" name="Final Step">
+                <div class="section">
+                    <div class="panel">
+                        <div class="panel-heading">Allowed Props</div>
+                        <div class="panel-body">
+                            <cly-check-list v-model="$v.editedObject.selectedProps.$model" :items="constants.availableProps"></cly-check-list>
+                            <div class="validation-error" v-if="$v.editedObject.selectedProps.$anyError">You must select at least 2 props.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="label">Visibility</div> 
+                    <div>
+                        <cly-radio v-model="editedObject.visibility" :items="constants.visibilityOptions"></cly-radio>
+                    </div>
+                </div>
+                <div class="section">
+                    <cly-check v-model="editedObject.status" skin="tick" label="Set as active"></cly-check>
+                </div>
+                <div class="section">
+                    <pre>
+                        {{editedObject}}
+                    </pre>
+                </div>
             </cly-content>
         </template>
     </example-drawer>

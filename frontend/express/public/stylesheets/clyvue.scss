@@ -567,8 +567,8 @@
             background-color: #fff;
             height: 55px;
             width: 100%;
-            top: 64px;
-            position: absolute;
+            top: 6px;
+            position: relative;
             border-top: 1px solid #F9F9F9;
             display: flex;
             justify-content: space-around;
@@ -633,6 +633,15 @@
                 > .description { font-size: 11px; margin-top: 4px; color: #9c9c9c; line-height: 17px; }
                 input[type=text].input { width: 100%; box-sizing: border-box; border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; }
             }
+            &.multi-step {
+                height: calc(100% - 56px);
+            }
+            .validation-error {
+                margin-top: 10px; 
+                clear: both; 
+                color: rgb(255, 0, 0); 
+                font-size: 12px;
+            }
         }
 
         .panel { 
@@ -659,6 +668,16 @@
                     font-size: 14px;
                     padding: 12px 22px;
                 }
+            }
+        }
+    }
+
+    .cly-vue-panel {
+        .widget-header .right {
+            .cly-vue-button {
+                float: right;
+                margin-top: 6px;
+                margin-left: 20px;
             }
         }
     }

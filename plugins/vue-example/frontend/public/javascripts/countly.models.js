@@ -1,8 +1,25 @@
-/*global $, countlyCommon, Vue */
+/*global $, countlyCommon, Vue, _ */
 
 (function(countlyVueExample) {
 
     countlyVueExample.initialize = function() {};
+
+    countlyVueExample.factory = {
+        getEmpty: function(fields) {
+            fields = fields || {};
+            var original = {
+                _id: null,
+                name: '',
+                field1: '',
+                field2: '',
+                description: '',
+                status: false,
+                selectedProps: [],
+                visibility: 'private'
+            };
+            return _.extend(original, fields);
+        }
+    };
 
     countlyVueExample.getVuexModule = function() {
         return {
@@ -10,7 +27,7 @@
             module: {
                 namespaced: true,
                 state: {
-                    pairs: [],
+                    records: [],
                     randomNumbers: [],
                     pieData: {
                         "dp": [
@@ -34,8 +51,8 @@
                     id: 0
                 },
                 getters: {
-                    pairs: function(state) {
-                        return state.pairs;
+                    records: function(state) {
+                        return state.records;
                     },
                     randomNumbers: function(state) {
                         return state.randomNumbers;
@@ -51,17 +68,25 @@
                     }
                 },
                 mutations: {
-                    addPair: function(state, obj) {
-                        state.pairs.push({_id: state.id, status: false, name: obj.name, value: obj.value});
-                        state.id++;
+                    saveRecord: function(state, obj) {
+                        if (obj._id !== null) {
+                            state.records = state.records.filter(function(val) {
+                                return val._id !== obj._id;
+                            }).concat(obj);
+                        }
+                        else {
+                            obj._id = state.id;
+                            state.records.push(obj);
+                            state.id++;
+                        }
                     },
-                    deletePairById: function(state, _id) {
-                        state.pairs = state.pairs.filter(function(val) {
+                    deleteRecordById: function(state, _id) {
+                        state.records = state.records.filter(function(val) {
                             return val._id !== _id;
                         });
                     },
                     setStatus: function(state, obj) {
-                        var target = state.pairs.filter(function(val) {
+                        var target = state.records.filter(function(val) {
                             return val._id === obj._id;
                         });
                         if (target.length > 0) {

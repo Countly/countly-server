@@ -2,10 +2,10 @@
     <cly-tabs id="basic-tabs" v-model="activeTab">
         <cly-content v-bind:name='i18n("vue-example.table")' id="table-tab">
             <cly-panel title="DataTable" v-bind:date-selector="false">
+                <template slot="right-top">
+                    <cly-button v-on:click="add" skin="green" v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
+                </template>
                 <div>
-                    <div style="width: auto;padding: 24px;border-bottom: 1px solid #ccc;height: 30px;">
-                        <cly-button v-on:click="add" skin="green" v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
-                    </div>
                     <div style="width: 20%;display: inline-block;padding: 20px 30px 30px 30px; min-height: 150px;">
                         <pre>{{tableRows}}</pre>
                     </div>
@@ -16,6 +16,7 @@
                             v-bind:keyFn="tableKeyFn"
                             v-on:try-delete-record="onTryDelete"
                             v-on:delete-record="onDelete"
+                            v-on:edit-record="onEditRecord"
                             v-on:show-record="onShow">
                         </cly-datatable-w>
                     </div>

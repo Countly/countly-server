@@ -712,8 +712,8 @@
   background-color: #fff;
   height: 55px;
   width: 100%;
-  top: 64px;
-  position: absolute;
+  top: 6px;
+  position: relative;
   border-top: 1px solid #F9F9F9;
   display: flex;
   justify-content: space-around;
@@ -790,6 +790,15 @@
   padding: 7px;
   font-size: 12px;
 }
+.cly-vue-theme-clydef .cly-vue-drawer .details.multi-step {
+  height: calc(100% - 56px);
+}
+.cly-vue-theme-clydef .cly-vue-drawer .details .validation-error {
+  margin-top: 10px;
+  clear: both;
+  color: red;
+  font-size: 12px;
+}
 .cly-vue-theme-clydef .cly-vue-drawer .panel {
   background-color: #ffffff;
   border: 1px solid #D0D0D0;
@@ -841,6 +850,11 @@
   float: right;
   font-size: 14px;
   padding: 12px 22px;
+}
+.cly-vue-theme-clydef .cly-vue-panel .widget-header .right .cly-vue-button {
+  float: right;
+  margin-top: 6px;
+  margin-left: 20px;
 }
 
 /*# sourceMappingURL=clyvue.css.map */

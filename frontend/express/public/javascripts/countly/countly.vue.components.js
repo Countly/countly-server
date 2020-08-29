@@ -424,19 +424,22 @@
                         acc[val] = {
                             name: val,
                             isOpened: false,
-                            editedObject: {}
+                            initialEditedObject: {}
                         };
                         return acc;
                     }, {})
                 };
             },
             methods: {
-                openDrawer: function(name, editedObject) {
-                    this.loadDrawer(name, editedObject);
+                openDrawer: function(name, initialEditedObject) {
+                    if (this.drawers[name].isOpened) {
+                        return;
+                    }
+                    this.loadDrawer(name, initialEditedObject);
                     this.drawers[name].isOpened = true;
                 },
-                loadDrawer: function(name, editedObject) {
-                    this.drawers[name].editedObject = editedObject || {};
+                loadDrawer: function(name, initialEditedObject) {
+                    this.drawers[name].initialEditedObject = initialEditedObject || {};
                 },
                 closeDrawer: function(name) {
                     this.drawers[name].isOpened = false;
@@ -611,6 +614,9 @@
 
     var _components = {
         BaseDrawer: countlyBaseComponent.extend({
+            mixins: [
+                _mixins.i18n
+            ],
             template: '<div class="cly-vue-drawer" v-bind:class="{open: isOpened}">\
                             <div class="title">\
                                 <span>{{title}}</span>\
@@ -627,28 +633,31 @@
                                     </div>\
                                 </div>\
                             </div>\
-                            <div class="details">\
-                                <slot :editedObject="editedObject" :$v="$v"></slot>\
+                            <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
+                                <slot :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                             </div>\
                             <div class="buttons multi-step" v-if="isMultiStep">\
-                                <cly-button v-bind:disabled="!isCurrentStepValid" @click="nextStep" skin="green" label="Next step"></cly-button>\
-                                <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" label="Previous step"></cly-button>\
+                                <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
+                                <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
                             </div>\
                             <div class="buttons single-step" v-if="!isMultiStep">\
-                                <cly-button v-bind:disabled="!isCurrentStepValid" @click="submit" skin="green" label="Save changes"></cly-button>\
+                                <cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
                             </div>\
                         </div>',
             props: {
                 isOpened: {type: Boolean, required: true},
-                editedObject: {type: Object},
+                initialEditedObject: {type: Object},
                 name: {type: String, required: true}
             },
             data: function() {
                 return {
                     title: '',
-                    internalEdited: this.copyOfEdited(),
+                    saveButtonLabel: this.i18n("common.drawer.confirm"),
+                    editedObject: this.copyOfEdited(),
                     currentStepIndex: 0,
-                    stepContents: []
+                    stepContents: [],
+                    constants: {}
                 };
             },
             computed: {
@@ -659,11 +668,14 @@
                     return null;
                 },
                 isCurrentStepValid: function() {
-                    if (!Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
+                    if (!this.stepValidations || !Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
                         // No validation scenario defined
                         return true;
                     }
                     return this.stepValidations[this.activeContentId];
+                },
+                isLastStep: function() {
+                    return this.stepContents.length > 1 && this.currentStepIndex === this.stepContents.length - 1;
                 },
                 activeContent: function() {
                     if (this.currentStepIndex > this.stepContents.length - 1) {
@@ -680,7 +692,7 @@
                     this.$emit("close", this.name);
                 },
                 copyOfEdited: function() {
-                    return JSON.parse(JSON.stringify(this.editedObject));
+                    return JSON.parse(JSON.stringify(this.initialEditedObject));
                 },
                 setStep: function(newIndex) {
                     if (newIndex >= 0 && newIndex < this.stepContents.length) {
@@ -691,13 +703,19 @@
                     this.setStep(this.currentStepIndex - 1);
                 },
                 nextStep: function() {
-                    this.$v.$touch();
                     if (this.isCurrentStepValid) {
                         this.setStep(this.currentStepIndex + 1);
                     }
                 },
+                reset: function() {
+                    this.$v.$reset();
+                    this.setStep(0);
+                },
                 submit: function() {
-
+                    if (!this.$v.$invalid) {
+                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                        this.tryClosing();
+                    }
                 },
                 afterEditedObjectChanged: function() { },
             },
@@ -708,10 +726,15 @@
                 this.setStep(this.stepContents[0].tId);
             },
             watch: {
-                editedObject: function() {
-                    this.internalEdited = this.copyOfEdited();
-                    this.afterEditedObjectChanged(this.internalEdited);
-                    this.$v.$reset();
+                initialEditedObject: function() {
+                    this.editedObject = this.copyOfEdited();
+                    this.afterEditedObjectChanged(this.editedObject);
+                    this.reset();
+                },
+                isOpened: function(newState) {
+                    if (!newState) {
+                        this.reset();
+                    }
                 }
             }
         })
@@ -1596,7 +1619,7 @@
                         </div>\
                     </div>',
         props: {
-            value: {required: true, type: Boolean},
+            value: {default: false, type: Boolean},
             label: {type: String},
             skin: { default: "switch", type: String}
         },
@@ -1637,8 +1660,18 @@
                       </cly-check>\
                   </div>',
         props: {
-            value: {required: true},
-            items: {required: true},
+            value: {
+                default: function() {
+                    return [];
+                },
+                type: Array
+            },
+            items: {
+                default: function() {
+                    return [];
+                },
+                type: Array
+            },
             skin: { default: "switch", type: String}
         },
         computed: {
