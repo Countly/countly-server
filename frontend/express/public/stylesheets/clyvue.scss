@@ -567,8 +567,8 @@
             background-color: #fff;
             height: 55px;
             width: 100%;
-            top: 64px;
-            position: absolute;
+            top: 6px;
+            position: relative;
             border-top: 1px solid #F9F9F9;
             display: flex;
             justify-content: space-around;
@@ -632,6 +632,9 @@
                 .label { font-size: 12px; margin-bottom: 8px; color:#636363; }
                 > .description { font-size: 11px; margin-top: 4px; color: #9c9c9c; line-height: 17px; }
                 input[type=text].input { width: 100%; box-sizing: border-box; border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; }
+            }
+            &.multi-step {
+                height: calc(100% - 56px);
             }
         }
 

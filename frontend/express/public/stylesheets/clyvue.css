@@ -712,8 +712,8 @@
   background-color: #fff;
   height: 55px;
   width: 100%;
-  top: 64px;
-  position: absolute;
+  top: 6px;
+  position: relative;
   border-top: 1px solid #F9F9F9;
   display: flex;
   justify-content: space-around;
@@ -789,6 +789,9 @@
   outline: none;
   padding: 7px;
   font-size: 12px;
+}
+.cly-vue-theme-clydef .cly-vue-drawer .details.multi-step {
+  height: calc(100% - 56px);
 }
 .cly-vue-theme-clydef .cly-vue-drawer .panel {
   background-color: #ffffff;

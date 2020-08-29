@@ -627,7 +627,7 @@
                                     </div>\
                                 </div>\
                             </div>\
-                            <div class="details">\
+                            <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
                                 <slot :editedObject="editedObject" :$v="$v"></slot>\
                             </div>\
                             <div class="buttons multi-step" v-if="isMultiStep">\

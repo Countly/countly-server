@@ -4,25 +4,18 @@
     <example-drawer v-on:close="closeDrawer" v-bind="drawers.main">
         <template slot-scope="{ editedObject, $v }">
             <cly-content id="step1" name="First Step">
-                <br>
-                <br>
-                <br>
                 <pre>
                     {{editedObject}}
                 </pre>
                 <cly-check v-model="$v.editedObject.step1.$model" label="Step is valid."></cly-check>
             </cly-content>
-            <cly-content id="step2" name="Second Step"><br>
-                <br>
-                <br>
+            <cly-content id="step2" name="Second Step">
                 <pre>
                     {{editedObject}}
                 </pre>
                 <cly-check v-model="$v.editedObject.step2.$model" label="Step is valid."></cly-check>
             </cly-content>
-            <cly-content id="step3" name="Final Step"><br>
-                <br>
-                <br>
+            <cly-content id="step3" name="Final Step">
                 <pre>
                     {{editedObject}}
                 </pre>
