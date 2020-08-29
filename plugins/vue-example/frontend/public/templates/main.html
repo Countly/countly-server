@@ -8,6 +8,7 @@
                     <div class="label">Name</div> 
                     <div>
                         <cly-text-field v-model="editedObject.name"></cly-text-field>
+                        <div class="validation-error" v-if="!$v.editedObject.name.required">Name is required.</div>
                     </div>
                 </div>
                 <div class="section">
@@ -17,11 +18,13 @@
                             <div class="label">Field 1</div> 
                             <div>
                                 <cly-text-field v-model="editedObject.field1"></cly-text-field>
+                                <div class="validation-error" v-if="!$v.editedObject.field1.required">Field 1 is required.</div>
                             </div>
                             <br>
                             <div class="label">Field 2</div> 
                             <div>
                                 <cly-text-field v-model="editedObject.field2"></cly-text-field>
+                                <div class="validation-error" v-if="!$v.editedObject.field2.required">Field 2 is required.</div>
                             </div>
                         </div>
                     </div>
@@ -50,7 +53,8 @@
                     <div class="panel">
                         <div class="panel-heading">Allowed Props</div>
                         <div class="panel-body">
-                            <cly-check-list v-model="editedObject.selectedProps" :items="constants.availableProps"></cly-check-list>                            
+                            <cly-check-list v-model="editedObject.selectedProps" :items="constants.availableProps"></cly-check-list>     
+                            <div class="validation-error" v-if="$v.editedObject.selectedProps.$invalid">You must select at least 2 props.</div>                       
                         </div>
                     </div>
                 </div>

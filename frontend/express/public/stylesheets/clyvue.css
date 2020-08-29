@@ -793,6 +793,12 @@
 .cly-vue-theme-clydef .cly-vue-drawer .details.multi-step {
   height: calc(100% - 56px);
 }
+.cly-vue-theme-clydef .cly-vue-drawer .details .validation-error {
+  margin-top: 10px;
+  clear: both;
+  color: red;
+  font-size: 12px;
+}
 .cly-vue-theme-clydef .cly-vue-drawer .panel {
   background-color: #ffffff;
   border: 1px solid #D0D0D0;

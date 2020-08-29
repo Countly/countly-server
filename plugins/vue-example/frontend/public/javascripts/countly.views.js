@@ -238,7 +238,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
             },
             selectedProps: {
                 required: validators.required,
-                minLength: validators.minLength(1)
+                minLength: validators.minLength(2)
             }
         }
     }

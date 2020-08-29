@@ -636,6 +636,12 @@
             &.multi-step {
                 height: calc(100% - 56px);
             }
+            .validation-error {
+                margin-top: 10px; 
+                clear: both; 
+                color: rgb(255, 0, 0); 
+                font-size: 12px;
+            }
         }
 
         .panel { 
