@@ -1,8 +1,25 @@
-/*global $, countlyCommon, Vue */
+/*global $, countlyCommon, Vue, _ */
 
 (function(countlyVueExample) {
 
     countlyVueExample.initialize = function() {};
+
+    countlyVueExample.factory = {
+        getEmpty: function(fields) {
+            fields = fields || {};
+            var original = {
+                _id: null,
+                name: '',
+                field1: '',
+                field2: '',
+                description: '',
+                status: false,
+                allowedProps: [],
+                visibility: 'private'
+            };
+            return _.extend(original, fields);
+        }
+    };
 
     countlyVueExample.getVuexModule = function() {
         return {
@@ -52,7 +69,8 @@
                 },
                 mutations: {
                     addPair: function(state, obj) {
-                        state.pairs.push({_id: state.id, status: false, name: obj.name, value: obj.value});
+                        obj._id = state.id;
+                        state.pairs.push(obj);
                         state.id++;
                     },
                     deletePairById: function(state, _id) {

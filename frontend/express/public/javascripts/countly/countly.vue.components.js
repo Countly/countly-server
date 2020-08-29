@@ -659,7 +659,7 @@
                     return null;
                 },
                 isCurrentStepValid: function() {
-                    if (!Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
+                    if (!this.stepValidations || !Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
                         // No validation scenario defined
                         return true;
                     }
@@ -695,7 +695,7 @@
                         this.setStep(this.currentStepIndex + 1);
                     }
                 },
-                reset: function () {
+                reset: function() {
                     this.$v.$reset();
                     this.setStep(0);
                 },
@@ -717,7 +717,7 @@
                     this.reset();
                 },
                 isOpened: function(newState) {
-                    if (!newState){
+                    if (!newState) {
                         this.reset();
                     }
                 }

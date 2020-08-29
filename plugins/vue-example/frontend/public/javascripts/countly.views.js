@@ -126,11 +126,7 @@ var TableView = countlyVue.views.BaseView.extend({
     },
     methods: {
         add: function() {
-            this.$emit("open-drawer", "main", {
-                "step1": false,
-                "step2": true,
-                "step3": false
-            });
+            this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
         },
         onTryDelete: function(row, callback) {
             callback({
@@ -197,9 +193,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
     computed: {
         stepValidations: function() {
             return {
-                "step1": !this.$v.editedObject.step1.$invalid,
-                "step2": !this.$v.editedObject.step2.$invalid,
-                "step3": !this.$v.editedObject.step3.$invalid
+                "step1": !(this.$v.editedObject.name.$invalid || this.$v.editedObject.field1.$invalid || this.$v.editedObject.field2.$invalid),
             };
         }
     },
@@ -217,21 +211,15 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
     },
     validations: {
         editedObject: {
-            step1: {
-                sameAs: validators.sameAs(function() {
-                    return true;
-                })
+            name: {
+                required: validators.required
             },
-            step2: {
-                sameAs: validators.sameAs(function() {
-                    return true;
-                })
+            field1: {
+                required: validators.required
             },
-            step3: {
-                sameAs: validators.sameAs(function() {
-                    return true;
-                })
-            }
+            field2: {
+                required: validators.required
+            },
         }
     }
 });

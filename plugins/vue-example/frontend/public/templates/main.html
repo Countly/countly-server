@@ -4,22 +4,56 @@
     <example-drawer v-on:close="closeDrawer" v-bind="drawers.main">
         <template slot-scope="{ editedObject, $v }">
             <cly-content id="step1" name="First Step">
-                <pre>
-                    {{editedObject}}
-                </pre>
-                <cly-check v-model="$v.editedObject.step1.$model" label="Step is valid."></cly-check>
+                <div class="section">
+                    <div class="label">Name</div> 
+                    <div>
+                        <cly-text-field v-model="editedObject.name"></cly-text-field>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="panel">
+                        <div class="panel-heading">Fields</div>
+                        <div class="panel-body">
+                            <div class="label">Field 1</div> 
+                            <div>
+                                <cly-text-field v-model="editedObject.field1"></cly-text-field>
+                            </div>
+                            <br>
+                            <div class="label">Field 2</div> 
+                            <div>
+                                <cly-text-field v-model="editedObject.field2"></cly-text-field>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section">
+                    <pre>
+                        {{editedObject}}
+                    </pre>
+                </div>
             </cly-content>
             <cly-content id="step2" name="Second Step">
-                <pre>
-                    {{editedObject}}
-                </pre>
-                <cly-check v-model="$v.editedObject.step2.$model" label="Step is valid."></cly-check>
+                <div class="section">
+                    <div class="label">Description</div> 
+                    <div>
+                        <cly-text-field v-model="editedObject.description"></cly-text-field>
+                    </div>
+                </div>
+                <div class="section">
+                    <pre>
+                        {{editedObject}}
+                    </pre>
+                </div>
             </cly-content>
             <cly-content id="step3" name="Final Step">
-                <pre>
-                    {{editedObject}}
-                </pre>
-                <cly-check v-model="$v.editedObject.step3.$model" label="Step is valid."></cly-check>
+                <div class="section">
+                    <cly-check v-model="editedObject.status" skin="tick" label="Set as active"></cly-check>
+                </div>
+                <div class="section">
+                    <pre>
+                        {{editedObject}}
+                    </pre>
+                </div>
             </cly-content>
         </template>
     </example-drawer>
