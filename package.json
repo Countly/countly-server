@@ -55,7 +55,7 @@
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-cssmin": "3.0.0",
     "grunt-contrib-uglify": "5.0.0",
-    "jimp": "0.16.0",
+    "jimp": "0.16.1",
     "jsdoc": "3.6.5",
     "json2csv": "5.0.1",
     "json2xls": "^0.1.2",
