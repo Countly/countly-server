@@ -92,6 +92,11 @@ var TableView = countlyVue.views.BaseView.extend({
                     type: "options",
                     items: [
                         {
+                            icon: "fa fa-pencil",
+                            label: "Edit",
+                            action: {"event": "edit-record"},
+                        },
+                        {
                             icon: "fa fa-trash",
                             label: "Delete",
                             action: {"event": "delete-record"},
@@ -127,6 +132,9 @@ var TableView = countlyVue.views.BaseView.extend({
     methods: {
         add: function() {
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
+        },
+        onEditRecord: function(row) {
+            this.$emit("open-drawer", "main", row);
         },
         onTryDelete: function(row, callback) {
             callback({
@@ -215,7 +223,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
     },
     methods: {
         afterEditedObjectChanged: function(newState) {
-            if (newState._id) {
+            if (newState._id !== null) {
                 this.title = "Edit Record";
                 this.saveButtonLabel = "Save Changes";
             }

@@ -69,9 +69,9 @@
                 },
                 mutations: {
                     saveRecord: function(state, obj) {
-                        if (obj._id) {
+                        if (obj._id !== null) {
                             state.records = state.records.filter(function(val) {
-                                return val._id !== _id;
+                                return val._id !== obj._id;
                             }).concat(obj);
                         }
                         else {
