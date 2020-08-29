@@ -691,10 +691,13 @@
                     this.setStep(this.currentStepIndex - 1);
                 },
                 nextStep: function() {
-                    this.$v.$touch();
                     if (this.isCurrentStepValid) {
                         this.setStep(this.currentStepIndex + 1);
                     }
+                },
+                reset: function () {
+                    this.$v.$reset();
+                    this.setStep(0);
                 },
                 submit: function() {
 
@@ -711,7 +714,12 @@
                 editedObject: function() {
                     this.internalEdited = this.copyOfEdited();
                     this.afterEditedObjectChanged(this.internalEdited);
-                    this.$v.$reset();
+                    this.reset();
+                },
+                isOpened: function(newState) {
+                    if (!newState){
+                        this.reset();
+                    }
                 }
             }
         })
