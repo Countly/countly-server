@@ -261,7 +261,7 @@ var MainView = countlyVue.views.BaseView.extend({
         "example-drawer": ExampleDrawer
     },
     methods: {
-        onDrawerSubmit: function(doc){
+        onDrawerSubmit: function(doc) {
             this.$store.commit("vueExample/saveRecord", doc);
         }
     }
