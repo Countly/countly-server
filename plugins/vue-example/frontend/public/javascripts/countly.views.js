@@ -197,9 +197,9 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
     computed: {
         stepValidations: function() {
             return {
-                "step1": !this.$v.editedObject.step1.$anyError,
-                "step2": !this.$v.editedObject.step2.$anyError,
-                "step3": !this.$v.editedObject.step3.$anyError
+                "step1": !this.$v.editedObject.step1.$invalid,
+                "step2": !this.$v.editedObject.step2.$invalid,
+                "step3": !this.$v.editedObject.step3.$invalid
             };
         }
     },
