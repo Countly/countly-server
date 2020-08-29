@@ -671,4 +671,14 @@
             }
         }
     }
+
+    .cly-vue-panel {
+        .widget-header .right {
+            .cly-vue-button {
+                float: right;
+                margin-top: 6px;
+                margin-left: 20px;
+            }
+        }
+    }
 }
