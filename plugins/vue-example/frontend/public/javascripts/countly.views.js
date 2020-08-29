@@ -193,9 +193,24 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
     computed: {
         stepValidations: function() {
             return {
-                "step1": !(this.$v.editedObject.name.$invalid || this.$v.editedObject.field1.$invalid || this.$v.editedObject.field2.$invalid),
+                "step1": !(this.$v.editedObject.name.$invalid || this.$v.editedObject.field1.$invalid || this.$v.editedObject.field2.$invalid)
             };
         }
+    },
+    data: function() {
+        return {
+            constants: {
+                "visibilityOptions": [
+                    {label: "Global", value: "global", description: "Can be seen by everyone."},
+                    {label: "Private", value: "private", description: "Can be seen by the creator."}
+                ],
+                "availableProps": [
+                    {label: "Type 1", value: 1},
+                    {label: "Type 2", value: 2},
+                    {label: "Type 3", value: 3}
+                ]
+            }
+        };
     },
     methods: {
         afterEditedObjectChanged: function(newState) {

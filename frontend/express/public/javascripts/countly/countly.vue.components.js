@@ -628,7 +628,7 @@
                                 </div>\
                             </div>\
                             <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                <slot :editedObject="editedObject" :$v="$v"></slot>\
+                                <slot :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                             </div>\
                             <div class="buttons multi-step" v-if="isMultiStep">\
                                 <cly-button v-bind:disabled="!isCurrentStepValid" @click="nextStep" skin="green" label="Next step"></cly-button>\
@@ -648,7 +648,8 @@
                     title: '',
                     internalEdited: this.copyOfEdited(),
                     currentStepIndex: 0,
-                    stepContents: []
+                    stepContents: [],
+                    constants: {}
                 };
             },
             computed: {
@@ -1604,7 +1605,7 @@
                         </div>\
                     </div>',
         props: {
-            value: {required: true, type: Boolean},
+            value: {default: false, type: Boolean},
             label: {type: String},
             skin: { default: "switch", type: String}
         },
@@ -1645,8 +1646,18 @@
                       </cly-check>\
                   </div>',
         props: {
-            value: {required: true},
-            items: {required: true},
+            value: {
+                default: function() {
+                    return [];
+                },
+                type: Array
+            },
+            items: {
+                default: function() {
+                    return [];
+                },
+                type: Array
+            },
             skin: { default: "switch", type: String}
         },
         computed: {

@@ -14,7 +14,7 @@
                 field2: '',
                 description: '',
                 status: false,
-                allowedProps: [],
+                selectedProps: [],
                 visibility: 'private'
             };
             return _.extend(original, fields);

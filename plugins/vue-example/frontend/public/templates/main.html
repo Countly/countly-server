@@ -2,7 +2,7 @@
     <tg-view></tg-view>
     <table-view v-on:open-drawer="openDrawer"></table-view>
     <example-drawer v-on:close="closeDrawer" v-bind="drawers.main">
-        <template slot-scope="{ editedObject, $v }">
+        <template slot-scope="{ editedObject, $v, constants }">
             <cly-content id="step1" name="First Step">
                 <div class="section">
                     <div class="label">Name</div> 
@@ -46,6 +46,20 @@
                 </div>
             </cly-content>
             <cly-content id="step3" name="Final Step">
+                <div class="section">
+                    <div class="panel">
+                        <div class="panel-heading">Allowed Props</div>
+                        <div class="panel-body">
+                            <cly-check-list v-model="editedObject.selectedProps" :items="constants.availableProps"></cly-check-list>                            
+                        </div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="label">Visibility</div> 
+                    <div>
+                        <cly-radio v-model="editedObject.visibility" :items="constants.visibilityOptions"></cly-radio>
+                    </div>
+                </div>
                 <div class="section">
                     <cly-check v-model="editedObject.status" skin="tick" label="Set as active"></cly-check>
                 </div>
