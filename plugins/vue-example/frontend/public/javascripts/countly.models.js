@@ -27,7 +27,7 @@
             module: {
                 namespaced: true,
                 state: {
-                    pairs: [],
+                    records: [],
                     randomNumbers: [],
                     pieData: {
                         "dp": [
@@ -51,8 +51,8 @@
                     id: 0
                 },
                 getters: {
-                    pairs: function(state) {
-                        return state.pairs;
+                    records: function(state) {
+                        return state.records;
                     },
                     randomNumbers: function(state) {
                         return state.randomNumbers;
@@ -68,18 +68,25 @@
                     }
                 },
                 mutations: {
-                    addPair: function(state, obj) {
-                        obj._id = state.id;
-                        state.pairs.push(obj);
-                        state.id++;
+                    saveRecord: function(state, obj) {
+                        if (obj._id) {
+                            state.records = state.records.filter(function(val) {
+                                return val._id !== _id;
+                            }).concat(obj);
+                        }
+                        else {
+                            obj._id = state.id;
+                            state.records.push(obj);
+                            state.id++;
+                        }
                     },
-                    deletePairById: function(state, _id) {
-                        state.pairs = state.pairs.filter(function(val) {
+                    deleteRecordById: function(state, _id) {
+                        state.records = state.records.filter(function(val) {
                             return val._id !== _id;
                         });
                     },
                     setStatus: function(state, obj) {
-                        var target = state.pairs.filter(function(val) {
+                        var target = state.records.filter(function(val) {
                             return val._id === obj._id;
                         });
                         if (target.length > 0) {

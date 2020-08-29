@@ -1,7 +1,7 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
     <tg-view></tg-view>
     <table-view v-on:open-drawer="openDrawer"></table-view>
-    <example-drawer v-on:close="closeDrawer" v-bind="drawers.main">
+    <example-drawer v-on:close="closeDrawer" v-on:submit="onDrawerSubmit" v-bind="drawers.main">
         <template slot-scope="{ editedObject, $v, constants }">
             <cly-content id="step1" name="First Step">
                 <div class="section">

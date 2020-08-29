@@ -4,7 +4,7 @@ var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
     computed: {
         tableRows: function() {
-            return this.$store.getters["vueExample/pairs"];
+            return this.$store.getters["vueExample/records"];
         }
     },
     data: function() {
@@ -53,10 +53,10 @@ var TableView = countlyVue.views.BaseView.extend({
                 },
                 {
                     type: "field",
-                    fieldKey: "value",
+                    fieldKey: "description",
                     options: {
                         dataType: "numeric",
-                        title: "Value"
+                        title: "Description"
                     },
                     dt: {
                         "sWidth": "15%"
@@ -76,7 +76,7 @@ var TableView = countlyVue.views.BaseView.extend({
                             return stringBuffer.join('');
                         }
                         else {
-                            return row.value;
+                            return row.description;
                         }
                     },
                     customActions: [{
@@ -137,7 +137,7 @@ var TableView = countlyVue.views.BaseView.extend({
             });
         },
         onDelete: function(row) {
-            this.$store.commit("vueExample/deletePairById", row._id);
+            this.$store.commit("vueExample/deleteRecordById", row._id);
         },
         onShow: function(/*row, key*/) {
         }
@@ -215,14 +215,14 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
     },
     methods: {
         afterEditedObjectChanged: function(newState) {
-            if (!newState._id) {
-                this.title = "Create New Record";
+            if (newState._id) {
+                this.title = "Edit Record";
+                this.saveButtonLabel = "Save Changes";
             }
-        },
-        onSave: function() {
-            /*this.targetName = "Your data, your rules.";
-            this.targetValue += 1;
-            this.$store.commit("vueExample/addPair", {name: this.targetName, value: this.targetValue});*/
+            else {
+                this.title = "Create New Record";
+                this.saveButtonLabel = "Create Record";
+            }
         }
     },
     validations: {
@@ -251,6 +251,11 @@ var MainView = countlyVue.views.BaseView.extend({
         "table-view": TableView,
         "tg-view": TimeGraphView,
         "example-drawer": ExampleDrawer
+    },
+    methods: {
+        onDrawerSubmit: function(doc){
+            this.$store.commit("vueExample/saveRecord", doc);
+        }
     }
 });
 

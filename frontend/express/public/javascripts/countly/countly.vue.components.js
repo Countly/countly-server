@@ -712,7 +712,10 @@
                     this.setStep(0);
                 },
                 submit: function() {
-
+                    if (!this.$v.$invalid) {
+                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                        this.tryClosing();
+                    }
                 },
                 afterEditedObjectChanged: function() { },
             },
