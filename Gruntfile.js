@@ -56,6 +56,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue/vue.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuex.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuelidate.min.js',
+                    'frontend/express/public/javascripts/utils/vue/v-tooltip.min.js',
                     'frontend/express/public/javascripts/utils/vue/validators.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',

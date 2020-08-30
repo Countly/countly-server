@@ -3,7 +3,7 @@
         <cly-content v-bind:name='i18n("vue-example.table")' id="table-tab">
             <cly-panel title="DataTable" v-bind:date-selector="false">
                 <template slot="right-top">
-                    <cly-button v-on:click="add" skin="green" v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
+                    <cly-button v-tooltip="'Tooltip'" v-on:click="add" skin="green" v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
                 </template>
                 <div>
                     <div style="width: 20%;display: inline-block;padding: 20px 30px 30px 30px; min-height: 150px;">

@@ -378,6 +378,7 @@
     */
 
     Vue.use(window.vuelidate.default);
+    window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
 
     var autoRefreshMixin = {
         mounted: function() {
