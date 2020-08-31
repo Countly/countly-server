@@ -62,10 +62,9 @@
                 height: 30px;
 
                 @for $i from 1 through 15 {
-                    $proportional_w: 100 / $i + '%';
 
                     &.tabs-#{$i} li {
-                        width: calc(#{$proportional_w} - 1px);
+                        width: calc(#{100 / $i + '%'} - 1px);
                     }
                 }
 
@@ -686,12 +685,17 @@
         display: block !important;
         z-index: 10000;
         font-size: 12px;
-      
+        
+        $tooltip_color: rgba(10,10,10,.8);
+        $tooltip_arrow_param: 8px;
+
         .tooltip-inner {
-          background: black;
+          border:none;
+          background: #{$tooltip_color};
           color: white;
           border-radius: 4px;
-          padding: 5px 10px 4px;
+          padding: 6px 14px;
+          line-height: 18px;
         }
       
         .tooltip-arrow {
@@ -700,65 +704,65 @@
           border-style: solid;
           position: absolute;
           margin: 5px;
-          border-color: black;
+          border-color: #{$tooltip_color};
           z-index: 1;
         }
       
         &[x-placement^="top"] {
-          margin-bottom: 5px;
+          margin-bottom: #{$tooltip_arrow_param * 2};
       
           .tooltip-arrow {
-            border-width: 5px 5px 0 5px;
+            border-width: #{$tooltip_arrow_param} #{$tooltip_arrow_param} 0 #{$tooltip_arrow_param};
             border-left-color: transparent !important;
             border-right-color: transparent !important;
             border-bottom-color: transparent !important;
-            bottom: -5px;
-            left: calc(50% - 5px);
+            bottom: -#{$tooltip_arrow_param};
+            left: calc(50% - #{$tooltip_arrow_param});
             margin-top: 0;
             margin-bottom: 0;
           }
         }
       
         &[x-placement^="bottom"] {
-          margin-top: 5px;
+          margin-top: #{$tooltip_arrow_param * 2};
       
           .tooltip-arrow {
-            border-width: 0 5px 5px 5px;
+            border-width: 0 #{$tooltip_arrow_param} #{$tooltip_arrow_param} #{$tooltip_arrow_param};
             border-left-color: transparent !important;
             border-right-color: transparent !important;
             border-top-color: transparent !important;
-            top: -5px;
-            left: calc(50% - 5px);
+            top: -#{$tooltip_arrow_param};
+            left: calc(50% - #{$tooltip_arrow_param});
             margin-top: 0;
             margin-bottom: 0;
           }
         }
       
         &[x-placement^="right"] {
-          margin-left: 5px;
+          margin-left: #{$tooltip_arrow_param * 2};
       
           .tooltip-arrow {
-            border-width: 5px 5px 5px 0;
+            border-width: #{$tooltip_arrow_param} #{$tooltip_arrow_param} #{$tooltip_arrow_param} 0;
             border-left-color: transparent !important;
             border-top-color: transparent !important;
             border-bottom-color: transparent !important;
-            left: -5px;
-            top: calc(50% - 5px);
+            left: -#{$tooltip_arrow_param};
+            top: calc(50% - #{$tooltip_arrow_param});
             margin-left: 0;
             margin-right: 0;
           }
         }
       
         &[x-placement^="left"] {
-          margin-right: 5px;
+          margin-right: #{$tooltip_arrow_param * 2};
       
           .tooltip-arrow {
-            border-width: 5px 0 5px 5px;
+            border-width: #{$tooltip_arrow_param} 0 #{$tooltip_arrow_param} #{$tooltip_arrow_param};
             border-top-color: transparent !important;
             border-right-color: transparent !important;
             border-bottom-color: transparent !important;
-            right: -5px;
-            top: calc(50% - 5px);
+            right: -#{$tooltip_arrow_param};
+            top: calc(50% - #{$tooltip_arrow_param});
             margin-left: 0;
             margin-right: 0;
           }
@@ -767,12 +771,12 @@
         &[aria-hidden='true'] {
           visibility: hidden;
           opacity: 0;
-          transition: opacity .15s, visibility .15s;
+          transition: opacity .05s, visibility .05s;
         }
       
         &[aria-hidden='false'] {
           visibility: visible;
           opacity: 1;
-          transition: opacity .15s;
+          transition: opacity .05s;
         }
       }
