@@ -685,11 +685,12 @@
     .cly-vue-tooltip {
         display: block !important;
         z-index: 10000;
+        font-size: 12px;
       
         .tooltip-inner {
           background: black;
           color: white;
-          border-radius: 16px;
+          border-radius: 4px;
           padding: 5px 10px 4px;
         }
       
