@@ -857,4 +857,89 @@
   margin-left: 20px;
 }
 
+.cly-vue-tooltip {
+  display: block !important;
+  z-index: 10000;
+  font-size: 12px;
+}
+.cly-vue-tooltip .tooltip-inner {
+  border: none;
+  background: rgba(10, 10, 10, 0.8);
+  color: white;
+  border-radius: 4px;
+  padding: 6px 14px;
+  line-height: 18px;
+}
+.cly-vue-tooltip .tooltip-arrow {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: absolute;
+  margin: 5px;
+  border-color: rgba(10, 10, 10, 0.8);
+  z-index: 1;
+}
+.cly-vue-tooltip[x-placement^=top] {
+  margin-bottom: 16px;
+}
+.cly-vue-tooltip[x-placement^=top] .tooltip-arrow {
+  border-width: 8px 8px 0 8px;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  bottom: -8px;
+  left: calc(50% - 8px);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.cly-vue-tooltip[x-placement^=bottom] {
+  margin-top: 16px;
+}
+.cly-vue-tooltip[x-placement^=bottom] .tooltip-arrow {
+  border-width: 0 8px 8px 8px;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+  top: -8px;
+  left: calc(50% - 8px);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.cly-vue-tooltip[x-placement^=right] {
+  margin-left: 16px;
+}
+.cly-vue-tooltip[x-placement^=right] .tooltip-arrow {
+  border-width: 8px 8px 8px 0;
+  border-left-color: transparent !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+  left: -8px;
+  top: calc(50% - 8px);
+  margin-left: 0;
+  margin-right: 0;
+}
+.cly-vue-tooltip[x-placement^=left] {
+  margin-right: 16px;
+}
+.cly-vue-tooltip[x-placement^=left] .tooltip-arrow {
+  border-width: 8px 0 8px 8px;
+  border-top-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  right: -8px;
+  top: calc(50% - 8px);
+  margin-left: 0;
+  margin-right: 0;
+}
+.cly-vue-tooltip[aria-hidden=true] {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.05s, visibility 0.05s;
+}
+.cly-vue-tooltip[aria-hidden=false] {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.05s;
+}
+
 /*# sourceMappingURL=clyvue.css.map */
