@@ -4360,58 +4360,7 @@ window.EventsBlueprintView = countlyView.extend({
             }
         });
 
-        $(".cly-button-menu").on("cly-list.item", function(event1, data) {
-            var el = null;
-            var tmpEl = $(data.target);
-            if (tmpEl.parent().is("a") && tmpEl.parent().data("id") !== undefined) {
-                el = tmpEl.parent();
-            }
-            else {
-                el = tmpEl;
-            }
-            var event = el.data("id");
-            if (event) {
-                if (el.hasClass("delete_single_event")) {
-                    var eventName = el.data('name');
-                    if (eventName === "") {
-                        eventName = event;
-                    }
 
-                    if (eventName.length > self.textLimit) {
-                        eventName = eventName.substr(0, self.textLimit) + "...";
-                    }
-                    CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this", "<b>" + eventName + "</b>"), "popStyleGreen", function(result) {
-                        if (!result) {
-                            return true;
-                        }
-                        countlyEvent.delete_events([event], function(result1) {
-                            if (result1 === true) {
-                                var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"], info: "", sticky: false, clearAll: true, type: "ok"};
-                                CountlyHelpers.notify(msg);
-                                self.refresh(true, false);
-                            }
-                            else {
-                                CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
-                            }
-                        });
-                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map['events.general.yes-delete-event']], {title: jQuery.i18n.map['events.general.want-delete-this-title'], image: "delete-an-event"});
-                }
-                else if (el.hasClass("event_toggle_visibility")) {
-                    var toggleto = el.data("changeto");
-                    event = event.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
-                    countlyEvent.update_visibility([event], toggleto, function(result) {
-                        if (result === true) {
-                            var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
-                            CountlyHelpers.notify(msg);
-                            self.refresh(true, false);
-                        }
-                        else {
-                            CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
-                        }
-                    });
-                }
-            }
-        });
 
     },
     renderCommon: function(isRefresh) {
@@ -4813,6 +4762,60 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#events-event-settings').css("display", "block");
                 $('#events-custom-settings').css("display", "none");
             }
+
+            $(".cly-button-menu").on("cly-list.item", function(event1, data) {
+                var el = null;
+                var tmpEl = $(data.target);
+                if (tmpEl.parent().is("a") && tmpEl.parent().data("id") !== undefined) {
+                    el = tmpEl.parent();
+                }
+                else {
+                    el = tmpEl;
+                }
+                var event = el.data("id");
+                if (event) {
+                    if (el.hasClass("delete_single_event")) {
+                        var eventName = el.data('name');
+                        if (eventName === "") {
+                            eventName = event;
+                        }
+
+                        if (eventName.length > self.textLimit) {
+                            eventName = eventName.substr(0, self.textLimit) + "...";
+                        }
+                        CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this", "<b>" + eventName + "</b>"), "popStyleGreen", function(result) {
+                            if (!result) {
+                                return true;
+                            }
+                            countlyEvent.delete_events([event], function(result1) {
+                                if (result1 === true) {
+                                    var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"], info: "", sticky: false, clearAll: true, type: "ok"};
+                                    CountlyHelpers.notify(msg);
+                                    self.refresh(true, false);
+                                }
+                                else {
+                                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                                }
+                            });
+                        }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map['events.general.yes-delete-event']], {title: jQuery.i18n.map['events.general.want-delete-this-title'], image: "delete-an-event"});
+                    }
+                    else if (el.hasClass("event_toggle_visibility")) {
+                        var toggleto = el.data("changeto");
+                        event = event.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
+                        countlyEvent.update_visibility([event], toggleto, function(result) {
+                            if (result === true) {
+                                var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
+                                CountlyHelpers.notify(msg);
+                                self.refresh(true, false);
+                            }
+                            else {
+                                CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                            }
+                        });
+                    }
+                }
+            });
+
         }
     },
     compare_arrays: function(array1, array2) {
