@@ -1222,42 +1222,12 @@
                 </div>
                 <div class="events-general-description" data-localize="events.general.description" ></div>
                 <div class="" id="events-custom-settings-table">
-                    <table class="events-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th style="text-align:center;"><a id="select-all-events" class="fa fa-square-o check-green check-header"></a></th>
-                                <th data-localize="events.general.event"></th>
-                                <th colspan="2" data-localize="events.general.status"></th>
-                                <th data-localize="events.general.event-description"></th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        {{#if onlyMessage}}
-                            <tr><td colspan="6">{{onlyMessage}}</td></tr>
-                        {{else}}
-                        {{#eachOfObjectValue event-map}}
-                            <tr data-id="{{this.key}}" data-name="{{this.name}}" data-visible="{{this.is_visible}}">
-                                <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
-                                <td style="text-align:center;">
-                                    <a class="fa fa-square-o check-green check-header select-event-check" data-event-name="{{this.name}}" data-event-key="{{this.key}}"></a>
-                                </td>
-                                <td class="events-edit-name-field">{{this.name}}</td>
-                                {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
-                                {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
-                                <td class="events-edit-description-field">{{#if this.description}}{{{this.description}}}{{else}}-{{/if}}</td>
-                                <td style="width: 30px;">
-                                    <a class="cly-list-options"></a>
-                                </td>
-                            </tr>
-                        {{/eachOfObjectValue}}
-                        {{/if}}
-                    </table>
-										<div class="cly-button-menu event-settings-menu" tabindex="1">
+					<div class="cly-button-menu event-settings-menu" tabindex="1">
                         <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
                         <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
                         <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                     </div>
+					<table class="d-table help-zone-vb no-fix events-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
                 </div>
             </div>
         </div>
