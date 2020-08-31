@@ -4258,30 +4258,6 @@ window.EventsBlueprintView = countlyView.extend({
                         });
                     }
                 }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map['common.yes-discard']], {title: jQuery.i18n.map["events.general.want-to-discard-title"], image: "empty-icon"});
-
-            }
-        });
-
-        //General settings, select all checkbox
-        $("#select-all-events").on("click", function() {
-            var isChecked = $(this).hasClass("fa-check-square");//is now checked
-            if (isChecked) {
-                $(this).addClass("fa-square-o");
-                $(this).removeClass("fa-check-square");
-                $(".events-table .select-event-check").addClass("fa-square-o");
-                $(".events-table .select-event-check").removeClass("fa-check-square");
-            }
-            else {
-                $(this).removeClass("fa-square-o");
-                $(this).addClass("fa-check-square");
-                $(".events-table .select-event-check").removeClass("fa-square-o");
-                $(".events-table .select-event-check").addClass("fa-check-square");
-            }
-            if ($('.select-event-check.fa-check-square').length > 0) {
-                $('#events-general-action').removeClass('disabled');
-            }
-            else {
-                $('#events-general-action').addClass('disabled');
             }
         });
 
@@ -4384,7 +4360,6 @@ window.EventsBlueprintView = countlyView.extend({
             }
         });
 
-
         $(".cly-button-menu").on("cly-list.item", function(event1, data) {
             var el = null;
             var tmpEl = $(data.target);
@@ -4437,6 +4412,7 @@ window.EventsBlueprintView = countlyView.extend({
                 }
             }
         });
+
     },
     renderCommon: function(isRefresh) {
         var eventData = countlyEvent.getEventData();
@@ -4445,11 +4421,15 @@ window.EventsBlueprintView = countlyView.extend({
         var eventmap = countlyEvent.getEvents(true);
         this.activeEvent = "";
         var i = 0;
+
+        var tableData = [];
         for (i = 0; i < eventmap.length; i++) {
             if (eventmap[i].is_active === true) {
                 this.activeEvent = eventmap[i];
             }
+            tableData.push(eventmap[i]);
         }
+        this.tableData = tableData;
 
         this.have_drill = false;
         if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("drill") > -1) {
@@ -4517,8 +4497,86 @@ window.EventsBlueprintView = countlyView.extend({
             this.visibilityFilter = "";
             this.selectedSubmenu = "";
             this.templateData.submenu = "";
+            this.columns = [
+                {
+                    "mData": function(/*row, type*/) {
+                        return '<i class="fa fa-reorder event-order"></i>';
+                    },
+                    "sType": "string",
+                    "sTitle": "",
+                    "bSortable": false,
+                    "sClass": "center"
+                },
+                {
+                    "mData": function(row) {
+                        return '<a class="fa fa-square-o check-green check-header select-event-check" data-event-name="' + row.name + '" data-event-key="' + row.key + '"></a>';
+                    },
+                    "sType": "string",
+                    "sTitle": '<a id="select-all-events" class="fa fa-square-o check-green check-header"></a>',
+                    "bSortable": false,
+                    "sClass": "center"
+                },
+                {
+                    "mData": function(row) {
+                        return row.name;
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["events.general.event"],
+                    "bSortable": false,
+                    "sClass": "events-edit-name-field"
+                },
+                {
+                    "mData": function(row) {
+                        if (row.is_visible) {
+                            return '<div class="event_visibility_row_visible"><i class="fa fa-eye"></i> ' + jQuery.i18n.map["events.general.status.visible"] + "</div>";
+                        }
+                        else {
+                            return '<div class="event_visibility_row_hidden"><i class="fa fa-eye-slash"></i>' + jQuery.i18n.map["events.general.status.hidden"] + "</div>";
+                        }
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["events.general.status"],
+                    "bSortable": false
+                },
+
+                {
+                    "mData": function(row) {
+                        if (row.description) {
+                            return row.description;
+                        }
+                        else {
+                            return "-";
+                        }
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["events.general.event-description"],
+                    "bSortable": false,
+                    "sClass": "events-edit-description-field"
+                },
+                {
+                    "mData": function() {
+                        return '<a class="cly-list-options"></a>';
+                    },
+                    "sType": "string",
+                    "sTitle": "",
+                    "bSortable": false
+                },
+            ];
+
 
             $(this.el).html(this.template(this.templateData));
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": tableData,
+                "aoColumns": this.columns,
+                "fnRowCallback": function(nRow, aData) {
+                    $(nRow).attr("data-id", aData.key);
+                    $(nRow).attr("data-name", aData.name);
+                    $(nRow).attr("data-visible", aData.is_visible);
+                }
+            }));
+
+            $(".d-table").stickyTableHeaders();
+
             self.check_changes();
             self.pageScript();
 
@@ -4532,6 +4590,30 @@ window.EventsBlueprintView = countlyView.extend({
 
             $("#events-event-settings").on("keyup", "textarea", function() {
                 self.check_changes();
+            });
+
+
+            //General settings, select all checkbox
+            $("#events-custom-settings-table").on("click", "#select-all-events", function() {
+                var isChecked = $(this).hasClass("fa-check-square");//is now checked
+                if (isChecked) {
+                    $(this).addClass("fa-square-o");
+                    $(this).removeClass("fa-check-square");
+                    $(".events-table .select-event-check").addClass("fa-square-o");
+                    $(".events-table .select-event-check").removeClass("fa-check-square");
+                }
+                else {
+                    $(this).removeClass("fa-square-o");
+                    $(this).addClass("fa-check-square");
+                    $(".events-table .select-event-check").removeClass("fa-square-o");
+                    $(".events-table .select-event-check").addClass("fa-check-square");
+                }
+                if ($('.select-event-check.fa-check-square').length > 0) {
+                    $('#events-general-action').removeClass('disabled');
+                }
+                else {
+                    $('#events-general-action').addClass('disabled');
+                }
             });
 
             //General - checkbooxes in each line:
@@ -4649,6 +4731,7 @@ window.EventsBlueprintView = countlyView.extend({
                                     if (result1 === true) {
                                         var msg1 = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"], sticky: false, clearAll: true, type: "ok"};
                                         CountlyHelpers.notify(msg1);
+
                                         self.refresh(true, false);
                                     }
                                     else {
@@ -4793,6 +4876,20 @@ window.EventsBlueprintView = countlyView.extend({
             this.preventHashChange = false;
         }
     },
+    remakeTable: function() {
+        var self = this;
+
+        this.dtable.fnDestroy(false);
+        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaData": self.tableData,
+            "aoColumns": self.columns,
+            "fnRowCallback": function(nRow, aData) {
+                $(nRow).attr("data-id", aData.key);
+                $(nRow).attr("data-name", aData.name);
+                $(nRow).attr("data-visible", aData.is_visible);
+            }
+        }));
+    },
     refresh: function(eventChanged) {
         var self = this;
         if (eventChanged) {
@@ -4804,7 +4901,6 @@ window.EventsBlueprintView = countlyView.extend({
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(self.el).find("#events-settings-table").html(newPage.find("#events-settings-table").html());//Event settings
                 $("#events-event-settings .widget-header .title").html(self.activeEvent.name);//change event settings title
-                $(self.el).find("#events-custom-settings-table").html(newPage.find("#events-custom-settings-table").html()); //update general settings table
                 $(self.el).find("#event-nav-eventitems").html(newPage.find("#event-nav-eventitems").html());//reset navigation
 
                 $('#event-filter-types div[data-value="all"]').html('<span>' + jQuery.i18n.map["events.general.show.all"] + '</span> (' + self.templateData.allCount + ')');
@@ -4821,8 +4917,16 @@ window.EventsBlueprintView = countlyView.extend({
                     $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.all"] + ' (' + self.templateData.allCount + ')');
                 }
                 self.pageScript(); //add scripts
+
+
+
                 app.localize($("#events-event-settings"));
                 app.localize($("#events-custom-settings-table"));
+
+                CountlyHelpers.refreshTable(self.dtable, self.tableData);
+
+                $('#select-all-events').addClass("fa-square-o");
+                $('#select-all-events').removeClass("fa-check-square");
 
                 if (self.selectedSubmenu === "") {
                     $('#events-event-settings').css("display", "none");
@@ -7336,7 +7440,6 @@ app.addAppSwitchCallback(function(appId) {
  * @returns {boolean} true - no changes, moving forward
  */
 function checkIfEventViewHaveNotUpdatedChanges() {
-
     if (app.eventsBlueprintView && app.eventsBlueprintView.preventHashChange === true) {
         var movemeto = Backbone.history.getFragment();
         if (movemeto !== "/analytics/events/blueprint") {
