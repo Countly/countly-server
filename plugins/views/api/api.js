@@ -1339,43 +1339,46 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         haveViews = true;
                     }
                 }
+
+                //filter events and call functions to get view names
+                var promises = [];
+                params.qstring.events = params.qstring.events.filter(function(currEvent) {
+                    if (currEvent.timestamp) {
+                        params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
+                    }
+                    if (currEvent.key === "[CLY]_view") {
+                        if (currEvent.segmentation && currEvent.segmentation.name) {
+                            currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
+                            //bug from SDK possibly reporting timestamp instead of duration	
+                            if (currEvent.dur && (currEvent.dur + "").length >= 10) {
+                                currEvent.dur = 0;
+                            }
+                            promises.push(processView(params, currEvent));
+                        }
+                        return false;
+                    }
+                    else if (currEvent.key === "[CLY]_action") {
+                        if (currEvent.segmentation && (currEvent.segmentation.name || currEvent.segmentation.view) && currEvent.segmentation.type && currEvent.segmentation.type === 'scroll') {
+                            currEvent.scroll = 0;
+                            if (currEvent.segmentation.y && currEvent.segmentation.height) {
+                                var height = parseInt(currEvent.segmentation.height, 10);
+                                if (height !== 0) {
+                                    currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / height;
+                                }
+                            }
+                            promises.push(processView(params, currEvent));
+                        }
+                    }
+                    return true;
+                });
+
                 if (haveViews) {
                     common.readBatcher.getOne("views", {'_id': common.db.ObjectID(params.app_id)}, (err3, viewInfo) => {
-                        var promises = [];
-
-                        params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                            if (currEvent.timestamp) {
-                                params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
-                            }
-                            if (currEvent.key === "[CLY]_view") {
-                                if (currEvent.segmentation && currEvent.segmentation.name) {
-                                    currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
-                                    //bug from SDK possibly reporting timestamp instead of duration
-                                    if (currEvent.dur && (currEvent.dur + "").length >= 10) {
-                                        currEvent.dur = 0;
-                                    }
-                                    promises.push(processView(params, currEvent));
-                                }
-                                return false;
-                            }
-                            else if (currEvent.key === "[CLY]_action") {
-                                if (currEvent.segmentation && (currEvent.segmentation.name || currEvent.segmentation.view) && currEvent.segmentation.type && currEvent.segmentation.type === 'scroll') {
-                                    currEvent.scroll = 0;
-                                    if (currEvent.segmentation.y && currEvent.segmentation.height) {
-                                        var height = parseInt(currEvent.segmentation.height, 10);
-                                        if (height !== 0) {
-                                            currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / height;
-                                        }
-                                    }
-                                    promises.push(processView(params, currEvent));
-                                }
-                            }
-                            return true;
-                        });
-
                         //Matches correct view naming
                         Promise.all(promises).then(function(results) {
                             var runDrill = [];
+                            var haveVisit = false;
+                            var lastView = {};
                             for (let p = 0; p < results.length; p++) {
                                 if (results[p] !== false) {
 
@@ -1389,12 +1392,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         }
                                         //geting all segment info
                                         if (results[p].segmentation.visit) {
-                                            var lastView = {};
+                                            haveVisit = true;
                                             lastView[results[p].viewAlias + '.ts'] = params.time.timestamp;
-                                            var currEvent = results[p];
-                                            common.db.collection('app_userviews' + params.app_id).findAndModify({'_id': params.app_user.uid}, {}, {$max: lastView}, {upsert: true, new: false}, function(err2, view2) {
-                                                recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
-                                            });
                                         }
                                         else {
                                             recordMetrics(params, results[p], params.app_user, null, viewInfo);
@@ -1405,6 +1404,17 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     }
                                 }
                             }
+
+                            if (haveVisit) {
+                                common.db.collection('app_userviews' + params.app_id).findAndModify({'_id': params.app_user.uid}, {}, {$max: lastView}, {upsert: true, new: false}, function(err2, view2) {
+                                    for (let p = 0; p < results.length; p++) {
+                                        var currEvent = results[p];
+                                        recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
+                                    }
+                                });
+                            }
+
+
                             if (runDrill.length > 0) {
                                 plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: runDrill});
                             }
