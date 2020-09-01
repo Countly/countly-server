@@ -283,6 +283,28 @@ class ReadBatcher extends EventEmitter {
     }
 
     /**
+     *  Invalidate specific cache
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {object} query - query for the document
+     *  @param {object} projection - which fields to return
+     *  @param {bool} multi - true if multiple documents
+     */
+    invalidate(collection, query, projection, multi) {
+        if (!this.onMaster || cluster.isMaster) {
+            var id = JSON.stringify(query) + "_" + multi;
+            if (!this.data[collection]) {
+                this.data[collection] = {};
+            }
+            if (this.data[collection][id] && this.data[collection][id].data) {
+                delete this.data[collection][id];
+            }
+        }
+        else {
+            process.send({ cmd: "batch_invalidate", data: {collection, query, projection, multi} });
+        }
+    }
+
+    /**
      *  Get data from cache or from db and cache it
      *  @param {string} collection - name of the collection where to update data
      *  @param {object} query - query for the document
