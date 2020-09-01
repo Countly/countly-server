@@ -2,13 +2,13 @@
     <tg-view></tg-view>
     <table-view v-on:open-drawer="openDrawer"></table-view>
     <example-drawer v-on:close="closeDrawer" v-on:submit="onDrawerSubmit" v-bind="drawers.main">
-        <template slot-scope="{ editedObject, $v, constants }">
+        <template slot-scope="drawerScope">
             <cly-content id="step1" name="First Step">
                 <div class="section">
                     <div class="label">Name</div> 
                     <div>
-                        <cly-text-field v-model="$v.editedObject.name.$model" placeholder="Some required value"></cly-text-field>
-                        <div class="validation-error" v-if="$v.editedObject.name.$anyError">Name is required.</div>
+                        <cly-text-field v-model="drawerScope.$v.editedObject.name.$model" placeholder="Some required value"></cly-text-field>
+                        <div class="validation-error" v-if="drawerScope.$v.editedObject.name.$anyError">Name is required.</div>
                     </div>
                 </div>
                 <div class="section">
@@ -17,21 +17,21 @@
                         <div class="panel-body">
                             <div class="label">Field 1</div> 
                             <div>
-                                <cly-text-field v-model="$v.editedObject.field1.$model" placeholder="Some required value"></cly-text-field>
-                                <div class="validation-error" v-if="$v.editedObject.field1.$anyError">Field 1 is required.</div>
+                                <cly-text-field v-model="drawerScope.$v.editedObject.field1.$model" placeholder="Some required value"></cly-text-field>
+                                <div class="validation-error" v-if="drawerScope.$v.editedObject.field1.$anyError">Field 1 is required.</div>
                             </div>
                             <br>
                             <div class="label">Field 2</div> 
                             <div>
-                                <cly-text-field v-model="$v.editedObject.field2.$model" placeholder="Some required value"></cly-text-field>
-                                <div class="validation-error" v-if="$v.editedObject.field2.$anyError">Field 2 is required.</div>
+                                <cly-text-field v-model="drawerScope.$v.editedObject.field2.$model" placeholder="Some required value"></cly-text-field>
+                                <div class="validation-error" v-if="drawerScope.$v.editedObject.field2.$anyError">Field 2 is required.</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="section">
                     <pre>
-                        {{editedObject}}
+                        {{drawerScope.editedObject}}
                     </pre>
                 </div>
             </cly-content>
@@ -39,12 +39,12 @@
                 <div class="section">
                     <div class="label">Description</div> 
                     <div>
-                        <cly-text-area v-model="editedObject.description" placeholder="A brief description (optional)"></cly-text-area>
+                        <cly-text-area v-model="drawerScope.editedObject.description" placeholder="A brief description (optional)"></cly-text-area>
                     </div>
                 </div>
                 <div class="section">
                     <pre>
-                        {{editedObject}}
+                        {{drawerScope.editedObject}}
                     </pre>
                 </div>
             </cly-content>
@@ -53,23 +53,23 @@
                     <div class="panel">
                         <div class="panel-heading">Allowed Props</div>
                         <div class="panel-body">
-                            <cly-check-list v-model="$v.editedObject.selectedProps.$model" :items="constants.availableProps"></cly-check-list>
-                            <div class="validation-error" v-if="$v.editedObject.selectedProps.$anyError">You must select at least 2 props.</div>
+                            <cly-check-list v-model="drawerScope.$v.editedObject.selectedProps.$model" :items="drawerScope.constants.availableProps"></cly-check-list>
+                            <div class="validation-error" v-if="drawerScope.$v.editedObject.selectedProps.$anyError">You must select at least 2 props.</div>
                         </div>
                     </div>
                 </div>
                 <div class="section">
                     <div class="label">Visibility</div> 
                     <div>
-                        <cly-radio v-model="editedObject.visibility" :items="constants.visibilityOptions"></cly-radio>
+                        <cly-radio v-model="drawerScope.editedObject.visibility" :items="drawerScope.constants.visibilityOptions"></cly-radio>
                     </div>
                 </div>
                 <div class="section">
-                    <cly-check v-model="editedObject.status" skin="tick" label="Set as active"></cly-check>
+                    <cly-check v-model="drawerScope.editedObject.status" skin="tick" label="Set as active"></cly-check>
                 </div>
                 <div class="section">
                     <pre>
-                        {{editedObject}}
+                        {{drawerScope.editedObject}}
                     </pre>
                 </div>
             </cly-content>
