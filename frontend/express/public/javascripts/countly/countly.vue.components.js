@@ -380,6 +380,7 @@
     Vue.use(window.vuelidate.default);
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
 
+    // @vue/component
     var autoRefreshMixin = {
         mounted: function() {
             var self = this;
@@ -392,6 +393,7 @@
         }
     };
 
+    // @vue/component
     var i18nMixin = {
         methods: {
             i18n: function() {
@@ -400,6 +402,7 @@
         }
     };
 
+    // @vue/component
     var refreshOnParentActiveMixin = {
         watch: {
             isParentActive: function(newState) {
@@ -413,6 +416,7 @@
         }
     };
 
+    // @vue/component
     var hasDrawersMixin = function(names) {
         if (!Array.isArray(names)) {
             names = [names];
@@ -580,165 +584,176 @@
     var _uniqueComponentId = 0;
 
     var countlyBaseComponent = Vue.extend({
-        beforeCreate: function() {
-            this.ucid = _uniqueComponentId.toString();
-            _uniqueComponentId += 1;
-        },
         computed: {
             componentId: function() {
                 return "cly-cmp-" + _uniqueComponentId;
             }
-        }
-    });
-
-    var countlyBaseView = countlyBaseComponent.extend({
-        mixins: [
-            _mixins.autoRefresh,
-            _mixins.i18n
-        ],
-        props: {
-            name: { type: String, default: null},
-            id: { type: String, default: null }
         },
-        computed: {
-            isParentActive: function() {
-                return this.$parent.isActive !== false;
-            },
-            vName: function() {
-                return this.name;
-            },
-            vId: function() {
-                return this.id;
-            }
+        beforeCreate: function() {
+            this.ucid = _uniqueComponentId.toString();
+            _uniqueComponentId += 1;
         }
     });
 
-    var _components = {
-        BaseDrawer: countlyBaseComponent.extend({
+    var countlyBaseView = countlyBaseComponent.extend(
+        // @vue/component
+        {
             mixins: [
+                _mixins.autoRefresh,
                 _mixins.i18n
             ],
-            template: '<div class="cly-vue-drawer" v-bind:class="{open: isOpened}">\
-                            <div class="title">\
-                                <span>{{title}}</span>\
-                                <div class="close" v-on:click="tryClosing">\
-                                    <i class="ion-ios-close-empty"></i>\
-                                </div>\
-                            </div>\
-                            <div class="steps-header" v-if="isMultiStep">\
-                                <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
-                                    <div class="wrapper">\
-                                        <span class="index">{{i + 1}}</span>\
-                                        <span class="done-icon"><i class="fa fa-check"></i></span>\
-                                        <span class="text">{{currentContent.name}}</span>\
-                                    </div>\
-                                </div>\
-                            </div>\
-                            <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                <slot :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
-                            </div>\
-                            <div class="buttons multi-step" v-if="isMultiStep">\
-                                <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
-                                <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
-                                <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
-                            </div>\
-                            <div class="buttons single-step" v-if="!isMultiStep">\
-                                <cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
-                            </div>\
-                        </div>',
             props: {
-                isOpened: {type: Boolean, required: true},
-                initialEditedObject: {type: Object},
-                name: {type: String, required: true}
-            },
-            data: function() {
-                return {
-                    title: '',
-                    saveButtonLabel: this.i18n("common.drawer.confirm"),
-                    editedObject: this.copyOfEdited(),
-                    currentStepIndex: 0,
-                    stepContents: [],
-                    constants: {}
-                };
+                name: { type: String, default: null},
+                id: { type: String, default: null }
             },
             computed: {
-                activeContentId: function() {
-                    if (this.activeContent) {
-                        return this.activeContent.tId;
-                    }
-                    return null;
+                isParentActive: function() {
+                    return this.$parent.isActive !== false;
                 },
-                isCurrentStepValid: function() {
-                    if (!this.stepValidations || !Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
-                        // No validation scenario defined
-                        return true;
-                    }
-                    return this.stepValidations[this.activeContentId];
+                vName: function() {
+                    return this.name;
                 },
-                isLastStep: function() {
-                    return this.stepContents.length > 1 && this.currentStepIndex === this.stepContents.length - 1;
-                },
-                activeContent: function() {
-                    if (this.currentStepIndex > this.stepContents.length - 1) {
-                        return null;
-                    }
-                    return this.stepContents[this.currentStepIndex];
-                },
-                isMultiStep: function() {
-                    return this.stepContents.length > 1;
-                }
-            },
-            methods: {
-                tryClosing: function() {
-                    this.$emit("close", this.name);
-                },
-                copyOfEdited: function() {
-                    return JSON.parse(JSON.stringify(this.initialEditedObject));
-                },
-                setStep: function(newIndex) {
-                    if (newIndex >= 0 && newIndex < this.stepContents.length) {
-                        this.currentStepIndex = newIndex;
-                    }
-                },
-                prevStep: function() {
-                    this.setStep(this.currentStepIndex - 1);
-                },
-                nextStep: function() {
-                    if (this.isCurrentStepValid) {
-                        this.setStep(this.currentStepIndex + 1);
-                    }
-                },
-                reset: function() {
-                    this.$v.$reset();
-                    this.setStep(0);
-                },
-                submit: function() {
-                    if (!this.$v.$invalid) {
-                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
-                        this.tryClosing();
-                    }
-                },
-                afterEditedObjectChanged: function() { },
-            },
-            mounted: function() {
-                this.stepContents = this.$children.filter(function(child) {
-                    return child.isContent;
-                });
-                this.setStep(this.stepContents[0].tId);
-            },
-            watch: {
-                initialEditedObject: function() {
-                    this.editedObject = this.copyOfEdited();
-                    this.afterEditedObjectChanged(this.editedObject);
-                    this.reset();
-                },
-                isOpened: function(newState) {
-                    if (!newState) {
-                        this.reset();
-                    }
+                vId: function() {
+                    return this.id;
                 }
             }
-        })
+        }
+    );
+
+    var _components = {
+        BaseDrawer: countlyBaseComponent.extend(
+            // @vue/component
+            {
+                mixins: [
+                    _mixins.i18n
+                ],
+                props: {
+                    isOpened: {type: Boolean, required: true},
+                    initialEditedObject: {
+                        type: Object,
+                        default: function() {
+                            return {};
+                        }
+                    },
+                    name: {type: String, required: true}
+                },
+                data: function() {
+                    return {
+                        title: '',
+                        saveButtonLabel: this.i18n("common.drawer.confirm"),
+                        editedObject: this.copyOfEdited(),
+                        currentStepIndex: 0,
+                        stepContents: [],
+                        constants: {}
+                    };
+                },
+                computed: {
+                    activeContentId: function() {
+                        if (this.activeContent) {
+                            return this.activeContent.tId;
+                        }
+                        return null;
+                    },
+                    isCurrentStepValid: function() {
+                        if (!this.stepValidations || !Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
+                            // No validation scenario defined
+                            return true;
+                        }
+                        return this.stepValidations[this.activeContentId];
+                    },
+                    isLastStep: function() {
+                        return this.stepContents.length > 1 && this.currentStepIndex === this.stepContents.length - 1;
+                    },
+                    activeContent: function() {
+                        if (this.currentStepIndex > this.stepContents.length - 1) {
+                            return null;
+                        }
+                        return this.stepContents[this.currentStepIndex];
+                    },
+                    isMultiStep: function() {
+                        return this.stepContents.length > 1;
+                    }
+                },
+                watch: {
+                    initialEditedObject: function() {
+                        this.editedObject = this.copyOfEdited();
+                        this.afterEditedObjectChanged(this.editedObject);
+                        this.reset();
+                    },
+                    isOpened: function(newState) {
+                        if (!newState) {
+                            this.reset();
+                        }
+                    }
+                },
+                mounted: function() {
+                    this.stepContents = this.$children.filter(function(child) {
+                        return child.isContent;
+                    });
+                    this.setStep(this.stepContents[0].tId);
+                },
+                methods: {
+                    tryClosing: function() {
+                        this.$emit("close", this.name);
+                    },
+                    copyOfEdited: function() {
+                        return JSON.parse(JSON.stringify(this.initialEditedObject));
+                    },
+                    setStep: function(newIndex) {
+                        if (newIndex >= 0 && newIndex < this.stepContents.length) {
+                            this.currentStepIndex = newIndex;
+                        }
+                    },
+                    prevStep: function() {
+                        this.setStep(this.currentStepIndex - 1);
+                    },
+                    nextStep: function() {
+                        if (this.isCurrentStepValid) {
+                            this.setStep(this.currentStepIndex + 1);
+                        }
+                    },
+                    reset: function() {
+                        this.$v.$reset();
+                        this.setStep(0);
+                    },
+                    submit: function() {
+                        if (!this.$v.$invalid) {
+                            this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                            this.tryClosing();
+                        }
+                    },
+                    afterEditedObjectChanged: function() { },
+                },
+                template: '<div class="cly-vue-drawer" v-bind:class="{open: isOpened}">\
+                                <div class="title">\
+                                    <span>{{title}}</span>\
+                                    <div class="close" v-on:click="tryClosing">\
+                                        <i class="ion-ios-close-empty"></i>\
+                                    </div>\
+                                </div>\
+                                <div class="steps-header" v-if="isMultiStep">\
+                                    <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
+                                        <div class="wrapper">\
+                                            <span class="index">{{i + 1}}</span>\
+                                            <span class="done-icon"><i class="fa fa-check"></i></span>\
+                                            <span class="text">{{currentContent.name}}</span>\
+                                        </div>\
+                                    </div>\
+                                </div>\
+                                <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
+                                    <slot :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                </div>\
+                                <div class="buttons multi-step" v-if="isMultiStep">\
+                                    <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
+                                    <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                    <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
+                                </div>\
+                                <div class="buttons single-step" v-if="!isMultiStep">\
+                                    <cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                </div>\
+                            </div>'
+            }
+        )
     };
 
     var _views = {
@@ -755,979 +770,1026 @@
 
     // New components
 
-    Vue.component("cly-datatable-w", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-datatable-w" ref="wrapper">\
-                        <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
-                            <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
-                        </div>\
-                        <table ref="dtable" cellpadding="0" cellspacing="0" class="d-table-vue-wrapper"></table>\
-                    </div>',
-        data: function() {
-            return {
-                isInitialized: false,
-                pendingInit: false,
-                nLocks: 0,
-                tableInstance: null,
-                optionItems: [],
-                focusedRow: null,
-                customActions: null,
-                lastCol: 0,
-                finalizedNativeColumns: null
-            };
-        },
-        computed: {
-            hasOptions: function() {
-                return this.optionItems.length > 0;
+    Vue.component("cly-datatable-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                rows: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                columns: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                keyFn: { type: Function, default: null}
             },
-            isLocked: function() {
-                return this.nLocks > 0;
-            }
-        },
-        props: {
-            rows: {
-                type: Array,
-                default: function() {
-                    return [];
+            data: function() {
+                return {
+                    isInitialized: false,
+                    pendingInit: false,
+                    nLocks: 0,
+                    tableInstance: null,
+                    optionItems: [],
+                    focusedRow: null,
+                    customActions: null,
+                    lastCol: 0,
+                    finalizedNativeColumns: null
+                };
+            },
+            computed: {
+                hasOptions: function() {
+                    return this.optionItems.length > 0;
+                },
+                isLocked: function() {
+                    return this.nLocks > 0;
                 }
             },
-            columns: { type: Array },
-            keyFn: { type: Function, default: null}
-        },
-        methods: {
-            initialize: function() {
-                this.pendingInit = true;
+            watch: {
+                rows: function() {
+                    this.refresh();
+                }
+            },
+            mounted: function() {
+                this.initialize();
+            },
+            beforeDestroy: function() {
+                this.tableInstance.fnDestroy();
+            },
+            methods: {
+                initialize: function() {
+                    this.pendingInit = true;
 
-                var self = this,
-                    nativeColumns = [];
+                    var self = this,
+                        nativeColumns = [];
 
-                self.customActions = [];
+                    self.customActions = [];
 
-                this.columns.forEach(function(column) {
-                    var nativeColumn = null;
-                    if (!column.type) {
-                        return;
-                    }
-                    else if (column.type === "field") {
-                        nativeColumn = {
-                            "mData": function(row) {
-                                return row[column.fieldKey];
-                            }
-                        };
-                    }
-                    else if (column.type === "options") {
-                        if (self.hasOptions) {
-                            //disallow multiple options
+                    this.columns.forEach(function(column) {
+                        var nativeColumn = null;
+                        if (!column.type) {
                             return;
                         }
-                        var checkedItems = (column.items || []).filter(function(item) {
-                            return !item.disabled;
-                        });
-                        if (checkedItems.length === 0) {
-                            //ignore empty lists;
-                            return;
-                        }
-                        self.optionItems = checkedItems;
-                        nativeColumn = {
-                            "mData": function() {
-                                return '<a class="cly-list-options"></a>';
-                            },
-                            "sType": "string",
-                            "sClass": "shrink center",
-                            "bSortable": false
-                        };
-                    }
-                    else if (column.type === "checkbox") {
-                        nativeColumn = {
-                            "mData": function(row, type) {
-                                if (type === "display") {
-                                    var stringBuffer = ['<div class="on-off-switch">'];
-                                    var rowId = self.componentId + "-row-" + self.keyFn(row);
-                                    if (row[column.fieldKey]) {
-                                        stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '" checked>');
-                                    }
-                                    else {
-                                        stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '">');
-                                    }
-                                    stringBuffer.push('<label class="on-off-switch-label" for="' + rowId + '"></label>');
-                                    stringBuffer.push('</div>');
-                                    return stringBuffer.join('');
-                                }
-                                else {
+                        else if (column.type === "field") {
+                            nativeColumn = {
+                                "mData": function(row) {
                                     return row[column.fieldKey];
                                 }
-                            },
-                            "sType": "string",
-                            "sClass": "shrink",
-                            "bSortable": false
-                        };
-                        if (column.onChange) {
-                            self.customActions.push({
-                                "selector": ".on-off-switch-checkbox",
-                                "event": "change",
-                                "_columnSelector": ".cly-dt-col-" + self.lastCol,
-                                "_handlerFn": function() {
-                                    var rowEl = $(this).parents("tr");
-                                    var cbx = $(this);
-                                    var newValue = $(this).is(":checked");
-                                    column.onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
-                                        if (revert) {
-                                            cbx.prop("checked", !newValue);
-                                        }
-                                    });
-                                }
-                            });
+                            };
                         }
-                    }
-                    else if (column.type === "raw") {
-                        nativeColumn = {
-                            "mData": column.viewFn
-                        };
-                        if (column.customActions) {
-                            column.customActions.forEach(function(customAction) {
+                        else if (column.type === "options") {
+                            if (self.hasOptions) {
+                                //disallow multiple options
+                                return;
+                            }
+                            var checkedItems = (column.items || []).filter(function(item) {
+                                return !item.disabled;
+                            });
+                            if (checkedItems.length === 0) {
+                                //ignore empty lists;
+                                return;
+                            }
+                            self.optionItems = checkedItems;
+                            nativeColumn = {
+                                "mData": function() {
+                                    return '<a class="cly-list-options"></a>';
+                                },
+                                "sType": "string",
+                                "sClass": "shrink center",
+                                "bSortable": false
+                            };
+                        }
+                        else if (column.type === "checkbox") {
+                            nativeColumn = {
+                                "mData": function(row, type) {
+                                    if (type === "display") {
+                                        var stringBuffer = ['<div class="on-off-switch">'];
+                                        var rowId = self.componentId + "-row-" + self.keyFn(row);
+                                        if (row[column.fieldKey]) {
+                                            stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '" checked>');
+                                        }
+                                        else {
+                                            stringBuffer.push('<input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '">');
+                                        }
+                                        stringBuffer.push('<label class="on-off-switch-label" for="' + rowId + '"></label>');
+                                        stringBuffer.push('</div>');
+                                        return stringBuffer.join('');
+                                    }
+                                    else {
+                                        return row[column.fieldKey];
+                                    }
+                                },
+                                "sType": "string",
+                                "sClass": "shrink",
+                                "bSortable": false
+                            };
+                            if (column.onChange) {
                                 self.customActions.push({
-                                    "selector": customAction.selector,
-                                    "event": customAction.event,
+                                    "selector": ".on-off-switch-checkbox",
+                                    "event": "change",
                                     "_columnSelector": ".cly-dt-col-" + self.lastCol,
                                     "_handlerFn": function() {
                                         var rowEl = $(this).parents("tr");
-                                        var rowData = rowEl.data("cly-row-data");
-                                        self.$emit(customAction.action.event, rowData, function(options) {
-                                            if (options.undo) {
-                                                self.softAction(rowData, options.undo.message, {
-                                                    commit: function() {
-                                                        self.$emit(options.undo.commit, rowData);
-                                                    }
-                                                });
+                                        var cbx = $(this);
+                                        var newValue = $(this).is(":checked");
+                                        column.onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
+                                            if (revert) {
+                                                cbx.prop("checked", !newValue);
                                             }
                                         });
                                     }
                                 });
+                            }
+                        }
+                        else if (column.type === "raw") {
+                            nativeColumn = {
+                                "mData": column.viewFn
+                            };
+                            if (column.customActions) {
+                                column.customActions.forEach(function(customAction) {
+                                    self.customActions.push({
+                                        "selector": customAction.selector,
+                                        "event": customAction.event,
+                                        "_columnSelector": ".cly-dt-col-" + self.lastCol,
+                                        "_handlerFn": function() {
+                                            var rowEl = $(this).parents("tr");
+                                            var rowData = rowEl.data("cly-row-data");
+                                            self.$emit(customAction.action.event, rowData, function(options) {
+                                                if (options.undo) {
+                                                    self.softAction(rowData, options.undo.message, {
+                                                        commit: function() {
+                                                            self.$emit(options.undo.commit, rowData);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+                        }
+
+                        if (column.options) {
+                            // default mappings to dt
+                            if (column.options.dataType) {
+                                nativeColumn.sType = column.options.dataType;
+                            }
+                            if (column.options.title) {
+                                nativeColumn.sTitle = column.options.title;
+                            }
+                        }
+
+                        if (column.dt) {
+                            _.extend(nativeColumn, column.dt);
+                        }
+
+                        if (!nativeColumn.sClass) {
+                            nativeColumn.sClass = "";
+                        }
+                        nativeColumn.sClass += " cly-dt-col cly-dt-col-" + self.lastCol;
+                        self.lastCol++;
+                        nativeColumns.push(nativeColumn);
+                    });
+
+                    this.finalizedNativeColumns = nativeColumns;
+
+                    this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {
+                        "aaData": this.rows,
+                        "aoColumns": nativeColumns,
+                        "fnInitComplete": function(oSettings, json) {
+                            $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+                            self.$nextTick(function() {
+                                CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
+                                self.initializeEventAdapter();
+                            });
+
+                            self.isInitialized = true;
+                            self.pendingInit = false;
+                        },
+                        "fnRowCallback": function(nRow, aData) {
+                            var rowEl = $(nRow);
+                            rowEl.attr("data-cly-row-id", self.keyFn(aData));
+                            rowEl.data("cly-row-data", aData);
+                        },
+                    }));
+
+                    this.tableInstance.stickyTableHeaders();
+                },
+                initializeEventAdapter: function() {
+                    var self = this;
+
+                    if (self.hasOptions) {
+                        $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
+                            var rowData = $(data.target).parents("tr").data("cly-row-data");
+                            self.focusedRow = rowData;
+                        });
+                    }
+                    self.customActions.forEach(function(customAction) {
+                        $(self.$refs.dtable).find("tbody").on(
+                            customAction.event,
+                            customAction._columnSelector + " " + customAction.selector,
+                            customAction._handlerFn);
+                    });
+                },
+                refresh: function() {
+                    if (this.isLocked) {
+                        // for pending undo operations
+                        return;
+                    }
+                    if (this.isInitialized && !this.pendingInit) {
+                        CountlyHelpers.refreshTable(this.tableInstance, this.rows);
+                    }
+                    else if (!this.isInitialized && !this.pendingInit) {
+                        this.initialize();
+                    }
+                },
+                softAction: function(row, message, callbacks) {
+                    var self = this;
+                    self.nLocks++;
+                    var undoRow = $("<tr><td class='undo-row' colspan='" + self.finalizedNativeColumns.length + "'>" + message + "&nbsp;<a>" + jQuery.i18n.map["common.undo"] + "</a></td></tr>");
+                    var triggeringRow = $(self.tableInstance).find('tbody tr[data-cly-row-id=' + self.keyFn(row) + ']');
+                    triggeringRow.after(undoRow);
+                    triggeringRow.hide();
+                    var commitWrapped = function() {
+                        undoRow.remove();
+                        self.nLocks--;
+                        callbacks.commit();
+                        self.refresh();
+                    };
+                    var commitTimeout = setTimeout(commitWrapped, 2000);
+                    undoRow.find('a').click(function() {
+                        clearTimeout(commitTimeout);
+                        undoRow.remove();
+                        self.nLocks--;
+                        triggeringRow.show();
+                        if (callbacks.undo) {
+                            callbacks.undo();
+                        }
+                    });
+                },
+                optionEvent: function(action) {
+                    var self = this,
+                        focusedRef = this.focusedRow;
+
+                    this.$emit(action.event, focusedRef, function(options) {
+                        if (options.undo) {
+                            self.softAction(focusedRef, options.undo.message, {
+                                commit: function() {
+                                    self.$emit(options.undo.commit, focusedRef);
+                                }
                             });
                         }
-                    }
-
-                    if (column.options) {
-                        // default mappings to dt
-                        if (column.options.dataType) {
-                            nativeColumn.sType = column.options.dataType;
-                        }
-                        if (column.options.title) {
-                            nativeColumn.sTitle = column.options.title;
-                        }
-                    }
-
-                    if (column.dt) {
-                        _.extend(nativeColumn, column.dt);
-                    }
-
-                    if (!nativeColumn.sClass) {
-                        nativeColumn.sClass = "";
-                    }
-                    nativeColumn.sClass += " cly-dt-col cly-dt-col-" + self.lastCol;
-                    self.lastCol++;
-                    nativeColumns.push(nativeColumn);
-                });
-
-                this.finalizedNativeColumns = nativeColumns;
-
-                this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {
-                    "aaData": this.rows,
-                    "aoColumns": nativeColumns,
-                    "fnInitComplete": function(oSettings, json) {
-                        $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
-                        self.$nextTick(function() {
-                            CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
-                            self.initializeEventAdapter();
-                        });
-
-                        self.isInitialized = true;
-                        self.pendingInit = false;
-                    },
-                    "fnRowCallback": function(nRow, aData) {
-                        var rowEl = $(nRow);
-                        rowEl.attr("data-cly-row-id", self.keyFn(aData));
-                        rowEl.data("cly-row-data", aData);
-                    },
-                }));
-
-                this.tableInstance.stickyTableHeaders();
-            },
-            initializeEventAdapter: function() {
-                var self = this;
-
-                if (self.hasOptions) {
-                    $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
-                        var rowData = $(data.target).parents("tr").data("cly-row-data");
-                        self.focusedRow = rowData;
                     });
                 }
-                self.customActions.forEach(function(customAction) {
-                    $(self.$refs.dtable).find("tbody").on(
-                        customAction.event,
-                        customAction._columnSelector + " " + customAction.selector,
-                        customAction._handlerFn);
-                });
             },
-            refresh: function() {
-                if (this.isLocked) {
-                    // for pending undo operations
-                    return;
-                }
-                if (this.isInitialized && !this.pendingInit) {
-                    CountlyHelpers.refreshTable(this.tableInstance, this.rows);
-                }
-                else if (!this.isInitialized && !this.pendingInit) {
-                    this.initialize();
-                }
+            template: '<div class="cly-vue-datatable-w" ref="wrapper">\
+                            <div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\
+                                <a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\
+                            </div>\
+                            <table ref="dtable" cellpadding="0" cellspacing="0" class="d-table-vue-wrapper"></table>\
+                        </div>'
+        }
+    ));
+
+    Vue.component("cly-tabs", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                value: { default: null, type: String },
+                skin: { default: "main", type: String}
             },
-            softAction: function(row, message, callbacks) {
-                var self = this;
-                self.nLocks++;
-                var undoRow = $("<tr><td class='undo-row' colspan='" + self.finalizedNativeColumns.length + "'>" + message + "&nbsp;<a>" + jQuery.i18n.map["common.undo"] + "</a></td></tr>");
-                var triggeringRow = $(self.tableInstance).find('tbody tr[data-cly-row-id=' + self.keyFn(row) + ']');
-                triggeringRow.after(undoRow);
-                triggeringRow.hide();
-                var commitWrapped = function() {
-                    undoRow.remove();
-                    self.nLocks--;
-                    callbacks.commit();
-                    self.refresh();
+            data: function() {
+                return {
+                    tabs: []
                 };
-                var commitTimeout = setTimeout(commitWrapped, 2000);
-                undoRow.find('a').click(function() {
-                    clearTimeout(commitTimeout);
-                    undoRow.remove();
-                    self.nLocks--;
-                    triggeringRow.show();
-                    if (callbacks.undo) {
-                        callbacks.undo();
-                    }
-                });
             },
-            optionEvent: function(action) {
-                var self = this,
-                    focusedRef = this.focusedRow;
-
-                this.$emit(action.event, focusedRef, function(options) {
-                    if (options.undo) {
-                        self.softAction(focusedRef, options.undo.message, {
-                            commit: function() {
-                                self.$emit(options.undo.commit, focusedRef);
-                            }
-                        });
+            computed: {
+                skinClass: function() {
+                    if (["main", "graphs"].indexOf(this.skin) > -1) {
+                        return "tabs-" + this.skin + "-skin";
                     }
-                });
-            }
-        },
-        watch: {
-            rows: function() {
-                this.refresh();
-            }
-        },
-        mounted: function() {
-            this.initialize();
-        },
-        beforeDestroy: function() {
-            this.tableInstance.fnDestroy();
-        }
-    }));
-
-    Vue.component("cly-tabs", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]">\
-                        <ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]">\
-                            <li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}">\
-                                <a v-html="tab.tName"></a>\
-                            </li>\
-                        </ul>\
-                        <div class="cly-vue-tabs-container">\
-                            <slot/>\
-                        </div>\
-                    </div>',
-        mixins: [
-            _mixins.i18n
-        ],
-        data: function() {
-            return {
-                tabs: []
-            };
-        },
-        props: {
-            value: { default: null },
-            skin: { default: "main", type: String}
-        },
-        computed: {
-            skinClass: function() {
-                if (["main", "graphs"].indexOf(this.skin) > -1) {
-                    return "tabs-" + this.skin + "-skin";
+                    return "tabs-main-skin";
+                },
+                numberOfTabsClass: function() {
+                    return "tabs-" + this.tabs.length;
+                },
+                activeContentId: function() {
+                    return this.value;
                 }
-                return "tabs-main-skin";
             },
-            numberOfTabsClass: function() {
-                return "tabs-" + this.tabs.length;
+            mounted: function() {
+                this.tabs = this.$children;
+                if (!this.value) {
+                    this.$emit("input", this.tabs[0].tId);
+                }
             },
-            activeContentId: function() {
-                return this.value;
-            }
-        },
-        methods: {
-            setTab: function(tId) {
-                this.$emit("input", tId);
-            }
-        },
-        mounted: function() {
-            this.tabs = this.$children;
-            if (!this.value) {
-                this.$emit("input", this.tabs[0].tId);
-            }
+            methods: {
+                setTab: function(tId) {
+                    this.$emit("input", tId);
+                }
+            },
+            template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]">\
+                            <ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]">\
+                                <li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}">\
+                                    <a v-html="tab.tName"></a>\
+                                </li>\
+                            </ul>\
+                            <div class="cly-vue-tabs-container">\
+                                <slot/>\
+                            </div>\
+                        </div>'
         }
-    }));
+    ));
 
-    Vue.component("cly-content", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-content" v-if="isActive || alwaysMounted">\
-                        <div v-show="isActive"><slot/></div>\
-                    </div>',
-        mixins: [
-            _mixins.i18n
-        ],
-        props: {
-            name: { type: String, default: null},
-            id: { type: String, default: null },
-            alwaysMounted: { type: Boolean, default: true }
-        },
-        data: function() {
-            return {
-                isContent: true
-            };
-        },
-        computed: {
-            isActive: function() {
-                return this.$parent.activeContentId === this.id;
+    Vue.component("cly-content", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                name: { type: String, default: null},
+                id: { type: String, default: null },
+                alwaysMounted: { type: Boolean, default: true }
             },
-            tName: function() {
-                return this.name;
+            data: function() {
+                return {
+                    isContent: true
+                };
             },
-            tId: function() {
-                return this.id;
-            }
+            computed: {
+                isActive: function() {
+                    return this.$parent.activeContentId === this.id;
+                },
+                tName: function() {
+                    return this.name;
+                },
+                tId: function() {
+                    return this.id;
+                }
+            },
+            template: '<div class="cly-vue-content" v-if="isActive || alwaysMounted">\
+                            <div v-show="isActive"><slot/></div>\
+                        </div>'
         }
-    }));
+    ));
 
-    Vue.component("cly-panel", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-panel widget">\
-                        <div class="widget-header">\
-                            <div class="left">\
-                                <div>\
-                                    <slot name="left-top">\
-                                        <div class="title">{{title}}</div>\
+    Vue.component("cly-panel", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                title: { type: String, required: true },
+                dateSelector: { type: Boolean, required: false, default: true },
+            },
+            template: '<div class="cly-vue-panel widget">\
+                            <div class="widget-header">\
+                                <div class="left">\
+                                    <div>\
+                                        <slot name="left-top">\
+                                            <div class="title">{{title}}</div>\
+                                        </slot>\
+                                    </div>\
+                                </div>\
+                                <div class="right">\
+                                    <slot name="right-top">\
+                                        <cly-global-date-selector-w v-once v-if="dateSelector"></cly-global-date-selector-w>\
                                     </slot>\
                                 </div>\
                             </div>\
-                            <div class="right">\
-                                <slot name="right-top">\
-                                    <cly-global-date-selector-w v-once v-if="dateSelector"></cly-global-date-selector-w>\
-                                </slot>\
+                            <div class="widget-content help-zone-vb">\
+                                <slot/>\
                             </div>\
-                        </div>\
-                        <div class="widget-content help-zone-vb">\
-                            <slot/>\
-                        </div>\
-                    </div>',
-        props: {
-            title: { type: String, required: true },
-            dateSelector: { type: Boolean, required: false, default: true },
-        },
-    }));
+                        </div>',
+        }
+    ));
 
-    Vue.component("cly-global-date-selector-w", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-global-date-selector-w help-zone-vs">\
-                        <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
-                            <i class="material-icons">date_range</i>\
-                            <span class="inst-selected-date">{{currentPeriodLabel}}</span>\
-                            <span class="down ion-chevron-down"></span>\
-                            <span class="up ion-chevron-up"></span>\
-                        </div>\
-                        <div class="inst-date-picker" v-show="isOpened">\
-                            <div class="date-selector-buttons">\
-                                <div class="button date-selector" v-for="item in fixedPeriods" :key="item.value" v-bind:class="{active: currentPeriod == item.value}" @click="setPeriod(item.value)">{{item.name}}</div>\
-                                <div class="button-container">\
-                                    <div class="icon-button green inst-date-submit" @click="setCustomPeriod()">{{i18n("common.apply")}}</div>\
-                                    <div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}</div>\
+    Vue.component("cly-global-date-selector-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            data: function() {
+                return {
+                    // UI state
+                    isOpened: false,
+
+                    // UI constants
+                    fixedPeriods: [
+                        {name: moment().subtract(1, "days").format("Do"), value: "yesterday"},
+                        {name: this.i18n("common.today"), value: "hour"},
+                        {name: this.i18n("taskmanager.last-7days"), value: "7days"},
+                        {name: this.i18n("taskmanager.last-30days"), value: "30days"},
+                        {name: this.i18n("taskmanager.last-60days"), value: "60days"},
+                        {name: moment().format("MMMM, YYYY"), value: "day"},
+                        {name: moment().year(), value: "month"},
+                    ],
+
+                    // Datepicker handles
+                    dateTo: null,
+                    dateFrom: null,
+
+                    // Picked values
+                    dateToSelected: null,
+                    dateFromSelected: null,
+
+                    // Labels
+                    dateFromLabel: '',
+                    dateToLabel: '',
+                };
+            },
+            computed: {
+                currentPeriod: function() {
+                    return this.$store.getters["countlyCommon/period"];
+                },
+                currentPeriodLabel: function() {
+                    return this.$store.getters["countlyCommon/periodLabel"];
+                },
+                toInternal: function() {
+                    return this.dateToSelected;
+                },
+                fromInternal: function() {
+                    return this.dateFromSelected;
+                }
+            },
+            watch: {
+                dateFromSelected: function(newValue) {
+                    var date = new Date(newValue),
+                        self = this;
+                    if (newValue > self.dateToSelected) {
+                        self.dateToSelected = newValue;
+                    }
+                    self.dateTo.datepicker("option", "minDate", date);
+                    self.dateFrom.datepicker("setDate", date);
+                    self.dateFromLabel = moment(newValue).format("MM/DD/YYYY");
+                },
+                dateToSelected: function(newValue) {
+                    var date = new Date(newValue),
+                        self = this;
+                    if (newValue < self.dateFromSelected) {
+                        self.dateFromSelected = newValue;
+                    }
+                    self.dateFrom.datepicker("option", "maxDate", date);
+                    self.dateTo.datepicker("setDate", date);
+                    self.dateToLabel = moment(newValue).format("MM/DD/YYYY");
+                },
+                isOpened: function() {
+                    var self = this;
+                    self.dateTo.datepicker("refresh");
+                    self.dateFrom.datepicker("refresh");
+                }
+            },
+            mounted: function() {
+                this._initPickers();
+
+                var periodObj = countlyCommon.getPeriod(),
+                    self = this;
+
+                if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
+                    self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
+                    self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10)) - 24 * 60 * 60 * 1000 + 1;
+                }
+                else {
+                    var date = new Date();
+                    date.setHours(0, 0, 0, 0);
+                    self.dateToSelected = date.getTime();
+                    var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
+                    extendDate.setHours(0, 0, 0, 0);
+                    self.dateFromSelected = extendDate.getTime();
+                }
+            },
+            beforeDestroy: function() {
+                this.dateTo.datepicker('hide').datepicker('destroy');
+                this.dateFrom.datepicker('hide').datepicker('destroy');
+            },
+            methods: {
+                _initPickers: function() {
+                    var self = this;
+
+                    var _onSelect = function(instance, selectedDate) {
+                        var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+                        date.setHours(0, 0, 0, 0);
+                        return date.getTime();
+                    };
+
+                    var _beforeShowDay = function(date, testFn) {
+                        var ts = date.getTime();
+                        if (testFn(ts)) {
+                            return [true, "in-range", ""];
+                        }
+                        else {
+                            return [true, "", ""];
+                        }
+                    };
+
+                    self.dateTo = $(this.$refs.instDateTo).datepicker({
+                        numberOfMonths: 1,
+                        showOtherMonths: true,
+                        maxDate: moment().toDate(),
+                        onSelect: function(selectedDate) {
+                            self.dateToSelected = _onSelect($(this).data("datepicker"), selectedDate);
+                        },
+                        beforeShowDay: function(date) {
+                            return _beforeShowDay(date, function(ts) {
+                                return ts < self.toInternal && ts >= self.fromInternal;
+                            });
+                        }
+                    });
+
+                    self.dateFrom = $(this.$refs.instDateFrom).datepicker({
+                        numberOfMonths: 1,
+                        showOtherMonths: true,
+                        maxDate: moment().subtract(1, 'days').toDate(),
+                        onSelect: function(selectedDate) {
+                            self.dateFromSelected = _onSelect($(this).data("datepicker"), selectedDate);
+                        },
+                        beforeShowDay: function(date) {
+                            return _beforeShowDay(date, function(ts) {
+                                return ts <= self.toInternal && ts > self.fromInternal;
+                            });
+                        }
+                    });
+
+                    $.datepicker.setDefaults($.datepicker.regional[""]);
+                    self.dateTo.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                    self.dateFrom.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                },
+                toggle: function() {
+                    this.isOpened = !this.isOpened;
+                },
+                cancel: function() {
+                    this.isOpened = false;
+                },
+                setCustomPeriod: function() {
+                    var self = this;
+                    if (!self.dateFromSelected && !self.dateToSelected) {
+                        return false;
+                    }
+                    this.setPeriod([
+                        self.dateFromSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected),
+                        self.dateToSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateToSelected) + 24 * 60 * 60 * 1000 - 1
+                    ]);
+                },
+                setPeriod: function(newPeriod) {
+                    countlyCommon.setPeriod(newPeriod);
+                    this.$root.$emit("cly-date-change");
+                    this.isOpened = false;
+                },
+                dateFromInputSubmit: function() {
+                    var date = moment(this.dateFromLabel, "MM/DD/YYYY");
+                    if (date.format("MM/DD/YYYY") === this.dateFromLabel) {
+                        this.dateFromSelected = date.valueOf();
+                    }
+                    else {
+                        this.dateFromLabel = moment(this.dateFromSelected).format("MM/DD/YYYY");
+                    }
+                },
+                dateToInputSubmit: function() {
+                    var date = moment(this.dateToLabel, "MM/DD/YYYY");
+                    if (date.format("MM/DD/YYYY") === this.dateToLabel) {
+                        this.dateToSelected = date.valueOf();
+                    }
+                    else {
+                        this.dateToLabel = moment(this.dateToSelected).format("MM/DD/YYYY");
+                    }
+                }
+            },
+            template: '<div class="cly-vue-global-date-selector-w help-zone-vs">\
+                            <div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\
+                                <i class="material-icons">date_range</i>\
+                                <span class="inst-selected-date">{{currentPeriodLabel}}</span>\
+                                <span class="down ion-chevron-down"></span>\
+                                <span class="up ion-chevron-up"></span>\
+                            </div>\
+                            <div class="inst-date-picker" v-show="isOpened">\
+                                <div class="date-selector-buttons">\
+                                    <div class="button date-selector" v-for="item in fixedPeriods" :key="item.value" v-bind:class="{active: currentPeriod == item.value}" @click="setPeriod(item.value)">{{item.name}}</div>\
+                                    <div class="button-container">\
+                                        <div class="icon-button green inst-date-submit" @click="setCustomPeriod()">{{i18n("common.apply")}}</div>\
+                                        <div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}</div>\
+                                    </div>\
+                                </div>\
+                                <div class="calendar-container">\
+                                    <table>\
+                                        <tr>\
+                                            <td class="calendar-block">\
+                                                <div class="calendar inst-date-from" ref="instDateFrom"></div>\
+                                            </td>\
+                                            <td class="calendar-block">\
+                                                <div class="calendar inst-date-to" ref="instDateTo"></div>\
+                                            </td>\
+                                        </tr>\
+                                        <tr>\
+                                            <td class="calendar-block">\
+                                                <input type="text" class="calendar-input-field inst-date-from-input" v-model="dateFromLabel" @keyup.enter="dateFromInputSubmit"></input><span class="date-input-label">{{i18n("common.from")}}</span>\
+                                            </td>\
+                                            <td class="calendar-block">\
+                                                <input type="text" class="calendar-input-field inst-date-to-input" v-model="dateToLabel" @keyup.enter="dateToInputSubmit"></input><span class="date-input-label">{{i18n("common.to")}}</span>\
+                                            </td>\
+                                        </tr>\
+                                    </table>\
                                 </div>\
                             </div>\
-                            <div class="calendar-container">\
-                                <table>\
-                                    <tr>\
-                                        <td class="calendar-block">\
-                                            <div class="calendar inst-date-from" ref="instDateFrom"></div>\
-                                        </td>\
-                                        <td class="calendar-block">\
-                                            <div class="calendar inst-date-to" ref="instDateTo"></div>\
-                                        </td>\
-                                    </tr>\
-                                    <tr>\
-                                        <td class="calendar-block">\
-                                            <input type="text" class="calendar-input-field inst-date-from-input" v-model="dateFromLabel" @keyup.enter="dateFromInputSubmit"></input><span class="date-input-label">{{i18n("common.from")}}</span>\
-                                        </td>\
-                                        <td class="calendar-block">\
-                                            <input type="text" class="calendar-input-field inst-date-to-input" v-model="dateToLabel" @keyup.enter="dateToInputSubmit"></input><span class="date-input-label">{{i18n("common.to")}}</span>\
-                                        </td>\
-                                    </tr>\
-                                </table>\
-                            </div>\
-                        </div>\
-                    </div>',
-        mixins: [
-            _mixins.i18n
-        ],
-        data: function() {
-            return {
-                // UI state
-                isOpened: false,
-
-                // UI constants
-                fixedPeriods: [
-                    {name: moment().subtract(1, "days").format("Do"), value: "yesterday"},
-                    {name: this.i18n("common.today"), value: "hour"},
-                    {name: this.i18n("taskmanager.last-7days"), value: "7days"},
-                    {name: this.i18n("taskmanager.last-30days"), value: "30days"},
-                    {name: this.i18n("taskmanager.last-60days"), value: "60days"},
-                    {name: moment().format("MMMM, YYYY"), value: "day"},
-                    {name: moment().year(), value: "month"},
-                ],
-
-                // Datepicker handles
-                dateTo: null,
-                dateFrom: null,
-
-                // Picked values
-                dateToSelected: null,
-                dateFromSelected: null,
-
-                // Labels
-                dateFromLabel: '',
-                dateToLabel: '',
-            };
-        },
-        computed: {
-            currentPeriod: function() {
-                return this.$store.getters["countlyCommon/period"];
-            },
-            currentPeriodLabel: function() {
-                return this.$store.getters["countlyCommon/periodLabel"];
-            },
-            toInternal: function() {
-                return this.dateToSelected;
-            },
-            fromInternal: function() {
-                return this.dateFromSelected;
-            }
-        },
-        mounted: function() {
-            this._initPickers();
-
-            var periodObj = countlyCommon.getPeriod(),
-                self = this;
-
-            if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
-                self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
-                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10)) - 24 * 60 * 60 * 1000 + 1;
-            }
-            else {
-                var date = new Date();
-                date.setHours(0, 0, 0, 0);
-                self.dateToSelected = date.getTime();
-                var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
-                extendDate.setHours(0, 0, 0, 0);
-                self.dateFromSelected = extendDate.getTime();
-            }
-        },
-        methods: {
-            _initPickers: function() {
-                var self = this;
-
-                var _onSelect = function(instance, selectedDate) {
-                    var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-                    date.setHours(0, 0, 0, 0);
-                    return date.getTime();
-                };
-
-                var _beforeShowDay = function(date, testFn) {
-                    var ts = date.getTime();
-                    if (testFn(ts)) {
-                        return [true, "in-range", ""];
-                    }
-                    else {
-                        return [true, "", ""];
-                    }
-                };
-
-                self.dateTo = $(this.$refs.instDateTo).datepicker({
-                    numberOfMonths: 1,
-                    showOtherMonths: true,
-                    maxDate: moment().toDate(),
-                    onSelect: function(selectedDate) {
-                        self.dateToSelected = _onSelect($(this).data("datepicker"), selectedDate);
-                    },
-                    beforeShowDay: function(date) {
-                        return _beforeShowDay(date, function(ts) {
-                            return ts < self.toInternal && ts >= self.fromInternal;
-                        });
-                    }
-                });
-
-                self.dateFrom = $(this.$refs.instDateFrom).datepicker({
-                    numberOfMonths: 1,
-                    showOtherMonths: true,
-                    maxDate: moment().subtract(1, 'days').toDate(),
-                    onSelect: function(selectedDate) {
-                        self.dateFromSelected = _onSelect($(this).data("datepicker"), selectedDate);
-                    },
-                    beforeShowDay: function(date) {
-                        return _beforeShowDay(date, function(ts) {
-                            return ts <= self.toInternal && ts > self.fromInternal;
-                        });
-                    }
-                });
-
-                $.datepicker.setDefaults($.datepicker.regional[""]);
-                self.dateTo.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
-                self.dateFrom.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
-            },
-            toggle: function() {
-                this.isOpened = !this.isOpened;
-            },
-            cancel: function() {
-                this.isOpened = false;
-            },
-            setCustomPeriod: function() {
-                var self = this;
-                if (!self.dateFromSelected && !self.dateToSelected) {
-                    return false;
-                }
-                this.setPeriod([
-                    self.dateFromSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected),
-                    self.dateToSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateToSelected) + 24 * 60 * 60 * 1000 - 1
-                ]);
-            },
-            setPeriod: function(newPeriod) {
-                countlyCommon.setPeriod(newPeriod);
-                this.$root.$emit("cly-date-change");
-                this.isOpened = false;
-            },
-            dateFromInputSubmit: function() {
-                var date = moment(this.dateFromLabel, "MM/DD/YYYY");
-                if (date.format("MM/DD/YYYY") === this.dateFromLabel) {
-                    this.dateFromSelected = date.valueOf();
-                }
-                else {
-                    this.dateFromLabel = moment(this.dateFromSelected).format("MM/DD/YYYY");
-                }
-            },
-            dateToInputSubmit: function() {
-                var date = moment(this.dateToLabel, "MM/DD/YYYY");
-                if (date.format("MM/DD/YYYY") === this.dateToLabel) {
-                    this.dateToSelected = date.valueOf();
-                }
-                else {
-                    this.dateToLabel = moment(this.dateToSelected).format("MM/DD/YYYY");
-                }
-            }
-        },
-        watch: {
-            dateFromSelected: function(newValue) {
-                var date = new Date(newValue),
-                    self = this;
-                if (newValue > self.dateToSelected) {
-                    self.dateToSelected = newValue;
-                }
-                self.dateTo.datepicker("option", "minDate", date);
-                self.dateFrom.datepicker("setDate", date);
-                self.dateFromLabel = moment(newValue).format("MM/DD/YYYY");
-            },
-            dateToSelected: function(newValue) {
-                var date = new Date(newValue),
-                    self = this;
-                if (newValue < self.dateFromSelected) {
-                    self.dateFromSelected = newValue;
-                }
-                self.dateFrom.datepicker("option", "maxDate", date);
-                self.dateTo.datepicker("setDate", date);
-                self.dateToLabel = moment(newValue).format("MM/DD/YYYY");
-            },
-            isOpened: function() {
-                var self = this;
-                self.dateTo.datepicker("refresh");
-                self.dateFrom.datepicker("refresh");
-            }
-        },
-        beforeDestroy: function() {
-            this.dateTo.datepicker('hide').datepicker('destroy');
-            this.dateFrom.datepicker('hide').datepicker('destroy');
+                        </div>'
         }
-    }));
+    ));
 
-    Vue.component("cly-time-graph-w", countlyBaseComponent.extend({
-        mixins: [
-            _mixins.i18n
-        ],
-        template: '<div class="cly-vue-time-graph-w">\
-                        <div ref="container" class="graph-container"></div>\
-                        <div class="cly-vue-graph-no-data" v-if="!hasData">\
-                            <div class="inner">\
-                                <div class="icon"></div>\
-                                <div class="text">{{i18n("common.graph.no-data")}}</div>\
-                            </div>\
-                        </div>\
-                    </div>',
-        props: {
-            dataPoints: {
-                required: true,
-                type: Array,
-                default: function() {
-                    return [];
+    Vue.component("cly-time-graph-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                dataPoints: {
+                    required: true,
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                bucket: { required: false, default: null, type: Object },
+                overrideBucket: { required: false, default: null, type: Object },
+                frozen: {default: false, type: Boolean},
+                configPaths: { required: true, type: Object },
+                configSmall: { required: false, default: false, type: Boolean },
+                configOptions: { required: false, default: null, type: Object }
+            },
+            data: function() {
+                return {
+                    options: JSON.parse(JSON.stringify(this.configOptions)),
+                    paths: JSON.parse(JSON.stringify(this.configPaths)),
+                    small: JSON.parse(JSON.stringify(this.configSmall))
+                };
+            },
+            computed: {
+                hasData: function() {
+                    if (this.dataPoints.length === 0) {
+                        return false;
+                    }
+                    if (this.dataPoints[0].length === 0) {
+                        return false;
+                    }
+                    return true;
                 }
             },
-            bucket: { required: false, default: null },
-            overrideBucket: { required: false, default: null },
-            frozen: {default: false, type: Boolean},
-            configPaths: { required: true },
-            configSmall: { required: false, default: false },
-            configOptions: { required: false, default: null }
-        },
-        data: function() {
-            return {
-                options: JSON.parse(JSON.stringify(this.configOptions)),
-                paths: JSON.parse(JSON.stringify(this.configPaths)),
-                small: JSON.parse(JSON.stringify(this.configSmall))
-            };
-        },
-        computed: {
-            hasData: function() {
-                if (this.dataPoints.length === 0) {
-                    return false;
+            watch: {
+                dataPoints: function() {
+                    this.refresh();
+                },
+                frozen: function(newValue) {
+                    if (!newValue) {
+                        this.refresh();
+                    }
                 }
-                if (this.dataPoints[0].length === 0) {
-                    return false;
-                }
-                return true;
-            }
-        },
-        mounted: function() {
-            this.refresh();
-        },
-        methods: {
-            refresh: function() {
-
-                if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
-                    // no need to refresh if hidden
-                    return;
-                }
-
-                var self = this;
-
-                var points = this.dataPoints.map(function(path, pathIdx) {
-                    var series = path.map(function(val, idx) {
-                        return [idx + 1, val];
-                    });
-                    var pathCopy = _.extend({}, self.paths[pathIdx]);
-                    pathCopy.data = series;
-                    return pathCopy;
-                });
-
+            },
+            mounted: function() {
+                this.refresh();
+            },
+            beforeDestroy: function() {
                 this.unbindResizer();
-
-                countlyCommon.drawTimeGraph(points,
-                    $(this.$refs.container),
-                    this.bucket, this.overrideBucket,
-                    this.small, null,
-                    this.options);
-
-                setTimeout(function() {
-                    self.initializeResizer();
-                }, 0);
             },
-            initializeResizer: function() {
-                var plot = $(this.$refs.container).data("plot");
-                plot.getPlaceholder().resize(this._onResize);
-            },
-            unbindResizer: function() {
-                var plot = $(this.$refs.container).data("plot");
-                if (plot) {
-                    plot.getPlaceholder().unbind("resize", this._onResize);
-                }
-            },
-            _onResize: function() {
-                var self = this,
-                    plot = $(this.$refs.container).data("plot"),
-                    placeholder = plot.getPlaceholder();
+            methods: {
+                refresh: function() {
 
-                if (placeholder.width() === 0 || placeholder.height() === 0) {
-                    return;
-                }
-
-                // plot.resize();
-                // plot.setupGrid();
-                // plot.draw();
-
-                var graphWidth = plot.width();
-
-                $(self.$refs.container).find(".graph-key-event-label").each(function() {
-                    var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
-
-                    if (o.left <= 15) {
-                        o.left = 15;
+                    if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
+                        // no need to refresh if hidden
+                        return;
                     }
 
-                    if (o.left >= (graphWidth - 15)) {
-                        o.left = (graphWidth - 15);
-                    }
+                    var self = this;
 
-                    $(this).css({
-                        left: o.left
+                    var points = this.dataPoints.map(function(path, pathIdx) {
+                        var series = path.map(function(val, idx) {
+                            return [idx + 1, val];
+                        });
+                        var pathCopy = _.extend({}, self.paths[pathIdx]);
+                        pathCopy.data = series;
+                        return pathCopy;
                     });
-                });
 
-                $(self.$refs.container).find(".graph-note-label").each(function() {
-                    var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+                    this.unbindResizer();
 
-                    $(this).css({
-                        left: o.left
-                    });
-                });
-            }
-        },
-        beforeDestroy: function() {
-            this.unbindResizer();
-        },
-        watch: {
-            dataPoints: function() {
-                this.refresh();
-            },
-            frozen: function(newValue) {
-                if (!newValue) {
-                    this.refresh();
-                }
-            }
-        }
-    }));
+                    countlyCommon.drawTimeGraph(points,
+                        $(this.$refs.container),
+                        this.bucket, this.overrideBucket,
+                        this.small, null,
+                        this.options);
 
-    Vue.component("cly-graph-w", countlyBaseComponent.extend({
-        mixins: [
-            _mixins.i18n
-        ],
-        template: '<div class="cly-vue-graph-w">\
-                        <div ref="container" class="graph-container"></div>\
-                        <div class="cly-vue-graph-no-data" v-if="!hasData">\
-                            <div class="inner">\
-                                <div class="icon"></div>\
-                                <div class="text">{{i18n("common.graph.no-data")}}</div>\
-                            </div>\
-                        </div>\
-                    </div>',
-        props: {
-            dataPoints: {
-                required: true,
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
-            graphType: { required: false, type: String, default: "bar" },
-            frozen: {default: false, type: Boolean},
-            configOptions: { required: false, default: null }
-        },
-        data: function() {
-            return {
-                options: JSON.parse(JSON.stringify(this.configOptions))
-            };
-        },
-        computed: {
-            hasData: function() {
-                return !!this.dataPoints;
-            }
-        },
-        mounted: function() {
-            this.refresh();
-        },
-        methods: {
-            refresh: function() {
-
-                if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
-                    // no need to refresh if hidden
-                    return;
-                }
-
-                countlyCommon.drawGraph(this.dataPoints,
-                    $(this.$refs.container),
-                    this.graphType,
-                    this.options);
-            }
-        },
-        watch: {
-            dataPoints: function() {
-                this.refresh();
-            },
-            graphType: function() {
-                this.refresh();
-            },
-            frozen: function(newValue) {
-                if (!newValue) {
-                    this.refresh();
-                }
-            }
-        }
-    }));
-
-    Vue.component("cly-radio", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-radio">\
-                        <div class="radio-wrapper">\
-                            <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
-                                <div class="box"></div>\
-                                <div class="text">{{item.label}}</div>\
-                                <div class="description">{{item.description}}</div>\
-                            </div>\
-                        </div>\
-                   </div>',
-        props: {
-            value: {required: true},
-            items: {required: true}
-        },
-        methods: {
-            setValue: function(e) {
-                this.$emit('input', e);
-            }
-        }
-    }));
-
-    Vue.component("cly-text-field", countlyBaseComponent.extend({
-        template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">',
-        props: {
-            value: {required: true}
-        },
-        methods: {
-            setValue: function(e) {
-                this.$emit('input', e);
-            }
-        }
-    }));
-
-    Vue.component("cly-check", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-check" v-bind:class="[skinClass]">\
-                        <div class="check-wrapper">\
-                            <input type="checkbox" class="check-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
-                            <label v-bind:class="labelClass" v-bind:for="componentId + \'-cb\'"></label>\
-                            <span class="check-text" @click="setValue(!value)">{{label}}</span>\
-                        </div>\
-                    </div>',
-        props: {
-            value: {default: false, type: Boolean},
-            label: {type: String},
-            skin: { default: "switch", type: String}
-        },
-        computed: {
-            skinClass: function() {
-                if (["switch", "tick"].indexOf(this.skin) > -1) {
-                    return "check-" + this.skin + "-skin";
-                }
-                return "check-switch-skin";
-            },
-            labelClass: function() {
-                return this.getClass(this.value);
-            }
-        },
-        methods: {
-            setValue: function(e) {
-                this.$emit('input', e);
-            },
-            getClass: function(value) {
-                var classes = ["check-label"];
-                if (this.skin === "tick") {
-                    classes.push("fa");
-                    if (value) {
-                        classes.push("fa-check-square");
-                    }
-                    else {
-                        classes.push("fa-square-o");
-                    }
-                }
-                return classes;
-            }
-        }
-    }));
-
-    Vue.component("cly-check-list", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-check-list">\
-                      <cly-check v-for="(item, i) in items" :key="i" v-bind:skin="skin" v-bind:label="item.label" v-bind:value="uncompressed[i]" v-on:input="setValue(item.value, $event)">\
-                      </cly-check>\
-                  </div>',
-        props: {
-            value: {
-                default: function() {
-                    return [];
+                    setTimeout(function() {
+                        self.initializeResizer();
+                    }, 0);
                 },
-                type: Array
-            },
-            items: {
-                default: function() {
-                    return [];
+                initializeResizer: function() {
+                    var plot = $(this.$refs.container).data("plot");
+                    plot.getPlaceholder().resize(this._onResize);
                 },
-                type: Array
-            },
-            skin: { default: "switch", type: String}
-        },
-        computed: {
-            uncompressed: function() {
-                return this.getUncompressed();
-            }
-        },
-        methods: {
-            getUncompressed: function() {
-                var self = this;
-                return this.items.map(function(item) {
-                    return self.value.indexOf(item.value) > -1;
-                });
-            },
-            setValue: function(value, status) {
-                var self = this;
-                var newArray = null;
-                if (status && self.value.indexOf(value) === -1) {
-                    newArray = self.value.slice();
-                    newArray.push(value);
-                }
-                else if (!status && self.value.indexOf(value) > -1) {
-                    newArray = self.value.slice().filter(function(item) {
-                        return item !== value;
+                unbindResizer: function() {
+                    var plot = $(this.$refs.container).data("plot");
+                    if (plot) {
+                        plot.getPlaceholder().unbind("resize", this._onResize);
+                    }
+                },
+                _onResize: function() {
+                    var self = this,
+                        plot = $(this.$refs.container).data("plot"),
+                        placeholder = plot.getPlaceholder();
+
+                    if (placeholder.width() === 0 || placeholder.height() === 0) {
+                        return;
+                    }
+
+                    // plot.resize();
+                    // plot.setupGrid();
+                    // plot.draw();
+
+                    var graphWidth = plot.width();
+
+                    $(self.$refs.container).find(".graph-key-event-label").each(function() {
+                        var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+
+                        if (o.left <= 15) {
+                            o.left = 15;
+                        }
+
+                        if (o.left >= (graphWidth - 15)) {
+                            o.left = (graphWidth - 15);
+                        }
+
+                        $(this).css({
+                            left: o.left
+                        });
+                    });
+
+                    $(self.$refs.container).find(".graph-note-label").each(function() {
+                        var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+
+                        $(this).css({
+                            left: o.left
+                        });
                     });
                 }
-                if (newArray) {
-                    this.$emit('input', newArray);
-                }
-            }
-        }
-    }));
-
-    Vue.component("cly-button", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-button" v-bind:class="activeClasses" v-on="$listeners">{{label}}</div>',
-        props: {
-            label: {type: String},
-            skin: { default: "green", type: String},
-            disabled: {type: Boolean, default: false}
-        },
-        computed: {
-            activeClasses: function() {
-                var classes = [this.skinClass];
-                if (this.disabled) {
-                    classes.push("disabled");
-                }
-                return classes;
             },
-            skinClass: function() {
-                if (["green", "light"].indexOf(this.skin) > -1) {
-                    return "button-" + this.skin + "-skin";
-                }
-                return "button-light-skin";
-            }
+            template: '<div class="cly-vue-time-graph-w">\
+                            <div ref="container" class="graph-container"></div>\
+                            <div class="cly-vue-graph-no-data" v-if="!hasData">\
+                                <div class="inner">\
+                                    <div class="icon"></div>\
+                                    <div class="text">{{i18n("common.graph.no-data")}}</div>\
+                                </div>\
+                            </div>\
+                        </div>'
         }
-    }));
+    ));
+
+    Vue.component("cly-graph-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                dataPoints: {
+                    required: true,
+                    type: Object,
+                    default: function() {
+                        return {};
+                    }
+                },
+                graphType: { required: false, type: String, default: "bar" },
+                frozen: {default: false, type: Boolean},
+                configOptions: { required: false, default: null, type: Object }
+            },
+            data: function() {
+                return {
+                    options: JSON.parse(JSON.stringify(this.configOptions))
+                };
+            },
+            computed: {
+                hasData: function() {
+                    return !!this.dataPoints;
+                }
+            },
+            watch: {
+                dataPoints: function() {
+                    this.refresh();
+                },
+                graphType: function() {
+                    this.refresh();
+                },
+                frozen: function(newValue) {
+                    if (!newValue) {
+                        this.refresh();
+                    }
+                }
+            },
+            mounted: function() {
+                this.refresh();
+            },
+            methods: {
+                refresh: function() {
+
+                    if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
+                        // no need to refresh if hidden
+                        return;
+                    }
+
+                    countlyCommon.drawGraph(this.dataPoints,
+                        $(this.$refs.container),
+                        this.graphType,
+                        this.options);
+                }
+            },
+            template: '<div class="cly-vue-graph-w">\
+                            <div ref="container" class="graph-container"></div>\
+                            <div class="cly-vue-graph-no-data" v-if="!hasData">\
+                                <div class="inner">\
+                                    <div class="icon"></div>\
+                                    <div class="text">{{i18n("common.graph.no-data")}}</div>\
+                                </div>\
+                            </div>\
+                        </div>'
+        }
+    ));
+
+    Vue.component("cly-radio", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, default: null, type: [ String, Number ]},
+                items: {
+                    required: true,
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                }
+            },
+            template: '<div class="cly-vue-radio">\
+                            <div class="radio-wrapper">\
+                                <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
+                                    <div class="box"></div>\
+                                    <div class="text">{{item.label}}</div>\
+                                    <div class="description">{{item.description}}</div>\
+                                </div>\
+                            </div>\
+                        </div>'
+        }
+    ));
+
+    Vue.component("cly-text-field", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, type: [ String, Number ]}
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                }
+            },
+            template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">'
+        }
+    ));
+
+    Vue.component("cly-check", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {default: false, type: Boolean},
+                label: {type: String, default: ''},
+                skin: { default: "switch", type: String}
+            },
+            computed: {
+                skinClass: function() {
+                    if (["switch", "tick"].indexOf(this.skin) > -1) {
+                        return "check-" + this.skin + "-skin";
+                    }
+                    return "check-switch-skin";
+                },
+                labelClass: function() {
+                    return this.getClass(this.value);
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                },
+                getClass: function(value) {
+                    var classes = ["check-label"];
+                    if (this.skin === "tick") {
+                        classes.push("fa");
+                        if (value) {
+                            classes.push("fa-check-square");
+                        }
+                        else {
+                            classes.push("fa-square-o");
+                        }
+                    }
+                    return classes;
+                }
+            },
+            template: '<div class="cly-vue-check" v-bind:class="[skinClass]">\
+                            <div class="check-wrapper">\
+                                <input type="checkbox" class="check-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
+                                <label v-bind:class="labelClass" v-bind:for="componentId + \'-cb\'"></label>\
+                                <span class="check-text" @click="setValue(!value)">{{label}}</span>\
+                            </div>\
+                        </div>'
+        }
+    ));
+
+    Vue.component("cly-check-list", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {
+                    default: function() {
+                        return [];
+                    },
+                    type: Array
+                },
+                items: {
+                    default: function() {
+                        return [];
+                    },
+                    type: Array
+                },
+                skin: { default: "switch", type: String}
+            },
+            computed: {
+                uncompressed: function() {
+                    return this.getUncompressed();
+                }
+            },
+            methods: {
+                getUncompressed: function() {
+                    var self = this;
+                    return this.items.map(function(item) {
+                        return self.value.indexOf(item.value) > -1;
+                    });
+                },
+                setValue: function(value, status) {
+                    var self = this;
+                    var newArray = null;
+                    if (status && self.value.indexOf(value) === -1) {
+                        newArray = self.value.slice();
+                        newArray.push(value);
+                    }
+                    else if (!status && self.value.indexOf(value) > -1) {
+                        newArray = self.value.slice().filter(function(item) {
+                            return item !== value;
+                        });
+                    }
+                    if (newArray) {
+                        this.$emit('input', newArray);
+                    }
+                }
+            },
+            template: '<div class="cly-vue-check-list">\
+                        <cly-check v-for="(item, i) in items" :key="i" v-bind:skin="skin" v-bind:label="item.label" v-bind:value="uncompressed[i]" v-on:input="setValue(item.value, $event)">\
+                        </cly-check>\
+                    </div>'
+        }
+    ));
+
+    Vue.component("cly-button", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                label: {type: String, default: ''},
+                skin: { default: "green", type: String},
+                disabled: {type: Boolean, default: false}
+            },
+            computed: {
+                activeClasses: function() {
+                    var classes = [this.skinClass];
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
+                },
+                skinClass: function() {
+                    if (["green", "light"].indexOf(this.skin) > -1) {
+                        return "button-" + this.skin + "-skin";
+                    }
+                    return "button-light-skin";
+                }
+            },
+            template: '<div class="cly-vue-button" v-bind:class="activeClasses" v-on="$listeners">{{label}}</div>'
+        }
+    ));
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
