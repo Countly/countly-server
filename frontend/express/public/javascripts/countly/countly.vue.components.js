@@ -1703,8 +1703,8 @@
             },
             template: '<div class="cly-vue-check" v-bind:class="[skinClass]">\
                             <div class="check-wrapper">\
-                                <input type="checkbox" class="check-checkbox" v-bind:id="componentId + \'-cb\'" :checked="value" v-on:input="setValue($event.target.checked)">\
-                                <label v-bind:class="labelClass" v-bind:for="componentId + \'-cb\'"></label>\
+                                <input type="checkbox" class="check-checkbox" :checked="value">\
+                                <div v-bind:class="labelClass" @click="setValue(!value)"></div>\
                                 <span class="check-text" @click="setValue(!value)">{{label}}</span>\
                             </div>\
                         </div>'
