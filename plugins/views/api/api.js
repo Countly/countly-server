@@ -1302,7 +1302,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 var current_views = {};
                 var haveViews = false;
                 var update;
-                for (var p = 0; p < params.qstring.events.length; p++) {
+                for (let p = 0; p < params.qstring.events.length; p++) {
                     var currE = params.qstring.events[p];
                     if (currE.key === "[CLY]_view") {
                         haveViews = true;
@@ -1339,36 +1339,86 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         haveViews = true;
                     }
                 }
+
+                //filter events and call functions to get view names
+                var promises = [];
+                params.qstring.events = params.qstring.events.filter(function(currEvent) {
+                    if (currEvent.timestamp) {
+                        params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
+                    }
+                    if (currEvent.key === "[CLY]_view") {
+                        if (currEvent.segmentation && currEvent.segmentation.name) {
+                            currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
+                            //bug from SDK possibly reporting timestamp instead of duration	
+                            if (currEvent.dur && (currEvent.dur + "").length >= 10) {
+                                currEvent.dur = 0;
+                            }
+                            promises.push(processView(params, currEvent));
+                        }
+                        return false;
+                    }
+                    else if (currEvent.key === "[CLY]_action") {
+                        if (currEvent.segmentation && (currEvent.segmentation.name || currEvent.segmentation.view) && currEvent.segmentation.type && currEvent.segmentation.type === 'scroll') {
+                            currEvent.scroll = 0;
+                            if (currEvent.segmentation.y && currEvent.segmentation.height) {
+                                var height = parseInt(currEvent.segmentation.height, 10);
+                                if (height !== 0) {
+                                    currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / height;
+                                }
+                            }
+                            promises.push(processView(params, currEvent));
+                        }
+                    }
+                    return true;
+                });
+
                 if (haveViews) {
                     common.readBatcher.getOne("views", {'_id': common.db.ObjectID(params.app_id)}, (err3, viewInfo) => {
-                        params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                            if (currEvent.timestamp) {
-                                params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
-                            }
-                            if (currEvent.key === "[CLY]_view") {
-                                if (currEvent.segmentation && currEvent.segmentation.name) {
-                                    currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
-                                    //bug from SDK possibly reporting timestamp instead of duration
-                                    if (currEvent.dur && (currEvent.dur + "").length >= 10) {
-                                        currEvent.dur = 0;
-                                    }
-                                    processView(params, currEvent, viewInfo);
-                                }
-                                return false;
-                            }
-                            else if (currEvent.key === "[CLY]_action") {
-                                if (currEvent.segmentation && (currEvent.segmentation.name || currEvent.segmentation.view) && currEvent.segmentation.type && currEvent.segmentation.type === 'scroll') {
-                                    currEvent.scroll = 0;
-                                    if (currEvent.segmentation.y && currEvent.segmentation.height) {
-                                        var height = parseInt(currEvent.segmentation.height, 10);
-                                        if (height !== 0) {
-                                            currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / height;
+                        //Matches correct view naming
+                        Promise.all(promises).then(function(results) {
+                            var runDrill = [];
+                            var haveVisit = false;
+                            var lastView = {};
+                            for (let p = 0; p < results.length; p++) {
+                                if (results[p] !== false) {
+
+                                    if (results[p].key === '[CLY]_view') {
+                                        if (results[p].segmentation.visit) {
+                                            params.views.push(results[p]);
+                                            runDrill.push(results[p]);
+                                        }
+                                        if (results[p].dur) {
+                                            plugins.dispatch("/view/duration", {params: params, duration: results[p].dur, viewName: results[p].viewAlias});
+                                        }
+                                        //geting all segment info
+                                        if (results[p].segmentation.visit) {
+                                            haveVisit = true;
+                                            lastView[results[p].viewAlias + '.ts'] = params.time.timestamp;
+                                        }
+                                        else {
+                                            recordMetrics(params, results[p], params.app_user, null, viewInfo);
                                         }
                                     }
-                                    processView(params, currEvent, viewInfo);
+                                    else { //cly action
+                                        recordMetrics(params, results[p], params.app_user, null, viewInfo);
+                                    }
                                 }
                             }
-                            return true;
+
+                            if (haveVisit) {
+                                common.db.collection('app_userviews' + params.app_id).findAndModify({'_id': params.app_user.uid}, {}, {$max: lastView}, {upsert: true, new: false}, function(err2, view2) {
+                                    for (let p = 0; p < results.length; p++) {
+                                        var currEvent = results[p];
+                                        recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
+                                    }
+                                });
+                            }
+
+
+                            if (runDrill.length > 0) {
+                                plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: runDrill});
+                            }
+
                         });
                         resolve();
                     });
@@ -1414,94 +1464,58 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     }
 
     /**
-     * Function to process view dta after getting view id
-     * @param  {Object} currEvent - Current event object
-     * @param  {Object} params - Default parameters object
-     * @param  {Object} viewInfo - Object with info about segmentation
-     */
-    function processingData(currEvent, params, viewInfo) { //only on cly_view
-        if (currEvent.segmentation.visit) {
-            params.views.push(currEvent);
-            var events = [currEvent];
-            plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: events});
-        }
-        if (currEvent.dur) {
-            plugins.dispatch("/view/duration", {params: params, duration: currEvent.dur, viewName: currEvent.viewAlias});
-        }
-        //geting all segment info
-        if (currEvent.segmentation.visit) {
-            var lastView = {};
-            lastView[currEvent.viewAlias + '.ts'] = params.time.timestamp;
-            common.db.collection('app_userviews' + params.app_id).findAndModify({'_id': params.app_user.uid}, {}, {$max: lastView}, {upsert: true, new: false}, function(err2, view2) {
-                recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
-            });
-        }
-        else {
-            recordMetrics(params, currEvent, params.app_user, null, viewInfo);
-        }
-    }
-
-    /**
      * Function to process view
      * @param  {Object} params - Default parameters object
      * @param  {Object} currEvent - Current event object
-     * @param  {Object} viewInfo - Object with info about segmentation
+	 * @returns {Object} Promise - Promise
      */
-    function processView(params, currEvent, viewInfo) {
-        var updateData = {};
+    function processView(params, currEvent) {
+        return new Promise(function(resolve) {
+            var updateData = {};
 
-
-        if (currEvent.segmentation.view) {
-            updateData.url = currEvent.segmentation.view;
-        }
-        if (currEvent.segmentation.domain) {
-            updateData['domain.' + common.db.encode(currEvent.segmentation.domain)] = true;
-        }
-
-        var query = {};
-        if (currEvent.segmentation.name) {
-            if (currEvent.segmentation.name.length > plugins.getConfig("views").view_name_limit) {
-                currEvent.segmentation.name = currEvent.segmentation.name.slice(0, plugins.getConfig("views").view_name_limit);
+            if (currEvent.segmentation.view) {
+                updateData.url = currEvent.segmentation.view;
             }
-            query = {'view': currEvent.segmentation.name};
-            updateData.view = currEvent.segmentation.name;
+            if (currEvent.segmentation.domain) {
+                updateData['domain.' + common.db.encode(currEvent.segmentation.domain)] = true;
+            }
 
-            common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err1, total) {
-                var options = {upsert: true, new: true};
-                if (total >= plugins.getConfig("views").view_limit) {
-                    options.upsert = false;
+            var query = {};
+            if (currEvent.segmentation.name) {
+                if (currEvent.segmentation.name.length > plugins.getConfig("views").view_name_limit) {
+                    currEvent.segmentation.name = currEvent.segmentation.name.slice(0, plugins.getConfig("views").view_name_limit);
                 }
-                getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, {$set: updateData}, options, function(err, view) {
-                    if (view && view._id) {
-                        params.viewsNamingMap[currEvent.segmentation.name] = view._id;
-                        var escapedMetricVal = common.db.encode(view._id + "");
-                        currEvent.viewAlias = escapedMetricVal;
-                        if (currEvent.key === "[CLY]_view") {
-                            processingData(currEvent, params, viewInfo);
+                query = {'view': currEvent.segmentation.name};
+                updateData.view = currEvent.segmentation.name;
+
+                common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err1, total) {
+                    var options = {upsert: true, new: true};
+                    if (total >= plugins.getConfig("views").view_limit) {
+                        options.upsert = false;
+                    }
+                    getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, {$set: updateData}, options, function(err, view) {
+                        if (view && view._id) {
+                            params.viewsNamingMap[currEvent.segmentation.name] = view._id;
+                            var escapedMetricVal = common.db.encode(view._id + "");
+                            currEvent.viewAlias = escapedMetricVal;
+                            resolve(currEvent);
                         }
-                        else {
-                            recordMetrics(params, currEvent, params.app_user, null, viewInfo);
-                        }
+                    });
+                });
+            }
+            else if (currEvent.segmentation.view) {
+                query = {$or: [{'view': currEvent.segmentation.view}, {'url': currEvent.segmentation.view}]};
+                getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, null, null, function(err, view) {
+                    if (view) {
+                        currEvent.viewAlias = common.db.encode(view._id + "");
+                        resolve(currEvent);
                     }
                 });
-            });
-        }
-        else if (currEvent.segmentation.view) {
-            query = {$or: [{'view': currEvent.segmentation.view}, {'url': currEvent.segmentation.view}]};
-            getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, null, null, function(err, view) {
-                if (view) {
-                    currEvent.viewAlias = common.db.encode(view._id + "");
-                    if (currEvent.key === "[CLY]_view") {
-                        processingData(currEvent, params, viewInfo);
-                    }
-                    else {
-                        recordMetrics(params, currEvent, params.app_user, null, viewInfo);
-                    }
-                }
-            });
-        }
-
-
+            }
+            else {
+                resolve(false);
+            }
+        });
     }
 
     /**
