@@ -7,7 +7,7 @@
                 <div class="section">
                     <div class="label">Name</div> 
                     <div>
-                        <cly-text-field v-model="$v.editedObject.name.$model"></cly-text-field>
+                        <cly-text-field v-model="$v.editedObject.name.$model" placeholder="Some required value"></cly-text-field>
                         <div class="validation-error" v-if="$v.editedObject.name.$anyError">Name is required.</div>
                     </div>
                 </div>
@@ -17,13 +17,13 @@
                         <div class="panel-body">
                             <div class="label">Field 1</div> 
                             <div>
-                                <cly-text-field v-model="$v.editedObject.field1.$model"></cly-text-field>
+                                <cly-text-field v-model="$v.editedObject.field1.$model" placeholder="Some required value"></cly-text-field>
                                 <div class="validation-error" v-if="$v.editedObject.field1.$anyError">Field 1 is required.</div>
                             </div>
                             <br>
                             <div class="label">Field 2</div> 
                             <div>
-                                <cly-text-field v-model="$v.editedObject.field2.$model"></cly-text-field>
+                                <cly-text-field v-model="$v.editedObject.field2.$model" placeholder="Some required value"></cly-text-field>
                                 <div class="validation-error" v-if="$v.editedObject.field2.$anyError">Field 2 is required.</div>
                             </div>
                         </div>
@@ -39,8 +39,7 @@
                 <div class="section">
                     <div class="label">Description</div> 
                     <div>
-                        <cly-text-area v-model="editedObject.description"></cly-text-area>
-                        <cly-text-area v-model="editedObject.description" maxlength="10" rows="2"></cly-text-area>
+                        <cly-text-area v-model="editedObject.description" placeholder="A brief description (optional)"></cly-text-area>
                     </div>
                 </div>
                 <div class="section">
