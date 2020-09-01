@@ -1623,7 +1623,7 @@
         // @vue/component
         {
             props: {
-                value: {required: true, default: null, type: [ String, Number ]},
+                value: {required: true, default: -1, type: [ String, Number ]},
                 items: {
                     required: true,
                     type: Array,
@@ -1653,7 +1653,7 @@
         // @vue/component
         {
             props: {
-                value: {required: true, type: [ String, Number ]}
+                value: {required: true, type: [ String, Number ], default: ''}
             },
             methods: {
                 setValue: function(e) {
@@ -1796,7 +1796,7 @@
         // @vue/component
         {
             props: {
-                value: {required: true, type: [ String, Number ]}
+                value: {required: true, type: [ String, Number ], default: ''}
             },
             methods: {
                 setValue: function(e) {
