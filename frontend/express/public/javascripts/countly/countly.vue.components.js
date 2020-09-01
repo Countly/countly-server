@@ -1418,7 +1418,7 @@
                 bucket: { required: false, default: null, type: Object },
                 overrideBucket: { required: false, default: null, type: Object },
                 frozen: {default: false, type: Boolean},
-                configPaths: { required: true, type: Object },
+                configPaths: { required: true, type: Array },
                 configSmall: { required: false, default: false, type: Boolean },
                 configOptions: { required: false, default: null, type: Object }
             },
