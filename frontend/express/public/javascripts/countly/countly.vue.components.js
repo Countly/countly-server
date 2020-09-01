@@ -1660,7 +1660,7 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<input type="text" class="cly-vue-text-field input" v-bind:value="value" v-on:input="setValue($event.target.value)">'
+            template: '<input type="text" class="cly-vue-text-field input" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
         }
     ));
 
@@ -1789,6 +1789,25 @@
                 }
             },
             template: '<div class="cly-vue-button" v-bind:class="activeClasses" v-on="$listeners">{{label}}</div>'
+        }
+    ));
+
+    Vue.component("cly-text-area", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, type: [ String, Number ]}
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                }
+            },
+            template: '<textarea class="cly-vue-text-area"\
+                            v-bind="$attrs"\
+                            :value="value"\
+                            @input="setValue($event.target.value)">\
+                        </textarea>'
         }
     ));
 

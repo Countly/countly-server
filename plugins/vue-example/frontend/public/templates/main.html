@@ -39,7 +39,8 @@
                 <div class="section">
                     <div class="label">Description</div> 
                     <div>
-                        <cly-text-field v-model="editedObject.description"></cly-text-field>
+                        <cly-text-area v-model="editedObject.description"></cly-text-area>
+                        <cly-text-area v-model="editedObject.description" maxlength="10" rows="2"></cly-text-area>
                     </div>
                 </div>
                 <div class="section">

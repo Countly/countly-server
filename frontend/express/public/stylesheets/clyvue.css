@@ -856,6 +856,19 @@
   margin-top: 6px;
   margin-left: 20px;
 }
+.cly-vue-theme-clydef .cly-vue-text-area {
+  font: 13px Ubuntu, Helvetica, sans-serif;
+  color: #444;
+  width: 100%;
+  border-radius: 2px;
+  resize: none;
+  color: #444;
+  border: none;
+  box-shadow: inset 0 0 0 1px #d0d0d0;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
 
 .cly-vue-tooltip {
   display: block !important;
