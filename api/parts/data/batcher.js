@@ -205,22 +205,24 @@ class ReadBatcher extends EventEmitter {
         return new Promise((resolve, reject) => {
             if (multi) {
                 this.db.collection(collection).find(query, projection).toArray((err, res) => {
-                    if (!err && res) {
+                    if (!err) {
                         this.cache(collection, id, query, projection, res, true);
                         resolve(res);
                     }
                     else {
+                        this.data[collection][id].promise = null;
                         reject(err);
                     }
                 });
             }
             else {
                 this.db.collection(collection).findOne(query, projection, (err, res) => {
-                    if (!err && res) {
+                    if (!err) {
                         this.cache(collection, id, query, projection, res, false);
                         resolve(res);
                     }
                     else {
+                        this.data[collection][id].promise = null;
                         reject(err);
                     }
                 });
