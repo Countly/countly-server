@@ -1162,7 +1162,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      */
     function getViewNameObject(params, collection, query, update, options, callback) {
         if (plugins.getConfig("api", params.app && params.app.plugins, true).batch_read_processing === true) {
-            common.readBatcher.getOne(collection, query, (err, view) => {
+            common.readBatcher.getOne(collection, query, {}, (err, view) => {
+                console.log("Before" + JSON.stringify(query));
                 if (view) {
                     var good_value = true;
                     if (update && update.$set) {
@@ -1178,6 +1179,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     else { //current record has different values - find and modify;
                         common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
                             callback(err2, view2);
+                            common.readBatcher.invalidate(collection, query, {}, false);
                         });
                     }
                 }
@@ -1190,6 +1192,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
                             if (view2 && view2.value) {
                                 callback(err, view2.value);
+                                common.readBatcher.invalidate(collection, query, {}, false);
                             }
                             else {
                                 callback(err, null);
@@ -1379,6 +1382,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             var runDrill = [];
                             var haveVisit = false;
                             var lastView = {};
+                            var projection = {};
                             for (let p = 0; p < results.length; p++) {
                                 if (results[p] !== false) {
 
@@ -1394,6 +1398,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         if (results[p].segmentation.visit) {
                                             haveVisit = true;
                                             lastView[results[p].viewAlias + '.ts'] = params.time.timestamp;
+                                            projection[results[p].viewAlias] = 1;
                                         }
                                         else {
                                             recordMetrics(params, results[p], params.app_user, null, viewInfo);
@@ -1406,7 +1411,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             }
 
                             if (haveVisit) {
-                                common.db.collection('app_userviews' + params.app_id).findAndModify({'_id': params.app_user.uid}, {}, {$max: lastView}, {upsert: true, new: false}, function(err2, view2) {
+                                common.db.collection('app_userviews' + params.app_id).findOneAndUpdate({'_id': params.app_user.uid}, {$max: lastView}, {upsert: true, new: false, projection: projection}, function(err2, view2) {
                                     for (let p = 0; p < results.length; p++) {
                                         var currEvent = results[p];
                                         recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);

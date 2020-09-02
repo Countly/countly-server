@@ -295,7 +295,7 @@ class ReadBatcher extends EventEmitter {
             if (!this.data[collection]) {
                 this.data[collection] = {};
             }
-            if (this.data[collection][id] && this.data[collection][id].data) {
+            if (this.data[collection][id]) {
                 delete this.data[collection][id];
             }
         }
