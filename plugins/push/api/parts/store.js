@@ -1328,7 +1328,8 @@ class Loader extends Store {
      */
     pushNote(mid, uids, date, recur) {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
-        log.i('Recording message %s for uids %j', mid, uids);
+        log.i('Recording message %s for %d uids', mid, uids.length);
+        log.d('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
             this.db.collection(`push_${this.app._id}`).updateMany({_id: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
                 if (err) {
@@ -1450,8 +1451,20 @@ class Loader extends Store {
      */
     recordSentEvent(note, sent) {
         let common1 = require('../../../../api/utils/common.js');
+
         if (!common1.db) {
             common1.db = this.db;
+        }
+
+        if (!common1.writeBatcher) {
+            try {
+                const {WriteBatcher, ReadBatcher} = require('../../../../api/parts/data/batcher.js');
+                common1.writeBatcher = new WriteBatcher(common1.db);
+                common1.readBatcher = new ReadBatcher(common1.db);
+            }
+            catch (e) {
+                // ignore
+            }
         }
 
         plugins.internalEvents.push('[CLY]_push_sent');
