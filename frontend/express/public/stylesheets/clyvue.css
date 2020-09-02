@@ -888,9 +888,6 @@
 .cly-vue-theme-clydef .cly-vue-select.req {
   border-color: #E95C6C;
 }
-.cly-vue-theme-clydef .cly-vue-select.dark {
-  border-color: #666;
-}
 .cly-vue-theme-clydef .cly-vue-select.disabled {
   opacity: 0.4 !important;
   cursor: default;
@@ -1027,6 +1024,9 @@
 .cly-vue-theme-clydef .cly-vue-select.upside-down .items-list {
   bottom: 100%;
   top: auto;
+}
+.cly-vue-theme-clydef .cly-vue-select.dark {
+  border-color: #666;
 }
 .cly-vue-theme-clydef .cly-vue-select.dark .items-list {
   border-color: #d0d0d0;

@@ -1811,7 +1811,7 @@
         }
     ));
 
-    Vue.component("cly-select-w", countlyBaseComponent.extend(
+    Vue.component("cly-select-n", countlyBaseComponent.extend(
         // @vue/component
         {
             mixins: [
@@ -1867,26 +1867,12 @@
                         this.opened = false;
                     }
                 },
-                _onListClick: function(element) {
+                close: function() {
+                    this.opened = false;
+                },
+                commitSearch: function() {
                     if (this.dynamicItems) {
-                        var self = this;
-                        setTimeout(function() {
-                            var timeout = null;
-
-                            $(element).find('input').val(self.searchQuery);
-                            $(element).find('input').unbind('keyup').bind('keyup', function() {
-                                if (timeout) {
-                                    clearTimeout(timeout);
-                                    timeout = null;
-                                }
-                                var query = $(this).val();
-                                timeout = setTimeout(function() {
-                                    $(element).find('.select-items').prepend("<div class='table-loader' style='top:-1px'></div>");
-                                    self.searchQuery = query;
-                                    self.$emit("search", query);
-                                }, 1000);
-                            });
-                        });
+                        this.$emit("search", this.searchQuery);
                     }
                 }
             },
@@ -1896,13 +1882,11 @@
                         this.searchQuery = "";
                     }
                 },
-                searchQuery: function(query) {
-                    if (this.dynamicItems) {
-                        this.$emit("search", query);
-                    }
+                searchQuery: function() {
+                    this.commitSearch();
                 }
             },
-            template: '<div class="cly-vue-select text-align-left" v-bind:class="{\'active\': opened, \'dynamic-items\' : dynamicItems, \'disabled\' : disabled}">\
+            template: '<div class="cly-vue-select centered text-align-left" v-bind:class="{\'active\': opened, \'dynamic-items\' : dynamicItems, \'disabled\' : disabled}" v-click-outside="close">\
                             <div class="select-inner" @click="opened=!opened">\
                                 <div class="text-container">\
                                     <div v-if="selectedItem" class="text" style="width:80%">\

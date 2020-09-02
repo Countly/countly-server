@@ -165,11 +165,21 @@ var TableView = countlyVue.views.BaseView.extend({
             var self = this;
             setTimeout(function() {
                 // Mimic an async search event
-                self.selectDWItems = [
-                    {name: "Related with (" + query + ") 1", value: 1},
-                    {name: "Related with (" + query + ") 2", value: 2},
-                    {name: "Related with (" + query + ") 3", value: 3},
-                ];
+                if (query && query !== "") {
+                    self.selectDWItems = [
+                        {name: "Related with (" + query + ") 1", value: 1},
+                        {name: "Related with (" + query + ") 2", value: 2},
+                        {name: "Related with (" + query + ") 3", value: 3},
+                    ];
+                }
+                else {
+                    // Return to original list
+                    self.selectDWItems = [
+                        {name: "Type 1", value: 1},
+                        {name: "Type 2", value: 2},
+                        {name: "Type 3", value: 3},
+                    ];
+                }
             }, 0);
         }
     }

@@ -76,15 +76,15 @@
                         Select (static)
                     </div>
                     <div class="example-cell">
-                        <cly-select-w 
+                        <cly-select-n
                             style="width:220px"
                             v-bind:items="selectWItems" 
                             v-model="selectWModel"
                             placeholder="Select an item">
-                        </cly-select-w>
+                        </cly-select-n>
                     </div>
                     <div class="example-cell">
-                        Selected value: {{selectWModel}}
+                        Selected item: {{selectWModel}}
                     </div>
                 </div>
                 <div class="example-component">
@@ -92,17 +92,17 @@
                         Select (dynamic)
                     </div>
                     <div class="example-cell">
-                        <cly-select-w 
+                        <cly-select-n 
                             style="width:220px"
                             :items="selectDWItems" 
                             :dynamic-items="true"
                             v-model="selectDWModel"
                             @search="onDSSearch"
                             placeholder="Select an item">
-                        </cly-select-w>
+                        </cly-select-n>
                     </div>
                     <div class="example-cell">
-                        Selected value: {{selectDWModel}}
+                        Selected item: {{selectDWModel}}
                     </div>
                 </div>
             </cly-panel>
