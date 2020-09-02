@@ -450,77 +450,85 @@
                 var sum = 0;
 
                 var i = 0;
+                var useMerging = true;
                 for (i = 0; i &lt; dataPoints.dp.length; i++) {
                     sum = sum + dataPoints.dp[i].data[0][1];
-                    dataPoints.dp[i].moreInfo = "";
-                }
-
-                var dpLength = dataPoints.dp.length;
-                var treshold_value = Math.round(min_treshold * sum);
-                var max_other = Math.round(min_treshold * sum);
-                var under_treshold = [];//array of values under treshold
-                var left_for_other = sum;
-                for (i = 0; i &lt; dataPoints.dp.length; i++) {
-                    if (dataPoints.dp[i].data[0][1] >= treshold_value) {
-                        left_for_other = left_for_other - dataPoints.dp[i].data[0][1];
+                    if (dataPoints.dp[i].moreInfo) {
+                        useMerging = false;
                     }
                     else {
-                        under_treshold.push(dataPoints.dp[i].data[0][1]);
+                        dataPoints.dp[i].moreInfo = "";
                     }
                 }
-                var stop_breaking = Math.round(sum * break_other);
-                if (left_for_other >= stop_breaking) { //fix values if other takes more than set % of data
-                    under_treshold = under_treshold.sort(function(a, b) {
-                        return a - b;
-                    });
 
-                    var tresholdMap = [];
-                    treshold_value = treshold_value - 1; //to don't group exactly 5% values later in code
-                    tresholdMap.push({value: treshold_value, text: 5});
-                    var in_this_one = 0;
-                    var count_in_this = 0;
-
-                    for (p = under_treshold.length - 1; p >= 0 &amp;&amp; under_treshold[p] > 0 &amp;&amp; left_for_other >= stop_breaking; p--) {
-                        if (under_treshold[p] &lt;= treshold_value) {
-                            if (in_this_one + under_treshold[p] &lt;= max_other || count_in_this &lt; 5) {
-                                count_in_this++;
-                                in_this_one += under_treshold[p];
-                                left_for_other -= under_treshold[p];
-                            }
-                            else {
-                                if (tresholdMap[tresholdMap.length - 1].value === under_treshold[p]) {
-                                    in_this_one = 0;
-                                    count_in_this = 0;
-                                    treshold_value = under_treshold[p] - 1;
-                                }
-                                else {
-                                    in_this_one = under_treshold[p];
-                                    count_in_this = 1;
-                                    treshold_value = under_treshold[p];
-                                    left_for_other -= under_treshold[p];
-                                }
-                                tresholdMap.push({value: treshold_value, text: Math.max(0.009, Math.round(treshold_value * 10000 / sum) / 100)});
-                            }
+                if (useMerging) {
+                    var dpLength = dataPoints.dp.length;
+                    var treshold_value = Math.round(min_treshold * sum);
+                    var max_other = Math.round(min_treshold * sum);
+                    var under_treshold = [];//array of values under treshold
+                    var left_for_other = sum;
+                    for (i = 0; i &lt; dataPoints.dp.length; i++) {
+                        if (dataPoints.dp[i].data[0][1] >= treshold_value) {
+                            left_for_other = left_for_other - dataPoints.dp[i].data[0][1];
+                        }
+                        else {
+                            under_treshold.push(dataPoints.dp[i].data[0][1]);
                         }
                     }
-                    treshold_value = Math.max(treshold_value - 1, 0);
-                    tresholdMap.push({value: treshold_value, text: Math.round(treshold_value * 10000 / sum) / 100});
-                    var tresholdPointer = 0;
+                    var stop_breaking = Math.round(sum * break_other);
+                    if (left_for_other >= stop_breaking) { //fix values if other takes more than set % of data
+                        under_treshold = under_treshold.sort(function(a, b) {
+                            return a - b;
+                        });
 
-                    while (tresholdPointer &lt; tresholdMap.length - 1) {
-                        dataPoints.dp.push({"label": tresholdMap[tresholdPointer + 1].text + "-" + tresholdMap[tresholdPointer].text + "%", "data": [[0, 0]], "moreInfo": []});
-                        var tresholdPlace = dataPoints.dp.length - 1;
-                        for (i = 0; i &lt; dpLength; i++) {
-                            if (dataPoints.dp[i].data[0][1] &lt;= tresholdMap[tresholdPointer].value &amp;&amp; dataPoints.dp[i].data[0][1] > tresholdMap[tresholdPointer + 1].value) {
-                                dataPoints.dp[tresholdPlace].moreInfo.push({"label": dataPoints.dp[i].label, "value": Math.round(dataPoints.dp[i].data[0][1] * 10000 / sum) / 100});
-                                dataPoints.dp[tresholdPlace].data[0][1] = dataPoints.dp[tresholdPlace].data[0][1] + dataPoints.dp[i].data[0][1];
-                                dataPoints.dp.splice(i, 1);
-                                dpLength = dataPoints.dp.length;
-                                i--;
-                                tresholdPlace--;
+                        var tresholdMap = [];
+                        treshold_value = treshold_value - 1; //to don't group exactly 5% values later in code
+                        tresholdMap.push({value: treshold_value, text: 5});
+                        var in_this_one = 0;
+                        var count_in_this = 0;
+
+                        for (p = under_treshold.length - 1; p >= 0 &amp;&amp; under_treshold[p] > 0 &amp;&amp; left_for_other >= stop_breaking; p--) {
+                            if (under_treshold[p] &lt;= treshold_value) {
+                                if (in_this_one + under_treshold[p] &lt;= max_other || count_in_this &lt; 5) {
+                                    count_in_this++;
+                                    in_this_one += under_treshold[p];
+                                    left_for_other -= under_treshold[p];
+                                }
+                                else {
+                                    if (tresholdMap[tresholdMap.length - 1].value === under_treshold[p]) {
+                                        in_this_one = 0;
+                                        count_in_this = 0;
+                                        treshold_value = under_treshold[p] - 1;
+                                    }
+                                    else {
+                                        in_this_one = under_treshold[p];
+                                        count_in_this = 1;
+                                        treshold_value = under_treshold[p];
+                                        left_for_other -= under_treshold[p];
+                                    }
+                                    tresholdMap.push({value: treshold_value, text: Math.max(0.009, Math.round(treshold_value * 10000 / sum) / 100)});
+                                }
                             }
                         }
-                        tresholdPointer = tresholdPointer + 1;
+                        treshold_value = Math.max(treshold_value - 1, 0);
+                        tresholdMap.push({value: treshold_value, text: Math.round(treshold_value * 10000 / sum) / 100});
+                        var tresholdPointer = 0;
+
+                        while (tresholdPointer &lt; tresholdMap.length - 1) {
+                            dataPoints.dp.push({"label": tresholdMap[tresholdPointer + 1].text + "-" + tresholdMap[tresholdPointer].text + "%", "data": [[0, 0]], "moreInfo": []});
+                            var tresholdPlace = dataPoints.dp.length - 1;
+                            for (i = 0; i &lt; dpLength; i++) {
+                                if (dataPoints.dp[i].data[0][1] &lt;= tresholdMap[tresholdPointer].value &amp;&amp; dataPoints.dp[i].data[0][1] > tresholdMap[tresholdPointer + 1].value) {
+                                    dataPoints.dp[tresholdPlace].moreInfo.push({"label": dataPoints.dp[i].label, "value": Math.round(dataPoints.dp[i].data[0][1] * 10000 / sum) / 100});
+                                    dataPoints.dp[tresholdPlace].data[0][1] = dataPoints.dp[tresholdPlace].data[0][1] + dataPoints.dp[i].data[0][1];
+                                    dataPoints.dp.splice(i, 1);
+                                    dpLength = dataPoints.dp.length;
+                                    i--;
+                                    tresholdPlace--;
+                                }
+                            }
+                            tresholdPointer = tresholdPointer + 1;
+                        }
                     }
                 }
             }
@@ -639,19 +647,25 @@
                     $(container).bind("plothover", function(event, pos, item) {
                         $("#graph-tooltip").remove();
                         if (item &amp;&amp; item.series &amp;&amp; item.series.moreInfo) {
-                            var tooltipcontent = "&lt;table class='pie_tooltip_table'>";
-                            if (item.series.moreInfo.length &lt;= 5) {
-                                for (p = 0; p &lt; item.series.moreInfo.length; p++) {
-                                    tooltipcontent = tooltipcontent + "&lt;tr>&lt;td>" + item.series.moreInfo[p].label + ":&lt;/td>&lt;td>" + item.series.moreInfo[p].value + "%&lt;/td>";
+                            var tooltipcontent;
+                            if (Array.isArray(item.series.moreInfo)) {
+                                tooltipcontent = "&lt;table class='pie_tooltip_table'>";
+                                if (item.series.moreInfo.length &lt;= 5) {
+                                    for (p = 0; p &lt; item.series.moreInfo.length; p++) {
+                                        tooltipcontent = tooltipcontent + "&lt;tr>&lt;td>" + item.series.moreInfo[p].label + ":&lt;/td>&lt;td>" + item.series.moreInfo[p].value + "%&lt;/td>";
+                                    }
                                 }
+                                else {
+                                    for (p = 0; p &lt; 5; p = p + 1) {
+                                        tooltipcontent += "&lt;tr>&lt;td>" + item.series.moreInfo[p].label + " :&lt;/td>&lt;td>" + item.series.moreInfo[p].value + "%&lt;/td>&lt;/tr>";
+                                    }
+                                    tooltipcontent += "&lt;tr>&lt;td colspan='2' style='text-align:center;'>...&lt;/td>&lt;/tr>&lt;tr>&lt;td style='text-align:center;' colspan=2>(and " + (item.series.moreInfo.length - 5) + " other)&lt;/td>&lt;/tr>";
+                                }
+                                tooltipcontent += "&lt;/table>";
                             }
                             else {
-                                for (p = 0; p &lt; 5; p = p + 1) {
-                                    tooltipcontent += "&lt;tr>&lt;td>" + item.series.moreInfo[p].label + " :&lt;/td>&lt;td>" + item.series.moreInfo[p].value + "%&lt;/td>&lt;/tr>";
-                                }
-                                tooltipcontent += "&lt;tr>&lt;td colspan='2' style='text-align:center;'>...&lt;/td>&lt;/tr>&lt;tr>&lt;td style='text-align:center;' colspan=2>(and " + (item.series.moreInfo.length - 5) + " other)&lt;/td>&lt;/tr>";
+                                tooltipcontent = item.series.moreInfo;
                             }
-                            tooltipcontent += "&lt;/table>";
                             showTooltip({
                                 x: pos.pageX,
                                 y: pos.pageY,
@@ -4508,7 +4522,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Sep 02 2020 13:58:37 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Sep 02 2020 14:13:09 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
