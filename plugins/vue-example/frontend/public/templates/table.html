@@ -71,6 +71,38 @@
                         Selected value: {{selectedCheck}}
                     </div>
                 </div>
+                <div class="example-component">
+                    <div class="example-cell">
+                        Select (static)
+                    </div>
+                    <div class="example-cell">
+                        <cly-select-w 
+                            v-bind:items="selectWItems" 
+                            v-model="selectWModel"
+                            placeholder="Select an item">
+                        </cly-select-w>
+                    </div>
+                    <div class="example-cell">
+                        Selected value: {{selectWModel}}
+                    </div>
+                </div>
+                <div class="example-component">
+                    <div class="example-cell">
+                        Select (dynamic)
+                    </div>
+                    <div class="example-cell">
+                        <cly-select-w 
+                            :items="selectDWItems" 
+                            :searchable="true"
+                            v-model="selectDWModel"
+                            @search="onDSSearch"
+                            placeholder="Select an item">
+                        </cly-select-w>
+                    </div>
+                    <div class="example-cell">
+                        Selected value: {{selectDWModel}}
+                    </div>
+                </div>
             </cly-panel>
         </cly-content>
     </cly-tabs>

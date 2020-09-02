@@ -126,6 +126,18 @@ var TableView = countlyVue.views.BaseView.extend({
                 {label: "Type 1", value: 1},
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3},
+            ],
+            selectWModel: null,
+            selectWItems: [
+                {name: "Type 1", value: 1},
+                {name: "Type 2", value: 2},
+                {name: "Type 3", value: 3},
+            ],
+            selectDWModel: null,
+            selectDWItems: [
+                {name: "Type 1", value: 1},
+                {name: "Type 2", value: 2},
+                {name: "Type 3", value: 3},
             ]
         };
     },
@@ -148,6 +160,17 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$store.commit("vueExample/deleteRecordById", row._id);
         },
         onShow: function(/*row, key*/) {
+        },
+        onDSSearch: function(query) {
+            var self = this;
+            setTimeout(function() {
+                // Mimic an async search event
+                self.selectDWItems = [
+                    {name: "Related with (" + query + ") 1", value: 1},
+                    {name: "Related with (" + query + ") 2", value: 2},
+                    {name: "Related with (" + query + ") 3", value: 3},
+                ];
+            }, 500);
         }
     }
 });

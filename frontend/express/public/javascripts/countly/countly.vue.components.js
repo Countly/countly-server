@@ -1811,4 +1811,118 @@
         }
     ));
 
+    Vue.component("cly-select-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                value: {
+                    type: Object,
+                    default: function() {
+                        return { name: "", value: null };
+                    }
+                },
+                items: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                placeholder: { type: String, default: '' },
+                searchable: { type: Boolean, default: false },
+                disabled: { type: Boolean, default: false },
+            },
+            data: function() {
+                return { searchQuery: "" };
+            },
+            computed: {
+                selectedItem: function() {
+                    // Just an alias for value
+                    return this.value;
+                }
+            },
+            methods: {
+                setItem: function(item) {
+                    if (item.value) {
+                        this.$emit("input", item);
+                    }
+                },
+                _onListClick: function(element) {
+                    if (this.searchable) {
+                        var self = this;
+                        setTimeout(function() {
+                            var timeout = null;
+
+                            $(element).find('input').val(self.searchQuery);
+                            $(element).find('input').unbind('keyup').bind('keyup', function() {
+                                if (timeout) {
+                                    clearTimeout(timeout);
+                                    timeout = null;
+                                }
+                                var query = $(this).val();
+                                timeout = setTimeout(function() {
+                                    $(element).find('.select-items').prepend("<div class='table-loader' style='top:-1px'></div>");
+                                    self.searchQuery = query;
+                                    self.$emit("search", query);
+                                }, 1000);
+                            });
+                        });
+                    }
+                }
+            },
+            mounted: function() {
+                if (this.selectedItem) {
+                    $(this.$refs.selectList).clySelectSetSelection(this.selectedItem.value, this.selectedItem.name);
+                }
+
+                $(this.$refs.selectList).unbind('click').bind("click", this._onListClick.bind(this, $(this.$refs.selectList)));
+            },
+            updated: function() {
+                var selectListDOM = $(this.$refs.selectList);
+                selectListDOM.find('.table-loader').detach();
+                if (this.selectedItem) {
+                    selectListDOM.clySelectSetSelection(this.selectedItem.value, this.selectedItem.name);
+                }
+
+                selectListDOM.unbind('click').bind("click", this._onListClick.bind(this, selectListDOM));
+
+                //For move items to slimscroll area after search event;
+                if (selectListDOM.find('.select-items').is(':visible') && selectListDOM.find('.warning').is(':visible')) {
+                    selectListDOM.find('.item').each(function() {
+                        var item = $(this);
+                        item.removeClass('hidden');
+                        item.detach();
+                        item.insertAfter(selectListDOM.find('.warning'));
+                    });
+                }
+            },
+            template: '<div ref="selectList" class="cly-select text-align-left" v-bind:class="{\'big-list\' : searchable, \'disabled\' : disabled}">\
+                            <div class="select-inner">\
+                                <div class="text-container">\
+                                    <div v-if="selectedItem" class="text" style="width:80%" v-bind:data-value="selectedItem.value">\
+                                        <span v-text="selectedItem.text"></span>\
+                                    </div>\
+                                    <div v-if="!selectedItem" class="text" style="width:80%">\
+                                        <span class="text-light-gray" v-text="placeholder"></span>\
+                                    </div>\
+                                </div>\
+                                <div class="right combo"></div>\
+                            </div>\
+                            <div class="select-items square" style="width:100%;">\
+                                <div class="warning" v-if="searchable">{{ i18n("drill.big-list-warning") }}</div>\
+                                <div v-for="item in items" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
+                                    <div v-if="!item.value">\
+                                        <span v-text="item.name"></span>\
+                                    </div>\
+                                    <div v-if="item.value" v-bind:data-value="item.value">\
+                                        <span v-text="item.name"></span>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </div>'
+        }
+    ));
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
