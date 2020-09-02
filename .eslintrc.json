@@ -1,5 +1,5 @@
 {
-    "extends": ["eslint:recommended",  "plugin:vue/recommended"],
+    "extends": "eslint:recommended",
     "rules": {
         "require-atomic-updates": "off",
         "block-spacing": [

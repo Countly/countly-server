@@ -14,8 +14,6 @@
     "url": "git://github.com/countly/countly-server.git"
   },
   "devDependencies": {
-    "eslint": "^7.7.0",
-    "eslint-plugin-vue": "^6.2.2",
     "grunt-eslint": "^23.0.0",
     "grunt-mocha-nyc": "^1.0.3",
     "grunt-mocha-test": "0.13.3",
