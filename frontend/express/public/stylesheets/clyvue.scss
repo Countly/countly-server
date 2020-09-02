@@ -680,103 +680,117 @@
             }
         }
     }
+    
+    .cly-vue-text-area {
+        font: 13px Ubuntu,Helvetica,sans-serif;
+        color: #444;
+        width: 100%;
+        border-radius: 2px;
+        resize: none;
+        color: #444;
+        border: none;
+        box-shadow: inset 0 0 0 1px #d0d0d0;
+        padding: 10px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
 }
-    .cly-vue-tooltip {
-        display: block !important;
-        z-index: 10000;
-        font-size: 12px;
-        
-        $tooltip_color: rgba(10,10,10,.8);
-        $tooltip_arrow_param: 8px;
+.cly-vue-tooltip {
+    display: block !important;
+    z-index: 10000;
+    font-size: 12px;
+    
+    $tooltip_color: rgba(10,10,10,.8);
+    $tooltip_arrow_param: 8px;
 
-        .tooltip-inner {
-          border:none;
-          background: #{$tooltip_color};
-          color: white;
-          border-radius: 4px;
-          padding: 6px 14px;
-          line-height: 18px;
-        }
-      
+    .tooltip-inner {
+        border:none;
+        background: #{$tooltip_color};
+        color: white;
+        border-radius: 4px;
+        padding: 6px 14px;
+        line-height: 18px;
+    }
+    
+    .tooltip-arrow {
+        width: 0;
+        height: 0;
+        border-style: solid;
+        position: absolute;
+        margin: 5px;
+        border-color: #{$tooltip_color};
+        z-index: 1;
+    }
+    
+    &[x-placement^="top"] {
+        margin-bottom: #{$tooltip_arrow_param * 2};
+    
         .tooltip-arrow {
-          width: 0;
-          height: 0;
-          border-style: solid;
-          position: absolute;
-          margin: 5px;
-          border-color: #{$tooltip_color};
-          z-index: 1;
+        border-width: #{$tooltip_arrow_param} #{$tooltip_arrow_param} 0 #{$tooltip_arrow_param};
+        border-left-color: transparent !important;
+        border-right-color: transparent !important;
+        border-bottom-color: transparent !important;
+        bottom: -#{$tooltip_arrow_param};
+        left: calc(50% - #{$tooltip_arrow_param});
+        margin-top: 0;
+        margin-bottom: 0;
         }
-      
-        &[x-placement^="top"] {
-          margin-bottom: #{$tooltip_arrow_param * 2};
-      
-          .tooltip-arrow {
-            border-width: #{$tooltip_arrow_param} #{$tooltip_arrow_param} 0 #{$tooltip_arrow_param};
-            border-left-color: transparent !important;
-            border-right-color: transparent !important;
-            border-bottom-color: transparent !important;
-            bottom: -#{$tooltip_arrow_param};
-            left: calc(50% - #{$tooltip_arrow_param});
-            margin-top: 0;
-            margin-bottom: 0;
-          }
+    }
+    
+    &[x-placement^="bottom"] {
+        margin-top: #{$tooltip_arrow_param * 2};
+    
+        .tooltip-arrow {
+        border-width: 0 #{$tooltip_arrow_param} #{$tooltip_arrow_param} #{$tooltip_arrow_param};
+        border-left-color: transparent !important;
+        border-right-color: transparent !important;
+        border-top-color: transparent !important;
+        top: -#{$tooltip_arrow_param};
+        left: calc(50% - #{$tooltip_arrow_param});
+        margin-top: 0;
+        margin-bottom: 0;
         }
-      
-        &[x-placement^="bottom"] {
-          margin-top: #{$tooltip_arrow_param * 2};
-      
-          .tooltip-arrow {
-            border-width: 0 #{$tooltip_arrow_param} #{$tooltip_arrow_param} #{$tooltip_arrow_param};
-            border-left-color: transparent !important;
-            border-right-color: transparent !important;
-            border-top-color: transparent !important;
-            top: -#{$tooltip_arrow_param};
-            left: calc(50% - #{$tooltip_arrow_param});
-            margin-top: 0;
-            margin-bottom: 0;
-          }
+    }
+    
+    &[x-placement^="right"] {
+        margin-left: #{$tooltip_arrow_param * 2};
+    
+        .tooltip-arrow {
+        border-width: #{$tooltip_arrow_param} #{$tooltip_arrow_param} #{$tooltip_arrow_param} 0;
+        border-left-color: transparent !important;
+        border-top-color: transparent !important;
+        border-bottom-color: transparent !important;
+        left: -#{$tooltip_arrow_param};
+        top: calc(50% - #{$tooltip_arrow_param});
+        margin-left: 0;
+        margin-right: 0;
         }
-      
-        &[x-placement^="right"] {
-          margin-left: #{$tooltip_arrow_param * 2};
-      
-          .tooltip-arrow {
-            border-width: #{$tooltip_arrow_param} #{$tooltip_arrow_param} #{$tooltip_arrow_param} 0;
-            border-left-color: transparent !important;
-            border-top-color: transparent !important;
-            border-bottom-color: transparent !important;
-            left: -#{$tooltip_arrow_param};
-            top: calc(50% - #{$tooltip_arrow_param});
-            margin-left: 0;
-            margin-right: 0;
-          }
+    }
+    
+    &[x-placement^="left"] {
+        margin-right: #{$tooltip_arrow_param * 2};
+    
+        .tooltip-arrow {
+        border-width: #{$tooltip_arrow_param} 0 #{$tooltip_arrow_param} #{$tooltip_arrow_param};
+        border-top-color: transparent !important;
+        border-right-color: transparent !important;
+        border-bottom-color: transparent !important;
+        right: -#{$tooltip_arrow_param};
+        top: calc(50% - #{$tooltip_arrow_param});
+        margin-left: 0;
+        margin-right: 0;
         }
-      
-        &[x-placement^="left"] {
-          margin-right: #{$tooltip_arrow_param * 2};
-      
-          .tooltip-arrow {
-            border-width: #{$tooltip_arrow_param} 0 #{$tooltip_arrow_param} #{$tooltip_arrow_param};
-            border-top-color: transparent !important;
-            border-right-color: transparent !important;
-            border-bottom-color: transparent !important;
-            right: -#{$tooltip_arrow_param};
-            top: calc(50% - #{$tooltip_arrow_param});
-            margin-left: 0;
-            margin-right: 0;
-          }
-        }
-      
-        &[aria-hidden='true'] {
-          visibility: hidden;
-          opacity: 0;
-          transition: opacity .05s, visibility .05s;
-        }
-      
-        &[aria-hidden='false'] {
-          visibility: visible;
-          opacity: 1;
-          transition: opacity .05s;
-        }
-      }
+    }
+    
+    &[aria-hidden='true'] {
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity .05s, visibility .05s;
+    }
+    
+    &[aria-hidden='false'] {
+        visibility: visible;
+        opacity: 1;
+        transition: opacity .05s;
+    }
+}
