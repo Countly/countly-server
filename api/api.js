@@ -218,6 +218,10 @@ const passToMaster = (worker) => {
                     worker.send({ cmd: "batch_read", data: {msgId, err} });
                 });
         }
+        else if (msg.cmd === "batch_invalidate") {
+            const {collection, query, projection, multi} = msg.data;
+            common.readBatcher.invalidate(collection, query, projection, multi);
+        }
         else if (msg.cmd === "dispatch" && msg.event) {
             workers.forEach((w) => {
                 w.send(msg);
