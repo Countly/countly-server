@@ -170,7 +170,7 @@ var TableView = countlyVue.views.BaseView.extend({
                     {name: "Related with (" + query + ") 2", value: 2},
                     {name: "Related with (" + query + ") 3", value: 3},
                 ];
-            }, 500);
+            }, 0);
         }
     }
 });

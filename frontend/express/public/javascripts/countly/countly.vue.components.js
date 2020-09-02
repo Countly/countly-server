@@ -1831,26 +1831,44 @@
                     }
                 },
                 placeholder: { type: String, default: '' },
-                searchable: { type: Boolean, default: false },
+                dynamicItems: { type: Boolean, default: false },
                 disabled: { type: Boolean, default: false },
             },
             data: function() {
-                return { searchQuery: "" };
+                return {
+                    searchQuery: "",
+                    navigatedIndex: null,
+                    opened: false
+                };
             },
             computed: {
                 selectedItem: function() {
-                    // Just an alias for value
                     return this.value;
+                },
+                searchable: function() {
+                    return this.items.length > 10 || this.dynamicItems;
+                },
+                visibleItems: function() {
+                    var self = this;
+                    if (this.searchQuery && this.searchQuery !== "") {
+                        return this.items.filter(function(item) {
+                            return item.name.indexOf(self.searchQuery) > -1;
+                        });
+                    }
+                    else {
+                        return this.items;
+                    }
                 }
             },
             methods: {
                 setItem: function(item) {
                     if (item.value) {
                         this.$emit("input", item);
+                        this.opened = false;
                     }
                 },
                 _onListClick: function(element) {
-                    if (this.searchable) {
+                    if (this.dynamicItems) {
                         var self = this;
                         setTimeout(function() {
                             var timeout = null;
@@ -1872,47 +1890,38 @@
                     }
                 }
             },
-            mounted: function() {
-                if (this.selectedItem) {
-                    $(this.$refs.selectList).clySelectSetSelection(this.selectedItem.value, this.selectedItem.name);
-                }
-
-                $(this.$refs.selectList).unbind('click').bind("click", this._onListClick.bind(this, $(this.$refs.selectList)));
-            },
-            updated: function() {
-                var selectListDOM = $(this.$refs.selectList);
-                selectListDOM.find('.table-loader').detach();
-                if (this.selectedItem) {
-                    selectListDOM.clySelectSetSelection(this.selectedItem.value, this.selectedItem.name);
-                }
-
-                selectListDOM.unbind('click').bind("click", this._onListClick.bind(this, selectListDOM));
-
-                //For move items to slimscroll area after search event;
-                if (selectListDOM.find('.select-items').is(':visible') && selectListDOM.find('.warning').is(':visible')) {
-                    selectListDOM.find('.item').each(function() {
-                        var item = $(this);
-                        item.removeClass('hidden');
-                        item.detach();
-                        item.insertAfter(selectListDOM.find('.warning'));
-                    });
+            watch: {
+                opened: function(newValue) {
+                    if (!newValue) {
+                        this.searchQuery = "";
+                    }
+                },
+                searchQuery: function(query) {
+                    if (this.dynamicItems) {
+                        this.$emit("search", query);
+                    }
                 }
             },
-            template: '<div ref="selectList" class="cly-select text-align-left" v-bind:class="{\'big-list\' : searchable, \'disabled\' : disabled}">\
-                            <div class="select-inner">\
+            template: '<div class="cly-vue-select text-align-left" v-bind:class="{\'active\': opened, \'dynamic-items\' : dynamicItems, \'disabled\' : disabled}">\
+                            <div class="select-inner" @click="opened=!opened">\
                                 <div class="text-container">\
-                                    <div v-if="selectedItem" class="text" style="width:80%" v-bind:data-value="selectedItem.value">\
-                                        <span v-text="selectedItem.text"></span>\
+                                    <div v-if="selectedItem" class="text" style="width:80%">\
+                                        <span>{{selectedItem.name}}</span>\
                                     </div>\
                                     <div v-if="!selectedItem" class="text" style="width:80%">\
-                                        <span class="text-light-gray" v-text="placeholder"></span>\
+                                        <span class="text-light-gray">{{placeholder}}</span>\
                                     </div>\
                                 </div>\
                                 <div class="right combo"></div>\
                             </div>\
-                            <div class="select-items square" style="width:100%;">\
-                                <div class="warning" v-if="searchable">{{ i18n("drill.big-list-warning") }}</div>\
-                                <div v-for="item in items" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
+                            <div class="items-list square" style="width:100%;" v-show="opened">\
+                                <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
+                                <div class="search" v-if="searchable">\
+                                    <div class="inner">\
+                                    <input type="search" v-model="searchQuery"/>\<i class="fa fa-search"></i>\
+                                    </div>\
+                                </div>\
+                                <div v-for="item in visibleItems" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
                                     <div v-if="!item.value">\
                                         <span v-text="item.name"></span>\
                                     </div>\

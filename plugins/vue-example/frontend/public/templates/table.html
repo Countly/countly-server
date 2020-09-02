@@ -77,6 +77,7 @@
                     </div>
                     <div class="example-cell">
                         <cly-select-w 
+                            style="width:220px"
                             v-bind:items="selectWItems" 
                             v-model="selectWModel"
                             placeholder="Select an item">
@@ -92,8 +93,9 @@
                     </div>
                     <div class="example-cell">
                         <cly-select-w 
+                            style="width:220px"
                             :items="selectDWItems" 
-                            :searchable="true"
+                            :dynamic-items="true"
                             v-model="selectDWModel"
                             @search="onDSSearch"
                             placeholder="Select an item">
