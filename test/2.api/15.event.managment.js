@@ -612,7 +612,7 @@ describe('Testing event settings', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    done();
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
 
@@ -706,7 +706,7 @@ describe('Testing event settings', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
 
