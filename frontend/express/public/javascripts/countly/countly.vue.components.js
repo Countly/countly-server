@@ -1849,7 +1849,8 @@
                     searchQuery: "", // debounced search query value
                     navigatedIndex: null,
                     opened: false,
-                    waitingItems: false
+                    waitingItems: false,
+                    groupIndex: []
                 };
             },
             computed: {
@@ -1862,8 +1863,21 @@
                 visibleItems: function() {
                     var self = this;
                     if (!this.dynamicItems && this.tempSearchQuery && this.tempSearchQuery !== "") {
-                        return this.items.filter(function(item) {
-                            return item.name.indexOf(self.tempSearchQuery) > -1;
+                        var visible = this.items.map(function() {
+                            return false;
+                        });
+                        this.items.forEach(function(item, idx) {
+                            if (Object.prototype.hasOwnProperty.call(item, "value")) {
+                                if (item.name.indexOf(self.tempSearchQuery) > -1) {
+                                    visible[idx] = true;
+                                    if (self.groupIndex[idx] > -1) {
+                                        visible[self.groupIndex[idx]] = true;
+                                    }
+                                }
+                            }
+                        });
+                        return this.items.filter(function(item, idx) {
+                            return visible[idx];
                         });
                     }
                     else if (this.dynamicItems && this.waitingItems) {
@@ -1890,6 +1904,20 @@
                         this.waitingItems = true;
                         this.$emit("search", this.searchQuery);
                     }
+                },
+                refreshGroupIndex: function() {
+                    var index = [];
+                    var currentGroup = -1;
+                    this.items.forEach(function(item, idx) {
+                        if (!Object.prototype.hasOwnProperty.call(item, "value")) {
+                            currentGroup = idx;
+                            index.push(-1);
+                        }
+                        else {
+                            index.push(currentGroup);
+                        }
+                    });
+                    this.groupIndex = index;
                 }
             },
             watch: {
@@ -1905,8 +1933,12 @@
                 searchQuery: function() {
                     this.fireDynamicSearch();
                 },
-                items: function() {
-                    this.waitingItems = false;
+                items: {
+                    immediate: true,
+                    handler: function() {
+                        this.waitingItems = false;
+                        this.refreshGroupIndex();
+                    }
                 }
             },
             template: '<div class="cly-vue-select centered text-align-left" v-bind:class="{\'active\': opened, \'dynamic-items\' : dynamicItems, \'disabled\' : disabled}" v-click-outside="close">\
