@@ -783,7 +783,7 @@
      
         &.loading:after { content:"Loading..."; position: absolute; top:1px; left: 0; color:#d0d0d0; background-color: #fdfdfd; padding: 5px 40px 5px 11px; font-size: 13px; }
      
-        &.float { 
+        &.select-slim-skin { 
             float:left; border:none; width: auto; background-color: transparent; margin-right: 5px; 
             .text { padding-left: 3px; }
             .text-container { width:auto; max-width:150px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; }

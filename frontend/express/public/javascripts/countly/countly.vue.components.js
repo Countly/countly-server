@@ -1833,7 +1833,8 @@
                 placeholder: { type: String, default: '' },
                 dynamicItems: { type: Boolean, default: false },
                 disabled: { type: Boolean, default: false },
-                aligned: { type: String, default: "left" }
+                aligned: { type: String, default: "left" },
+                skin: { type: String, default: 'default' },
             },
             mounted: function() {
                 $(this.$refs.scrollable).slimScroll({
@@ -1871,7 +1872,18 @@
                     if (this.disabled) {
                         classes.push("disabled");
                     }
-                    classes.push("select-aligned-" + this.aligned);
+                    if (["default", "slim"].indexOf(this.skin) > -1) {
+                        classes.push("select-" + this.skin + "-skin");
+                    }
+                    else {
+                        classes.push("select-default-skin");
+                    }
+                    if (["left", "center", "right"].indexOf(this.aligned) > -1) {
+                        classes.push("select-aligned-" + this.aligned);
+                    }
+                    else {
+                        classes.push("select-aligned-left");
+                    }
                     return classes;
                 },
                 visibleItems: function() {
@@ -1980,7 +1992,7 @@
                             <div class="items-list square" style="width:100%;" v-show="opened">\
                                 <div ref="scrollable" class="scrollable">\
                                     <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
-                                    <div v-for="item in visibleItems" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
+                                    <div v-for="(item, i) in visibleItems" :key="i" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
                                         <div v-if="!item.value">\
                                             <span v-text="item.name"></span>\
                                         </div>\

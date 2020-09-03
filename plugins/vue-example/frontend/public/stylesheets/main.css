@@ -5,13 +5,12 @@
 .vue-example-wrapper .example-cell{
     margin: 20px;
     width: 25%;
-    text-align: center;
+    height: 200px;
     display: inline-block;
     vertical-align: middle;
 }
 
 .vue-example-wrapper .example-component{
-    text-align: center;
     border-bottom: 1px solid #ccc;
-    height: 150px;
+    height: 200px;
 }
