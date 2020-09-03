@@ -1811,4 +1811,199 @@
         }
     ));
 
+    Vue.component("cly-select-n", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                value: {
+                    type: Object,
+                    default: function() {
+                        return { name: "", value: null };
+                    }
+                },
+                items: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                placeholder: { type: String, default: '' },
+                dynamicItems: { type: Boolean, default: false },
+                disabled: { type: Boolean, default: false },
+                aligned: { type: String, default: "left" },
+                skin: { type: String, default: 'default' },
+            },
+            mounted: function() {
+                $(this.$refs.scrollable).slimScroll({
+                    height: '100%',
+                    start: 'top',
+                    wheelStep: 10,
+                    position: 'right',
+                    disableFadeOut: true
+                });
+            },
+            data: function() {
+                return {
+                    tempSearchQuery: "", // in-sync search query value
+                    searchQuery: "", // debounced search query value
+                    navigatedIndex: null,
+                    opened: false,
+                    waitingItems: false
+                };
+            },
+            computed: {
+                selectedItem: function() {
+                    return this.value;
+                },
+                searchable: function() {
+                    return this.items.length > 10 || this.dynamicItems;
+                },
+                containerClasses: function() {
+                    var classes = [];
+                    if (this.opened) {
+                        classes.push("active");
+                    }
+                    if (this.dynamicItems) {
+                        classes.push("dynamic-items");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    if (["default", "slim"].indexOf(this.skin) > -1) {
+                        classes.push("select-" + this.skin + "-skin");
+                    }
+                    else {
+                        classes.push("select-default-skin");
+                    }
+                    if (["left", "center", "right"].indexOf(this.aligned) > -1) {
+                        classes.push("select-aligned-" + this.aligned);
+                    }
+                    else {
+                        classes.push("select-aligned-left");
+                    }
+                    return classes;
+                },
+                visibleItems: function() {
+                    var self = this;
+                    if (!this.dynamicItems && this.tempSearchQuery && this.tempSearchQuery !== "") {
+                        var visible = this.items.map(function() {
+                            return false;
+                        });
+                        var loweredQuery = self.tempSearchQuery.toLowerCase();
+                        this.items.forEach(function(item, idx) {
+                            if (Object.prototype.hasOwnProperty.call(item, "value")) {
+                                if (item.name.toLowerCase().indexOf(loweredQuery) > -1) {
+                                    visible[idx] = true;
+                                    if (self.groupIndex[idx] > -1) {
+                                        visible[self.groupIndex[idx]] = true;
+                                    }
+                                }
+                            }
+                        });
+                        return this.items.filter(function(item, idx) {
+                            return visible[idx];
+                        });
+                    }
+                    else if (this.dynamicItems && this.waitingItems) {
+                        // blocked for search event to complete
+                        return [];
+                    }
+                    else {
+                        return this.items;
+                    }
+                },
+                groupIndex: function() {
+                    var index = [];
+                    var currentGroup = -1;
+                    this.items.forEach(function(item, idx) {
+                        if (!Object.prototype.hasOwnProperty.call(item, "value")) {
+                            currentGroup = idx;
+                            index.push(-1);
+                        }
+                        else {
+                            index.push(currentGroup);
+                        }
+                    });
+                    return index;
+                }
+            },
+            methods: {
+                setItem: function(item) {
+                    if (item.value) {
+                        this.$emit("input", item);
+                        this.opened = false;
+                    }
+                },
+                close: function() {
+                    this.opened = false;
+                },
+                fireDynamicSearch: function() {
+                    if (this.dynamicItems) {
+                        this.waitingItems = true;
+                        this.$emit("search", this.searchQuery);
+                    }
+                },
+                toggle: function() {
+                    if (!this.disabled) {
+                        this.opened = !this.opened;
+                    }
+                }
+            },
+            watch: {
+                opened: function(newValue) {
+                    if (!newValue) {
+                        this.tempSearchQuery = "";
+                        this.searchQuery = "";
+                    }
+                },
+                tempSearchQuery: _.debounce(function(newVal) {
+                    this.searchQuery = newVal;
+                }, 500),
+                searchQuery: function() {
+                    this.fireDynamicSearch();
+                },
+                items: {
+                    immediate: true,
+                    handler: function() {
+                        this.waitingItems = false;
+                    }
+                }
+            },
+            template: '<div class="cly-vue-select" v-bind:class="containerClasses" v-click-outside="close">\
+                            <div class="select-inner" @click="toggle">\
+                                <div class="text-container">\
+                                    <div v-if="selectedItem" class="text" style="width:80%">\
+                                        <span>{{selectedItem.name}}</span>\
+                                    </div>\
+                                    <div v-if="!selectedItem" class="text" style="width:80%">\
+                                        <span class="text-light-gray">{{placeholder}}</span>\
+                                    </div>\
+                                </div>\
+                                <div class="right combo"></div>\
+                            </div>\
+                            <div class="search" v-if="searchable" v-show="opened">\
+                                <div class="inner">\
+                                <input type="search" v-model="tempSearchQuery"/>\<i class="fa fa-search"></i>\
+                                </div>\
+                            </div>\
+                            <div class="items-list square" style="width:100%;" v-show="opened">\
+                                <div ref="scrollable" class="scrollable">\
+                                    <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
+                                    <div v-for="(item, i) in visibleItems" :key="i" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
+                                        <div v-if="!item.value">\
+                                            <span v-text="item.name"></span>\
+                                        </div>\
+                                        <div v-if="item.value" v-bind:data-value="item.value">\
+                                            <span v-text="item.name"></span>\
+                                        </div>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </div>'
+        }
+    ));
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

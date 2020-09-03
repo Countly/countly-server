@@ -8,7 +8,15 @@ var TableView = countlyVue.views.BaseView.extend({
         }
     },
     data: function() {
-        var self = this;
+        var self = this,
+            manyItems = [];
+
+        for (var i = 1;i <= 50;i++) {
+            if (i > 0 && i % 10 === 0) {
+                manyItems.push({name: (i - i % 10) + "s"});
+            }
+            manyItems.push({name: "Type " + i, value: i});
+        }
         return {
             targetName: "",
             targetValue: 0,
@@ -126,7 +134,11 @@ var TableView = countlyVue.views.BaseView.extend({
                 {label: "Type 1", value: 1},
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3},
-            ]
+            ],
+            selectWModel: null,
+            selectWItems: manyItems,
+            selectDWModel: null,
+            selectDWItems: manyItems
         };
     },
     methods: {
@@ -148,6 +160,26 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$store.commit("vueExample/deleteRecordById", row._id);
         },
         onShow: function(/*row, key*/) {
+        },
+        onDSSearch: function(query) {
+            var self = this;
+            setTimeout(function() {
+                // Mimic an async search event
+                if (query && query !== "") {
+                    self.selectDWItems = [
+                        {name: "Related with (" + query + ") 1", value: 1},
+                        {name: "Related with (" + query + ") 2", value: 2},
+                        {name: "Related with (" + query + ") 3", value: 3},
+                    ];
+                }
+                else {
+                    var manyItems = [];
+                    for (var i = 1;i <= 50;i++) {
+                        manyItems.push({name: "Type " + i, value: i});
+                    }
+                    self.selectDWItems = manyItems;
+                }
+            }, 500);
         }
     }
 });
