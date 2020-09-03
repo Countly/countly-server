@@ -8,7 +8,12 @@ var TableView = countlyVue.views.BaseView.extend({
         }
     },
     data: function() {
-        var self = this;
+        var self = this,
+            manyItems = [];
+
+        for (var i = 1;i <= 50;i++) {
+            manyItems.push({name: "Type " + i, value: i});
+        }
         return {
             targetName: "",
             targetValue: 0,
@@ -128,26 +133,9 @@ var TableView = countlyVue.views.BaseView.extend({
                 {label: "Type 3", value: 3},
             ],
             selectWModel: null,
-            selectWItems: [
-                {name: "Type 1", value: 1},
-                {name: "Type 2", value: 2},
-                {name: "Type 3", value: 3},
-                {name: "Type 1", value: 4},
-                {name: "Type 2", value: 5},
-                {name: "Type 3", value: 6},
-                {name: "Type 1", value: 7},
-                {name: "Type 2", value: 8},
-                {name: "Type 3", value: 9},
-                {name: "Type 1", value: 10},
-                {name: "Type 2", value: 1},
-                {name: "Type 3", value: 2},
-            ],
+            selectWItems: manyItems,
             selectDWModel: null,
-            selectDWItems: [
-                {name: "Type 1", value: 1},
-                {name: "Type 2", value: 2},
-                {name: "Type 3", value: 3},
-            ]
+            selectDWItems: manyItems
         };
     },
     methods: {
@@ -182,12 +170,11 @@ var TableView = countlyVue.views.BaseView.extend({
                     ];
                 }
                 else {
-                    // Return to original list
-                    self.selectDWItems = [
-                        {name: "Type 1", value: 1},
-                        {name: "Type 2", value: 2},
-                        {name: "Type 3", value: 3},
-                    ];
+                    var manyItems = [];
+                    for (var i = 1;i <= 50;i++) {
+                        manyItems.push({name: "Type " + i, value: i});
+                    }
+                    self.selectDWItems = manyItems;
                 }
             }, 500);
         }

@@ -713,7 +713,7 @@
         }
         
         .search { 
-            top:100%; background-color: #FFF; width:100%; border:1px solid #D0D0D0; border-top:none; margin-left:-1px; cursor:default; overflow:auto; 
+            top:100%; background-color: #FFF; width:100%; border:1px solid #D0D0D0; border-bottom:none; margin-left:-1px; cursor:default; overflow:auto; 
             .fa { position: absolute; right:0; top:5px; color:#CCC; font-size: 10px; }
             .inner { position:relative; margin:5px 8px; padding:4px 1px; padding-right:20px; background-color:#FFF; font:13px Ubuntu; line-height:111%; }
             input { 
@@ -726,7 +726,7 @@
         .items-list { 
             top:100%; z-index:2; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; 
 
-            .scroll-list {  max-height:188px; }
+            .scrollable {  max-height:188px; }
             .warning { color:#FF8700; font-weight:normal; border-bottom:1px solid #e6e6e6; font:11px Ubuntu,Helvetica,sans-serif; line-height:14px; padding:7px 9px; cursor: default; text-align: center; }
             .item {
                  text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#666; font-weight:normal; border-bottom:1px solid #e6e6e6; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px 9px; padding-bottom:7px; 

@@ -918,7 +918,7 @@
   background-color: #FFF;
   width: 100%;
   border: 1px solid #D0D0D0;
-  border-top: none;
+  border-bottom: none;
   margin-left: -1px;
   cursor: default;
   overflow: auto;
@@ -968,7 +968,7 @@
   border: 1px solid #D0D0D0;
   width: 135px;
 }
-.cly-vue-theme-clydef .cly-vue-select .items-list .scroll-list {
+.cly-vue-theme-clydef .cly-vue-select .items-list .scrollable {
   max-height: 188px;
 }
 .cly-vue-theme-clydef .cly-vue-select .items-list .warning {

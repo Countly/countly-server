@@ -1834,6 +1834,15 @@
                 dynamicItems: { type: Boolean, default: false },
                 disabled: { type: Boolean, default: false },
             },
+            mounted: function() {
+                $(this.$refs.scrollable).slimScroll({
+                    height: '100%',
+                    start: 'top',
+                    wheelStep: 10,
+                    position: 'right',
+                    disableFadeOut: true
+                });
+            },
             data: function() {
                 return {
                     tempSearchQuery: "", // in-sync search query value
@@ -1912,19 +1921,21 @@
                                 </div>\
                                 <div class="right combo"></div>\
                             </div>\
-                            <div class="items-list square" style="width:100%;" v-show="opened">\
-                                <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
-                                <div class="search" v-if="searchable">\
-                                    <div class="inner">\
-                                    <input type="search" v-model="tempSearchQuery"/>\<i class="fa fa-search"></i>\
-                                    </div>\
+                            <div class="search" v-if="searchable" v-show="opened">\
+                                <div class="inner">\
+                                <input type="search" v-model="tempSearchQuery"/>\<i class="fa fa-search"></i>\
                                 </div>\
-                                <div v-for="item in visibleItems" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
-                                    <div v-if="!item.value">\
-                                        <span v-text="item.name"></span>\
-                                    </div>\
-                                    <div v-if="item.value" v-bind:data-value="item.value">\
-                                        <span v-text="item.name"></span>\
+                            </div>\
+                            <div class="items-list square" style="width:100%;" v-show="opened">\
+                                <div ref="scrollable" class="scrollable">\
+                                    <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
+                                    <div v-for="item in visibleItems" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
+                                        <div v-if="!item.value">\
+                                            <span v-text="item.name"></span>\
+                                        </div>\
+                                        <div v-if="item.value" v-bind:data-value="item.value">\
+                                            <span v-text="item.name"></span>\
+                                        </div>\
                                     </div>\
                                 </div>\
                             </div>\
