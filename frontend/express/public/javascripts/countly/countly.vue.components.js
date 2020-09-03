@@ -1850,8 +1850,7 @@
                     searchQuery: "", // debounced search query value
                     navigatedIndex: null,
                     opened: false,
-                    waitingItems: false,
-                    groupIndex: []
+                    waitingItems: false
                 };
             },
             computed: {
@@ -1903,6 +1902,20 @@
                     else {
                         return this.items;
                     }
+                },
+                groupIndex: function() {
+                    var index = [];
+                    var currentGroup = -1;
+                    this.items.forEach(function(item, idx) {
+                        if (!Object.prototype.hasOwnProperty.call(item, "value")) {
+                            currentGroup = idx;
+                            index.push(-1);
+                        }
+                        else {
+                            index.push(currentGroup);
+                        }
+                    });
+                    return index;
                 }
             },
             methods: {
@@ -1920,20 +1933,6 @@
                         this.waitingItems = true;
                         this.$emit("search", this.searchQuery);
                     }
-                },
-                refreshGroupIndex: function() {
-                    var index = [];
-                    var currentGroup = -1;
-                    this.items.forEach(function(item, idx) {
-                        if (!Object.prototype.hasOwnProperty.call(item, "value")) {
-                            currentGroup = idx;
-                            index.push(-1);
-                        }
-                        else {
-                            index.push(currentGroup);
-                        }
-                    });
-                    this.groupIndex = index;
                 }
             },
             watch: {
@@ -1953,7 +1952,6 @@
                     immediate: true,
                     handler: function() {
                         this.waitingItems = false;
-                        this.refreshGroupIndex();
                     }
                 }
             },
