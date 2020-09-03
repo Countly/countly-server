@@ -25,6 +25,7 @@
     .appleFooter a {color:#999999; text-decoration: none;}
 
     #report-title span { font-size: 25px; display: block; }
+    .report-email-subtitle{ font-size: 16px; font-weight: normal; padding: 15px 0px 0px 0px; line-height:16px; }
 
     /* MOBILE STYLES */
     @media screen and (max-width: 525px) {
@@ -69,55 +70,60 @@
     }
 </style>
 </head>
-<body style="margin: 0; padding: 0;">
+<body style="margin: 0; padding: 0; background-color:#f2f2f2;">
+<div style="margin:100px auto;max-width:1000px;">
 
-<!-- HEADER -->
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
-        <td bgcolor="#ffffff" align="center" style="padding:0 15px;">
+        <td bgcolor="#ffffff" align="center" style="padding: 38px 15px 15px 15px;" class="section-padding">
             <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
                 <tr>
-                    <td style="padding: 30px 0px 30px 0px;" class="logo" align="center">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" >
+                    <td style="padding:38px 0 46px 0;">
+                        <!-- HEADER -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
-                                <td bgcolor="#ffffff" width="100" align="left"><a href="<%= version.page %>" target="_blank"><img alt="Logo" src="<%= host %>/images/dashboard/logo.png" width="150" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></a></td>
+                                <td bgcolor="#ffffff" align="left" style="padding:0 15px;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="responsive-table">
+                                        <tr>
+                                            <td style="padding: 30px 0px 30px 0px;" class="logo" align="left">
+                                                <table border="0" cellpadding="0" cellspacing="0" width="100%" >
+                                                    <tr>
+                                                        <td bgcolor="#ffffff" width="100" align="left"><a href="<%= version.page %>" target="_blank"><img alt="Logo" src="<%= host %>/images/dashboard/logo.png" width="150" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></a></td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ONE COLUMN SECTION -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td bgcolor="#FFFFFF" align="left" style="padding: 20px 0px;69px 0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="responsive-table">
+                                        <tr>
+                                            <td>
+                                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                                    <tr>
+                                                        <td id="report-title" align="left" style="font-size: 35px; font-family: Helvetica, Arial, sans-serif; color: #333333; padding-top: 0px; line-height: 36px; font-weight: 600;" ><%- properties["reports.your"] %></td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
-            </table>
-        </td>
-    </tr>
-</table>
+                <% for(var i=0; i < apps.length; i++) { %>
+                <% if (apps[i] && apps[i].display) { %>
+                <!-- THREE COLUMN SECTION -->
 
-<!-- ONE COLUMN SECTION -->
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td bgcolor="#FFFFFF" align="center" style="padding: 20px 15px 20px 15px;">
-            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
                 <tr>
-                    <td>
-                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td id="report-title" align="left" style="font-size: 35px; font-family: Helvetica, Arial, sans-serif; color: #333333; padding-top: 0px; line-height: 36px; font-weight: 600;" ><%- properties["reports.your"] %></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-
-<% for(var i=0; i < apps.length; i++) { %>
-    <% if (apps[i] && apps[i].display) { %>
-<!-- THREE COLUMN SECTION -->
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td bgcolor="#ffffff" align="center" style="padding: 35px 15px 15px 15px;" class="section-padding">
-            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
-                <tr>
-                    <td style="padding: 10px 0 10px 0;">
+                    <td style="padding: 10px 0 40px 0;">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td valign="top" class="mobile-wrapper">
@@ -140,11 +146,11 @@
                         </table>
                     </td>
                 </tr>
-                
+
                 <% for(var j in apps[i].results) {%>
-                    <% if (report.metrics[j]) { %>
+                <% if (report.metrics[j]) { %>
                 <tr>
-                    <td style="padding: 10px 0 0 0; border-bottom: 1px dashed #DDDDDD; ">
+                    <td style="padding: 10px 0 0 0; border-bottom: 1px #DDDDDD; ">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td valign="top" class="mobile-wrapper">
@@ -153,7 +159,7 @@
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                     <tr>
-                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px; font-weight: bold;">
+                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 20px; font-weight: bold;">
                                                             <%= properties["reports."+j] %>
                                                         </td>
                                                     </tr>
@@ -166,11 +172,40 @@
                         </table>
                     </td>
                 </tr>
-                  
 
-                    <% for(var key in apps[i].results[j]) {%>
-                        <% if (metrics[key] || j == "events") { var keyName = key; %>
-                        <% if (j == "events") { keyName = apps[i].results[j][key].name || keyName;}%>
+                <% if (metricProps[j]) { %>
+                <tr>
+                    <tr>
+                        <td style="padding: 5px 0 0 0; border-bottom: 1px dashed #dddddd;">
+                            <table cellspacing="0" cellpadding="0" border="0" width="100%" style="display:inline-table">
+                                <tr>
+                                    <td valign="top" class="mobile-wrapper">
+                                        <% for(var k = 0; k < metricProps[j].length; k++) {  %>
+                                        <% var item = metricProps[j][k]; %>
+                                        <!-- left column -->
+                                        <table cellpadding="0" cellspacing="0" border="0"  style="<% if(k == 0){ %>width: 48%;" align="left" <% } if(k ===1){ %> width:28%;" align="left"<%} if(k ===2) {%>  width:20%;" align="right" <%}%> >
+                                            <tr>
+                                                <td style="padding: 0 0 10px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                        <tr>
+                                                            <th align="<% if(k == 0){ %>left<% } else {%>right<%} %>" style="font-family: arial, sans-serif;color: #979797;  font-size: 16px;word-wrap:break-word;word-break:break-all;"><%= item %></th>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </tr>
+                <% } %>
+
+                <% for(var key in apps[i].results[j]) {%>
+                <% if (metrics[key] || j == "events") { var keyName = key; %>
+                <% if (j == "events") { keyName = apps[i].results[j][key].name || keyName;}%>
                 <tr>
                     <td style="padding: 10px 0 0 0;">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%" style="display:inline-table">
@@ -219,11 +254,10 @@
                         </table>
                     </td>
                 </tr>
-                        <% } %>
-                    <% } %>
-                  
-                    <tr>
-                    <td style="padding: 10px 0 0 0; border-top: 1px dashed #DDDDDD; ">
+                <% } %>
+                <% } %>
+                <tr>
+                    <td style="padding: 10px 0 30px 0; border-top: 1px dashed #DDDDDD;">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td valign="top" class="mobile-wrapper">
@@ -245,37 +279,41 @@
                         </table>
                     </td>
                 </tr>
-                
+
                 <% } %>
                 <% } %>
                 <% for(var key in apps[i].plugin_metrics) { %>
-                    <%- apps[i].plugin_metrics[key].html %>
+                <%- apps[i].plugin_metrics[key].html %>
                 <% } %>
-               
-            </table>
-        </td>
-    </tr>
-     
-</table>
-    <% } %>
-<% } %>
-<!-- ONE COLUMN SECTION -->
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td bgcolor="#ffffff" align="center" style="padding: 0px 15px 15px 15px;" class="section-padding">
-            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+
+
+                <% } %>
+                <% } %>
                 <tr>
                     <td>
-                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                        <!-- ONE COLUMN SECTION -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
-                                <td align="center">
-                                    <!-- BULLETPROOF BUTTON -->
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="mobile-button-container">
+                                <td bgcolor="#ffffff" align="center" style="padding: 0px 15px 15px 15px;" class="section-padding">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
                                         <tr>
-                                            <td align="center" style="padding: 25px 0 0 0;" class="padding-copy">
-                                                <table border="0" cellspacing="0" cellpadding="0" class="responsive-table">
+                                            <td>
+                                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                                     <tr>
-                                                        <td align="center"><a href="<%= host %>/dashboard" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: normal; color: #ffffff; text-decoration: none; background-color: #3a9d3e; border-top: 15px solid #3a9d3e; border-bottom: 15px solid #3a9d3e; border-left: 25px solid #3a9d3e; border-right: 25px solid #3a9d3e; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; display: inline-block;" class="mobile-button"><%= properties["reports.to-dashboard"] %></a></td>
+                                                        <td align="center">
+                                                            <!-- BULLETPROOF BUTTON -->
+                                                            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="mobile-button-container">
+                                                                <tr>
+                                                                    <td align="center" style="padding: 25px 0 0 0;" class="padding-copy">
+                                                                        <table border="0" cellspacing="0" cellpadding="0" class="responsive-table">
+                                                                            <tr>
+                                                                                <td align="center"><a href="<%= host %>/dashboard" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: normal; color: #ffffff; text-decoration: none; background-color: #3a9d3e; border-top: 15px solid #3a9d3e; border-bottom: 15px solid #3a9d3e; border-left: 25px solid #3a9d3e; border-right: 25px solid #3a9d3e; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; display: inline-block;" class="mobile-button"><%= properties["reports.to-dashboard"] %></a></td>
+                                                                            </tr>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
                                                     </tr>
                                                 </table>
                                             </td>
@@ -284,31 +322,32 @@
                                 </td>
                             </tr>
                         </table>
+
                     </td>
                 </tr>
-            </table>
-        </td>
-    </tr>
-                 
-
-</table>
-
-<!-- FOOTER -->
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td bgcolor="#ffffff" align="center">
-            <table border="0" cellspacing="0" cellpadding="0" width="100%" align="center">
-                <tr>
-                    <td style="padding: 70px 0px 40px 0px;" align="center">
-                        <!-- UNSUBSCRIBE COPY -->
-                        <table width="500" border="0" cellspacing="0" cellpadding="0" align="center" class="responsive-table">
+                <tr> 
+                    <td>
+                        <!-- FOOTER -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
-                                <td align="center" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
-                                    <a style="color: #3a9d3e; text-decoration: none;" href="<%= host %>/dashboard#/manage/reports" target="_blank"><%= properties["reports.settings"] %></a> |
-                                    <a style="color: #3a9d3e; text-decoration: none;" href="<%= version.page %>" target="_blank"><%= version.title %></a>
+                                <td style="padding:50px 0px;">
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0" align="left" class="responsive-table">
+                                        <tr>
+                                            <td align="left" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
+                                                <span style="color: #979797;"><%= properties["reports.sent-by"] %></span>
+                                                <a style="color: #979797;" href="https://count.ly" target="_blank"><%= version.title %></a>
+                                            </td>
+                                            <td align="right" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
+                                                <a style="color: #979797;" href="<%= host %>/dashboard#/manage/reports" target="_blank"><%= properties["reports.settings"] %></a> |
+                                                <a style="color: #979797;" href="<%= version.page %>" target="_blank"><%= properties["reports.get-help"] %></a> |
+                                                <a style="color: #979797;" href="<%= version.page %>" target="_blank"><%= properties["reports.view-in-browser"] %></a>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </td>
                             </tr>
                         </table>
+
                     </td>
                 </tr>
             </table>
@@ -319,6 +358,7 @@
 <!-- Gmail hack -->
 <div style="white-space:nowrap; font:15px courier; color:#ffffff; line-height:0; width:500px !important; min-width:500px !important; max-width:500px !important;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
 <!-- /Gmail hack -->
+</div>
 
 </body>
 </html>
