@@ -45,6 +45,11 @@ var metrics = {
     "events": {},
     "views": {}
 };
+var metricProps = {
+    "analytics": ["metric", "count", "change"],
+    "events": ["event", "count", "change"],
+    "crash": ["crash", "occurrences", "change"],
+};
 (function(reports) {
     let _periodObj = null;
     reports.sendReport = function(db, id, callback) {
@@ -499,6 +504,15 @@ var metrics = {
                                     else {
                                         props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
                                         props["reports.your"] = localize.format(props["reports.your"], props["reports." + report.frequency], report.date);
+                                        props["reports.sent-by"] = localize.format(props["reports.sent-by"]);
+                                        props["reports.view-in-browser"] = localize.format(props["reports.view-in-browser"]);
+                                        props["reports.get-help"] = localize.format(props["reports.get-help"]);
+                                        const metricPropsString = {};
+                                        for (let k in metricProps) {
+                                            metricPropsString[k] = metricProps[k].map((item) =>{
+                                                return props["reports.metric-"+item];
+                                            });
+                                        }
                                         report.properties = props;
                                         var allowedMetrics = {};
                                         for (var i in report.metrics) {
@@ -508,7 +522,7 @@ var metrics = {
                                                 }
                                             }
                                         }
-                                        var message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics});
+                                        var message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics, metricProps: metricPropsString});
                                         report.subject = versionInfo.title + ': ' + localize.format(
                                             (
                                                 (report.frequency === "weekly") ? report.properties["reports.subject-week"] :
