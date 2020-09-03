@@ -1866,9 +1866,10 @@
                         var visible = this.items.map(function() {
                             return false;
                         });
+                        var loweredQuery = self.tempSearchQuery.toLowerCase();
                         this.items.forEach(function(item, idx) {
                             if (Object.prototype.hasOwnProperty.call(item, "value")) {
-                                if (item.name.indexOf(self.tempSearchQuery) > -1) {
+                                if (item.name.toLowerCase().indexOf(loweredQuery) > -1) {
                                     visible[idx] = true;
                                     if (self.groupIndex[idx] > -1) {
                                         visible[self.groupIndex[idx]] = true;
