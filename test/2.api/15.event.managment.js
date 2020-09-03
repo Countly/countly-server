@@ -687,7 +687,7 @@ describe('Testing event settings', function() {
                         ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
                         ob.should.have.property("whitelisted_segments", {});
-                        done();
+                        setTimeout(done, 10 * testUtils.testScalingFactor);
                     });
             }, 0);
         });
@@ -706,7 +706,7 @@ describe('Testing event settings', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    done();
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
 
