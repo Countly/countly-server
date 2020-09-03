@@ -892,7 +892,7 @@
   opacity: 0.4 !important;
   cursor: default;
 }
-.cly-vue-theme-clydef .cly-vue-select:hover .right.combo:before {
+.cly-vue-theme-clydef .cly-vue-select:not(.disabled):hover .right.combo:before {
   color: #2fa732;
 }
 .cly-vue-theme-clydef .cly-vue-select.select-aligned-left {

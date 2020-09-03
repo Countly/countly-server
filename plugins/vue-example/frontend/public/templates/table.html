@@ -96,6 +96,13 @@
                             placeholder="Select an item"
                             aligned="right">
                         </cly-select-n>
+                        <cly-select-n
+                            style="width:220px"
+                            v-bind:items="selectWItems" 
+                            v-model="selectWModel"
+                            placeholder="Select an item"
+                            :disabled="true">
+                        </cly-select-n>
                     </div>
                     <div class="example-cell">
                         Selected item: {{selectWModel}}

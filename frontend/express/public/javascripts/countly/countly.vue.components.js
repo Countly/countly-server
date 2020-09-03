@@ -1933,6 +1933,11 @@
                         this.waitingItems = true;
                         this.$emit("search", this.searchQuery);
                     }
+                },
+                toggle: function() {
+                    if (!this.disabled) {
+                        this.opened = !this.opened;
+                    }
                 }
             },
             watch: {
@@ -1956,7 +1961,7 @@
                 }
             },
             template: '<div class="cly-vue-select" v-bind:class="containerClasses" v-click-outside="close">\
-                            <div class="select-inner" @click="opened=!opened">\
+                            <div class="select-inner" @click="toggle">\
                                 <div class="text-container">\
                                     <div v-if="selectedItem" class="text" style="width:80%">\
                                         <span>{{selectedItem.name}}</span>\

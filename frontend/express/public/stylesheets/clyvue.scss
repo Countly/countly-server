@@ -701,7 +701,7 @@
         
         &.req { border-color:#E95C6C; }
         &.disabled { opacity: 0.4 !important; cursor: default; }
-        &:hover .right.combo:before { color:#2fa732; }
+        &:not(.disabled):hover .right.combo:before { color:#2fa732; }
 
         &.select-aligned-left {
             text-align: left;
