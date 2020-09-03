@@ -892,19 +892,27 @@
   opacity: 0.4 !important;
   cursor: default;
 }
-.cly-vue-theme-clydef .cly-vue-select.centered, .cly-vue-theme-clydef .cly-vue-select.centered .text {
-  text-align: center;
+.cly-vue-theme-clydef .cly-vue-select:hover .right.combo:before {
+  color: #2fa732;
 }
-.cly-vue-theme-clydef .cly-vue-select.centered.text-align-left, .cly-vue-theme-clydef .cly-vue-select.centered.text-align-left .text {
+.cly-vue-theme-clydef .cly-vue-select.select-aligned-left {
   text-align: left;
 }
-.cly-vue-theme-clydef .cly-vue-select.centered .text {
+.cly-vue-theme-clydef .cly-vue-select.select-aligned-left .text {
+  text-align: left;
+}
+.cly-vue-theme-clydef .cly-vue-select.select-aligned-center {
+  text-align: center;
+}
+.cly-vue-theme-clydef .cly-vue-select.select-aligned-center .text {
+  text-align: center;
   padding-right: 9px;
 }
-.cly-vue-theme-clydef .cly-vue-select .select-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
+.cly-vue-theme-clydef .cly-vue-select.select-aligned-right {
+  text-align: right;
+}
+.cly-vue-theme-clydef .cly-vue-select.select-aligned-right .text {
+  text-align: right;
 }
 .cly-vue-theme-clydef .cly-vue-select.active {
   border-bottom-left-radius: 0;
@@ -912,6 +920,30 @@
 }
 .cly-vue-theme-clydef .cly-vue-select.active .right {
   border-bottom-right-radius: 0;
+}
+.cly-vue-theme-clydef .cly-vue-select.active .right.combo:before {
+  content: "";
+  color: #2fa732;
+}
+.cly-vue-theme-clydef .cly-vue-select .select-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.cly-vue-theme-clydef .cly-vue-select .text-container {
+  float: left;
+  width: 100%;
+}
+.cly-vue-theme-clydef .cly-vue-select .text {
+  padding: 6px 9px;
+  padding-right: 25px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #444;
+  font-weight: normal;
+  font: 13px Ubuntu, Helvetica, sans-serif;
+  line-height: 111%;
 }
 .cly-vue-theme-clydef .cly-vue-select .search {
   top: 100%;
@@ -1050,21 +1082,6 @@
 .cly-vue-theme-clydef .cly-vue-select .flag.np {
   margin-right: 15px;
 }
-.cly-vue-theme-clydef .cly-vue-select .text-container {
-  float: left;
-  width: 100%;
-}
-.cly-vue-theme-clydef .cly-vue-select .text {
-  padding: 6px 9px;
-  padding-right: 25px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  color: #444;
-  font-weight: normal;
-  font: 13px Ubuntu, Helvetica, sans-serif;
-  line-height: 111%;
-}
 .cly-vue-theme-clydef .cly-vue-select .right {
   opacity: 0.8;
   right: 0;
@@ -1083,13 +1100,6 @@
   font-size: 9px;
   position: absolute;
   right: 8px;
-}
-.cly-vue-theme-clydef .cly-vue-select:hover .right.combo:before {
-  color: #2fa732;
-}
-.cly-vue-theme-clydef .cly-vue-select.active .right.combo:before {
-  content: "";
-  color: #2fa732;
 }
 .cly-vue-theme-clydef .cly-vue-select.loading:after {
   content: "Loading...";

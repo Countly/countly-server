@@ -1833,6 +1833,7 @@
                 placeholder: { type: String, default: '' },
                 dynamicItems: { type: Boolean, default: false },
                 disabled: { type: Boolean, default: false },
+                aligned: { type: String, default: "left" }
             },
             mounted: function() {
                 $(this.$refs.scrollable).slimScroll({
@@ -1859,6 +1860,20 @@
                 },
                 searchable: function() {
                     return this.items.length > 10 || this.dynamicItems;
+                },
+                containerClasses: function() {
+                    var classes = [];
+                    if (this.opened) {
+                        classes.push("active");
+                    }
+                    if (this.dynamicItems) {
+                        classes.push("dynamic-items");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    classes.push("select-aligned-" + this.aligned);
+                    return classes;
                 },
                 visibleItems: function() {
                     var self = this;
@@ -1942,7 +1957,7 @@
                     }
                 }
             },
-            template: '<div class="cly-vue-select centered text-align-left" v-bind:class="{\'active\': opened, \'dynamic-items\' : dynamicItems, \'disabled\' : disabled}" v-click-outside="close">\
+            template: '<div class="cly-vue-select" v-bind:class="containerClasses" v-click-outside="close">\
                             <div class="select-inner" @click="opened=!opened">\
                                 <div class="text-container">\
                                     <div v-if="selectedItem" class="text" style="width:80%">\
