@@ -157,6 +157,7 @@ class ConnectionResource extends EventEmitter {
      * @returns {Promise} promise
      */
     service() {
+        log.i('[%d]: Servicing  %d', process.pid, this.msgs.length);
         log.d('[%d]: Servicing  %j', process.pid, this.msgs);
 
         this._servicing = false;
