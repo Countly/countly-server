@@ -132,6 +132,15 @@ var TableView = countlyVue.views.BaseView.extend({
                 {name: "Type 1", value: 1},
                 {name: "Type 2", value: 2},
                 {name: "Type 3", value: 3},
+                {name: "Type 1", value: 4},
+                {name: "Type 2", value: 5},
+                {name: "Type 3", value: 6},
+                {name: "Type 1", value: 7},
+                {name: "Type 2", value: 8},
+                {name: "Type 3", value: 9},
+                {name: "Type 1", value: 10},
+                {name: "Type 2", value: 1},
+                {name: "Type 3", value: 2},
             ],
             selectDWModel: null,
             selectDWItems: [
@@ -180,7 +189,7 @@ var TableView = countlyVue.views.BaseView.extend({
                         {name: "Type 3", value: 3},
                     ];
                 }
-            }, 0);
+            }, 500);
         }
     }
 });

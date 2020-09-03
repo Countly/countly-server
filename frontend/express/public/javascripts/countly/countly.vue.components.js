@@ -1836,9 +1836,11 @@
             },
             data: function() {
                 return {
-                    searchQuery: "",
+                    tempSearchQuery: "", // in-sync search query value
+                    searchQuery: "", // debounced search query value
                     navigatedIndex: null,
-                    opened: false
+                    opened: false,
+                    waitingItems: false
                 };
             },
             computed: {
@@ -1850,10 +1852,14 @@
                 },
                 visibleItems: function() {
                     var self = this;
-                    if (this.searchQuery && this.searchQuery !== "") {
+                    if (!this.dynamicItems && this.tempSearchQuery && this.tempSearchQuery !== "") {
                         return this.items.filter(function(item) {
-                            return item.name.indexOf(self.searchQuery) > -1;
+                            return item.name.indexOf(self.tempSearchQuery) > -1;
                         });
+                    }
+                    else if (this.dynamicItems && this.waitingItems) {
+                        // blocked for search event to complete
+                        return [];
                     }
                     else {
                         return this.items;
@@ -1870,8 +1876,9 @@
                 close: function() {
                     this.opened = false;
                 },
-                commitSearch: function() {
+                fireDynamicSearch: function() {
                     if (this.dynamicItems) {
+                        this.waitingItems = true;
                         this.$emit("search", this.searchQuery);
                     }
                 }
@@ -1879,11 +1886,18 @@
             watch: {
                 opened: function(newValue) {
                     if (!newValue) {
+                        this.tempSearchQuery = "";
                         this.searchQuery = "";
                     }
                 },
+                tempSearchQuery: _.debounce(function(newVal) {
+                    this.searchQuery = newVal;
+                }, 500),
                 searchQuery: function() {
-                    this.commitSearch();
+                    this.fireDynamicSearch();
+                },
+                items: function() {
+                    this.waitingItems = false;
                 }
             },
             template: '<div class="cly-vue-select centered text-align-left" v-bind:class="{\'active\': opened, \'dynamic-items\' : dynamicItems, \'disabled\' : disabled}" v-click-outside="close">\
@@ -1902,7 +1916,7 @@
                                 <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
                                 <div class="search" v-if="searchable">\
                                     <div class="inner">\
-                                    <input type="search" v-model="searchQuery"/>\<i class="fa fa-search"></i>\
+                                    <input type="search" v-model="tempSearchQuery"/>\<i class="fa fa-search"></i>\
                                     </div>\
                                 </div>\
                                 <div v-for="item in visibleItems" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
