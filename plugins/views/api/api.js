@@ -1095,7 +1095,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
-                common.db.collection('apps').findOne({'key': params.qstring.app_key}, function(err1, app) {
+                common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err1, app) => {
                     if (!app) {
                         common.returnMessage(params, 401, 'User does not have view right for this application');
                         return false;
@@ -1163,7 +1163,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     function getViewNameObject(params, collection, query, update, options, callback) {
         if (plugins.getConfig("api", params.app && params.app.plugins, true).batch_read_processing === true) {
             common.readBatcher.getOne(collection, query, {}, (err, view) => {
-                console.log("Before" + JSON.stringify(query));
                 if (view) {
                     var good_value = true;
                     if (update && update.$set) {
@@ -1189,14 +1188,19 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                     if (update) {
                         //we have no error and have no data - so we don't have record. Run find and modify
-                        common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
-                            if (view2 && view2.value) {
-                                callback(err, view2.value);
-                                common.readBatcher.invalidate(collection, query, {}, false);
+                        common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err1, total) {
+                            if (total >= plugins.getConfig("views").view_limit) {
+                                options.upsert = false;
                             }
-                            else {
-                                callback(err, null);
-                            }
+                            common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
+                                if (view2 && view2.value) {
+                                    callback(err, view2.value);
+                                    common.readBatcher.invalidate(collection, query, {}, false);
+                                }
+                                else {
+                                    callback(err, null);
+                                }
+                            });
                         });
                     }
                     else {
@@ -1207,13 +1211,18 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         else { //no batch processing. run as before.
             if (update) {
-                common.db.collection(collection).findAndModify(query, {}, update, options, function(err, view) {
-                    if (view && view.value) {
-                        callback(err, view.value);
+                common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err1, total) {
+                    if (total >= plugins.getConfig("views").view_limit) {
+                        options.upsert = false;
                     }
-                    else {
-                        callback(err, null);
-                    }
+                    common.db.collection(collection).findAndModify(query, {}, update, options, function(err, view) {
+                        if (view && view.value) {
+                            callback(err, view.value);
+                        }
+                        else {
+                            callback(err, null);
+                        }
+                    });
                 });
             }
             else {
@@ -1492,20 +1501,15 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 query = {'view': currEvent.segmentation.name};
                 updateData.view = currEvent.segmentation.name;
+                var options = {upsert: true, new: true};
 
-                common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err1, total) {
-                    var options = {upsert: true, new: true};
-                    if (total >= plugins.getConfig("views").view_limit) {
-                        options.upsert = false;
+                getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, {$set: updateData}, options, function(err, view) {
+                    if (view && view._id) {
+                        params.viewsNamingMap[currEvent.segmentation.name] = view._id;
+                        var escapedMetricVal = common.db.encode(view._id + "");
+                        currEvent.viewAlias = escapedMetricVal;
+                        resolve(currEvent);
                     }
-                    getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, {$set: updateData}, options, function(err, view) {
-                        if (view && view._id) {
-                            params.viewsNamingMap[currEvent.segmentation.name] = view._id;
-                            var escapedMetricVal = common.db.encode(view._id + "");
-                            currEvent.viewAlias = escapedMetricVal;
-                            resolve(currEvent);
-                        }
-                    });
                 });
             }
             else if (currEvent.segmentation.view) {
