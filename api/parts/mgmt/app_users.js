@@ -43,7 +43,7 @@ usersApi.create = function(app_id, doc, params, callback) {
         callback("Provide device_id as did property for data");
         return;
     }
-    common.db.collection('apps').findOne({_id: common.db.ObjectID(app_id)}, function(err, app) {
+    common.readBatcher.getOne("apps", {_id: common.db.ObjectID(app_id)}, (err, app) => {
         if (err || !app) {
             callback("App does not exist");
             return;
