@@ -506,6 +506,10 @@
         }
     };
 
+    var BackboneRouteAdapter = function() {};
+
+    Vue.prototype.$route = new BackboneRouteAdapter();
+
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
             this.component = opts.component;
@@ -558,6 +562,9 @@
             self.vm = new Vue({
                 el: el,
                 store: _vuex.getGlobalStore(),
+                beforeCreate: function() {
+                    this.$route.params = self.params;
+                },
                 render: function(h) {
                     if (self.defaultArgs) {
                         return h(self.component, { attrs: self.defaultArgs });
