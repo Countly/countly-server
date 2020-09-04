@@ -950,10 +950,11 @@
   background-color: #FFF;
   width: 100%;
   border: 1px solid #D0D0D0;
-  border-bottom: none;
   margin-left: -1px;
   cursor: default;
   overflow: auto;
+  position: absolute;
+  z-index: 2000;
 }
 .cly-vue-theme-clydef .cly-vue-select .search .fa {
   position: absolute;

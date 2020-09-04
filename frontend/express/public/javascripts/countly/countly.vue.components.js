@@ -494,7 +494,39 @@
         }
     });
 
+    var createModule = function(name, emptyStateFn, moduleObj) {
+
+        moduleObj = moduleObj || {};
+
+        var mutations = moduleObj.mutations || {},
+            actions = moduleObj.actions || {};
+
+        if (!mutations.resetState) {
+            mutations.resetState = function(state) {
+                Object.assign(state, emptyStateFn());
+            };
+        }
+
+        if (!actions.reset) {
+            actions.reset = function(context) {
+                context.commit("resetState");
+            };
+        }
+
+        return {
+            name: name,
+            module: {
+                namespaced: true,
+                state: emptyStateFn(),
+                getters: moduleObj.getters || {},
+                mutations: mutations,
+                actions: actions
+            }
+        };
+    };
+
     var _vuex = {
+        createModule: createModule,
         getGlobalStore: function() {
             return _globalVuexStore;
         },
@@ -505,6 +537,10 @@
             }
         }
     };
+
+    var BackboneRouteAdapter = function() {};
+
+    Vue.prototype.$route = new BackboneRouteAdapter();
 
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
@@ -558,6 +594,9 @@
             self.vm = new Vue({
                 el: el,
                 store: _vuex.getGlobalStore(),
+                beforeCreate: function() {
+                    this.$route.params = self.params;
+                },
                 render: function(h) {
                     if (self.defaultArgs) {
                         return h(self.component, { attrs: self.defaultArgs });
