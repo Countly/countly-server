@@ -2081,7 +2081,8 @@ const processRequest = (params) => {
 const processRequestData = (params, app, done) => {
 
     //preserve time for user's previous session
-    params.previous_session = params.app_user.ls;
+    params.previous_session = params.app_user.lsid;
+    params.previous_session_start = params.app_user.ls;
 
     var ob = {params: params, app: app, updates: []};
     plugins.dispatch("/sdk/user_properties", ob, function() {
