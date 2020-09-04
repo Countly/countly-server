@@ -323,10 +323,10 @@ class ProcessJob extends J.IPCJob {
             if (count === 0) {
                 return done();
             }
-            else if (this.isFork && count < FORK_WHEN_MORE_THAN) {
-                this.log.i('Won\'t run fork since there\'s less than forkable number of tokens');
-                return done();
-            }
+            // else if (this.isFork && count < FORK_WHEN_MORE_THAN) {
+            //     this.log.i('Won\'t run fork since there\'s less than forkable number of tokens');
+            //     return done();
+            // }
 
 
             do {
