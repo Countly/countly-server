@@ -206,8 +206,8 @@ const passToMaster = (worker) => {
             plugins.stopSyncing();
         }
         else if (msg.cmd === "batch_write") {
-            const {collection, id, operation} = msg.data;
-            common.writeBatcher.add(collection, id, operation);
+            const {collection, id, operation, db} = msg.data;
+            common.writeBatcher.add(collection, id, operation, db);
         }
         else if (msg.cmd === "batch_read") {
             const {collection, query, projection, multi, msgId} = msg.data;

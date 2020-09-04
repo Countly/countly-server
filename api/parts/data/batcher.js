@@ -18,12 +18,22 @@ class WriteBatcher extends EventEmitter {
      */
     constructor(db) {
         super();
-        this.db = db;
-        this.data = {};
+        this.dbs = {countly: db};
+        this.data = {countly: {}};
         plugins.loadConfigs(db, () => {
             this.loadConfig();
             this.schedule();
         });
+    }
+
+    /**
+     *  Add another database to batch
+     *  @param {string} name - name of the database
+     *  @param {Db} connection - MongoDB connection to that database
+     */
+    addDb(name, connection) {
+        this.dbs[name] = connection;
+        this.data[name] = {};
     }
 
     /**
@@ -38,25 +48,26 @@ class WriteBatcher extends EventEmitter {
 
     /**
      *  Writes data to database for specific collection
+     *  @param {string} db - name of the database for which to write data
      *  @param {string} collection - name of the collection for which to write data
      */
-    async flush(collection) {
-        if (Object.keys(this.data[collection]).length) {
+    async flush(db, collection) {
+        if (Object.keys(this.data[db][collection]).length) {
             var queries = [];
-            for (let key in this.data[collection]) {
-                if (Object.keys(this.data[collection][key]).length) {
+            for (let key in this.data[db][collection]) {
+                if (Object.keys(this.data[db][collection][key]).length) {
                     queries.push({
                         updateOne: {
-                            filter: {_id: this.data[collection][key].id},
-                            update: this.data[collection][key].value,
+                            filter: {_id: this.data[db][collection][key].id},
+                            update: this.data[db][collection][key].value,
                             upsert: true
                         }
                     });
                 }
             }
-            this.data[collection] = {};
+            this.data[db][collection] = {};
             try {
-                await this.db.collection(collection).bulkWrite(queries, {ordered: false});
+                await this.dbs[db].collection(collection).bulkWrite(queries, {ordered: false});
                 this.emit("flushed");
             }
             catch (ex) {
@@ -66,12 +77,12 @@ class WriteBatcher extends EventEmitter {
                 //trying to rollback operations to try again on next iteration
                 for (let i = 0; i < queries.length; i++) {
                     //if we don't have anything for this document yet just use query
-                    if (!this.data[collection][queries[i].updateOne.filter._id]) {
-                        this.data[collection][queries[i].updateOne.filter._id] = {id: queries[i].updateOne.filter._id, value: queries[i].updateOne.update};
+                    if (!this.data[db][collection][queries[i].updateOne.filter._id]) {
+                        this.data[db][collection][queries[i].updateOne.filter._id] = {id: queries[i].updateOne.filter._id, value: queries[i].updateOne.update};
                     }
                     else {
                         //if we have, then we can try to merge query back in
-                        this.data[collection][queries[i].updateOne.filter._id].value = common.mergeQuery(queries[i].updateOne.update, this.data[collection][queries[i].updateOne.filter._id].value);
+                        this.data[db][collection][queries[i].updateOne.filter._id].value = common.mergeQuery(queries[i].updateOne.update, this.data[db][collection][queries[i].updateOne.filter._id].value);
                     }
                 }
             }
@@ -84,8 +95,10 @@ class WriteBatcher extends EventEmitter {
      */
     flushAll() {
         let promises = [];
-        for (let collection in this.data) {
-            promises.push(this.flush(collection));
+        for (let db in this.data) {
+            for (let collection in this.data[db]) {
+                promises.push(this.flush(db, collection));
+            }
         }
         return Promise.all(promises).finally(() => {
             this.schedule();
@@ -106,16 +119,17 @@ class WriteBatcher extends EventEmitter {
      *  Get operation on document by id
      *  @param {string} collection - name of the collection where to update data
      *  @param {string} id - id of the document
+     *  @param {string} db - name of the database for which to write data
      *  @returns {object} bulkwrite query for document by reference, you can modify it synchronously or data may be lost
      */
-    get(collection, id) {
-        if (!this.data[collection]) {
-            this.data[collection] = {};
+    get(collection, id, db = "countly") {
+        if (!this.data[db][collection]) {
+            this.data[db][collection] = {};
         }
-        if (!this.data[collection][id]) {
-            this.data[collection][id] = {id: id, value: {}};
+        if (!this.data[db][collection][id]) {
+            this.data[db][collection][id] = {id: id, value: {}};
         }
-        return this.data[collection][id].value;
+        return this.data[db][collection][id].value;
     }
 
     /**
@@ -123,24 +137,25 @@ class WriteBatcher extends EventEmitter {
      *  @param {string} collection - name of the collection where to update data
      *  @param {string} id - id of the document
      *  @param {object} operation - operation
+     *  @param {string} db - name of the database for which to write data
      */
-    add(collection, id, operation) {
+    add(collection, id, operation, db = "countly") {
         if (!this.shared || cluster.isMaster) {
-            if (!this.data[collection]) {
-                this.data[collection] = {};
+            if (!this.data[db][collection]) {
+                this.data[db][collection] = {};
             }
-            if (!this.data[collection][id]) {
-                this.data[collection][id] = {id: id, value: operation};
+            if (!this.data[db][collection][id]) {
+                this.data[db][collection][id] = {id: id, value: operation};
             }
             else {
-                this.data[collection][id].value = common.mergeQuery(this.data[collection][id].value, operation);
+                this.data[db][collection][id].value = common.mergeQuery(this.data[db][collection][id].value, operation);
             }
             if (!this.process) {
-                this.flush(collection);
+                this.flush(db, collection);
             }
         }
         else {
-            process.send({ cmd: "batch_write", data: {collection, id, operation} });
+            process.send({ cmd: "batch_write", data: {collection, id, operation, db} });
         }
     }
 }
