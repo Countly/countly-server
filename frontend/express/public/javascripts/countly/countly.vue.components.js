@@ -494,7 +494,39 @@
         }
     });
 
+    var createModule = function(name, emptyStateFn, moduleObj) {
+
+        moduleObj = moduleObj || {};
+
+        var mutations = moduleObj.mutations || {},
+            actions = moduleObj.actions || {};
+
+        if (!mutations.resetState) {
+            mutations.resetState = function(state) {
+                Object.assign(state, emptyStateFn());
+            };
+        }
+
+        if (!actions.reset) {
+            actions.reset = function(context) {
+                context.commit("resetState");
+            };
+        }
+
+        return {
+            name: name,
+            module: {
+                namespaced: true,
+                state: emptyStateFn(),
+                getters: moduleObj.getters || {},
+                mutations: mutations,
+                actions: actions
+            }
+        };
+    };
+
     var _vuex = {
+        createModule: createModule,
         getGlobalStore: function() {
             return _globalVuexStore;
         },

@@ -1,8 +1,6 @@
-/*global $, countlyCommon, Vue, _ */
+/*global $, countlyCommon, Vue, _, countlyVue */
 
 (function(countlyVueExample) {
-
-    countlyVueExample.initialize = function() {};
 
     countlyVueExample.factory = {
         getEmpty: function(fields) {
@@ -22,101 +20,113 @@
     };
 
     countlyVueExample.getVuexModule = function() {
-        return {
-            name: "vueExample",
-            module: {
-                namespaced: true,
-                state: {
-                    records: [],
-                    randomNumbers: [],
-                    pieData: {
-                        "dp": [
-                            {"data": [[0, 20]], "label": "Test1", "color": "#52A3EF"},
-                            {"data": [[0, 10]], "label": "Test2", "color": "#FF8700"},
-                            {"data": [[0, 50]], "label": "Test3", "color": "#0EC1B9"}
-                        ]
-                    },
-                    lineData: {
-                        "dp": [
-                            {"data": [[-1, null], [0, 20], [1, 10], [2, 40], [3, null]], "label": "Value", "color": "#52A3EF"},
-                        ],
-                        "ticks": [[-1, ""], [0, "Test1"], [1, "Test2"], [2, "Test3"], [3, ""]]
-                    },
-                    barData: {
-                        "dp": [
-                            {"data": [[-1, null], [0, 20], [1, 10], [2, 40], [3, null]], "label": "Value", "color": "#52A3EF"},
-                        ],
-                        "ticks": [[-1, ""], [0, "Test1"], [1, "Test2"], [2, "Test3"], [3, ""]]
-                    },
-                    id: 0
+
+        var getEmptyState = function() {
+            return {
+                records: [],
+                randomNumbers: [],
+                pieData: {
+                    "dp": [
+                        {"data": [[0, 20]], "label": "Test1", "color": "#52A3EF"},
+                        {"data": [[0, 10]], "label": "Test2", "color": "#FF8700"},
+                        {"data": [[0, 50]], "label": "Test3", "color": "#0EC1B9"}
+                    ]
                 },
-                getters: {
-                    records: function(state) {
-                        return state.records;
-                    },
-                    randomNumbers: function(state) {
-                        return state.randomNumbers;
-                    },
-                    pieData: function(state) {
-                        return state.pieData;
-                    },
-                    barData: function(state) {
-                        return state.barData;
-                    },
-                    lineData: function(state) {
-                        return state.lineData;
-                    }
+                lineData: {
+                    "dp": [
+                        {"data": [[-1, null], [0, 20], [1, 10], [2, 40], [3, null]], "label": "Value", "color": "#52A3EF"},
+                    ],
+                    "ticks": [[-1, ""], [0, "Test1"], [1, "Test2"], [2, "Test3"], [3, ""]]
                 },
-                mutations: {
-                    saveRecord: function(state, obj) {
-                        if (obj._id !== null) {
-                            state.records = state.records.filter(function(val) {
-                                return val._id !== obj._id;
-                            }).concat(obj);
-                        }
-                        else {
-                            obj._id = state.id;
-                            state.records.push(obj);
-                            state.id++;
-                        }
-                    },
-                    deleteRecordById: function(state, _id) {
-                        state.records = state.records.filter(function(val) {
-                            return val._id !== _id;
-                        });
-                    },
-                    setStatus: function(state, obj) {
-                        var target = state.records.filter(function(val) {
-                            return val._id === obj._id;
-                        });
-                        if (target.length > 0) {
-                            Vue.set(target[0], "status", obj.value);
-                        }
-                    },
-                    setRandomNumbers: function(state, obj) {
-                        state.randomNumbers = [obj, obj.map(function(x) {
-                            return x / 2;
-                        })];
-                    }
+                barData: {
+                    "dp": [
+                        {"data": [[-1, null], [0, 20], [1, 10], [2, 40], [3, null]], "label": "Value", "color": "#52A3EF"},
+                    ],
+                    "ticks": [[-1, ""], [0, "Test1"], [1, "Test2"], [2, "Test3"], [3, ""]]
                 },
-                actions: {
-                    updateRandomArray: function(context) {
-                        return $.when($.ajax({
-                            type: "GET",
-                            url: countlyCommon.API_URL + "/o",
-                            data: {
-                                app_id: countlyCommon.ACTIVE_APP_ID,
-                                method: 'get-random-numbers'
-                            }
-                        })).then(function(json) {
-                            context.commit("setRandomNumbers", json);
-                        }, function() {
-                            /* handle error */
-                        });
-                    }
-                }
+                id: 0
+            };
+        };
+
+        var getters = {
+            records: function(state) {
+                return state.records;
+            },
+            randomNumbers: function(state) {
+                return state.randomNumbers;
+            },
+            pieData: function(state) {
+                return state.pieData;
+            },
+            barData: function(state) {
+                return state.barData;
+            },
+            lineData: function(state) {
+                return state.lineData;
             }
         };
+
+        var mutations = {
+            saveRecord: function(state, obj) {
+                if (obj._id !== null) {
+                    state.records = state.records.filter(function(val) {
+                        return val._id !== obj._id;
+                    }).concat(obj);
+                }
+                else {
+                    obj._id = state.id;
+                    state.records.push(obj);
+                    state.id++;
+                }
+            },
+            deleteRecordById: function(state, _id) {
+                state.records = state.records.filter(function(val) {
+                    return val._id !== _id;
+                });
+            },
+            setStatus: function(state, obj) {
+                var target = state.records.filter(function(val) {
+                    return val._id === obj._id;
+                });
+                if (target.length > 0) {
+                    Vue.set(target[0], "status", obj.value);
+                }
+            },
+            setRandomNumbers: function(state, obj) {
+                state.randomNumbers = [obj, obj.map(function(x) {
+                    return x / 2;
+                })];
+            }
+        };
+
+        var actions = {
+            initialize: function(context) {
+                context.dispatch("refresh");
+            },
+            refresh: function(context) {
+                context.dispatch("updateRandomArray");
+            },
+            updateRandomArray: function(context) {
+                return $.when($.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        method: 'get-random-numbers'
+                    }
+                })).then(function(json) {
+                    context.commit("setRandomNumbers", json);
+                }, function() {
+                    /* handle error */
+                });
+            }
+        };
+
+        return countlyVue.vuex.createModule("countlyVueExample", getEmptyState, {
+            getters: getters,
+            mutations: mutations,
+            actions: actions
+        });
     };
 
 })(window.countlyVueExample = window.countlyVueExample || {});

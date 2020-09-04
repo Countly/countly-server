@@ -4,7 +4,7 @@ var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
     computed: {
         tableRows: function() {
-            return this.$store.getters["vueExample/records"];
+            return this.$store.getters["countlyVueExample/records"];
         }
     },
     data: function() {
@@ -29,7 +29,7 @@ var TableView = countlyVue.views.BaseView.extend({
                     type: "checkbox",
                     fieldKey: "status",
                     onChange: function(newValue, row) {
-                        self.$store.commit("vueExample/setStatus", {_id: row._id, value: newValue});
+                        self.$store.commit("countlyVueExample/setStatus", {_id: row._id, value: newValue});
                     },
                     options: {
                         title: "Status"
@@ -157,7 +157,7 @@ var TableView = countlyVue.views.BaseView.extend({
             });
         },
         onDelete: function(row) {
-            this.$store.commit("vueExample/deleteRecordById", row._id);
+            this.$store.commit("countlyVueExample/deleteRecordById", row._id);
         },
         onShow: function(/*row, key*/) {
         },
@@ -205,22 +205,22 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     computed: {
         randomNumbers: function() {
-            return this.$store.getters["vueExample/randomNumbers"];
+            return this.$store.getters["countlyVueExample/randomNumbers"];
         },
         barData: function() {
-            return this.$store.getters["vueExample/barData"];
+            return this.$store.getters["countlyVueExample/barData"];
         },
         pieData: function() {
-            return this.$store.getters["vueExample/pieData"];
+            return this.$store.getters["countlyVueExample/pieData"];
         },
         lineData: function() {
-            return this.$store.getters["vueExample/lineData"];
+            return this.$store.getters["countlyVueExample/lineData"];
         }
     },
     methods: {
         refresh: function() {
             if (this.isParentActive) {
-                this.$store.dispatch("vueExample/updateRandomArray");
+                this.$store.dispatch("countlyVueExample/updateRandomArray");
             }
         }
     },
@@ -294,8 +294,11 @@ var MainView = countlyVue.views.BaseView.extend({
     },
     methods: {
         onDrawerSubmit: function(doc) {
-            this.$store.commit("vueExample/saveRecord", doc);
+            this.$store.commit("countlyVueExample/saveRecord", doc);
         }
+    },
+    beforeCreate: function() {
+        this.$store.dispatch("countlyVueExample/initialize");
     }
 });
 
