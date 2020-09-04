@@ -736,7 +736,7 @@
         .text { padding:6px 9px; padding-right:25px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#444; font-weight:normal; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; }
         
         .search { 
-            top:100%; background-color: #FFF; width:100%; border:1px solid #D0D0D0; border-bottom:none; margin-left:-1px; cursor:default; overflow:auto; 
+            top:100%; background-color: #FFF; width:100%; border:1px solid #D0D0D0; margin-left:-1px; cursor:default; overflow:auto; position: absolute;z-index: 2000;
             .fa { position: absolute; right:0; top:5px; color:#CCC; font-size: 10px; }
             .inner { position:relative; margin:5px 8px; padding:4px 1px; padding-right:20px; background-color:#FFF; font:13px Ubuntu; line-height:111%; }
             input { 

@@ -321,10 +321,8 @@ var exampleView = new countlyVue.views.BackboneWrapper({
 
 app.vueExampleView = exampleView;
 
-app.route("/vue/example/*id", 'vue-example', function(id) {
-    var params = {
-        id: id
-    };
+app.route("/vue/example", 'vue-example', function() {
+    var params = {};
     this.vueExampleView.params = params;
     this.renderWhenReady(this.vueExampleView);
 });
