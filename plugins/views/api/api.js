@@ -1280,20 +1280,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         log.e(err);
                     }
                     if (view) {
-                        common.db.collection('app_userviews' + params.app_id).findOne({'_id': user.uid}, function(err2, view2) {
-                            var LastTime = 0;
-                            if (view2 && view2[view._id]) {
-                                LastTime = view2[view._id].ts;
-                            }
-                            if (ob.end_session || LastTime && params.time.timestamp - LastTime < 60) {
-                                if (parseInt(user.vc) === 1) {
-                                    segmentation.bounce = 1;
-                                }
-                                params.viewsNamingMap = params.viewsNamingMap || {};
-                                params.viewsNamingMap[segmentation.name] = view._id;
-                                recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
-                            }
-                        });
+                        if (parseInt(user.vc) === 1) {
+                            segmentation.bounce = 1;
+                        }
+                        params.viewsNamingMap = params.viewsNamingMap || {};
+                        params.viewsNamingMap[segmentation.name] = view._id;
+                        recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
                     }
                 });
             }
