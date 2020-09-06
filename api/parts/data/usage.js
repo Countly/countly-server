@@ -974,7 +974,7 @@ plugins.register("/sdk/user_properties", function(ob) {
             });
         }
         else {
-            userProps.lsid = params.request_hash + "_" + params.app_user.uid + "_" + params.time.mstimestamp;
+            userProps.lsid = params.request_id;
 
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
                 processSessionDurationRange(params.session_duration || 0, params);
