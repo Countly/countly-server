@@ -1,4 +1,3 @@
-const EventEmitter = require('events');
 const crypto = require('crypto');
 const cluster = require('cluster');
 const plugins = require('../../../plugins/pluginManager.js');
@@ -11,13 +10,12 @@ const common = require('../../utils/common.js');
  *  let batcher = new WriteBatcher(common.db);
  *  batcher.set("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});
  */
-class WriteBatcher extends EventEmitter {
+class WriteBatcher {
     /**
      *  Create batcher instance
      *  @param {Db} db - database object
      */
     constructor(db) {
-        super();
         this.dbs = {countly: db};
         this.data = {countly: {}};
         plugins.loadConfigs(db, () => {
@@ -68,10 +66,8 @@ class WriteBatcher extends EventEmitter {
             this.data[db][collection] = {};
             try {
                 await this.dbs[db].collection(collection).bulkWrite(queries, {ordered: false});
-                this.emit("flushed");
             }
             catch (ex) {
-                this.emit("error", ex);
                 log.e("Error updating documents", ex);
 
                 //trying to rollback operations to try again on next iteration
@@ -166,13 +162,12 @@ class WriteBatcher extends EventEmitter {
  *  let batcher = new ReadBatcher(common.db);
  *  let promise = batcher.getOne("events", {"_id":"5689b386909ee5c"});
  */
-class ReadBatcher extends EventEmitter {
+class ReadBatcher {
     /**
      *  Create batcher instance
      *  @param {Db} db - database object
      */
     constructor(db) {
-        super();
         this.db = db;
         this.data = {};
         this.promises = {};
