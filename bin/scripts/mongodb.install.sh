@@ -44,6 +44,8 @@ postrotate
 endscript
 }
 EOF
+
+        sed -i "s#/var/lib/mongo#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         if [ -f /etc/lsb-release ]; then
@@ -61,6 +63,8 @@ postrotate
 endscript
 }
 EOF
+
+        sed -i "s#/var/lib/mongodb#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         if [ -f /etc/redhat-release ]; then
