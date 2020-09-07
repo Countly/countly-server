@@ -1172,9 +1172,12 @@
                 },
                 tId: function() {
                     return this.id;
+                },
+                elementId: function() {
+                    return this.componentId + "-" + this.id;
                 }
             },
-            template: '<div class="cly-vue-content" v-if="isActive || alwaysMounted">\
+            template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\
                             <div v-show="isActive"><slot/></div>\
                         </div>'
         }
