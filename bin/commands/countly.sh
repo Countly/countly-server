@@ -518,8 +518,6 @@ countly_restorefiles (){
             fi
         done
         )
-        echo "Restarting Countly...";
-        countly restart;
     else
         echo "No files to restore from";
     fi
