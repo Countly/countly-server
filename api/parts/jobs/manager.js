@@ -353,30 +353,19 @@ class Manager {
     **/
     schedule(job) {
         if (job.scheduleObj) {
-            var strict = job.strict !== null && job.strict !== undefined,
+            let strict = job.strict !== null && job.strict !== undefined && job.strict !== false,
                 schedule = typeof job.scheduleObj === 'string' ? later.parse.text(job.scheduleObj) : job.scheduleObj,
-                nextFrom = strict ? new Date(job.next) : new Date(),
-                next = later.schedule(schedule).next(2, nextFrom);
+                now = new Date(),
+                // for strict jobs we're going to repeat all missed tasks (100 tasks max) up to current date after restart
+                // for non-strict ones, we want to start from current date
+                next = later.schedule(schedule).next(2, strict ? new Date(job.next || now.getTime()) : now);
 
-            if (next && next.length > 1) {
-                if (strict) {
-                    // for strict jobs we're going to repeat all missed tasks up to current date after restart
-                    // for non-strict ones, we want to start from current date
-                    while (next[1].getTime() < Date.now()) {
-                        next = later.schedule(schedule).next(2, next[1]);
-                        if (next.length < 2) {
-                            return;
-                        }
-                    }
-                }
-                return job.schedule(job.scheduleObj, job.strict, next[1].getTime());
+            next = next.filter(d => d.getTime() !== job.next && (!job.next || d.getTime() > job.next) && d.getTime() !== now.getTime());
+            if (typeof job.strict === 'number' && job.next) {
+                let s = next.filter(d => Math.abs(d.getTime() - job.next) > job.strict);
+                next = s.length ? s : next;
             }
-            else if (next && next.length && next[0].getTime() > Date.now()) {
-                return job.schedule(job.scheduleObj, job.strict, next[0].getTime());
-            }
-            else {
-                throw new Error('Later returned bad schedule: ' + JSON.stringify(next) + ' for schedule ' + JSON.stringify(job.scheduleObj) + ' & next ' + nextFrom);
-            }
+            return job.schedule(job.scheduleObj, job.strict, next.shift());
         }
         return Promise.resolve();
     }
