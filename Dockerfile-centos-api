@@ -23,8 +23,15 @@ COPY . .
 
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
 	rpm -i /tmp/tini.rpm && \
+	\
 	yum -y install openssl-devel gcc-c++-4.8.5 make git make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools && \
-	git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 --single-branch --branch=v1.30.0 --depth=1 && \
+	wget https://www.openssl.org/source/openssl-1.1.1f.tar.gz && \
+    tar -zxvf openssl-1.1.1f.tar.gz -C /tmp && \
+    rm openssl-1.1.1f.tar.gz && \
+    ( cd /tmp/openssl-1.1.1f; \
+      ./config --prefix=/usr && make depend && make && make install_sw ) && \
+    \
+	git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 --single-branch --branch=v1.41.0 --depth=1 && \
 	(cd /tmp/nghttp2; \
 	 export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install) && \
 	\
@@ -43,7 +50,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	npm remove -y mocha nyc should supertest && \
 	rm -rf /opt/app-root/src/.npm && \
 	yum remove -y git gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel devtoolset-7-gcc devtoolset-7-libstdc++-devel python36-devel centos-release-scl devtoolset-7-gcc-c++ && \
-	yum -y install openssl-devel pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
+	yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
 	yum clean all && \
 	rm -rf /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* && \
 	chown -R 1001:0 /opt/countly && \

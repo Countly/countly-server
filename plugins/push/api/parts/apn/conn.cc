@@ -863,9 +863,13 @@ namespace apns {
 	void H2::conn_thread_initiate_h2(uv_async_t *async) {
 		H2 *obj = static_cast<H2*>(async->data);
 		// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: conn_thread_initiate_h2 in " << uv_thread_self() << " hostname " << obj->hostname);
+
+		// silence any debug output
+ 		nghttp2_set_debug_vprintf_callback([](const char *format, va_list args) -> void {
+		});
+
 		nghttp2_session_callbacks *callbacks;
 
- 
 		nghttp2_session_callbacks_new(&callbacks);
 		
 		nghttp2_session_callbacks_set_send_callback(callbacks, [](nghttp2_session *session, const uint8_t *data, size_t length, int flags, void *user_data) -> ssize_t { 

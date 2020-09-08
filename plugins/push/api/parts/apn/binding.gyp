@@ -5,6 +5,7 @@
 		"libraries": [
 			# "-llibnghttp2", "-L/usr/local/lib/"
 			# "/usr/local/lib/libnghttp2.so.14.7.0",
+			"-lssl", "-lcrypto",
 			"/usr/local/lib/libnghttp2.a"
 		],	
 		"include_dirs": [
