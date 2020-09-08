@@ -3,22 +3,22 @@ dist: bionic
 node_js: "10"
 env:
   global:
-  - MONGODB=4.0.12
+  - MONGODB=4.2.9
   - secure: f2KyTV9GmGnmrMYkUnXIiRD384Fcl3nw5wDBvT6F3ucC3ZdaEw8mfKbMQjKJLgaBb90PnVz72y1tuSt5A4bHetU4kh3Vgb3NyRkJ0md+Pi6Ox+ivI2Zjvv06Xq/Mw2VrBOTHe81z6BntYq8imY7O455s089jMcEvQ052Q/NqSHE=
 branches:
   except:
   - gh-pages
 before_install:
 - sudo apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
-- wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB}.tgz -O /tmp/mongodb.tgz
+- wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-${MONGODB}.tgz -O /tmp/mongodb.tgz
 - tar -xf /tmp/mongodb.tgz
 - mkdir /tmp/data
-- ${PWD}/mongodb-linux-x86_64-${MONGODB}/bin/mongod --dbpath /tmp/data --bind_ip 127.0.0.1 --logpath ${PWD}/mongod.log &> /dev/null &
+- ${PWD}/mongodb-linux-x86_64-ubuntu1804-${MONGODB}/bin/mongod --dbpath /tmp/data --bind_ip 127.0.0.1 --logpath ${PWD}/mongod.log &> /dev/null &
 - until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
 install: sudo bash ./bin/countly.install_travis.sh
 before_script:
 - nodejs --version
-- ${PWD}/mongodb-linux-x86_64-${MONGODB}/bin/mongod --version
+- ${PWD}/mongodb-linux-x86_64-ubuntu1804-${MONGODB}/bin/mongod --version
 - cat ${PWD}/mongod.log
 - sudo rm -rf ./node_modules
 - sudo npm install --unsafe-perm
