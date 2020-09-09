@@ -33,11 +33,10 @@ var run_command = function(my_command, my_args) {
                 console.error(`exec error: ${error}`);
                 reject();
             }
-            console.log(`stdout: ${stdout}`);
-            console.error(`stderr: ${stderr}`);
-            resolve();
+            else {
+                setTimeout(resolve, 5000);
+            }
         });
-
     });
 };
 
@@ -49,16 +48,16 @@ function validate_files(exportid, apps, export_path, callback) {
         var missing_files = [];
         for (var i = 0; i < apps.length; i++) {
             var target = path.resolve(__dirname, './../export/');
-            console.log(target);
+
             while (fs.existsSync(target + "/" + exportid)) {
                 target = target + "/" + exportid;
             }
-            console.log(target);
+
             while (fs.existsSync(target + "/" + apps[i])) {
                 target = target + "/" + apps[i];
             }
             target = target + "/countly";
-            console.log(target);
+
             var pp = target;
             for (var j = 0; j < simpleDocs.length; j++) {
                 var dir = pp + '/' + simpleDocs[j].replace('{1}', apps[i]);
@@ -83,14 +82,11 @@ function validate_result(done, max_wait, wait_on, fail_on, options) {
             .post('/o/datamigration/getstatus?exportid=' + options.test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
             .expect(200)
             .end(function(err, res) {
-                console.log('/o/datamigration/getstatus?exportid=' + options.test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID);
-                console.log(res.text);
                 var ob = JSON.parse(res.text);
                 console.log("current status:" + ob.result.status + " current step:" + ob.result.step + " " + ob.result.progress);
-
                 if (ob.result.status == wait_on) {
                     (ob.result._id).should.be.exactly(options.test_export_id);
-                    validate_files(options.test_export_id, [testapp._id], options.export_path, done);
+                    validate_files(options.test_export_id, options.apps, options.export_path, done);
                 }
                 else if (ob.result.status == fail_on) {
                     done("Export changed to status " + fail_on + ". Was expected to reach status " + wait_on);
@@ -172,6 +168,7 @@ function check_if_empty_list_test() {
                 done();
             });
     });
+
 }
 
 describe("Testing data migration plugin", function() {
@@ -190,6 +187,20 @@ describe("Testing data migration plugin", function() {
                     var ob = JSON.parse(res.text);
                     (ob.result).should.be.exactly("You don't have any exports");
                     done();
+                });
+        });
+
+        it('clean list just in case', function(done) {
+            request
+                .post('/i/datamigration/delete_all?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    (ob.result).should.be.exactly("ok");
+                    setTimeout(done, 1000);
                 });
         });
 
@@ -658,7 +669,6 @@ describe("Testing data migration plugin", function() {
                 });
         });
         it("Validate token ", function(done) {
-
             request
                 .post('/i/datamigration/import?test_con=1')
                 .set('countly-token', mytoken)
@@ -676,7 +686,6 @@ describe("Testing data migration plugin", function() {
                     }
 
                 });
-
         });
         it("Send test ", function(done) {
             tt = "b18e10498ec0f41a85bb8155ccd4a209819319a3";
@@ -897,17 +906,7 @@ describe("Testing data migration plugin", function() {
     });
 
     describe("Importing bigger app", function() {
-        var mytoken = "";
-        var tt = "";
-        it("Unauthorised", function(done) {
-            request
-                .post('/o/datamigration/createimporttoken')
-                .expect(401)
-                .end(function(err, res) {
-                    done();
-                });
-        });
-        it("Create token", function(done) {
+        it("Create token and call import process", function(done) {
             request
                 .post('/o/datamigration/createimporttoken?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                 .expect(200)
@@ -917,30 +916,25 @@ describe("Testing data migration plugin", function() {
                     }
                     var ob = JSON.parse(res.text);
                     if (ob.result && ob.result != "") {
-                        mytoken = ob.result;
+                        var tt = "f9b35d90be5f2240eafced7c6bfdf130856cd0a7";
+                        var dir = path.resolve(__dirname, './' + tt + '.tar.gz');
+                        request
+                            .post('/i/datamigration/import?ts=000000&existing_file=' + dir)
+                            .set('countly-token', ob.result)
+                            .expect(200)
+                            .end(function(err, res) {
+                                if (err) {
+                                    return done(err);
+                                }
+                                var ob = JSON.parse(res.text);
+                                (ob.result).should.be.exactly("Importing process started.");
+                                done();
+                            });
+
                     }
                     else {
                         done('invalid response. No token provided.' + res.text);
                     }
-                    done();
-                });
-        });
-
-
-        it("Call import process", function(done) {
-            tt = "f9b35d90be5f2240eafced7c6bfdf130856cd0a7";
-            var dir = path.resolve(__dirname, './' + tt + '.tar.gz');
-            request
-                .post('/i/datamigration/import?ts=000000&existing_file=' + dir)
-                .set('countly-token', mytoken)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly("Importing process started.");
-                    done();
                 });
         });
 
@@ -963,7 +957,7 @@ describe("Testing data migration plugin", function() {
                     }
                     var ob = JSON.parse(res.text);
                     if (ob.result && ob.result == "ok") {
-                        done();
+                        setTimeout(done, 10000);
                     }
                     else {
                         done('invalid response. No token provided.' + res.text);
@@ -1002,29 +996,24 @@ describe("Testing data migration plugin", function() {
         it("Get contents", function(done) {
             var exportid = "f9b35d90be5f2240eafced7c6bfdf130856cd0a7";
             var export_path = export_path || path.resolve(__dirname, './../export/');
-            run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", path.resolve(__dirname, './../export')]).then(function() {
-                var missing_files = [];
-                var apps = [testapp._id];
-                for (var i = 0; i < apps.length; i++) {
-                    var pp = path.resolve(__dirname, './../export/' + exportid + '/' + apps[i] + '/countly');
-
-                    var files = fs.readdirSync(path.resolve(__dirname, "./f9b35d90be5f2240eafced7c6bfdf130856cd0a7/" + apps[i] + "/countly"));
-                    for (var j = 0; j < files.length; j++) {
-                        var dir = pp + '/' + files[j];
-                        if (!fs.existsSync(dir)) {
-                            missing_files.push(dir);
-                        }
+            var missing_files = [];
+            var apps = ["5f589b9e8df39d7b85474921"];
+            for (var i = 0; i < apps.length; i++) {
+                var pp = path.resolve(__dirname, './../export/' + exportid + '/' + apps[i] + '/countly');
+                var files = fs.readdirSync(path.resolve(__dirname, "./" + "f9b35d90be5f2240eafced7c6bfdf130856cd0a7" + "/" + apps[i] + "/countly"));
+                for (var j = 0; j < files.length; j++) {
+                    var dir = path.resolve(pp, "./" + files[j]);
+                    if (!fs.existsSync(dir)) {
+                        missing_files.push(dir);
                     }
                 }
-                if (missing_files.length > 0) {
-                    done("File(s) missing: " + missing_files.join('/n'));
-                }
-                else {
-                    done();
-                }
-            }, function(err) {
-                done(err);
-            });
+            }
+            if (missing_files.length > 0) {
+                done("File(s) missing: " + missing_files.join('/n'));
+            }
+            else {
+                done();
+            }
         });
     });
 
