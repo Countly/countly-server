@@ -25,19 +25,19 @@ var TIMEOUT_FOR_DATA_MIGRATION_TEST = 10000;
 var TIMES_FOR_DATA_MIGRATION_TEST = 10;
 
 var counter = 0;
-var run_command = function(my_command, my_args) {
-    return new Promise(function(resolve, reject) {
+var run_command = function(my_command, my_args, callback) {
 
-        exec('sudo ' + my_command + ' ' + my_args.join(" "), (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                reject();
-            }
-            else {
-                setTimeout(resolve, 5000);
-            }
-        });
+
+    exec('sudo ' + my_command + ' ' + my_args.join(" "), (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            callback("err");
+        }
+        else {
+            setTimeout(callback, 10000);
+        }
     });
+
 };
 
 function validate_files(exportid, apps, export_path, callback) {
@@ -57,7 +57,7 @@ function validate_files(exportid, apps, export_path, callback) {
         }
     }
 
-    run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", target_folder]).then(function() {
+    run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", target_folder], function() {
         var missing_files = [];
         for (var i = 0; i < apps.length; i++) {
             var target = target_folder;
@@ -85,8 +85,6 @@ function validate_files(exportid, apps, export_path, callback) {
         else {
             callback();
         }
-    }, function(err) {
-        callback(err);
     });
 }
 function validate_result(done, max_wait, wait_on, fail_on, options) {
@@ -157,7 +155,7 @@ function validate_import_result(done, max_wait, exportid) {
                     done(err);
                 }
                 else if (data.indexOf("Data imported") > -1) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 5000 * testUtils.testScalingFactor);
                 }
                 else {
                     counter = counter + 1;
