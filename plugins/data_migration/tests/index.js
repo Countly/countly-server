@@ -99,7 +99,7 @@ function validate_result(done, max_wait, wait_on, fail_on, options) {
                 console.log("current status:" + ob.result.status + " current step:" + ob.result.step + " " + ob.result.progress);
                 if (ob.result.status == wait_on) {
                     (ob.result._id).should.be.exactly(options.test_export_id);
-                    validate_files(options.test_export_id, options.apps, options.export_path, done);
+                    done();
                 }
                 else if (ob.result.status == fail_on) {
                     done("Export changed to status " + fail_on + ". Was expected to reach status " + wait_on);
@@ -107,7 +107,7 @@ function validate_result(done, max_wait, wait_on, fail_on, options) {
                 else {
                     counter = counter + 1;
                     setTimeout(function() {
-                        validate_result(done, TIMES_FOR_DATA_MIGRATION_TEST, wait_on, fail_on, options);
+                        done();
                     }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
                 }
             });
@@ -398,7 +398,7 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                validate_result(done, 200, "finished", "failed", {"test_export_id": test_export_id, apps: [testapp._id]});
+                validate_result(done, 200, "finished", "failed", {test_export_id: test_export_id});
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
 
@@ -410,7 +410,8 @@ describe("Testing data migration plugin", function() {
             var logdir = path.resolve(__dirname, './../../../log/dm-export_' + test_export_id + '.log');
             if (fs.existsSync(dir)) {
                 if (fs.existsSync(logdir)) {
-                    done();
+
+                    validate_files(test_export_id, [testapp._id], null, done);
                 }
                 else {
                     done("Log file not created");
@@ -518,7 +519,7 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                validate_result(done, 200, "finished", "failed", {"test_export_id": test_export_id, apps: [testapp._id], export_path: path.resolve(__dirname, './../../')});
+                done();
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
@@ -531,7 +532,7 @@ describe("Testing data migration plugin", function() {
             var logdir = path.resolve(__dirname, './../../../log/dm-export_' + test_export_id + '.log');
             if (fs.existsSync(logdir)) {
                 if (fs.existsSync(dir)) {
-                    done();
+                    validate_files(test_export_id, [testapp._id], path.resolve(__dirname, './../../'), done);
                 }
                 else {
                     done("Archive not created");
@@ -1055,12 +1056,30 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                validate_result(done, 200, "finished", "failed", {test_export_id: "f9b35d90be5f2240eafced7c6bfdf130856cd0a7", "apps": ["5f589b9e8df39d7b85474921"]});
+                validate_result(done, 200, "finished", "failed", {test_export_id: "f9b35d90be5f2240eafced7c6bfdf130856cd0a7"});
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
 
     describe("Comparing if folder contents - if no data missing", function() {
+        it("Check for archive", function(done) {
+
+            var dir = path.resolve(__dirname, './../export/' + "f9b35d90be5f2240eafced7c6bfdf130856cd0a7" + '.tar.gz');
+            var logdir = path.resolve(__dirname, './../../../log/dm-export_' + "f9b35d90be5f2240eafced7c6bfdf130856cd0a7" + '.log');
+            if (fs.existsSync(dir)) {
+                if (fs.existsSync(logdir)) {
+                    validate_files("f9b35d90be5f2240eafced7c6bfdf130856cd0a7", ["5f589b9e8df39d7b85474921"], null, done);
+                }
+                else {
+                    done("Log file not created");
+                }
+            }
+            else {
+                done("Archive not created");
+            }
+        });
+
+
         it("Get contents", function(done) {
             var exportid = "f9b35d90be5f2240eafced7c6bfdf130856cd0a7";
             var export_path = export_path || path.resolve(__dirname, './../export/');
