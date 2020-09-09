@@ -44,10 +44,23 @@ function validate_files(exportid, apps, export_path, callback) {
     var simpleDocs = ["apm_device{1}.bson", "apm_device{1}.metadata.json", "apm_network{1}.bson", "apm_network{1}.metadata.json", "app_crashes{1}.bson", "app_crashes{1}.metadata.json", "app_crashgroups{1}.bson", "app_crashgroups{1}.metadata.json", "app_crashusers{1}.bson", "app_crashusers{1}.metadata.json", "app_nxret{1}.bson", "app_nxret{1}.metadata.json", "app_users{1}.bson", "app_users{1}.metadata.json", "app_viewsmeta{1}.bson", "app_viewsmeta{1}.metadata.json", "apps.bson", "apps.metadata.json", "browser.bson", "browser.metadata.json", "calculated_metrics.bson", "calculated_metrics.metadata.json", "campaigndata.bson", "campaigndata.metadata.json", "campaigns.bson", "campaigns.metadata.json", "carriers.bson", "carriers.metadata.json", "cities.bson", "cities.metadata.json", "cohortdata.bson", "cohortdata.metadata.json", "cohorts.bson", "cohorts.metadata.json", "concurrent_users_max.bson", "concurrent_users_max.metadata.json", "consent_history{1}.bson", "consent_history{1}.metadata.json", "consents.bson", "consents.metadata.json", "crash_share.bson", "crash_share.metadata.json", "crashdata.bson", "crashdata.metadata.json", "density.bson", "density.metadata.json", "device_details.bson", "device_details.metadata.json", "devices.bson", "devices.metadata.json", "events.bson", "events.metadata.json", "feedback{1}.bson", "feedback{1}.metadata.json", "feedback_widgets.bson", "feedback_widgets.metadata.json", "funnels.bson", "funnels.metadata.json", "langs.bson", "langs.metadata.json", "max_online_counts.bson", "max_online_counts.metadata.json", "messages.bson", "messages.metadata.json", "metric_changes{1}.bson", "metric_changes{1}.metadata.json", "notes.bson", "notes.metadata.json", "retention_daily.bson", "retention_daily.metadata.json", "retention_monthly.bson", "retention_monthly.metadata.json", "retention_weekly.bson", "retention_weekly.metadata.json", "server_stats_data_points.bson", "server_stats_data_points.metadata.json", "sources.bson", "sources.metadata.json", "symbolication_jobs.bson", "symbolication_jobs.metadata.json", "top_events.bson", "top_events.metadata.json", "users.bson", "users.metadata.json", "views.bson", "views.metadata.json"];
 
     export_path = export_path || path.resolve(__dirname, './../export/');
-    run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", path.resolve(__dirname, './../export')]).then(function() {
+
+
+    var target_folder = path.resolve(__dirname, './compare_export');
+    if (!fs.existsSync(target_folder)) {
+        try {
+            fs.mkdirSync(target_folder, 484);
+        }
+        catch (err) {
+            callback(err.message);
+            return;
+        }
+    }
+
+    run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", target_folder]).then(function() {
         var missing_files = [];
         for (var i = 0; i < apps.length; i++) {
-            var target = path.resolve(__dirname, './../export/');
+            var target = target_folder;
 
             while (fs.existsSync(target + "/" + exportid)) {
                 target = target + "/" + exportid;
@@ -138,7 +151,21 @@ function validate_import_result(done, max_wait, exportid) {
             fs.existsSync(path.resolve(__dirname, './../import/' + exportid + '.json')) &&
             fs.existsSync(path.resolve(__dirname, './../../../log/dm-import_' + exportid + '.log'))
         ) {
-            done();
+
+            fs.readFile(path.resolve(__dirname, './../../../log/dm-import_' + exportid + '.log'), 'utf8', function(err, data) {
+                if (err) {
+                    done(err);
+                }
+                else if (data.indexOf("Data imported") > -1) {
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                }
+                else {
+                    counter = counter + 1;
+                    setTimeout(function() {
+                        validate_import_result(done, max_wait, exportid);
+                    }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
+                }
+            });
         }
         else {
             counter = counter + 1;
@@ -547,8 +574,6 @@ describe("Testing data migration plugin", function() {
                 done("Archive not deleted");
             }
         });
-
-
     });
 
     describe("cleanup", function() {
@@ -892,6 +917,27 @@ describe("Testing data migration plugin", function() {
     });
 
     describe("cleanup", function() {
+        it("Check if app exists", function(done) {
+            request
+                .post('/o/apps/all?api_key=' + API_KEY_ADMIN)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    else {
+                        res = JSON.parse(res.text);
+                        res = res["admin_of"];
+                        for (var k in res) {
+                            if (k === "58650a47cc2ed563c5ad964c") {
+                                done();
+                                return;
+                            }
+                        }
+                        done("App missing");
+                    }
+                });
+        });
         it("Remove test app", function(done) {
             request
                 .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"58650a47cc2ed563c5ad964c"}')
@@ -947,6 +993,28 @@ describe("Testing data migration plugin", function() {
         });
     });
     describe("some cleanup", function() {
+        it("Check if app exists", function(done) {
+            request
+                .post('/o/apps/all?api_key=' + API_KEY_ADMIN)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    else {
+                        res = JSON.parse(res.text);
+                        res = res["admin_of"];
+                        for (var k in res) {
+                            if (k === "5f589b9e8df39d7b85474921") {
+                                done();
+                                return;
+                            }
+                        }
+                        done("App missing");
+                    }
+                });
+        });
+
         it("delete import request ", function(done) {
             request
                 .post('/i/datamigration/delete_import?exportid=f9b35d90be5f2240eafced7c6bfdf130856cd0a7' + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
@@ -999,7 +1067,7 @@ describe("Testing data migration plugin", function() {
             var missing_files = [];
             var apps = ["5f589b9e8df39d7b85474921"];
             for (var i = 0; i < apps.length; i++) {
-                var pp = path.resolve(__dirname, './../export/' + exportid + '/' + apps[i] + '/countly');
+                var pp = path.resolve(__dirname, './compare_export' + '/' + exportid + '/' + apps[i] + '/countly');
                 var files = fs.readdirSync(path.resolve(__dirname, "./" + "f9b35d90be5f2240eafced7c6bfdf130856cd0a7" + "/" + apps[i] + "/countly"));
                 for (var j = 0; j < files.length; j++) {
                     var dir = path.resolve(pp, "./" + files[j]);
@@ -1057,7 +1125,17 @@ describe("Testing data migration plugin", function() {
                 }
             });
         });
+        it("clenup test dir", function(done) {
+            fse.remove(path.resolve(__dirname, './compare_export'), err => {
+                if (err) {
+                    done(Error('Unable to remove directory'));
+                }
+                else {
+                    done();
+                }
 
+            });
+        });
         it("Get export list", function(done) {
             request
                 .post('/o/datamigration/getmyexports?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
