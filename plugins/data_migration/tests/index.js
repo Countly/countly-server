@@ -45,15 +45,24 @@ var run_command = function(my_command, my_args) {
 };
 
 function validate_files(exportid, apps, export_path, callback) {
-    var prefix = ["apps-", 'app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_viewdata', 'app_views', 'campaign_users', 'campaigndata-', 'campaigns-', 'notes-', 'messages-', "browser-", "carriers-", "cities-", "crashdata-", "density-", "device_details-", "devices-", "langs-", "sources-", "users-", "retention_daily-", "retention_weekly-", "retention_monthly-"];
-
     var simpleDocs = ["apm_device{1}.bson", "apm_device{1}.metadata.json", "apm_network{1}.bson", "apm_network{1}.metadata.json", "app_crashes{1}.bson", "app_crashes{1}.metadata.json", "app_crashgroups{1}.bson", "app_crashgroups{1}.metadata.json", "app_crashusers{1}.bson", "app_crashusers{1}.metadata.json", "app_nxret{1}.bson", "app_nxret{1}.metadata.json", "app_users{1}.bson", "app_users{1}.metadata.json", "app_viewsmeta{1}.bson", "app_viewsmeta{1}.metadata.json", "apps.bson", "apps.metadata.json", "browser.bson", "browser.metadata.json", "calculated_metrics.bson", "calculated_metrics.metadata.json", "campaigndata.bson", "campaigndata.metadata.json", "campaigns.bson", "campaigns.metadata.json", "carriers.bson", "carriers.metadata.json", "cities.bson", "cities.metadata.json", "cohortdata.bson", "cohortdata.metadata.json", "cohorts.bson", "cohorts.metadata.json", "concurrent_users_max.bson", "concurrent_users_max.metadata.json", "consent_history{1}.bson", "consent_history{1}.metadata.json", "consents.bson", "consents.metadata.json", "crash_share.bson", "crash_share.metadata.json", "crashdata.bson", "crashdata.metadata.json", "density.bson", "density.metadata.json", "device_details.bson", "device_details.metadata.json", "devices.bson", "devices.metadata.json", "events.bson", "events.metadata.json", "feedback{1}.bson", "feedback{1}.metadata.json", "feedback_widgets.bson", "feedback_widgets.metadata.json", "funnels.bson", "funnels.metadata.json", "langs.bson", "langs.metadata.json", "max_online_counts.bson", "max_online_counts.metadata.json", "messages.bson", "messages.metadata.json", "metric_changes{1}.bson", "metric_changes{1}.metadata.json", "notes.bson", "notes.metadata.json", "retention_daily.bson", "retention_daily.metadata.json", "retention_monthly.bson", "retention_monthly.metadata.json", "retention_weekly.bson", "retention_weekly.metadata.json", "server_stats_data_points.bson", "server_stats_data_points.metadata.json", "sources.bson", "sources.metadata.json", "symbolication_jobs.bson", "symbolication_jobs.metadata.json", "top_events.bson", "top_events.metadata.json", "users.bson", "users.metadata.json", "views.bson", "views.metadata.json"];
 
     export_path = export_path || path.resolve(__dirname, './../export/');
     run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", path.resolve(__dirname, './../export')]).then(function() {
         var missing_files = [];
         for (var i = 0; i < apps.length; i++) {
-            var pp = path.resolve(__dirname, './../export/' + exportid + '/' + apps[i] + '/countly');
+            var target = path.resolve(__dirname, './../export/');
+            console.log(target);
+            while (fs.existsSync(target + "/" + exportid)) {
+                target = target + "/" + exportid;
+            }
+            console.log(target);
+            while (fs.existsSync(target + "/" + apps[i])) {
+                target = target + "/" + apps[i];
+            }
+            target = target + "/countly";
+            console.log(target);
+            var pp = target;
             for (var j = 0; j < simpleDocs.length; j++) {
                 var dir = pp + '/' + simpleDocs[j].replace('{1}', apps[i]);
                 if (!fs.existsSync(dir)) {
@@ -979,6 +988,7 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
+                test_export_id = crypto.createHash('SHA1').update(JSON.stringify(["5f589b9e8df39d7b85474921"])).digest('hex');
                 validate_result(done, 200, "finished", "failed");
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
