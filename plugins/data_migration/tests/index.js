@@ -34,7 +34,7 @@ var run_command = function(my_command, my_args, callback) {
             callback("err");
         }
         else {
-            setTimeout(callback, 10000);
+            setTimeout(callback, 30000);
         }
     });
 
@@ -142,8 +142,6 @@ function validate_import_result(done, max_wait, exportid) {
     if (counter <= max_wait) {
         //check if info file is here
         //check log file
-
-
         if (!fs.existsSync(path.resolve(__dirname, './../import/' + exportid + '.tar.gz')) &&
             !fs.existsSync(path.resolve(__dirname, './../import/' + exportid + '')) &&
             fs.existsSync(path.resolve(__dirname, './../import/' + exportid + '.json')) &&
@@ -155,9 +153,10 @@ function validate_import_result(done, max_wait, exportid) {
                     done(err);
                 }
                 else if (data.indexOf("Data imported") > -1) {
-                    setTimeout(done, 5000 * testUtils.testScalingFactor);
+                    setTimeout(done, 10000 * testUtils.testScalingFactor);
                 }
                 else {
+                    console.log(data);
                     counter = counter + 1;
                     setTimeout(function() {
                         validate_import_result(done, max_wait, exportid);
@@ -1009,7 +1008,31 @@ describe("Testing data migration plugin", function() {
                                 return;
                             }
                         }
-                        done("App missing");
+                        //try again
+
+                        setTimeout(function() {
+                            request
+                                .post('/o/apps/all?api_key=' + API_KEY_ADMIN)
+                                .expect(200)
+                                .end(function(err, res) {
+                                    if (err) {
+                                        return done(err);
+                                    }
+                                    else {
+                                        res = JSON.parse(res.text);
+                                        res = res["admin_of"];
+                                        for (var k in res) {
+                                            if (k === "5f589b9e8df39d7b85474921") {
+                                                done();
+                                                return;
+                                            }
+                                        }
+
+                                        done("App missing");
+                                    }
+                                });
+
+                        }, 10000);
                     }
                 });
         });
