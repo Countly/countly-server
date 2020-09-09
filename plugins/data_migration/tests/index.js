@@ -27,7 +27,7 @@ var TIMES_FOR_DATA_MIGRATION_TEST = 10;
 var counter = 0;
 var run_command = function(my_command, my_args) {
     return new Promise(function(resolve, reject) {
-        var starr = [null, null, null];
+        var starr = ['inherit', 'inherit', 'inherit'];
         var child = spawn(my_command, my_args, {shell: false, cwd: __dirname, detached: false, stdio: starr}, function(error) {
             if (error) {
                 reject(Error('error:' + JSON.stringify(error)));
@@ -80,20 +80,20 @@ function validate_files(exportid, apps, export_path, callback) {
         callback(err);
     });
 }
-function validate_result(done, max_wait, wait_on, fail_on, export_path) {
+function validate_result(done, max_wait, wait_on, fail_on, options) {
     if (counter < TIMES_FOR_DATA_MIGRATION_TEST) {
         request
-            .post('/o/datamigration/getstatus?exportid=' + test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            .post('/o/datamigration/getstatus?exportid=' + options.test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
             .expect(200)
             .end(function(err, res) {
-                console.log('/o/datamigration/getstatus?exportid=' + test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID);
+                console.log('/o/datamigration/getstatus?exportid=' + options.test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID);
                 console.log(res.text);
                 var ob = JSON.parse(res.text);
                 console.log("current status:" + ob.result.status + " current step:" + ob.result.step + " " + ob.result.progress);
 
                 if (ob.result.status == wait_on) {
-                    (ob.result._id).should.be.exactly(test_export_id);
-                    validate_files(test_export_id, [testapp._id], export_path, done);
+                    (ob.result._id).should.be.exactly(options.test_export_id);
+                    validate_files(options.test_export_id, [testapp._id], options.export_path, done);
                 }
                 else if (ob.result.status == fail_on) {
                     done("Export changed to status " + fail_on + ". Was expected to reach status " + wait_on);
@@ -101,7 +101,7 @@ function validate_result(done, max_wait, wait_on, fail_on, export_path) {
                 else {
                     counter = counter + 1;
                     setTimeout(function() {
-                        validate_result(done, TIMES_FOR_DATA_MIGRATION_TEST, wait_on, fail_on, export_path);
+                        validate_result(done, TIMES_FOR_DATA_MIGRATION_TEST, wait_on, fail_on, options);
                     }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
                 }
             });
@@ -109,7 +109,7 @@ function validate_result(done, max_wait, wait_on, fail_on, export_path) {
     else {
         console.log("Stopped waiting for update.(was expected to finish under  " + (TIMEOUT_FOR_DATA_MIGRATION_TEST * TIMES_FOR_DATA_MIGRATION_TEST) / 1000 + " seconds). ");
         //try getting log file
-        var dir = path.resolve(__dirname, '../../../log/dm-export_' + test_export_id + ".log");
+        var dir = path.resolve(__dirname, '../../../log/dm-export_' + options.test_export_id + ".log");
         if (fs.existsSync(dir)) {
             var instream = fs.createReadStream(dir);
 
@@ -363,7 +363,7 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                validate_result(done, 200, "finished", "failed");
+                validate_result(done, 200, "finished", "failed", {"test_export_id": test_export_id, apps: [testapp._id]});
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
 
@@ -483,7 +483,7 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                validate_result(done, 200, "finished", "failed", path.resolve(__dirname, './../../'));
+                validate_result(done, 200, "finished", "failed", {"test_export_id": test_export_id, apps: [testapp._id], export_path: path.resolve(__dirname, './../../')});
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
@@ -543,6 +543,20 @@ describe("Testing data migration plugin", function() {
 
     });
 
+    describe("cleanup", function() {
+        it("Remove test app", function(done) {
+            console.log(testapp._id);
+            request
+                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + testapp._id + '"}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+    });
 
 
     describe("Valiate invalid import", function() {
@@ -691,7 +705,7 @@ describe("Testing data migration plugin", function() {
         //checking statuss and seeing if it moves to end
             counter = 0;
             setTimeout(function() {
-                validate_import_result(done, 10, tt);
+                validate_import_result(done, 10, "b18e10498ec0f41a85bb8155ccd4a209819319a3");
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
@@ -874,11 +888,8 @@ describe("Testing data migration plugin", function() {
 
     describe("cleanup", function() {
         it("Remove test app", function(done) {
-            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-            APP_ID = testUtils.get("APP_ID");
-            APP_KEY = testUtils.get("APP_KEY");
             request
-                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + testapp._id + '"}')
+                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"58650a47cc2ed563c5ad964c"}')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -941,13 +952,11 @@ describe("Testing data migration plugin", function() {
         //checking statuss and seeing if it moves to end
             counter = 0;
             setTimeout(function() {
-                validate_import_result(done, 10, tt);
+                validate_import_result(done, 10, "f9b35d90be5f2240eafced7c6bfdf130856cd0a7");
             }, 1000);
         });
     });
-
-
-    describe("Exporting same app", function() {
+    describe("some cleanup", function() {
         it("delete import request ", function(done) {
             request
                 .post('/i/datamigration/delete_import?exportid=f9b35d90be5f2240eafced7c6bfdf130856cd0a7' + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
@@ -966,6 +975,9 @@ describe("Testing data migration plugin", function() {
 
                 });
         });
+    });
+
+    describe("Exporting same app", function() {
         it("Run bigger export", function(done) {
             request
                 .post('/i/datamigration/export?only_export=1&apps=5f589b9e8df39d7b85474921&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
@@ -978,7 +990,7 @@ describe("Testing data migration plugin", function() {
                     var apps = [testapp._id];
                     test_export_id = crypto.createHash('SHA1').update(JSON.stringify(apps)).digest('hex');
                     var ob = JSON.parse(res.text);
-                    (ob.result).should.be.exactly(test_export_id);
+                    (ob.result).should.be.exactly("f9b35d90be5f2240eafced7c6bfdf130856cd0a7");
                     done();
                 });
         });
@@ -989,7 +1001,7 @@ describe("Testing data migration plugin", function() {
             this.timeout(0);
             setTimeout(function() {
                 test_export_id = crypto.createHash('SHA1').update(JSON.stringify(["5f589b9e8df39d7b85474921"])).digest('hex');
-                validate_result(done, 200, "finished", "failed");
+                validate_result(done, 200, "finished", "failed", {test_export_id: "f9b35d90be5f2240eafced7c6bfdf130856cd0a7", "apps": ["5f589b9e8df39d7b85474921"]});
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
@@ -1024,14 +1036,10 @@ describe("Testing data migration plugin", function() {
         });
     });
 
-
     describe("cleanup", function() {
         it("Remove test app", function(done) {
-            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-            APP_ID = testUtils.get("APP_ID");
-            APP_KEY = testUtils.get("APP_KEY");
             request
-                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + testapp._id + '"}')
+                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"5f589b9e8df39d7b85474921"}')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
