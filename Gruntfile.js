@@ -57,6 +57,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue/vuex.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuelidate.min.js',
                     'frontend/express/public/javascripts/utils/vue/v-tooltip.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-good-table.min.js',
                     'frontend/express/public/javascripts/utils/vue/validators.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
@@ -140,7 +141,8 @@ module.exports = function(grunt) {
                 files: {
                     'frontend/express/public/stylesheets/main.min.css': [
                         'frontend/express/public/stylesheets/main.css',
-                        'frontend/express/public/stylesheets/clyvue.css',
+                        'frontend/express/public/stylesheets/vue/clyvue.css',
+                        'frontend/express/public/stylesheets/vue/vue-good-table.min.css',
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
                         'frontend/express/public/stylesheets/jsoneditor/codemirror.css',

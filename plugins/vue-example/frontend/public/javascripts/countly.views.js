@@ -138,12 +138,37 @@ var TableView = countlyVue.views.BaseView.extend({
             selectWModel: null,
             selectWItems: manyItems,
             selectDWModel: null,
-            selectDWItems: manyItems
+            selectDWItems: manyItems,
+            gtableColumns: [
+                {
+                    label: 'Status',
+                    field: 'status',
+                    type: 'boolean',
+                },
+                {
+                    label: 'ID',
+                    field: '_id',
+                    type: 'number',
+                },
+                {
+                    type: "text",
+                    field: "name",
+                    label: "Name",
+                },
+                {
+                    type: "text",
+                    field: "description",
+                    label: "Description",
+                },
+            ]
         };
     },
     methods: {
         add: function() {
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
+        },
+        statusChanged: function(_id, newValue) {
+            this.$store.commit("countlyVueExample/setStatus", {_id: _id, value: newValue});
         },
         onEditRecord: function(row) {
             this.$emit("open-drawer", "main", row);
