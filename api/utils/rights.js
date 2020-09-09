@@ -519,7 +519,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
     if (params.qstring.app_id) {
         //if app_id was provided, we need to check if user has access for this app_id
         // is user has read permission for current app
-        var hasReadAccess = params.member.permission && typeof params.member.permission.r[params.qstring.app_id] === "object";
+        var hasReadAccess = params.member.permission && typeof params.member.permission.r[params.qstring.app_id] === "object" && params.member.permission.r[params.qstring.app_id].all;
         // leave it for backwards compatibility
         var isRestricted = params.member.app_restrict && params.member.app_restrict[params.qstring.app_id] && params.member.app_restrict[params.qstring.app_id].indexOf("#/manage/db");
         if (params.member.global_admin || hasReadAccess && !isRestricted) {
