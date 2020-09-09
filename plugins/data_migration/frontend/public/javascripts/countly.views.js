@@ -545,7 +545,7 @@ window.DataMigrationView = countlyView.extend({
             addedfile: function(file) {
                 if (self.check_ext(file.name)) {
                     var iSize = 0;
-                    if ($.browser.msie) {
+                    if (window.ActiveXObject) {
                         var objFSO = new ActiveXObject("Scripting.FileSystemObject");
                         var sPath = file.value;
                         var objFile = objFSO.getFile(sPath);

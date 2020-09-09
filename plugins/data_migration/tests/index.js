@@ -8,7 +8,8 @@ var path = require("path");
 var fs = require("fs"),
     readline = require('readline'),
     stream = require('stream');
-
+var cp = require('child_process'); //call process
+var spawn = cp.spawn; //for calling command line
 const fse = require('fs-extra'); // delete folders
 var crypto = require('crypto');
 var APP_KEY = "";
@@ -24,32 +25,66 @@ var TIMEOUT_FOR_DATA_MIGRATION_TEST = 10000;
 var TIMES_FOR_DATA_MIGRATION_TEST = 10;
 
 var counter = 0;
+var run_command = function(my_command, my_args) {
+    return new Promise(function(resolve, reject) {
+        var starr = [null, null, null];
+        var child = spawn(my_command, my_args, {shell: false, cwd: __dirname, detached: false, stdio: starr}, function(error) {
+            if (error) {
+                reject(Error('error:' + JSON.stringify(error)));
+                return;
+            }
+        });
 
-function validate_files(exportid, apps) {
+        child.on('error', function(error) {
+            return reject(Error('error:' + JSON.stringify(error)));
+        });
+        child.on('exit', function(code) {
+            return resolve();
+        });
+    });
+};
+
+function validate_files(exportid, apps, export_path, callback) {
     var prefix = ["apps-", 'app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_viewdata', 'app_views', 'campaign_users', 'campaigndata-', 'campaigns-', 'notes-', 'messages-', "browser-", "carriers-", "cities-", "crashdata-", "density-", "device_details-", "devices-", "langs-", "sources-", "users-", "retention_daily-", "retention_weekly-", "retention_monthly-"];
 
-    for (var i = 0; i < apps.length; i++) {
-        for (var j = 0; j < prefix.length; j++) {
-            var dir = path.resolve(__dirname, './../export/' + exportid + '/' + prefix[j] + apps[i] + ".json");
-            if (!fs.existsSync(dir)) {
-                return "File missing: " + dir;
+    var simpleDocs = ["apm_device{1}.bson", "apm_device{1}.metadata.json", "apm_network{1}.bson", "apm_network{1}.metadata.json", "app_crashes{1}.bson", "app_crashes{1}.metadata.json", "app_crashgroups{1}.bson", "app_crashgroups{1}.metadata.json", "app_crashusers{1}.bson", "app_crashusers{1}.metadata.json", "app_nxret{1}.bson", "app_nxret{1}.metadata.json", "app_users{1}.bson", "app_users{1}.metadata.json", "app_viewsmeta{1}.bson", "app_viewsmeta{1}.metadata.json", "apps.bson", "apps.metadata.json", "browser.bson", "browser.metadata.json", "calculated_metrics.bson", "calculated_metrics.metadata.json", "campaigndata.bson", "campaigndata.metadata.json", "campaigns.bson", "campaigns.metadata.json", "carriers.bson", "carriers.metadata.json", "cities.bson", "cities.metadata.json", "cohortdata.bson", "cohortdata.metadata.json", "cohorts.bson", "cohorts.metadata.json", "concurrent_users_max.bson", "concurrent_users_max.metadata.json", "consent_history{1}.bson", "consent_history{1}.metadata.json", "consents.bson", "consents.metadata.json", "crash_share.bson", "crash_share.metadata.json", "crashdata.bson", "crashdata.metadata.json", "density.bson", "density.metadata.json", "device_details.bson", "device_details.metadata.json", "devices.bson", "devices.metadata.json", "events.bson", "events.metadata.json", "feedback{1}.bson", "feedback{1}.metadata.json", "feedback_widgets.bson", "feedback_widgets.metadata.json", "funnels.bson", "funnels.metadata.json", "langs.bson", "langs.metadata.json", "max_online_counts.bson", "max_online_counts.metadata.json", "messages.bson", "messages.metadata.json", "metric_changes{1}.bson", "metric_changes{1}.metadata.json", "notes.bson", "notes.metadata.json", "retention_daily.bson", "retention_daily.metadata.json", "retention_monthly.bson", "retention_monthly.metadata.json", "retention_weekly.bson", "retention_weekly.metadata.json", "server_stats_data_points.bson", "server_stats_data_points.metadata.json", "sources.bson", "sources.metadata.json", "symbolication_jobs.bson", "symbolication_jobs.metadata.json", "top_events.bson", "top_events.metadata.json", "users.bson", "users.metadata.json", "views.bson", "views.metadata.json"];
+
+    export_path = export_path || path.resolve(__dirname, './../export/');
+    run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", path.resolve(__dirname, './../export')]).then(function() {
+        var missing_files = [];
+        for (var i = 0; i < apps.length; i++) {
+            var pp = path.resolve(__dirname, './../export/' + exportid + '/' + apps[i] + '/countly');
+            for (var j = 0; j < simpleDocs.length; j++) {
+                var dir = pp + '/' + simpleDocs[j].replace('{1}', apps[i]);
+                if (!fs.existsSync(dir)) {
+                    missing_files.push(dir);
+                }
             }
         }
-    }
-    return true;
+        if (missing_files.length > 0) {
+            callback("File(s) missing: " + missing_files.join('/n'));
+        }
+        else {
+            callback();
+        }
+    }, function(err) {
+        callback(err);
+    });
 }
-function validate_result(done, max_wait, wait_on, fail_on) {
+function validate_result(done, max_wait, wait_on, fail_on, export_path) {
     if (counter < TIMES_FOR_DATA_MIGRATION_TEST) {
         request
             .post('/o/datamigration/getstatus?exportid=' + test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
             .expect(200)
             .end(function(err, res) {
+                console.log('/o/datamigration/getstatus?exportid=' + test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID);
+                console.log(res.text);
                 var ob = JSON.parse(res.text);
                 console.log("current status:" + ob.result.status + " current step:" + ob.result.step + " " + ob.result.progress);
 
                 if (ob.result.status == wait_on) {
                     (ob.result._id).should.be.exactly(test_export_id);
-                    done();
+                    validate_files(test_export_id, [testapp._id], export_path, done);
                 }
                 else if (ob.result.status == fail_on) {
                     done("Export changed to status " + fail_on + ". Was expected to reach status " + wait_on);
@@ -57,7 +92,7 @@ function validate_result(done, max_wait, wait_on, fail_on) {
                 else {
                     counter = counter + 1;
                     setTimeout(function() {
-                        validate_result(done, TIMES_FOR_DATA_MIGRATION_TEST, wait_on, fail_on);
+                        validate_result(done, TIMES_FOR_DATA_MIGRATION_TEST, wait_on, fail_on, export_path);
                     }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
                 }
             });
@@ -439,7 +474,7 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                validate_result(done, 200, "finished", "failed");
+                validate_result(done, 200, "finished", "failed", path.resolve(__dirname, './../../'));
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
@@ -825,6 +860,157 @@ describe("Testing data migration plugin", function() {
             setTimeout(function() {
                 validate_import_result(done, 10, tt);
             }, 1000);
+        });
+    });
+
+    describe("cleanup", function() {
+        it("Remove test app", function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            APP_KEY = testUtils.get("APP_KEY");
+            request
+                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + testapp._id + '"}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+    });
+
+    describe("Importing bigger app", function() {
+        var mytoken = "";
+        var tt = "";
+        it("Unauthorised", function(done) {
+            request
+                .post('/o/datamigration/createimporttoken')
+                .expect(401)
+                .end(function(err, res) {
+                    done();
+                });
+        });
+        it("Create token", function(done) {
+            request
+                .post('/o/datamigration/createimporttoken?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    if (ob.result && ob.result != "") {
+                        mytoken = ob.result;
+                    }
+                    else {
+                        done('invalid response. No token provided.' + res.text);
+                    }
+                    done();
+                });
+        });
+
+
+        it("Call import process", function(done) {
+            tt = "f9b35d90be5f2240eafced7c6bfdf130856cd0a7";
+            var dir = path.resolve(__dirname, './' + tt + '.tar.gz');
+            request
+                .post('/i/datamigration/import?ts=000000&existing_file=' + dir)
+                .set('countly-token', mytoken)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    (ob.result).should.be.exactly("Importing process started.");
+                    done();
+                });
+        });
+
+        after(function(done) {
+        //checking statuss and seeing if it moves to end
+            counter = 0;
+            setTimeout(function() {
+                validate_import_result(done, 10, tt);
+            }, 1000);
+        });
+    });
+
+
+    describe("Exporting same app", function() {
+        it("delete import request ", function(done) {
+            request
+                .post('/i/datamigration/delete_import?exportid=f9b35d90be5f2240eafced7c6bfdf130856cd0a7' + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    if (ob.result && ob.result == "ok") {
+                        done();
+                    }
+                    else {
+                        done('invalid response. No token provided.' + res.text);
+                    }
+
+                });
+        });
+        it("Run bigger export", function(done) {
+            request
+                .post('/i/datamigration/export?only_export=1&apps=5f589b9e8df39d7b85474921&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    testapp._id = "5f589b9e8df39d7b85474921";
+                    var apps = [testapp._id];
+                    test_export_id = crypto.createHash('SHA1').update(JSON.stringify(apps)).digest('hex');
+                    var ob = JSON.parse(res.text);
+                    (ob.result).should.be.exactly(test_export_id);
+                    done();
+                });
+        });
+
+        after(function(done) {
+            //checking statuss and seeing if it moves to end
+            counter = 0;
+            this.timeout(0);
+            setTimeout(function() {
+                validate_result(done, 200, "finished", "failed");
+            }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
+        });
+    });
+
+    describe("Comparing if folder contents - if no data missing", function() {
+        it("Get contents", function(done) {
+            var exportid = test_export_id;
+            var export_path = export_path || path.resolve(__dirname, './../export/');
+            run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", path.resolve(__dirname, './../export')]).then(function() {
+                var missing_files = [];
+                var apps = [testapp._id];
+                for (var i = 0; i < apps.length; i++) {
+                    var pp = path.resolve(__dirname, './../export/' + exportid + '/' + apps[i] + '/countly');
+
+                    var files = fs.readdirSync(path.resolve(__dirname, "./f9b35d90be5f2240eafced7c6bfdf130856cd0a7/" + apps[i] + "/countly"));
+                    for (var j = 0; j < files.length; j++) {
+                        var dir = pp + '/' + files[j];
+                        if (!fs.existsSync(dir)) {
+                            missing_files.push(dir);
+                        }
+                    }
+                }
+                if (missing_files.length > 0) {
+                    done("File(s) missing: " + missing_files.join('/n'));
+                }
+                else {
+                    done();
+                }
+            }, function(err) {
+                done(err);
+            });
         });
     });
 
