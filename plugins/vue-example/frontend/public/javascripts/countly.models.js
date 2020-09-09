@@ -21,9 +21,14 @@
 
     countlyVueExample.getVuexModule = function() {
 
+        var records = [];
+        for (var i = 0; i < 20; i++) {
+            records.push(countlyVueExample.factory.getEmpty({_id: i}));
+        }
+
         var getEmptyState = function() {
             return {
-                records: [],
+                records: records,
                 randomNumbers: [],
                 pieData: {
                     "dp": [

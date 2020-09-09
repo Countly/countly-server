@@ -33,16 +33,15 @@
                         <pre>{{tableRows}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <vue-good-table
-                            v-bind:rows="tableRows"
-                            v-bind:columns="gtableColumns"
-                            @statusChanged="statusChanged"
-                            styleClass="cly-vgt-table striped">
+                        <cly-datatable
+                            :rows="tableRows"
+                            :columns="gtableColumns"
+                            @statusChanged="statusChanged">
                             <template slot="table-row" slot-scope="props">
                                 <span v-if="props.column.field == 'status'">
-                                    <cly-check 
-                                        v-tooltip="props.row.status?'Activated':'Deactivated'" 
-                                        :value="props.row.status" 
+                                    <cly-check
+                                        v-tooltip="props.row.status?'Activated':'Deactivated'"
+                                        :value="props.row.status"
                                         @input="statusChanged(props.row._id, $event)">
                                     </cly-check>
                                 </span>
@@ -50,12 +49,7 @@
                                     {{props.formattedRow[props.column.field]}}
                                 </span>
                             </template>
-                            <div slot="table-actions-bottom">
-                            </div>
-                            <div slot="emptystate">
-                              {{ i18n("common.table.no-data") }}
-                            </div>
-                        </vue-good-table>
+                        </cly-datatable>
                     </div>
                 </div>
             </cly-panel>

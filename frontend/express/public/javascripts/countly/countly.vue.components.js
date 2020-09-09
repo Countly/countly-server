@@ -2048,4 +2048,43 @@
         }
     ));
 
+    Vue.component("cly-datatable", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        data: function() {
+            return {
+                paginationOptions: {
+                    enabled: true,
+                    mode: 'records',
+                    perPage: 5,
+                    position: 'top',
+                    perPageDropdown: [3, 7, 9],
+                    dropdownAllowAll: false,
+                    setCurrentPage: 2,
+                    nextLabel: 'next',
+                    prevLabel: 'prev',
+                    rowsPerPageLabel: 'Rows per page',
+                    ofLabel: 'of',
+                    pageLabel: 'page',
+                    allLabel: 'All',
+                }
+            };
+        },
+        template: '<vue-good-table\
+                    v-bind="$props"\
+                    v-bind="$attrs"\
+                    v-on="$listeners"\
+                    :pagination-options="paginationOptions"\
+                    styleClass="cly-vgt-table striped">\
+                        <template slot="table-row" slot-scope="scope"><slot name="table-row" v-bind="scope"/></template>\
+                        <div slot="table-actions-bottom">\
+                        </div>\
+                        <div slot="emptystate">\
+                            {{ i18n("common.table.no-data") }}\
+                        </div>\
+                    </vue-good-table>\
+        '
+    }));
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
