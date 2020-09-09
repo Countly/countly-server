@@ -28,7 +28,7 @@ var counter = 0;
 var run_command = function(my_command, my_args) {
     return new Promise(function(resolve, reject) {
         var starr = ['inherit', 'inherit', 'inherit'];
-        var child = spawn(my_command, my_args, {shell: false, cwd: __dirname, detached: false, stdio: starr}, function(error) {
+        var child = spawn("sudo " + my_command, my_args, {shell: false, cwd: __dirname, detached: false, stdio: starr}, function(error) {
             if (error) {
                 reject(Error('error:' + JSON.stringify(error)));
                 return;
@@ -545,7 +545,6 @@ describe("Testing data migration plugin", function() {
 
     describe("cleanup", function() {
         it("Remove test app", function(done) {
-            console.log(testapp._id);
             request
                 .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + testapp._id + '"}')
                 .expect(200)
