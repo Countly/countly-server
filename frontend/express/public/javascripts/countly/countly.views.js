@@ -3155,8 +3155,8 @@ window.ManageUsersView = countlyView.extend({
     memberPermission: {},
     renderFeatureTemplate: function(featureName, appId) {
         var self = this;
-        var featureTemplate = '<div class="feature-name">';
-        featureTemplate += featureName + '</div>';
+        var featureTemplate = '<div><div class="feature-name"><b>';
+        featureTemplate += featureName + '</b></div>';
         featureTemplate += '<div class="feature-permissions">';
         var isChecked = typeof self.memberPermission.c[appId].allowed[featureName] !== "undefined" ? self.memberPermission.c[appId].allowed[featureName] : false;
         featureTemplate += 'Create <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + '  id="c-' + appId + '-' + featureName + '">'
@@ -3166,7 +3166,7 @@ window.ManageUsersView = countlyView.extend({
         featureTemplate += 'Update <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="u-' + appId + '-' + featureName + '">'
         isChecked = typeof self.memberPermission.d[appId].allowed[featureName] !== "undefined" ? self.memberPermission.d[appId].allowed[featureName] : false;
         featureTemplate += 'Delete <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="d-' + appId + '-' + featureName + '">'
-        featureTemplate += '</div>';
+        featureTemplate += '</div></div>';
         return featureTemplate;
     },
     initializeMemberPermission: function() {
@@ -3239,14 +3239,25 @@ window.ManageUsersView = countlyView.extend({
         }
     },
     updatePermission: function(type, app, scope, value) {
+        var cores = {"applications": true, "users": true, "configurations": true};
         if (value) {
             if (typeof this.memberPermission[type][app] === "undefined") {
                 this.memberPermission[type][app] = this.initializeAppPermission(this.memberPermission[type][app]);
             }
-            this.memberPermission[type][app].allowed[scope] = true;    
+            if (typeof cores[scope] === "undefined") {
+                this.memberPermission[type][app].allowed[scope] = true;
+            }
+            else {
+                this.memberPermission[type].global.allowed[scope] = true;
+            }
         }
         else {
-            this.memberPermission[type][app].allowed[scope] = false;
+            if (typeof cores[scope] === "undefined") {
+                this.memberPermission[type][app].allowed[scope] = true;
+            }
+            else {
+                this.memberPermission[type].global.allowed[scope] = true;
+            }
         }
         store.set('permission_model', this.memberPermission);
         console.log(this.memberPermission);
