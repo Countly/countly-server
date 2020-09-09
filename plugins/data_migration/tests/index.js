@@ -9,7 +9,7 @@ var fs = require("fs"),
     readline = require('readline'),
     stream = require('stream');
 var cp = require('child_process'); //call process
-var spawn = cp.spawn; //for calling command line
+const exec = cp.exec; //for calling command line
 const fse = require('fs-extra'); // delete folders
 var crypto = require('crypto');
 var APP_KEY = "";
@@ -27,20 +27,17 @@ var TIMES_FOR_DATA_MIGRATION_TEST = 10;
 var counter = 0;
 var run_command = function(my_command, my_args) {
     return new Promise(function(resolve, reject) {
-        var starr = ['inherit', 'inherit', 'inherit'];
-        var child = spawn("sudo " + my_command, my_args, {shell: false, cwd: __dirname, detached: false, stdio: starr}, function(error) {
+
+        exec('sudo ' + my_command + ' ' + my_args.join(" "), (error, stdout, stderr) => {
             if (error) {
-                reject(Error('error:' + JSON.stringify(error)));
-                return;
+                console.error(`exec error: ${error}`);
+                reject();
             }
+            console.log(`stdout: ${stdout}`);
+            console.error(`stderr: ${stderr}`);
+            resolve();
         });
 
-        child.on('error', function(error) {
-            return reject(Error('error:' + JSON.stringify(error)));
-        });
-        child.on('exit', function(code) {
-            return resolve();
-        });
     });
 };
 
@@ -985,9 +982,6 @@ describe("Testing data migration plugin", function() {
                     if (err) {
                         return done(err);
                     }
-                    testapp._id = "5f589b9e8df39d7b85474921";
-                    var apps = [testapp._id];
-                    test_export_id = crypto.createHash('SHA1').update(JSON.stringify(apps)).digest('hex');
                     var ob = JSON.parse(res.text);
                     (ob.result).should.be.exactly("f9b35d90be5f2240eafced7c6bfdf130856cd0a7");
                     done();
@@ -999,7 +993,6 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                test_export_id = crypto.createHash('SHA1').update(JSON.stringify(["5f589b9e8df39d7b85474921"])).digest('hex');
                 validate_result(done, 200, "finished", "failed", {test_export_id: "f9b35d90be5f2240eafced7c6bfdf130856cd0a7", "apps": ["5f589b9e8df39d7b85474921"]});
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
@@ -1007,7 +1000,7 @@ describe("Testing data migration plugin", function() {
 
     describe("Comparing if folder contents - if no data missing", function() {
         it("Get contents", function(done) {
-            var exportid = test_export_id;
+            var exportid = "f9b35d90be5f2240eafced7c6bfdf130856cd0a7";
             var export_path = export_path || path.resolve(__dirname, './../export/');
             run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", path.resolve(__dirname, './../export')]).then(function() {
                 var missing_files = [];
