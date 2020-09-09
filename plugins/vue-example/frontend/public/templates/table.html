@@ -37,7 +37,7 @@
                             v-bind:rows="tableRows"
                             v-bind:columns="gtableColumns"
                             @statusChanged="statusChanged"
-                            styleClass="cly-vgt-table">
+                            styleClass="cly-vgt-table striped">
                             <template slot="table-row" slot-scope="props">
                                 <span v-if="props.column.field == 'status'">
                                     <cly-check 
@@ -50,6 +50,11 @@
                                     {{props.formattedRow[props.column.field]}}
                                 </span>
                             </template>
+                            <div slot="table-actions-bottom">
+                            </div>
+                            <div slot="emptystate">
+                              {{ i18n("common.table.no-data") }}
+                            </div>
                         </vue-good-table>
                     </div>
                 </div>
