@@ -127,7 +127,6 @@ function validate_result(done, max_wait, wait_on, fail_on, options) {
             .post('/o/datamigration/getstatus?exportid=' + options.test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
             .expect(200)
             .end(function(err, res) {
-                console.log(res.text);
                 var ob = JSON.parse(res.text);
                 console.log("current status:" + ob.result.status + " current step:" + ob.result.step + " " + ob.result.progress);
                 if (ob.result.status == wait_on) {
@@ -964,8 +963,8 @@ describe("Testing data migration plugin", function() {
         });
     });
 
-    describe("cleanup", function() {
-        it("Check if app exists", function(done) {
+    /*describe("cleanup", function() {
+		it("Check if app exists", function(done) {
             request
                 .post('/o/apps/all?api_key=' + API_KEY_ADMIN)
                 .expect(200)
@@ -973,17 +972,17 @@ describe("Testing data migration plugin", function() {
                     if (err) {
                         return done(err);
                     }
-                    else {
-                        res = JSON.parse(res.text);
-                        res = res["admin_of"];
-                        for (var k in res) {
-                            if (k === "58650a47cc2ed563c5ad964c") {
-                                done();
-                                return;
-                            }
-                        }
-                        done("App missing");
-                    }
+					else {
+						res = JSON.parse(res.text);
+						res = res["admin_of"]
+						for(var k in res){
+							if(k === "58650a47cc2ed563c5ad964c"){
+								done();
+								return;
+							}
+						}
+						done("App missing");
+					}
                 });
         });
         it("Remove test app", function(done) {
@@ -997,7 +996,7 @@ describe("Testing data migration plugin", function() {
                     done();
                 });
         });
-    });
+    });*/
 
     /*describe("Importing bigger app", function() {
         it("Create token and call import process", function(done) {
