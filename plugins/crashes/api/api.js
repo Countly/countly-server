@@ -8,7 +8,10 @@ var plugin = {},
     Duplex = require('stream').Duplex,
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'crashes';
 
 plugins.setConfigs("crashes", {
     report_limit: 100
@@ -58,7 +61,11 @@ plugins.setConfigs("crashes", {
                         bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
                         bulk.find({uid: oldUid, group: group}).remove();
                     }
-                    bulk.execute();
+                    bulk.execute(function(bulkerr) {
+                        if (bulkerr) {
+                            console.log(bulkerr);
+                        }
+                    });
                 }
             });
         }
@@ -730,10 +737,10 @@ plugins.setConfigs("crashes", {
 
     //read api call
     plugins.register("/o", function(ob) {
-        var obParams = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
-        if (obParams.qstring.method === 'crashes') {
-            validate(obParams, function(params) {
+        var params = ob.params;
+        
+        if (params.qstring.method === 'crashes') {
+            validateRead(params, FEATURE_NAME, function() {
                 if (params.qstring.group) {
                     if (params.qstring.userlist) {
                         common.db.collection('app_crashusers' + params.app_id).find({group: params.qstring.group}, {uid: 1, _id: 0}).toArray(function(err, uids) {
@@ -959,8 +966,8 @@ plugins.setConfigs("crashes", {
             });
             return true;
         }
-        else if (obParams.qstring.method === 'user_crashes') {
-            validate(obParams, function(params) {
+        else if (params.qstring.method === 'user_crashes') {
+            validate(params, FEATURE_NAME, function() {
                 if (params.qstring.uid) {
                     var columns = ["group", "reports", "last"];
                     var query = {group: {$ne: 0}, uid: params.qstring.uid};
@@ -1023,13 +1030,12 @@ plugins.setConfigs("crashes", {
 
     //reading crashes
     plugins.register("/o/crashes", function(ob) {
-        var obParams = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
+        var params = ob.params;
         var paths = ob.paths;
 
         switch (paths[3]) {
         case 'download_stacktrace':
-            validate(obParams, function(params) {
+            validateRead(params, FEATURE_NAME, function() {
                 if (!params.qstring.crash_id) {
                     common.returnMessage(params, 400, 'Please provide crash_id parameter');
                     return;
@@ -1057,7 +1063,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'download_binary':
-            validate(obParams, function(params) {
+            validateRead(params, FEATURE_NAME, function() {
                 if (!params.qstring.crash_id) {
                     common.returnMessage(params, 400, 'Please provide crash_id parameter');
                     return;
@@ -1096,21 +1102,20 @@ plugins.setConfigs("crashes", {
 
     //manipulating crashes
     plugins.register("/i/crashes", function(ob) {
-        var obParams = ob.params;
-        var validate = ob.validateUserForDataWriteAPI;
+        var params = ob.params;
         var paths = ob.paths;
-        if (obParams.qstring.args) {
+        if (params.qstring.args) {
             try {
-                obParams.qstring.args = JSON.parse(obParams.qstring.args);
+                params.qstring.args = JSON.parse(params.qstring.args);
             }
             catch (SyntaxError) {
-                console.log('Parse ' + obParams.apiPath + ' JSON failed');
+                console.log('Parse ' + params.apiPath + ' JSON failed');
             }
         }
 
         switch (paths[3]) {
         case 'resolve':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
                     if (groups) {
@@ -1159,7 +1164,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'unresolve':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
                     if (groups) {
@@ -1190,7 +1195,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'view':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
                     if (groups) {
@@ -1223,7 +1228,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'share':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id + "").digest('hex');
                 common.db.collection('crash_share').insert({_id: id, app_id: params.qstring.app_id + "", crash_id: params.qstring.args.crash_id + ""}, function() {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set": {is_public: true}}, function() {});
@@ -1234,7 +1239,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'unshare':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id + "").digest('hex');
                 common.db.collection('crash_share').remove({'_id': id }, function() {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set": {is_public: false}}, function() {});
@@ -1245,7 +1250,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'modify_share':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 if (params.qstring.args.data) {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set": {share: params.qstring.args.data}}, function() {
                         plugins.dispatch("/systemlogs", {params: params, action: "crash_modify_share", data: {app_id: params.qstring.app_id, crash_id: params.qstring.args.crash_id, data: params.qstring.args.data}});
@@ -1259,7 +1264,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'hide':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_hidden: true}}, {multi: true}, function() {
                     for (var i = 0; i < crashes.length; i++) {
@@ -1271,7 +1276,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'show':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_hidden: false}}, {multi: true}, function() {
                     for (var i = 0; i < crashes.length; i++) {
@@ -1283,7 +1288,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'resolving':
-            validate(obParams, function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_resolving: true}}, {multi: true}, function() {
                     for (var i = 0; i < crashes.length; i++) {
@@ -1295,7 +1300,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'add_comment':
-            ob.validateUserForWriteAPI(function() {
+            validateCreate(params, FEATURE_NAME, function() {
                 var comment = {};
                 if (obParams.qstring.args.time) {
                     comment.time = obParams.qstring.args.time;
@@ -1322,7 +1327,7 @@ plugins.setConfigs("crashes", {
             }, obParams);
             break;
         case 'edit_comment':
-            ob.validateUserForWriteAPI(function() {
+            validateUpdate(function() {
                 common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).findOne({'_id': obParams.qstring.args.crash_id }, function(err, crash) {
                     var comment;
                     if (crash && crash.comments) {
@@ -1360,7 +1365,7 @@ plugins.setConfigs("crashes", {
             }, obParams);
             break;
         case 'delete_comment':
-            ob.validateUserForWriteAPI(function() {
+            validateDelete(params, FEATURE_NAME, function() {
                 common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).findOne({'_id': obParams.qstring.args.crash_id }, function(err, crash) {
                     var comment;
                     if (crash && crash.comments) {
@@ -1386,7 +1391,7 @@ plugins.setConfigs("crashes", {
             }, obParams);
             break;
         case 'delete':
-            validate(obParams, function(params) {
+            validateDelete(params, FEATURE_NAME, function() {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(err, groups) {
                     if (groups) {
