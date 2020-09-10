@@ -833,7 +833,7 @@ plugins.register("/i", function(ob) {
                         session_duration: params.session_duration,
                         end_session: true
                     });
-    
+
                     updates.push({$set: {sd: 0}});
                     let updateUser = {};
                     for (let i = 0; i < updates.length; i++) {
