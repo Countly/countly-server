@@ -4,7 +4,7 @@ var exported = {},
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateUserForWrite, validateCreate, validateRead, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const widgetProperties = {
     popup_header_text: {
@@ -454,8 +454,7 @@ const widgetPropertyPreprocessors = {
             }
         }
 
-        var validateUserForRead = ob.validateUserForDataReadAPI;
-        validateUserForRead(params, function() {
+        validateRead(params, 'star_rating',  function() {
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
                 if (!err) {
@@ -528,8 +527,8 @@ const widgetPropertyPreprocessors = {
      */
     plugins.register('/o/feedback/widgets', function(ob) {
         var params = ob.params;
-        var validateUserForRead = ob.validateUserForDataReadAPI;
-        validateUserForRead(params, function() {
+        
+        validateRead(params, 'star_rating', function() {
             var collectionName = 'feedback_widgets';
             var query = {};
             if (params.qstring.is_active) {
