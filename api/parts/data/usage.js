@@ -807,6 +807,45 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
     return true;
 }
 
+plugins.register("/i", function(ob) {
+    var params = ob.params;
+    var config = plugins.getConfig("api", params.app && params.app.plugins, true);
+    if (params.qstring.end_session) {
+        setTimeout(function() {
+            //need to query app user again to get data modified by another request
+            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
+                if (!dbAppUser || err) {
+                    return;
+                }
+                //if new session did not start during cooldown, then we can post process this session
+                if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
+                    processSessionDurationRange(params.session_duration || 0, params);
+                    let updates = [];
+                    plugins.dispatch("/session/end", {
+                        params: params,
+                        dbAppUser: dbAppUser,
+                        updates: updates
+                    });
+                    plugins.dispatch("/session/post", {
+                        params: params,
+                        dbAppUser: dbAppUser,
+                        updates: updates,
+                        session_duration: params.session_duration,
+                        end_session: true
+                    });
+    
+                    updates.push({$set: {sd: 0}});
+                    let updateUser = {};
+                    for (let i = 0; i < updates.length; i++) {
+                        updateUser = common.mergeQuery(updateUser, updates[i]);
+                    }
+                    common.updateAppUser(params, updateUser);
+                }
+            });
+        }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);
+    }
+});
+
 plugins.register("/sdk/user_properties", async function(ob) {
     var params = ob.params;
     var userProps = {};
@@ -1067,38 +1106,6 @@ plugins.register("/sdk/user_properties", async function(ob) {
             }
             update.$unset[common.dbUserMap.has_ongoing_session] = "";
         }
-        setTimeout(function() {
-            //need to query app user again to get data modified by another request
-            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
-                if (!dbAppUser || err) {
-                    return;
-                }
-                //if new session did not start during cooldown, then we can post process this session
-                if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
-                    processSessionDurationRange(params.session_duration || 0, params);
-                    let updates = [];
-                    plugins.dispatch("/session/end", {
-                        params: params,
-                        dbAppUser: dbAppUser,
-                        updates: updates
-                    });
-                    plugins.dispatch("/session/post", {
-                        params: params,
-                        dbAppUser: dbAppUser,
-                        updates: updates,
-                        session_duration: params.session_duration,
-                        end_session: true
-                    });
-
-                    updates.push({$set: {sd: 0}});
-                    let updateUser = {};
-                    for (let i = 0; i < updates.length; i++) {
-                        updateUser = common.mergeQuery(updateUser, updates[i]);
-                    }
-                    common.updateAppUser(params, updateUser);
-                }
-            });
-        }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);
     }
 
     if (!params.qstring.begin_session && !params.qstring.session_duration) {
