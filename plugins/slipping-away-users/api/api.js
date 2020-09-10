@@ -3,7 +3,11 @@
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common.js'),
     BPromise = require('bluebird'),
-    moment = require('moment-timezone');
+    moment = require('moment-timezone'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'slipping_away_users';
+
 (function() {
     plugins.setConfigs("slipping-away-users", {
         p1: 7,
@@ -25,11 +29,11 @@ const plugins = require('../../pluginManager'),
                 console.log(e);
             }
         }
-        const validate = ob.validateUserForDataReadAPI;
+        
         const countlyDb = common.db;
         const sp = plugins.getConfig("slipping-away-users");
         const periods = [sp.p1, sp.p2, sp.p3, sp.p4, sp.p5];
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             const timeList = {};
             const tasks = [];
             const conditions = [];
