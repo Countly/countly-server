@@ -3,7 +3,10 @@ var plugin = {},
     {authenticator: GA} = require("otplib"),
     log = common.log('two-factor-auth:api'),
     utils = require("../../../api/utils/utils.js"),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'two_factor_auth';
 
 plugins.setConfigs("two-factor-auth", {
     globally_enabled: false
@@ -14,7 +17,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
 
     switch (ob.params.qstring.method) {
     case "enable":
-        ob.validateUserForWriteAPI(ob.params, function() {
+        validateUpdate(ob.params, FEATURE_NAME, function() {
             var member = ob.params.member,
                 secretToken = ob.params.qstring.secret_token,
                 authCode = ob.params.qstring.auth_code;
@@ -58,7 +61,7 @@ plugins.register("/i/two-factor-auth", function(ob) {
         });
         break;
     case "disable":
-        ob.validateUserForWriteAPI(ob.params, function() {
+        validateUpdate(ob.params, FEATURE_NAME, function() {
             var member = ob.params.member;
 
             if (!config.globally_enabled) {
