@@ -1,13 +1,17 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'logger';
+
 
 (function() {
     var processSDKRequest = function(params) {
         if (params.logging_is_allowed) {
             params.log_processed = true;
-            var now = Math.round(new Date().getTime() / 1000);
-            var ts = common.initTimeObj(null, params.qstring.timestamp || now).timestamp;
+            var now = new Date().getTime();
+            var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
             var device = {};
             device.id = params.qstring.device_id || "";
             var location = {};
@@ -56,6 +60,21 @@ var exported = {},
                 q = JSON.parse(q);
                 q.old_device_id = params.old_device_id;
                 q = JSON.stringify(q);
+            }
+            if (params.qstring.token_session) {
+                if (!types.token) {
+                    types.token = {};
+                }
+                types.token.token_session = params.qstring.token_session;
+                if (params.qstring.ios_token) {
+                    types.token.ios_token = params.qstring.ios_token;
+                }
+                if (params.qstring.android_token) {
+                    types.token.android_token = params.qstring.android_token;
+                }
+                if (typeof params.qstring.test_mode !== "undefined") {
+                    types.token.test_mode = params.qstring.test_mode;
+                }
             }
             if (params.qstring.begin_session) {
                 if (!types.session) {
@@ -245,7 +264,7 @@ var exported = {},
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
+        
         if (params.qstring.method === 'logs') {
             var filter = {};
             if (typeof params.qstring.filter !== "undefined") {
@@ -256,7 +275,7 @@ var exported = {},
                     filter = {};
                 }
             }
-            validate(params, function(parameters) {
+            validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).find(filter).toArray(function(err, items) {
                     if (err) {
                         console.log(err);
@@ -267,7 +286,7 @@ var exported = {},
             return true;
         }
         if (params.qstring.method === 'collection_info') {
-            validate(params, function(parameters) {
+            validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).stats(function(err, stats) {
                     if (err) {
                         console.log(err);
