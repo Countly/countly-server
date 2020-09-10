@@ -5,11 +5,14 @@
 var plugin = {},
     push = require('./parts/endpoints.js'),
     N = require('./parts/note.js'),
+    C = require('./parts/credentials.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
     plugins = require('../../pluginManager.js'),
-    countlyCommon = require('../../../api/lib/countly.common.js');
+    countlyCommon = require('../../../api/lib/countly.common.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
 
+const FEATURE_NAME = 'push';
 const PUSH_CACHE_GROUP = 'P';
 
 (function() {
@@ -133,10 +136,33 @@ const PUSH_CACHE_GROUP = 'P';
         });
     });
 
-    plugins.register('/drill/preprocess_query', ({query}) => {
-        if (query.message) {
-            log.d(`removing message ${query.message} from queryObject`);
+    plugins.register('/drill/preprocess_query', ({query, params}) => {
+        if (query.message && query.message.$in) {
+            let min = query.message.$in;
+            log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
+
+            if (params.qstring.method === 'user_details') {
+                return new Promise((res, rej) => {
+                    try {
+                        common.db.collection(`push_${params.app_id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(common.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+                            if (err) {
+                                rej(err);
+                            }
+                            else {
+                                ids = (ids || []).map(id => id._id);
+                                query.uid = {$in: ids};
+                                log.d(`filtered by message: uids out of ${ids.length}`);
+                                res();
+                            }
+                        });
+                    }
+                    catch (e) {
+                        console.log(e);
+                        rej(e);
+                    }
+                });
+            }
         }
     });
 
@@ -347,8 +373,8 @@ const PUSH_CACHE_GROUP = 'P';
 
     plugins.register('/i/pushes', function(ob) {
         var params = ob.params,
-            paths = ob.paths,
-            validateUserForWriteAPI = ob.validateUserForWriteAPI;
+            paths = ob.paths;
+            
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -360,31 +386,34 @@ const PUSH_CACHE_GROUP = 'P';
 
         switch (paths[3]) {
         case 'dashboard':
-            validateUserForWriteAPI(push.dashboard, params);
+            validateRead(params, FEATURE_NAME, push.dashboard, params);
             break;
         case 'prepare':
-            validateUserForWriteAPI(push.prepare, params);
+            validateUpdate(params, FEATURE_NAME, push.prepare, params);
             break;
         case 'create':
-            validateUserForWriteAPI(push.create, params);
+            validateCreate(params, FEATURE_NAME, push.create, params);
             break;
         case 'push':
-            validateUserForWriteAPI(push.push, params);
+            validateCreate(params, FEATURE_NAME, push.push, params);
             break;
         case 'pop':
-            validateUserForWriteAPI(push.pop, params);
+            validateCreate(params, FEATURE_NAME, push.pop, params);
             break;
         case 'message':
-            validateUserForWriteAPI(push.message, params);
+            validateRead(params, FEATURE_NAME, push.message, params);
             break;
         case 'active':
-            validateUserForWriteAPI(push.active, params);
+            validateUpdate(params, FEATURE_NAME, push.active, params);
             break;
         case 'delete':
-            validateUserForWriteAPI(push.delete, params);
+            validateDelete(params, FEATURE_NAME, push.delete, params);
             break;
         case 'mime':
-            validateUserForWriteAPI(push.mimeInfo, params);
+            validateRead(params, FEATURE_NAME, push.mimeInfo, params);
+            break;
+        case 'huawei':
+            push.huawei(params);
             break;
         // case 'download':
         //     validateUserForWriteAPI(push.download.bind(push, params, paths[4]), params);
@@ -398,8 +427,7 @@ const PUSH_CACHE_GROUP = 'P';
 
     plugins.register('/o/pushes', function(ob) {
         var params = ob.params,
-            validateUserForWriteAPI = ob.validateUserForWriteAPI;
-
+            
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -409,7 +437,7 @@ const PUSH_CACHE_GROUP = 'P';
             }
         }
 
-        validateUserForWriteAPI(push.getAllMessages, params);
+        validateRead(params, FEATURE_NAME, push.getAllMessages, params);
         return true;
     });
 
@@ -464,12 +492,10 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/apps/reset', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
-        common.db.collection(`push_${appId}`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_id`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_ia`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_ip`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_at`).deleteMany({}, function() {});
-        common.db.collection(`push_${appId}_ap`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}`).drop({}, function() {});
+        C.FIELDS.forEach(f => {
+            common.db.collection(`push_${appId}_${f}`).drop({}, function() {});
+        });
         common.db.collection('apps').findOne({_id: common.db.ObjectID(appId)}, function(err, app) {
             if (err || !app) {
                 return log.e('Cannot find app: %j', err || 'no app');
@@ -484,7 +510,10 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/apps/clear_all', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
-        common.db.collection(`push_${appId}`).deleteMany({}, function() {});
+        common.db.collection(`push_${appId}`).drop({}, function() {});
+        C.FIELDS.forEach(f => {
+            common.db.collection(`push_${appId}_${f}`).drop({}, function() {});
+        });
         // common.db.collection('credentials').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
 
@@ -492,11 +521,9 @@ const PUSH_CACHE_GROUP = 'P';
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
         common.db.collection(`push_${appId}`).drop({}, function() {});
-        common.db.collection(`push_${appId}_id`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ia`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ip`).drop({}, function() {});
-        common.db.collection(`push_${appId}_at`).drop({}, function() {});
-        common.db.collection(`push_${appId}_ap`).drop({}, function() {});
+        C.FIELDS.forEach(f => {
+            common.db.collection(`push_${appId}_${f}`).drop({}, function() {});
+        });
     });
 
     plugins.register('/consent/change', ({params, changes}) => {
