@@ -2088,12 +2088,16 @@ const processRequestData = (params, app, done) => {
     var ob = {params: params, app: app, updates: []};
     plugins.dispatch("/sdk/user_properties", ob, function() {
         var update = {};
-        for (let i = 0; i < ob.updates.length; i++) {
-            update = common.mergeQuery(update, ob.updates[i]);
+        //check if we already processed app users for this request
+        if (params.app_user.last_req !== params.request_hash && ob.updates.length) {
+            ob.updates.push({$set: {last_req: params.request_hash, ingested: false}});
+            for (let i = 0; i < ob.updates.length; i++) {
+                update = common.mergeQuery(update, ob.updates[i]);
+            }
         }
         var newUser = params.app_user.fs ? false : true;
         common.updateAppUser(params, update, function() {
-            if (!plugins.getConfig("api").safe && !params.res.finished) {
+            if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                 common.returnMessage(params, 200, 'Success');
             }
             if (params.qstring.begin_session) {
@@ -2116,9 +2120,27 @@ const processRequestData = (params, app, done) => {
                 params: params,
                 app: app
             });
-            plugins.dispatch("/sdk/data_ingestion", {params: params}, function() {
+            plugins.dispatch("/sdk/data_ingestion", {params: params}, function(result) {
+                var retry = false;
+                if (result && result.length) {
+                    for (let index = 0; index < result.length; index++) {
+                        if (result[index].status === "rejected") {
+                            retry = true;
+                            break;
+                        }
+                    }
+                }
+                if (!retry && plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                    //acknowledge data ingestion
+                    common.updateAppUser(params, {$set: {ingested: true}});
+                }
                 if (!params.res.finished) {
-                    common.returnMessage(params, 200, 'Success');
+                    if (retry) {
+                        common.returnMessage(params, 400, 'Could not ingest data');
+                    }
+                    else {
+                        common.returnMessage(params, 200, 'Success');
+                    }
                 }
                 if (done) {
                     done();
@@ -2300,7 +2322,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
                 //check unique millisecond timestamp, if it is the same as the last request had,
                 //then we are having duplicate request, due to sudden connection termination
-                if (params.app_user.last_req === params.request_hash) {
+                if (params.app_user.last_req === params.request_hash && (!plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.app_user.ingested)) {
                     params.cancelRequest = "Duplicate request";
                 }
             }
@@ -2371,10 +2393,6 @@ const validateAppForFetchAPI = (params, done, try_times) => {
 
         if (!checksumSaltVerification(params)) {
             return done ? done() : false;
-        }
-
-        if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
-            params.user.tz = parseInt(params.qstring.tz);
         }
 
         if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
@@ -2475,7 +2493,10 @@ function processUser(params, initiator, done, try_times) {
                 .update(params.qstring.app_key + params.qstring.old_device_id + "")
                 .digest('hex');
 
-            countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
+            countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(err) {
+                if (err) {
+                    return common.returnMessage(params, 400, 'Cannot update user');
+                }
                 //remove old device ID and retry request
                 params.qstring.old_device_id = null;
                 restartRequest(params, initiator, done, try_times, resolve);

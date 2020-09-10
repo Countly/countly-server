@@ -249,7 +249,7 @@ var common = require('../../../api/utils/common.js'),
                             }
                         }
                     });
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, taskCb);
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, {allowDiskUse: true}, taskCb);
                 }
             });
         }

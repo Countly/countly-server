@@ -341,162 +341,186 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             app_id: app_id,
             newAppUser: newAppUserP,
             oldAppUser: oldAppUser
-        });
-        //merge user data
-        for (var i in oldAppUser) {
-            // sum up session count and total session duration
-            if (i === "sc" || i === "tsd") {
-                if (typeof newAppUserP[i] === "undefined") {
-                    newAppUserP[i] = 0;
-                }
-                newAppUserP[i] += oldAppUser[i];
-            }
-            //check if old user has been seen before new one
-            else if (i === "fs") {
-                if (!newAppUserP.fs || oldAppUser.fs < newAppUserP.fs) {
-                    newAppUserP.fs = oldAppUser.fs;
-                }
-            }
-            //check if old user has been seen before new one
-            else if (i === "fac") {
-                if (!newAppUserP.fac || oldAppUser.fac < newAppUserP.fac) {
-                    newAppUserP.fac = oldAppUser.fac;
-                }
-            }
-            //check if old user has been the last to be seen
-            else if (i === "ls") {
-                if (!newAppUserP.ls || oldAppUser.ls > newAppUserP.ls) {
-                    newAppUserP.ls = oldAppUser.ls;
-                    //then also overwrite last session data
-                    if (oldAppUser.lsid) {
-                        newAppUserP.lsid = oldAppUser.lsid;
-                    }
-                    if (oldAppUser.sd) {
-                        newAppUserP.sd = oldAppUser.sd;
-                    }
-                }
-            }
-            //check if old user has been the last to be seen
-            else if (i === "lac") {
-                if (!newAppUserP.lac || oldAppUser.lac > newAppUserP.lac) {
-                    newAppUserP.lac = oldAppUser.lac;
-                }
-            }
-            else if (i === "lest") {
-                if (!newAppUserP.lest || oldAppUser.lest > newAppUserP.lest) {
-                    newAppUserP.lest = oldAppUser.lest;
-                }
-            }
-            else if (i === "lbst") {
-                if (!newAppUserP.lbst || oldAppUser.lbst > newAppUserP.lbst) {
-                    newAppUserP.lbst = oldAppUser.lbst;
-                }
-            }
-            //merge custom user data
-            else if (typeof oldAppUser[i] === "object" && oldAppUser[i]) {
-                if (Array.isArray(oldAppUser[i])) {
-                    if (!Array.isArray(newAppUserP[i])) {
-                        newAppUserP[i] = [];
-                    }
-                    for (let j = 0; j < oldAppUser[i].length; j++) {
-                        //set properties that new user does not have
-                        if (newAppUserP[i].indexOf(oldAppUser[i][j]) === -1) {
-                            newAppUserP[i].push(oldAppUser[i][j]);
-                        }
-                    }
-                }
-                else {
+        }, function() {
+            //merge user data
+            for (var i in oldAppUser) {
+                // sum up session count and total session duration
+                if (i === "sc" || i === "tsd") {
                     if (typeof newAppUserP[i] === "undefined") {
-                        newAppUserP[i] = {};
+                        newAppUserP[i] = 0;
                     }
-                    for (let j in oldAppUser[i]) {
-                        //set properties that new user does not have
-                        if (typeof newAppUserP[i][j] === "undefined") {
-                            newAppUserP[i][j] = oldAppUser[i][j];
+                    newAppUserP[i] += oldAppUser[i];
+                }
+                //check if old user has been seen before new one
+                else if (i === "fs") {
+                    if (!newAppUserP.fs || oldAppUser.fs < newAppUserP.fs) {
+                        newAppUserP.fs = oldAppUser.fs;
+                    }
+                }
+                //check if old user has been seen before new one
+                else if (i === "fac") {
+                    if (!newAppUserP.fac || oldAppUser.fac < newAppUserP.fac) {
+                        newAppUserP.fac = oldAppUser.fac;
+                    }
+                }
+                //check if old user has been the last to be seen
+                else if (i === "ls") {
+                    if (!newAppUserP.ls || oldAppUser.ls > newAppUserP.ls) {
+                        newAppUserP.ls = oldAppUser.ls;
+                        //then also overwrite last session data
+                        if (oldAppUser.lsid) {
+                            newAppUserP.lsid = oldAppUser.lsid;
+                        }
+                        if (oldAppUser.sd) {
+                            newAppUserP.sd = oldAppUser.sd;
                         }
                     }
                 }
+                //check if old user has been the last to be seen
+                else if (i === "lac") {
+                    if (!newAppUserP.lac || oldAppUser.lac > newAppUserP.lac) {
+                        newAppUserP.lac = oldAppUser.lac;
+                    }
+                }
+                else if (i === "lest") {
+                    if (!newAppUserP.lest || oldAppUser.lest > newAppUserP.lest) {
+                        newAppUserP.lest = oldAppUser.lest;
+                    }
+                }
+                else if (i === "lbst") {
+                    if (!newAppUserP.lbst || oldAppUser.lbst > newAppUserP.lbst) {
+                        newAppUserP.lbst = oldAppUser.lbst;
+                    }
+                }
+                //merge custom user data
+                else if (typeof oldAppUser[i] === "object" && oldAppUser[i]) {
+                    if (Array.isArray(oldAppUser[i])) {
+                        if (!Array.isArray(newAppUserP[i])) {
+                            newAppUserP[i] = [];
+                        }
+                        for (let j = 0; j < oldAppUser[i].length; j++) {
+                            //set properties that new user does not have
+                            if (newAppUserP[i].indexOf(oldAppUser[i][j]) === -1) {
+                                newAppUserP[i].push(oldAppUser[i][j]);
+                            }
+                        }
+                    }
+                    else {
+                        if (typeof newAppUserP[i] === "undefined") {
+                            newAppUserP[i] = {};
+                        }
+                        for (let j in oldAppUser[i]) {
+                            //set properties that new user does not have
+                            if (typeof newAppUserP[i][j] === "undefined") {
+                                newAppUserP[i][j] = oldAppUser[i][j];
+                            }
+                        }
+                    }
+                }
+                //set other properties that new user does not have
+                else if (i !== "_id" && i !== "did" && typeof newAppUserP[i] === "undefined") {
+                    newAppUserP[i] = oldAppUser[i];
+                }
             }
-            //set other properties that new user does not have
-            else if (i !== "_id" && i !== "did" && typeof newAppUserP[i] === "undefined") {
-                newAppUserP[i] = oldAppUser[i];
+            //store last merged uid for reference
+            newAppUserP.merged_uid = oldAppUser.uid;
+            if (typeof newAppUserP.merges === "undefined") {
+                newAppUserP.merges = 1;
             }
-        }
-        //store last merged uid for reference
-        newAppUserP.merged_uid = oldAppUser.uid;
-        if (typeof newAppUserP.merges === "undefined") {
-            newAppUserP.merges = 1;
-        }
-        if (typeof oldAppUser.merges !== "undefined") {
-            newAppUserP.merges += oldAppUser.merges;
-        }
-        //update new user
-        common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function() {
-            //delete old user
-            common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(err, res) {
+            if (typeof oldAppUser.merges !== "undefined") {
+                newAppUserP.merges += oldAppUser.merges;
+            }
+            //update new user
+            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(err) {
+                if (err) {
+                    return callback(err, newAppUserP);
+                }
                 //let plugins know they need to merge user data
                 common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function() {});
                 plugins.dispatch("/i/device_id", {
                     app_id: app_id,
                     oldUser: oldAppUser,
                     newUser: newAppUserP
-                }, function() {
-                    if (callback) {
-                        callback(err, res);
+                }, function(result) {
+                    var retry = false;
+                    if (result && result.length) {
+                        for (let index = 0; index < result.length; index++) {
+                            if (result[index].status === "rejected") {
+                                retry = true;
+                                break;
+                            }
+                        }
                     }
+
+                    if (retry) {
+                        //all plugins could not merge data, we should retry
+                        return callback(new Error("Could not merge data in all plugins"), newAppUserP);
+                    }
+                    //delete old user
+                    common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
+                        if (callback) {
+                            callback(errRemoving, newAppUserP);
+                        }
+                    });
                 });
             });
         });
     }
 
     common.db.collection('app_users' + app_id).findOne({'_id': old_id }, function(err, oldAppUser) {
-        if (!err && oldAppUser) {
-            if (newAppUser && Object.keys(newAppUser).length) {
-                //register user merge
-                common.db.collection('app_user_merges' + app_id).insert({
-                    _id: oldAppUser.uid,
-                    merged_to: newAppUser.uid,
-                    ts: Math.round(new Date().getTime() / 1000),
-                    cd: new Date()
-                }, function() {
-                    if (newAppUser.ls && newAppUser.ls > oldAppUser.ls) {
-                        mergeUserData(newAppUser, oldAppUser);
-                    }
-                    else {
-                        //switching user identity
-                        var temp = oldAppUser._id;
-                        oldAppUser._id = newAppUser._id;
-                        newAppUser._id = temp;
-
-                        temp = oldAppUser.did;
-                        oldAppUser.did = newAppUser.did;
-                        newAppUser.did = temp;
-
-                        temp = oldAppUser.uid;
-                        oldAppUser.uid = newAppUser.uid;
-                        newAppUser.uid = temp;
-
-                        mergeUserData(oldAppUser, newAppUser);
-                    }
-                });
-            }
-            else {
-                //simply copy user document with old uid
-                //no harm is done
-                oldAppUser.did = new_device_id + "";
-                oldAppUser._id = new_id;
-                common.db.collection('app_users' + app_id).insert(oldAppUser, function() {
-                    common.db.collection('app_users' + app_id).remove({_id: old_id}, function() {
-                        if (callback) {
-                            callback(err, oldAppUser);
-                        }
-                    });
-                });
-            }
+        if (err) {
+            //problem getting old user data
+            return callback(err, oldAppUser);
         }
-        else if (callback) {
-            //process request
-            callback(null, newAppUser);
+        if (!oldAppUser) {
+            //there is no old user, process request
+            return callback(null, newAppUser);
+        }
+        if (!newAppUser || !Object.keys(newAppUser).length) {
+            //new user does not exist yet
+            //simply copy user document with old uid
+            //no harm is done
+            oldAppUser.did = new_device_id + "";
+            oldAppUser._id = new_id;
+            common.db.collection('app_users' + app_id).insert(oldAppUser, function(err2) {
+                if (err) {
+                    callback(err2, oldAppUser);
+                }
+                else {
+                    common.db.collection('app_users' + app_id).remove({_id: old_id}, function(err3) {
+                        callback(err3, oldAppUser);
+                    });
+                }
+            });
+        }
+        else {
+            //we have to merge user data
+            common.db.collection('app_user_merges' + app_id).insert({
+                _id: oldAppUser.uid,
+                merged_to: newAppUser.uid,
+                ts: Math.round(new Date().getTime() / 1000),
+                cd: new Date()
+            }, {ignore_errors: [11000]}, function() {
+                if (newAppUser.ls && newAppUser.ls > oldAppUser.ls) {
+                    mergeUserData(newAppUser, oldAppUser);
+                }
+                else {
+                    //switching user identity
+                    var temp = oldAppUser._id;
+                    oldAppUser._id = newAppUser._id;
+                    newAppUser._id = temp;
+
+                    temp = oldAppUser.did;
+                    oldAppUser.did = newAppUser.did;
+                    newAppUser.did = temp;
+
+                    temp = oldAppUser.uid;
+                    oldAppUser.uid = newAppUser.uid;
+                    newAppUser.uid = temp;
+
+                    mergeUserData(oldAppUser, newAppUser);
+                }
+            });
         }
     });
 };
