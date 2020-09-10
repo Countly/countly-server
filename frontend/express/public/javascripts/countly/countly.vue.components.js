@@ -2050,6 +2050,9 @@
 
 
     var clyDataTablePagination = countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
         template: '<div class="cly-vgt-custom-paginator">\
                         <div class="buttons">\
                             <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
@@ -2073,7 +2076,7 @@
             return {
                 firstPage: 1,
                 currentPage: 1,
-                perPage: 5
+                perPage: 7
             };
         },
         computed: {
@@ -2093,9 +2096,23 @@
         mounted: function() {
             this.updatePerPage();
             this.goToFirstPage();
+            this.updateInfo();
         },
         methods: {
+            updateInfo: function() {
+                var startEntries = (this.currentPage - 1) * this.perPage + 1,
+                    endEntries = Math.min(startEntries + this.perPage - 1, this.total),
+                    totalEntries = this.total;
+
+                var info = this.i18n("common.showing")
+                    .replace("_START_", startEntries)
+                    .replace("_END_", endEntries)
+                    .replace("_TOTAL_", totalEntries);
+
+                this.$emit("infoChanged", info);
+            },
             updateCurrentPage: function() {
+                this.updateInfo();
                 this.pageChanged({currentPage: this.currentPage});
             },
             updatePerPage: function() {
@@ -2130,6 +2147,8 @@
         }
     });
 
+
+    // common.filtered = (filtered from _MAX_ total entries)
     Vue.component("cly-datatable", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
@@ -2138,13 +2157,29 @@
         components: {
             "custom-pagination": clyDataTablePagination
         },
+        computed: {
+            bottomText: function() {
+                if (this.searchQuery) {
+                    this.i18n("common.filtered").replace("_MAX_", this.rows);
+                }
+            }
+        },
         data: function() {
             return {
                 searchQuery: '',
-                searchVisible: false
+                searchVisible: false,
+                pageInfo: ''
             };
         },
         methods: {
+            onInfoChanged: function(text) {
+                this.pageInfo = text;
+            },
+            onSearch: function(params) {
+                if (params.searchTerm) {
+                    this.$refs.pagination.goToFirstPage();
+                }
+            },
             toggleSearch: function() {
                 var self = this;
                 this.searchVisible = !this.searchVisible;
@@ -2167,9 +2202,12 @@
                         enabled: true,\
                         externalQuery: searchQuery\
                     }"\
+                    @on-search="onSearch"\
                     styleClass="cly-vgt-table striped">\
                         <template slot="pagination-top" slot-scope="props">\
                             <custom-pagination\
+                            @infoChanged="onInfoChanged"\
+                            ref="pagination"\
                             :total="props.total"\
                             :pageChanged="props.pageChanged"\
                             :perPageChanged="props.perPageChanged">\
@@ -2185,6 +2223,7 @@
                             </div>\
                         </div>\
                         <div slot="table-actions-bottom">\
+                            {{pageInfo}}\
                         </div>\
                         <div slot="emptystate">\
                             {{ i18n("common.table.no-data") }}\
