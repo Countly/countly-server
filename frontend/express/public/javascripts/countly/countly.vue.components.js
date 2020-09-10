@@ -2048,23 +2048,99 @@
         }
     ));
 
+
+    var clyDataTablePagination = countlyBaseComponent.extend({
+        template: '<div>\
+                    <div v-if="prevAvailable" @click="goToFirstPage"> << </div>\
+                    <div v-if="prevAvailable" @click="goToPrevPage"> < </div>\
+                    <div v-if="nextAvailable" @click="goToNextPage"> > </div>\
+                    <div v-if="nextAvailable" @click="goToLastPage"> >> </div>\
+                    </div>',
+        props: {
+            pageChanged: {
+                type: Function,
+            },
+            perPageChanged: {
+                type: Function,
+            },
+            total: {
+                type: Number
+            }
+        },
+        data: function() {
+            return {
+                firstPage: 1,
+                currentPage: 1,
+                perPage: 5
+            };
+        },
+        computed: {
+            totalPages: function() {
+                return Math.ceil(this.total / this.perPage);
+            },
+            lastPage: function() {
+                return this.totalPages;
+            },
+            prevAvailable: function() {
+                return this.currentPage > this.firstPage;
+            },
+            nextAvailable: function() {
+                return this.currentPage < this.lastPage;
+            }
+        },
+        mounted: function() {
+            this.updatePerPage();
+            this.goToFirstPage();
+        },
+        methods: {
+            updateCurrentPage: function() {
+                this.pageChanged({currentPage: this.currentPage});
+            },
+            updatePerPage: function() {
+                this.perPageChanged({currentPerPage: this.perPage});
+            },
+            goToFirstPage: function() {
+                this.currentPage = this.firstPage;
+            },
+            goToLastPage: function() {
+                this.currentPage = this.lastPage;
+            },
+            goToPrevPage: function() {
+                if (this.prevAvailable) {
+                    this.currentPage--;
+                }
+            },
+            goToNextPage: function() {
+                if (this.nextAvailable) {
+                    this.currentPage++;
+                }
+            }
+        },
+        watch: {
+            currentPage: function() {
+                this.updateCurrentPage();
+            }
+        }
+    });
+
     Vue.component("cly-datatable", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
         inheritAttrs: false,
+        components: {
+            "custom-pagination": clyDataTablePagination
+        },
         computed: {
             paginationOptions: function() {
                 return {
                     enabled: true,
                     mode: 'records',
-                    position: 'top',
-                    perPage: 10,
+                    position: 'top'
                 };
             }
         },
         template: '<vue-good-table\
-                    v-bind="$props"\
                     v-bind="$attrs"\
                     v-on="$listeners"\
                     :pagination-options="paginationOptions"\
