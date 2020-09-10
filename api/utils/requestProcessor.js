@@ -55,6 +55,7 @@ const reloadConfig = function() {
         }
     });
 };
+
 /**
  * Default request processing handler, which requires request context to operate. Check tcp_example.js
  * @static
@@ -2257,6 +2258,59 @@ const processBulkRequest = (i, requests, params) => {
 };
 
 /**
+ * @param  {object} params - params object
+ * @param  {String} type - source type
+ * @param  {Function} done - done callback
+ * @returns {Function} - done or boolean value
+ */
+const checksumSaltVerification = (params) => {
+    if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
+        const payloads = [];
+        payloads.push(params.href.substr(params.fullPath.length + 1));
+
+        if (params.req.method.toLowerCase() === 'post') {
+            payloads.push(params.req.body);
+        }
+        if (typeof params.qstring.checksum !== "undefined") {
+            for (let i = 0; i < payloads.length; i++) {
+                payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+            }
+            if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
+                common.returnMessage(params, 400, 'Request does not match checksum');
+                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                params.cancelRequest = 'Request does not match checksum sha1';
+                plugins.dispatch("/sdk/cancel", {params: params});
+                return false;
+            }
+        }
+        else if (typeof params.qstring.checksum256 !== "undefined") {
+            for (let i = 0; i < payloads.length; i++) {
+                payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+            }
+            if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
+                common.returnMessage(params, 400, 'Request does not match checksum');
+                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                params.cancelRequest = 'Request does not match checksum sha256';
+                plugins.dispatch("/sdk/cancel", {params: params});
+                return false;
+            }
+        }
+        else {
+            common.returnMessage(params, 400, 'Request does not have checksum');
+            console.log("Request does not have checksum", params.href, params.req.body);
+            params.cancelRequest = "Request does not have checksum";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return false;
+        }
+    }
+
+    return true;
+};
+
+
+/**
  * Validate App for Write API
  * Checks app_key from the http request against "apps" collection.
  * This is the first step of every write request to API.
@@ -2440,6 +2494,34 @@ const validateAppForFetchAPI = (params, done, try_times) => {
 };
 
 /**
+ * Restart Request
+ * @param {params} params - params object
+ * @param {function} initiator - function which initiated request
+ * @param {function} done - callback when processing done
+ * @param {number} try_times - how many times request was retried
+ * @param {function} fail - callback when restart limit reached
+ * @returns {void} void
+ */
+const restartRequest = (params, initiator, done, try_times, fail) => {
+    if (!try_times) {
+        try_times = 1;
+    }
+    else {
+        try_times++;
+    }
+    if (try_times > 5) {
+        console.log("Too many retries", try_times);
+        if (typeof fail === "function") {
+            fail("Cannot process request. Too many retries");
+        }
+        return;
+    }
+    params.retry_request = true;
+    //retry request
+    initiator(params, done, try_times);
+};
+
+/**
  * @param  {object} params - params object
  * @param  {function} initiator - function which initiated request
  * @param  {function} done - callback when processing done
@@ -2509,58 +2591,6 @@ function processUser(params, initiator, done, try_times) {
 }
 
 /**
- * @param  {object} params - params object
- * @param  {String} type - source type
- * @param  {Function} done - done callback
- * @returns {Function} - done or boolean value
- */
-const checksumSaltVerification = (params) => {
-    if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
-        const payloads = [];
-        payloads.push(params.href.substr(params.fullPath.length + 1));
-
-        if (params.req.method.toLowerCase() === 'post') {
-            payloads.push(params.req.body);
-        }
-        if (typeof params.qstring.checksum !== "undefined") {
-            for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
-                payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-            }
-            if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 400, 'Request does not match checksum');
-                console.log("Checksum did not match", params.href, params.req.body, payloads);
-                params.cancelRequest = 'Request does not match checksum sha1';
-                plugins.dispatch("/sdk/cancel", {params: params});
-                return false;
-            }
-        }
-        else if (typeof params.qstring.checksum256 !== "undefined") {
-            for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
-                payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-            }
-            if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 400, 'Request does not match checksum');
-                console.log("Checksum did not match", params.href, params.req.body, payloads);
-                params.cancelRequest = 'Request does not match checksum sha256';
-                plugins.dispatch("/sdk/cancel", {params: params});
-                return false;
-            }
-        }
-        else {
-            common.returnMessage(params, 400, 'Request does not have checksum');
-            console.log("Request does not have checksum", params.href, params.req.body);
-            params.cancelRequest = "Request does not have checksum";
-            plugins.dispatch("/sdk/cancel", {params: params});
-            return false;
-        }
-    }
-
-    return true;
-};
-
-/**
  * Function to fetch app user from db
  * @param  {object} params - params object
  * @returns {promise} - user
@@ -2589,34 +2619,6 @@ const ignorePossibleDevices = (params) => {
         plugins.dispatch("/sdk/cancel", {params: params});
         return true;
     }
-};
-
-/**
- * Restart Request
- * @param {params} params - params object
- * @param {function} initiator - function which initiated request
- * @param {function} done - callback when processing done
- * @param {number} try_times - how many times request was retried
- * @param {function} fail - callback when restart limit reached
- * @returns {void} void
- */
-const restartRequest = (params, initiator, done, try_times, fail) => {
-    if (!try_times) {
-        try_times = 1;
-    }
-    else {
-        try_times++;
-    }
-    if (try_times > 5) {
-        console.log("Too many retries", try_times);
-        if (typeof fail === "function") {
-            fail("Cannot process request. Too many retries");
-        }
-        return;
-    }
-    params.retry_request = true;
-    //retry request
-    initiator(params, done, try_times);
 };
 
 /**

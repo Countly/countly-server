@@ -63,10 +63,10 @@ plugins.setConfigs("api", {
     offline_mode: false,
     reports_regenerate_interval: 3600,
     send_test_email: "",
-    batch_processing: false,
+    batch_processing: true,
     batch_on_master: false,
     batch_period: 10,
-    batch_read_processing: false,
+    batch_read_processing: true,
     batch_read_on_master: false,
     batch_read_ttl: 600,
     batch_read_period: 60
@@ -267,7 +267,7 @@ if (cluster.isMaster) {
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
         jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
         jobs.job('api:task').replace().schedule('every 5 minutes');
-        jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
+        //jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
     }, 10000);
 }
 else {
