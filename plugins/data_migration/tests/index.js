@@ -8,7 +8,8 @@ var path = require("path");
 var fs = require("fs"),
     readline = require('readline'),
     stream = require('stream');
-
+var cp = require('child_process'); //call process
+const exec = cp.exec; //for calling command line
 const fse = require('fs-extra'); // delete folders
 var crypto = require('crypto');
 var APP_KEY = "";
@@ -24,31 +25,112 @@ var TIMEOUT_FOR_DATA_MIGRATION_TEST = 10000;
 var TIMES_FOR_DATA_MIGRATION_TEST = 10;
 
 var counter = 0;
+var run_command = function(my_command, my_args, callback) {
 
-function validate_files(exportid, apps) {
-    var prefix = ["apps-", 'app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_viewdata', 'app_views', 'campaign_users', 'campaigndata-', 'campaigns-', 'notes-', 'messages-', "browser-", "carriers-", "cities-", "crashdata-", "density-", "device_details-", "devices-", "langs-", "sources-", "users-", "retention_daily-", "retention_weekly-", "retention_monthly-"];
 
-    for (var i = 0; i < apps.length; i++) {
-        for (var j = 0; j < prefix.length; j++) {
-            var dir = path.resolve(__dirname, './../export/' + exportid + '/' + prefix[j] + apps[i] + ".json");
-            if (!fs.existsSync(dir)) {
-                return "File missing: " + dir;
+    exec('sudo ' + my_command + ' ' + my_args.join(" "), (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            callback("err");
+        }
+        else {
+            setTimeout(callback, 1000);
+        }
+    });
+
+};
+
+
+function validate_log(exportid, callback) {
+    fs.readFile(path.resolve(__dirname, './../../../log/dm-export_' + exportid + '.log'), 'utf8', function(err, data) {
+        if (err) {
+            callback(err);
+        }
+        var good_errors = ["Failed: error counting countly_out.: Invalid namespace specified 'countly_out.", "Exited with error code: 1", "Failed: error counting countly.: Invalid namespace specified 'countly.'", "Failed: error counting countly_drill.: Invalid namespace specified 'countly_drill.'"];
+
+        const lines = data.split(/\r?\n/);
+        var badErrors = [];
+        // print all lines
+        lines.forEach((line) => {
+            if (line.indexOf("error") > -1) {
+                var bad = true;
+                for (var z = 0; z < good_errors.length; z++) {
+                    if (line.indexOf(good_errors[z]) > -1) {
+                        bad = false;
+                        break;
+                    }
+                }
+                if (bad) {
+                    badErrors.push(line);
+                }
             }
+        });
+
+        if (badErrors.length > 0) {
+            callback(badErrors.join(","));
+        }
+        else {
+            callback();
+        }
+    });
+}
+function validate_files(exportid, apps, export_path, callback) {
+    var simpleDocs = ["apm_device{1}.bson", "apm_device{1}.metadata.json", "apm_network{1}.bson", "apm_network{1}.metadata.json", "app_crashes{1}.bson", "app_crashes{1}.metadata.json", "app_crashgroups{1}.bson", "app_crashgroups{1}.metadata.json", "app_crashusers{1}.bson", "app_crashusers{1}.metadata.json", "app_nxret{1}.bson", "app_nxret{1}.metadata.json", "app_users{1}.bson", "app_users{1}.metadata.json", "app_viewsmeta{1}.bson", "app_viewsmeta{1}.metadata.json", "apps.bson", "apps.metadata.json", "browser.bson", "browser.metadata.json", "calculated_metrics.bson", "calculated_metrics.metadata.json", "campaigndata.bson", "campaigndata.metadata.json", "campaigns.bson", "campaigns.metadata.json", "carriers.bson", "carriers.metadata.json", "cities.bson", "cities.metadata.json", "cohortdata.bson", "cohortdata.metadata.json", "cohorts.bson", "cohorts.metadata.json", "concurrent_users_max.bson", "concurrent_users_max.metadata.json", "consent_history{1}.bson", "consent_history{1}.metadata.json", "consents.bson", "consents.metadata.json", "crash_share.bson", "crash_share.metadata.json", "crashdata.bson", "crashdata.metadata.json", "density.bson", "density.metadata.json", "device_details.bson", "device_details.metadata.json", "devices.bson", "devices.metadata.json", "events.bson", "events.metadata.json", "feedback{1}.bson", "feedback{1}.metadata.json", "feedback_widgets.bson", "feedback_widgets.metadata.json", "funnels.bson", "funnels.metadata.json", "langs.bson", "langs.metadata.json", "max_online_counts.bson", "max_online_counts.metadata.json", "messages.bson", "messages.metadata.json", "metric_changes{1}.bson", "metric_changes{1}.metadata.json", "notes.bson", "notes.metadata.json", "retention_daily.bson", "retention_daily.metadata.json", "retention_monthly.bson", "retention_monthly.metadata.json", "retention_weekly.bson", "retention_weekly.metadata.json", "server_stats_data_points.bson", "server_stats_data_points.metadata.json", "sources.bson", "sources.metadata.json", "symbolication_jobs.bson", "symbolication_jobs.metadata.json", "top_events.bson", "top_events.metadata.json", "users.bson", "users.metadata.json", "views.bson", "views.metadata.json"];
+
+    export_path = export_path || path.resolve(__dirname, './../export/');
+
+
+    var target_folder = path.resolve(__dirname, './compare_export');
+    if (!fs.existsSync(target_folder)) {
+        try {
+            fs.mkdirSync(target_folder, 484);
+        }
+        catch (err) {
+            callback(err.message);
+            return;
         }
     }
-    return true;
+
+    run_command("tar", ["xvzf", export_path + '/' + exportid + '.tar.gz', "-C", target_folder], function() {
+        var missing_files = [];
+        for (var i = 0; i < apps.length; i++) {
+            var target = target_folder;
+
+            while (fs.existsSync(target + "/" + exportid)) {
+                target = target + "/" + exportid;
+            }
+
+            while (fs.existsSync(target + "/" + apps[i])) {
+                target = target + "/" + apps[i];
+            }
+            target = target + "/countly";
+
+            var pp = target;
+            for (var j = 0; j < simpleDocs.length; j++) {
+                var dir = pp + '/' + simpleDocs[j].replace('{1}', apps[i]);
+                if (!fs.existsSync(dir)) {
+                    missing_files.push(dir);
+                }
+            }
+        }
+        if (missing_files.length > 0) {
+            callback("File(s) missing: " + missing_files.join('/n'));
+        }
+        else {
+            callback();
+        }
+    });
 }
-function validate_result(done, max_wait, wait_on, fail_on) {
+function validate_result(done, max_wait, wait_on, fail_on, options) {
     if (counter < TIMES_FOR_DATA_MIGRATION_TEST) {
         request
-            .post('/o/datamigration/getstatus?exportid=' + test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            .post('/o/datamigration/getstatus?exportid=' + options.test_export_id + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
             .expect(200)
             .end(function(err, res) {
                 var ob = JSON.parse(res.text);
                 console.log("current status:" + ob.result.status + " current step:" + ob.result.step + " " + ob.result.progress);
-
                 if (ob.result.status == wait_on) {
-                    (ob.result._id).should.be.exactly(test_export_id);
+                    (ob.result._id).should.be.exactly(options.test_export_id);
                     done();
                 }
                 else if (ob.result.status == fail_on) {
@@ -57,7 +139,7 @@ function validate_result(done, max_wait, wait_on, fail_on) {
                 else {
                     counter = counter + 1;
                     setTimeout(function() {
-                        validate_result(done, TIMES_FOR_DATA_MIGRATION_TEST, wait_on, fail_on);
+                        done();
                     }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
                 }
             });
@@ -65,7 +147,7 @@ function validate_result(done, max_wait, wait_on, fail_on) {
     else {
         console.log("Stopped waiting for update.(was expected to finish under  " + (TIMEOUT_FOR_DATA_MIGRATION_TEST * TIMES_FOR_DATA_MIGRATION_TEST) / 1000 + " seconds). ");
         //try getting log file
-        var dir = path.resolve(__dirname, '../../../log/dm-export_' + test_export_id + ".log");
+        var dir = path.resolve(__dirname, '../../../log/dm-export_' + options.test_export_id + ".log");
         if (fs.existsSync(dir)) {
             var instream = fs.createReadStream(dir);
 
@@ -94,14 +176,27 @@ function validate_import_result(done, max_wait, exportid) {
     if (counter <= max_wait) {
         //check if info file is here
         //check log file
-
-
         if (!fs.existsSync(path.resolve(__dirname, './../import/' + exportid + '.tar.gz')) &&
             !fs.existsSync(path.resolve(__dirname, './../import/' + exportid + '')) &&
             fs.existsSync(path.resolve(__dirname, './../import/' + exportid + '.json')) &&
             fs.existsSync(path.resolve(__dirname, './../../../log/dm-import_' + exportid + '.log'))
         ) {
-            done();
+
+            fs.readFile(path.resolve(__dirname, './../../../log/dm-import_' + exportid + '.log'), 'utf8', function(err, data) {
+                if (err) {
+                    done(err);
+                }
+                else if (data.indexOf("Data imported") > -1) {
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                }
+                else {
+                    console.log(data);
+                    counter = counter + 1;
+                    setTimeout(function() {
+                        validate_import_result(done, max_wait, exportid);
+                    }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
+                }
+            });
         }
         else {
             counter = counter + 1;
@@ -131,6 +226,7 @@ function check_if_empty_list_test() {
                 done();
             });
     });
+
 }
 
 describe("Testing data migration plugin", function() {
@@ -149,6 +245,20 @@ describe("Testing data migration plugin", function() {
                     var ob = JSON.parse(res.text);
                     (ob.result).should.be.exactly("You don't have any exports");
                     done();
+                });
+        });
+
+        it('clean list just in case', function(done) {
+            request
+                .post('/i/datamigration/delete_all?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    (ob.result).should.be.exactly("ok");
+                    setTimeout(done, 1000);
                 });
         });
 
@@ -319,7 +429,7 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                validate_result(done, 200, "finished", "failed");
+                validate_result(done, 200, "finished", "failed", {test_export_id: test_export_id});
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
 
@@ -331,7 +441,15 @@ describe("Testing data migration plugin", function() {
             var logdir = path.resolve(__dirname, './../../../log/dm-export_' + test_export_id + '.log');
             if (fs.existsSync(dir)) {
                 if (fs.existsSync(logdir)) {
-                    done();
+                    validate_log(test_export_id, function(err) {
+                        if (err) {
+                            done(err);
+                        }
+                        else {
+                            done();
+                            //validate_files(test_export_id, [testapp._id], null, done)
+                        }
+                    });
                 }
                 else {
                     done("Log file not created");
@@ -439,7 +557,7 @@ describe("Testing data migration plugin", function() {
             counter = 0;
             this.timeout(0);
             setTimeout(function() {
-                validate_result(done, 200, "finished", "failed");
+                done();
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
@@ -452,7 +570,15 @@ describe("Testing data migration plugin", function() {
             var logdir = path.resolve(__dirname, './../../../log/dm-export_' + test_export_id + '.log');
             if (fs.existsSync(logdir)) {
                 if (fs.existsSync(dir)) {
-                    done();
+                    validate_log(test_export_id, function(err) {
+                        if (err) {
+                            done(err);
+                        }
+                        else {
+                            done();
+                            //validate_files(test_export_id, [testapp._id], path.resolve(__dirname, './../../'), done);
+                        }
+                    });
                 }
                 else {
                     done("Archive not created");
@@ -495,10 +621,21 @@ describe("Testing data migration plugin", function() {
                 done("Archive not deleted");
             }
         });
-
-
     });
 
+    describe("cleanup", function() {
+        it("Remove test app", function(done) {
+            request
+                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + testapp._id + '"}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+    });
 
 
     describe("Valiate invalid import", function() {
@@ -604,7 +741,6 @@ describe("Testing data migration plugin", function() {
                 });
         });
         it("Validate token ", function(done) {
-
             request
                 .post('/i/datamigration/import?test_con=1')
                 .set('countly-token', mytoken)
@@ -622,7 +758,6 @@ describe("Testing data migration plugin", function() {
                     }
 
                 });
-
         });
         it("Send test ", function(done) {
             tt = "b18e10498ec0f41a85bb8155ccd4a209819319a3";
@@ -647,7 +782,7 @@ describe("Testing data migration plugin", function() {
         //checking statuss and seeing if it moves to end
             counter = 0;
             setTimeout(function() {
-                validate_import_result(done, 10, tt);
+                validate_import_result(done, 10, "b18e10498ec0f41a85bb8155ccd4a209819319a3");
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
@@ -828,14 +963,31 @@ describe("Testing data migration plugin", function() {
         });
     });
 
-
-    describe("cleanup", function() {
-        it("Remove test app", function(done) {
-            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-            APP_ID = testUtils.get("APP_ID");
-            APP_KEY = testUtils.get("APP_KEY");
+    /*describe("cleanup", function() {
+		it("Check if app exists", function(done) {
             request
-                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + testapp._id + '"}')
+                .post('/o/apps/all?api_key=' + API_KEY_ADMIN)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+					else {
+						res = JSON.parse(res.text);
+						res = res["admin_of"]
+						for(var k in res){
+							if(k === "58650a47cc2ed563c5ad964c"){
+								done();
+								return;
+							}
+						}
+						done("App missing");
+					}
+                });
+        });
+        it("Remove test app", function(done) {
+            request
+                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"58650a47cc2ed563c5ad964c"}')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -844,6 +996,205 @@ describe("Testing data migration plugin", function() {
                     done();
                 });
         });
+    });*/
+
+    /*describe("Importing bigger app", function() {
+        it("Create token and call import process", function(done) {
+            request
+                .post('/o/datamigration/createimporttoken?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    if (ob.result && ob.result != "") {
+						var tt = "f9b35d90be5f2240eafced7c6bfdf130856cd0a7";
+						var dir = path.resolve(__dirname, './' + tt + '.tar.gz');
+						request
+						.post('/i/datamigration/import?ts=000000&existing_file=' + dir)
+						.set('countly-token', ob.result)
+						.expect(200)
+						.end(function(err, res) {
+							if (err) {
+								return done(err);
+							}
+							var ob = JSON.parse(res.text);
+							(ob.result).should.be.exactly("Importing process started.");
+							done();
+						});
+						
+                    }
+                    else {
+                        done('invalid response. No token provided.' + res.text);
+                    }
+                });
+        });
+
+        after(function(done) {
+        //checking statuss and seeing if it moves to end
+            counter = 0;
+            setTimeout(function() {
+                validate_import_result(done, 10, "f9b35d90be5f2240eafced7c6bfdf130856cd0a7");
+            }, 1000);
+        });
+    });
+	describe("some cleanup",function(){
+		it("Check if app exists", function(done) {
+            request
+                .post('/o/apps/all?api_key=' + API_KEY_ADMIN)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+					else {
+						res = JSON.parse(res.text);
+						res = res["admin_of"]
+						for(var k in res){
+							if(k === "5f589b9e8df39d7b85474921"){
+								done();
+								return;
+							}
+						}
+						//try again
+						
+						setTimeout(function(){
+							request
+							.post('/o/apps/all?api_key=' + API_KEY_ADMIN)
+							.expect(200)
+							.end(function(err, res) {
+								if (err) {
+									return done(err);
+								}
+								else {
+									res = JSON.parse(res.text);
+									res = res["admin_of"]
+									for(var k in res){
+										if(k === "5f589b9e8df39d7b85474921"){
+											done();
+											return;
+										}
+									}
+									
+									done("App missing");
+								}
+							});
+							
+						},10000);
+					}
+                });
+        });
+		
+		it("delete import request ", function(done) {
+            request
+                .post('/i/datamigration/delete_import?exportid=f9b35d90be5f2240eafced7c6bfdf130856cd0a7' + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    if (ob.result && ob.result == "ok") {
+                        setTimeout(done,10000);
+                    }
+                    else {
+                        done('invalid response. No token provided.' + res.text);
+                    }
+
+                });
+        });
+	});
+
+    describe("Exporting same app", function() {
+        it("Run bigger export", function(done) {
+            request
+                .post('/i/datamigration/export?only_export=1&apps=5f589b9e8df39d7b85474921&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    (ob.result).should.be.exactly("f9b35d90be5f2240eafced7c6bfdf130856cd0a7");
+                    done();
+                });
+        });
+
+        after(function(done) {
+            //checking statuss and seeing if it moves to end
+            counter = 0;
+            this.timeout(0);
+            setTimeout(function() {
+                validate_result(done, 200, "finished", "failed",{test_export_id:"f9b35d90be5f2240eafced7c6bfdf130856cd0a7"});
+            }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
+        });
+    });
+
+    describe("Comparing if folder contents - if no data missing", function() {
+		it("Check for archive", function(done) {
+			
+            var dir = path.resolve(__dirname, './../export/' + "f9b35d90be5f2240eafced7c6bfdf130856cd0a7" + '.tar.gz');
+            var logdir = path.resolve(__dirname, './../../../log/dm-export_' + "f9b35d90be5f2240eafced7c6bfdf130856cd0a7" + '.log');
+            if (fs.existsSync(dir)) {
+                if (fs.existsSync(logdir)) {
+					validate_log("f9b35d90be5f2240eafced7c6bfdf130856cd0a7",function(err){
+						if(err) {
+							done(err);
+						}
+						else {
+							validate_files("f9b35d90be5f2240eafced7c6bfdf130856cd0a7", ["5f589b9e8df39d7b85474921"], null, done)
+						}
+					});
+					
+                }
+                else {
+                    done("Log file not created");
+                }
+            }
+            else {
+                done("Archive not created");
+            }
+        });
+		
+		
+        it("Get contents", function(done) {
+            var exportid = "f9b35d90be5f2240eafced7c6bfdf130856cd0a7";
+            var export_path = export_path || path.resolve(__dirname, './../export/');
+                var missing_files = [];
+                var apps = ["5f589b9e8df39d7b85474921"];
+                for (var i = 0; i < apps.length; i++) {
+                    var pp = path.resolve(__dirname, './compare_export'+'/' + exportid + '/' + apps[i] + '/countly');
+                    var files = fs.readdirSync(path.resolve(__dirname, "./"+"f9b35d90be5f2240eafced7c6bfdf130856cd0a7"+"/" + apps[i] + "/countly"));
+                    for (var j = 0; j < files.length; j++) {
+                        var dir = path.resolve(pp,"./"+files[j]);
+                        if (!fs.existsSync(dir)) {
+                            missing_files.push(dir);
+                        }
+                    }
+                }
+                if (missing_files.length > 0) {
+                    done("File(s) missing: " + missing_files.join('/n'));
+                }
+                else {
+                    done();
+                }
+        });
+		it("Remove test app", function(done) {
+            request
+                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"5f589b9e8df39d7b85474921"}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+    });*/
+
+    describe("cleanup", function() {
+
 
         it('delete data', function(done) {
             request
@@ -872,7 +1223,17 @@ describe("Testing data migration plugin", function() {
                 }
             });
         });
+        it("clenup test dir", function(done) {
+            fse.remove(path.resolve(__dirname, './compare_export'), err => {
+                if (err) {
+                    done(Error('Unable to remove directory'));
+                }
+                else {
+                    done();
+                }
 
+            });
+        });
         it("Get export list", function(done) {
             request
                 .post('/o/datamigration/getmyexports?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)

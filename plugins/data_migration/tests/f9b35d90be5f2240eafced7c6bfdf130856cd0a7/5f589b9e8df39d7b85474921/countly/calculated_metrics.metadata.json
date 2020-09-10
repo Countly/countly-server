@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":2,"key":{"_id":1},"name":"_id_","ns":"countly.calculated_metrics"},{"v":2,"unique":true,"key":{"app":1,"key":1},"name":"app_1_key_1","ns":"countly.calculated_metrics"}],"uuid":"51f72888c1e5425fa394d178b7a8f172"}

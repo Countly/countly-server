@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":2,"key":{"_id":1},"name":"_id_","ns":"countly.feedback5f589b9e8df39d7b85474921"},{"v":2,"key":{"uid":1},"name":"uid_1","ns":"countly.feedback5f589b9e8df39d7b85474921"},{"v":2,"key":{"ts":1},"name":"ts_1","ns":"countly.feedback5f589b9e8df39d7b85474921"}],"uuid":"7aec148b8d384f11bb76818199073f40"}
