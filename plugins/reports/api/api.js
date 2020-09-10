@@ -2,7 +2,10 @@ var common = require('../../../api/utils/common.js'),
     reports = require("./reports"),
     time = require('time'),
     async = require('async'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'reports';
 
 (function() {
     plugins.register("/master", function() {
@@ -13,21 +16,20 @@ var common = require('../../../api/utils/common.js'),
     });
 
     plugins.register("/o/reports", function(ob) {
-        let paramsInstance = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
+        let params = ob.params;
         var paths = ob.paths;
-        if (paramsInstance.qstring.args) {
+        if (params.qstring.args) {
             try {
-                paramsInstance.qstring.args = JSON.parse(paramsInstance.qstring.args);
+                params.qstring.args = JSON.parse(params.qstring.args);
             }
             catch (SyntaxError) {
-                console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
+                console.log('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
 
         switch (paths[3]) {
         case 'all':
-            validate(paramsInstance, function(params) {
+            validateRead(params, FEATURE_NAME, function() {
                 common.db.collection('reports').find({user: common.db.ObjectID(params.member._id)}).toArray(function(err, result) {
                     var parallelTashs = [];
 
@@ -61,28 +63,27 @@ var common = require('../../../api/utils/common.js'),
             });
             break;
         default:
-            common.returnMessage(paramsInstance, 400, 'Invalid path');
+            common.returnMessage(params, 400, 'Invalid path');
             break;
         }
         return true;
     });
 
     plugins.register("/i/reports", function(ob) {
-        var paramsInstance = ob.params;
-        var validate = ob.validateUserForWriteAPI;
+        var params = ob.params;
         var paths = ob.paths;
-        if (paramsInstance.qstring.args) {
+        if (params.qstring.args) {
             try {
-                paramsInstance.qstring.args = JSON.parse(paramsInstance.qstring.args);
+                params.qstring.args = JSON.parse(params.qstring.args);
             }
             catch (SyntaxError) {
-                console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
+                console.log('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
 
         switch (paths[3]) {
         case 'create':
-            validate(function(params) {
+            validateCreate(params, FEATURE_NAME, function() {
                 var props = {};
                 props = params.qstring.args;
                 props.minute = (props.minute) ? parseInt(props.minute) : 0;
@@ -128,10 +129,10 @@ var common = require('../../../api/utils/common.js'),
                         }
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'update':
-            validate(function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 var props = {};
 
                 props = params.qstring.args;
@@ -181,10 +182,10 @@ var common = require('../../../api/utils/common.js'),
                         });
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'delete':
-            validate(function(params) {
+            validateDelete(params, FEATURE_NAME, function() {
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -207,10 +208,10 @@ var common = require('../../../api/utils/common.js'),
                         }
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'send':
-            validate(function(params) {
+            validateCreate(params, FEATURE_NAME, function() {
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -246,10 +247,10 @@ var common = require('../../../api/utils/common.js'),
                         });
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'preview':
-            validate(function(params) {
+            validateRead(params, FEATURE_NAME, function() {
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -286,10 +287,10 @@ var common = require('../../../api/utils/common.js'),
                         });
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'status':
-            validate(function(params) {
+            validateUpdate(params, FEATURE_NAME, function() {
                 const statusList = params.qstring.args;
 
                 common.db.onOpened(function() {
@@ -306,10 +307,10 @@ var common = require('../../../api/utils/common.js'),
                         });
                     }
                 });
-            }, paramsInstance);
+            });
             break;
         default:
-            common.returnMessage(paramsInstance, 400, 'Invalid path');
+            common.returnMessage(params, 400, 'Invalid path');
             break;
         }
         return true;
