@@ -807,7 +807,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
     return true;
 }
 
-plugins.register("/sdk/user_properties", function(ob) {
+plugins.register("/sdk/user_properties", async function(ob) {
     var params = ob.params;
     var userProps = {};
     var update = {};
@@ -866,8 +866,14 @@ plugins.register("/sdk/user_properties", function(ob) {
         }
     }
     else if (params.qstring.begin_session && params.qstring.location !== "") {
-        try {
-            var data = geoip.lookup(params.ip_address);
+        if (userProps.loc !== undefined || (userProps.cc && userProps.cty)) {
+            let data = await locFromGeocoder(params, {
+                country: userProps.cc,
+                city: userProps.cc,
+                tz: userProps.tz,
+                lat: userProps.loc && userProps.loc.geo.coordinates[1],
+                lon: userProps.loc && userProps.loc.geo.coordinates[0]
+            });
             if (data) {
                 if (!userProps.cc && data.country) {
                     userProps.cc = data.country;
@@ -881,7 +887,7 @@ plugins.register("/sdk/user_properties", function(ob) {
                     userProps.cty = data.city;
                 }
 
-                if (!userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
+                if (!userProps.loc && typeof data.lat !== "undefined" && typeof data.lon !== "undefined") {
                     // only override lat/lon if no recent gps location exists in user document
                     if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
                         userProps.loc = {
@@ -896,8 +902,40 @@ plugins.register("/sdk/user_properties", function(ob) {
                 }
             }
         }
-        catch (e) {
-            log.e('Error in geoip: %j', e);
+        else {
+            try {
+                let data = geoip.lookup(params.ip_address);
+                if (data) {
+                    if (!userProps.cc && data.country) {
+                        userProps.cc = data.country;
+                    }
+
+                    if (!userProps.rgn && data.region) {
+                        userProps.rgn = data.region;
+                    }
+
+                    if (!userProps.cty && data.city) {
+                        userProps.cty = data.city;
+                    }
+
+                    if (!userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
+                        // only override lat/lon if no recent gps location exists in user document
+                        if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
+                            userProps.loc = {
+                                gps: false,
+                                geo: {
+                                    type: 'Point',
+                                    coordinates: [data.ll[1], data.ll[0]]
+                                },
+                                date: params.time.mstimestamp
+                            };
+                        }
+                    }
+                }
+            }
+            catch (e) {
+                log.e('Error in geoip: %j', e);
+            }
         }
         if (!userProps.cc) {
             userProps.cc = "Unknown";
@@ -910,10 +948,12 @@ plugins.register("/sdk/user_properties", function(ob) {
         }
     }
 
+    if (config.city_data === false) {
+        userProps.cty = 'Unknown';
+    }
+
     params.user.country = userProps.cc || "Unknown";
     params.user.city = userProps.cty || "Unknown";
-
-    //TODO: process other geo location, like reverse lookup
 
     //if we have metrics, let's process metrics
     if (params.qstring.metrics) {
