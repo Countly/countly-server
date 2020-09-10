@@ -2,7 +2,10 @@ var exported = {},
     langs = require('./utils/langs.js'),
     common = require('../../../api/utils/common.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'locale';
 
 (function() {
     plugins.register("/worker", function() {
@@ -43,9 +46,9 @@ var exported = {},
 
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        
         if (params.qstring.method === "langs") {
-            validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'langs');
+            validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'langs');
             return true;
         }
         return false;
