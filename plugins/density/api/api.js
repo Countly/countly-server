@@ -1,7 +1,10 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    fetch = require('../../../api/parts/data/fetch.js');
+    fetch = require('../../../api/parts/data/fetch.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'density';
 
 (function() {
     plugins.register("/worker", function() {
@@ -33,9 +36,9 @@ var exported = {},
     });
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        
         if (params.qstring.method === "density") {
-            validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'density');
+            validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'density');
             return true;
         }
         return false;
