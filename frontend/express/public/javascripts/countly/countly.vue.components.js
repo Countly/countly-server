@@ -2121,6 +2121,11 @@
         watch: {
             currentPage: function() {
                 this.updateCurrentPage();
+            },
+            totalPages: function(newTotal) {
+                if (this.currentPage > newTotal) {
+                    this.goToFirstPage();
+                }
             }
         }
     });
@@ -2133,19 +2138,35 @@
         components: {
             "custom-pagination": clyDataTablePagination
         },
-        computed: {
-            paginationOptions: function() {
-                return {
-                    enabled: true,
-                    mode: 'records',
-                    position: 'top'
-                };
+        data: function() {
+            return {
+                searchQuery: '',
+                searchVisible: false
+            };
+        },
+        methods: {
+            toggleSearch: function() {
+                var self = this;
+                this.searchVisible = !this.searchVisible;
+                this.$nextTick(function() {
+                    if (self.searchVisible) {
+                        self.$refs.searchInput.focus();
+                    }
+                });
             }
         },
         template: '<vue-good-table\
                     v-bind="$attrs"\
                     v-on="$listeners"\
-                    :pagination-options="paginationOptions"\
+                    :pagination-options="{\
+                        enabled: true,\
+                        mode: \'records\',\
+                        position: \'top\'\
+                    }"\
+                    :search-options="{\
+                        enabled: true,\
+                        externalQuery: searchQuery\
+                    }"\
                     styleClass="cly-vgt-table striped">\
                         <template slot="pagination-top" slot-scope="props">\
                             <custom-pagination\
@@ -2155,6 +2176,14 @@
                             </custom-pagination>\
                         </template>\
                         <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData"><slot :name="name" v-bind="slotData" /></template>\
+                        <div slot="table-actions">\
+                            <div>\
+                                <div class="magnifier-wrapper" @click="toggleSearch">\
+                                    <i class="fa fa-search"></i>\
+                                </div>\
+                                <input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-model="searchQuery"/>\
+                            </div>\
+                        </div>\
                         <div slot="table-actions-bottom">\
                         </div>\
                         <div slot="emptystate">\
