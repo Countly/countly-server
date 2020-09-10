@@ -2049,19 +2049,30 @@
     ));
 
 
-    var clyDataTablePagination = countlyBaseComponent.extend({
+    var clyDataTableControls = countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
-        template: '<div class="cly-vgt-custom-paginator">\
-                        <div class="buttons">\
-                            <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
-                            <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
-                            <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\
-                            <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\
+        template: '<div class="cly-vgt-custom-controls">\
+                        <div class="cly-vgt-custom-search">\
+                            <div class="magnifier-wrapper" @click="toggleSearch">\
+                                <i class="fa fa-search"></i>\
+                            </div>\
+                            <input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-bind:value="searchQuery" @input="queryChanged($event.target.value)"/>\
+                        </div>\
+                        <div class="cly-vgt-custom-paginator">\
+                            <div class="buttons">\
+                                <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
+                                <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
+                                <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\
+                                <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\
+                            </div>\
                         </div>\
                     </div>',
         props: {
+            searchQuery: {
+                type: String
+            },
             pageChanged: {
                 type: Function,
             },
@@ -2076,7 +2087,8 @@
             return {
                 firstPage: 1,
                 currentPage: 1,
-                perPage: 7
+                perPage: 7,
+                searchVisible: false,
             };
         },
         computed: {
@@ -2099,15 +2111,38 @@
             this.updateInfo();
         },
         methods: {
+            queryChanged: function(newSearchQuery) {
+                var self = this;
+                this.$emit("queryChanged", newSearchQuery);
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
+            },
+            toggleSearch: function() {
+                var self = this;
+                this.searchVisible = !this.searchVisible;
+                this.$nextTick(function() {
+                    if (self.searchVisible) {
+                        self.$refs.searchInput.focus();
+                    }
+                });
+            },
             updateInfo: function() {
                 var startEntries = (this.currentPage - 1) * this.perPage + 1,
                     endEntries = Math.min(startEntries + this.perPage - 1, this.total),
-                    totalEntries = this.total;
+                    totalEntries = this.total,
+                    info = this.i18n("common.table.no-data");
 
-                var info = this.i18n("common.showing")
-                    .replace("_START_", startEntries)
-                    .replace("_END_", endEntries)
-                    .replace("_TOTAL_", totalEntries);
+                if (totalEntries > 0) {
+                    info = this.i18n("common.showing")
+                        .replace("_START_", startEntries)
+                        .replace("_END_", endEntries)
+                        .replace("_TOTAL_", totalEntries);
+                }
+
+                if (this.searchQuery) {
+                    info += " " + this.i18n("common.filtered").replace("_MAX_", 100);
+                }
 
                 this.$emit("infoChanged", info);
             },
@@ -2147,15 +2182,13 @@
         }
     });
 
-
-    // common.filtered = (filtered from _MAX_ total entries)
     Vue.component("cly-datatable", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
         inheritAttrs: false,
         components: {
-            "custom-pagination": clyDataTablePagination
+            "custom-controls": clyDataTableControls
         },
         computed: {
             bottomText: function() {
@@ -2166,9 +2199,8 @@
         },
         data: function() {
             return {
-                searchQuery: '',
-                searchVisible: false,
-                pageInfo: ''
+                pageInfo: '',
+                searchQuery: ''
             };
         },
         methods: {
@@ -2177,17 +2209,8 @@
             },
             onSearch: function(params) {
                 if (params.searchTerm) {
-                    this.$refs.pagination.goToFirstPage();
+                    this.$refs.controls.goToFirstPage();
                 }
-            },
-            toggleSearch: function() {
-                var self = this;
-                this.searchVisible = !this.searchVisible;
-                this.$nextTick(function() {
-                    if (self.searchVisible) {
-                        self.$refs.searchInput.focus();
-                    }
-                });
             }
         },
         template: '<vue-good-table\
@@ -2205,23 +2228,17 @@
                     @on-search="onSearch"\
                     styleClass="cly-vgt-table striped">\
                         <template slot="pagination-top" slot-scope="props">\
-                            <custom-pagination\
+                            <custom-controls\
                             @infoChanged="onInfoChanged"\
-                            ref="pagination"\
+                            @queryChanged="searchQuery = $event"\
+                            ref="controls"\
+                            :search-query="searchQuery"\
                             :total="props.total"\
                             :pageChanged="props.pageChanged"\
                             :perPageChanged="props.perPageChanged">\
-                            </custom-pagination>\
+                            </custom-controls>\
                         </template>\
                         <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData"><slot :name="name" v-bind="slotData" /></template>\
-                        <div slot="table-actions">\
-                            <div>\
-                                <div class="magnifier-wrapper" @click="toggleSearch">\
-                                    <i class="fa fa-search"></i>\
-                                </div>\
-                                <input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-model="searchQuery"/>\
-                            </div>\
-                        </div>\
                         <div slot="table-actions-bottom">\
                             {{pageInfo}}\
                         </div>\

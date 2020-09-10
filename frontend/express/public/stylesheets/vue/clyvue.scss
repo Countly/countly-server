@@ -1797,6 +1797,22 @@
         }
     }
 
+    .cly-vgt-custom-controls {
+        height: 32px;
+        &:hover {
+            .cly-vgt-custom-paginator,
+            .magnifier-wrapper {
+                color: #888;
+                transition: color 0.5s;
+            }
+        }
+    }
+
+    .cly-vgt-custom-search {
+        float: left;
+        padding: 5px 0 0 10px;
+    }
+
     .cly-vgt-custom-paginator {
         float: right;
         color: #bbb;
@@ -1808,10 +1824,6 @@
         font-size: 10px;
         line-height: 111%;
         text-align: left;
-        &:hover {
-            color: #888;
-            transition: color 0.5s;
-        }
         .buttons {
             float: right;
             span {
@@ -1827,7 +1839,7 @@
         }
     }
 
-    .vgt-inner-wrap .magnifier-wrapper{
+    .vgt-inner-wrap .magnifier-wrapper {
         color: #bbb;
         transition: color 0.5s;
         border: none;
