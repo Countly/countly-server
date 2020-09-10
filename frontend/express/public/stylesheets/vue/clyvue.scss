@@ -1838,6 +1838,26 @@
                 }
             }
         }
+        .display-items {
+            float: right;
+            padding: 5px 11px;
+            border-left: 1px solid #cccccc;
+            label {
+                text-transform: uppercase;
+            }
+            input {
+                font-size: 13px;
+                margin: 0;
+                border-radius: 2px;
+                background-color: #fff;
+                border: 1px solid #ccc;
+                transition: width 0.5s;
+                outline: none;
+                padding: 2px 6px;
+                width: 50px;
+                margin-left: 9px;
+            }
+        }
     }
 
     .vgt-inner-wrap .magnifier-wrapper {

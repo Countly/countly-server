@@ -2061,6 +2061,9 @@
                             <input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-bind:value="searchQuery" @input="queryChanged($event.target.value)"/>\
                         </div>\
                         <div class="cly-vgt-custom-paginator">\
+                            <div class="display-items">\
+                                <label>{{ i18n("common.show-items") }} <input type="number" v-model.number="displayItems"></label>\
+                            </div>\
                             <div class="buttons">\
                                 <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
                                 <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
@@ -2090,8 +2093,9 @@
             return {
                 firstPage: 1,
                 currentPage: 1,
-                perPage: 7,
+                perPage: 10,
                 searchVisible: false,
+                displayItems: 10
             };
         },
         computed: {
@@ -2150,11 +2154,18 @@
                 this.$emit("infoChanged", info);
             },
             updateCurrentPage: function() {
-                this.updateInfo();
+                var self = this;
                 this.pageChanged({currentPage: this.currentPage});
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
             },
             updatePerPage: function() {
+                var self = this;
                 this.perPageChanged({currentPerPage: this.perPage});
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
             },
             goToFirstPage: function() {
                 this.currentPage = this.firstPage;
@@ -2174,6 +2185,14 @@
             }
         },
         watch: {
+            displayItems: function(newValue) {
+                if (newValue > 0) {
+                    this.perPage = newValue;
+                }
+            },
+            perPage: function() {
+                this.updatePerPage();
+            },
             currentPage: function() {
                 this.updateCurrentPage();
             },
@@ -2200,7 +2219,7 @@
         },
         computed: {
             notFilteredTotal: function() {
-                if (!this.rows){
+                if (!this.rows) {
                     return 0;
                 }
                 return this.rows.length;
