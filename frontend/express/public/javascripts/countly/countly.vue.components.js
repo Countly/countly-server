@@ -2081,7 +2081,10 @@
             },
             total: {
                 type: Number
-            }
+            },
+            notFilteredTotal: {
+                type: Number
+            },
         },
         data: function() {
             return {
@@ -2141,7 +2144,7 @@
                 }
 
                 if (this.searchQuery) {
-                    info += " " + this.i18n("common.filtered").replace("_MAX_", 100);
+                    info += " " + this.i18n("common.filtered").replace("_MAX_", this.notFilteredTotal);
                 }
 
                 this.$emit("infoChanged", info);
@@ -2190,11 +2193,17 @@
         components: {
             "custom-controls": clyDataTableControls
         },
+        props: {
+            rows: {
+                type: Array
+            }
+        },
         computed: {
-            bottomText: function() {
-                if (this.searchQuery) {
-                    this.i18n("common.filtered").replace("_MAX_", this.rows);
+            notFilteredTotal: function() {
+                if (!this.rows){
+                    return 0;
                 }
+                return this.rows.length;
             }
         },
         data: function() {
@@ -2215,6 +2224,7 @@
         },
         template: '<vue-good-table\
                     v-bind="$attrs"\
+                    v-bind:rows="rows"\
                     v-on="$listeners"\
                     :pagination-options="{\
                         enabled: true,\
@@ -2234,6 +2244,7 @@
                             ref="controls"\
                             :search-query="searchQuery"\
                             :total="props.total"\
+                            :notFilteredTotal="notFilteredTotal"\
                             :pageChanged="props.pageChanged"\
                             :perPageChanged="props.perPageChanged">\
                             </custom-controls>\
