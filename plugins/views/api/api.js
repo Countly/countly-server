@@ -8,7 +8,10 @@ var pluginOb = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
-    log = common.log('views:api');
+    log = common.log('views:api'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'views';
 
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true};
 //keys to not use as segmentation
@@ -42,9 +45,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/i/views", function(ob) {
         var appId = ob.params.qstring.app_id;
-        var validateUserForDataWriteAPI = ob.validateUserForDataWriteAPI;
+        
         return new Promise(function(resolve) {
-            validateUserForDataWriteAPI(ob.params, function(params) {
+            validateCreate(ob.params, FEATURE_NAME, function(params) {
                 if (ob.params.qstring.method === "rename_views") {
                     if (ob.params.qstring.data) {
                         var haveUpdate = false;
@@ -225,6 +228,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param {@function} callback - callback function
     */
     function getAggregatedData(collectionName, params, settings, callback) {
+        settings = settings || {};
         var app_id = settings.app_id;
         var pipeline = [];
         var period = params.qstring.period || '30days';
@@ -285,9 +289,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var last_pushed = "";
         var selectMap = {};
         var projector;
-        if (settings && settings.onlyIDs) {
-            pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
-        }
+
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
             for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
@@ -344,11 +346,17 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector[settings.levels.daily[i]] = {$sum: {$switch: {branches: branches2, default: 0}}};
             }
             pipeline.push({$match: {$or: month_array}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             pipeline.push({$group: projector});
         }
         else if (period === "month") { //this year
             curmonth = periodObj.activePeriod;
             pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + ":0"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
 
             var groupBy1 = {_id: "$vw"};
             for (let i = 0; i < settings.levels.monthly.length; i++) {
@@ -370,6 +378,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var monthNumber = curmonth.split(':');
             var thisYear = now.format('YYYY');
             pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
 
             var groupBy0 = {_id: "$vw"};
             for (let i = 0; i < settings.levels.daily.length; i++) {
@@ -387,6 +398,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             curmonth = this_date[0] + ":" + this_date[1];
             var curday = this_date[2];
             pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + "_m"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             var p_a = {vw: true, _id: "$vw"};
 
             for (let i = 0; i < settings.levels.daily.length; i++) {
@@ -478,6 +492,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector[settings.levels.daily[i]] = {$sum: {$switch: {branches: branches02, default: 0}}};
             }
             pipeline.push({$match: {$or: month_array}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             pipeline.push({$group: projector});
 
         }
@@ -556,12 +573,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     }
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-
+        
         var segment = params.qstring.segment || "";
         var segmentVal = params.qstring.segmentVal || "";
         if (params.qstring.method === "views") {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 var colName = "";
                 var sortby;
                 var startPos = 0;
@@ -626,8 +642,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                         query = [{$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                            query = [{$match: {"sortcol": {$regex: params.qstring.sSearch}}}];
-                            selOptions.count_query = {"view": {$regex: params.qstring.sSearch}};
+                            query.push({$match: {"sortcol": {$regex: params.qstring.sSearch, $options: 'i'}}});
+                            selOptions.count_query = {"view": {$regex: params.qstring.sSearch, $options: 'i'}};
                         }
                         if (sortcol === 'name') {
                             query.push(sortby);
@@ -837,7 +853,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             return true;
         }
         else if (params.qstring.method === "get_view_segments") {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 var res = {segments: [], domains: []};
                 common.db.collection("views").findOne({'_id': common.db.ObjectID(params.app_id)}, function(err1, res1) {
                     if (res1 && res1.segments) {
@@ -1078,7 +1094,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/o/actions", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        
         if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
                 common.db.collection('apps').findOne({'key': params.qstring.app_key}, function(err1, app) {
@@ -1128,7 +1144,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 });
             }
             else {
-                validateUserForDataReadAPI(params, getHeatmap);
+                validateRead(params, FEATURE_NAME, getHeatmap);
             }
             return true;
         }
