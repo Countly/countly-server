@@ -65,20 +65,35 @@ class WriteBatcher {
             }
             this.data[db][collection] = {};
             try {
-                await this.dbs[db].collection(collection).bulkWrite(queries, {ordered: false});
+                await new Promise((resolve, reject) => {
+                    this.dbs[db].collection(collection).bulkWrite(queries, {ordered: false, ignore_errors: [11000]}, function(err, res) {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve(res);
+                    });
+                });
             }
             catch (ex) {
-                log.e("Error updating documents", ex);
+                if (ex.code !== 11000) {
+                    log.e("Error updating documents", ex);
+                }
 
                 //trying to rollback operations to try again on next iteration
-                for (let i = 0; i < queries.length; i++) {
-                    //if we don't have anything for this document yet just use query
-                    if (!this.data[db][collection][queries[i].updateOne.filter._id]) {
-                        this.data[db][collection][queries[i].updateOne.filter._id] = {id: queries[i].updateOne.filter._id, value: queries[i].updateOne.update};
-                    }
-                    else {
-                        //if we have, then we can try to merge query back in
-                        this.data[db][collection][queries[i].updateOne.filter._id].value = common.mergeQuery(queries[i].updateOne.update, this.data[db][collection][queries[i].updateOne.filter._id].value);
+                if (ex.writeErrors && ex.writeErrors.length) {
+                    for (let i = 0; i < ex.writeErrors.length; i++) {
+                        let index = ex.writeErrors[i].index;
+                        if (queries[index]) {
+                            //if we don't have anything for this document yet just use query
+                            if (!this.data[db][collection][queries[index].updateOne.filter._id]) {
+                                this.data[db][collection][queries[index].updateOne.filter._id] = {id: queries[index].updateOne.filter._id, value: queries[index].updateOne.update};
+                            }
+                            else {
+                                //if we have, then we can try to merge query back in
+                                this.data[db][collection][queries[index].updateOne.filter._id].value = common.mergeQuery(queries[index].updateOne.update, this.data[db][collection][queries[index].updateOne.filter._id].value);
+                            }
+                        }
                     }
                 }
             }
