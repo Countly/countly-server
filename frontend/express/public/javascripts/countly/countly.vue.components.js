@@ -2050,11 +2050,13 @@
 
 
     var clyDataTablePagination = countlyBaseComponent.extend({
-        template: '<div>\
-                    <div v-if="prevAvailable" @click="goToFirstPage"> << </div>\
-                    <div v-if="prevAvailable" @click="goToPrevPage"> < </div>\
-                    <div v-if="nextAvailable" @click="goToNextPage"> > </div>\
-                    <div v-if="nextAvailable" @click="goToLastPage"> >> </div>\
+        template: '<div class="cly-vgt-custom-paginator">\
+                        <div class="buttons">\
+                            <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
+                            <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
+                            <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\
+                            <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\
+                        </div>\
                     </div>',
         props: {
             pageChanged: {
