@@ -1,10 +1,9 @@
-var plugins = require('../../pluginManager.js'),
-    common = require('../../../api/utils/common.js');
+var plugins = require('../../pluginManager.js');
 
 //write api call
-plugins.register("/i", function(ob) {
+plugins.register("/sdk/user_properties", function(ob) {
     //store is as custom property
     if (ob.params.ip_address) {
-        common.updateAppUser(ob.params, {$set: {"custom.ip": ob.params.ip_address}});
+        ob.updates.push({$set: {"custom.ip": ob.params.ip_address}});
     }
 });

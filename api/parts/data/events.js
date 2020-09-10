@@ -22,15 +22,17 @@ countlyEvents.processEvents = function(params) {
         for (let i = 1; i < 32; i++) {
             forbiddenSegValues.push(i + "");
         }
-        common.db.collection("events").findOne({'_id': params.app_id}, {
+        common.readBatcher.getOne("events", {'_id': params.app_id}, {
             list: 1,
             segments: 1,
-            omitted_segments: 1
-        }, function(err, eventColl) {
+            omitted_segments: 1,
+            whitelisted_segments: 1
+        }, (err, eventColl) => {
             var appEvents = [],
                 appSegments = {},
                 metaToFetch = {},
                 omitted_segments = {},
+                whitelisted_segments = {},
                 pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
 
             if (!err && eventColl) {
@@ -45,21 +47,16 @@ countlyEvents.processEvents = function(params) {
                 if (eventColl.omitted_segments) {
                     omitted_segments = eventColl.omitted_segments;
                 }
-            }
 
-            var userProps = {};
+                if (eventColl.whitelisted_segments) {
+                    whitelisted_segments = eventColl.whitelisted_segments;
+                }
+            }
 
             for (let i = 0; i < params.qstring.events.length; i++) {
                 var currEvent = params.qstring.events[i],
                     shortEventName = "",
                     eventCollectionName = "";
-
-                if (currEvent.key === "[CLY]_orientation") {
-                    if (currEvent.segmentation && currEvent.segmentation.mode) {
-                        userProps.ornt = currEvent.segmentation.mode;
-                    }
-                    continue;
-                }
 
                 if (!currEvent.segmentation) {
                     continue;
@@ -92,6 +89,11 @@ countlyEvents.processEvents = function(params) {
                         }
                         //check if segment should be ommited
                         if (omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey) !== -1) {
+                            continue;
+                        }
+
+                        //check if whitelisted is set and this one not in whitelist
+                        if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
                             continue;
                         }
 
@@ -132,10 +134,6 @@ countlyEvents.processEvents = function(params) {
                 }
             }
 
-            if (Object.keys(userProps).length) {
-                common.updateAppUser(params, {$set: userProps}, true);
-            }
-
             async.map(Object.keys(metaToFetch), fetchEventMeta, function(err2, eventMetaDocs) {
                 var appSgValues = {};
 
@@ -155,7 +153,7 @@ countlyEvents.processEvents = function(params) {
                     }
                 }
 
-                processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, resolve);
+                processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, whitelisted_segments, resolve);
             });
 
             /**
@@ -164,7 +162,7 @@ countlyEvents.processEvents = function(params) {
             * @param {function} callback - for result
             **/
             function fetchEventMeta(id, callback) {
-                common.db.collection(metaToFetch[id].coll).findOne({'_id': metaToFetch[id].id}, {meta_v2: 1}, function(err2, eventMetaDoc) {
+                common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err2, eventMetaDoc) => {
                     var retObj = eventMetaDoc || {};
                     retObj.coll = metaToFetch[id].coll;
 
@@ -182,9 +180,10 @@ countlyEvents.processEvents = function(params) {
 * @param {object} appSgValues - object in format [collection][document_id][segment] and array of values as value for inserting in database
 * @param {params} params - params object
 * @param {array} omitted_segments - array of segments to omit
+* @param {array} whitelisted_segments - array of segments to keep
 * @param {function} done - callback function to call when done processing
 **/
-function processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, done) {
+function processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, whitelisted_segments, done) {
     var events = [],
         eventCollections = {},
         eventSegments = {},
@@ -275,6 +274,10 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 }
                 //check if segment should be ommited
                 if (omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey) !== -1) {
+                    continue;
+                }
+
+                if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
                     continue;
                 }
 
@@ -371,20 +374,21 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     }
                     eventSegments[collection + "." + zeroId].m = zeroId.split(".")[0];
                     eventSegments[collection + "." + zeroId].s = "no-segment";
-                    common.db.collection(collection).update({'_id': "no-segment_" + zeroId.replace(".", "_")}, {$set: eventSegments[collection + "." + zeroId]}, {'upsert': true}, function() {});
+                    common.writeBatcher.add(collection, "no-segment_" + zeroId.replace(".", "_"), {$set: eventSegments[collection + "." + zeroId]});
                 }
             }
 
             for (let segment in eventCollections[collection]) {
                 let collIdSplits = segment.split("."),
                     collId = segment.replace(/\./g, "_");
-                common.db.collection(collection).update({'_id': collId}, {
+
+                common.writeBatcher.add(collection, collId, {
                     $set: {
                         "m": collIdSplits[1],
                         "s": collIdSplits[0]
                     },
                     "$inc": eventCollections[collection][segment]
-                }, {'upsert': true}, function() {});
+                });
             }
         }
     }
@@ -432,8 +436,14 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 });
             }
         }
+        for (var k = 0; k < eventDocs.length; k++) {
+            common.writeBatcher.add(eventDocs[k].collection, eventDocs[k]._id, eventDocs[k].updateObj);
+        }
+        if (!params.bulk) {
+            common.returnMessage(params, 200, 'Success');
+        }
 
-        async.map(eventDocs, updateEventDb, function(err, eventUpdateResults) {
+        /*async.map(eventDocs, updateEventDb, function(err, eventUpdateResults) {
             var needRollback = false;
 
             for (let i = 0; i < eventUpdateResults.length; i++) {
@@ -453,7 +463,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             else if (!params.bulk) {
                 common.returnMessage(params, 200, 'Success');
             }
-        });
+        });*/
     }
 
     if (events.length) {
@@ -484,7 +494,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             }
         }
 
-        common.db.collection('events').update({'_id': params.app_id}, eventSegmentList, {'upsert': true}, function() {});
+        common.writeBatcher.add('events', common.db.ObjectID(params.app_id), eventSegmentList);
     }
     done();
 }
@@ -527,7 +537,7 @@ function mergeEvents(firstObj, secondObj) {
 * @param {object} eventDoc - document with information about event
 * @param {function} callback - to call when update done
 **/
-function updateEventDb(eventDoc, callback) {
+/*function updateEventDb(eventDoc, callback) {
     common.db.collection(eventDoc.collection).update({'_id': eventDoc._id}, eventDoc.updateObj, {
         'upsert': true,
         'safe': true
@@ -545,14 +555,14 @@ function updateEventDb(eventDoc, callback) {
             });
         }
     });
-}
+}*/
 
 /**
 * Rollback already updated events in case error happened and we have safe api enabled
 * @param {object} eventUpdateResult - db result object of updating event document
 * @param {function} callback - to call when rollback done
 **/
-function rollbackEventDb(eventUpdateResult, callback) {
+/*function rollbackEventDb(eventUpdateResult, callback) {
     if (eventUpdateResult.status === "failed") {
         callback(null, {});
     }
@@ -567,14 +577,14 @@ function rollbackEventDb(eventUpdateResult, callback) {
             callback(true, {});
         }
     }
-}
+}*/
 
 /**
 * Invert updated object to deduct updated values
 * @param {object} obj - object with properties and values to deduct
 * @returns {object} inverted update object, to deduct inserted values
 **/
-function getInvertedValues(obj) {
+/*function getInvertedValues(obj) {
     var invObj = {};
 
     for (var objProp in obj) {
@@ -582,6 +592,6 @@ function getInvertedValues(obj) {
     }
 
     return invObj;
-}
+}*/
 
 module.exports = countlyEvents;

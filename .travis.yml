@@ -25,7 +25,7 @@ before_script:
 - sudo countly restart
 script:
 - countly shellcheck
-- sudo npm test
+- sudo countly test
 after_script:
 - cat log/countly-api.log
 - cat log/countly-dashboard.log

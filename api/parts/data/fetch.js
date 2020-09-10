@@ -27,7 +27,7 @@ var fetch = {},
 **/
 fetch.prefetchEventData = function(collection, params) {
     if (!params.qstring.event) {
-        common.db.collection('events').findOne({'_id': params.app_id}, function(err, result) {
+        common.readBatcher.getOne("events", {'_id': params.app_id}, (err, result) => {
             if (result && result.list) {
                 if (result.order && result.order.length) {
                     for (let i = 0; i < result.order.length; i++) {

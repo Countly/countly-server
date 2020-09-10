@@ -10,6 +10,7 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
+const {WriteBatcher, ReadBatcher} = require('./parts/data/batcher.js');
 
 var t = ["countly:", "api"];
 
@@ -19,6 +20,8 @@ if (cluster.isMaster) {
         log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
     }
     common.db = plugins.dbConnection();
+    common.writeBatcher = new WriteBatcher(common.db);
+    common.readBatcher = new ReadBatcher(common.db);
     t.push("master");
     t.push("node");
     t.push(process.argv[1]);
@@ -59,7 +62,14 @@ plugins.setConfigs("api", {
     metric_changes: true,
     offline_mode: false,
     reports_regenerate_interval: 3600,
-    send_test_email: ""
+    send_test_email: "",
+    batch_processing: true,
+    batch_on_master: false,
+    batch_period: 10,
+    batch_read_processing: true,
+    batch_read_on_master: false,
+    batch_read_ttl: 600,
+    batch_read_period: 60
 });
 
 /**
@@ -112,6 +122,41 @@ plugins.setConfigs('logs', {
 plugins.init();
 
 /**
+ *  Trying to gracefully handle the batch state
+ *  @param {number} code - error code
+ */
+async function storeBatchedData(code) {
+    try {
+        await common.writeBatcher.flushAll();
+        console.log("Successfully stored batch state");
+    }
+    catch (ex) {
+        console.log("Could not store batch state");
+    }
+    process.exit(code);
+}
+
+/**
+ *  Handle before exit for gracefull close
+ */
+process.on('beforeExit', (code) => {
+    console.log('Received exit, trying to save batch state: ', code);
+    storeBatchedData(code);
+});
+
+/**
+ *  Handle exit events for gracefull close
+ */
+['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
+    'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
+].forEach(function(sig) {
+    process.on(sig, async function() {
+        storeBatchedData(sig);
+        console.log('Got signal: ' + sig);
+    });
+});
+
+/**
  * Uncaught Exception Handler
  */
 process.on('uncaughtException', (err) => {
@@ -120,7 +165,7 @@ process.on('uncaughtException', (err) => {
         log.e('Logging caught exception');
     }
     console.trace();
-    process.exit(1);
+    storeBatchedData(1);
 });
 
 /**
@@ -159,6 +204,23 @@ const passToMaster = (worker) => {
         }
         else if (msg.cmd === "endPlugins") {
             plugins.stopSyncing();
+        }
+        else if (msg.cmd === "batch_write") {
+            const {collection, id, operation, db} = msg.data;
+            common.writeBatcher.add(collection, id, operation, db);
+        }
+        else if (msg.cmd === "batch_read") {
+            const {collection, query, projection, multi, msgId} = msg.data;
+            common.readBatcher.get(collection, query, projection, multi).then((data) => {
+                worker.send({ cmd: "batch_read", data: {msgId, data} });
+            })
+                .catch((err) => {
+                    worker.send({ cmd: "batch_read", data: {msgId, err} });
+                });
+        }
+        else if (msg.cmd === "batch_invalidate") {
+            const {collection, query, projection, multi} = msg.data;
+            common.readBatcher.invalidate(collection, query, projection, multi);
         }
         else if (msg.cmd === "dispatch" && msg.event) {
             workers.forEach((w) => {
@@ -205,7 +267,7 @@ if (cluster.isMaster) {
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
         jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
         jobs.job('api:task').replace().schedule('every 5 minutes');
-        jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
+        //jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
     }, 10000);
 }
 else {
@@ -215,6 +277,9 @@ else {
 
     common.cache = new CacheWorker(common.db);
     common.cache.start();
+
+    common.writeBatcher = new WriteBatcher(common.db);
+    common.readBatcher = new ReadBatcher(common.db);
 
     //since process restarted mark running tasks as errored
     taskManager.errorResults({db: common.db});
@@ -232,7 +297,6 @@ else {
 
     process.on('exit', () => {
         console.log('Exiting due to master exited');
-        process.exit(1);
     });
 
     plugins.dispatch("/worker", {common: common});
