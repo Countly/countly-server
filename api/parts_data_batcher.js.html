@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>api/utils/authorizer - Documentation</title>
+    <title>parts/data/batcher.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,2574 +34,511 @@
 
 <div id="main">
     
-    <h1 class="page-title">api/utils/authorizer</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        
-            
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-                <div class="description usertext"><p>Module providing one time authentication</p></div>
-            
-
-            
-                
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line1">line 1</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id=".check_if_expired"><span class="type-signature">(static) </span>check_if_expired<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line162">line 162</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Checks if token is not expired yet</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options for the task</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>database connection</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>token to rvalidate</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired)</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".clean"><span class="type-signature">(static) </span>clean<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line392">line 392</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Clean all expired tokens</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options for the task</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>database connection</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>function called when cleaning completed</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".extend_token"><span class="type-signature">(static) </span>extend_token<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line191">line 191</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>extent token life spas</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options for the task</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>database connection</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>token to extend</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>extendBy</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>extend token by given time(in ms)(optional) You have to provide extedBy or extendTill. extendBy==0 makes it never die</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>extendTill</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>extend till given timestamp. (optional) You have to provide extedBy or extendTill</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>function called when reading was completed or errored, providing error object as first param and true as second if extending successful</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".getToken"><span class="type-signature">(static) </span>getToken<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line382">line 382</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Generates auhtentication ID</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>id to be used when saving the task</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".read"><span class="type-signature">(static) </span>read<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line138">line 138</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Get whole token information from database</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options for the task</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>database connection</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>token to read</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>function called when reading was completed or errored, providing error object as first param and token object from database as second</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".save"><span class="type-signature">(static) </span>save<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line27">line 27</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Store token for later authentication</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options for the task</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>database connection</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ttl</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>amount of seconds for token to work, 0 works indefinately</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>multi</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">bool</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>false</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>if true, can be used many times until expired</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>token to store, if not provided, will be generated</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>owner</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>id of the user who created this token</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>app</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>list of the apps for which token was created</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>endpoint</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tryReuse</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>if true - tries to find not expired token with same parameters. If not founds cretes new token. If found - updates token expiration time to new one and returns token.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>temporary</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">bool</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>false</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>If logged in with temporary token. Doesn't kill other sessions on logout.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>function called when saving was completed or errored, providing error object as first param and token string as second</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".verify"><span class="type-signature">(static) </span>verify<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line357">line 357</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Verify token and expire it</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options for the task</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>database connection</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>token to verify</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>qstring</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>params.qstring. If not passed and there is limitation for this token on params - token will not be valid</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>req_path</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>current request path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".verify_return"><span class="type-signature">(static) </span>verify_return<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line370">line 370</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Similar to authorizer.verify. Only difference - return token owner if valid.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options for the task</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>database connection</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>token to verify</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>qstring</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>params.qstring. If not passed and there is limitation for this token on params - token will not be valid</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>req_path</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>current request path</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="~verify_token"><span class="type-signature">(inner) </span>verify_token<span class="signature">(options, return_owner, return_data)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_authorizer.js.html">utils/authorizer.js</a>, <a href="utils_authorizer.js.html#line234">line 234</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Token validation function called from verify and verify return</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options for the task</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>database connection</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>token to validate</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>qstring</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>params.qstring. If not passed and there is limitation for this token on params - token will not be valid</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>function called when verifying was completed or errored, providing error object as first param and true as second if extending successful</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>return_owner</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>states if in callback owner shold be returned. If return_owner==false, returns true or false.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>return_data</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>states if in callback all token data should be returned.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">parts/data/batcher.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const crypto = require('crypto');
+const cluster = require('cluster');
+const plugins = require('../../../plugins/pluginManager.js');
+const log = require('../../utils/log.js')("batcher");
+const common = require('../../utils/common.js');
+
+/**
+ *  Class for batching database operations for aggregated data 
+ *  @example
+ *  let batcher = new WriteBatcher(common.db);
+ *  batcher.set("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});
+ */
+class WriteBatcher {
+    /**
+     *  Create batcher instance
+     *  @param {Db} db - database object
+     */
+    constructor(db) {
+        this.dbs = {countly: db};
+        this.data = {countly: {}};
+        plugins.loadConfigs(db, () => {
+            this.loadConfig();
+            this.schedule();
+        });
+    }
+
+    /**
+     *  Add another database to batch
+     *  @param {string} name - name of the database
+     *  @param {Db} connection - MongoDB connection to that database
+     */
+    addDb(name, connection) {
+        this.dbs[name] = connection;
+        this.data[name] = {};
+    }
+
+    /**
+     *  Reloads server configs
+     */
+    loadConfig() {
+        let config = plugins.getConfig("api");
+        this.period = config.batch_period * 1000;
+        this.process = config.batch_processing;
+        this.shared = config.batch_on_master;
+    }
+
+    /**
+     *  Writes data to database for specific collection
+     *  @param {string} db - name of the database for which to write data
+     *  @param {string} collection - name of the collection for which to write data
+     */
+    async flush(db, collection) {
+        if (Object.keys(this.data[db][collection]).length) {
+            var queries = [];
+            for (let key in this.data[db][collection]) {
+                if (Object.keys(this.data[db][collection][key]).length) {
+                    queries.push({
+                        updateOne: {
+                            filter: {_id: this.data[db][collection][key].id},
+                            update: this.data[db][collection][key].value,
+                            upsert: true
+                        }
+                    });
+                }
+            }
+            this.data[db][collection] = {};
+            try {
+                await new Promise((resolve, reject) => {
+                    this.dbs[db].collection(collection).bulkWrite(queries, {ordered: false, ignore_errors: [11000]}, function(err, res) {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve(res);
+                    });
+                });
+            }
+            catch (ex) {
+                if (ex.code !== 11000) {
+                    log.e("Error updating documents", ex);
+                }
+
+                //trying to rollback operations to try again on next iteration
+                if (ex.writeErrors &amp;&amp; ex.writeErrors.length) {
+                    for (let i = 0; i &lt; ex.writeErrors.length; i++) {
+                        let index = ex.writeErrors[i].index;
+                        if (queries[index]) {
+                            //if we don't have anything for this document yet just use query
+                            if (!this.data[db][collection][queries[index].updateOne.filter._id]) {
+                                this.data[db][collection][queries[index].updateOne.filter._id] = {id: queries[index].updateOne.filter._id, value: queries[index].updateOne.update};
+                            }
+                            else {
+                                //if we have, then we can try to merge query back in
+                                this.data[db][collection][queries[index].updateOne.filter._id].value = common.mergeQuery(queries[index].updateOne.update, this.data[db][collection][queries[index].updateOne.filter._id].value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     *  Run all pending database queries
+     *  @returns {Promise} promise
+     */
+    flushAll() {
+        let promises = [];
+        for (let db in this.data) {
+            for (let collection in this.data[db]) {
+                promises.push(this.flush(db, collection));
+            }
+        }
+        return Promise.all(promises).finally(() => {
+            this.schedule();
+        });
+    }
+
+    /**
+     *  Schedule next flush
+     */
+    schedule() {
+        setTimeout(() => {
+            this.loadConfig();
+            this.flushAll();
+        }, this.period);
+    }
+
+    /**
+     *  Get operation on document by id
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} id - id of the document
+     *  @param {string} db - name of the database for which to write data
+     *  @returns {object} bulkwrite query for document by reference, you can modify it synchronously or data may be lost
+     */
+    get(collection, id, db = "countly") {
+        if (!this.data[db][collection]) {
+            this.data[db][collection] = {};
+        }
+        if (!this.data[db][collection][id]) {
+            this.data[db][collection][id] = {id: id, value: {}};
+        }
+        return this.data[db][collection][id].value;
+    }
+
+    /**
+     *  Provide operation for document id and batcher will try to merge multiple operations
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} id - id of the document
+     *  @param {object} operation - operation
+     *  @param {string} db - name of the database for which to write data
+     */
+    add(collection, id, operation, db = "countly") {
+        if (!this.shared || cluster.isMaster) {
+            if (!this.data[db][collection]) {
+                this.data[db][collection] = {};
+            }
+            if (!this.data[db][collection][id]) {
+                this.data[db][collection][id] = {id: id, value: operation};
+            }
+            else {
+                this.data[db][collection][id].value = common.mergeQuery(this.data[db][collection][id].value, operation);
+            }
+            if (!this.process) {
+                this.flush(db, collection);
+            }
+        }
+        else {
+            process.send({ cmd: "batch_write", data: {collection, id, operation, db} });
+        }
+    }
+}
+
+/**
+ *  Class for caching read from database
+ *  @example
+ *  let batcher = new ReadBatcher(common.db);
+ *  let promise = batcher.getOne("events", {"_id":"5689b386909ee5c"});
+ */
+class ReadBatcher {
+    /**
+     *  Create batcher instance
+     *  @param {Db} db - database object
+     */
+    constructor(db) {
+        this.db = db;
+        this.data = {};
+        this.promises = {};
+        plugins.loadConfigs(db, () => {
+            this.loadConfig();
+            this.schedule();
+        });
+
+        if (!cluster.isMaster) {
+            process.on("message", (msg) => {
+                if (msg.cmd === "batch_read" &amp;&amp; msg.data &amp;&amp; msg.data.msgId &amp;&amp; this.promises[msg.data.msgId]) {
+                    if (msg.data.data) {
+                        this.promises[msg.data.msgId].resolve(msg.data.data);
+                    }
+                    else {
+                        this.promises[msg.data.msgId].reject(msg.data.err);
+                    }
+                    delete this.promises[msg.data.msgId];
+                }
+            });
+        }
+    }
+
+    /**
+     *  Reloads server configs
+     */
+    loadConfig() {
+        let config = plugins.getConfig("api");
+        this.period = config.batch_read_period * 1000;
+        this.ttl = config.batch_read_ttl * 1000;
+        this.process = config.batch_read_processing;
+        this.onMaster = config.batch_read_on_master;
+    }
+
+    /**
+     *  Get data from database
+     *  @param {string} collection - name of the collection for which to write data
+     *  @param {string} id - id of cache
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {bool} multi - true if multiple documents
+     *  @returns {Promise} promise
+     */
+    getData(collection, id, query, projection, multi) {
+        return new Promise((resolve, reject) => {
+            if (multi) {
+                this.db.collection(collection).find(query, projection).toArray((err, res) => {
+                    if (!err) {
+                        this.cache(collection, id, query, projection, res, true);
+                        resolve(res);
+                    }
+                    else {
+                        this.data[collection][id].promise = null;
+                        reject(err);
+                    }
+                });
+            }
+            else {
+                this.db.collection(collection).findOne(query, projection, (err, res) => {
+                    if (!err) {
+                        this.cache(collection, id, query, projection, res, false);
+                        resolve(res);
+                    }
+                    else {
+                        this.data[collection][id].promise = null;
+                        reject(err);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     *  Check all cache
+     */
+    checkAll() {
+        for (let collection in this.data) {
+            if (Object.keys(this.data[collection]).length) {
+                for (let id in this.data[collection]) {
+                    if (this.data[collection][id].last_used &lt; Date.now() - this.ttl) {
+                        delete this.data[collection][id];
+                    }
+                }
+            }
+        }
+
+        this.schedule();
+    }
+
+    /**
+     *  Schedule next flush
+     */
+    schedule() {
+        setTimeout(() => {
+            this.loadConfig();
+            this.checkAll();
+        }, this.period);
+    }
+
+    /**
+	* Gets list of keys from projection object which are included
+	*  @param {object} projection - which fields to return
+	*  @returns {object} {keys - list of keys, have_projection - true if projection not empty}
+	*/
+    keysFromProjectionObject(projection) {
+        var keysSaved = [];
+        var have_projection = false;
+        projection = projection || {};
+
+        if (projection.projection &amp;&amp; typeof projection.projection === 'object') {
+            projection = projection.projection;
+        }
+
+        if (projection.fields &amp;&amp; typeof projection.fields === 'object') {
+            projection = projection.fields;
+        }
+
+        for (var k in projection) {
+            have_projection = true;
+            if (projection[k] === 1) {
+                keysSaved.push(k);
+            }
+        }
+        return {"keys": keysSaved, "have_projection": have_projection};
+    }
+
+    /**
+     *  Invalidate specific cache
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {object} query - query for the document
+     *  @param {object} projection - which fields to return
+     *  @param {bool} multi - true if multiple documents
+     */
+    invalidate(collection, query, projection, multi) {
+        if (!this.onMaster || cluster.isMaster) {
+            var id = JSON.stringify(query) + "_" + multi;
+            if (!this.data[collection]) {
+                this.data[collection] = {};
+            }
+            if (this.data[collection][id] &amp;&amp; !this.data[collection][id].promise) {
+                delete this.data[collection][id];
+            }
+        }
+        else {
+            process.send({ cmd: "batch_invalidate", data: {collection, query, projection, multi} });
+        }
+    }
+
+    /**
+     *  Get data from cache or from db and cache it
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {object} query - query for the document
+     *  @param {object} projection - which fields to return
+     *  @param {bool} multi - true if multiple documents
+     *  @returns {Promise} promise
+     */
+    get(collection, query, projection, multi) {
+        if (!this.onMaster || cluster.isMaster) {
+            var id = JSON.stringify(query) + "_" + multi;
+            if (!this.data[collection]) {
+                this.data[collection] = {};
+            }
+            var good_projection = true;
+            var keysSaved = this.keysFromProjectionObject(this.data[collection][id] &amp;&amp; this.data[collection][id].projection);
+            var keysNew = this.keysFromProjectionObject(projection);
+
+            if (this.data[collection][id] &amp;&amp; (keysSaved.have_projection || keysNew.have_projection)) {
+                if (keysSaved.have_projection) {
+                    for (let p = 0; p &lt; keysNew.keys.length; p++) {
+                        if (keysSaved.keys.indexOf(keysNew.keys[p]) === -1) {
+                            good_projection = false;
+                            keysSaved.keys.push(keysNew.keys[p]);
+                        }
+                    }
+                }
+                if (!good_projection) {
+                    projection = {};
+                    for (var p = 0; p &lt; keysSaved.keys.length; p++) {
+                        projection[keysSaved.keys[p]] = 1;
+                    }
+                }
+            }
+
+            if (!good_projection || !this.data[collection][id] || this.data[collection][id].last_updated &lt; Date.now() - this.period) {
+                if (this.process) {
+                    this.data[collection][id] = {
+                        query: query,
+                        promise: this.getData(collection, id, query, projection, multi),
+                        projection: projection,
+                        last_used: Date.now(),
+                        last_updated: Date.now(),
+                        multi: multi
+                    };
+                    return this.data[collection][id].promise;
+                }
+                else {
+                    return this.getData(collection, id, query, projection, multi);
+                }
+            }
+            //we already have a read for this
+            else if (this.data[collection][id] &amp;&amp; this.data[collection][id].promise) {
+                return this.data[collection][id].promise;
+            }
+            else {
+                this.data[collection][id].last_used = Date.now();
+
+                return new Promise((resolve) => {
+                    resolve(this.data[collection][id].data);
+                });
+            }
+        }
+        else {
+            return new Promise((resolve, reject) => {
+                let msgId = getId();
+                this.promises[msgId] = {resolve, reject};
+                process.send({ cmd: "batch_read", data: {collection, query, projection, multi, msgId} });
+            });
+        }
+    }
+
+    /**
+     *  Get single document from cache or from db and cache it
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {function=} callback - optional to get result, or else will return promise
+     *  @returns {Promise} if callback not passed, returns promise
+     */
+    getOne(collection, query, projection, callback) {
+        if (typeof projection === "function") {
+            callback = projection;
+            projection = {};
+        }
+        if (!projection) {
+            projection = {};
+        }
+        return promiseOrCallback(this.get(collection, query, projection, false), callback);
+    }
+
+    /**
+     *  Get multiple document from cache or from db and cache it
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {function=} callback - optional to get result, or else will return promise
+     *  @returns {Promise} if callback not passed, returns promise
+     */
+    getMany(collection, query, projection, callback) {
+        if (typeof projection === "function") {
+            callback = projection;
+            projection = {};
+        }
+        if (!projection) {
+            projection = {};
+        }
+        return promiseOrCallback(this.get(collection, query, projection, true), callback);
+    }
+
+    /**
+     *  Cache data read from database
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {string} id - id of the cache
+     *  @param {string} query - query for the document
+     *  @param {string} projection - which fields to return
+     *  @param {object} data - data from database
+     *  @param {bool} multi - true if multiple documents
+     */
+    cache(collection, id, query, projection, data, multi) {
+        if (this.process) {
+            this.data[collection][id] = {
+                query: query,
+                data: data,
+                projection: projection,
+                last_used: Date.now(),
+                last_updated: Date.now(),
+                multi: multi
+            };
+        }
+    }
+}
+
+/**
+ *  Return promise or callback based on params
+ *  @param {Promise} promise - promise for data
+ *  @param {function=} callback - callback to call
+ *  @returns {Promise} Returned promise
+ */
+function promiseOrCallback(promise, callback) {
+    if (typeof callback === "function") {
+        return promise.then(function(data) {
+            callback(null, data);
+        })
+            .catch(function(err) {
+                callback(err, null);
+            });
+    }
+    return promise;
+}
+
+/**
+ *  Generate random id
+ *  @returns {string} randomly generated id
+ */
+function getId() {
+    return crypto.randomBytes(16).toString("hex");
+}
+
+module.exports = {WriteBatcher, ReadBatcher};</code></pre>
+        </article>
+    </section>
 
 
 
@@ -2613,7 +550,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Sep 10 2020 17:37:03 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Sep 10 2020 17:37:02 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
