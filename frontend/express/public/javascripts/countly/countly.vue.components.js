@@ -2052,24 +2052,16 @@
         mixins: [
             _mixins.i18n
         ],
-        data: function() {
-            return {
-                paginationOptions: {
+        inheritAttrs: false,
+        computed: {
+            paginationOptions: function() {
+                return {
                     enabled: true,
                     mode: 'records',
-                    perPage: 5,
                     position: 'top',
-                    perPageDropdown: [3, 7, 9],
-                    dropdownAllowAll: false,
-                    setCurrentPage: 2,
-                    nextLabel: 'next',
-                    prevLabel: 'prev',
-                    rowsPerPageLabel: 'Rows per page',
-                    ofLabel: 'of',
-                    pageLabel: 'page',
-                    allLabel: 'All',
-                }
-            };
+                    perPage: 10,
+                };
+            }
         },
         template: '<vue-good-table\
                     v-bind="$props"\
@@ -2077,7 +2069,14 @@
                     v-on="$listeners"\
                     :pagination-options="paginationOptions"\
                     styleClass="cly-vgt-table striped">\
-                        <template slot="table-row" slot-scope="scope"><slot name="table-row" v-bind="scope"/></template>\
+                        <template slot="pagination-top" slot-scope="props">\
+                            <custom-pagination\
+                            :total="props.total"\
+                            :pageChanged="props.pageChanged"\
+                            :perPageChanged="props.perPageChanged">\
+                            </custom-pagination>\
+                        </template>\
+                        <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData"><slot :name="name" v-bind="slotData" /></template>\
                         <div slot="table-actions-bottom">\
                         </div>\
                         <div slot="emptystate">\
