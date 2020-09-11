@@ -1388,6 +1388,11 @@
                 margin-top: -9px;
                 width: 100%;
                 height: inherit;
+                a {
+                    font-weight: 500;
+                    text-decoration: underline;
+                    cursor: pointer;
+                }
             }
         }
     }
