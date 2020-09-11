@@ -138,12 +138,60 @@ var TableView = countlyVue.views.BaseView.extend({
             selectWModel: null,
             selectWItems: manyItems,
             selectDWModel: null,
-            selectDWItems: manyItems
+            selectDWItems: manyItems,
+            gtableColumns: [
+                {
+                    label: 'Status',
+                    field: 'status',
+                    type: 'boolean',
+                    sortable: false
+                },
+                {
+                    label: 'ID',
+                    field: '_id',
+                    type: 'number',
+                },
+                {
+                    type: "text",
+                    field: "name",
+                    label: "Name",
+                },
+                {
+                    type: "text",
+                    field: "description",
+                    label: "Description",
+                },
+                {
+                    type: "cly-options",
+                    width: "20px",
+                    items: [
+                        {
+                            icon: "fa fa-pencil",
+                            label: "Edit",
+                            event: "edit-record",
+                        },
+                        {
+                            icon: "fa fa-trash",
+                            label: "Delete",
+                            event: "delete-record",
+                        },
+                        {
+                            icon: "fa fa-trash",
+                            label: "Delete (with undo)",
+                            event: "delayed-delete-record",
+                            disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
+                        }
+                    ]
+                },
+            ]
         };
     },
     methods: {
         add: function() {
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
+        },
+        statusChanged: function(_id, newValue) {
+            this.$store.commit("countlyVueExample/setStatus", {_id: _id, value: newValue});
         },
         onEditRecord: function(row) {
             this.$emit("open-drawer", "main", row);
@@ -155,6 +203,9 @@ var TableView = countlyVue.views.BaseView.extend({
                     "message": "You deleted a record."
                 }
             });
+        },
+        onDelayedDelete: function(row) {
+            this.$store.commit("countlyVueExample/delayedDeleteRecordById", row._id);
         },
         onDelete: function(row) {
             this.$store.commit("countlyVueExample/deleteRecordById", row._id);

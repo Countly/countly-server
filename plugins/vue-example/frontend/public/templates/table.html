@@ -23,6 +23,49 @@
                 </div>
             </cly-panel>
         </cly-content>
+        <cly-content v-bind:name='"Vue Good Table"' id="good-table-tab">
+            <cly-panel title="DataTable" v-bind:date-selector="false">
+                <template slot="right-top">
+                    <cly-button v-tooltip="'Tooltip'" v-on:click="add" skin="green" v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
+                </template>
+                <div>
+                    <div style="width: 20%;display: inline-block;padding: 20px 30px 30px 30px; min-height: 150px;">
+                        <pre>{{tableRows}}</pre>
+                    </div>
+                    <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
+                        <cly-datatable 
+                            :rows="tableRows"
+                            :columns="gtableColumns"
+                            @statusChanged="statusChanged"
+                            @delayed-delete-record="onDelayedDelete"
+                            @delete-record="onDelete"
+                            @edit-record="onEditRecord">
+                            <template slot="table-row" slot-scope="scope">
+                                <span v-if="scope.props.column.field == 'status'">
+                                    <cly-check
+                                        v-tooltip="scope.props.row.status?'Activated':'Deactivated'"
+                                        :value="scope.props.row.status"
+                                        @input="statusChanged(scope.props.row._id, $event)">
+                                    </cly-check>
+                                </span>
+                                <template v-else-if="scope.props.column.field == 'cly-options'">
+                                    <div v-if="scope.props.row._delayedDelete" class="undo-row">
+                                        {{ scope.props.row._delayedDelete.message }}
+                                        <a @click="scope.props.row._delayedDelete.abort()">Undo.</a>
+                                    </div>
+                                    <span>
+                                        <a class="cly-row-options-trigger" @click="scope.events.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>
+                                    </span>
+                                </template>
+                                <span v-else>
+                                    {{scope.props.formattedRow[scope.props.column.field]}}
+                                </span>
+                            </template>
+                        </cly-datatable>
+                    </div>
+                </div>
+            </cly-panel>
+        </cly-content>
         <cly-content name='Form elements' id="form-tab">
             <cly-panel title="Form elements" v-bind:date-selector="false">
                 <div class="example-component">

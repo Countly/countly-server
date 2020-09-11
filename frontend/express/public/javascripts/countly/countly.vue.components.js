@@ -659,6 +659,30 @@
         }
     );
 
+    /**
+     * Simple implementation for abortable delayed actions.
+     * Primarily used for table undo events.
+     *
+     * @param {String} message Action description
+     * @param {Function} actionFn Delayed action
+     * @param {Function} abortFn Callback will be called on abort
+     * @param {Number} timeout Delay amount in ms
+     */
+    function DelayedAction(message, actionFn, abortFn, timeout) {
+        this.message = message;
+        this.timeout = setTimeout(actionFn, timeout || 2000);
+        this.abortFn = abortFn;
+    }
+
+    DelayedAction.prototype.abort = function() {
+        clearTimeout(this.timeout);
+        this.abortFn();
+    };
+
+    var _helpers = {
+        DelayedAction: DelayedAction
+    };
+
     var _components = {
         BaseDrawer: countlyBaseComponent.extend(
             // @vue/component
@@ -804,7 +828,8 @@
         mixins: _mixins,
         vuex: _vuex,
         views: _views,
-        components: _components
+        components: _components,
+        helpers: _helpers
     };
 
     // New components
@@ -1172,9 +1197,12 @@
                 },
                 tId: function() {
                     return this.id;
+                },
+                elementId: function() {
+                    return this.componentId + "-" + this.id;
                 }
             },
-            template: '<div class="cly-vue-content" v-if="isActive || alwaysMounted">\
+            template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\
                             <div v-show="isActive"><slot/></div>\
                         </div>'
         }
@@ -2044,5 +2072,328 @@
                         </div>'
         }
     ));
+
+
+    var clyDataTableControls = countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        template: '<div class="cly-vgt-custom-controls">\
+                        <div class="cly-vgt-custom-search">\
+                            <div class="magnifier-wrapper" @click="toggleSearch">\
+                                <i class="fa fa-search"></i>\
+                            </div>\
+                            <input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-bind:value="searchQuery" @input="queryChanged($event.target.value)"/>\
+                        </div>\
+                        <div class="cly-vgt-custom-paginator">\
+                            <div class="display-items">\
+                                <label>{{ i18n("common.show-items") }} <input type="number" v-model.number="displayItems"></label>\
+                            </div>\
+                            <div class="buttons">\
+                                <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
+                                <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
+                                <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\
+                                <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\
+                            </div>\
+                        </div>\
+                    </div>',
+        props: {
+            searchQuery: {
+                type: String
+            },
+            pageChanged: {
+                type: Function,
+            },
+            perPageChanged: {
+                type: Function,
+            },
+            total: {
+                type: Number
+            },
+            notFilteredTotal: {
+                type: Number
+            },
+        },
+        data: function() {
+            return {
+                firstPage: 1,
+                currentPage: 1,
+                perPage: 10,
+                searchVisible: false,
+                displayItems: 10
+            };
+        },
+        computed: {
+            totalPages: function() {
+                return Math.ceil(this.total / this.perPage);
+            },
+            lastPage: function() {
+                return this.totalPages;
+            },
+            prevAvailable: function() {
+                return this.currentPage > this.firstPage;
+            },
+            nextAvailable: function() {
+                return this.currentPage < this.lastPage;
+            }
+        },
+        mounted: function() {
+            this.updatePerPage();
+            this.goToFirstPage();
+            this.updateInfo();
+        },
+        methods: {
+            queryChanged: function(newSearchQuery) {
+                var self = this;
+                this.$emit("queryChanged", newSearchQuery);
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
+            },
+            toggleSearch: function() {
+                var self = this;
+                this.searchVisible = !this.searchVisible;
+                this.$nextTick(function() {
+                    if (self.searchVisible) {
+                        self.$refs.searchInput.focus();
+                    }
+                });
+            },
+            updateInfo: function() {
+                var startEntries = (this.currentPage - 1) * this.perPage + 1,
+                    endEntries = Math.min(startEntries + this.perPage - 1, this.total),
+                    totalEntries = this.total,
+                    info = this.i18n("common.table.no-data");
+
+                if (totalEntries > 0) {
+                    info = this.i18n("common.showing")
+                        .replace("_START_", startEntries)
+                        .replace("_END_", endEntries)
+                        .replace("_TOTAL_", totalEntries);
+                }
+
+                if (this.searchQuery) {
+                    info += " " + this.i18n("common.filtered").replace("_MAX_", this.notFilteredTotal);
+                }
+
+                this.$emit("infoChanged", info);
+            },
+            updateCurrentPage: function() {
+                var self = this;
+                this.pageChanged({currentPage: this.currentPage});
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
+            },
+            updatePerPage: function() {
+                var self = this;
+                this.perPageChanged({currentPerPage: this.perPage});
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
+            },
+            goToFirstPage: function() {
+                this.currentPage = this.firstPage;
+            },
+            goToLastPage: function() {
+                this.currentPage = this.lastPage;
+            },
+            goToPrevPage: function() {
+                if (this.prevAvailable) {
+                    this.currentPage--;
+                }
+            },
+            goToNextPage: function() {
+                if (this.nextAvailable) {
+                    this.currentPage++;
+                }
+            }
+        },
+        watch: {
+            displayItems: function(newValue) {
+                if (newValue > 0) {
+                    this.perPage = newValue;
+                }
+            },
+            perPage: function() {
+                this.updatePerPage();
+            },
+            currentPage: function() {
+                this.updateCurrentPage();
+            },
+            totalPages: function(newTotal) {
+                if (this.currentPage > newTotal) {
+                    this.goToFirstPage();
+                }
+            }
+        }
+    });
+
+    Vue.component("cly-datatable", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        inheritAttrs: false,
+        components: {
+            "custom-controls": clyDataTableControls
+        },
+        props: {
+            rows: {
+                type: Array
+            },
+            columns: {
+                type: Array
+            }
+        },
+        computed: {
+            notFilteredTotal: function() {
+                if (!this.rows) {
+                    return 0;
+                }
+                return this.rows.length;
+            },
+            extendedColumns: function() {
+                var extended = this.columns.map(function(col) {
+                    if (col.type === "cly-options") {
+                        var newCol = JSON.parse(JSON.stringify(col));
+                        newCol.field = "cly-options";
+                        newCol.sortable = false;
+                        delete newCol.type;
+                        return newCol;
+                    }
+                    return col;
+                });
+                return extended;
+            }
+        },
+        data: function() {
+            return {
+                pageInfo: '',
+                searchQuery: '',
+                optionsOpened: false,
+                optionsRowData: {},
+                optionsItems: [],
+                optionsPosition: {
+                    right: '37px',
+                    top: '0'
+                }
+            };
+        },
+        methods: {
+            onInfoChanged: function(text) {
+                this.pageInfo = text;
+            },
+            showRowOptions: function(event, items, row) {
+                var rect = $(event.target).offset(),
+                    self = this;
+
+                this.optionsPosition = {
+                    right: '37px',
+                    top: (rect.top + 25) + "px"
+                };
+                this.optionsItems = items;
+                this.optionsRowData = row;
+
+                self.$nextTick(function() {
+                    self.optionsOpened = true;
+                });
+            },
+            onSearch: function(params) {
+                if (params.searchTerm) {
+                    this.$refs.controls.goToFirstPage();
+                }
+            },
+            addTableEvents: function(propsObj) {
+                var newProps = {
+                    props: propsObj,
+                    events: {
+                        showRowOptions: this.showRowOptions
+                    }
+                };
+                return newProps;
+            }
+        },
+        template: '<div>\
+                        <cly-row-options\
+                            :items="optionsItems"\
+                            :pos="optionsPosition"\
+                            :opened="optionsOpened"\
+                            :rowData="optionsRowData"\
+                            @close="optionsOpened=false"\
+                            v-on="$listeners">\
+                        </cly-row-options>\
+                        <vue-good-table\
+                            v-bind="$attrs"\
+                            v-bind:rows="rows"\
+                            v-bind:columns="extendedColumns"\
+                            v-on="$listeners"\
+                            :pagination-options="{\
+                                enabled: true,\
+                                mode: \'records\',\
+                                position: \'top\'\
+                            }"\
+                            :search-options="{\
+                                enabled: true,\
+                                externalQuery: searchQuery\
+                            }"\
+                            @on-search="onSearch"\
+                            styleClass="cly-vgt-table striped">\
+                                <template slot="pagination-top" slot-scope="props">\
+                                    <custom-controls\
+                                    @infoChanged="onInfoChanged"\
+                                    @queryChanged="searchQuery = $event"\
+                                    ref="controls"\
+                                    :search-query="searchQuery"\
+                                    :total="props.total"\
+                                    :notFilteredTotal="notFilteredTotal"\
+                                    :pageChanged="props.pageChanged"\
+                                    :perPageChanged="props.perPageChanged">\
+                                    </custom-controls>\
+                                </template>\
+                                <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">\
+                                    <slot :name="name" v-bind="addTableEvents(slotData)" />\
+                                </template>\
+                                <div slot="table-actions-bottom">\
+                                    {{pageInfo}}\
+                                </div>\
+                                <div slot="emptystate">\
+                                    {{ i18n("common.table.no-data") }}\
+                                </div>\
+                        </vue-good-table>\
+                    </div>'
+    }));
+
+    Vue.component("cly-row-options", countlyBaseComponent.extend({
+        props: {
+            items: {
+                type: Array
+            },
+            opened: {
+                type: Boolean
+            },
+            pos: {
+                type: Object
+            },
+            rowData: {
+                type: Object
+            }
+        },
+        methods: {
+            tryClosing: function() {
+                if (this.opened) {
+                    this.$emit("close");
+                }
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey, this.rowData);
+                this.tryClosing();
+            }
+        },
+        template: '<div class="cly-row-options" v-click-outside="tryClosing">\
+                        <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
+                            <a @click="fireEvent(item.event)" v-for="(item, index) in items" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
+                        </div>\
+                    </div>'
+    }));
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

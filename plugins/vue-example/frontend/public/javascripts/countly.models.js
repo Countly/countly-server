@@ -21,9 +21,14 @@
 
     countlyVueExample.getVuexModule = function() {
 
+        var records = [];
+        for (var i = 0; i < 20; i++) {
+            records.push(countlyVueExample.factory.getEmpty({_id: i}));
+        }
+
         var getEmptyState = function() {
             return {
-                records: [],
+                records: records,
                 randomNumbers: [],
                 pieData: {
                     "dp": [
@@ -77,6 +82,23 @@
                     obj._id = state.id;
                     state.records.push(obj);
                     state.id++;
+                }
+            },
+            delayedDeleteRecordById: function(state, _id) {
+                var matchingRecords = state.records.filter(function(val) {
+                    return val._id === _id;
+                });
+                if (matchingRecords.length > 0) {
+                    var item = matchingRecords[0];
+                    Vue.set(item, '_delayedDelete', new countlyVue.helpers.DelayedAction("You deleted a record.",
+                        function() {
+                            state.records = state.records.filter(function(val) {
+                                return val._id !== item._id;
+                            });
+                        },
+                        function() {
+                            Vue.delete(item, '_delayedDelete');
+                        }, 3000));
                 }
             },
             deleteRecordById: function(state, _id) {
