@@ -2215,6 +2215,9 @@
         props: {
             rows: {
                 type: Array
+            },
+            columns: {
+                type: Array
             }
         },
         computed: {
@@ -2223,60 +2226,132 @@
                     return 0;
                 }
                 return this.rows.length;
+            },
+            extendedColumns: function() {
+                var extended = this.columns.map(function(col) {
+                    if (col.type === "cly-options") {
+                        var newCol = JSON.parse(JSON.stringify(col));
+                        newCol.field = "cly-options";
+                        newCol.sortable = false;
+                        delete newCol.type;
+                        return newCol;
+                    }
+                    return col;
+                });
+                return extended;
             }
         },
         data: function() {
             return {
                 pageInfo: '',
-                searchQuery: ''
+                searchQuery: '',
+                optionsOpened: false,
+                optionsItems: [],
+                optionsPosition: {
+                    left: '0',
+                    top: '0'
+                }
             };
         },
         methods: {
             onInfoChanged: function(text) {
                 this.pageInfo = text;
             },
+            showRowOptions: function(event, items, row) {
+                this.optionsItems = items;
+                this.optionsOpened = true;
+                var rect = event.target.getBoundingClientRect();
+
+                this.optionsPosition = {
+                    //right: rect.right + "px",
+                    top: rect.top + "px"
+                };
+
+                this.optionsRowData = row;
+            },
             onSearch: function(params) {
                 if (params.searchTerm) {
                     this.$refs.controls.goToFirstPage();
                 }
+            },
+            addTableEvents: function(propsObj) {
+                var newProps = {
+                    props: propsObj,
+                    events: {
+                        showRowOptions: this.showRowOptions
+                    }
+                };
+                return newProps;
             }
         },
-        template: '<vue-good-table\
-                    v-bind="$attrs"\
-                    v-bind:rows="rows"\
-                    v-on="$listeners"\
-                    :pagination-options="{\
-                        enabled: true,\
-                        mode: \'records\',\
-                        position: \'top\'\
-                    }"\
-                    :search-options="{\
-                        enabled: true,\
-                        externalQuery: searchQuery\
-                    }"\
-                    @on-search="onSearch"\
-                    styleClass="cly-vgt-table striped">\
-                        <template slot="pagination-top" slot-scope="props">\
-                            <custom-controls\
-                            @infoChanged="onInfoChanged"\
-                            @queryChanged="searchQuery = $event"\
-                            ref="controls"\
-                            :search-query="searchQuery"\
-                            :total="props.total"\
-                            :notFilteredTotal="notFilteredTotal"\
-                            :pageChanged="props.pageChanged"\
-                            :perPageChanged="props.perPageChanged">\
-                            </custom-controls>\
-                        </template>\
-                        <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData"><slot :name="name" v-bind="slotData" /></template>\
-                        <div slot="table-actions-bottom">\
-                            {{pageInfo}}\
+        template: '<div>\
+                        <cly-row-options\
+                            :items="optionsItems"\
+                            :pos="optionsPosition"\
+                            :opened="optionsOpened"\
+                            :rowData="optionsRowData">\
+                        </cly-row-options>\
+                        <vue-good-table\
+                            v-bind="$attrs"\
+                            v-bind:rows="rows"\
+                            v-bind:columns="extendedColumns"\
+                            v-on="$listeners"\
+                            :pagination-options="{\
+                                enabled: true,\
+                                mode: \'records\',\
+                                position: \'top\'\
+                            }"\
+                            :search-options="{\
+                                enabled: true,\
+                                externalQuery: searchQuery\
+                            }"\
+                            @on-search="onSearch"\
+                            styleClass="cly-vgt-table striped">\
+                                <template slot="pagination-top" slot-scope="props">\
+                                    <custom-controls\
+                                    @infoChanged="onInfoChanged"\
+                                    @queryChanged="searchQuery = $event"\
+                                    ref="controls"\
+                                    :search-query="searchQuery"\
+                                    :total="props.total"\
+                                    :notFilteredTotal="notFilteredTotal"\
+                                    :pageChanged="props.pageChanged"\
+                                    :perPageChanged="props.perPageChanged">\
+                                    </custom-controls>\
+                                </template>\
+                                <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">\
+                                    <slot :name="name" v-bind="addTableEvents(slotData)" />\
+                                </template>\
+                                <div slot="table-actions-bottom">\
+                                    {{pageInfo}}\
+                                </div>\
+                                <div slot="emptystate">\
+                                    {{ i18n("common.table.no-data") }}\
+                                </div>\
+                        </vue-good-table>\
+                    </div>'
+    }));
+
+    Vue.component("cly-row-options", countlyBaseComponent.extend({
+        props: {
+            items: {
+                type: Array
+            },
+            opened: {
+                type: Boolean
+            },
+            pos: {
+                type: Object
+            },
+            rowData: {
+                type: Object
+            }
+        },
+        template: '<div class="cly-row-options">\
+                        <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top, opacity: opened ? 1:0 }" class="menu" tabindex="1">\
+                            <a v-for="(item, index) in items" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
                         </div>\
-                        <div slot="emptystate">\
-                            {{ i18n("common.table.no-data") }}\
-                        </div>\
-                    </vue-good-table>\
-        '
+                    </div>'
     }));
 
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));

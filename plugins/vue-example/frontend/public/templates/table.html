@@ -33,21 +33,28 @@
                         <pre>{{tableRows}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable
+                        <cly-datatable 
                             :rows="tableRows"
                             :columns="gtableColumns"
                             @statusChanged="statusChanged">
-                            <template slot="table-row" slot-scope="props">
-                                <span v-if="props.column.field == 'status'">
+                            <template slot="table-row" slot-scope="scope">
+                                <span v-if="scope.props.column.field == 'status'">
                                     <cly-check
-                                        v-tooltip="props.row.status?'Activated':'Deactivated'"
-                                        :value="props.row.status"
-                                        @input="statusChanged(props.row._id, $event)">
+                                        v-tooltip="scope.props.row.status?'Activated':'Deactivated'"
+                                        :value="scope.props.row.status"
+                                        @input="statusChanged(scope.props.row._id, $event)">
                                     </cly-check>
                                 </span>
-                                <span v-else>
-                                    {{props.formattedRow[props.column.field]}}
+                                <span v-else-if="scope.props.column.field == 'cly-options'">
+                                    <a class="cly-row-options-trigger" @click="scope.events.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>
                                 </span>
+                                <span v-else>
+                                    {{scope.props.formattedRow[scope.props.column.field]}}
+                                </span>
+                            </template>
+                            
+                            <template slot="table-row-after" slot-scope="props">
+                                hello
                             </template>
                         </cly-datatable>
                     </div>

@@ -144,6 +144,7 @@ var TableView = countlyVue.views.BaseView.extend({
                     label: 'Status',
                     field: 'status',
                     type: 'boolean',
+                    sortable: false
                 },
                 {
                     label: 'ID',
@@ -159,6 +160,28 @@ var TableView = countlyVue.views.BaseView.extend({
                     type: "text",
                     field: "description",
                     label: "Description",
+                },
+                {
+                    type: "cly-options",
+                    width: "20px",
+                    items: [
+                        {
+                            icon: "fa fa-pencil",
+                            label: "Edit",
+                            action: {"event": "edit-record"},
+                        },
+                        {
+                            icon: "fa fa-trash",
+                            label: "Delete",
+                            action: {"event": "delete-record"},
+                        },
+                        {
+                            icon: "fa fa-trash",
+                            label: "Delete (with undo)",
+                            action: {"event": "try-delete-record"},
+                            disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
+                        }
+                    ]
                 },
             ]
         };

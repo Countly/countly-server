@@ -1276,7 +1276,8 @@
         &.striped tbody tr:nth-of-type(even) {
             background-color: #f9f9f9;
         }
-        tbody tr {
+        tbody tr,
+        &.striped tbody tr {
             &:last-child {
                 border-bottom: none;
             }
@@ -1368,11 +1369,25 @@
             line-height: 15px;
             vertical-align: top;
             color: $text-color;
+            height: 20px;
         }
-        & tr.clickable {
-            cursor: pointer;
-            &:hover {
-                background-color: $highlight-color;
+        & tr {
+            &.clickable {
+                cursor: pointer;
+                &:hover {
+                    background-color: $highlight-color;
+                }
+            }
+            .undo-row {
+                position: absolute;
+                left: 0;
+                text-align: center;
+                padding: 9px 0px;
+                background-color: #ffeded;
+                color: #2b2b2b;
+                margin-top: -9px;
+                width: 100%;
+                height: inherit;
             }
         }
     }
@@ -1668,6 +1683,7 @@
             margin-left: 10px;
         }
     }
+
     .vgt-wrap__actions-footer {
         border: none;
         border-bottom-left-radius: 2px;
@@ -1875,6 +1891,71 @@
         padding: 3px 7px 0px 0px;
         cursor: pointer;
         margin-left: -3px;
+    }
+
+    .cly-row-options-trigger {
+        cursor: pointer;
+        color: #a7a7a7;
+        font-size: 20px;
+        vertical-align: middle;
+        line-height: 12px;
+        &:before {
+            font-family: "Ionicons";
+            content: "\f396";
+        }
+    }
+    .cly-row-options {
+        .menu {
+            padding: 10px 0;
+            opacity: 0;
+            transition: opacity 0.3s, z-index 0.9s;
+            z-index: 10;
+            position: absolute;
+            background-color: #fff;
+            right: 0;
+            top: 37px;
+            border-radius: 2px;
+            outline: none;
+            border: 1px solid #d0d0d0;
+
+            &:before {
+                border: 4px solid rgba(194, 225, 245, 0);
+                border-bottom-color: #fff;
+                right: 7px;
+                top: -8px;
+                content: " ";
+                height: 0;
+                width: 0;
+                position: absolute;
+                pointer-events: none;
+                z-index: 2;
+            }
+            &:after {
+                border: 5px solid rgba(194, 225, 245, 0);
+                border-bottom-color: #d0d0d0;
+                right: 6px;
+                top: -10px;
+                content: " ";
+                height: 0;
+                width: 0;
+                position: absolute;
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            .item {
+                cursor: pointer;
+                padding: 8px 20px;
+                font-size: 13px;
+                white-space: nowrap;
+                color: #474747;
+                display: block;
+                .fa {
+                    margin-right: 7px;
+                    width: 13px;
+                }
+            }
+        }
     }
 }
 .cly-vue-tooltip {
