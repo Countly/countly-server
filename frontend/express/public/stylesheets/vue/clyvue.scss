@@ -1308,9 +1308,9 @@
     $notify-bg-color: #fdf9e8;
     $notify-fg-color: #b38d28; /* Utility styles
       ************************************************/
-    .vgt-right-align {
+    /*.vgt-right-align {
         text-align: right;
-    }
+    }*/
 
     .vgt-left-align {
         text-align: left;
@@ -1416,28 +1416,15 @@
             &.sortable {
                 cursor: pointer;
                 &:after {
-                    content: "";
-                    position: absolute;
-                    height: 0px;
-                    width: 0px;
-                    right: 6px;
-                    top: 50%;
-                    margin-top: -7px;
-                    border-left: $sort-chevron-width solid transparent;
-                    border-right: $sort-chevron-width solid transparent;
-                    border-bottom: $sort-chevron-width solid $chevron-color;
-                }
-                &:before {
-                    content: "";
-                    position: absolute;
-                    height: 0px;
-                    width: 0px;
-                    right: 6px;
-                    top: 45%;
-                    margin-bottom: -7px;
-                    border-left: $sort-chevron-width solid transparent;
-                    border-right: $sort-chevron-width solid transparent;
-                    border-top: $sort-chevron-width solid $chevron-color;
+                    color:  $chevron-color;
+                    display: inline-block;
+                    font-family: 'Font Awesome 5 Free';
+                    font-weight: 900;
+                    content: "\f0dc";
+                    margin-left: 7px;
+                    vertical-align: text-top;
+                    margin-top: 4px;
+                    line-height: 6px;
                 }
             }
         }
@@ -1495,12 +1482,28 @@
             }
             &.sorting-asc {
                 &:after {
-                    border-bottom: $sort-chevron-width solid $link-color;
+                    color: $link-color;
+                    display: inline-block;
+                    font-family: 'Font Awesome 5 Free';
+                    font-weight: 900;
+                    content: "\f0de";
+                    margin-left: 7px;
+                    vertical-align: text-top;
+                    margin-top: 7px;
+                    line-height: 5px;
                 }
             }
             &.sorting-desc {
-                &:before {
-                    border-top: $sort-chevron-width solid $link-color;
+                &:after {
+                    color: $link-color;
+                    display: inline-block;
+                    font-family: 'Font Awesome 5 Free';
+                    font-weight: 900;
+                    content: "\f0dd";
+                    margin-left: 7px;
+                    vertical-align: text-top;
+                    margin-top: 2px;
+                    line-height: 6px;
                 }
             }
         }
