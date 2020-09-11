@@ -84,20 +84,20 @@
                     state.id++;
                 }
             },
-            softDeleteRecordById: function(state, _id) {
+            delayedDeleteRecordById: function(state, _id) {
                 var matchingRecords = state.records.filter(function(val) {
                     return val._id === _id;
                 });
                 if (matchingRecords.length > 0) {
                     var item = matchingRecords[0];
-                    Vue.set(item, '_deleted', new countlyVue.helpers.DelayedAction("You deleted a record.",
+                    Vue.set(item, '_delayedDelete', new countlyVue.helpers.DelayedAction("You deleted a record.",
                         function() {
                             state.records = state.records.filter(function(val) {
                                 return val._id !== item._id;
                             });
                         },
                         function() {
-                            Vue.delete(item, '_deleted');
+                            Vue.delete(item, '_delayedDelete');
                         }, 3000));
                 }
             },

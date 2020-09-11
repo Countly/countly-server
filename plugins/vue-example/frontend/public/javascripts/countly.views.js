@@ -178,7 +178,7 @@ var TableView = countlyVue.views.BaseView.extend({
                         {
                             icon: "fa fa-trash",
                             label: "Delete (with undo)",
-                            event: "soft-delete-record",
+                            event: "delayed-delete-record",
                             disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
                         }
                     ]
@@ -204,8 +204,8 @@ var TableView = countlyVue.views.BaseView.extend({
                 }
             });
         },
-        onSoftDelete: function(row) {
-            this.$store.commit("countlyVueExample/softDeleteRecordById", row._id);
+        onDelayedDelete: function(row) {
+            this.$store.commit("countlyVueExample/delayedDeleteRecordById", row._id);
         },
         onDelete: function(row) {
             this.$store.commit("countlyVueExample/deleteRecordById", row._id);
