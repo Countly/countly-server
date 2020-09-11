@@ -640,18 +640,27 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                 // is member.permission.r[app_id].all is true?
                 // or member.global_admin?
                 if (!member.global_admin) {
-                    if (feature.substr(0, 7) === 'global_') {
-                        feature = feature.split('_')[1];
-                        if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r.global === "object") && (member.permission.r.global.all || member.permission.r.global.allowed[feature]))) {
+                    if (typeof member.permission !== 'undefined') {
+                        if (feature.substr(0, 7) === 'global_') {
+                            feature = feature.split('_')[1];
+                            if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r.global === "object") && (member.permission.r.global.all || member.permission.r.global.allowed[feature]))) {
+                                common.returnMessage(params, 401, 'User does not have view right for this application');
+                                reject('User does not have view right for this application');
+                                return false;
+                            }
+                        }
+                        else if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object") && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]))) {
+                            common.returnMessage(params, 401, 'User does not have view right for this application');
+                            reject('User does not have view right for this application');
+                            return false;
+                        }    
+                    }
+                    else {
+                        if (!((member.user_of && Array.isArray(member.user_of) && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
                             common.returnMessage(params, 401, 'User does not have view right for this application');
                             reject('User does not have view right for this application');
                             return false;
                         }
-                    }
-                    else if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object") && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]))) {
-                        common.returnMessage(params, 401, 'User does not have view right for this application');
-                        reject('User does not have view right for this application');
-                        return false;
                     }
                 }
 
@@ -741,18 +750,27 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                 }
 
                 if (!member.global_admin) {
-                    if (feature.substr(0, 7) === 'global_') {
-                        feature = feature.split('_')[1];
-                        if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType].global === "object") && (member.permission[accessType].global.all || member.permission[accessType].global.allowed[feature]))) {
+                    if (typeof member.permission !== 'undefined') {
+                        if (feature.substr(0, 7) === 'global_') {
+                            feature = feature.split('_')[1];
+                            if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType].global === "object") && (member.permission[accessType].global.all || member.permission[accessType].global.allowed[feature]))) {
+                                common.returnMessage(params, 401, 'User does not have view right for this application');
+                                reject('User does not have view right for this application');
+                                return false;
+                            }
+                        }
+                        else if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object") && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]))) {
                             common.returnMessage(params, 401, 'User does not have view right for this application');
                             reject('User does not have view right for this application');
                             return false;
-                        }
+                        }    
                     }
-                    else if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object") && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]))) {
-                        common.returnMessage(params, 401, 'User does not have view right for this application');
-                        reject('User does not have view right for this application');
-                        return false;
+                    else {
+                        if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
+                            common.returnMessage(params, 401, 'User does not have write right for this application');
+                            reject('User does not have write right for this application');
+                            return false;
+                        }
                     }
                 }
 
