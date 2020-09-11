@@ -36,7 +36,10 @@
                         <cly-datatable 
                             :rows="tableRows"
                             :columns="gtableColumns"
-                            @statusChanged="statusChanged">
+                            @statusChanged="statusChanged"
+                            @try-delete-record="onTryDelete"
+                            @delete-record="onDelete"
+                            @edit-record="onEditRecord">
                             <template slot="table-row" slot-scope="scope">
                                 <span v-if="scope.props.column.field == 'status'">
                                     <cly-check

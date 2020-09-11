@@ -1909,7 +1909,7 @@
             padding: 10px 0;
             opacity: 0;
             transition: opacity 0.3s, z-index 0.9s;
-            z-index: 10;
+            z-index: -1;
             position: absolute;
             background-color: #fff;
             right: 0;
@@ -1917,6 +1917,12 @@
             border-radius: 2px;
             outline: none;
             border: 1px solid #d0d0d0;
+
+            &.active {
+                z-index: 2;
+                opacity: 1;
+                transition: opacity 0.2s;
+            }
 
             &:before {
                 border: 4px solid rgba(194, 225, 245, 0);
@@ -1953,6 +1959,9 @@
                 .fa {
                     margin-right: 7px;
                     width: 13px;
+                }
+                &:hover {
+                    background-color: #f3f3f3;
                 }
             }
         }

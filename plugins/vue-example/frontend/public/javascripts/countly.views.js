@@ -168,17 +168,17 @@ var TableView = countlyVue.views.BaseView.extend({
                         {
                             icon: "fa fa-pencil",
                             label: "Edit",
-                            action: {"event": "edit-record"},
+                            event: "edit-record",
                         },
                         {
                             icon: "fa fa-trash",
                             label: "Delete",
-                            action: {"event": "delete-record"},
+                            event: "delete-record",
                         },
                         {
                             icon: "fa fa-trash",
                             label: "Delete (with undo)",
-                            action: {"event": "try-delete-record"},
+                            event: "try-delete-record",
                             disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
                         }
                     ]

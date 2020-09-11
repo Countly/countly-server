@@ -2246,9 +2246,10 @@
                 pageInfo: '',
                 searchQuery: '',
                 optionsOpened: false,
+                optionsRowData: {},
                 optionsItems: [],
                 optionsPosition: {
-                    left: '0',
+                    right: '37px',
                     top: '0'
                 }
             };
@@ -2258,16 +2259,19 @@
                 this.pageInfo = text;
             },
             showRowOptions: function(event, items, row) {
-                this.optionsItems = items;
-                this.optionsOpened = true;
-                var rect = event.target.getBoundingClientRect();
+                var rect = $(event.target).offset(),
+                    self = this;
 
                 this.optionsPosition = {
-                    //right: rect.right + "px",
-                    top: rect.top + "px"
+                    right: '37px',
+                    top: (rect.top + 25) + "px"
                 };
-
+                this.optionsItems = items;
                 this.optionsRowData = row;
+
+                self.$nextTick(function() {
+                    self.optionsOpened = true;
+                });
             },
             onSearch: function(params) {
                 if (params.searchTerm) {
@@ -2289,7 +2293,9 @@
                             :items="optionsItems"\
                             :pos="optionsPosition"\
                             :opened="optionsOpened"\
-                            :rowData="optionsRowData">\
+                            :rowData="optionsRowData"\
+                            @close="optionsOpened=false"\
+                            v-on="$listeners">\
                         </cly-row-options>\
                         <vue-good-table\
                             v-bind="$attrs"\
@@ -2347,9 +2353,20 @@
                 type: Object
             }
         },
-        template: '<div class="cly-row-options">\
-                        <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top, opacity: opened ? 1:0 }" class="menu" tabindex="1">\
-                            <a v-for="(item, index) in items" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
+        methods: {
+            tryClosing: function() {
+                if (this.opened) {
+                    this.$emit("close");
+                }
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey, this.rowData);
+                this.tryClosing();
+            }
+        },
+        template: '<div class="cly-row-options" v-click-outside="tryClosing">\
+                        <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
+                            <a @click="fireEvent(item.event)" v-for="(item, index) in items" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
                         </div>\
                     </div>'
     }));
