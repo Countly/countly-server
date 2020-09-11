@@ -84,6 +84,23 @@
                     state.id++;
                 }
             },
+            softDeleteRecordById: function(state, _id) {
+                var matchingRecords = state.records.filter(function(val) {
+                    return val._id === _id;
+                });
+                if (matchingRecords.length > 0) {
+                    var item = matchingRecords[0];
+                    Vue.set(item, '_deleted', new countlyVue.helpers.DelayedAction("You deleted a record.",
+                        function() {
+                            state.records = state.records.filter(function(val) {
+                                return val._id !== item._id;
+                            });
+                        },
+                        function() {
+                            Vue.delete(item, '_deleted');
+                        }, 3000));
+                }
+            },
             deleteRecordById: function(state, _id) {
                 state.records = state.records.filter(function(val) {
                     return val._id !== _id;

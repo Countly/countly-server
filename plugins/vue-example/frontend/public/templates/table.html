@@ -37,7 +37,7 @@
                             :rows="tableRows"
                             :columns="gtableColumns"
                             @statusChanged="statusChanged"
-                            @try-delete-record="onTryDelete"
+                            @soft-delete-record="onSoftDelete"
                             @delete-record="onDelete"
                             @edit-record="onEditRecord">
                             <template slot="table-row" slot-scope="scope">
@@ -48,9 +48,15 @@
                                         @input="statusChanged(scope.props.row._id, $event)">
                                     </cly-check>
                                 </span>
-                                <span v-else-if="scope.props.column.field == 'cly-options'">
-                                    <a class="cly-row-options-trigger" @click="scope.events.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>
-                                </span>
+                                <template v-else-if="scope.props.column.field == 'cly-options'">
+                                    <div v-if="scope.props.row._deleted" class="undo-row">
+                                        {{ scope.props.row._deleted.message }}
+                                        <a @click="scope.props.row._deleted.abort()">Undo.</a>
+                                    </div>
+                                    <span>
+                                        <a class="cly-row-options-trigger" @click="scope.events.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>
+                                    </span>
+                                </template>
                                 <span v-else>
                                     {{scope.props.formattedRow[scope.props.column.field]}}
                                 </span>
