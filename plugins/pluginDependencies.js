@@ -111,9 +111,10 @@ var getFixedDependencies = function(plugins, options) {
 
     options = getOptions(options);
 
-    var {dpcs, errors} = getDependencies(plugins, discoveryStrategy),
+    var {dpcs, errors} = getDependencies(plugins, options),
         fixedPlugins = [],
-        visited = new Set();
+        visited = new Set(),
+        logger = options.logger;
 
     var _traverse = function(pluginName) {
 
