@@ -16,9 +16,9 @@ else
 
     if [ -z "$2" ]
     then
-        read -sp "Enter password: " password
+        read -srp "Enter password: " password
         echo ""
-        read -sp "Enter password again: " password_confirmation
+        read -srp "Enter password again: " password_confirmation
         echo ""
 
         if [ "$password" != "$password_confirmation" ]

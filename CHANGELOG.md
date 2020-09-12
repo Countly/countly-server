@@ -1,3 +1,90 @@
+## Version 20.04.1
+
+**Fixes**
+* [api] make sure location is string
+* [api] skip empty bulk requests
+* [cmd] fix logging of upgrade commands
+* [configuration] plugin settings in app managament treat number like number
+* [crashes] log bulk error on crash users upsert
+* [dbviewer] fixed projection problem
+* [enterpriseinfo] more space to login area
+* [frontend] fix empty template load in application management
+* [frontend] fixed admins accessing applications section
+* [frontend] fixed error when checking user_of rights
+* [frontend] period parsing fixes
+* [members] maintain backwards compatability for api key validation
+* [plugin-upload] fix file type check
+* [populator] allow providing single digit values as custom user properties in templates
+* [push] fixing unhandled rejection on delete of notification with invalid id
+* [reportmanager] delete long tasks on app delete
+* [server-stats] punchcard comply with rights access
+* [star-rating] fix dialog to work with checksum enabled apps
+* [star-rating] fixed integration popup problem
+* [star-ratings] fixed comments tab sorting problem
+* [systemlogs] fix exports script for new driver version
+* [views] correct localization based on app type
+* [views] fixed incorrect result when searching for specific views
+
+**Enterprise fixes**
+* [ab-testing] fixed user merging logic for ab testing experiments
+* [ab-testing] shallow copy bug fix
+* [attribution] correctly calculating campaign level aggregated data
+* [cohorts] do not crash if cohort does not exist for widget
+* [cohorts] moved back to master process for usage in push campaigns
+* [concurrent_users] handling metric labels overflow
+* [dashboards] fixed double zoom on drill widget period switch
+* [drill] correctly check query type for api parameter
+* [drill] fixed date processing error in some cases
+* [drill] fixed duration formatting for BY queryes and dashboard widgets
+* [drill] fixed recording orientation key
+* [drill] limit line count in graph based on settings color count for BY queries
+* [drill] proper event key escaping/unescaping processing
+* [drill] use BY limit from configuration correctly
+* [flows] use view display name in flow diagram
+* [formulas] correctly regenerate formulas data in report manager
+* [formulas] fixed NaN/no data issue for weekly buckets
+* [funnels] fixed calculating funnel data for past periods
+* [loyalty] fix segmentation filter
+* [performance-monitoring] apm tables sorting fixes
+* [performance-monitoring] fix drill query period
+* [performance-monitoring] tabs navigation bug fix
+* [performance-monitoring] unknown value fix
+* [star-rating] drill icon will only appear on ratings tab
+
+**Improvements**
+* [compare] increased app/event compare limit to 20
+* [db] support for mongodb DNS seed list connection string
+* [frontend] add links to events in event overview
+* [frontend] remove password field when creating users from Global admin
+* [ip_store] store ip address as custom user property (disabled by default)
+* [logger] allow searching for request contents in search field
+* [logger] register data for tokens on top level
+* [logger] register requests with ms precision
+* [performance-monitoring] network response latency overall percentages and breakdown by country
+* [populator] add more template based views with heatmap data for web app type
+* [remote-config] add support for does not contain
+* [reportmanager] display errors in the report manager table 
+
+**Enterprise Improvements**
+* [block] do not require segmentation for blocking events
+* [funnels] display readable stepnames for custom dashboards widgets
+* [users] display search input if any value is provided in it
+* [users] make segments and segment values searchable and exportable in event timeline
+
+**Development related**
+* [api] provide a way to bypass checksum check for programmatic request
+* [cmd] add new plugin creation command
+* [docker] Invalid A/B testing model location for debian
+* [docker] Removing unnecessary plugins
+* [docker] fixed disappearing timzeone
+* [docs] comment fixes and documentation generation stucture
+* [frontend] allow skipping columns from export
+* [plugins] ensure events propagate to all plugins on single plugin failure
+* [scripts] single mongodb installation script (that can be used standalone)
+* [shellcheck] fixes and CI checks
+* [tests] increased timeouts and removed ambigiousness
+
+
 ## Version 20.04
 
 **Fixes**

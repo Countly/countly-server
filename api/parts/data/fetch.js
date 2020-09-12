@@ -6,6 +6,7 @@
 /** @lends module:api/parts/data/fetch */
 var fetch = {},
     common = require('./../../utils/common.js'),
+    moment = require('moment-timezone'),
     async = require('async'),
     countlyModel = require('../../lib/countly.model.js'),
     countlySession = countlyModel.load("users"),
@@ -17,6 +18,7 @@ var fetch = {},
     _ = require('underscore'),
     crypto = require('crypto'),
     usage = require('./usage.js'),
+    STATUS_MAP = require('../jobs/job').STATUS_MAP,
     plugins = require('../../../plugins/pluginManager.js');
 
 /**
@@ -83,9 +85,8 @@ fetch.fetchEventData = function(collection, params) {
 
     common.db.collection(collection).findOne({_id: idToFetch}, fetchFields, function(err, result) {
         if (err || !result) {
-            var now = new common.time.Date();
             result = {};
-            result[now.getFullYear()] = {};
+            result[moment().year()] = {};
         }
 
         common.returnOutput(params, result);
@@ -272,9 +273,8 @@ fetch.fetchTimeData = function(collection, params) {
 
     common.db.collection(collection).findOne({'_id': params.app_id}, fetchFields, function(err, result) {
         if (!result) {
-            let now = new common.time.Date();
             result = {};
-            result[now.getFullYear()] = {};
+            result[moment.year()] = {};
         }
 
         common.returnOutput(params, result);
@@ -1763,8 +1763,13 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                 }
             }
 
-            //truncate large meta on refresh
-
+            //Fixing meta  to be escaped.(Because return output will escape keys and make values incompatable)
+            for (let i in mergedDataObj.meta) {
+                for (var p = 0; p < mergedDataObj.meta[i].length; p++) {
+                    mergedDataObj.meta[i][p] = mergedDataObj.meta[i][p].replace(new RegExp("\"", "g"), '&quot;');
+                }
+            }
+            //truncate large meta on refresh		
             if (isRefresh) {
                 var metric_length = plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit;
                 if (metric_length > 0) {
@@ -1826,5 +1831,100 @@ function union(x, y) {
 
     return res;
 }
+
+/**
+* Get data for jobs listing for jobs api
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.fetchJobs = async function(metric, params) {
+    try {
+        if (params.qstring.name) {
+            await fetch.jobDetails(metric, params);
+        }
+        await fetch.alljobs(metric, params);
+    }
+    catch (e) {
+        console.log(e);
+        common.returnOutput(params, 500, "Fetching jobs failed");
+    }
+};
+
+/**
+* Get all jobs grouped by job name for jobs api
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.alljobs = async function(metric, params) {
+    const columns = ["name", "schedule", "next", "finished", "status", "total"];
+    let sort = {};
+    let total = await common.db.collection('jobs').aggregate([
+        {
+            $group: { _id: "$name" }
+        },
+        {
+            $count: 'total'
+        }
+    ]).toArray();
+    total = total.length > 0 ? total[0].total : 0;
+    const pipeline = [
+        {
+            $sort: {
+                finished: -1
+            }
+        },
+        {
+            $group: {
+                _id: "$name",
+                name: {$first: "$name"},
+                status: {$first: "$status"},
+                schedule: {$first: "$schedule"},
+                next: {$first: "$next"},
+                finished: {$first: "$finished"},
+                total: {$sum: 1}
+            }
+        }
+    ];
+    if (params.qstring.sSearch) {
+        pipeline.unshift({
+            $match: {name: {$regex: new RegExp(params.qstring.sSearch, "i")}}
+        });
+    }
+    const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
+    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
+    items = items.map((job) => {
+        job.status = STATUS_MAP[job.status];
+        return job;
+    });
+    cursor.close();
+    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || []});
+};
+
+/**
+* Get all documents for a given job name
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.jobDetails = async function(metric, params) {
+    const columns = ["schedule", "next", "finished", "status", "data", "duration"];
+    let sort = {};
+    const cursor = common.db.collection('jobs').find({name: params.qstring.name});
+    const total = await cursor.count();
+    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
+    items = items.map((job) => {
+        job.status = STATUS_MAP[job.status];
+        return job;
+    });
+    cursor.close();
+    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || []});
+};
 
 module.exports = fetch;

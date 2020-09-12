@@ -21,6 +21,7 @@ const log = require('./log.js')('core:authorizer');
 * @param {string} options.app - list of the apps for which token was created
 * @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)
 * @param {string} options.tryReuse - if true - tries to find not expired token with same parameters. If not founds cretes new token. If found - updates token expiration time to new one and returns token.
+* @param {bool} [options.temporary=false] - If logged in with temporary token. Doesn't kill other sessions on logout.
 * @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
 */
 authorizer.save = function(options) {
@@ -31,6 +32,7 @@ authorizer.save = function(options) {
     options.app = options.app || "";
     options.endpoint = options.endpoint || "";
     options.purpose = options.purpose || "";
+    options.temporary = options.temporary || false; //If logged in with temporary token. Doesn't kill other sessions on logout
 
     if (options.endpoint !== "" && !Array.isArray(options.endpoint)) {
         options.endpoint = [options.endpoint];
@@ -84,7 +86,8 @@ authorizer.save = function(options) {
                                 owner: options.owner,
                                 app: options.app,
                                 endpoint: options.endpoint,
-                                purpose: options.purpose
+                                purpose: options.purpose,
+                                temporary: options.temporary
                             }, function(err1) {
                                 if (typeof options.callback === "function") {
                                     options.callback(err1, options.token);
@@ -102,7 +105,8 @@ authorizer.save = function(options) {
                         owner: options.owner,
                         app: options.app,
                         endpoint: options.endpoint,
-                        purpose: options.purpose
+                        purpose: options.purpose,
+                        temporary: options.temporary
                     }, function(err1) {
                         if (typeof options.callback === "function") {
                             options.callback(err1, options.token);
@@ -225,8 +229,9 @@ authorizer.extend_token = function(options) {
 * @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
 * @param {function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
 * @param {boolean} return_owner states if in callback owner shold be returned. If return_owner==false, returns true or false.
+* @param {boolean} return_data states if in callback all token data should be returned.
 */
-var verify_token = function(options, return_owner) {
+var verify_token = function(options, return_owner, return_data) {
     options.db = options.db || common.db;
     if (!options.token || options.token === "") {
         if (typeof options.callback === "function") {
@@ -313,12 +318,18 @@ var verify_token = function(options, return_owner) {
                         if (return_owner) {
                             valid = res.owner;
                         }
+                        else if (return_data) {
+                            valid = res;
+                        }
                     }
                     else if (res.ends >= Math.round(Date.now() / 1000)) {
                         valid = true;
                         expires_after = Math.max(0, res.ends - Math.round(Date.now() / 1000));
                         if (return_owner) {
                             valid = res.owner;
+                        }
+                        else if (return_data) {
+                            valid = res;
                         }
                     }
 
@@ -357,7 +368,12 @@ authorizer.verify = function(options) {
 * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
 */
 authorizer.verify_return = function(options) {
-    verify_token(options, true);
+    if (options.return_data) {
+        verify_token(options, false, true);
+    }
+    else {
+        verify_token(options, true);
+    }
 };
 /**
 * Generates auhtentication ID

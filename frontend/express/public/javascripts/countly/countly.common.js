@@ -576,6 +576,9 @@
                         if (item && item.datapoint && item.datapoint[1]) {
                             // For stacked bar chart calculate the diff
                             var yAxisValue = item.datapoint[1].toFixed(1).replace(".0", "") - item.datapoint[2].toFixed(1).replace(".0", "");
+                            if (inGraphProperties && inGraphProperties.tooltipType === "duration") {
+                                yAxisValue = countlyCommon.formatSecond(yAxisValue);
+                            }
 
                             showTooltip({
                                 x: pos.pageX,

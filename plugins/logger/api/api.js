@@ -6,8 +6,8 @@ var exported = {},
     var processSDKRequest = function(params) {
         if (params.logging_is_allowed) {
             params.log_processed = true;
-            var now = Math.round(new Date().getTime() / 1000);
-            var ts = common.initTimeObj(null, params.qstring.timestamp || now).timestamp;
+            var now = new Date().getTime();
+            var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
             var device = {};
             device.id = params.qstring.device_id || "";
             var location = {};
@@ -56,6 +56,21 @@ var exported = {},
                 q = JSON.parse(q);
                 q.old_device_id = params.old_device_id;
                 q = JSON.stringify(q);
+            }
+            if (params.qstring.token_session) {
+                if (!types.token) {
+                    types.token = {};
+                }
+                types.token.token_session = params.qstring.token_session;
+                if (params.qstring.ios_token) {
+                    types.token.ios_token = params.qstring.ios_token;
+                }
+                if (params.qstring.android_token) {
+                    types.token.android_token = params.qstring.android_token;
+                }
+                if (typeof params.qstring.test_mode !== "undefined") {
+                    types.token.test_mode = params.qstring.test_mode;
+                }
             }
             if (params.qstring.begin_session) {
                 if (!types.session) {

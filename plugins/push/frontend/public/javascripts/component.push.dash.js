@@ -269,8 +269,7 @@ window.component('push.dash', function (dash) {
                     message = self.messages().find(function (m) { return m._id() === id; });
 
                 if ($(data.target).hasClass('view-recipients') && message) {
-                    countlySegmentation.setQueryObject({message: message._id()});
-                    window.location.hash = "/users/request/"+JSON.stringify(countlySegmentation.getRequestData());
+                    window.app.navigate('#/users/qfilter/' + JSON.stringify({message: {$in: [message._id()]}}), true);
                     return;
                 } else if ($(data.target).hasClass('duplicate-message') && message) {
                     var json = message.toJSON(false, true, true);
@@ -519,7 +518,7 @@ window.component('push.dash', function (dash) {
     C.push.initPersOpts = function() {
         var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
             props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
-            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(7), title: f.name}); });
+            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.replace('.', '|'), title: f.name}); });
 
         C.push.PERS_OPTS = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
                 .concat(props)

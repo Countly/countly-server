@@ -39,7 +39,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/moment/moment-with-locales.min.js',
                     'frontend/express/public/javascripts/utils/handlebars.js',
                     'frontend/express/public/javascripts/utils/backbone-min.js',
-                    'frontend/express/public/javascripts/utils/jquery.i18n.properties-min-1.0.9.js',
+                    'frontend/express/public/javascripts/utils/jquery.i18n.properties.js',
                     'frontend/express/public/javascripts/utils/jstz.min.js',
                     'frontend/express/public/javascripts/utils/store+json2.min.js',
                     'frontend/express/public/javascripts/utils/jquery.idle-timer.js',

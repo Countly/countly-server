@@ -59,6 +59,42 @@
     box-sizing: border-box;
     box-shadow: 0 0 0 1px #d0d0d0;
 }
+#danger-title-bar {
+    margin-top: 10px;
+    background-color: red;
+    color: white;
+    box-sizing: border-box;
+    border: 1px solid #d0d0d0;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+#danger-nav-head {
+    display: flex;
+    align-items: center;
+    height: 27px;
+    padding: 15px 20px 15px 15px;
+    color: white;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    font: 15px Ubuntu,Helvetica,sans-serif;
+    text-align: left;
+    background-color: #D63E40;
+    text-transform: uppercase;
+}
+#danger-table-td {
+    background-color: #FFF;
+    text-align: center;
+    color: #2FA732;
+    width: 125px;
+    padding: 20px 25px;
+    border-right: 1px solid #d0d0d0;
+}
+#danger-table-row {
+    
+}
+#danger-table-row:hover {
+    background-color: white;
+}
 #configs-nav-head {
     display: flex;
     align-items: center;
@@ -128,6 +164,29 @@
     font-size: 13px;
     padding-top: 8px
 }
+
+#configs-table-widget {
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+}
+
+#sticky-config-header .widget-header {
+	border: none;
+}
+
+#config-table-container > table {
+	border: none;
+}
+
+#sticky-config-header {
+	border-bottom: 1px solid #d0d0d0;
+}
+
+#sticky-config-header > div {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
+
 .config-container.selected {
     background-color:#dedede
 }
@@ -297,8 +356,10 @@
 #delete-user-account-button {
     padding-top:6px;
     padding-bottom: 6px;
-    margin-bottom:10px;
+    margin-top:2px;
     margin-left:0px;
+    color: #D63E40;
+    background-color: white;
 }
 #delete_account_password {
     float:left;
@@ -317,4 +378,159 @@
 
 .plugins #plugins-table tr.dirty {
     background-color: #fbffc4;
+}
+
+.user-config-danger-zone {
+    margin-top: 25px;
+    
+}
+
+.danger-zone-description {
+    color: gray;
+    font-size: 12px;
+}
+
+#danger-table-description {
+    padding: 20px;
+}
+
+#danger-table-description .title {
+    margin-bottom: 10px;
+}
+
+.user-config-danger-zone .d-table td {
+    padding: 15px 20px;
+}
+
+.user-config-danger-zone .d-table {
+	margin-bottom: 0px;
+	border:none;
+}
+
+
+#user-configuration-change-password {
+    margin-left: 0px;
+    background-color: white;
+    box-shadow: inset 0 0 0 1px black;
+    color: black;
+    padding: 6px 12px;
+}
+
+.user-configuration-modal .popup-title {
+    color: #636363;
+    font-size: 16px;
+    text-align: center;
+    margin: 25px 0px 15px 0px;
+    font-weight: 500;
+}
+
+.user-configuration-modal .popup-description {
+    color: #717171;
+    font-size: 13px;
+    line-height: 19px;
+    font-family: Ubuntu,Helvetica,sans-serif;
+    margin: 0px;
+    margin-top: 15px;
+}
+
+.user-configuration-modal .popup-description-next {
+	color: #717171;
+    font-size: 13px;
+    line-height: 19px;
+    font-family: Ubuntu,Helvetica,sans-serif;
+    margin: 0px;
+    margin-bottom: 15px;	
+}
+
+.user-configuration-modal .user-password-change-modal-input {
+    border-radius: 2px;
+    margin: 0;
+    font: 14px Ubuntu,Helvetica,sans-serif;
+    padding: 8px;
+    border: 1px solid #D0D0D0;
+    width: calc(100% - 16px);
+    margin-bottom: 10px;
+    margin-top:4px;
+}
+
+.user-configuration-modal .action-section {
+    margin-top: 20px;
+    text-align: right;
+}
+
+#user-account-delete-modal .action-section {
+    margin-top: 45px;
+    text-align: right;
+}
+
+#danger-zone-description-second {
+    margin-top: 5px;
+}
+
+#user-account-delete-modal .input-section {
+	margin-top: 20px;
+    height: 40px;
+}
+
+.user-configuration-modal {
+    display: none;
+    background-color: white;
+    width: 300px;
+    padding: 30px 30px 20px 30px;
+    position: fixed;
+    border-radius: 2px;
+    z-index: 10001;
+    left: calc(50% - 150px);
+    top: 20%;
+}
+
+.popup-action-transparent-btn {
+    border: none;
+    color: #000000;
+    background-color: #ffffff;
+    padding: 12px;
+    margin-right: 10px;
+    cursor: pointer;
+    font: 12px Ubuntu,Helvetica,sans-serif;
+}
+
+.popup-action-green-btn {
+    background-color: #2EB52B;
+    color: #ffffff;
+    border-radius: 2px;
+    float: none;
+    border: none;
+    padding: 12px;
+    box-shadow: none;
+    display: inline-block;
+    margin: 0;
+    min-height: 14px;
+    cursor: pointer;
+    font: 12px Ubuntu,Helvetica,sans-serif;
+    line-height: 15px;
+    overflow: auto;
+    margin-left: 8px;
+}
+
+.popup-action-red-btn {
+    cursor: pointer;
+    border:none;
+    border-radius: 2px;
+    background-color: #D63E40;
+    color: white;
+    min-height: 14px;
+    padding: 12px;
+    font: 12px Ubuntu,Helvetica,sans-serif;
+    line-height: 15px;
+}
+
+.user-configuration-modal .popup-input-label {
+    font-family: Ubuntu;
+    font-size: 13px;
+    color: #717171;
+    margin-top: 8px;
+}
+
+.user-configuration-modal input::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #B9B9B9;
 }

@@ -51,9 +51,9 @@
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/drop/drop-theme-countly.min.css?<%= countlyVersion %>" />
-		<% if (plugins) { %>
-			<% for(var i=0, l=plugins.length; i<l; i++) {%>
-		<link rel="stylesheet" href="<%- cdn %><%= plugins[i] %>/stylesheets/main.css?<%= countlyVersion %>" />
+        <% if (stylesheets) { %>
+			<% for(var i=0, l=stylesheets.length; i<l; i++) {%>
+        <link rel="stylesheet" href="<%- cdn %><%= stylesheets[i] %>?<%= countlyVersion %>" />
 			<% } %>
 		<% } %>
 	    <!-- DEVELOPMENT -->
@@ -72,7 +72,7 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment-with-locales.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jstz.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/store+json2.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.idle-timer.js?<%= countlyVersion %>"></script>
@@ -195,7 +195,7 @@
                         <div id="user-menu">
                             <a class="item" href='#/manage/user-settings' data-priority="10">
                                 <i class="ion-gear-a icon"></i>
-                                <div data-localize="sidebar.settings"></div>
+                                <div data-localize="plugins.user-configs"></div>
                             </a>
                             <a href="#/manage/token_manager" class="item" data-priority="11">
                                 <i class="ion-key icon"></i>
@@ -355,10 +355,10 @@
 		<p data-localize="export.export-as"></p>
         <div id="export-type-selector" class="button-selector light">
             <div class="button selected active" id="export-csv">.CSV</div>
-			<div class="button" id="export-xls">.XLS</div>
+			<div class="button" id="export-xlsx">.XLSX</div>
 			<div class="button" id="export-json">.JSON</div>
         </div>
-        <p class="details" data-localize="export.export-number"></p>
+        <!--<p class="details" data-localize="export.export-number"></p>
         <div class="cly-select">
             <div class="select-inner">
                 <div class="text-container">
@@ -368,6 +368,13 @@
             </div>
             <div class="select-items square">
                 <div></div>
+            </div>
+        </div> -->
+		<div class="export-columns-selector">
+            <p data-localize="export.columns-to-export"></p>
+            <p class="checkbox-line"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-all-columns"></a><span data-localize="export.export-all-columns"><span>
+            <div class="columns-height-wrapper">
+				<div class="columns-wrapper"></div>
             </div>
         </div>
         <div class="icon-button green export-data" data-localize="export.export"></div>
@@ -1381,7 +1388,7 @@
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
                                     <div class="col">
-                                        <h4>{{this.name}}</h4>
+                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
                                         <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
                                     </div>
                                     {{/eachOfObjectValue}}
@@ -1392,7 +1399,7 @@
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventData30Day}}
                                     <div class="col">
-                                        <h4>{{this.name}}</h4>
+                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
                                         <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
                                     </div>
                                     {{/eachOfObjectValue}}
@@ -1467,12 +1474,12 @@
 
                                         {{#if this.value.name}}
                                         <td class="event-overview-grid-block cly-widget">
-                                            <div class="title">{{this.value.name}}</div>
+                                            <div class="title"><a href="/dashboard#/{{../../../active-app-id}}/analytics/events/key/{{encodeURIComponent this.value.name}}">{{this.value.name}}</a></div>
                                             {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
                                             <table>
                                                 <tr>
                                                      <td colspan="2">
-                                                        <div class="spark spark-{{this.value.property}}" values="{{this.value.data}}"></div>
+                                                        <div class="spark spark-{{this.value.property}}" values="{{this.value.data}}"></div >
                                                     </td>
                                                 </tr>
                                                 <tr class="number">

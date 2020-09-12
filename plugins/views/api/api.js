@@ -58,36 +58,34 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             resolve();
                             return;
                         }
-                        common.db.onOpened(function() {
-                            const bulk = common.db._native.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
-                            for (var k = 0; k < data.length; k++) {
-                                if (data[k].value !== "") {
-                                    bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
-                                }
-                                else {
-                                    bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$unset: {"display": true}});
-                                }
-                                haveUpdate = true;
-                            }
-
-                            if (haveUpdate) {
-                                bulk.execute(function(err/*, updateResult*/) {
-                                    if (err) {
-                                        log.e(err);
-                                        common.returnMessage(params, 400, err);
-                                        resolve();
-                                    }
-                                    else {
-                                        common.returnMessage(params, 200, 'Success');
-                                        resolve();
-                                    }
-                                });
+                        const bulk = common.db.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
+                        for (var k = 0; k < data.length; k++) {
+                            if (data[k].value !== "") {
+                                bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
                             }
                             else {
-                                common.returnMessage(params, 400, 'Nothing to update');
-                                resolve();
+                                bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$unset: {"display": true}});
                             }
-                        });
+                            haveUpdate = true;
+                        }
+
+                        if (haveUpdate) {
+                            bulk.execute(function(err/*, updateResult*/) {
+                                if (err) {
+                                    log.e(err);
+                                    common.returnMessage(params, 400, err);
+                                    resolve();
+                                }
+                                else {
+                                    common.returnMessage(params, 200, 'Success');
+                                    resolve();
+                                }
+                            });
+                        }
+                        else {
+                            common.returnMessage(params, 400, 'Nothing to update');
+                            resolve();
+                        }
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing request parameter: data');
@@ -161,7 +159,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var newUid = ob.newUser.uid;
         if (oldUid !== newUid) {
             common.db.collection("app_userviews" + appId).find({_id: oldUid}).toArray(function(err, data) {
-                const bulk = common.db._native.collection("app_userviews" + appId).initializeUnorderedBulkOp();
+                const bulk = common.db.collection("app_userviews" + appId).initializeUnorderedBulkOp();
                 var haveUpdate = false;
                 for (var k in data) {
                     for (var view in data[k]) {
@@ -225,6 +223,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param {@function} callback - callback function
     */
     function getAggregatedData(collectionName, params, settings, callback) {
+        settings = settings || {};
         var app_id = settings.app_id;
         var pipeline = [];
         var period = params.qstring.period || '30days';
@@ -285,9 +284,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var last_pushed = "";
         var selectMap = {};
         var projector;
-        if (settings && settings.onlyIDs) {
-            pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
-        }
+
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
             for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
@@ -344,11 +341,17 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector[settings.levels.daily[i]] = {$sum: {$switch: {branches: branches2, default: 0}}};
             }
             pipeline.push({$match: {$or: month_array}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             pipeline.push({$group: projector});
         }
         else if (period === "month") { //this year
             curmonth = periodObj.activePeriod;
             pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + ":0"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
 
             var groupBy1 = {_id: "$vw"};
             for (let i = 0; i < settings.levels.monthly.length; i++) {
@@ -370,6 +373,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var monthNumber = curmonth.split(':');
             var thisYear = now.format('YYYY');
             pipeline.push({$match: {'_id': {$regex: ".*_" + thisYear + ":0"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
 
             var groupBy0 = {_id: "$vw"};
             for (let i = 0; i < settings.levels.daily.length; i++) {
@@ -387,6 +393,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             curmonth = this_date[0] + ":" + this_date[1];
             var curday = this_date[2];
             pipeline.push({$match: {'_id': {$regex: ".*_" + curmonth + "_m"}}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             var p_a = {vw: true, _id: "$vw"};
 
             for (let i = 0; i < settings.levels.daily.length; i++) {
@@ -478,6 +487,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 projector[settings.levels.daily[i]] = {$sum: {$switch: {branches: branches02, default: 0}}};
             }
             pipeline.push({$match: {$or: month_array}});
+            if (settings && settings.onlyIDs) {
+                pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
+            }
             pipeline.push({$group: projector});
 
         }
@@ -626,8 +638,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                         query = [{$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                            query = [{$match: {"sortcol": {$regex: params.qstring.sSearch}}}];
-                            selOptions.count_query = {"view": {$regex: params.qstring.sSearch}};
+                            query.push({$match: {"sortcol": {$regex: params.qstring.sSearch, $options: 'i'}}});
+                            selOptions.count_query = {"view": {$regex: params.qstring.sSearch, $options: 'i'}};
                         }
                         if (sortcol === 'name') {
                             query.push(sortby);
@@ -1507,9 +1519,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     var lastViewTimestamp = view[viewName];
                     var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                         lastViewDate = common.getDate(lastViewTimestamp, params.appTimezone),
-                        secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                        secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                        secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                        secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                        secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                        secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                         secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
@@ -1521,8 +1533,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         monthSmallerUpdate['d.' + params.time.day + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 
-                    if (lastViewDate.getFullYear() === params.time.yearly &&
-                        Math.ceil(common.moment(lastViewDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+                    if (lastViewDate.year() === params.time.yearly &&
+                        Math.ceil(lastViewDate.format("DDD") / 7) < params.time.weekly) {
                         tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 

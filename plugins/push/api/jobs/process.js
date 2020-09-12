@@ -79,12 +79,14 @@ class ProcessJob extends J.IPCJob {
      */
     prepare(manager, db) {
         this.log.d('Loading credentials for %j', this.data);
-        this.creds = new C.Credentials(this.data.cid);
+        this.creds = new C.Credentials(this.cid, this.aid, this.field);
         return new Promise((resolve, reject) => {
             this.creds.load(db).then(() => {
+                this.data.cid = this.creds._id.toString();
+
                 let cid = typeof this.cid === 'string' ? this.cid : this.cid.toString(),
                     aid = typeof this.aid === 'string' ? db.ObjectID(this.aid) : this.aid;
-                db.collection('apps').findOne({_id: aid, $or: [{'plugins.push.i._id': cid}, {'plugins.push.a._id': cid}]}, (err, app) => {
+                db.collection('apps').findOne({_id: aid, $or: [{'plugins.push.i._id': cid}, {'plugins.push.a._id': cid}, {'plugins.push.h._id': cid}]}, (err, app) => {
                     if (err) {
                         return reject(err);
                     }
@@ -119,6 +121,7 @@ class ProcessJob extends J.IPCJob {
                     this.log.e('Adding resourceErrors to notes %j', ids);
                     await loader.updateNotes({_id: {$in: ids.map(db.ObjectID)}}, {$set: {error: error}, $push: {'result.resourceErrors': {$each: [{date: this.now(), field: this.field, error: error}], $slice: -5}}});
                 }
+                reject(err);
             });
         });
     }
@@ -137,7 +140,7 @@ class ProcessJob extends J.IPCJob {
      * @returns {object} Resource
      */
     createResource(_id, name, db) {
-        return new Resource(_id, name, {cid: this.cid, field: this.field, proxyhost: this.proxyhost, proxyport: this.proxyport, proxyuser: this.proxyuser, proxypass: this.proxypass}, db);
+        return new Resource(_id, name, {cid: this.cid, field: this.field, aid: this.aid, proxyhost: this.proxyhost, proxyport: this.proxyport, proxyuser: this.proxyuser, proxypass: this.proxypass}, db);
     }
 
     /** gets new retry policy
@@ -252,22 +255,31 @@ class ProcessJob extends J.IPCJob {
     compile(notes, msgs) {
         // let pm, pn, pp, po;
 
-        return msgs.map(m => {
-            let note = notes[m.n.toString()];
-            if (note) {
-                m.m = note.compile(this.platform, m);
-                m.a = note.isAlert(this.platform, m);
-                // if (pn && pn === note && pp === m.p && po === m.o) {
-                //     m.m = pm;
-                // } else {
-                //     pn = note;
-                //     pp = m.p;
-                //     po = m.o;
-                //     pm = m.m = note.compile(this.platform, m);
-                // }
-            }
-            return m;
-        }).filter(m => !!m.m);
+        let invalid = [];
+
+        return {
+            invalid,
+            nts: msgs.map(m => {
+                let s = m.n.toString(),
+                    note = notes[s];
+                if (note) {
+                    m.m = note.compile(this.platform, m);
+                    m.a = note.isAlert(this.platform, m);
+                    // if (pn && pn === note && pp === m.p && po === m.o) {
+                    //     m.m = pm;
+                    // } else {
+                    //     pn = note;
+                    //     pp = m.p;
+                    //     po = m.o;
+                    //     pm = m.m = note.compile(this.platform, m);
+                    // }
+                }
+                if (!m.m) {
+                    invalid.push(m._id);
+                }
+                return m;
+            }).filter(m => !!m.m)
+        };
     }
 
     /** finish
@@ -333,7 +345,8 @@ class ProcessJob extends J.IPCJob {
 
                 // load counts & messages
                 let counts = await this.loader.counts(date),
-                    notes = await this.loader.notes(Object.keys(counts).filter(k => k !== 'total'));
+                    notes = await this.loader.notes(Object.keys(counts).filter(k => k !== 'total')),
+                    nts = [], invalid = [];
 
                 this.log.d('Counts: %j', counts);
 
@@ -361,13 +374,33 @@ class ProcessJob extends J.IPCJob {
                 // send & remove notifications from the collection
                 let statuses;
                 try {
-                    let nts = this.compile(notes, msgs);
+                    let ret = this.compile(notes, msgs);
+                    nts = ret.nts;
+                    invalid = ret.invalid;
                     if (nts.length !== msgs.length) {
-                        this.log.e('Some notifications didn\'t compile');
+                        this.log.d('Some notifications didn\'t compile');
+                        this.log.d('Notes %j', notes);
+                        this.log.d('Messages %j', msgs);
                     }
-                    this.log.i('Sending %d', nts.length);
-                    [statuses, resourceError] = await this.resource.send(nts);
-                    this.log.i('Send of %d returned %d statuses', nts.length, statuses.length);
+
+                    if (invalid.length) {
+                        this.log.d('Invalid %j', invalid);
+                        await this.loader.ack(invalid);
+                    }
+
+                    if (nts.length) {
+                        this.log.i('Sending %d', nts.length);
+                        [statuses, resourceError] = await this.resource.send(nts);
+                        this.log.i('Send of %d returned %d statuses', nts.length, statuses.length);
+                    }
+                    else {
+                        this.log.w('Nothing to send for:');
+                        this.log.d('Notes %j', notes);
+                        this.log.d('Messages %j', msgs);
+                        statuses = [];
+                        resourceError = undefined;
+                        // break;
+                    }
 
                     if (this.platform === N.Platform.IOS && statuses && statuses.length) {
                         statuses.forEach(s => {
@@ -473,8 +506,8 @@ class ProcessJob extends J.IPCJob {
                 });
 
                 // smth bad happened
-                if (Object.values(processed).reduce((a, b) => a + b, 0) !== msgs.length) {
-                    this.log.w('Got %d statuses while %d is expected', Object.values(processed).reduce((a, b) => a + b, 0), msgs.length);
+                if (Object.values(processed).reduce((a, b) => a + b, 0) !== nts.length) {
+                    this.log.w('Got %d statuses while %d is expected', Object.values(processed).reduce((a, b) => a + b, 0), nts.length);
                 }
 
                 // update messages with processed / sent / errors

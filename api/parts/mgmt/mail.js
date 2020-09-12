@@ -56,6 +56,7 @@ else {
 * @param {function} callback - function to call when its done
 **/
 mail.sendMail = function(message, callback) {
+    message.from = config.mail && config.mail.strings && config.mail.strings.from || message.from || "Countly";
     mail.smtpTransport.sendMail(message, function(error) {
         if (error) {
             console.log('Error sending email');

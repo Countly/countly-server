@@ -182,8 +182,8 @@ window.component('push.view', function(view) {
                                     title: t('pu.po.metrics.sent'),
                                     titleClick: function(ev){
                                         ev.preventDefault();
-                                        window.countlySegmentation.setQueryObject({message: ctrl.message._id()});
-                                        window.location.hash = "/users/request/"+JSON.stringify(window.countlySegmentation.getRequestData());
+                                        window.app.navigate('#/users/qfilter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}}), true);
+                                        // window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/users/qfilter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}});
                                     },
                                     titleTitle: t('push.po.table.recipients'),
                                     helpr: t('pu.po.metrics.sent.desc'),
@@ -504,7 +504,7 @@ window.component('push.view', function(view) {
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab3.date')),
                                 m('.col-right', (ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab3.date.now')) + 
-									(ctrl.message.tz() ? 
+									(typeof ctrl.message.tz() === 'number'  ? 
 									    t('pu.po.tab3.date.intz') 
 									    : ctrl.message.autoTime() ? 
 									        t('pu.po.tab3.date.intz') + ' ' + t('pu.at') + ctrl.message.autoTime()

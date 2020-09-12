@@ -35,7 +35,7 @@ plugins.setConfigs("crashes", {
             common.db.collection("app_crashes" + appId).update({uid: oldUid}, {'$set': {uid: newUid}}, {multi: true}, function() {});
             common.db.collection("app_crashusers" + appId).find({uid: oldUid}).toArray(function(err, res) {
                 if (res && res.length) {
-                    const bulk = common.db._native.collection("app_crashusers" + appId).initializeUnorderedBulkOp();
+                    const bulk = common.db.collection("app_crashusers" + appId).initializeUnorderedBulkOp();
                     for (let i = 0; i < res.length; i++) {
                         const updates = {};
                         for (const key of ['last', 'sessions']) {
@@ -58,7 +58,11 @@ plugins.setConfigs("crashes", {
                         bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
                         bulk.find({uid: oldUid, group: group}).remove();
                     }
-                    bulk.execute();
+                    bulk.execute(function(bulkerr) {
+                        if (bulkerr) {
+                            console.log(bulkerr);
+                        }
+                    });
                 }
             });
         }

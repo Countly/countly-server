@@ -78,11 +78,10 @@ if grep -q -i "release 6" /etc/redhat-release ; then
     yum install -y wget
     wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
     yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
+    # shellcheck disable=SC1091
     source /opt/rh/devtoolset-2/enable
-    CC="$(which gcc)"
-    CXX="$(which g++)"
-    export $CC 
-    export $CXX
+    #CC="$(which gcc)"
+    #CXX="$(which g++)"
 fi
 
 #install grunt & npm modules
@@ -104,6 +103,9 @@ mv /etc/sudoers2 /etc/sudoers
 chmod 0440 /etc/sudoers
 
 bash "$DIR/scripts/detect.init.sh"
+
+#install numactl
+yum install numactl -y
 
 #configure and start nginx
 set +e

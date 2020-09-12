@@ -113,6 +113,7 @@ window.PopulatorView = countlyView.extend({
 
         $("#templates-tab").off("click", ".edit-icon").on("click", ".edit-icon", function(e) {
             var menu = $(e.currentTarget).parents(".populator-template-options-item").find(".edit-menu");
+            $("#templates-tab .edit-menu").not(menu).hide();
             menu.toggle();
             /*
             if (!menu.is(":hidden")) {
@@ -378,7 +379,7 @@ window.PopulatorView = countlyView.extend({
             if (["true", "false"].indexOf(s) !== -1) {
                 return s === "true";
             }
-            else if (/^[1-9][0-9]+|0$/.test(s)) {
+            else if (/^[0-9]+$/.test(s)) {
                 return parseInt(s);
             }
             else {

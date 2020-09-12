@@ -13,7 +13,9 @@ window.MobileDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        return $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {});
+        //do not wait on country initialization
+        countlyTotalUsers.initialize("countries");
+        return $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {});
     },
     afterRender: function() {
         if (countlyGlobal.config.use_google) {

@@ -151,6 +151,9 @@ window.CompareView = countlyView.extend({
     drawGraph: function() {
         var dp = [];
         for (var i = 0; i < this.selectedAlts.length; i++) {
+            if (typeof countlyCommon.GRAPH_COLORS[i] === "undefined") {
+                break;
+            }
             var color = countlyCommon.GRAPH_COLORS[i];
             var data = this.viewHelper.model.getChartData(this.selectedAlts[i], this.selectedMetric).chartDP;
             if (data) {
@@ -245,7 +248,7 @@ var compareEventsViewHelper = {
         text: jQuery.i18n.map["compare.events.back"]
     },
     compareText: jQuery.i18n.map["compare.events.limit"],
-    maxAlternatives: 10,
+    maxAlternatives: 20,
     beforeRender: function() {
 
     },
@@ -330,7 +333,7 @@ var compareAppsViewHelper = {
     model: countlyAppCompare,
     defaultMetric: "draw-total-sessions",
     compareText: jQuery.i18n.map["compare.apps.limit"],
-    maxAlternatives: 10,
+    maxAlternatives: 20,
     initOnDateChange: true,
     getTableColumns: function() {
         /**

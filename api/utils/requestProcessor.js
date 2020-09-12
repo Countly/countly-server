@@ -932,16 +932,20 @@ const processRequest = (params) => {
                         var updateThese = {"$unset": {}};
                         if (idss.length > 0) {
                             for (let i = 0; i < idss.length; i++) {
-
                                 if (idss[i].indexOf('.') !== -1) {
                                     updateThese.$unset["map." + idss[i].replace(/\./g, '\\u002e')] = 1;
-                                    updateThese.$unset["segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
                                     updateThese.$unset["omitted_segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
                                 }
                                 else {
                                     updateThese.$unset["map." + idss[i]] = 1;
-                                    updateThese.$unset["segments." + idss[i]] = 1;
                                     updateThese.$unset["omitted_segments." + idss[i]] = 1;
+                                }
+                                idss[i] = common.decode_html(idss[i]);//previously escaped, get unescaped id (because segments are using it)
+                                if (idss[i].indexOf('.') !== -1) {
+                                    updateThese.$unset["segments." + idss[i].replace(/\./g, '\\u002e')] = 1;
+                                }
+                                else {
+                                    updateThese.$unset["segments." + idss[i]] = 1;
                                 }
                             }
 
@@ -1783,6 +1787,9 @@ const processRequest = (params) => {
                 }
 
                 switch (params.qstring.method) {
+                case 'jobs':
+                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
+                    break;
                 case 'total_users':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
@@ -2126,7 +2133,7 @@ const processBulkRequest = (i, requests, params) => {
         return;
     }
 
-    if (!requests[i].app_key && !appKey) {
+    if (!requests[i] || (!requests[i].app_key && !appKey)) {
         return processBulkRequest(i + 1, requests, params);
     }
 
@@ -2491,7 +2498,7 @@ function processUser(params, done, try_times) {
  * @returns {Function} - done or boolean value
  */
 const checksumSaltVerification = (params, type) => {
-    if (params.app.checksum_salt && params.app.checksum_salt.length) {
+    if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
         const payloads = [];
         if (type === "WriteAPI") {
             payloads.push(params.href.substr(3));

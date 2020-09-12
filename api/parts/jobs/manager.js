@@ -30,147 +30,148 @@ class Manager {
         this.running = {}; // {'push:apn:connection': [resource1, resource2], 'xxx': [resource3]}
         this.resources = []; // {'push:apn:connection': [job1, job2]}
         // Once job is done running (goes out of running), if it's resourceful job, it goes into resources until resource is closed or another job of this type is being run
+        manager.singleDefaultConnection().then((db) => {
+            this.db = db;
+            // JOB.setDB(this.db);
+            this.collection = this.db.collection('jobs');
+            // this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart', done: Date.now()}}, {multi: true}, log.logdb('resetting interrupted jobs'));
 
-        this.db = manager.singleDefaultConnection();
-        // JOB.setDB(this.db);
-        this.collection = this.db.collection('jobs');
-        // this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart', done: Date.now()}}, {multi: true}, log.logdb('resetting interrupted jobs'));
+            // setTimeout(() => {
+            //  let Constructor = this.classes['api:ipcTest'];
+            //  new Constructor('api:ipcTest', {root: true}).now();
+            // }, 3000)
 
-        // setTimeout(() => {
-        //  let Constructor = this.classes['api:ipcTest'];
-        //  new Constructor('api:ipcTest', {root: true}).now();
-        // }, 3000)
-
-        // Listen for transient jobs
-        require('cluster').on('online', worker => {
-            let channel = new IPC.IdChannel(JOB.EVT.TRANSIENT_CHANNEL).attach(worker).on(JOB.EVT.TRANSIENT_RUN, (json) => {
-                log.d('[%d]: Got transient job request %j', process.pid, json);
-                this.start(this.create(json)).then((data) => {
-                    log.d('[%d]: Success running transient job %j', process.pid, json, data);
-                    if (data) {
-                        json.result = data;
-                    }
-                    channel.send(JOB.EVT.TRANSIENT_DONE, json);
-                }, (error) => {
-                    log.d('[%d]: Error when running transient job %j: ', process.pid, json, error);
-                    if (error && error.toString()) {
-                        json.error = error.toString().replace('Error: ', '');
-                    }
-                    else {
-                        json.error = 'Unknown push error';
-                    }
-                    if (!json.error) {
-                        json.error = 'Unknown push error';
-                    }
-                    channel.send(JOB.EVT.TRANSIENT_DONE, json);
+            // Listen for transient jobs
+            require('cluster').on('online', worker => {
+                let channel = new IPC.IdChannel(JOB.EVT.TRANSIENT_CHANNEL).attach(worker).on(JOB.EVT.TRANSIENT_RUN, (json) => {
+                    log.d('[%d]: Got transient job request %j', process.pid, json);
+                    this.start(this.create(json)).then((data) => {
+                        log.d('[%d]: Success running transient job %j', process.pid, json, data);
+                        if (data) {
+                            json.result = data;
+                        }
+                        channel.send(JOB.EVT.TRANSIENT_DONE, json);
+                    }, (error) => {
+                        log.d('[%d]: Error when running transient job %j: ', process.pid, json, error);
+                        if (error && error.toString()) {
+                            json.error = error.toString().replace('Error: ', '');
+                        }
+                        else {
+                            json.error = 'Unknown push error';
+                        }
+                        if (!json.error) {
+                            json.error = 'Unknown push error';
+                        }
+                        channel.send(JOB.EVT.TRANSIENT_DONE, json);
+                    });
                 });
             });
-        });
 
-        // Close all resources on main process exit
-        process.on('exit', () => {
-            for (let k in this.resources) {
-                if (this.resources[k].canBeTerminated()) {
-                    this.resources[k].close();
-                }
-            }
-        });
-
-        // don't scan for tests
-        if (process.argv[1].indexOf('mocha') !== -1) {
-            this.types.push('test');
-            this.classes.test = require('../../jobs/test.js');
-            this.files.test = '../../jobs/test.js';
-            return this.checkAfterDelay();
-        }
-
-        scan(this.db, this.files, this.classes).then(() => {
-            this.types = Object.keys(this.classes);
-            log.i('Found %d job types, starting monitoring: %j', this.types.length, this.types);
-            // cancel jobs star
-            // this.collection.update({status: STATUS.RUNNING, $or: [{modified: {$lt: Date.now() - 60000}}, {modified: null}, {modified: {$exists: false}}]}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart', done: Date.now()}}, {multi: true}, () => {
-            this.collection.find({status: STATUS.RUNNING}).toArray((err, toCancel) => {
-                if (err) {
-                    log.e(err);
-                }
-
-                log.i('Cancelling %d jobs', toCancel ? toCancel.length : null);
-                log.d('Cancelling %j', toCancel);
-                try {
-                    /**
-                    * Apply transformation to each array elementFromPoint
-                    * @param {array} arr - array to transform
-                    * @param {function} transform - transformation function
-                    * @returns {Promise} promise
-                    **/
-                    let sequence = (arr, transform) => {
-                        return new Promise((resolve, reject) => {
-                            /**
-                            * Processing next element
-                            **/
-                            var next = () => {
-                                let promise = transform(arr.pop());
-                                if (arr.length) {
-                                    promise.then(next, reject);
-                                }
-                                else {
-                                    promise.then(resolve, reject);
-                                }
-                            };
-                            if (!arr.length) {
-                                resolve();
-                            }
-                            else {
-                                next();
-                            }
-                        });
-                    };
-                    let promise = toCancel && toCancel.length ? sequence(toCancel, async j => {
-                            let job = this.create(j);
-                            if (job) {
-                                await job.cancel(this.db).catch(() => log.e.bind(log));
-                            }
-                            else {
-                                await JOB.Job.update(this.db, {_id: j._id}, {
-                                    $set: {
-                                        status: JOB.STATUS.CANCELLED,
-                                        error: 'cancelled on restart'
-                                    }
-                                });
-                            }
-                        }) : Promise.resolve(),
-                        /** Resume processing job **/
-                        resume = () => {
-                            log.d('Resuming after cancellation');
-                            this.collection.find({status: STATUS.PAUSED}).toArray((err2, array) => {
-                                if (!err2 && array && array.length) {
-                                    log.i('Going to resume following jobs: %j', array.map(j => {
-                                        return {
-                                            _id: j._id,
-                                            name: j.name
-                                        };
-                                    }));
-                                    this.process(array.filter(j => this.types.indexOf(j.name) !== -1)).catch(e => {
-                                        log.e('Error during job resuming', e);
-                                        resume();
-                                    });
-                                }
-                                else {
-                                    this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
-                                }
-                            });
-                            // this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
-                        };
-                    promise.then(resume, resume);
-                }
-                catch (e) {
-                    log.e(e, e.stack);
-                    this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
+            // Close all resources on main process exit
+            process.on('exit', () => {
+                for (let k in this.resources) {
+                    if (this.resources[k].canBeTerminated()) {
+                        this.resources[k].close();
+                    }
                 }
             });
-        }, (e) => {
-            log.e('Error when loading jobs', e, e.stack);
-            this.checkAfterDelay();
+
+            // don't scan for tests
+            if (process.argv[1].indexOf('mocha') !== -1) {
+                this.types.push('test');
+                this.classes.test = require('../../jobs/test.js');
+                this.files.test = '../../jobs/test.js';
+                return this.checkAfterDelay();
+            }
+
+            scan(this.db, this.files, this.classes).then(() => {
+                this.types = Object.keys(this.classes);
+                log.i('Found %d job types, starting monitoring: %j', this.types.length, this.types);
+                // cancel jobs star
+                // this.collection.update({status: STATUS.RUNNING, $or: [{modified: {$lt: Date.now() - 60000}}, {modified: null}, {modified: {$exists: false}}]}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart', done: Date.now()}}, {multi: true}, () => {
+                this.collection.find({status: STATUS.RUNNING}).toArray((err, toCancel) => {
+                    if (err) {
+                        log.e(err);
+                    }
+
+                    log.i('Cancelling %d jobs', toCancel ? toCancel.length : null);
+                    log.d('Cancelling %j', toCancel);
+                    try {
+                        /**
+                        * Apply transformation to each array elementFromPoint
+                        * @param {array} arr - array to transform
+                        * @param {function} transform - transformation function
+                        * @returns {Promise} promise
+                        **/
+                        let sequence = (arr, transform) => {
+                            return new Promise((resolve, reject) => {
+                                /**
+                                * Processing next element
+                                **/
+                                var next = () => {
+                                    let promise = transform(arr.pop());
+                                    if (arr.length) {
+                                        promise.then(next, reject);
+                                    }
+                                    else {
+                                        promise.then(resolve, reject);
+                                    }
+                                };
+                                if (!arr.length) {
+                                    resolve();
+                                }
+                                else {
+                                    next();
+                                }
+                            });
+                        };
+                        let promise = toCancel && toCancel.length ? sequence(toCancel, async j => {
+                                let job = this.create(j);
+                                if (job) {
+                                    await job.cancel(this.db).catch(() => log.e.bind(log));
+                                }
+                                else {
+                                    await JOB.Job.update(this.db, {_id: j._id}, {
+                                        $set: {
+                                            status: JOB.STATUS.CANCELLED,
+                                            error: 'cancelled on restart'
+                                        }
+                                    });
+                                }
+                            }) : Promise.resolve(),
+                            /** Resume processing job **/
+                            resume = () => {
+                                log.d('Resuming after cancellation');
+                                this.collection.find({status: STATUS.PAUSED}).toArray((err2, array) => {
+                                    if (!err2 && array && array.length) {
+                                        log.i('Going to resume following jobs: %j', array.map(j => {
+                                            return {
+                                                _id: j._id,
+                                                name: j.name
+                                            };
+                                        }));
+                                        this.process(array.filter(j => this.types.indexOf(j.name) !== -1)).catch(e => {
+                                            log.e('Error during job resuming', e);
+                                            resume();
+                                        });
+                                    }
+                                    else {
+                                        this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
+                                    }
+                                });
+                                // this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
+                            };
+                        promise.then(resume, resume);
+                    }
+                    catch (e) {
+                        log.e(e, e.stack);
+                        this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
+                    }
+                });
+            }, (e) => {
+                log.e('Error when loading jobs', e, e.stack);
+                this.checkAfterDelay();
+            });
         });
 
     }
@@ -353,11 +354,13 @@ class Manager {
     **/
     schedule(job) {
         if (job.scheduleObj) {
-            var schedule = typeof job.scheduleObj === 'string' ? later.parse.text(job.scheduleObj) : job.scheduleObj,
-                nextFrom = new Date(job.next);
-            var next = later.schedule(schedule).next(2, nextFrom);
+            var strict = job.strict !== null && job.strict !== undefined,
+                schedule = typeof job.scheduleObj === 'string' ? later.parse.text(job.scheduleObj) : job.scheduleObj,
+                nextFrom = strict ? new Date(job.next) : new Date(),
+                next = later.schedule(schedule).next(2, nextFrom);
+
             if (next && next.length > 1) {
-                if (job.strict !== null && job.strict !== undefined) {
+                if (strict) {
                     // for strict jobs we're going to repeat all missed tasks up to current date after restart
                     // for non-strict ones, we want to start from current date
                     while (next[1].getTime() < Date.now()) {
@@ -595,7 +598,7 @@ class Manager {
             n = (this.running[job.name] || []).length,
             can = c === 0 || (n + count) <= c;
         if (!can) {
-            log.i('Hit concurrency limit on %j: %d is running out of limit %d, requested to run %d', job._id, n, c, count);
+            log.i('Hit concurrency limit on %j: %d is running out of limit %d, requested to run %d, running %j', job._id, n, c, count, this.running[job.name]);
         }
         return can;
     }

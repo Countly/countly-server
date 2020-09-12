@@ -10,9 +10,12 @@ var APP_ID = "";
 var APP_KEY = "";
 
 describe('Retrieve API-KEY', function() {
+    before('Create db connection', async function() {
+        testUtils.db = await plugins.dbConnection("countly");
+        testUtils.client = testUtils.db.client;
+    });
     it('should create user', function(done) {
-        var db = plugins.dbConnection();
-        db.collection("members").findOne({global_admin: true}, function(err, member) {
+        testUtils.db.collection("members").findOne({global_admin: true}, function(err, member) {
             if (err) {
                 return done(err);
             }
@@ -22,7 +25,6 @@ describe('Retrieve API-KEY', function() {
             //generate data for new user, to tear it down later
             testUtils.username = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
             testUtils.email = testUtils.username + "@test.test";
-            db.close();
             done();
         });
     });

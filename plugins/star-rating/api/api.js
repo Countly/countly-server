@@ -1,4 +1,5 @@
 var exported = {},
+    requestProcessor = require('../../../api/utils/requestProcessor'),
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
@@ -260,6 +261,44 @@ const widgetPropertyPreprocessors = {
             }
         });
     };
+    var nonChecksumHandler = function(ob) {
+        try {
+            var events = JSON.parse(ob.params.qstring.events);
+            if (events.length !== 1 || events[0].key !== "[CLY]_star_rating") {
+                common.returnMessage(ob.params, 400, 'invalid_event_request');
+                return false;
+            }
+            else {
+                var params = {
+                    no_checksum: true,
+                    //providing data in request object
+                    'req': {
+                        url: "/i?" + ob.params.href.split("/i/feedback/input?")[1]
+                    },
+                    //adding custom processing for API responses
+                    'APICallback': function(err, responseData, headers, returnCode) {
+                        //sending response to client
+                        if (returnCode === 200) {
+                            common.returnOutput(ob.params, JSON.parse(responseData));
+                            return true;
+                        }
+                        else {
+                            common.returnMessage(ob.params, returnCode, JSON.parse(responseData).result);
+                            return false;
+                        }
+                    }
+                };
+                requestProcessor.processRequest(params);
+                return true;
+            }
+        }
+        catch (jsonParseError) {
+            common.returnMessage(ob.params, 400, 'invalid_event_request');
+            return false;
+        }
+    };
+
+    plugins.register("/i/feedback/input", nonChecksumHandler);
     plugins.register("/i", function(ob) {
         var params = ob.params;
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
@@ -381,6 +420,7 @@ const widgetPropertyPreprocessors = {
         var query = {};
         var skip = parseInt(params.qstring.iDisplayStart);
         var limit = parseInt(params.qstring.iDisplayLength);
+        var colNames = ['rating', 'comment', 'email', 'ts'];
         query.ts = countlyCommon.getTimestampRangeQuery(params, true);
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
@@ -400,11 +440,28 @@ const widgetPropertyPreprocessors = {
         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
             query.comment = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
         }
+        if (params.qstring.iSortCol_0) {
+            try {
+                var colIndex = parseInt(params.qstring.iSortCol_0);
+                var colName = colNames[colIndex];
+                var sortType = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
+                var sort = {};
+                sort[colName] = sortType;
+            }
+            catch (e) {
+                common.returnMessage(params, 500, 'Invalid column index for sorting');
+                return true;
+            }
+        }
+
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
                 if (!err) {
+                    if (sort) {
+                        cursor.sort(sort);
+                    }
                     cursor.skip(skip);
                     cursor.limit(limit);
                     cursor.toArray(function(cursorErr, res) {

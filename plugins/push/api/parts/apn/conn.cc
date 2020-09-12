@@ -142,8 +142,6 @@ namespace apns {
 			if (obj->tcp) {
 				uv_read_stop((uv_stream_t *)obj->tcp);
 
-				LOG_WARNING("CONN " << uv_thread_self() << ": has next address ? " << !!obj->address->ai_next);
-
 				uv_close((uv_handle_t *)obj->tcp, [](uv_handle_t* handle){
 					H2* obj = static_cast<H2 *>(handle->data);
 					LOG_WARNING(obj->hostname);
@@ -158,21 +156,9 @@ namespace apns {
 					}
 
 					LOG_WARNING("CONN " << uv_thread_self() << ": freed tcp & ssl for " << obj->hostname);
-					if (obj->address->ai_next) {
-						LOG_WARNING("CONN " << uv_thread_self() << ": going to try next address");
-						obj->address = obj->address->ai_next;
-						obj->conn_async->data = obj;
-						uv_async_send(obj->conn_async);
-					} else {
-						LOG_WARNING("CONN " << uv_thread_self() << ": no more addresses, quit");
-						obj->stats.error_connection = "Timeout on all resolved servers";
-						if (obj->tcp_init_sem) {
-							uv_sem_post(obj->tcp_init_sem);
-						}
-						if (obj->h2_sem) {
-							uv_sem_post(obj->h2_sem);
-						}
-					}
+					LOG_WARNING("CONN " << uv_thread_self() << ": going to try next address");
+					obj->conn_async->data = obj;
+					uv_async_send(obj->conn_async);
 				});
 			} else {
 				if (obj->ssl) {
@@ -203,7 +189,7 @@ namespace apns {
 
 		stats.init_eofs = 0;
 
-		while (address && !(stats.state & ST_CONNECTED) && stats.init_eofs < H2_MAX_EOFS) {
+		while (!(stats.state & ST_CONNECTED) && stats.init_eofs < H2_MAX_EOFS) {
 			tcp_init_sem = new uv_sem_t;
 			uv_sem_init(tcp_init_sem, 0);
 
@@ -275,6 +261,7 @@ namespace apns {
 
 				if (ssl) {
 					SSL_free(ssl);
+					ssl = nullptr;
 				}
 
 				// BIO_free(read_bio);
@@ -284,8 +271,6 @@ namespace apns {
 					close(fd);
 					fd = 0;
 				}
-
-				address = address->ai_next;
 			}
 
 		}
@@ -304,12 +289,11 @@ namespace apns {
 			uv_timer_start(obj->conn_timer, conn_thread_timeout, H2_TIMEOUT, 0);
 		}
 
-		struct sockaddr_in *i_addr = (struct sockaddr_in *)obj->address->ai_addr; 
-		char *addr = inet_ntoa((struct in_addr)i_addr->sin_addr);
-		// inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr); 
-		// char addr[17] = {'\0'};
-		// uv_ip4_name((struct sockaddr_in*) obj->address->ai_addr, addr, 16);
-		LOG_DEBUG("CONN " << uv_thread_self() << ": connecting to " << obj->hostname << " (" << addr << ": " << obj->address->ai_family << " (" << AF_INET << "), " << obj->address->ai_protocol << ") in " << uv_thread_self());
+		auto item = obj->addresses.begin();
+		std::advance(item, std::rand() % (obj->addresses.size() - 1));
+		auto str = item->first;
+		struct addrinfo *i_addrinfo = obj->addresses[str]; 
+		LOG_DEBUG("CONN " << uv_thread_self() << ": connecting to " << obj->hostname << " (" << str << ") in " << uv_thread_self());
 
 		obj->stats.error_connection = "";
 		obj->tcp = nullptr;
@@ -354,7 +338,7 @@ namespace apns {
 			// 	return;
 			// }
 
-			val = connect(obj->fd, obj->address->ai_addr, obj->address->ai_addrlen);
+			val = connect(obj->fd, i_addrinfo->ai_addr, i_addrinfo->ai_addrlen);
 			LOG_DEBUG("PROXY " << uv_thread_self() << ": CONN " << uv_thread_self() << ": connect " << val);
 			if (val != 0 && errno != EINPROGRESS) {
 				std::ostringstream out;
@@ -515,7 +499,7 @@ namespace apns {
 		SSL_set_tlsext_host_name(obj->ssl, obj->hostname.c_str());
 
 		if (obj->proxyport == 0) {
-			val = connect(obj->fd, obj->address->ai_addr, obj->address->ai_addrlen);
+			val = connect(obj->fd, i_addrinfo->ai_addr, i_addrinfo->ai_addrlen);
 			LOG_DEBUG("CONN " << uv_thread_self() << ": CONN " << uv_thread_self() << ": connect " << val);
 			if (val != 0 && errno != EINPROGRESS) {
 				std::ostringstream out;
@@ -602,7 +586,7 @@ namespace apns {
 		val = SSL_do_handshake(obj->ssl);
 		obj->conn_thread_uv_on_event();
 
-		LOG_INFO("CONN " << uv_thread_self() << ": waiting for SSL handshake to complete for " << addr << " in " << uv_thread_self());
+		LOG_INFO("CONN " << uv_thread_self() << ": waiting for SSL handshake to complete for " << str << " in " << uv_thread_self());
 	}
 
 	void H2::conn_thread_uv_on_event() {
@@ -905,8 +889,12 @@ namespace apns {
 					for (size_t i = 0; i < frame->settings.niv; ++i) {
 						// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: got setting " << frame->settings.iv[i].settings_id << ": " << frame->settings.iv[i].value << " in " << uv_thread_self());
 						if (frame->settings.iv[i].settings_id == NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS) {
-							obj->stats.sending_max = frame->settings.iv[i].value;
-							LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
+							if (frame->settings.iv[i].value <= 100 || obj->stats.sending > 0) {
+								obj->stats.sending_max = frame->settings.iv[i].value;
+								LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
+							} else {
+								LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: won't sending_max to " << frame->settings.iv[i].value << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
+							}
 						}
 					}
 					if (obj->h2_sem) {
@@ -996,6 +984,9 @@ namespace apns {
 						std::string status_string((const char *)value, valuelen);
 						try {
 							int status = std::atoi(status_string.c_str());
+							if (status != 200 && status != 410) {
+								LOG_DEBUG("CONN " << stream->id << " returned " << status);
+							}
 							if (status == 410) {
 								status = -200;
 							}
@@ -1003,6 +994,7 @@ namespace apns {
 						} catch (const std::invalid_argument &e) {
 							stream->status = -1;
 						}
+
 
 						// // LOG_DEBUG("CONN " << uv_thread_self() << ": nghttp2_session_callbacks_set_on_header_callback block ");
 						// uv_mutex_lock(stream->obj->main_mutex);
@@ -1043,12 +1035,12 @@ namespace apns {
 		nghttp2_session_callbacks_del(callbacks);
 
 		nghttp2_settings_entry iv[] = {
-			{NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, 1000},
+			{NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, 100},
 			{NGHTTP2_SETTINGS_INITIAL_WINDOW_SIZE, NGHTTP2_INITIAL_WINDOW_SIZE}
 			// {NGHTTP2_SETTINGS_HEADER_TABLE_SIZE, 4096},
 			// {NGHTTP2_SETTINGS_ENABLE_PUSH, 0}
 		};
-		obj->stats.sending_max = 1000;
+		obj->stats.sending_max = 100;
 
 		// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending SETTINGS");
 		int rv = nghttp2_submit_settings(obj->session, NGHTTP2_FLAG_NONE, iv, 1);
@@ -1287,7 +1279,7 @@ namespace apns {
 				// }
 				// LOG_DEBUG("CONN " << uv_thread_self() << ": headers " << nghttp2_strerror(stream->stream_id));
 				stream->stream_id = nghttp2_submit_request(session, NULL, headers, headers[7].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 7 : 8, &global_data, stream);
-				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending " << stream->stream_id << " to " << stream->id);
+				LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending " << stream->stream_id << " to " << stream->id << ": " << stream->path << ": " << stream->data);
 
 				if (stream->stream_id < 0) {
 					LOG_DEBUG("CONN " << uv_thread_self() << ": H2: Couldn't nghttp2_submit_request " << nghttp2_strerror(stream->stream_id));

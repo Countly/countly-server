@@ -707,36 +707,132 @@
             return false;
         }
     };
+    /** function to show selected column count in export dialog
+	* @param {object} dialog - dialog 
+	*/
+    function show_selected_column_count(dialog) {
 
+        var allSelected = dialog.find('.export-all-columns.fa-check-square');
+
+
+        var boxesCn = dialog.find('.columns-wrapper .checkbox-line');
+        if (boxesCn) {
+            boxesCn = boxesCn.length;
+        }
+        var selectedCn = dialog.find('.columns-wrapper .fa-check-square');
+        if (selectedCn) {
+            selectedCn = selectedCn.length;
+        }
+        if (allSelected.length === 0 && selectedCn !== boxesCn) {
+            dialog.find(".export-columns-selector p:first").html(jQuery.i18n.map["export.columns-to-export"] + "<span>" + jQuery.i18n.prop("export.export-columns-selected-count", selectedCn, boxesCn) + "</span>");
+        }
+        else {
+            dialog.find(".export-columns-selector p:first span").text("");
+        }
+    }
     /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
     * @param {boolean} exportByAPI - export from api request, export from db when set to false
+	* @param {boolean} instance - optional. Reference to table to get correct colum names(only if there is need to select columns to export) There must be changes made in table settings to allow it. (table.addColumnExportSelector = true and each column must have columnsSelectorIndex value as field in db)
     * @returns {object} jQuery object reference to dialog
     * @example
     * var dialog = CountlyHelpers.export(300000);
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.export = function(count, data, asDialog, exportByAPI) {
-        var hardLimit = countlyGlobal.config.export_limit;
-        var pages = Math.ceil(count / hardLimit);
+    CountlyHelpers.export = function(count, data, asDialog, exportByAPI, instance) {
+        //var hardLimit = countlyGlobal.config.export_limit;
+        //var pages = Math.ceil(count / hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
-        var page = 0;
+        //var page = 0;
+        var tableCols;
+
         dialog.removeAttr("id");
-        dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
+        /*dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
         if (count <= hardLimit) {
             dialog.find(".cly-select").hide();
         }
         else {
+            dialog.find(".select-items > div").append('<div data-value="-1" class="segmentation-option item">' + jQuery.i18n.map["common.all"] + " " + jQuery.i18n.map["export.documents"] + '</div>');
             for (var i = 0; i < pages; i++) {
                 dialog.find(".select-items > div").append('<div data-value="' + i + '" class="segmentation-option item">' + ((i * hardLimit + 1) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + ' - ' + (Math.min((i + 1) * hardLimit, count) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + " " + jQuery.i18n.map["export.documents"] + '</div>');
             }
             dialog.find(".export-data").addClass("disabled");
+        }*/
+
+        var str = "";
+        if (instance && instance.addColumnExportSelector && instance.fnSettings) {
+            tableCols = instance.fnSettings().aoColumns || [];
         }
+
+        if (tableCols && Array.isArray(tableCols) && tableCols.length > 0) {
+            var disabled = ""; //left in case want to add disabled  column feature
+            var myClass = "";
+            var myClass2 = "";
+            for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
+                if (tableCols[colIndex].columnSelectorIndex) {
+                    var colName = tableCols[colIndex].columnSelectorIndex;
+                    myClass = 'fa-check-square';
+                    myClass2 = "";
+
+
+                    if (tableCols[colIndex].bVisible === true) {
+                        //selectedC++;
+                    }
+                    else {
+                        myClass = 'fa-square-o';
+                        myClass2 = ' not-checked';
+                    }
+                    str += "<div class='checkbox-line' data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colName + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</div>";
+                }
+            }
+            dialog.find(".export-columns-selector .columns-wrapper").html(str);
+            dialog.find(".export-columns-selector").css("display", "block");
+
+
+            dialog.find('.columns-wrapper').slimScroll({
+                height: '100%',
+                start: 'top',
+                wheelStep: 10,
+                position: 'right',
+                disableFadeOut: true
+            });
+
+            $(".data-table-column-selector").on("click", function(e) {
+                e.stopPropagation();
+            });
+
+            dialog.find(".export-columns-selector").on("click", ".checkbox-line", function() {
+                var checkbox = $(this).find("a").first();
+                var isChecked = $(checkbox).hasClass("fa-check-square");//is now checked
+
+                if (isChecked) {
+                    $(checkbox).addClass("fa-square-o");
+                    $(checkbox).removeClass("fa-check-square");
+                    if ($(checkbox).hasClass("export-all-columns")) {
+                        dialog.find(".export-columns-selector").removeClass("hide-column-selectors");
+                    }
+                }
+                else {
+                    $(checkbox).removeClass("fa-square-o");
+                    $(checkbox).addClass("fa-check-square");
+                    if ($(checkbox).hasClass("export-all-columns")) {
+                        dialog.find(".export-columns-selector").addClass("hide-column-selectors");
+                    }
+                }
+                show_selected_column_count(dialog);
+            });
+            show_selected_column_count(dialog);
+        }
+        else {
+            dialog.find(".export-columns-selector .columns-wrapper").html("");
+            dialog.find(".export-columns-selector").css("display", "none");
+        }
+
         dialog.find(".button").click(function() {
             dialog.find(".button-selector .button").removeClass("selected");
             dialog.find(".button-selector .button").removeClass("active");
@@ -744,17 +840,45 @@
             $(this).addClass("active");
             type = $(this).attr("id").replace("export-", "");
         });
-        dialog.find(".segmentation-option").on("click", function() {
+        /*dialog.find(".segmentation-option").on("click", function() {
             page = $(this).data("value");
             dialog.find(".export-data").removeClass("disabled");
-        });
+        });*/
         dialog.find(".export-data").click(function() {
             if ($(this).hasClass("disabled")) {
                 return;
             }
             data.type = type;
-            data.limit = hardLimit;
-            data.skip = page * hardLimit;
+            data.limit = "";
+            data.skip = 0;
+            /*if (page !== -1) {
+                data.limit = hardLimit;
+                data.skip = page * hardLimit;
+            }
+            else {
+                data.limit = "";
+                data.skip = 0;
+            }*/
+
+            delete data.projection;
+            if (dialog.find(".export-columns-selector")) {
+                if (dialog.find(".export-all-columns").hasClass("fa-check-square")) {
+                    //export all columns no need for projections
+                }
+                else {
+                    var projection = {};
+                    var checked = dialog.find('.columns-wrapper .fa-check-square');
+                    for (var kz = 0; kz < checked.length; kz++) {
+                        projection[$(checked[kz]).data("index")] = true;
+                    }
+
+                    if (instance && instance.fixProjectionParams) {
+                        projection = instance.fixProjectionParams(projection);
+                    }
+                    data.projection = JSON.stringify(projection);
+                }
+            }
+
 
             var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
             var form = $('<form method="POST" action="' + url + '">');
@@ -846,7 +970,7 @@
                     var ob = {};
                     for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
                         try {
-                            if (!(tableData[i] && tableData[i][colIndex])) {
+                            if (!(tableData[i] && tableData[i][colIndex]) || (tableCols[colIndex] && tableCols[colIndex].noExport)) {
                                 continue;
                             }
                             if (tableCols[colIndex].sType === "formatted-num") {
@@ -1953,6 +2077,10 @@
             }
         }
 
+        if (store.get(dTable[0].id + '_sort')) {
+            oSettings.aaSorting = [store.get(dTable[0].id + '_sort')];
+        }
+
         oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
         dTable.fnStandingRedraw();
         dTable.trigger("table.refresh");
@@ -2029,6 +2157,7 @@
             "sType": "string",
             "sTitle": '',
             "bSortable": false,
+            "noExport": true,
             'sWidth': '1px'
         };
     };
@@ -3248,5 +3377,333 @@ $.extend(Template.prototype, {
             name = countlyGlobal.path + name;
         }
         return name + "?" + countlyGlobal.countlyVersion;
+    }
+});
+
+
+$.widget("cly.datepickerExtended", {
+    _init: function() {
+        var self = this;
+
+        if (this.options.range === true) {
+            this._initRangeSelection();
+        }
+        else {
+            this._initDateSelection();
+        }
+
+        $(this.element).addClass("datepicker-extended");
+
+        this.baseInstance = this.element.datepicker(this.options);
+
+        if (this.options.textEdit === true) {
+            this._initTextEdit();
+        }
+        setTimeout(function() {
+            self._finalizeInit();
+        }, 0);
+    },
+
+    // Private, range picker
+    _initRangeSelection: function() {
+        var self = this,
+            originalOnSelect = this.options.onSelect,
+            originalBeforeShowDay = this.options.beforeShowDay || function() {
+                return [true, "", ""];
+            },
+            currentFirst = null,
+            currentSecond = null,
+            $el = this.element;
+
+        this.committedRange = null;
+        this.temporaryRange = null;
+        this.isSelectingSecond = false;
+
+        /**
+         * Wraps onSelect callback of jQuery UI Datepicker and 
+         * injects the necessary business logic needed for range picking
+         * @param {String} dateText Date as string, passed by Datepicker 
+         * @param {Object} inst Instance object, passed by Datepicker
+         */
+        function _onSelect(dateText, inst) {
+            var point = self.isSelectingSecond ? "second" : "first";
+            if (originalOnSelect) {
+                originalOnSelect.apply($($el), [dateText, inst, point]);
+            }
+
+            var instance = $($el).data("datepicker");
+            var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
+            parsedDate.setHours(0, 0, 0, 0);
+            var reset = false;
+
+            if (self.isSelectingSecond && parsedDate < currentFirst) {
+                self.isSelectingSecond = false;
+                reset = true;
+                // reset
+            }
+
+            if (self.isSelectingSecond) {
+                currentSecond = parsedDate;
+                self.temporaryRange = null;
+                self._commitRange(currentFirst, currentSecond, true);
+                $($el).find(".text-fields input").removeClass("focused");
+            }
+            else {
+                currentFirst = parsedDate;
+                $($el).find(".input-1").addClass("focused");
+            }
+            self.isSelectingSecond = !self.isSelectingSecond;
+            if (reset) {
+                self._onTemporaryRangeUpdate(currentFirst, null);
+            }
+        }
+
+        /**
+         * Wraps beforeShowDay callback of jQuery UI Datepicker and 
+         * injects the necessary business logic needed for highlighting
+         * the current and temporary range.
+         * @param {Date} date Date as Date, passed by Datepicker 
+         * @returns {Array} Array structure requested by Datepicker UI
+         */
+        function _beforeShowDay(date) {
+            var returned = originalBeforeShowDay.apply($($el), [date]);
+            var targetRange = self.committedRange;
+            if (self.isSelectingSecond) {
+                targetRange = self.temporaryRange;
+            }
+            if (targetRange) {
+                if (targetRange[0] < date && date < targetRange[1]) {
+                    return [returned[0], returned[1] + " in-range", returned[2]];
+                }
+                if (targetRange[0].getTime() === date.getTime() || date.getTime() === targetRange[1].getTime()) {
+                    return [returned[0], returned[1] + " point", returned[2]];
+                }
+            }
+            return returned;
+        }
+
+        this.options.beforeShowDay = _beforeShowDay;
+        this.options.onSelect = _onSelect;
+
+        $($el).addClass("datepicker-range");
+
+        $($el).on("mouseover", ".ui-state-default", function() {
+            self._onTemporaryRangeUpdate(currentFirst, self._cellToDate($(this).parent()));
+        });
+
+        $($el).on("mouseout", ".ui-state-default", function() {
+            self._onTemporaryRangeUpdate(currentFirst, null);
+        });
+    },
+    _onTemporaryRangeUpdate: function(currentFirst, temporarySecond) {
+        var self = this;
+        if (!self.isSelectingSecond) {
+            return;
+        }
+        if (temporarySecond && currentFirst <= temporarySecond) {
+            self.temporaryRange = [currentFirst, temporarySecond];
+        }
+        else {
+            self.temporaryRange = [currentFirst, currentFirst];
+        }
+        self._syncWith("picker", 0);
+        self._syncWith("picker", 1);
+        self._refreshCellStates();
+    },
+    _commitRange: function(dateFirst, dateSecond, fireOnCommit) {
+        var self = this,
+            $el = this.element;
+
+        self.committedRange = [dateFirst, dateSecond].sort(function(a, b) {
+            return a - b;
+        });
+
+        var minDate = self.baseInstance.datepicker("option", "minDate"),
+            maxDate = self.baseInstance.datepicker("option", "maxDate");
+
+        minDate = minDate ? moment(minDate, "MM/DD/YYYY").toDate() : false;
+        maxDate = maxDate ? moment(maxDate, "MM/DD/YYYY").toDate() : false;
+
+        if (minDate && minDate - self.committedRange[0] > 0) {
+            self.committedRange[0] = new Date(minDate.getTime());
+        }
+
+        if (maxDate && self.committedRange[1] - maxDate > 0) {
+            self.committedRange[1] = new Date(maxDate.getTime());
+        }
+
+        self.committedRange[0].setHours(0, 0, 0, 0);
+        self.committedRange[1].setHours(0, 0, 0, 0);
+
+        if (fireOnCommit && self.options.onCommit) {
+            self.options.onCommit.apply($($el), self.committedRange);
+        }
+        self._syncWith("picker", 0, { onlyCommitted: true });
+        self._syncWith("picker", 1, { onlyCommitted: true });
+    },
+
+    // Private, generic
+    _initDateSelection: function() {
+        var self = this,
+            originalOnSelect = this.options.onSelect,
+            $el = this.element;
+
+        /**
+         * Wraps onSelect callback of jQuery UI Datepicker and 
+         * injects the necessary business logic needed for picker -> text field
+         * data binding.
+         * @param {String} dateText Date as string, passed by Datepicker 
+         * @param {Object} inst Instance object, passed by Datepicker
+         */
+        function _onSelect(dateText, inst) {
+            originalOnSelect.apply($($el), [dateText, inst]);
+            self._syncWith("picker", 0);
+        }
+
+        this.options.onSelect = _onSelect;
+    },
+    _initTextEdit: function() {
+        var $el = this.element,
+            self = this;
+
+        $($el).addClass("datepicker-text-edit");
+        $($el).prepend("<div class='text-fields'></div>");
+
+        $el.find(".text-fields").append('<input type="text" class="calendar-input-field input-0" data-input="0"></input>');
+        if (this.options.range === true) {
+            $el.find(".text-fields").append('<input type="text" class="calendar-input-field input-1" data-input="1"></input>');
+        }
+
+        $($el).on("keyup", ".text-fields input", function(event) {
+            if (event.keyCode === 13) {
+                var date = moment($(this).val(), "MM/DD/YYYY");
+                var inputIdx = parseInt($(this).data("input"), 10);
+
+                if (date.isValid()) {
+                    // update the picker value
+                    self._syncWith("text", inputIdx, {isDOMEvent: true});
+                }
+                else {
+                    // revert back to the original value
+                    self._syncWith("picker", inputIdx);
+                }
+            }
+        });
+    },
+    _syncWith: function(source, inputIdx, syncOptions) {
+
+        if (!this.options.textEdit) {
+            return;
+        }
+
+        syncOptions = syncOptions || {};
+
+        var $el = this.element,
+            self = this;
+
+        if (source === "text") {
+            var parsedDate = moment($($el).find(".text-fields .input-" + inputIdx).val(), "MM/DD/YYYY").toDate();
+            if (self.options.range !== true && inputIdx === 0) {
+                self.setDate(parsedDate);
+                if (syncOptions.isDOMEvent) {
+                    // manually trigger onSelect
+                    self.baseInstance.find('.ui-datepicker-current-day').click(); // represents the current day
+                }
+            }
+            else if (self.options.range === true) {
+                if (self.isSelectingSecond) {
+                    self.isSelectingSecond = false;
+                    // abort the ongoing picking
+                }
+                if (inputIdx === 0) {
+                    self._commitRange(parsedDate, self.committedRange[1], syncOptions.isDOMEvent);
+                }
+                else if (inputIdx === 1) {
+                    self._commitRange(self.committedRange[0], parsedDate, syncOptions.isDOMEvent);
+                }
+                this.baseInstance.datepicker("setDate", parsedDate);
+                this.baseInstance.datepicker("refresh");
+            }
+        }
+        else if (source === "picker") {
+            if (self.options.range !== true && inputIdx === 0) {
+                $($el).find(".text-fields .input-" + inputIdx).val(moment(self.getDate()).format("MM/DD/YYYY"));
+            }
+            else if (self.options.range === true) {
+                var targetRange = self.committedRange;
+                if (self.isSelectingSecond && !syncOptions.onlyCommitted) {
+                    targetRange = self.temporaryRange;
+                }
+                var selectedDate = targetRange[inputIdx];
+                $($el).find(".text-fields .input-" + inputIdx).val(moment(selectedDate).format("MM/DD/YYYY"));
+            }
+        }
+    },
+    _finalizeInit: function() {
+        if (this.options.range === true) {
+            if (this.options.defaultRange) {
+                this.setRange(this.options.defaultRange);
+            }
+            else {
+                this.setRange([moment().subtract(8, "d").startOf("d").toDate(), moment().subtract(1, "d").startOf("d").toDate()]);
+            }
+        }
+    },
+    _cellToDate: function(element) {
+        var day = parseInt($(element).find("a").text(), 10);
+        var month = parseInt($(element).data("month"), 10);
+        var year = parseInt($(element).data("year"), 10);
+        if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
+            return new Date(year, month, day, 0, 0, 0, 0);
+        }
+        else {
+            return null;
+        }
+    },
+    _refreshCellStates: function() {
+        var self = this,
+            $el = this.element;
+
+        $($el).find(".ui-datepicker-calendar td").each(function() {
+            var parsedDate = self._cellToDate($(this));
+            if (parsedDate) {
+                var returned = self.options.beforeShowDay(parsedDate);
+                $(this).attr('class', returned[1]);
+            }
+        });
+    },
+
+    // Public
+    abortRangePicking: function() {
+        if (this.options.range === true) {
+            this.isSelectingSecond = false;
+            this._syncWith("picker", 0);
+            this._syncWith("picker", 1);
+            this.temporaryRange = null;
+            $(this.element).find(".text-fields input").removeClass("focused");
+            this.baseInstance.datepicker("refresh");
+        }
+    },
+    getRange: function() {
+        return this.committedRange;
+    },
+    getDate: function() {
+        if (this.options.range === true) {
+            return this.getRange();
+        }
+        return this.baseInstance.datepicker("getDate");
+    },
+    setRange: function(dateRange) {
+        this._commitRange(dateRange[0], dateRange[1]);
+        this.baseInstance.datepicker("setDate", dateRange[1]);
+    },
+    setDate: function(date) {
+        if (this.options.range === true) {
+            this.setRange(date);
+        }
+        else {
+            this.baseInstance.datepicker("setDate", date);
+            this._syncWith("picker", 0);
+        }
     }
 });

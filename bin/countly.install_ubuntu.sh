@@ -48,7 +48,6 @@ g++ --version
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
-#bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
 apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #if npm is not installed, install it too
@@ -61,6 +60,9 @@ if [ "$INSIDE_DOCKER" != "1" ]
 then
 	apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 fi
+
+#install numactl
+apt-get -y install numactl
 
 #install sendmail
 apt-get -y install sendmail

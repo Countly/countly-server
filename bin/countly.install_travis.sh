@@ -52,7 +52,6 @@ g++ --version
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
-#bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
 apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install supervisor

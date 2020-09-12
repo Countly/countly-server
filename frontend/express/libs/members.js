@@ -239,12 +239,16 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
     req.session.uid = member._id;
     req.session.gadm = (member.global_admin === true);
     req.session.email = member.email;
+    var reuse = true;
+    if (req.session.temporary_token) {
+        reuse = false;
+    }
 
     authorize.save({
         db: countlyDb,
         multi: true,
         owner: req.session.uid,
-        tryReuse: true,
+        tryReuse: reuse,
         ttl: getSessionTimeoutInMs(req) / 1000,
         purpose: "LoggedInAuth",
         callback: function(err2, token) {
@@ -471,18 +475,23 @@ membersUtility.loginWithToken = function(req, callback) {
         db: membersUtility.db,
         token: token,
         req_path: fullPath,
+        return_data: true,
         callback: function(valid) {
             if (!valid) {
                 plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token}});
                 return callback(undefined);
             }
-            membersUtility.db.collection('members').findOne({"_id": membersUtility.db.ObjectID(valid)}, function(err, member) {
+
+            membersUtility.db.collection('members').findOne({"_id": membersUtility.db.ObjectID(valid.owner)}, function(err, member) {
                 if (err || !member) {
-                    plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid}});
+                    plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner}});
                     callback(undefined);
                 }
                 else {
                     plugins.callMethod("tokenLoginSuccessful", {req: req, data: {username: member.username}});
+                    if (valid.temporary) {
+                        req.session.temporary_token = true;
+                    }
                     setLoggedInVariables(req, member, membersUtility.db, function() {
                         req.session.settings = member.settings;
                         callback(member);
@@ -507,9 +516,12 @@ membersUtility.logout = function(req, res) {
         }
         if (req.session.auth_token) {
             membersUtility.db.collection("auth_tokens").remove({_id: req.session.auth_token});
-            req.session.auth_token = null;
+
             //louout also other users logged in with same credentials
-            killOtherSessionsForUser(req.session.uid, null, null, membersUtility.db);
+            if (!req.session.temporary_token) {
+                killOtherSessionsForUser(req.session.uid, null, null, membersUtility.db);
+            }
+            req.session.auth_token = null;
         }
         membersUtility.clearReqAndRes(req, res);
     }
@@ -791,7 +803,7 @@ membersUtility.settings = function(req, callback) {
             callback(false, "user-settings.api-key-length");
             return;
         }
-        if (!req.body.api_key.match(/^[0-9a-z]+([0-9]+)([a-z]+)[0-9a-z]+$/)) {
+        if (!req.body.api_key.match(/^[0-9a-zA-Z]+([0-9]+)([a-z]+)[0-9a-zA-Z]+$/)) {
             callback(false, "user-settings.api-key-restrict");
             return;
         }
