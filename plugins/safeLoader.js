@@ -1,10 +1,12 @@
 var log = require('../api/utils/log.js'),
+    _ = require('lodash'),
+    fs = require('fs'),
     logSafeLoader = log('plugins:safeloader');
 /**
  * 
  * @param {string} fixStrategy {disableChildren|enableParents}
  */
-var analyzeAndFixDependencies = function(plugins, fixStrategy) {
+var analyzeAndFixDependencies = function(plugins, fixOptions) {
     const DEP_ROOT = "___DEP_ROOT___";
     var errors = {};
     var dpcs = {
@@ -13,7 +15,9 @@ var analyzeAndFixDependencies = function(plugins, fixStrategy) {
         }
     };
 
-    fixStrategy = fixStrategy || "disableChildren";
+    fixOptions = fixOptions || {};
+
+    fixStrategy = fixOptions.fixStrategy || "disableChildren";
     if (["disableChildren", "enableParents"].indexOf(fixStrategy) === -1) {
         logSafeLoader.e("Invalid fixStrategy (" + fixStrategy + ") for analyzeAndFixDependencies.");
         return null;
@@ -115,6 +119,34 @@ var analyzeAndFixDependencies = function(plugins, fixStrategy) {
     else {
         logSafeLoader.i("Loaded successfully.");
     }
+
+    if (!_.isEqual(plugins, fixedPlugins)) {
+        logSafeLoader.w("Plugin list has changed.");
+        logSafeLoader.w("Old Plugins >>>", JSON.stringify(plugins));
+        logSafeLoader.w("New Plugins >>>", JSON.stringify(fixedPlugins));
+
+        if (fixOptions.overwrite) {
+            if (fs.existsSync(fixOptions.overwrite)) {
+                logSafeLoader.w("The old version will be overwritten.");
+                try {
+                    fs.renameSync(fixOptions.overwrite, fixOptions.overwrite + ".autobkp");
+                    try {
+                        fs.writeFileSync(fixOptions.overwrite, JSON.stringify(fixedPlugins));
+                    }
+                    catch (newWriteErr) {
+                        logSafeLoader.e(`Fixed ${fixOptions.overwrite} couldn't be written. Please check the original file.`, newWriteErr);
+                    }
+                }
+                catch (renameErr) {
+                    logSafeLoader.e(`Old ${fixOptions.overwrite} couldn't be renamed. Overwrite was aborted.`, renameErr);
+                }
+            }
+        }
+    }
+    else {
+        logSafeLoader.i("Plugin list is OK.");
+    }
+
     return fixedPlugins;
 }
 
