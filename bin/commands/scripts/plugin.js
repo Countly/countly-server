@@ -32,10 +32,15 @@ function save_changes(data) {
 if (myArgs[0] == "enable" && myArgs[1]) {
     var pluginName = myArgs[1];
     if (plugins.indexOf(pluginName) == -1) {
-        var {dpcs, errors} = dependencies.getDependencies(plugins.concat(pluginName), {
+        var {dpcs} = dependencies.getDependencies(plugins.concat(pluginName), {
             discoveryStrategy: "enableParents",
             env: "cli"
         });
+
+        if (!dpcs[pluginName]){
+            console.log("Plugin not found.");
+            return;
+        }
 
         var parentsNeedToBeEnabled = [];
 
@@ -46,12 +51,11 @@ if (myArgs[0] == "enable" && myArgs[1]) {
         });
 
         if (parentsNeedToBeEnabled.length > 0) {
-            console.log("You need to enable these parents as well: ");
-            console.log(parentsNeedToBeEnabled);
-            console.log("Continue?");
+            console.log(`> Enabling '${pluginName}' will cause depended plugin(s) (${parentsNeedToBeEnabled.join(', ')}) to be enabled as well.`);
+            console.log("> Do you want to continue?");
         }
         return;
-        
+
         manager.installPlugin(pluginName, function(err) {
             if (!err) {
                 plugins.push(pluginName);
@@ -68,6 +72,43 @@ if (myArgs[0] == "enable" && myArgs[1]) {
         console.log("Plugin already installed");
     }
 }
+else if (myArgs[0] == "disable" && myArgs[1]) {
+    var pluginName = myArgs[1];
+    if (plugins.indexOf(pluginName) > -1) {
+        var {dpcs} = dependencies.getDependencies(plugins.concat(pluginName), {
+            discoveryStrategy: "enableParents",
+            env: "cli"
+        });
+
+        if (!dpcs[pluginName]){
+            console.log("Plugin not found.");
+            return;
+        }
+
+        var childrenNeedToBeDisabled = [];
+
+        Object.keys(dpcs[pluginName].children).forEach(function(childName) {
+            if (plugins.indexOf(childName) > -1) {
+                childrenNeedToBeDisabled.push(childName);
+            }
+        });
+
+        if (childrenNeedToBeDisabled.length > 0) {
+            console.log(`> Disabling '${pluginName}' will cause dependent plugin(s) (${childrenNeedToBeDisabled.join(', ')}) to be disabled as well.`);
+            console.log("> Do you want to continue?");
+        }
+        return;
+        manager.uninstallPlugin(pluginName, function() {
+            plugins.splice(plugins.indexOf(pluginName), 1);
+            let data = {};
+            data[pluginName] = false;
+            save_changes(data);
+        });
+    }
+    else {
+        console.log("Plugin already uninstalled");
+    }
+}
 else if (myArgs[0] == "upgrade" && myArgs[1]) {
     if (plugins.indexOf(myArgs[1]) > -1) {
         require('../../../api/utils/log').setLevel('db:write', 'mute');
@@ -75,19 +116,6 @@ else if (myArgs[0] == "upgrade" && myArgs[1]) {
     }
     else {
         console.log("Plugin is not installed");
-    }
-}
-else if (myArgs[0] == "disable" && myArgs[1]) {
-    if (plugins.indexOf(myArgs[1]) > -1) {
-        manager.uninstallPlugin(myArgs[1], function() {
-            plugins.splice(plugins.indexOf(myArgs[1]), 1);
-            let data = {};
-            data[myArgs[1]] = false;
-            save_changes(data);
-        });
-    }
-    else {
-        console.log("Plugin already uninstalled");
     }
 }
 else if (myArgs[0] == "test" && myArgs[1]) {
