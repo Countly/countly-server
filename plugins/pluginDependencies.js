@@ -1,9 +1,25 @@
 var log = require('../api/utils/log.js'),
     _ = require('lodash'),
-    fs = require('fs'),
-    logSafeLoader = log('plugins:safeloader');
+    fs = require('fs'); 
 
 const CLY_ROOT = "___CLY_ROOT___";
+
+
+function getOptions(options) {
+    options = options || {};
+    if (options.env === "cli") {
+        options.logger = {
+            e: console.log,
+            i: console.log,
+            w: console.log
+        }
+    }
+    else {
+        options.logger = options.logger || log('plugins:dependencies');
+    }
+    options.discoveryStrategy = options.discoveryStrategy || "disableChildren";
+    return options;
+}
 
 /**
  * Returns a dependency graph of the provided plugins list.
@@ -23,18 +39,18 @@ const CLY_ROOT = "___CLY_ROOT___";
  * @param {*} discoveryStrategy (disableChildren|enableParents) Explained above.
  * @returns {Object} Returns an object with dpcs and errors fields
  */
-function getDependencies(plugins, discoveryStrategy) {
-    var errors = {};
-    var dpcs = {
-        [CLY_ROOT]: {
-            children: {}
-        }
-    };
+function getDependencies(plugins, options) {
+    var errors = {},
+        dpcs = {
+            [CLY_ROOT]: {
+                children: {}
+            }
+        };
+    
+    var {logger, discoveryStrategy} = getOptions(options);
 
-
-    discoveryStrategy = discoveryStrategy || "disableChildren";
     if (["disableChildren", "enableParents"].indexOf(discoveryStrategy) === -1) {
-        logSafeLoader.e("Invalid discoveryStrategy (" + discoveryStrategy + ") for analyzeAndFixDependencies.");
+        logger.e(`Invalid discoveryStrategy (${discoveryStrategy}) for analyzeAndFixDependencies.`);
         return null;
     }
 
@@ -70,6 +86,7 @@ function getDependencies(plugins, discoveryStrategy) {
     }
 
     for (var name in dpcs) {
+        dpcs[name].fromList = plugins.indexOf(name) > -1;
         for (var parentName in dpcs[name].parents) {
             if (!Object.prototype.hasOwnProperty.call(dpcs, parentName)) {
                 if (discoveryStrategy === "enableParents") {
@@ -90,11 +107,11 @@ function getDependencies(plugins, discoveryStrategy) {
     return {dpcs, errors};
 }
 
-var fixDependencies = function(plugins, fixOptions) {
+var getFixedDependencies = function(plugins, options) {
 
-    fixOptions = fixOptions || {};
+    options = getOptions(options);
 
-    var {dpcs, errors} = getDependencies(plugins, fixOptions.discoveryStrategy),
+    var {dpcs, errors} = getDependencies(plugins, discoveryStrategy),
         fixedPlugins = [],
         visited = new Set();
 
@@ -136,46 +153,42 @@ var fixDependencies = function(plugins, fixOptions) {
     }
 
     if (Object.keys(errors).length > 0) {
-        logSafeLoader.e("Loaded plugins:\n", fixedPlugins);
-        logSafeLoader.e("Safe loader couldn't load following plugins:\n", errors);
+        logger.e("Loaded plugins:\n", fixedPlugins);
+        logger.e("Safe loader couldn't load following plugins:\n", errors);
     }
     else {
-        logSafeLoader.i("Loaded successfully.");
+        logger.i("Loaded successfully.");
     }
 
     if (!_.isEqual(plugins, fixedPlugins)) {
-        logSafeLoader.w("Plugin list has changed.");
-        logSafeLoader.w("Old Plugins >>>", JSON.stringify(plugins));
-        logSafeLoader.w("New Plugins >>>", JSON.stringify(fixedPlugins));
+        logger.w("Plugin list has changed.");
+        logger.w("Old Plugins >>>", JSON.stringify(plugins));
+        logger.w("New Plugins >>>", JSON.stringify(fixedPlugins));
 
-        if (fixOptions.overwrite) {
-            if (fs.existsSync(fixOptions.overwrite)) {
-                logSafeLoader.w("The old version will be overwritten.");
+        if (options.overwrite) {
+            if (fs.existsSync(options.overwrite)) {
+                logger.w("The old version will be overwritten.");
                 try {
-                    fs.renameSync(fixOptions.overwrite, fixOptions.overwrite + ".autobkp");
+                    fs.renameSync(options.overwrite, options.overwrite + ".autobkp");
                     try {
-                        fs.writeFileSync(fixOptions.overwrite, JSON.stringify(fixedPlugins));
+                        fs.writeFileSync(options.overwrite, JSON.stringify(fixedPlugins));
                     }
                     catch (newWriteErr) {
-                        logSafeLoader.e(`Fixed ${fixOptions.overwrite} couldn't be written. Please check the original file.`, newWriteErr);
+                        logger.e(`Fixed ${options.overwrite} couldn't be written. Please check the original file.`, newWriteErr);
                     }
                 }
                 catch (renameErr) {
-                    logSafeLoader.e(`Old ${fixOptions.overwrite} couldn't be renamed. Overwrite was aborted.`, renameErr);
+                    logger.e(`Old ${options.overwrite} couldn't be renamed. Overwrite was aborted.`, renameErr);
                 }
             }
         }
     }
     else {
-        logSafeLoader.i("Plugin list is OK.");
+        logger.i("Plugin list is OK.");
     }
 
     return fixedPlugins;
 };
 
 exports.getDependencies = getDependencies;
-exports.safeLoad = fixDependencies;
-
-if (require.main === module) {
-    console.log(JSON.stringify(getDependencies(["formulas"], "enableParents"), null, 4));
-}
+exports.getFixedDependencies = getFixedDependencies;

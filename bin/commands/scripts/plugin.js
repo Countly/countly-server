@@ -1,4 +1,5 @@
 var manager = require('../../../plugins/pluginManager.js'),
+    dependencies = require('../../../plugins/pluginDependencies.js'),
     fs = require('fs'),
     path = require('path');
 
