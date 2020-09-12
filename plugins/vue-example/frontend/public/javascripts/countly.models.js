@@ -13,7 +13,8 @@
                 description: '',
                 status: false,
                 selectedProps: [],
-                visibility: 'private'
+                visibility: 'private',
+                isDetailRowShown: false
             };
             return _.extend(original, fields);
         }
@@ -105,6 +106,14 @@
                 state.records = state.records.filter(function(val) {
                     return val._id !== _id;
                 });
+            },
+            toggleDetail: function(state, obj) {
+                var target = state.records.filter(function(val) {
+                    return val._id === obj._id;
+                });
+                if (target.length > 0) {
+                    Vue.set(target[0], "isDetailRowShown", !target[0].isDetailRowShown);
+                }
             },
             setStatus: function(state, obj) {
                 var target = state.records.filter(function(val) {

@@ -36,7 +36,9 @@
                         <cly-datatable 
                             :rows="tableRows"
                             :columns="gtableColumns"
-                            @statusChanged="statusChanged"
+                            :has-detail-rows="true"
+                            @on-row-click="toggleRowDetail"
+                            @status-changed="statusChanged"
                             @delayed-delete-record="onDelayedDelete"
                             @delete-record="onDelete"
                             @edit-record="onEditRecord">
