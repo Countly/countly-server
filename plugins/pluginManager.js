@@ -1,6 +1,6 @@
 var pluginDependencies = require('./pluginDependencies.js'),
     path = require('path'),
-    plugins = pluginDependencies.getFixedDependencies(require('./plugins.json', 'dont-enclose'), {
+    plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
         "discoveryStrategy": "disableChildren",
         "overwrite": path.resolve(__dirname, './plugins.json')
     }),
@@ -633,7 +633,7 @@ var pluginManager = function pluginManager() {
     **/
     this.reloadPlugins = function() {
         delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
-        plugins = pluginDependencies.getFixedDependencies(require('./plugins.json', 'dont-enclose'), {
+        plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
             "discoveryStrategy": "disableChildren",
             "overwrite": path.resolve(__dirname, './plugins.json')
         });

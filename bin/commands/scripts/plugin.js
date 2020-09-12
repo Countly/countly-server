@@ -1,7 +1,8 @@
 var manager = require('../../../plugins/pluginManager.js'),
     dependencies = require('../../../plugins/pluginDependencies.js'),
     fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    pluginsListPath = path.resolve(__dirname, '../../../plugins/plugins.json');
 
 var plugins = manager.getPlugins();
 var myArgs = process.argv.slice(2);
@@ -16,8 +17,11 @@ function save_changes(data) {
             else {
                 db.close();
             }
-            var dir = path.resolve(__dirname, '../../../plugins/plugins.json');
-            fs.writeFile(dir, JSON.stringify(plugins), 'utf8', function() {
+            var fixedPlugins = dependencies.getFixedPluginList(plugins, {
+                discoveryStrategy: "disableChildren",
+                env: "cli"
+            });
+            fs.writeFile(pluginsListPath, JSON.stringify(fixedPlugins), 'utf8', function() {
                 console.log("Changes saved");
             });
         });
@@ -26,16 +30,37 @@ function save_changes(data) {
 
 //check if we have a command
 if (myArgs[0] == "enable" && myArgs[1]) {
-    if (plugins.indexOf(myArgs[1]) == -1) {
-        manager.installPlugin(myArgs[1], function(err) {
+    var pluginName = myArgs[1];
+    if (plugins.indexOf(pluginName) == -1) {
+        var {dpcs, errors} = dependencies.getDependencies(plugins.concat(pluginName), {
+            discoveryStrategy: "enableParents",
+            env: "cli"
+        });
+
+        var parentsNeedToBeEnabled = [];
+
+        Object.keys(dpcs[pluginName].parents).forEach(function(parentName) {
+            if (plugins.indexOf(parentName) === -1) {
+                parentsNeedToBeEnabled.push(parentName);
+            }
+        });
+
+        if (parentsNeedToBeEnabled.length > 0) {
+            console.log("You need to enable these parents as well: ");
+            console.log(parentsNeedToBeEnabled);
+            console.log("Continue?");
+        }
+        return;
+        
+        manager.installPlugin(pluginName, function(err) {
             if (!err) {
-                plugins.push(myArgs[1]);
+                plugins.push(pluginName);
                 let data = {};
-                data[myArgs[1]] = true;
+                data[pluginName] = true;
                 save_changes(data);
             }
             else {
-                console.log("Could not enable", myArgs[1]);
+                console.log("Could not enable", pluginName);
             }
         });
     }

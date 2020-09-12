@@ -86,7 +86,6 @@ function getDependencies(plugins, options) {
     }
 
     for (var name in dpcs) {
-        dpcs[name].fromList = plugins.indexOf(name) > -1;
         for (var parentName in dpcs[name].parents) {
             if (!Object.prototype.hasOwnProperty.call(dpcs, parentName)) {
                 if (discoveryStrategy === "enableParents") {
@@ -107,7 +106,7 @@ function getDependencies(plugins, options) {
     return {dpcs, errors};
 }
 
-var getFixedDependencies = function(plugins, options) {
+var getFixedPluginList = function(plugins, options) {
 
     options = getOptions(options);
 
@@ -192,4 +191,4 @@ var getFixedDependencies = function(plugins, options) {
 };
 
 exports.getDependencies = getDependencies;
-exports.getFixedDependencies = getFixedDependencies;
+exports.getFixedPluginList = getFixedPluginList;
