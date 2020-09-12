@@ -1,7 +1,7 @@
-var safeLoader = require('./safeLoader.js'),
+var pluginDependencies = require('./pluginDependencies.js'),
     path = require('path'),
-    plugins = safeLoader.load(require('./plugins.json', 'dont-enclose'), {
-        "fixStrategy": "disableChildren",
+    plugins = pluginDependencies.safeLoad(require('./plugins.json', 'dont-enclose'), {
+        "discoveryStrategy": "disableChildren",
         "overwrite": path.resolve(__dirname, './plugins.json')
     }),
     pluginsApis = {},
@@ -633,8 +633,8 @@ var pluginManager = function pluginManager() {
     **/
     this.reloadPlugins = function() {
         delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
-        plugins = safeLoader.load(require('./plugins.json', 'dont-enclose'), {
-            "fixStrategy": "disableChildren",
+        plugins = pluginDependencies.safeLoad(require('./plugins.json', 'dont-enclose'), {
+            "discoveryStrategy": "disableChildren",
             "overwrite": path.resolve(__dirname, './plugins.json')
         });
     };
