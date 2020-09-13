@@ -13,8 +13,7 @@
                 description: '',
                 status: false,
                 selectedProps: [],
-                visibility: 'private',
-                isDetailRowShown: false
+                visibility: 'private'
             };
             return _.extend(original, fields);
         }
@@ -94,13 +93,58 @@
             }
         };
 
-        var records = [];
-        for (var i = 0; i < 20; i++) {
-            records.push(countlyVueExample.factory.getEmpty({_id: i}));
-        }
+        var crud = countlyVue.vuex.CRUD("myRecords", {
+            writes: {
+                create: function(record) {
+                    return $.when($.ajax({
+                        type: "POST",
+                        url: countlyCommon.API_PARTS.data.w + "/vue_example/save",
+                        data: {
+                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                            "metric": JSON.stringify(record)
+                        },
+                        dataType: "json"
+                    }));
+                },
+                update: function(record) {
+                    return $.when($.ajax({
+                        type: "POST",
+                        url: countlyCommon.API_PARTS.data.w + "/vue_example/save",
+                        data: {
+                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                            "metric": JSON.stringify(record)
+                        },
+                        dataType: "json"
+                    }));
+                },
+                delete: function(id) {
+                    return $.when($.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.w + "/vue_example/delete",
+                        data: {
+                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                            "id": id
+                        },
+                        dataType: "json"
+                    }));
+                }
+            },
+            reads: {
+                all: function() {
+                    return $.when($.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o",
+                        data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
+                            method: 'vue-records'
+                        }
+                    }));
+                }
+            }
+        });
 
         var table = countlyVue.vuex.DataTable("table", {
-            initialRows: records,
+            source: "countlyVueExample/myRecords/all",
             keyFn: function(row) {
                 return row._id;
             }
@@ -111,7 +155,7 @@
             getters: getters,
             mutations: mutations,
             actions: actions,
-            submodules: [table]
+            submodules: [crud, table]
         });
     };
 

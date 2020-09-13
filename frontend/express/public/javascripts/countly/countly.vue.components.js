@@ -537,7 +537,6 @@
     var VuexDataTable = function(name, options) {
         var resetFn = function() {
             return {
-                _rows: options.initialRows || [],
                 patches: {}
             };
         };
@@ -546,12 +545,15 @@
             return JSON.stringify(options.keyFn(row));
         };
 
-        var getters = {
-            rows: function(state) {
+        var tableGetters = {
+            source: function(state, getters, rootState, rootGetters) {
+                return rootGetters[options.source];
+            },
+            rows: function(state, getters) {
                 if (Object.keys(state.patches).length === 0) {
-                    return state._rows;
+                    return getters.source;
                 }
-                return state._rows.map(function(row) {
+                return getters.source.map(function(row) {
                     var rowKey = keyFn(row);
                     if (state.patches[rowKey]) {
                         return _.extend(row, state.patches[rowKey]);
@@ -574,8 +576,33 @@
         };
         return VuexModule(name, {
             resetFn: resetFn,
-            getters: getters,
+            getters: tableGetters,
             mutations: mutations
+        });
+    };
+
+    var VuexCRUD = function(name, options) {
+        var resetFn = function() {
+            return {};
+        };
+
+        var actions = {};
+
+        Object.keys(options.writes).forEach(function(fnName) {
+            actions[fnName] = function(/*context*/) {
+                return options.writes[fnName]();
+            };
+        });
+
+        Object.keys(options.reads).forEach(function(fnName) {
+            actions[fnName] = function(/*context*/) {
+                return options.reads[fnName]();
+            };
+        });
+
+        return VuexModule(name, {
+            resetFn: resetFn,
+            actions: actions
         });
     };
 
@@ -590,7 +617,8 @@
             }
         },
         Module: VuexModule,
-        DataTable: VuexDataTable
+        DataTable: VuexDataTable,
+        CRUD: VuexCRUD
     };
 
     var BackboneRouteAdapter = function() {};
