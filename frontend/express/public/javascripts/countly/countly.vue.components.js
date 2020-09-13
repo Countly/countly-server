@@ -582,27 +582,43 @@
     };
 
     var VuexCRUD = function(name, options) {
+
+        var writes = options.writes || {},
+            reads = options.reads || {};
+
         var resetFn = function() {
             var state = {};
-            Object.keys(options.reads).forEach(function(fnName) {
+            Object.keys(reads).forEach(function(fnName) {
                 var stateKey = "_" + fnName;
                 state[stateKey] = [];
             });
             return state;
         };
 
+        var mutateGeneric = function(state, obj) {
+            state[obj.key] = obj.value;
+        };
+
         var actions = {},
             getters = {};
 
-        Object.keys(options.writes).forEach(function(fnName) {
+        Object.keys(writes).forEach(function(fnName) {
             actions[fnName] = function(/*context*/) {
-                return options.writes[fnName]();
+                return writes[fnName]();
             };
         });
 
-        Object.keys(options.reads).forEach(function(fnName) {
-            actions[fnName] = function(/*context*/) {
-                return options.reads[fnName]();
+        Object.keys(reads).forEach(function(fnName) {
+            actions[fnName] = function(context) {
+                return reads[fnName]().then(function(data) {
+                    var stateKey = "_" + fnName,
+                        obj = {
+                            key: stateKey,
+                            value: data
+                        };
+
+                    context.commit("mutateGeneric", obj);
+                });
             };
 
             getters[fnName] = function(state) {
@@ -614,7 +630,10 @@
         return VuexModule(name, {
             resetFn: resetFn,
             actions: actions,
-            getters: getters
+            getters: getters,
+            mutations: {
+                mutateGeneric: mutateGeneric
+            }
         });
     };
 

@@ -259,7 +259,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     computed: {
         randomNumbers: function() {
-            return this.$store.getters["countlyVueExample/randomNumbers"];
+            return this.$store.getters["countlyVueExample/timeGraph/points"];
         },
         barData: function() {
             return this.$store.getters["countlyVueExample/barData"];
@@ -274,7 +274,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     methods: {
         refresh: function() {
             if (this.isParentActive) {
-                this.$store.dispatch("countlyVueExample/updateRandomArray");
+                this.$store.dispatch("countlyVueExample/timeGraph/points");
             }
         }
     },
