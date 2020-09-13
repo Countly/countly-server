@@ -776,6 +776,7 @@ plugins.setConfigs("crashes", {
                         result.crashes.renewed = 0;
                         result.crashes.os = {};
                         result.crashes.highest_app = "";
+                        result.crashes.app_version = {};
                         result.loss = 0;
                         common.db.collection('app_crashgroups' + params.app_id).findOne({_id: "meta"}, function(crashGroupsErr, meta) {
                             if (meta) {

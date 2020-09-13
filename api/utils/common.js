@@ -211,6 +211,11 @@ common.dbUserMap = {
     'resolution': 'r'
 };
 
+common.dbUniqueMap = {
+    "*": [common.dbMap.unique],
+    users: [common.dbMap.unique, common.dbMap.durations, common.dbMap.frequency, common.dbMap.loyalty]
+};
+
 /**
 * Mapping some common event property names from longer understandable to shorter representation stored in database
 * @type {object} 
@@ -1545,7 +1550,7 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
         }
     }
     else {
-        zeroObjUpdate.push(metric);
+        //zeroObjUpdate.push(metric);
         monthObjUpdate.push(metric);
     }
     if (props.segments) {
@@ -1623,11 +1628,11 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
     }
     else {
         if (recordHourly) {
-            common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric, props.value);
+            //common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric, props.value);
             common.fillTimeObjectMonth(params, updateUsersMonth, escapedMetricVal + '.' + metric, props.value, recordHourly);
         }
         else {
-            zeroObjUpdate.push(escapedMetricVal + "." + metric);
+            //zeroObjUpdate.push(escapedMetricVal + "." + metric);
             monthObjUpdate.push(escapedMetricVal + "." + metric);
         }
     }

@@ -23,6 +23,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     plugins.internalDrillEvents.push("[CLY]_view");
     plugins.internalDrillEvents.push("[CLY]_action");
 
+    plugins.register("/worker", function() {
+        common.dbUniqueMap.users.push("vc");
+    });
+
     plugins.register("/i/user_merge", function(ob) {
         var newAppUser = ob.newAppUser;
         var oldAppUser = ob.oldAppUser;
