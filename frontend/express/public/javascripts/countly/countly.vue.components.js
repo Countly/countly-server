@@ -583,10 +583,16 @@
 
     var VuexCRUD = function(name, options) {
         var resetFn = function() {
-            return {};
+            var state = {};
+            Object.keys(options.reads).forEach(function(fnName) {
+                var stateKey = "_" + fnName;
+                state[stateKey] = [];
+            });
+            return state;
         };
 
-        var actions = {};
+        var actions = {},
+            getters = {};
 
         Object.keys(options.writes).forEach(function(fnName) {
             actions[fnName] = function(/*context*/) {
@@ -598,11 +604,17 @@
             actions[fnName] = function(/*context*/) {
                 return options.reads[fnName]();
             };
+
+            getters[fnName] = function(state) {
+                var stateKey = "_" + fnName;
+                return state[stateKey];
+            };
         });
 
         return VuexModule(name, {
             resetFn: resetFn,
-            actions: actions
+            actions: actions,
+            getters: getters
         });
     };
 

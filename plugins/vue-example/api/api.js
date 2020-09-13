@@ -6,8 +6,8 @@ var common = require('../../../api/utils/common.js'),
 
     plugins.register('/o', function(ob) {
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        var params = ob.params;
         if (ob.params.qstring.method === 'get-random-numbers') {
-            var params = ob.params;
             validateUserForDataReadAPI(params, function() {
                 common.returnOutput(params, [...Array(30)].map(() => Math.floor(Math.random() * 9)));
             });
@@ -15,10 +15,11 @@ var common = require('../../../api/utils/common.js'),
         }
         else if (ob.params.qstring.method === 'vue-records') {
             validateUserForDataReadAPI(params, function() {
-                common.db.collection("vue_example").find({}, function(err, records) {
+                common.db.collection("vue_example").find({}).toArray(function(err, records) {
                     common.returnOutput(params, records || []);
                 });
             });
+            return true;
         }
         return false;
     });
