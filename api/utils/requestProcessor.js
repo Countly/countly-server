@@ -2408,7 +2408,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     });
                 }
                 else {
-                    if (!params.res.finished) {
+                    if (!params.res.finished && !params.waitForResponse) {
                         common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
                         //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
