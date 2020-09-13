@@ -494,16 +494,16 @@
         }
     });
 
-    var createModule = function(name, emptyStateFn, moduleObj) {
+    var VuexModule = function(name, options) {
 
-        moduleObj = moduleObj || {};
+        options = options || {};
 
-        var mutations = moduleObj.mutations || {},
-            actions = moduleObj.actions || {};
+        var mutations = options.mutations || {},
+            actions = options.actions || {};
 
         if (!mutations.resetState) {
             mutations.resetState = function(state) {
-                Object.assign(state, emptyStateFn());
+                Object.assign(state, options.resetFn());
             };
         }
 
@@ -513,20 +513,70 @@
             };
         }
 
+        var module = {
+            namespaced: true,
+            state: options.resetFn(),
+            getters: options.getters || {},
+            mutations: mutations,
+            actions: actions
+        };
+
+        if (options.submodules) {
+            module.modules = {};
+            options.submodules.forEach(function(submodule) {
+                module.modules[submodule.name] = submodule.module;
+            });
+        }
+
         return {
             name: name,
-            module: {
-                namespaced: true,
-                state: emptyStateFn(),
-                getters: moduleObj.getters || {},
-                mutations: mutations,
-                actions: actions
-            }
+            module: module
         };
     };
 
+    var VuexDataTable = function(name, options) {
+        var resetFn = function() {
+            return {
+                rows: options.initialRows || [],
+                patches: {}
+            };
+        };
+
+        var keyFn = function(row) {
+            return JSON.stringify(options.keyFn(row));
+        };
+
+        var getters = {
+            rows: function(state) {
+                return state.rows.map(function(row) {
+                    var rowKey = keyFn(row);
+                    if (state.patches[rowKey]) {
+                        return _.extend(row, state.patches[rowKey]);
+                    }
+                    return row;
+                });
+            }
+        };
+
+        var mutations = {
+            patch: function(state, obj) {
+                var row = obj.row,
+                    fields = obj.fields;
+
+                var rowKey = keyFn(row);
+                var currentPatch = state.patches[rowKey] || {};
+
+                Vue.set(state.patches, rowKey, _.extend(currentPatch, fields));
+            }
+        };
+        return VuexModule(name, {
+            resetFn: resetFn,
+            getters: getters,
+            mutations: mutations
+        });
+    };
+
     var _vuex = {
-        createModule: createModule,
         getGlobalStore: function() {
             return _globalVuexStore;
         },
@@ -535,7 +585,9 @@
             if (!store.hasModule(wrapper.name) || force) {
                 store.registerModule(wrapper.name, wrapper.module);
             }
-        }
+        },
+        Module: VuexModule,
+        DataTable: VuexDataTable
     };
 
     var BackboneRouteAdapter = function() {};

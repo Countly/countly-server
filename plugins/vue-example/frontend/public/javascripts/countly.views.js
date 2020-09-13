@@ -4,7 +4,7 @@ var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
     computed: {
         tableRows: function() {
-            return this.$store.getters["countlyVueExample/records"];
+            return this.$store.getters["countlyVueExample/table/rows"];
         }
     },
     data: function() {
@@ -29,7 +29,7 @@ var TableView = countlyVue.views.BaseView.extend({
                     type: "checkbox",
                     fieldKey: "status",
                     onChange: function(newValue, row) {
-                        self.$store.commit("countlyVueExample/setStatus", {_id: row._id, value: newValue});
+                        self.$store.commit("countlyVueExample/table/patch", {row: row, fields: {status: newValue}});
                     },
                     options: {
                         title: "Status"
@@ -193,8 +193,8 @@ var TableView = countlyVue.views.BaseView.extend({
         toggleRowDetail: function(tableEvent) {
             this.$store.commit("countlyVueExample/toggleDetail", tableEvent.row);
         },
-        statusChanged: function(_id, newValue) {
-            this.$store.commit("countlyVueExample/setStatus", {_id: _id, value: newValue});
+        statusChanged: function(row, newValue) {
+            this.$store.commit("countlyVueExample/table/patch", {row: row, fields: {status: newValue}});
         },
         onEditRecord: function(row) {
             this.$emit("open-drawer", "main", row);

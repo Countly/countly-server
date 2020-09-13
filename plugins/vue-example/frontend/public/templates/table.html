@@ -47,7 +47,7 @@
                                     <cly-check
                                         v-tooltip="scope.props.row.status?'Activated':'Deactivated'"
                                         :value="scope.props.row.status"
-                                        @input="statusChanged(scope.props.row._id, $event)">
+                                        @input="statusChanged(scope.props.row, $event)">
                                     </cly-check>
                                 </span>
                                 <template v-else-if="scope.props.column.field == 'cly-options'">
