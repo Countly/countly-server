@@ -62,7 +62,8 @@
                 context.dispatch("refresh");
             },
             refresh: function(context) {
-                context.dispatch("updateRandomArray");
+                context.dispatch("countlyVueExample/myRecords/all", null, {root: true});
+                context.dispatch("countlyVueExample/timeGraph/points", null, {root: true});
             }
         };
 

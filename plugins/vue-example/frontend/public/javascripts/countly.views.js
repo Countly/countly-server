@@ -87,14 +87,14 @@ var TableView = countlyVue.views.BaseView.extend({
         add: function() {
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
         },
+        onEditRecord: function(row) {
+            this.$emit("open-drawer", "main", row);
+        },
         toggleRowDetail: function(tableEvent) {
             this.$store.commit("countlyVueExample/table/patch", {row: tableEvent.row, fields: {isDetailRowShown: !tableEvent.row.isDetailRowShown}});
         },
         statusChanged: function(row, newValue) {
             this.$store.commit("countlyVueExample/table/patch", {row: row, fields: {status: newValue}});
-        },
-        onEditRecord: function(row) {
-            this.$emit("open-drawer", "main", row);
         },
         onDelayedDelete: function(row) {
             this.$store.commit("countlyVueExample/delayedDeleteRecordById", row._id);
@@ -127,9 +127,6 @@ var TableView = countlyVue.views.BaseView.extend({
 
 var TimeGraphView = countlyVue.views.BaseView.extend({
     template: '#vue-example-tg-template',
-    mixins: [
-        countlyVue.mixins.refreshOnParentActive
-    ],
     data: function() {
         return {
             paths: [{
@@ -160,13 +157,8 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     methods: {
         refresh: function() {
-            if (this.isParentActive) {
-                this.$store.dispatch("countlyVueExample/timeGraph/points");
-            }
+            this.$store.dispatch("countlyVueExample/timeGraph/points");
         }
-    },
-    mounted: function() {
-        this.refresh();
     }
 });
 
@@ -227,7 +219,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
 
 var MainView = countlyVue.views.BaseView.extend({
     template: '#vue-example-main-template',
-    mixins: [countlyVue.mixins.hasDrawers("main")],
+    mixins: [countlyVue.mixins.hasDrawers("main"), countlyVue.mixins.autoRefresh],
     components: {
         "table-view": TableView,
         "tg-view": TimeGraphView,
@@ -236,6 +228,9 @@ var MainView = countlyVue.views.BaseView.extend({
     methods: {
         onDrawerSubmit: function(doc) {
             this.$store.dispatch("countlyVueExample/myRecords/save", doc);
+        },
+        refresh: function() {
+            this.$store.dispatch("countlyVueExample/refresh");
         }
     },
     beforeCreate: function() {
