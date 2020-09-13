@@ -2,8 +2,7 @@
 (function(countlyEventCompare, $) {
     //Private Properties
     // eslint-disable-next-line
-    var _periodObj = {},
-        _dbOb = {},
+    var _dbOb = {},
         _activeAppKey = 0,
         _initialized = false,
         _period = null,
@@ -54,7 +53,6 @@
     };
 
     countlyEventCompare.refresh = function() {
-        _periodObj = countlyCommon.periodObj;
 
         if (!countlyCommon.DEBUG) {
 
@@ -97,7 +95,6 @@
     };
 
     countlyEventCompare.reset = function() {
-        _periodObj = {};
         _dbOb = {};
         _activeAppKey = 0;
         _initialized = false;

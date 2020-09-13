@@ -783,28 +783,12 @@ var pluginManager = function pluginManager() {
         var self = this;
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
-        var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
 
-        m.stdout.on('data', (data) => {
-            console.log(data.toString());
-        });
-
-        m.stderr.on('data', (data) => {
-            console.log(data.toString());
-        });
-
-        m.on('close', (code) => {
-            console.log('Done running install.js with %j', code);
-            if (parseInt(code, 10) !== 0) {
-                errors = true;
-                return callback(errors);
-            }
-
+        new Promise(function(resolve) {
             var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
             if (eplugin && eplugin.prepackaged) {
-                return callback(errors);
+                return resolve(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
@@ -813,15 +797,33 @@ var pluginManager = function pluginManager() {
                         errors = true;
                         console.log('error: %j', error2);
                     }
-                    console.log('Done installing plugin %j', plugin);
-                    callback(errors);
+                    console.log('Done running npm install %j', plugin);
+                    resolve(errors);
                 });
             }
             else {
-                errors = true;
-                callback(errors);
+                resolve(errors);
                 console.log('Server is in offline mode, this command cannot be run. %j');
             }
+        }).then(function(result) {
+            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            var m = cp.spawn("nodejs", [scriptPath]);
+
+            m.stdout.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            m.stderr.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            m.on('close', (code) => {
+                console.log('Done installing plugin %j', code);
+                if (parseInt(code, 10) !== 0) {
+                    errors = true;
+                }
+                callback(errors || result);
+            });
         });
     };
 
@@ -835,28 +837,12 @@ var pluginManager = function pluginManager() {
         var self = this;
         console.log('Upgrading plugin %j...', plugin);
         callback = callback || function() {};
-        var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
 
-        m.stdout.on('data', (data) => {
-            console.log(data.toString());
-        });
-
-        m.stderr.on('data', (data) => {
-            console.log(data.toString());
-        });
-
-        m.on('close', (code) => {
-            console.log('Done running install.js with %j', code);
-            if (parseInt(code, 10) !== 0) {
-                errors = true;
-                return callback(errors);
-            }
-
+        new Promise(function(resolve) {
             var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
             if (eplugin && eplugin.prepackaged) {
-                return callback(errors);
+                return resolve(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
@@ -865,15 +851,33 @@ var pluginManager = function pluginManager() {
                         errors = true;
                         console.log('error: %j', error2);
                     }
-                    console.log('Done upgrading plugin %j', plugin);
-                    callback(errors);
+                    console.log('Done running npm update with %j', plugin);
+                    resolve(errors);
                 });
             }
             else {
-                errors = true;
-                callback(errors);
+                resolve(errors);
                 console.log('Server is in offline mode, this command cannot be run. %j');
             }
+        }).then(function(result) {
+            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            var m = cp.spawn("nodejs", [scriptPath]);
+
+            m.stdout.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            m.stderr.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            m.on('close', (code) => {
+                console.log('Done upgrading plugin %j', code);
+                if (parseInt(code, 10) !== 0) {
+                    errors = true;
+                }
+                callback(errors || result);
+            });
         });
     };
 
