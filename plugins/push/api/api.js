@@ -35,6 +35,7 @@ const PUSH_CACHE_GROUP = 'P';
         for (let k in creds.DB_USER_MAP) {
             common.dbUserMap[k] = creds.DB_USER_MAP[k];
         }
+        common.dbUniqueMap.users.push(creds.DB_MAP['messaging-enabled']);
     }
 
     plugins.register('/worker', function() {

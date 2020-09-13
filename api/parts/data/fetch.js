@@ -1476,7 +1476,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     if (typeof options.unique === "undefined") {
-        options.unique = common.dbMap.unique;
+        options.unique = common.dbUniqueMap[collection] || common.dbUniqueMap["*"];
     }
 
     if (!Array.isArray(options.unique)) {
@@ -1492,11 +1492,11 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     if (typeof options.levels.daily === "undefined") {
-        options.levels.daily = [common.dbMap.total, common.dbMap.new, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+        options.levels.daily = [];
     }
 
     if (typeof options.levels.monthly === "undefined") {
-        options.levels.monthly = [common.dbMap.total, common.dbMap.new, common.dbMap.duration, common.dbMap.events, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+        options.levels.monthly = [];
     }
 
     if (params.qstring.action === "refresh") {
@@ -1639,6 +1639,24 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     /**
+     *  Object to clear
+     *  @param {object} ob - zero document
+     */
+    function clearNoneUnique(ob) {
+        for (var i in ob) {
+            if (i === "meta") {
+                continue;
+            }
+            if (ob[i] && typeof ob[i] === "object" && options.unique.indexOf(i) === -1) {
+                clearNoneUnique(ob[i]);
+            }
+            else if (options.unique.indexOf(i) === -1) {
+                delete ob[i];
+            }
+        }
+    }
+
+    /**    
     * Merge multiple db documents into one
     * @param {array} dataObjects - array with db documents
     * @param {boolean} isRefresh - is it refresh data only for today
@@ -1650,7 +1668,6 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     **/
     function getMergedObj(dataObjects, isRefresh, levels, truncateEventValuesList) {
         var mergedDataObj = {};
-
         if (dataObjects) {
             for (let i = 0; i < dataObjects.length; i++) {
                 if (!dataObjects[i] || !dataObjects[i].m) {
@@ -1692,7 +1709,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                             }
                         }
                     }
-
+                    clearNoneUnique(dataObjects[i].d || {});
                     if (mergedDataObj[year]) {
                         mergedDataObj[year] = deepMerge(mergedDataObj[year], dataObjects[i].d);
                     }
@@ -1710,14 +1727,17 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
                     if (!isRefresh) {
                         for (let day in dataObjects[i].d) {
+                            if (options.unique.indexOf(day) !== -1) {
+                                continue;
+                            }
                             for (let prop in dataObjects[i].d[day]) {
-                                if ((collection === 'users' || dataObjects[i].s === 'no-segment') && prop <= 23 && prop >= 0) {
+                                if (options.unique.indexOf(prop) !== -1 || prop <= 23 && prop >= 0) {
                                     continue;
                                 }
 
                                 if (typeof dataObjects[i].d[day][prop] === 'object') {
                                     for (let secondLevel in dataObjects[i].d[day][prop]) {
-                                        if (levels.daily.indexOf(secondLevel) !== -1) {
+                                        if ((levels.daily.length) ? levels.daily.indexOf(secondLevel) !== -1 : options.unique.indexOf(secondLevel) === -1) {
                                             if (!mergedDataObj[year][month][prop]) {
                                                 mergedDataObj[year][month][prop] = {};
                                             }
@@ -1742,7 +1762,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                                         }
                                     }
                                 }
-                                else if (levels.monthly.indexOf(prop) !== -1) {
+                                else if ((levels.monthly.length) ? levels.monthly.indexOf(prop) !== -1 : options.unique.indexOf(prop) === -1) {
 
                                     if (mergedDataObj[year][month][prop]) {
                                         mergedDataObj[year][month][prop] += dataObjects[i].d[day][prop];
@@ -1789,7 +1809,6 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                 }
             }
         }
-
         return mergedDataObj;
     }
 }
