@@ -603,8 +603,16 @@
             getters = {};
 
         Object.keys(writes).forEach(function(fnName) {
-            actions[fnName] = function(/*context*/) {
-                return writes[fnName]();
+            actions[fnName] = function(context, obj) {
+                var writer = writes[fnName];
+
+                return writer.handler(obj).then(function() {
+                    if (writer.refresh) {
+                        writer.refresh.forEach(function(refreshAction) {
+                            context.dispatch(refreshAction);
+                        });
+                    }
+                });
             };
         });
 

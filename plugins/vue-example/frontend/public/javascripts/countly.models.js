@@ -68,7 +68,7 @@
 
         var recordsCRUD = countlyVue.vuex.CRUD("myRecords", {
             writes: {
-                create: {
+                save: {
                     refresh: ["all"],
                     handler: function(record) {
                         return $.when($.ajax({
@@ -76,21 +76,7 @@
                             url: countlyCommon.API_PARTS.data.w + "/vue_example/save",
                             data: {
                                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                                "metric": JSON.stringify(record)
-                            },
-                            dataType: "json"
-                        }));
-                    }
-                },
-                update: {
-                    refresh: ["all"],
-                    handler: function(record) {
-                        return $.when($.ajax({
-                            type: "POST",
-                            url: countlyCommon.API_PARTS.data.w + "/vue_example/save",
-                            data: {
-                                "app_id": countlyCommon.ACTIVE_APP_ID,
-                                "metric": JSON.stringify(record)
+                                "record": JSON.stringify(record)
                             },
                             dataType: "json"
                         }));

@@ -1,29 +1,6 @@
 <div>
     <cly-tabs id="basic-tabs" v-model="activeTab">
-        <cly-content v-bind:name='i18n("vue-example.table")' id="table-tab">
-            <cly-panel title="DataTable" v-bind:date-selector="false">
-                <template slot="right-top">
-                    <cly-button v-tooltip="'Tooltip'" v-on:click="add" skin="green" v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
-                </template>
-                <div>
-                    <div style="width: 20%;display: inline-block;padding: 20px 30px 30px 30px; min-height: 150px;">
-                        <pre>{{tableRows}}</pre>
-                    </div>
-                    <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable-w
-                            v-bind:rows="tableRows"
-                            v-bind:columns="tableColumns"
-                            v-bind:keyFn="tableKeyFn"
-                            v-on:try-delete-record="onTryDelete"
-                            v-on:delete-record="onDelete"
-                            v-on:edit-record="onEditRecord"
-                            v-on:show-record="onShow">
-                        </cly-datatable-w>
-                    </div>
-                </div>
-            </cly-panel>
-        </cly-content>
-        <cly-content v-bind:name='"Vue Good Table"' id="good-table-tab">
+        <cly-content v-bind:name='"Table"' id="good-table-tab">
             <cly-panel title="DataTable" v-bind:date-selector="false">
                 <template slot="right-top">
                     <cly-button v-tooltip="'Tooltip'" v-on:click="add" skin="green" v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
