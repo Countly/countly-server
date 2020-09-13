@@ -1845,7 +1845,9 @@ fetch.fetchJobs = async function(metric, params) {
         if (params.qstring.name) {
             await fetch.jobDetails(metric, params);
         }
-        await fetch.alljobs(metric, params);
+        else {
+            await fetch.alljobs(metric, params);
+        }
     }
     catch (e) {
         console.log(e);
