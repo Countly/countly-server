@@ -191,7 +191,7 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
         },
         toggleRowDetail: function(tableEvent) {
-            this.$store.commit("countlyVueExample/toggleDetail", tableEvent.row);
+            this.$store.commit("countlyVueExample/table/patch", {row: tableEvent.row, fields: {isDetailRowShown: !tableEvent.row.isDetailRowShown}});
         },
         statusChanged: function(row, newValue) {
             this.$store.commit("countlyVueExample/table/patch", {row: row, fields: {status: newValue}});

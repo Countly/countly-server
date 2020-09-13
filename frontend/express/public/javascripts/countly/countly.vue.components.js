@@ -537,7 +537,7 @@
     var VuexDataTable = function(name, options) {
         var resetFn = function() {
             return {
-                rows: options.initialRows || [],
+                _rows: options.initialRows || [],
                 patches: {}
             };
         };
@@ -548,7 +548,10 @@
 
         var getters = {
             rows: function(state) {
-                return state.rows.map(function(row) {
+                if (Object.keys(state.patches).length === 0) {
+                    return state._rows;
+                }
+                return state._rows.map(function(row) {
                     var rowKey = keyFn(row);
                     if (state.patches[rowKey]) {
                         return _.extend(row, state.patches[rowKey]);
@@ -564,9 +567,9 @@
                     fields = obj.fields;
 
                 var rowKey = keyFn(row);
-                var currentPatch = state.patches[rowKey] || {};
+                var currentPatch = Object.assign({}, state.patches[rowKey], fields);
 
-                Vue.set(state.patches, rowKey, _.extend(currentPatch, fields));
+                Vue.set(state.patches, rowKey, currentPatch);
             }
         };
         return VuexModule(name, {
