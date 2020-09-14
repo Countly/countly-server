@@ -1974,6 +1974,41 @@
             }
         }
     }
+    
+    .cly-diff-helper {
+        position: fixed;
+        z-index: 9999;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        height: 64px;
+
+        background: #FFFFFF;
+        border: 1px solid #D0D0D0;
+        box-sizing: border-box;
+        box-shadow: 0px 7px 14px rgba(0, 0, 0, 0.21539);
+        border-radius: 2px;
+
+        .message {
+            float: left;
+            padding: 21px;
+            font-family: Ubuntu;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 17px;
+            line-height: 20px;
+            .text-dark {
+                color: #444444;
+            }
+            .text-light {
+                color: #636363;
+            }
+        }
+        .buttons {
+            float: right;
+            padding: 17px;
+        }
+    }
 }
 .cly-vue-tooltip {
     display: block !important;

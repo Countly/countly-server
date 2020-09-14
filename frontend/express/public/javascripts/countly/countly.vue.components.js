@@ -2610,4 +2610,35 @@
                     </div>'
     }));
 
+    Vue.component("cly-diff-helper", countlyBaseComponent.extend({
+        props: {
+            diff: {
+                type: Array
+            },
+        },
+        computed: {
+            hasDiff: function() {
+                return this.diff.length > 0;
+            }
+        },
+        methods: {
+            save: function() {
+                this.$emit("save");
+            },
+            discard: function() {
+                this.$emit("discard");
+            }
+        },
+        template: '<div class="cly-diff-helper" v-if="hasDiff">\
+                        <div class="message">\
+                            <span class="text-dark">You made {{diff.length}} changes.</span>\
+                            <span class="text-light">Do you want to keep them?</span>\
+                        </div>\
+                        <div class="buttons">\
+                            <cly-button label="Discard Changes" skin="light" class="discard-btn" @click="discard"></cly-button>\
+                            <cly-button label="Save Changes" skin="green" class="save-btn" @click="save"></cly-button>\
+                        </div>\
+                    </div>'
+    }));
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
