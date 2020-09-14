@@ -96,7 +96,7 @@ var TableView = countlyVue.views.BaseView.extend({
             });
             this.$store.dispatch("countlyVueExample/myRecords/status", newStatusInfo);
         },
-        unpatchStatusChanges: function () {
+        unpatchStatusChanges: function() {
             this.$store.commit("countlyVueExample/table/unpatch", {fields: ["status"]});
         },
         refresh: function() {
