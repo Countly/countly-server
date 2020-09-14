@@ -91,7 +91,10 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
         },
         onEditRecord: function(row) {
-            this.$emit("open-drawer", "main", row);
+            var self = this;
+            this.$store.dispatch("countlyVueExample/myRecords/fetchSingle", row._id).then(function(doc) {
+                self.$emit("open-drawer", "main", doc);
+            });
         },
         toggleRowDetail: function(tableEvent) {
             this.$store.commit("countlyVueExample/table/patch", {row: tableEvent.row, fields: {isDetailRowShown: !tableEvent.row.isDetailRowShown}});

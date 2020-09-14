@@ -71,7 +71,7 @@
             writes: {
                 save: {
                     refresh: ["all"],
-                    handler: function(record) {
+                    handler: function(context, record) {
                         return $.when($.ajax({
                             type: "POST",
                             url: countlyCommon.API_PARTS.data.w + "/vue_example/save",
@@ -85,7 +85,7 @@
                 },
                 delete: {
                     refresh: ["all"],
-                    handler: function(id) {
+                    handler: function(context, id) {
                         return $.when($.ajax({
                             type: "GET",
                             url: countlyCommon.API_PARTS.data.w + "/vue_example/delete",
@@ -108,6 +108,22 @@
                             method: 'vue-records'
                         }
                     }));
+                },
+                single: {
+                    noState: true, // no state and getters will be created for this
+                    handler: function(context, id) {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: 'vue-records',
+                                id: id
+                            }
+                        })).then(function(records) {
+                            return records[0];
+                        });
+                    }
                 }
             }
         });

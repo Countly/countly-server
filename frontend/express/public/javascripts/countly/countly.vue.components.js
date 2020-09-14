@@ -589,16 +589,38 @@
         return "_" + readName;
     };
 
+    var _getStructuredAction = function(userDefined) {
+        if (typeof userDefined === "function") {
+            return {
+                handler: userDefined
+            };
+        }
+        return userDefined;
+    };
+
     var VuexCRUD = function(name, options) {
 
         var writes = options.writes || {},
             reads = options.reads || {};
 
+        writes = Object.keys(writes).reduce(function(acc, val) {
+            acc[val] = _getStructuredAction(writes[val]);
+            return acc;
+        }, {});
+
+        reads = Object.keys(reads).reduce(function(acc, val) {
+            acc[val] = _getStructuredAction(reads[val]);
+            return acc;
+        }, {});
+
         var resetFn = function() {
             var state = {};
             Object.keys(reads).forEach(function(fnName) {
-                var stateKey = _getReadStateName(fnName);
-                state[stateKey] = [];
+                var reader = reads[fnName];
+                if (!reader.noState) {
+                    var stateKey = _getReadStateName(fnName);
+                    state[stateKey] = [];
+                }
             });
             return state;
         };
@@ -614,12 +636,13 @@
             actions[fnName] = function(context, obj) {
                 var writer = writes[fnName];
 
-                return writer.handler(obj).then(function() {
+                return writer.handler(context, obj).then(function(response) {
                     if (writer.refresh) {
                         writer.refresh.forEach(function(refreshAction) {
                             context.dispatch(_getReadActionName(refreshAction));
                         });
                     }
+                    return response;
                 }, function(err) {
                     // eslint-disable-next-line no-console
                     console.log("VuexCRUD/writeErr@" + name + "/" + fnName, err);
@@ -629,27 +652,30 @@
 
         Object.keys(reads).forEach(function(fnName) {
             var actionName = _getReadActionName(fnName);
+            var reader = reads[fnName];
 
-            actions[actionName] = function(context) {
+            actions[actionName] = function(context, obj) {
 
-                return reads[fnName]().then(function(data) {
-                    var stateKey = _getReadStateName(fnName),
-                        obj = {
-                            key: stateKey,
+                return reader.handler(context, obj).then(function(data) {
+                    if (!reader.noState) {
+                        context.commit("mutateGeneric", {
+                            key: _getReadStateName(fnName),
                             value: data
-                        };
-
-                    context.commit("mutateGeneric", obj);
+                        });
+                    }
+                    return data;
                 }, function(err) {
                     // eslint-disable-next-line no-console
                     console.log("VuexCRUD/readErr@" + name + "/" + fnName, err);
                 });
             };
 
-            getters[fnName] = function(state) {
-                var stateKey = _getReadStateName(fnName);
-                return state[stateKey];
-            };
+            if (!reader.noState) {
+                getters[fnName] = function(state) {
+                    var stateKey = _getReadStateName(fnName);
+                    return state[stateKey];
+                };
+            }
         });
 
         return VuexModule(name, {
