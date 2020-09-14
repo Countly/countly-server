@@ -600,6 +600,37 @@
                 var currentPatch = Object.assign({}, state.patches[rowKey], fields);
 
                 Vue.set(state.patches, rowKey, currentPatch);
+            },
+            unpatch: function(state, obj) {
+                var row = obj.row,
+                    fields = obj.fields;
+
+                var rowKeys = null;
+                if (!row) {
+                    rowKeys = Object.keys(state.patches);
+                }
+                else {
+                    rowKeys = [keyFn(row)];
+                }
+
+                rowKeys.forEach(function(rowKey) {
+                    if (!state.patches[rowKey]) {
+                        return;
+                    }
+
+                    if (!fields) {
+                        Vue.delete(state.patches, rowKey);
+                    }
+                    else {
+                        fields.forEach(function(fieldName) {
+                            Vue.delete(state.patches[rowKey], fieldName);
+                        });
+                        if (Object.keys(state.patches[rowKey]).length === 0) {
+                            Vue.delete(state.patches, rowKey);
+                        }
+                    }
+                });
+
             }
         };
         return VuexModule(name, {
