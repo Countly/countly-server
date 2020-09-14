@@ -564,7 +564,7 @@
                     if (state.patches[rowKey]) {
                         var originalKey = keyFn(row, true);
                         state.trackedFields.forEach(function(fieldName) {
-                            if (row[fieldName] !== state.patches[rowKey][fieldName]) {
+                            if (Object.prototype.hasOwnProperty.call(state.patches[rowKey], fieldName) && row[fieldName] !== state.patches[rowKey][fieldName]) {
                                 diff.push({
                                     key: originalKey,
                                     field: fieldName,

@@ -87,6 +87,15 @@ var TableView = countlyVue.views.BaseView.extend({
         };
     },
     methods: {
+        updateStatusInfo: function() {
+            var newStatusInfo = this.tableDiff.map(function(item) {
+                return {
+                    _id: item.id,
+                    status: item.status
+                };
+            });
+            this.$store.dispatch("countlyVueExample/myRecords/status", newStatusInfo);
+        },
         refresh: function() {
             this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
         },

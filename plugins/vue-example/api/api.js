@@ -49,6 +49,35 @@ var common = require('../../../api/utils/common.js'),
         return true;
     });
 
+    plugins.register("/i/vue_example/status", function(ob) {
+        let paramsInstance = ob.params;
+        validateUserForWrite(paramsInstance, function(params) {
+            let records = params.qstring.records;
+            records = JSON.parse(records);
+            var updates = records.map(function(record) {
+                return {
+                    'updateOne':
+                    {
+                        'filter': { '_id': record._id },
+                        'update': { '$set': { 'status': record.status } }
+                    }
+                };
+            });
+            var done = function(result) {
+                common.returnOutput(params, result);
+            };
+            if (updates.length > 0) {
+                common.db.collection("vue_example").bulkWrite(updates, function() {
+                    done();
+                });
+            }
+            else {
+                done();
+            }
+        });
+        return true;
+    });
+
     plugins.register("/i/vue_example/delete", function(ob) {
         let paramsInstance = ob.params;
         validateUserForWrite(paramsInstance, function(params) {

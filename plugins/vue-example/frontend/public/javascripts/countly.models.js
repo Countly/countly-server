@@ -96,6 +96,20 @@
                             dataType: "json"
                         }));
                     }
+                },
+                status: {
+                    refresh: ["all"],
+                    handler: function(context, updates) {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.w + "/vue_example/status",
+                            data: {
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "records": JSON.stringify(updates)
+                            },
+                            dataType: "json"
+                        }));
+                    }
                 }
             },
             reads: {
