@@ -69,19 +69,6 @@ EOF
         sed -i "s#/var/lib/mongodb#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
-        if [ -f /etc/redhat-release ]; then
-            #mongodb might need to be started
-            if grep -q -i "release 6" /etc/redhat-release ; then
-                service mongod restart > /dev/null || echo "mongodb service does not exist"
-            else
-                systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
-            fi
-        fi
-
-        if [ -f /etc/lsb-release ]; then
-            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
-        fi
-
         message_ok 'Logrotate configured'
     else
         message_optional 'Command logrotate is not found, please install logrotate'
