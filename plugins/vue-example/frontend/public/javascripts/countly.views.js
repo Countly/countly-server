@@ -118,7 +118,21 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$store.commit("countlyVueExample/table/patch", {row: row, fields: {status: newValue}});
         },
         onDelayedDelete: function(row) {
-            this.$store.commit("countlyVueExample/delayedDeleteRecordById", row._id);
+            var self = this;
+            this.$store.commit("countlyVueExample/table/patch", {
+                row: row,
+                fields: {
+                    _delayedDelete: new countlyVue.helpers.DelayedAction(
+                        "You deleted a record.",
+                        function() {
+                            self.$store.dispatch("countlyVueExample/myRecords/delete", row._id);
+                        },
+                        function() {
+                            self.$store.commit("countlyVueExample/table/unpatch", {row: row, fields: ["_delayedDelete"]});
+                        })
+                }
+            }
+            );
         },
         onDelete: function(row) {
             this.$store.dispatch("countlyVueExample/myRecords/delete", row._id);
