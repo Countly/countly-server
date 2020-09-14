@@ -620,6 +620,9 @@
                             context.dispatch(_getReadActionName(refreshAction));
                         });
                     }
+                }, function(err) {
+                    // eslint-disable-next-line no-console
+                    console.log("VuexCRUD/writeErr@" + name + "/" + fnName, err);
                 });
             };
         });
@@ -639,7 +642,7 @@
                     context.commit("mutateGeneric", obj);
                 }, function(err) {
                     // eslint-disable-next-line no-console
-                    console.log("VuexCRUD/readErr", err);
+                    console.log("VuexCRUD/readErr@" + name + "/" + fnName, err);
                 });
             };
 
