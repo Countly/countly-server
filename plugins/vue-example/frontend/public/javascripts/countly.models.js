@@ -1,4 +1,4 @@
-/*global $, countlyCommon, Vue, _, countlyVue */
+/*global $, countlyCommon, _, countlyVue */
 
 (function(countlyVueExample) {
 
@@ -21,15 +21,8 @@
 
     countlyVueExample.getVuexModule = function() {
 
-        var records = [];
-        for (var i = 0; i < 20; i++) {
-            records.push(countlyVueExample.factory.getEmpty({_id: i}));
-        }
-
         var getEmptyState = function() {
             return {
-                records: records,
-                randomNumbers: [],
                 pieData: {
                     "dp": [
                         {"data": [[0, 20]], "label": "Test1", "color": "#52A3EF"},
@@ -48,18 +41,11 @@
                         {"data": [[-1, null], [0, 20], [1, 10], [2, 40], [3, null]], "label": "Value", "color": "#52A3EF"},
                     ],
                     "ticks": [[-1, ""], [0, "Test1"], [1, "Test2"], [2, "Test3"], [3, ""]]
-                },
-                id: 0
+                }
             };
         };
 
         var getters = {
-            records: function(state) {
-                return state.records;
-            },
-            randomNumbers: function(state) {
-                return state.randomNumbers;
-            },
             pieData: function(state) {
                 return state.pieData;
             },
@@ -71,83 +57,92 @@
             }
         };
 
-        var mutations = {
-            saveRecord: function(state, obj) {
-                if (obj._id !== null) {
-                    state.records = state.records.filter(function(val) {
-                        return val._id !== obj._id;
-                    }).concat(obj);
-                }
-                else {
-                    obj._id = state.id;
-                    state.records.push(obj);
-                    state.id++;
-                }
-            },
-            delayedDeleteRecordById: function(state, _id) {
-                var matchingRecords = state.records.filter(function(val) {
-                    return val._id === _id;
-                });
-                if (matchingRecords.length > 0) {
-                    var item = matchingRecords[0];
-                    Vue.set(item, '_delayedDelete', new countlyVue.helpers.DelayedAction("You deleted a record.",
-                        function() {
-                            state.records = state.records.filter(function(val) {
-                                return val._id !== item._id;
-                            });
-                        },
-                        function() {
-                            Vue.delete(item, '_delayedDelete');
-                        }, 3000));
-                }
-            },
-            deleteRecordById: function(state, _id) {
-                state.records = state.records.filter(function(val) {
-                    return val._id !== _id;
-                });
-            },
-            setStatus: function(state, obj) {
-                var target = state.records.filter(function(val) {
-                    return val._id === obj._id;
-                });
-                if (target.length > 0) {
-                    Vue.set(target[0], "status", obj.value);
-                }
-            },
-            setRandomNumbers: function(state, obj) {
-                state.randomNumbers = [obj, obj.map(function(x) {
-                    return x / 2;
-                })];
-            }
-        };
-
         var actions = {
             initialize: function(context) {
                 context.dispatch("refresh");
             },
             refresh: function(context) {
-                context.dispatch("updateRandomArray");
-            },
-            updateRandomArray: function(context) {
-                return $.when($.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_URL + "/o",
-                    data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
-                        method: 'get-random-numbers'
-                    }
-                })).then(function(json) {
-                    context.commit("setRandomNumbers", json);
-                }, function() {
-                    /* handle error */
-                });
+                context.dispatch("countlyVueExample/myRecords/fetchAll", null, {root: true});
+                context.dispatch("countlyVueExample/timeGraph/fetchPoints", null, {root: true});
             }
         };
 
-        return countlyVue.vuex.createModule("countlyVueExample", getEmptyState, {
+        var recordsCRUD = countlyVue.vuex.CRUD("myRecords", {
+            writes: {
+                save: {
+                    refresh: ["all"],
+                    handler: function(record) {
+                        return $.when($.ajax({
+                            type: "POST",
+                            url: countlyCommon.API_PARTS.data.w + "/vue_example/save",
+                            data: {
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "record": JSON.stringify(record)
+                            },
+                            dataType: "json"
+                        }));
+                    }
+                },
+                delete: {
+                    refresh: ["all"],
+                    handler: function(id) {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.w + "/vue_example/delete",
+                            data: {
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "id": id
+                            },
+                            dataType: "json"
+                        }));
+                    }
+                }
+            },
+            reads: {
+                all: function() {
+                    return $.when($.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o",
+                        data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
+                            method: 'vue-records'
+                        }
+                    }));
+                }
+            }
+        });
+
+        var timeGraphCRUD = countlyVue.vuex.CRUD("timeGraph", {
+            reads: {
+                points: function() {
+                    return $.when($.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o",
+                        data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
+                            method: 'get-random-numbers'
+                        }
+                    })).then(function(obj) {
+                        return [obj, obj.map(function(x) {
+                            return x / 2;
+                        })];
+                    });
+                }
+            }
+        });
+
+        var table = countlyVue.vuex.DataTable("table", {
+            source: "countlyVueExample/myRecords/all",
+            keyFn: function(row) {
+                return row._id;
+            }
+        });
+
+        return countlyVue.vuex.Module("countlyVueExample", {
+            resetFn: getEmptyState,
             getters: getters,
-            mutations: mutations,
-            actions: actions
+            actions: actions,
+            submodules: [recordsCRUD, timeGraphCRUD, table]
         });
     };
 

@@ -4,12 +4,11 @@ var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
     computed: {
         tableRows: function() {
-            return this.$store.getters["countlyVueExample/records"];
+            return this.$store.getters["countlyVueExample/table/rows"];
         }
     },
     data: function() {
-        var self = this,
-            manyItems = [];
+        var manyItems = [];
 
         for (var i = 1;i <= 50;i++) {
             if (i > 0 && i % 10 === 0) {
@@ -18,109 +17,7 @@ var TableView = countlyVue.views.BaseView.extend({
             manyItems.push({name: "Type " + i, value: i});
         }
         return {
-            targetName: "",
-            targetValue: 0,
             activeTab: null,
-            tableKeyFn: function(row) {
-                return row._id;
-            },
-            tableColumns: [
-                {
-                    type: "checkbox",
-                    fieldKey: "status",
-                    onChange: function(newValue, row) {
-                        self.$store.commit("countlyVueExample/setStatus", {_id: row._id, value: newValue});
-                    },
-                    options: {
-                        title: "Status"
-                    },
-                    dt: {
-                        "sWidth": "10%"
-                    }
-                },
-                {
-                    type: "field",
-                    fieldKey: "_id",
-                    options: {
-                        title: "ID"
-                    },
-                    dt: {
-                        "sWidth": "4%"
-                    },
-                },
-                {
-                    type: "field",
-                    fieldKey: "name",
-                    options: {
-                        dataType: "string",
-                        title: "Name"
-                    },
-                    dt: {
-                        "sWidth": "15%"
-                    },
-                },
-                {
-                    type: "field",
-                    fieldKey: "description",
-                    options: {
-                        dataType: "numeric",
-                        title: "Description"
-                    },
-                    dt: {
-                        "sWidth": "15%"
-                    },
-                },
-                {
-                    type: "raw",
-                    options: {
-                        dataType: "numeric",
-                        title: "Custom"
-                    },
-                    viewFn: function(row, type) {
-                        if (type === "display") {
-                            var stringBuffer = ['<div class="on-off-switch">'];
-                            stringBuffer.push("<strong><div class='custom-action-trigger'>Click to delete this</strong></div>");
-                            stringBuffer.push('</div>');
-                            return stringBuffer.join('');
-                        }
-                        else {
-                            return row.description;
-                        }
-                    },
-                    customActions: [{
-                        selector: ".custom-action-trigger",
-                        event: "click",
-                        action: {"event": "try-delete-record"}
-                    }],
-                    dt: {
-                        "sWidth": "15%"
-                    }
-                },
-                {
-                    type: "options",
-                    items: [
-                        {
-                            icon: "fa fa-pencil",
-                            label: "Edit",
-                            action: {"event": "edit-record"},
-                        },
-                        {
-                            icon: "fa fa-trash",
-                            label: "Delete",
-                            action: {"event": "delete-record"},
-                        },
-                        {
-                            icon: "fa fa-trash",
-                            label: "Delete (with undo)",
-                            action: {"event": "try-delete-record"},
-                            disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
-                        }
-                    ],
-                    dt: {
-                        "sWidth": "3%"
-                    }
-                }
-            ],
             typedText: 'Type sth...',
             selectedRadio: 2,
             availableRadio: [
@@ -187,30 +84,26 @@ var TableView = countlyVue.views.BaseView.extend({
         };
     },
     methods: {
+        refresh: function() {
+            this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
+        },
         add: function() {
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
-        },
-        statusChanged: function(_id, newValue) {
-            this.$store.commit("countlyVueExample/setStatus", {_id: _id, value: newValue});
         },
         onEditRecord: function(row) {
             this.$emit("open-drawer", "main", row);
         },
-        onTryDelete: function(row, callback) {
-            callback({
-                "undo": {
-                    "commit": "delete-record",
-                    "message": "You deleted a record."
-                }
-            });
+        toggleRowDetail: function(tableEvent) {
+            this.$store.commit("countlyVueExample/table/patch", {row: tableEvent.row, fields: {isDetailRowShown: !tableEvent.row.isDetailRowShown}});
+        },
+        statusChanged: function(row, newValue) {
+            this.$store.commit("countlyVueExample/table/patch", {row: row, fields: {status: newValue}});
         },
         onDelayedDelete: function(row) {
             this.$store.commit("countlyVueExample/delayedDeleteRecordById", row._id);
         },
         onDelete: function(row) {
-            this.$store.commit("countlyVueExample/deleteRecordById", row._id);
-        },
-        onShow: function(/*row, key*/) {
+            this.$store.dispatch("countlyVueExample/myRecords/delete", row._id);
         },
         onDSSearch: function(query) {
             var self = this;
@@ -237,9 +130,6 @@ var TableView = countlyVue.views.BaseView.extend({
 
 var TimeGraphView = countlyVue.views.BaseView.extend({
     template: '#vue-example-tg-template',
-    mixins: [
-        countlyVue.mixins.refreshOnParentActive
-    ],
     data: function() {
         return {
             paths: [{
@@ -256,7 +146,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     computed: {
         randomNumbers: function() {
-            return this.$store.getters["countlyVueExample/randomNumbers"];
+            return this.$store.getters["countlyVueExample/timeGraph/points"];
         },
         barData: function() {
             return this.$store.getters["countlyVueExample/barData"];
@@ -270,13 +160,8 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     methods: {
         refresh: function() {
-            if (this.isParentActive) {
-                this.$store.dispatch("countlyVueExample/updateRandomArray");
-            }
+            this.$store.dispatch("countlyVueExample/timeGraph/fetchPoints");
         }
-    },
-    mounted: function() {
-        this.refresh();
     }
 });
 
@@ -345,7 +230,7 @@ var MainView = countlyVue.views.BaseView.extend({
     },
     methods: {
         onDrawerSubmit: function(doc) {
-            this.$store.commit("countlyVueExample/saveRecord", doc);
+            this.$store.dispatch("countlyVueExample/myRecords/save", doc);
         }
     },
     beforeCreate: function() {
