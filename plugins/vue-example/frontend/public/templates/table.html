@@ -15,17 +15,26 @@
                             :rows="tableRows"
                             :columns="gtableColumns"
                             :has-detail-rows="true"
-                            @on-row-click="toggleRowDetail"
-                            @status-changed="statusChanged"
+                            @set-row-data="setRowData"
                             @delayed-delete-record="onDelayedDelete"
                             @delete-record="onDelete"
                             @edit-record="onEditRecord">
                             <template slot="table-row" slot-scope="scope">
-                                <span v-if="scope.props.column.field == 'status'">
+                                <template v-if="scope.props.column.field == 'cly-detail-toggler'">
+                                    <div @click="setRowData(scope.props.row, {isDetailRowShown: !scope.props.row.isDetailRowShown})">
+                                        <div v-if="!scope.props.row.isDetailRowShown">
+                                            <i class="material-icons expand-row-icon">keyboard_arrow_down</i>
+                                        </div>
+                                        <div v-else>
+                                            <i class="material-icons expand-row-icon">keyboard_arrow_up</i>
+                                        </div>
+                                    </div>
+                                </template>
+                                <span v-else-if="scope.props.column.field == 'status'">
                                     <cly-check
                                         v-tooltip="scope.props.row.status?'Activated':'Deactivated'"
                                         :value="scope.props.row.status"
-                                        @input="statusChanged(scope.props.row, $event)">
+                                        @input="setRowData(scope.props.row, {status: $event})">
                                     </cly-check>
                                 </span>
                                 <template v-else-if="scope.props.column.field == 'cly-options'">
@@ -34,7 +43,7 @@
                                         <a @click="scope.props.row._delayedDelete.abort()">Undo.</a>
                                     </div>
                                     <span>
-                                        <a class="cly-row-options-trigger" @click="scope.events.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>
+                                        <a class="cly-row-options-trigger" @click="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>
                                     </span>
                                 </template>
                                 <span v-else>

@@ -2470,6 +2470,9 @@
                 if (this.currentPage > newTotal) {
                     this.goToFirstPage();
                 }
+            },
+            total: function() {
+                this.updateInfo();
             }
         }
     });
@@ -2499,9 +2502,17 @@
             },
             extendedColumns: function() {
                 var extended = this.columns.map(function(col) {
+                    var newCol;
                     if (col.type === "cly-options") {
-                        var newCol = JSON.parse(JSON.stringify(col));
+                        newCol = JSON.parse(JSON.stringify(col));
                         newCol.field = "cly-options";
+                        newCol.sortable = false;
+                        delete newCol.type;
+                        return newCol;
+                    }
+                    if (col.type === "cly-detail-toggler") {
+                        newCol = JSON.parse(JSON.stringify(col));
+                        newCol.field = "cly-detail-toggler";
                         newCol.sortable = false;
                         delete newCol.type;
                         return newCol;
@@ -2548,10 +2559,10 @@
                     this.$refs.controls.goToFirstPage();
                 }
             },
-            addTableEvents: function(propsObj) {
+            addTableFns: function(propsObj) {
                 var newProps = {
                     props: propsObj,
-                    events: {
+                    fns: {
                         showRowOptions: this.showRowOptions
                     }
                 };
@@ -2596,7 +2607,7 @@
                                     </custom-controls>\
                                 </template>\
                                 <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">\
-                                    <slot :name="name" v-bind="addTableEvents(slotData)" />\
+                                    <slot :name="name" v-bind="addTableFns(slotData)" />\
                                 </template>\
                                 <div slot="table-actions-bottom">\
                                     {{pageInfo}}\
@@ -2623,6 +2634,13 @@
                 type: Object
             }
         },
+        computed: {
+            availableItems: function() {
+                return this.items.filter(function(item) {
+                    return !item.disabled;
+                });
+            }
+        },
         methods: {
             tryClosing: function() {
                 if (this.opened) {
@@ -2636,7 +2654,7 @@
         },
         template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">\
                         <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
-                            <a @click="fireEvent(item.event)" v-for="(item, index) in items" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
+                            <a @click="fireEvent(item.event)" v-for="(item, index) in availableItems" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
                         </div>\
                     </div>'
     }));
