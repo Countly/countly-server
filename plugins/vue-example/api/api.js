@@ -58,7 +58,7 @@ var common = require('../../../api/utils/common.js'),
                 return {
                     'updateOne':
                     {
-                        'filter': { '_id': record._id },
+                        'filter': { '_id': common.db.ObjectID(record._id) },
                         'update': { '$set': { 'status': record.status } }
                     }
                 };
@@ -68,11 +68,11 @@ var common = require('../../../api/utils/common.js'),
             };
             if (updates.length > 0) {
                 common.db.collection("vue_example").bulkWrite(updates, function() {
-                    done();
+                    done(true);
                 });
             }
             else {
-                done();
+                done(true);
             }
         });
         return true;

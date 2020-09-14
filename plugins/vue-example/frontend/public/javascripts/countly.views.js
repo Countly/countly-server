@@ -90,11 +90,13 @@ var TableView = countlyVue.views.BaseView.extend({
         updateStatusInfo: function() {
             var newStatusInfo = this.tableDiff.map(function(item) {
                 return {
-                    _id: item.id,
-                    status: item.status
+                    _id: item.key,
+                    status: item.newValue
                 };
             });
             this.$store.dispatch("countlyVueExample/myRecords/status", newStatusInfo);
+        },
+        unpatchStatusChanges: function () {
         },
         refresh: function() {
             this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
