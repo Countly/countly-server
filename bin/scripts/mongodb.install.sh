@@ -153,6 +153,25 @@ function fix_mongod_service_type () {
 	fi 2> /dev/null
 }
 
+function fix_mongod_service_limits () {
+    if [[ ! $(/sbin/init --version) =~ upstart ]]; then
+        SERVICE_FILE_PATH=$(systemctl status mongod | grep "loaded" | awk -F';' '{print $1}' | awk -F'(' '{print $2}')
+
+        if grep -q "LimitNPROC=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/LimitNPROC=/d" "${SERVICE_FILE_PATH}"
+        fi
+
+        if grep -q "LimitNOFILE=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/LimitNOFILE=/d" "${SERVICE_FILE_PATH}"
+        fi
+
+        sed -i "s#\[Service\]#\[Service\]\LimitNPROC=256000#g" "${SERVICE_FILE_PATH}"
+        sed -i "s#\[Service\]#\[Service\]\LimitNOFILE=392000#g" "${SERVICE_FILE_PATH}"
+
+        systemctl daemon-reload
+	fi 2> /dev/null
+}
+
 function message_warning () {
     echo -e "\e[1m[\e[91m!\e[97m]\e[0m $1"
 }
@@ -341,6 +360,8 @@ function mongodb_check() {
 
     #change mongod systemd service type to 'simple' to prevent systemd timeout interrupt on wiredtiger's long boot
     fix_mongod_service_type
+    #match service system limits to mongodb user's limits
+    fix_mongod_service_limits
 
     echo -e "\nSome of changes may need reboot!\n"
 }
