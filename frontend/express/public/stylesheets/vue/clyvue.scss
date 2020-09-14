@@ -1416,9 +1416,9 @@
             &.sortable {
                 cursor: pointer;
                 &:after {
-                    color:  $chevron-color;
+                    color: $chevron-color;
                     display: inline-block;
-                    font-family: 'Font Awesome 5 Free';
+                    font-family: "Font Awesome 5 Free";
                     font-weight: 900;
                     content: "\f0dc";
                     margin-left: 7px;
@@ -1484,7 +1484,7 @@
                 &:after {
                     color: $link-color;
                     display: inline-block;
-                    font-family: 'Font Awesome 5 Free';
+                    font-family: "Font Awesome 5 Free";
                     font-weight: 900;
                     content: "\f0de";
                     margin-left: 7px;
@@ -1497,7 +1497,7 @@
                 &:after {
                     color: $link-color;
                     display: inline-block;
-                    font-family: 'Font Awesome 5 Free';
+                    font-family: "Font Awesome 5 Free";
                     font-weight: 900;
                     content: "\f0dd";
                     margin-left: 7px;
@@ -1912,7 +1912,7 @@
             content: "\f396";
         }
     }
-    .cly-row-options {
+    .cly-vue-row-options {
         .menu {
             padding: 10px 0;
             opacity: 0;
@@ -1974,8 +1974,8 @@
             }
         }
     }
-    
-    .cly-diff-helper {
+
+    .cly-vue-diff-helper {
         position: fixed;
         z-index: 9999;
         left: 20px;
@@ -1983,8 +1983,8 @@
         bottom: 20px;
         height: 64px;
 
-        background: #FFFFFF;
-        border: 1px solid #D0D0D0;
+        background: #ffffff;
+        border: 1px solid #d0d0d0;
         box-sizing: border-box;
         box-shadow: 0px 7px 14px rgba(0, 0, 0, 0.21539);
         border-radius: 2px;
@@ -2006,7 +2006,10 @@
         }
         .buttons {
             float: right;
-            padding: 17px;
+            padding: 16px;
+            .cly-vue-button {
+                padding: 8px 14px;
+            }
         }
     }
 }

@@ -2603,7 +2603,7 @@
                 this.tryClosing();
             }
         },
-        template: '<div class="cly-row-options" v-click-outside="tryClosing">\
+        template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">\
                         <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
                             <a @click="fireEvent(item.event)" v-for="(item, index) in items" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
                         </div>\
@@ -2629,7 +2629,7 @@
                 this.$emit("discard");
             }
         },
-        template: '<div class="cly-diff-helper" v-if="hasDiff">\
+        template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\
                         <div class="message">\
                             <span class="text-dark">You made {{diff.length}} changes.</span>\
                             <span class="text-light">Do you want to keep them?</span>\
