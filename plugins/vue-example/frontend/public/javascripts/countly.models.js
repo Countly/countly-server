@@ -148,7 +148,8 @@
         });
 
         var table = countlyVue.vuex.DataTable("table", {
-            source: "countlyVueExample/myRecords/all",
+            sourceAddress: "countlyVueExample/myRecords/all",
+            trackedFields: ["status"],
             keyFn: function(row) {
                 return row._id;
             }

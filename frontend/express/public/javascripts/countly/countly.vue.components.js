@@ -537,26 +537,54 @@
     var VuexDataTable = function(name, options) {
         var resetFn = function() {
             return {
+                sourceAddress: options.sourceAddress,
+                trackedFields: options.trackedFields || [],
                 patches: {}
             };
         };
 
-        var keyFn = function(row) {
+        var keyFn = function(row, dontStringify) {
+            if (dontStringify) {
+                return options.keyFn(row);
+            }
             return JSON.stringify(options.keyFn(row));
         };
 
         var tableGetters = {
-            source: function(state, getters, rootState, rootGetters) {
-                return rootGetters[options.source];
+            sourceRows: function(state, getters, rootState, rootGetters) {
+                return rootGetters[state.sourceAddress];
+            },
+            diff: function(state, getters) {
+                if (state.trackedFields.length === 0 || Object.keys(state.patches).length === 0) {
+                    return [];
+                }
+                var diff = [];
+                getters.sourceRows.forEach(function(row) {
+                    var rowKey = keyFn(row);
+                    if (state.patches[rowKey]) {
+                        var originalKey = keyFn(row, true);
+                        state.trackedFields.forEach(function(fieldName) {
+                            if (row[fieldName] !== state.patches[rowKey][fieldName]) {
+                                diff.push({
+                                    key: originalKey,
+                                    field: fieldName,
+                                    newValue: state.patches[rowKey][fieldName],
+                                    oldValue: row[fieldName]
+                                });
+                            }
+                        });
+                    }
+                });
+                return diff;
             },
             rows: function(state, getters) {
                 if (Object.keys(state.patches).length === 0) {
-                    return getters.source;
+                    return getters.sourceRows;
                 }
-                return getters.source.map(function(row) {
+                return getters.sourceRows.map(function(row) {
                     var rowKey = keyFn(row);
                     if (state.patches[rowKey]) {
-                        return _.extend(row, state.patches[rowKey]);
+                        return Object.assign({}, row, state.patches[rowKey]);
                     }
                     return row;
                 });

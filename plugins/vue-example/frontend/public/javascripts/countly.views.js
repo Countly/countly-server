@@ -5,6 +5,9 @@ var TableView = countlyVue.views.BaseView.extend({
     computed: {
         tableRows: function() {
             return this.$store.getters["countlyVueExample/table/rows"];
+        },
+        tableDiff: function() {
+            return this.$store.getters["countlyVueExample/table/diff"];
         }
     },
     data: function() {
