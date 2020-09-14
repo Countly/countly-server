@@ -62,8 +62,8 @@
                 context.dispatch("refresh");
             },
             refresh: function(context) {
-                context.dispatch("countlyVueExample/myRecords/all", null, {root: true});
-                context.dispatch("countlyVueExample/timeGraph/points", null, {root: true});
+                context.dispatch("countlyVueExample/myRecords/fetchAll", null, {root: true});
+                context.dispatch("countlyVueExample/timeGraph/fetchPoints", null, {root: true});
             }
         };
 

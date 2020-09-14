@@ -581,6 +581,14 @@
         });
     };
 
+    var _getReadActionName = function(readName) {
+        return "fetch" + readName[0].toUpperCase() + readName.substring(1);
+    };
+
+    var _getReadStateName = function(readName) {
+        return "_" + readName;
+    };
+
     var VuexCRUD = function(name, options) {
 
         var writes = options.writes || {},
@@ -589,7 +597,7 @@
         var resetFn = function() {
             var state = {};
             Object.keys(reads).forEach(function(fnName) {
-                var stateKey = "_" + fnName;
+                var stateKey = _getReadStateName(fnName);
                 state[stateKey] = [];
             });
             return state;
@@ -609,7 +617,7 @@
                 return writer.handler(obj).then(function() {
                     if (writer.refresh) {
                         writer.refresh.forEach(function(refreshAction) {
-                            context.dispatch(refreshAction);
+                            context.dispatch(_getReadActionName(refreshAction));
                         });
                     }
                 });
@@ -617,20 +625,26 @@
         });
 
         Object.keys(reads).forEach(function(fnName) {
-            actions[fnName] = function(context) {
+            var actionName = _getReadActionName(fnName);
+
+            actions[actionName] = function(context) {
+
                 return reads[fnName]().then(function(data) {
-                    var stateKey = "_" + fnName,
+                    var stateKey = _getReadStateName(fnName),
                         obj = {
                             key: stateKey,
                             value: data
                         };
 
                     context.commit("mutateGeneric", obj);
+                }, function(err) {
+                    // eslint-disable-next-line no-console
+                    console.log("VuexCRUD/readErr", err);
                 });
             };
 
             getters[fnName] = function(state) {
-                var stateKey = "_" + fnName;
+                var stateKey = _getReadStateName(fnName);
                 return state[stateKey];
             };
         });

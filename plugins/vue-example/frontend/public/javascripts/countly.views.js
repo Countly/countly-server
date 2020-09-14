@@ -84,6 +84,9 @@ var TableView = countlyVue.views.BaseView.extend({
         };
     },
     methods: {
+        refresh: function() {
+            this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
+        },
         add: function() {
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
         },
@@ -157,7 +160,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch("countlyVueExample/timeGraph/points");
+            this.$store.dispatch("countlyVueExample/timeGraph/fetchPoints");
         }
     }
 });
@@ -219,7 +222,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
 
 var MainView = countlyVue.views.BaseView.extend({
     template: '#vue-example-main-template',
-    mixins: [countlyVue.mixins.hasDrawers("main"), countlyVue.mixins.autoRefresh],
+    mixins: [countlyVue.mixins.hasDrawers("main")],
     components: {
         "table-view": TableView,
         "tg-view": TimeGraphView,
@@ -228,9 +231,6 @@ var MainView = countlyVue.views.BaseView.extend({
     methods: {
         onDrawerSubmit: function(doc) {
             this.$store.dispatch("countlyVueExample/myRecords/save", doc);
-        },
-        refresh: function() {
-            this.$store.dispatch("countlyVueExample/refresh");
         }
     },
     beforeCreate: function() {
