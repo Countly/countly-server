@@ -165,8 +165,8 @@ function fix_mongod_service_limits () {
             sed -i "/LimitNOFILE=/d" "${SERVICE_FILE_PATH}"
         fi
 
-        sed -i "s#\[Service\]#\[Service\]\LimitNPROC=256000#g" "${SERVICE_FILE_PATH}"
-        sed -i "s#\[Service\]#\[Service\]\LimitNOFILE=392000#g" "${SERVICE_FILE_PATH}"
+        sed -i "s#\[Service\]#\[Service\]\nLimitNPROC=256000#g" "${SERVICE_FILE_PATH}"
+        sed -i "s#\[Service\]#\[Service\]\nLimitNOFILE=392000#g" "${SERVICE_FILE_PATH}"
 
         systemctl daemon-reload
 	fi 2> /dev/null
