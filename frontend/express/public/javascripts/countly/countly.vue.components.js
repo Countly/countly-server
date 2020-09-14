@@ -2477,13 +2477,54 @@
         }
     });
 
+    var clyDataTableRowOptions = countlyBaseComponent.extend({
+        props: {
+            items: {
+                type: Array
+            },
+            opened: {
+                type: Boolean
+            },
+            pos: {
+                type: Object
+            },
+            rowData: {
+                type: Object
+            }
+        },
+        computed: {
+            availableItems: function() {
+                return this.items.filter(function(item) {
+                    return !item.disabled;
+                });
+            }
+        },
+        methods: {
+            tryClosing: function() {
+                if (this.opened) {
+                    this.$emit("close");
+                }
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey, this.rowData);
+                this.tryClosing();
+            }
+        },
+        template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">\
+                        <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
+                            <a @click="fireEvent(item.event)" v-for="(item, index) in availableItems" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
+                        </div>\
+                    </div>'
+    });
+
     Vue.component("cly-datatable", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
         inheritAttrs: false,
         components: {
-            "custom-controls": clyDataTableControls
+            "custom-controls": clyDataTableControls,
+            'row-options': clyDataTableRowOptions
         },
         props: {
             rows: {
@@ -2539,6 +2580,9 @@
             onInfoChanged: function(text) {
                 this.pageInfo = text;
             },
+            setRowData: function(row, fields) {
+                this.$emit("set-row-data", row, fields);
+            },
             showRowOptions: function(event, items, row) {
                 var rect = $(event.target).offset(),
                     self = this;
@@ -2563,21 +2607,22 @@
                 var newProps = {
                     props: propsObj,
                     fns: {
-                        showRowOptions: this.showRowOptions
+                        showRowOptions: this.showRowOptions,
+                        setRowData: this.setRowData
                     }
                 };
                 return newProps;
             }
         },
         template: '<div>\
-                        <cly-row-options\
+                        <row-options\
                             :items="optionsItems"\
                             :pos="optionsPosition"\
                             :opened="optionsOpened"\
                             :rowData="optionsRowData"\
                             @close="optionsOpened=false"\
                             v-on="$listeners">\
-                        </cly-row-options>\
+                        </row-options>\
                         <vue-good-table\
                             v-bind="$attrs"\
                             v-bind:rows="rows"\
@@ -2619,43 +2664,38 @@
                     </div>'
     }));
 
-    Vue.component("cly-row-options", countlyBaseComponent.extend({
+    Vue.component("cly-datatable-detail-toggler", countlyBaseComponent.extend({
         props: {
-            items: {
-                type: Array
-            },
-            opened: {
-                type: Boolean
-            },
-            pos: {
-                type: Object
-            },
-            rowData: {
+            scope: {
                 type: Object
             }
         },
-        computed: {
-            availableItems: function() {
-                return this.items.filter(function(item) {
-                    return !item.disabled;
-                });
-            }
-        },
-        methods: {
-            tryClosing: function() {
-                if (this.opened) {
-                    this.$emit("close");
-                }
-            },
-            fireEvent: function(eventKey) {
-                this.$emit(eventKey, this.rowData);
-                this.tryClosing();
-            }
-        },
-        template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">\
-                        <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
-                            <a @click="fireEvent(item.event)" v-for="(item, index) in availableItems" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
+        template: '<div class="cly-vue-dt-detail-toggler">\
+                        <div @click="scope.fns.setRowData(scope.props.row, {isDetailRowShown: !scope.props.row.isDetailRowShown})">\
+                            <div v-if="!scope.props.row.isDetailRowShown">\
+                                <i class="material-icons expand-row-icon">keyboard_arrow_down</i>\
+                            </div>\
+                            <div v-else>\
+                                <i class="material-icons expand-row-icon">keyboard_arrow_up</i>\
+                            </div>\
                         </div>\
+                    </div>'
+    }));
+
+    Vue.component("cly-datatable-options", countlyBaseComponent.extend({
+        props: {
+            scope: {
+                type: Object
+            }
+        },
+        template: '<div class="cly-vue-dt-options">\
+                        <div v-if="scope.props.row._delayedDelete" class="undo-row">\
+                            {{ scope.props.row._delayedDelete.message }}\
+                            <a @click="scope.props.row._delayedDelete.abort()">Undo.</a>\
+                        </div>\
+                        <span>\
+                            <a class="cly-row-options-trigger" @click="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\
+                        </span>\
                     </div>'
     }));
 

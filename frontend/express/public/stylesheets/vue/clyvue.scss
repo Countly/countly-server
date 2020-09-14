@@ -1901,17 +1901,28 @@
         margin-left: -3px;
     }
 
-    .cly-row-options-trigger {
-        cursor: pointer;
-        color: #a7a7a7;
-        font-size: 20px;
-        vertical-align: middle;
-        line-height: 12px;
-        &:before {
-            font-family: "Ionicons";
-            content: "\f396";
+    .cly-vue-dt-options {
+        height: inherit;
+
+        .cly-row-options-trigger {
+            cursor: pointer;
+            color: #a7a7a7;
+            font-size: 20px;
+            vertical-align: middle;
+            line-height: 12px;
+            &:before {
+                font-family: "Ionicons";
+                content: "\f396";
+            }
         }
     }
+
+    .cly-vue-dt-detail-toggler {
+        & > div {
+            cursor: pointer;
+        }
+    }
+
     .cly-vue-row-options {
         .menu {
             padding: 10px 0;
