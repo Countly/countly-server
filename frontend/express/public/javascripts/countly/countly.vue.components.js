@@ -537,26 +537,54 @@
     var VuexDataTable = function(name, options) {
         var resetFn = function() {
             return {
+                sourceAddress: options.sourceAddress,
+                trackedFields: options.trackedFields || [],
                 patches: {}
             };
         };
 
-        var keyFn = function(row) {
+        var keyFn = function(row, dontStringify) {
+            if (dontStringify) {
+                return options.keyFn(row);
+            }
             return JSON.stringify(options.keyFn(row));
         };
 
         var tableGetters = {
-            source: function(state, getters, rootState, rootGetters) {
-                return rootGetters[options.source];
+            sourceRows: function(state, getters, rootState, rootGetters) {
+                return rootGetters[state.sourceAddress];
+            },
+            diff: function(state, getters) {
+                if (state.trackedFields.length === 0 || Object.keys(state.patches).length === 0) {
+                    return [];
+                }
+                var diff = [];
+                getters.sourceRows.forEach(function(row) {
+                    var rowKey = keyFn(row);
+                    if (state.patches[rowKey]) {
+                        var originalKey = keyFn(row, true);
+                        state.trackedFields.forEach(function(fieldName) {
+                            if (Object.prototype.hasOwnProperty.call(state.patches[rowKey], fieldName) && row[fieldName] !== state.patches[rowKey][fieldName]) {
+                                diff.push({
+                                    key: originalKey,
+                                    field: fieldName,
+                                    newValue: state.patches[rowKey][fieldName],
+                                    oldValue: row[fieldName]
+                                });
+                            }
+                        });
+                    }
+                });
+                return diff;
             },
             rows: function(state, getters) {
                 if (Object.keys(state.patches).length === 0) {
-                    return getters.source;
+                    return getters.sourceRows;
                 }
-                return getters.source.map(function(row) {
+                return getters.sourceRows.map(function(row) {
                     var rowKey = keyFn(row);
                     if (state.patches[rowKey]) {
-                        return _.extend(row, state.patches[rowKey]);
+                        return Object.assign({}, row, state.patches[rowKey]);
                     }
                     return row;
                 });
@@ -572,6 +600,37 @@
                 var currentPatch = Object.assign({}, state.patches[rowKey], fields);
 
                 Vue.set(state.patches, rowKey, currentPatch);
+            },
+            unpatch: function(state, obj) {
+                var row = obj.row,
+                    fields = obj.fields;
+
+                var rowKeys = null;
+                if (!row) {
+                    rowKeys = Object.keys(state.patches);
+                }
+                else {
+                    rowKeys = [keyFn(row)];
+                }
+
+                rowKeys.forEach(function(rowKey) {
+                    if (!state.patches[rowKey]) {
+                        return;
+                    }
+
+                    if (!fields) {
+                        Vue.delete(state.patches, rowKey);
+                    }
+                    else {
+                        fields.forEach(function(fieldName) {
+                            Vue.delete(state.patches[rowKey], fieldName);
+                        });
+                        if (Object.keys(state.patches[rowKey]).length === 0) {
+                            Vue.delete(state.patches, rowKey);
+                        }
+                    }
+                });
+
             }
         };
         return VuexModule(name, {
@@ -589,23 +648,33 @@
         return "_" + readName;
     };
 
+    var _getReadTransactionName = function(readName) {
+        return "_" + readName + "_lastTransactionId";
+    };
+
+    var _getStructuredAction = function(userDefined) {
+        if (typeof userDefined === "function") {
+            return {
+                handler: userDefined
+            };
+        }
+        return userDefined;
+    };
+
     var VuexCRUD = function(name, options) {
 
         var writes = options.writes || {},
             reads = options.reads || {};
 
-        var resetFn = function() {
-            var state = {};
-            Object.keys(reads).forEach(function(fnName) {
-                var stateKey = _getReadStateName(fnName);
-                state[stateKey] = [];
-            });
-            return state;
-        };
+        writes = Object.keys(writes).reduce(function(acc, val) {
+            acc[val] = _getStructuredAction(writes[val]);
+            return acc;
+        }, {});
 
-        var mutateGeneric = function(state, obj) {
-            state[obj.key] = obj.value;
-        };
+        reads = Object.keys(reads).reduce(function(acc, val) {
+            acc[val] = _getStructuredAction(reads[val]);
+            return acc;
+        }, {});
 
         var actions = {},
             getters = {};
@@ -614,48 +683,88 @@
             actions[fnName] = function(context, obj) {
                 var writer = writes[fnName];
 
-                return writer.handler(obj).then(function() {
+                return writer.handler(context, obj).then(function(response) {
                     if (writer.refresh) {
                         writer.refresh.forEach(function(refreshAction) {
                             context.dispatch(_getReadActionName(refreshAction));
                         });
                     }
+                    return response;
+                }, function(err) {
+                    // eslint-disable-next-line no-console
+                    console.log("VuexCRUD/writeErr@" + name + "/" + fnName, err);
                 });
             };
         });
 
         Object.keys(reads).forEach(function(fnName) {
             var actionName = _getReadActionName(fnName);
+            var reader = reads[fnName];
 
-            actions[actionName] = function(context) {
+            actions[actionName] = function(context, obj) {
+                var currentTransactionId = null,
+                    transactionName = _getReadTransactionName(fnName);
 
-                return reads[fnName]().then(function(data) {
-                    var stateKey = _getReadStateName(fnName),
-                        obj = {
-                            key: stateKey,
-                            value: data
-                        };
-
-                    context.commit("mutateGeneric", obj);
+                if (!reader.noState) {
+                    context.commit("incrementTransactionId", fnName);
+                    currentTransactionId = context.state[transactionName];
+                }
+                return reader.handler(context, obj).then(function(data) {
+                    if (!reader.noState) {
+                        if (currentTransactionId === context.state[transactionName]) {
+                            context.commit("mutateGeneric", {
+                                key: _getReadStateName(fnName),
+                                value: data
+                            });
+                        }
+                        // else { } Race condition (response for an older request has arrived later)
+                    }
+                    return data;
                 }, function(err) {
                     // eslint-disable-next-line no-console
-                    console.log("VuexCRUD/readErr", err);
+                    console.log("VuexCRUD/readErr@" + name + "/" + fnName, err);
                 });
             };
 
-            getters[fnName] = function(state) {
-                var stateKey = _getReadStateName(fnName);
-                return state[stateKey];
-            };
+            if (!reader.noState) {
+                getters[fnName] = function(state) {
+                    var stateKey = _getReadStateName(fnName);
+                    return state[stateKey];
+                };
+            }
         });
+
+        var resetFn = function() {
+            var state = {};
+            Object.keys(reads).forEach(function(fnName) {
+                var reader = reads[fnName];
+                if (!reader.noState) {
+                    var stateKey = _getReadStateName(fnName);
+                    state[stateKey] = [];
+                    state[_getReadTransactionName(fnName)] = 0;
+                }
+            });
+            return state;
+        };
+
+        var mutateGeneric = function(state, obj) {
+            state[obj.key] = obj.value;
+        };
+
+        var incrementTransactionId = function(state, readName) {
+            state[_getReadTransactionName(readName)] += 1;
+        };
+
+        var mutations = {
+            mutateGeneric: mutateGeneric,
+            incrementTransactionId: incrementTransactionId
+        };
 
         return VuexModule(name, {
             resetFn: resetFn,
             actions: actions,
             getters: getters,
-            mutations: {
-                mutateGeneric: mutateGeneric
-            }
+            mutations: mutations
         });
     };
 
@@ -2525,9 +2634,40 @@
                 this.tryClosing();
             }
         },
-        template: '<div class="cly-row-options" v-click-outside="tryClosing">\
+        template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">\
                         <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
                             <a @click="fireEvent(item.event)" v-for="(item, index) in items" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
+                        </div>\
+                    </div>'
+    }));
+
+    Vue.component("cly-diff-helper", countlyBaseComponent.extend({
+        props: {
+            diff: {
+                type: Array
+            },
+        },
+        computed: {
+            hasDiff: function() {
+                return this.diff.length > 0;
+            }
+        },
+        methods: {
+            save: function() {
+                this.$emit("save");
+            },
+            discard: function() {
+                this.$emit("discard");
+            }
+        },
+        template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\
+                        <div class="message">\
+                            <span class="text-dark">You made {{diff.length}} changes.</span>\
+                            <span class="text-light">Do you want to keep them?</span>\
+                        </div>\
+                        <div class="buttons">\
+                            <cly-button label="Discard Changes" skin="light" class="discard-btn" @click="discard"></cly-button>\
+                            <cly-button label="Save Changes" skin="green" class="save-btn" @click="save"></cly-button>\
                         </div>\
                     </div>'
     }));

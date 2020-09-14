@@ -5,6 +5,9 @@ var TableView = countlyVue.views.BaseView.extend({
     computed: {
         tableRows: function() {
             return this.$store.getters["countlyVueExample/table/rows"];
+        },
+        tableDiff: function() {
+            return this.$store.getters["countlyVueExample/table/diff"];
         }
     },
     data: function() {
@@ -84,6 +87,18 @@ var TableView = countlyVue.views.BaseView.extend({
         };
     },
     methods: {
+        updateStatusInfo: function() {
+            var newStatusInfo = this.tableDiff.map(function(item) {
+                return {
+                    _id: item.key,
+                    status: item.newValue
+                };
+            });
+            this.$store.dispatch("countlyVueExample/myRecords/status", newStatusInfo);
+        },
+        unpatchStatusChanges: function() {
+            this.$store.commit("countlyVueExample/table/unpatch", {fields: ["status"]});
+        },
         refresh: function() {
             this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
         },
@@ -91,7 +106,10 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
         },
         onEditRecord: function(row) {
-            this.$emit("open-drawer", "main", row);
+            var self = this;
+            this.$store.dispatch("countlyVueExample/myRecords/fetchSingle", row._id).then(function(doc) {
+                self.$emit("open-drawer", "main", doc);
+            });
         },
         toggleRowDetail: function(tableEvent) {
             this.$store.commit("countlyVueExample/table/patch", {row: tableEvent.row, fields: {isDetailRowShown: !tableEvent.row.isDetailRowShown}});
@@ -100,7 +118,21 @@ var TableView = countlyVue.views.BaseView.extend({
             this.$store.commit("countlyVueExample/table/patch", {row: row, fields: {status: newValue}});
         },
         onDelayedDelete: function(row) {
-            this.$store.commit("countlyVueExample/delayedDeleteRecordById", row._id);
+            var self = this;
+            this.$store.commit("countlyVueExample/table/patch", {
+                row: row,
+                fields: {
+                    _delayedDelete: new countlyVue.helpers.DelayedAction(
+                        "You deleted a record.",
+                        function() {
+                            self.$store.dispatch("countlyVueExample/myRecords/delete", row._id);
+                        },
+                        function() {
+                            self.$store.commit("countlyVueExample/table/unpatch", {row: row, fields: ["_delayedDelete"]});
+                        })
+                }
+            }
+            );
         },
         onDelete: function(row) {
             this.$store.dispatch("countlyVueExample/myRecords/delete", row._id);

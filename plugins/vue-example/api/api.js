@@ -15,7 +15,11 @@ var common = require('../../../api/utils/common.js'),
         }
         else if (ob.params.qstring.method === 'vue-records') {
             validateUserForDataReadAPI(params, function() {
-                common.db.collection("vue_example").find({}).toArray(function(err, records) {
+                var query = {};
+                if (ob.params.qstring.id) {
+                    query = { "_id": common.db.ObjectID(ob.params.qstring.id) };
+                }
+                common.db.collection("vue_example").find(query).toArray(function(err, records) {
                     common.returnOutput(params, records || []);
                 });
             });
@@ -40,6 +44,35 @@ var common = require('../../../api/utils/common.js'),
                 return common.db.collection("vue_example").findAndModify({ _id: common.db.ObjectID(id) }, {}, {$set: record}, function(err, result) {
                     common.returnOutput(params, result && result.value._id);
                 });
+            }
+        });
+        return true;
+    });
+
+    plugins.register("/i/vue_example/status", function(ob) {
+        let paramsInstance = ob.params;
+        validateUserForWrite(paramsInstance, function(params) {
+            let records = params.qstring.records;
+            records = JSON.parse(records);
+            var updates = records.map(function(record) {
+                return {
+                    'updateOne':
+                    {
+                        'filter': { '_id': common.db.ObjectID(record._id) },
+                        'update': { '$set': { 'status': record.status } }
+                    }
+                };
+            });
+            var done = function(result) {
+                common.returnOutput(params, result);
+            };
+            if (updates.length > 0) {
+                common.db.collection("vue_example").bulkWrite(updates, function() {
+                    done(true);
+                });
+            }
+            else {
+                done(true);
             }
         });
         return true;

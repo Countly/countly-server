@@ -7,6 +7,7 @@
                 </template>
                 <div>
                     <div style="width: 20%;display: inline-block;padding: 20px 30px 30px 30px; min-height: 150px;">
+                        <pre>{{tableDiff}}</pre>
                         <pre>{{tableRows}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
@@ -41,6 +42,11 @@
                                 </span>
                             </template>
                         </cly-datatable>
+                        <cly-diff-helper
+                            @save="updateStatusInfo"
+                            @discard="unpatchStatusChanges"
+                            :diff="tableDiff">
+                        </cly-diff-helper>
                     </div>
                 </div>
             </cly-panel>
