@@ -589,6 +589,10 @@
         return "_" + readName;
     };
 
+    var _getReadTransactionName = function(readName) {
+        return "_" + readName + "_lastTransactionId";
+    };
+
     var _getStructuredAction = function(userDefined) {
         if (typeof userDefined === "function") {
             return {
@@ -612,22 +616,6 @@
             acc[val] = _getStructuredAction(reads[val]);
             return acc;
         }, {});
-
-        var resetFn = function() {
-            var state = {};
-            Object.keys(reads).forEach(function(fnName) {
-                var reader = reads[fnName];
-                if (!reader.noState) {
-                    var stateKey = _getReadStateName(fnName);
-                    state[stateKey] = [];
-                }
-            });
-            return state;
-        };
-
-        var mutateGeneric = function(state, obj) {
-            state[obj.key] = obj.value;
-        };
 
         var actions = {},
             getters = {};
@@ -655,13 +643,22 @@
             var reader = reads[fnName];
 
             actions[actionName] = function(context, obj) {
+                var currentTransactionId = null,
+                    transactionName = _getReadTransactionName(fnName);
 
+                if (!reader.noState) {
+                    context.commit("incrementTransactionId", fnName);
+                    currentTransactionId = context.state[transactionName];
+                }
                 return reader.handler(context, obj).then(function(data) {
                     if (!reader.noState) {
-                        context.commit("mutateGeneric", {
-                            key: _getReadStateName(fnName),
-                            value: data
-                        });
+                        if (currentTransactionId === context.state[transactionName]) {
+                            context.commit("mutateGeneric", {
+                                key: _getReadStateName(fnName),
+                                value: data
+                            });
+                        }
+                        // else { } Race condition (response for an older request has arrived later)
                     }
                     return data;
                 }, function(err) {
@@ -678,13 +675,37 @@
             }
         });
 
+        var resetFn = function() {
+            var state = {};
+            Object.keys(reads).forEach(function(fnName) {
+                var reader = reads[fnName];
+                if (!reader.noState) {
+                    var stateKey = _getReadStateName(fnName);
+                    state[stateKey] = [];
+                    state[_getReadTransactionName(fnName)] = 0;
+                }
+            });
+            return state;
+        };
+
+        var mutateGeneric = function(state, obj) {
+            state[obj.key] = obj.value;
+        };
+
+        var incrementTransactionId = function(state, readName) {
+            state[_getReadTransactionName(readName)] += 1;
+        };
+
+        var mutations = {
+            mutateGeneric: mutateGeneric,
+            incrementTransactionId: incrementTransactionId
+        };
+
         return VuexModule(name, {
             resetFn: resetFn,
             actions: actions,
             getters: getters,
-            mutations: {
-                mutateGeneric: mutateGeneric
-            }
+            mutations: mutations
         });
     };
 
