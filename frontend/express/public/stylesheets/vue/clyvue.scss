@@ -592,7 +592,22 @@
     }
 
     // check
+    .cly-vue-check-list {
+        .cly-vue-check {
+            display: block;
+            padding: 4px 0;  
+        }
+    }
+    
     .cly-vue-check {
+        
+        display: inline-block;
+        
+        &.block {
+            display: block;
+            padding: 4px 0;  
+        }
+
         &.check-switch-skin {
             .check-wrapper {
                 .check-checkbox:checked + .check-label {
@@ -705,19 +720,43 @@
 
     //drawer
     .cly-vue-drawer {
+
+        $drawer-width: 600px;
+
         position: fixed;
-        width: 600px;
+        width: #{$drawer-width};
         height: 100%;
-        right: 0;
-        transform: translateX(600px);
+        transform: translateX(#{$drawer-width});
         transition: transform 0.3s;
+        right: 0;
         top: 0;
         background-color: #f9f9f9;
         border-left: 1px solid #d0d0d0;
         z-index: 10001;
-        box-sizing: border-box;
-        padding-top: 58px;
-        padding-bottom: 120px;
+
+        .sidecars-view {
+            background-color: #F3F3F3;
+            overflow-y: scroll;
+        }
+        .steps-view{
+            box-sizing: border-box;
+            padding-top: 58px;
+            padding-bottom: 120px;
+        }
+
+        .steps-view, .sidecars-view {
+            height: 100%;
+        }
+
+        &.has-sidecars {
+            width: #{$drawer-width * 2};
+            transform: translateX(#{$drawer-width * 2});
+            .steps-view, .sidecars-view {
+                width: 50%;
+                float: left;
+            }
+        }
+
         &.open {
             transform: translateX(0);
             transition: transform 0.3s;
@@ -737,7 +776,7 @@
             top: 0px;
             box-sizing: border-box;
             .close {
-                position: absolute;
+                position: fixed;
                 right: 20px;
                 top: 9px;
                 font-size: 42px;
@@ -1889,7 +1928,7 @@
         transition: color 0.5s;
         border: none;
         padding: 0;
-        overflow: auto;
+        overflow: hidden;
         font-weight: normal;
         font-size: 10px;
         line-height: 111%;
@@ -1901,17 +1940,28 @@
         margin-left: -3px;
     }
 
-    .cly-row-options-trigger {
-        cursor: pointer;
-        color: #a7a7a7;
-        font-size: 20px;
-        vertical-align: middle;
-        line-height: 12px;
-        &:before {
-            font-family: "Ionicons";
-            content: "\f396";
+    .cly-vue-dt-options {
+        height: inherit;
+
+        .cly-row-options-trigger {
+            cursor: pointer;
+            color: #a7a7a7;
+            font-size: 20px;
+            vertical-align: middle;
+            line-height: 12px;
+            &:before {
+                font-family: "Ionicons";
+                content: "\f396";
+            }
         }
     }
+
+    .cly-vue-dt-detail-toggler {
+        & > div {
+            cursor: pointer;
+        }
+    }
+
     .cly-vue-row-options {
         .menu {
             padding: 10px 0;

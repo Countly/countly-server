@@ -379,6 +379,7 @@
 
     Vue.use(window.vuelidate.default);
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
+    window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
 
     // @vue/component
     var autoRefreshMixin = {
@@ -932,6 +933,7 @@
         BaseDrawer: countlyBaseComponent.extend(
             // @vue/component
             {
+                inheritAttrs: false,
                 mixins: [
                     _mixins.i18n
                 ],
@@ -952,6 +954,7 @@
                         editedObject: this.copyOfEdited(),
                         currentStepIndex: 0,
                         stepContents: [],
+                        sidecarContents: [],
                         constants: {}
                     };
                 },
@@ -980,6 +983,9 @@
                     },
                     isMultiStep: function() {
                         return this.stepContents.length > 1;
+                    },
+                    hasSidecars: function() {
+                        return this.sidecarContents.length > 0;
                     }
                 },
                 watch: {
@@ -996,7 +1002,10 @@
                 },
                 mounted: function() {
                     this.stepContents = this.$children.filter(function(child) {
-                        return child.isContent;
+                        return child.isContent && child.role === "default";
+                    });
+                    this.sidecarContents = this.$children.filter(function(child) {
+                        return child.isContent && child.role === "sidecar";
                     });
                     this.setStep(this.stepContents[0].tId);
                 },
@@ -1032,32 +1041,38 @@
                     },
                     afterEditedObjectChanged: function() { },
                 },
-                template: '<div class="cly-vue-drawer" v-bind:class="{open: isOpened}">\
-                                <div class="title">\
-                                    <span>{{title}}</span>\
-                                    <div class="close" v-on:click="tryClosing">\
-                                        <i class="ion-ios-close-empty"></i>\
-                                    </div>\
+                template: '<div class="cly-vue-drawer"\
+                                v-bind:class="{open: isOpened, \'has-sidecars\': hasSidecars}">\
+                                <div class="sidecars-view" v-show="hasSidecars">\
+                                    <slot name="sidecars" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                                 </div>\
-                                <div class="steps-header" v-if="isMultiStep">\
-                                    <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
-                                        <div class="wrapper">\
-                                            <span class="index">{{i + 1}}</span>\
-                                            <span class="done-icon"><i class="fa fa-check"></i></span>\
-                                            <span class="text">{{currentContent.name}}</span>\
+                                <div class="steps-view">\
+                                    <div class="title">\
+                                        <span>{{title}}</span>\
+                                        <div class="close" v-on:click="tryClosing">\
+                                            <i class="ion-ios-close-empty"></i>\
                                         </div>\
                                     </div>\
-                                </div>\
-                                <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                    <slot :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
-                                </div>\
-                                <div class="buttons multi-step" v-if="isMultiStep">\
-                                    <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
-                                    <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
-                                    <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
-                                </div>\
-                                <div class="buttons single-step" v-if="!isMultiStep">\
-                                    <cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                    <div class="steps-header" v-if="isMultiStep">\
+                                        <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
+                                            <div class="wrapper">\
+                                                <span class="index">{{i + 1}}</span>\
+                                                <span class="done-icon"><i class="fa fa-check"></i></span>\
+                                                <span class="text">{{currentContent.name}}</span>\
+                                            </div>\
+                                        </div>\
+                                    </div>\
+                                    <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
+                                        <slot name="default" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                    </div>\
+                                    <div class="buttons multi-step" v-if="isMultiStep">\
+                                        <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
+                                        <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                        <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
+                                    </div>\
+                                    <div class="buttons single-step" v-if="!isMultiStep">\
+                                        <cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                    </div>\
                                 </div>\
                             </div>'
             }
@@ -1420,13 +1435,16 @@
     Vue.component("cly-content", countlyBaseComponent.extend(
         // @vue/component
         {
+            inheritAttrs: false,
             mixins: [
                 _mixins.i18n
             ],
             props: {
                 name: { type: String, default: null},
                 id: { type: String, default: null },
-                alwaysMounted: { type: Boolean, default: true }
+                alwaysMounted: { type: Boolean, default: true },
+                alwaysActive: { type: Boolean, default: false },
+                role: { type: String, default: "default" }
             },
             data: function() {
                 return {
@@ -1435,7 +1453,7 @@
             },
             computed: {
                 isActive: function() {
-                    return this.$parent.activeContentId === this.id;
+                    return this.alwaysActive || this.$parent.activeContentId === this.id;
                 },
                 tName: function() {
                     return this.name;
@@ -2017,7 +2035,7 @@
                             <div class="check-wrapper">\
                                 <input type="checkbox" class="check-checkbox" :checked="value">\
                                 <div v-bind:class="labelClass" @click="setValue(!value)"></div>\
-                                <span class="check-text" @click="setValue(!value)">{{label}}</span>\
+                                <span v-if="label" class="check-text" @click="setValue(!value)">{{label}}</span>\
                             </div>\
                         </div>'
         }
@@ -2470,8 +2488,51 @@
                 if (this.currentPage > newTotal) {
                     this.goToFirstPage();
                 }
+            },
+            total: function() {
+                this.updateInfo();
             }
         }
+    });
+
+    var clyDataTableRowOptions = countlyBaseComponent.extend({
+        props: {
+            items: {
+                type: Array
+            },
+            opened: {
+                type: Boolean
+            },
+            pos: {
+                type: Object
+            },
+            rowData: {
+                type: Object
+            }
+        },
+        computed: {
+            availableItems: function() {
+                return this.items.filter(function(item) {
+                    return !item.disabled;
+                });
+            }
+        },
+        methods: {
+            tryClosing: function() {
+                if (this.opened) {
+                    this.$emit("close");
+                }
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey, this.rowData);
+                this.tryClosing();
+            }
+        },
+        template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">\
+                        <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
+                            <a @click="fireEvent(item.event)" v-for="(item, index) in availableItems" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
+                        </div>\
+                    </div>'
     });
 
     Vue.component("cly-datatable", countlyBaseComponent.extend({
@@ -2480,7 +2541,8 @@
         ],
         inheritAttrs: false,
         components: {
-            "custom-controls": clyDataTableControls
+            "custom-controls": clyDataTableControls,
+            'row-options': clyDataTableRowOptions
         },
         props: {
             rows: {
@@ -2499,9 +2561,17 @@
             },
             extendedColumns: function() {
                 var extended = this.columns.map(function(col) {
+                    var newCol;
                     if (col.type === "cly-options") {
-                        var newCol = JSON.parse(JSON.stringify(col));
+                        newCol = JSON.parse(JSON.stringify(col));
                         newCol.field = "cly-options";
+                        newCol.sortable = false;
+                        delete newCol.type;
+                        return newCol;
+                    }
+                    if (col.type === "cly-detail-toggler") {
+                        newCol = JSON.parse(JSON.stringify(col));
+                        newCol.field = "cly-detail-toggler";
                         newCol.sortable = false;
                         delete newCol.type;
                         return newCol;
@@ -2528,6 +2598,9 @@
             onInfoChanged: function(text) {
                 this.pageInfo = text;
             },
+            setRowData: function(row, fields) {
+                this.$emit("set-row-data", row, fields);
+            },
             showRowOptions: function(event, items, row) {
                 var rect = $(event.target).offset(),
                     self = this;
@@ -2548,25 +2621,26 @@
                     this.$refs.controls.goToFirstPage();
                 }
             },
-            addTableEvents: function(propsObj) {
+            addTableFns: function(propsObj) {
                 var newProps = {
                     props: propsObj,
-                    events: {
-                        showRowOptions: this.showRowOptions
+                    fns: {
+                        showRowOptions: this.showRowOptions,
+                        setRowData: this.setRowData
                     }
                 };
                 return newProps;
             }
         },
         template: '<div>\
-                        <cly-row-options\
+                        <row-options\
                             :items="optionsItems"\
                             :pos="optionsPosition"\
                             :opened="optionsOpened"\
                             :rowData="optionsRowData"\
                             @close="optionsOpened=false"\
                             v-on="$listeners">\
-                        </cly-row-options>\
+                        </row-options>\
                         <vue-good-table\
                             v-bind="$attrs"\
                             v-bind:rows="rows"\
@@ -2596,7 +2670,7 @@
                                     </custom-controls>\
                                 </template>\
                                 <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">\
-                                    <slot :name="name" v-bind="addTableEvents(slotData)" />\
+                                    <slot :name="name" v-bind="addTableFns(slotData)" />\
                                 </template>\
                                 <div slot="table-actions-bottom">\
                                     {{pageInfo}}\
@@ -2608,36 +2682,38 @@
                     </div>'
     }));
 
-    Vue.component("cly-row-options", countlyBaseComponent.extend({
+    Vue.component("cly-datatable-detail-toggler", countlyBaseComponent.extend({
         props: {
-            items: {
-                type: Array
-            },
-            opened: {
-                type: Boolean
-            },
-            pos: {
-                type: Object
-            },
-            rowData: {
+            scope: {
                 type: Object
             }
         },
-        methods: {
-            tryClosing: function() {
-                if (this.opened) {
-                    this.$emit("close");
-                }
-            },
-            fireEvent: function(eventKey) {
-                this.$emit(eventKey, this.rowData);
-                this.tryClosing();
-            }
-        },
-        template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">\
-                        <div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\
-                            <a @click="fireEvent(item.event)" v-for="(item, index) in items" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\
+        template: '<div class="cly-vue-dt-detail-toggler">\
+                        <div @click="scope.fns.setRowData(scope.props.row, {isDetailRowShown: !scope.props.row.isDetailRowShown})">\
+                            <div v-if="!scope.props.row.isDetailRowShown">\
+                                <i class="material-icons expand-row-icon">keyboard_arrow_down</i>\
+                            </div>\
+                            <div v-else>\
+                                <i class="material-icons expand-row-icon">keyboard_arrow_up</i>\
+                            </div>\
                         </div>\
+                    </div>'
+    }));
+
+    Vue.component("cly-datatable-options", countlyBaseComponent.extend({
+        props: {
+            scope: {
+                type: Object
+            }
+        },
+        template: '<div class="cly-vue-dt-options">\
+                        <div v-if="scope.props.row._delayedDelete" class="undo-row">\
+                            {{ scope.props.row._delayedDelete.message }}\
+                            <a @click="scope.props.row._delayedDelete.abort()">Undo.</a>\
+                        </div>\
+                        <span>\
+                            <a class="cly-row-options-trigger" @click="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\
+                        </span>\
                     </div>'
     }));
 

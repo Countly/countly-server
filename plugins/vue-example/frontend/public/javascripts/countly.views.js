@@ -41,6 +41,11 @@ var TableView = countlyVue.views.BaseView.extend({
             selectDWItems: manyItems,
             gtableColumns: [
                 {
+                    type: "cly-detail-toggler",
+                    sortable: false,
+                    width: "10px",
+                },
+                {
                     label: 'Status',
                     field: 'status',
                     type: 'boolean',
@@ -111,11 +116,8 @@ var TableView = countlyVue.views.BaseView.extend({
                 self.$emit("open-drawer", "main", doc);
             });
         },
-        toggleRowDetail: function(tableEvent) {
-            this.$store.commit("countlyVueExample/table/patch", {row: tableEvent.row, fields: {isDetailRowShown: !tableEvent.row.isDetailRowShown}});
-        },
-        statusChanged: function(row, newValue) {
-            this.$store.commit("countlyVueExample/table/patch", {row: row, fields: {status: newValue}});
+        setRowData: function(row, fields) {
+            this.$store.commit("countlyVueExample/table/patch", {row: row, fields: fields});
         },
         onDelayedDelete: function(row) {
             var self = this;
