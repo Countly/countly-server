@@ -742,6 +742,8 @@
         }
 
         &.has-sidecars {
+            width: #{$drawer-width * 2};
+            transform: translateX(#{$drawer-width * 2});
             .steps-view, .sidecars-view {
                 width: 50%;
                 float: left;
@@ -767,7 +769,7 @@
             top: 0px;
             box-sizing: border-box;
             .close {
-                position: absolute;
+                position: fixed;
                 right: 20px;
                 top: 9px;
                 font-size: 42px;
