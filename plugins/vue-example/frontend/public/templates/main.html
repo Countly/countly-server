@@ -5,6 +5,10 @@
         @close="closeDrawer" 
         @submit="onDrawerSubmit"
         v-bind="drawers.main">
+        <template slot="sidecars">
+            <cly-content id="mainSidecar" role="sidecar" :always-active="true">
+            </cly-content>
+        </template>
         <template slot-scope="drawerScope" slot="default">
             <cly-content id="step1" name="First Step">
                 <div class="section">
@@ -75,10 +79,6 @@
                         {{drawerScope.editedObject}}
                     </pre>
                 </div>
-            </cly-content>
-        </template>
-        <template slot="sidecars">
-            <cly-content id="mainSidecar" role="sidecar" :always-active="true">
             </cly-content>
         </template>
     </example-drawer>

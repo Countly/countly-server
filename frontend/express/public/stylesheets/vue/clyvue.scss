@@ -726,16 +726,23 @@
         position: fixed;
         width: #{$drawer-width};
         height: 100%;
-        right: 0;
         transform: translateX(#{$drawer-width});
         transition: transform 0.3s;
+        right: 0;
         top: 0;
         background-color: #f9f9f9;
         border-left: 1px solid #d0d0d0;
         z-index: 10001;
-        box-sizing: border-box;
-        padding-top: 58px;
-        padding-bottom: 120px;
+
+        .sidecars-view {
+            background-color: #F3F3F3;
+            overflow-y: scroll;
+        }
+        .steps-view{
+            box-sizing: border-box;
+            padding-top: 58px;
+            padding-bottom: 120px;
+        }
 
         .steps-view, .sidecars-view {
             height: 100%;
