@@ -720,11 +720,14 @@
 
     //drawer
     .cly-vue-drawer {
+
+        $drawer-width: 600px;
+
         position: fixed;
-        width: 600px;
+        width: #{$drawer-width};
         height: 100%;
         right: 0;
-        transform: translateX(600px);
+        transform: translateX(#{$drawer-width});
         transition: transform 0.3s;
         top: 0;
         background-color: #f9f9f9;
@@ -733,6 +736,18 @@
         box-sizing: border-box;
         padding-top: 58px;
         padding-bottom: 120px;
+
+        .steps-view, .sidecars-view {
+            height: 100%;
+        }
+
+        &.has-sidecars {
+            .steps-view, .sidecars-view {
+                width: 50%;
+                float: left;
+            }
+        }
+
         &.open {
             transform: translateX(0);
             transition: transform 0.3s;

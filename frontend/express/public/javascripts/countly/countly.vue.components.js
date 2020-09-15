@@ -933,6 +933,7 @@
         BaseDrawer: countlyBaseComponent.extend(
             // @vue/component
             {
+                inheritAttrs: false,
                 mixins: [
                     _mixins.i18n
                 ],
@@ -953,6 +954,7 @@
                         editedObject: this.copyOfEdited(),
                         currentStepIndex: 0,
                         stepContents: [],
+                        sidecarContents: [],
                         constants: {}
                     };
                 },
@@ -981,6 +983,9 @@
                     },
                     isMultiStep: function() {
                         return this.stepContents.length > 1;
+                    },
+                    hasSidecars: function() {
+                        return this.sidecarContents.length > 0;
                     }
                 },
                 watch: {
@@ -997,7 +1002,10 @@
                 },
                 mounted: function() {
                     this.stepContents = this.$children.filter(function(child) {
-                        return child.isContent;
+                        return child.isContent && child.role === "default";
+                    });
+                    this.sidecarContents = this.$children.filter(function(child) {
+                        return child.isContent && child.role === "sidecar";
                     });
                     this.setStep(this.stepContents[0].tId);
                 },
@@ -1033,32 +1041,38 @@
                     },
                     afterEditedObjectChanged: function() { },
                 },
-                template: '<div class="cly-vue-drawer" v-bind:class="{open: isOpened}">\
-                                <div class="title">\
-                                    <span>{{title}}</span>\
-                                    <div class="close" v-on:click="tryClosing">\
-                                        <i class="ion-ios-close-empty"></i>\
-                                    </div>\
+                template: '<div class="cly-vue-drawer"\
+                                v-bind:class="{open: isOpened, \'has-sidecars\': hasSidecars}">\
+                                <div class="sidecars-view" v-show="hasSidecars">\
+                                    <slot name="sidecars" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                                 </div>\
-                                <div class="steps-header" v-if="isMultiStep">\
-                                    <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
-                                        <div class="wrapper">\
-                                            <span class="index">{{i + 1}}</span>\
-                                            <span class="done-icon"><i class="fa fa-check"></i></span>\
-                                            <span class="text">{{currentContent.name}}</span>\
+                                <div class="steps-view">\
+                                    <div class="title">\
+                                        <span>{{title}}</span>\
+                                        <div class="close" v-on:click="tryClosing">\
+                                            <i class="ion-ios-close-empty"></i>\
                                         </div>\
                                     </div>\
-                                </div>\
-                                <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                    <slot :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
-                                </div>\
-                                <div class="buttons multi-step" v-if="isMultiStep">\
-                                    <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
-                                    <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
-                                    <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
-                                </div>\
-                                <div class="buttons single-step" v-if="!isMultiStep">\
-                                    <cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                    <div class="steps-header" v-if="isMultiStep">\
+                                        <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
+                                            <div class="wrapper">\
+                                                <span class="index">{{i + 1}}</span>\
+                                                <span class="done-icon"><i class="fa fa-check"></i></span>\
+                                                <span class="text">{{currentContent.name}}</span>\
+                                            </div>\
+                                        </div>\
+                                    </div>\
+                                    <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
+                                        <slot name="default" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                    </div>\
+                                    <div class="buttons multi-step" v-if="isMultiStep">\
+                                        <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
+                                        <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                        <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
+                                    </div>\
+                                    <div class="buttons single-step" v-if="!isMultiStep">\
+                                        <cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
+                                    </div>\
                                 </div>\
                             </div>'
             }
@@ -1421,13 +1435,16 @@
     Vue.component("cly-content", countlyBaseComponent.extend(
         // @vue/component
         {
+            inheritAttrs: false,
             mixins: [
                 _mixins.i18n
             ],
             props: {
                 name: { type: String, default: null},
                 id: { type: String, default: null },
-                alwaysMounted: { type: Boolean, default: true }
+                alwaysMounted: { type: Boolean, default: true },
+                alwaysActive: { type: Boolean, default: false },
+                role: { type: String, default: "default" }
             },
             data: function() {
                 return {
@@ -1436,7 +1453,7 @@
             },
             computed: {
                 isActive: function() {
-                    return this.$parent.activeContentId === this.id;
+                    return this.alwaysActive || this.$parent.activeContentId === this.id;
                 },
                 tName: function() {
                     return this.name;
