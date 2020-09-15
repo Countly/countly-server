@@ -365,7 +365,7 @@ class Manager {
                 let s = next.filter(d => Math.abs(d.getTime() - job.next) > job.strict);
                 next = s.length ? s : next;
             }
-            return job.schedule(job.scheduleObj, job.strict, next.shift());
+            return job.schedule(job.scheduleObj, job.strict, next.shift().getTime());
         }
         return Promise.resolve();
     }
