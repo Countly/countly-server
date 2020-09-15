@@ -592,7 +592,22 @@
     }
 
     // check
+    .cly-vue-check-list {
+        .cly-vue-check {
+            display: block;
+            padding: 4px 0;  
+        }
+    }
+    
     .cly-vue-check {
+        
+        display: inline-block;
+        
+        &.block {
+            display: block;
+            padding: 4px 0;  
+        }
+
         &.check-switch-skin {
             .check-wrapper {
                 .check-checkbox:checked + .check-label {

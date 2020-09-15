@@ -379,6 +379,7 @@
 
     Vue.use(window.vuelidate.default);
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
+    window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
 
     // @vue/component
     var autoRefreshMixin = {
@@ -2017,7 +2018,7 @@
                             <div class="check-wrapper">\
                                 <input type="checkbox" class="check-checkbox" :checked="value">\
                                 <div v-bind:class="labelClass" @click="setValue(!value)"></div>\
-                                <span class="check-text" @click="setValue(!value)">{{label}}</span>\
+                                <span v-if="label" class="check-text" @click="setValue(!value)">{{label}}</span>\
                             </div>\
                         </div>'
         }
