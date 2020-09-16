@@ -2721,11 +2721,11 @@
                     this.updateRemoteParams({sort: params});
                 }
             },
-            onPerPageChange: function(params) {
+            onPerPageChange: _.debounce(function(params) {
                 if (this.isRemote) {
                     this.updateRemoteParams({perPage: params.currentPerPage});
                 }
-            }
+            }, 500)
         },
         watch: {
             searchQuery: _.debounce(function(newVal) {
@@ -2788,6 +2788,8 @@
                                 </div>\
                                 <div slot="emptystate">\
                                     {{ i18n("common.table.no-data") }}\
+                                </div>\
+                                <div slot="loadingContent">\
                                 </div>\
                         </vue-good-table>\
                     </div>'
