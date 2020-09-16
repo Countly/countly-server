@@ -224,6 +224,16 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
         };
     },
     methods: {
+        beforeNextStep: function() {
+            if (this.currentStepId === "step1") {
+                [this.$v.editedObject.name, this.$v.editedObject.field1, this.$v.editedObject.field2].forEach(function(validator) {
+                    validator.$touch();
+                });
+            }
+            else if (this.currentStepId === "step3") {
+                this.$v.editedObject.selectedProps.$touch();
+            }
+        },
         afterEditedObjectChanged: function(newState) {
             if (newState._id !== null) {
                 this.title = "Edit Record";
