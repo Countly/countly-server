@@ -1028,7 +1028,7 @@
                         this.setStep(this.currentStepIndex - 1);
                     },
                     nextStep: function() {
-                        this.beforeNextStep();
+                        this.beforeLeavingStep();
                         if (this.isCurrentStepValid) {
                             this.setStep(this.currentStepIndex + 1);
                         }
@@ -1038,14 +1038,14 @@
                         this.setStep(0);
                     },
                     submit: function() {
-                        this.beforeNextStep();
+                        this.beforeLeavingStep();
                         if (!this.$v.$invalid) {
                             this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
                             this.tryClosing();
                         }
                     },
                     afterEditedObjectChanged: function() { },
-                    beforeNextStep: function() { },
+                    beforeLeavingStep: function() { },
                 },
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{open: isOpened, \'has-sidecars\': hasSidecars}">\
