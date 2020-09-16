@@ -8,6 +8,9 @@ var TableView = countlyVue.views.BaseView.extend({
         },
         tableDiff: function() {
             return this.$store.getters["countlyVueExample/table/diff"];
+        },
+        rTableRows: function() {
+            return this.$store.getters["countlyVueExample/myRecords/largeCollection"];
         }
     },
     data: function() {
@@ -39,7 +42,7 @@ var TableView = countlyVue.views.BaseView.extend({
             selectWItems: manyItems,
             selectDWModel: null,
             selectDWItems: manyItems,
-            gtableColumns: [
+            tableColumns: [
                 {
                     type: "cly-detail-toggler",
                     sortable: false,
@@ -88,6 +91,18 @@ var TableView = countlyVue.views.BaseView.extend({
                         }
                     ]
                 },
+            ],
+            rTableColumns: [
+                {
+                    label: 'ID',
+                    field: '_id',
+                    type: 'number',
+                },
+                {
+                    type: "text",
+                    field: "name",
+                    label: "Name",
+                }
             ]
         };
     },
@@ -114,6 +129,12 @@ var TableView = countlyVue.views.BaseView.extend({
             var self = this;
             this.$store.dispatch("countlyVueExample/myRecords/fetchSingle", row._id).then(function(doc) {
                 self.$emit("open-drawer", "main", doc);
+            });
+        },
+        updateRemoteParams: function(remoteParams) {
+            var self = this;
+            this.$store.dispatch("countlyVueExample/myRecords/setParamsOfLargeCollection", remoteParams).then(function() {
+                self.$store.dispatch("countlyVueExample/myRecords/fetchLargeCollection");
             });
         },
         setRowData: function(row, fields) {

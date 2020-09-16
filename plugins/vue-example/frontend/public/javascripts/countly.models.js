@@ -127,10 +127,9 @@
                     params: {
                         page: 1,
                         perPage: 10,
-                        filters: [],
-                        fields: {'id': true, 'name': true},
-                        sortField: 'id',
-                        sortType: 'asc'
+                        fields: {'_id': true, 'name': true},
+                        sort: [],
+                        searchTerm: null
                     },
                     handler: function(context, actionParams, requestParams) {
                         return $.when($.ajax({

@@ -2588,6 +2588,14 @@
             },
             columns: {
                 type: Array
+            },
+            mode: {
+                type: String,
+                default: null
+            },
+            totalRows: {
+                type: Number,
+                default: 0
             }
         },
         computed: {
@@ -2617,6 +2625,17 @@
                     return col;
                 });
                 return extended;
+            },
+            isRemote: function() {
+                return this.internalMode === "remote";
+            },
+            internalTotalRows: function() {
+                if (this.isRemote) {
+                    return this.totalRows;
+                }
+                else {
+                    return this.rows.length;
+                }
             }
         },
         data: function() {
@@ -2629,6 +2648,14 @@
                 optionsPosition: {
                     right: '37px',
                     top: '0'
+                },
+                isLoading: false,
+                internalMode: this.mode,
+                remoteParams: {
+                    page: 1,
+                    perPage: 10,
+                    searchTerm: null,
+                    sort: []
                 }
             };
         },
@@ -2654,11 +2681,6 @@
                     self.optionsOpened = true;
                 });
             },
-            onSearch: function(params) {
-                if (params.searchTerm) {
-                    this.$refs.controls.goToFirstPage();
-                }
-            },
             addTableFns: function(propsObj) {
                 var newProps = {
                     props: propsObj,
@@ -2668,6 +2690,35 @@
                     }
                 };
                 return newProps;
+            },
+            updateRemoteParams: function(props) {
+                this.remoteParams = Object.assign({}, this.remoteParams, props);
+                this.$emit("remote-params-change", this.remoteParams);
+            },
+            // vgt event handlers
+            onSearch: function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({searchTerm: params.searchTerm});
+                    this.isLoading = true;
+                }
+                else if (params.searchTerm) {
+                    this.$refs.controls.goToFirstPage();
+                }
+            },
+            onPageChange: function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({page: params.currentPage});
+                }
+            },
+            onSortChange: function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({sort: params});
+                }
+            },
+            onPerPageChange: function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({perPage: params.currentPerPage});
+                }
             }
         },
         template: '<div>\
@@ -2693,7 +2744,15 @@
                                 enabled: true,\
                                 externalQuery: searchQuery\
                             }"\
+                            \
                             @on-search="onSearch"\
+                            @on-page-change="onPageChange"\
+                            @on-sort-change="onSortChange"\
+                            @on-per-page-change="onPerPageChange"\
+                            :mode="internalMode"\
+                            :totalRows="internalTotalRows"\
+                            :isLoading.sync="isLoading"\
+                            \
                             styleClass="cly-vgt-table striped">\
                                 <template slot="pagination-top" slot-scope="props">\
                                     <custom-controls\
