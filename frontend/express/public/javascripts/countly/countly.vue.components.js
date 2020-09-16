@@ -641,8 +641,12 @@
         });
     };
 
-    var _getReadActionName = function(readName) {
+    var _getReadFetchActionName = function(readName) {
         return "fetch" + readName[0].toUpperCase() + readName.substring(1);
+    };
+
+    var _getReadSetParamsActionName = function(readName) {
+        return "setParamsOf" + readName[0].toUpperCase() + readName.substring(1);
     };
 
     var _getReadStateName = function(readName) {
@@ -651,6 +655,10 @@
 
     var _getReadTransactionName = function(readName) {
         return "_" + readName + "_lastTransactionId";
+    };
+
+    var _getReadParamsName = function(readName) {
+        return "_" + readName + "_params";
     };
 
     var _getStructuredAction = function(userDefined) {
@@ -687,7 +695,7 @@
                 return writer.handler(context, obj).then(function(response) {
                     if (writer.refresh) {
                         writer.refresh.forEach(function(refreshAction) {
-                            context.dispatch(_getReadActionName(refreshAction));
+                            context.dispatch(_getReadFetchActionName(refreshAction));
                         });
                     }
                     return response;
@@ -699,18 +707,21 @@
         });
 
         Object.keys(reads).forEach(function(fnName) {
-            var actionName = _getReadActionName(fnName);
-            var reader = reads[fnName];
+            var fetchActionName = _getReadFetchActionName(fnName),
+                setParamsActionName = _getReadSetParamsActionName(fnName),
+                reader = reads[fnName];
 
-            actions[actionName] = function(context, obj) {
+            actions[fetchActionName] = function(context, obj) {
                 var currentTransactionId = null,
+                    readerParams = null,
                     transactionName = _getReadTransactionName(fnName);
 
                 if (!reader.noState) {
                     context.commit("incrementTransactionId", fnName);
                     currentTransactionId = context.state[transactionName];
+                    readerParams = context.state[_getReadParamsName(fnName)];
                 }
-                return reader.handler(context, obj).then(function(data) {
+                return reader.handler(context, obj, readerParams).then(function(data) {
                     if (!reader.noState) {
                         if (currentTransactionId === context.state[transactionName]) {
                             context.commit("mutateGeneric", {
@@ -728,6 +739,13 @@
             };
 
             if (!reader.noState) {
+                actions[setParamsActionName] = function(context, fields) {
+                    context.commit("extendReadParams", {
+                        readName: fnName,
+                        fields: fields
+                    });
+                };
+
                 getters[fnName] = function(state) {
                     var stateKey = _getReadStateName(fnName);
                     return state[stateKey];
@@ -743,6 +761,12 @@
                     var stateKey = _getReadStateName(fnName);
                     state[stateKey] = [];
                     state[_getReadTransactionName(fnName)] = 0;
+                    if (reader.params) {
+                        state[_getReadParamsName(fnName)] = JSON.parse(JSON.stringify(reader.params));
+                    }
+                    else {
+                        state[_getReadParamsName(fnName)] = {};
+                    }
                 }
             });
             return state;
@@ -756,9 +780,15 @@
             state[_getReadTransactionName(readName)] += 1;
         };
 
+        var extendReadParams = function(state, obj) {
+            var stateName = _getReadParamsName(obj.readName);
+            state[stateName] = Object.assign({}, state[stateName], obj.fields);
+        };
+
         var mutations = {
             mutateGeneric: mutateGeneric,
-            incrementTransactionId: incrementTransactionId
+            incrementTransactionId: incrementTransactionId,
+            extendReadParams: extendReadParams
         };
 
         return VuexModule(name, {
@@ -955,7 +985,8 @@
                         currentStepIndex: 0,
                         stepContents: [],
                         sidecarContents: [],
-                        constants: {}
+                        constants: {},
+                        isMounted: false
                     };
                 },
                 computed: {
@@ -964,6 +995,9 @@
                             return this.activeContent.tId;
                         }
                         return null;
+                    },
+                    currentStepId: function() {
+                        return this.activeContentId;
                     },
                     isCurrentStepValid: function() {
                         if (!this.stepValidations || !Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
@@ -1008,6 +1042,7 @@
                         return child.isContent && child.role === "sidecar";
                     });
                     this.setStep(this.stepContents[0].tId);
+                    this.isMounted = true;
                 },
                 methods: {
                     tryClosing: function() {
@@ -1025,6 +1060,7 @@
                         this.setStep(this.currentStepIndex - 1);
                     },
                     nextStep: function() {
+                        this.beforeLeavingStep();
                         if (this.isCurrentStepValid) {
                             this.setStep(this.currentStepIndex + 1);
                         }
@@ -1034,24 +1070,26 @@
                         this.setStep(0);
                     },
                     submit: function() {
+                        this.beforeLeavingStep();
                         if (!this.$v.$invalid) {
                             this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
                             this.tryClosing();
                         }
                     },
                     afterEditedObjectChanged: function() { },
+                    beforeLeavingStep: function() { },
                 },
                 template: '<div class="cly-vue-drawer"\
-                                v-bind:class="{open: isOpened, \'has-sidecars\': hasSidecars}">\
+                                v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
                                 <div class="sidecars-view" v-show="hasSidecars">\
                                     <slot name="sidecars" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                                 </div>\
                                 <div class="steps-view">\
                                     <div class="title">\
                                         <span>{{title}}</span>\
-                                        <div class="close" v-on:click="tryClosing">\
+                                        <span class="close" v-on:click="tryClosing">\
                                             <i class="ion-ios-close-empty"></i>\
-                                        </div>\
+                                        </span>\
                                     </div>\
                                     <div class="steps-header" v-if="isMultiStep">\
                                         <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
@@ -1453,7 +1491,7 @@
             },
             computed: {
                 isActive: function() {
-                    return this.alwaysActive || this.$parent.activeContentId === this.id;
+                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
                 },
                 tName: function() {
                     return this.name;
@@ -2546,15 +2584,33 @@
         },
         props: {
             rows: {
-                type: Array
+                type: Array,
+                default: function() {
+                    return [];
+                }
             },
             columns: {
                 type: Array
-            }
+            },
+            mode: {
+                type: String,
+                default: null
+            },
+            totalRows: {
+                type: Number,
+                default: 0
+            },
+            notFilteredTotalRows: {
+                type: Number,
+                default: 0
+            },
         },
         computed: {
             notFilteredTotal: function() {
-                if (!this.rows) {
+                if (this.isRemote) {
+                    return this.notFilteredTotalRows;
+                }
+                else if (!this.rows) {
                     return 0;
                 }
                 return this.rows.length;
@@ -2579,6 +2635,17 @@
                     return col;
                 });
                 return extended;
+            },
+            isRemote: function() {
+                return this.internalMode === "remote";
+            },
+            internalTotalRows: function() {
+                if (this.isRemote) {
+                    return this.totalRows;
+                }
+                else {
+                    return this.rows.length;
+                }
             }
         },
         data: function() {
@@ -2591,6 +2658,14 @@
                 optionsPosition: {
                     right: '37px',
                     top: '0'
+                },
+                isLoading: false,
+                internalMode: this.mode,
+                remoteParams: {
+                    page: 1,
+                    perPage: 10,
+                    searchQuery: null,
+                    sort: []
                 }
             };
         },
@@ -2616,11 +2691,6 @@
                     self.optionsOpened = true;
                 });
             },
-            onSearch: function(params) {
-                if (params.searchTerm) {
-                    this.$refs.controls.goToFirstPage();
-                }
-            },
             addTableFns: function(propsObj) {
                 var newProps = {
                     props: propsObj,
@@ -2630,7 +2700,40 @@
                     }
                 };
                 return newProps;
-            }
+            },
+            updateRemoteParams: function(props) {
+                this.remoteParams = Object.assign({}, this.remoteParams, props);
+                this.$emit("remote-params-change", this.remoteParams);
+            },
+            // vgt event handlers
+            onSearch: function(params) {
+                if (params.searchTerm) {
+                    this.$refs.controls.goToFirstPage();
+                }
+            },
+            onPageChange: function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({page: params.currentPage});
+                }
+            },
+            onSortChange: function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({sort: params});
+                }
+            },
+            onPerPageChange: _.debounce(function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({perPage: params.currentPerPage});
+                }
+            }, 500)
+        },
+        watch: {
+            searchQuery: _.debounce(function(newVal) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({searchQuery: newVal});
+                    this.isLoading = true;
+                }
+            }, 500)
         },
         template: '<div>\
                         <row-options\
@@ -2655,7 +2758,15 @@
                                 enabled: true,\
                                 externalQuery: searchQuery\
                             }"\
+                            \
                             @on-search="onSearch"\
+                            @on-page-change="onPageChange"\
+                            @on-sort-change="onSortChange"\
+                            @on-per-page-change="onPerPageChange"\
+                            :mode="internalMode"\
+                            :totalRows="internalTotalRows"\
+                            :isLoading.sync="isLoading"\
+                            \
                             styleClass="cly-vgt-table striped">\
                                 <template slot="pagination-top" slot-scope="props">\
                                     <custom-controls\
@@ -2677,6 +2788,8 @@
                                 </div>\
                                 <div slot="emptystate">\
                                     {{ i18n("common.table.no-data") }}\
+                                </div>\
+                                <div slot="loadingContent">\
                                 </div>\
                         </vue-good-table>\
                     </div>'

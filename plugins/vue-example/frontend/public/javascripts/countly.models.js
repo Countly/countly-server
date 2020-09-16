@@ -123,6 +123,23 @@
                         }
                     }));
                 },
+                largeCollection: function(context, actionParams, requestParams) {
+                    return $.when($.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o",
+                        data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
+                            method: 'large-col',
+                            table_params: JSON.stringify(requestParams)
+                        }
+                    })).catch(function() {
+                        return {
+                            rows: [],
+                            totalRows: 0,
+                            notFilteredTotalRows: 0
+                        };
+                    });
+                },
                 single: {
                     noState: true, // no state and getters will be created for this
                     handler: function(context, id) {

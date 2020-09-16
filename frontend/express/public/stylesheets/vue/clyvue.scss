@@ -726,7 +726,7 @@
         position: fixed;
         width: #{$drawer-width};
         height: 100%;
-        transform: translateX(#{$drawer-width});
+        transform: translateX(#{$drawer-width * 2});
         transition: transform 0.3s;
         right: 0;
         top: 0;
@@ -746,6 +746,10 @@
 
         .steps-view, .sidecars-view {
             height: 100%;
+        }
+        
+        &.mounted {
+            transform: translateX(#{$drawer-width});
         }
 
         &.has-sidecars {
@@ -772,17 +776,18 @@
             font-size: 20px;
             color: #636363;
             background-color: #fff;
-            width: 100%;
+            width: inherit;
             top: 0px;
             box-sizing: border-box;
             .close {
-                position: fixed;
-                right: 20px;
-                top: 9px;
                 font-size: 42px;
                 color: #9c9c9c;
                 transition: color 1s;
                 cursor: pointer;
+                float: right;
+                vertical-align: top;
+                bottom: 12px;
+                position: relative;
                 &:hover {
                     color: #333;
                     transition: color 1s;
