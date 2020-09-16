@@ -25,6 +25,12 @@ var common = require('../../../api/utils/common.js'),
             });
             return true;
         }
+        else if (ob.params.qstring.method === 'large-col') {
+            validateUserForDataReadAPI(params, function() {
+                common.returnOutput(params, []);
+            });
+            return true;
+        }
         return false;
     });
 

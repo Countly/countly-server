@@ -123,6 +123,27 @@
                         }
                     }));
                 },
+                largeCollection: {
+                    params: {
+                        page: 1,
+                        perPage: 10,
+                        filters: [],
+                        fields: {'id': true, 'name': true},
+                        sortField: 'id',
+                        sortType: 'asc'
+                    },
+                    handler: function(context, actionParams, requestParams) {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: 'large-col',
+                                table_params: JSON.stringify(requestParams)
+                            }
+                        }));
+                    }
+                },
                 single: {
                     noState: true, // no state and getters will be created for this
                     handler: function(context, id) {

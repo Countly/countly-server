@@ -653,6 +653,10 @@
         return "_" + readName + "_lastTransactionId";
     };
 
+    var _getReadParamsName = function(readName) {
+        return "_" + readName + "_params";
+    };
+
     var _getStructuredAction = function(userDefined) {
         if (typeof userDefined === "function") {
             return {
@@ -704,13 +708,15 @@
 
             actions[actionName] = function(context, obj) {
                 var currentTransactionId = null,
+                    readerParams = null,
                     transactionName = _getReadTransactionName(fnName);
 
                 if (!reader.noState) {
                     context.commit("incrementTransactionId", fnName);
                     currentTransactionId = context.state[transactionName];
+                    readerParams = context.state[_getReadParamsName(fnName)];
                 }
-                return reader.handler(context, obj).then(function(data) {
+                return reader.handler(context, obj, readerParams).then(function(data) {
                     if (!reader.noState) {
                         if (currentTransactionId === context.state[transactionName]) {
                             context.commit("mutateGeneric", {
@@ -743,6 +749,9 @@
                     var stateKey = _getReadStateName(fnName);
                     state[stateKey] = [];
                     state[_getReadTransactionName(fnName)] = 0;
+                    if (reader.params) {
+                        state[_getReadParamsName(fnName)] = JSON.parse(JSON.stringify(reader.params));
+                    }
                 }
             });
             return state;
