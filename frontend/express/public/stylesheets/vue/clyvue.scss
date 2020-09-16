@@ -776,17 +776,18 @@
             font-size: 20px;
             color: #636363;
             background-color: #fff;
-            width: 100%;
+            width: inherit;
             top: 0px;
             box-sizing: border-box;
             .close {
-                position: fixed;
-                right: 20px;
-                top: 9px;
                 font-size: 42px;
                 color: #9c9c9c;
                 transition: color 1s;
                 cursor: pointer;
+                float: right;
+                vertical-align: top;
+                bottom: 12px;
+                position: relative;
                 &:hover {
                     color: #333;
                     transition: color 1s;

@@ -1057,9 +1057,9 @@
                                 <div class="steps-view">\
                                     <div class="title">\
                                         <span>{{title}}</span>\
-                                        <div class="close" v-on:click="tryClosing">\
+                                        <span class="close" v-on:click="tryClosing">\
                                             <i class="ion-ios-close-empty"></i>\
-                                        </div>\
+                                        </span>\
                                     </div>\
                                     <div class="steps-header" v-if="isMultiStep">\
                                         <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
