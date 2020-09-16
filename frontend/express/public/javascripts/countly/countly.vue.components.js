@@ -1459,7 +1459,7 @@
             },
             computed: {
                 isActive: function() {
-                    return this.alwaysActive || this.$parent.activeContentId === this.id;
+                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
                 },
                 tName: function() {
                     return this.name;
