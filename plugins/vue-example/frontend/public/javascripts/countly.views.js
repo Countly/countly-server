@@ -9,7 +9,7 @@ var TableView = countlyVue.views.BaseView.extend({
         tableDiff: function() {
             return this.$store.getters["countlyVueExample/table/diff"];
         },
-        rTableRows: function() {
+        rTableData: function() {
             return this.$store.getters["countlyVueExample/myRecords/largeCollection"];
         }
     },

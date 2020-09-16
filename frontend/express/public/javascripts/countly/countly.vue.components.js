@@ -2584,7 +2584,10 @@
         },
         props: {
             rows: {
-                type: Array
+                type: Array,
+                default: function() {
+                    return [];
+                }
             },
             columns: {
                 type: Array
@@ -2596,11 +2599,18 @@
             totalRows: {
                 type: Number,
                 default: 0
-            }
+            },
+            notFilteredTotalRows: {
+                type: Number,
+                default: 0
+            },
         },
         computed: {
             notFilteredTotal: function() {
-                if (!this.rows) {
+                if (this.isRemote) {
+                    return this.notFilteredTotalRows;
+                }
+                else if (!this.rows) {
                     return 0;
                 }
                 return this.rows.length;
