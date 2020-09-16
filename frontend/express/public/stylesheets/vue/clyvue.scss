@@ -726,7 +726,7 @@
         position: fixed;
         width: #{$drawer-width};
         height: 100%;
-        transform: translateX(#{$drawer-width});
+        transform: translateX(#{$drawer-width * 2});
         transition: transform 0.3s;
         right: 0;
         top: 0;
@@ -746,6 +746,10 @@
 
         .steps-view, .sidecars-view {
             height: 100%;
+        }
+        
+        &.mounted {
+            transform: translateX(#{$drawer-width});
         }
 
         &.has-sidecars {

@@ -955,7 +955,8 @@
                         currentStepIndex: 0,
                         stepContents: [],
                         sidecarContents: [],
-                        constants: {}
+                        constants: {},
+                        isMounted: false
                     };
                 },
                 computed: {
@@ -1011,6 +1012,7 @@
                         return child.isContent && child.role === "sidecar";
                     });
                     this.setStep(this.stepContents[0].tId);
+                    this.isMounted = true;
                 },
                 methods: {
                     tryClosing: function() {
@@ -1048,7 +1050,7 @@
                     beforeLeavingStep: function() { },
                 },
                 template: '<div class="cly-vue-drawer"\
-                                v-bind:class="{open: isOpened, \'has-sidecars\': hasSidecars}">\
+                                v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
                                 <div class="sidecars-view" v-show="hasSidecars">\
                                     <slot name="sidecars" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                                 </div>\
