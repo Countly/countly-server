@@ -2654,7 +2654,7 @@
                 remoteParams: {
                     page: 1,
                     perPage: 10,
-                    searchTerm: null,
+                    searchQuery: null,
                     sort: []
                 }
             };
@@ -2697,11 +2697,7 @@
             },
             // vgt event handlers
             onSearch: function(params) {
-                if (this.isRemote) {
-                    this.updateRemoteParams({searchTerm: params.searchTerm});
-                    this.isLoading = true;
-                }
-                else if (params.searchTerm) {
+                if (params.searchTerm) {
                     this.$refs.controls.goToFirstPage();
                 }
             },
@@ -2720,6 +2716,14 @@
                     this.updateRemoteParams({perPage: params.currentPerPage});
                 }
             }
+        },
+        watch: {
+            searchQuery: _.debounce(function(newVal) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({searchQuery: newVal});
+                    this.isLoading = true;
+                }
+            }, 500)
         },
         template: '<div>\
                         <row-options\

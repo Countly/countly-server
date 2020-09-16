@@ -123,25 +123,16 @@
                         }
                     }));
                 },
-                largeCollection: {
-                    params: {
-                        page: 1,
-                        perPage: 10,
-                        fields: {'_id': true, 'name': true},
-                        sort: [],
-                        searchTerm: null
-                    },
-                    handler: function(context, actionParams, requestParams) {
-                        return $.when($.ajax({
-                            type: "GET",
-                            url: countlyCommon.API_URL + "/o",
-                            data: {
-                                app_id: countlyCommon.ACTIVE_APP_ID,
-                                method: 'large-col',
-                                table_params: JSON.stringify(requestParams)
-                            }
-                        }));
-                    }
+                largeCollection: function(context, actionParams, requestParams) {
+                    return $.when($.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o",
+                        data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
+                            method: 'large-col',
+                            table_params: JSON.stringify(requestParams)
+                        }
+                    }));
                 },
                 single: {
                     noState: true, // no state and getters will be created for this
