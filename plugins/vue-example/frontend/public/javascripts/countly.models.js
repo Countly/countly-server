@@ -132,7 +132,13 @@
                             method: 'large-col',
                             table_params: JSON.stringify(requestParams)
                         }
-                    }));
+                    })).catch(function() {
+                        return {
+                            rows: [],
+                            totalRows: 0,
+                            notFilteredTotalRows: 0
+                        };
+                    });
                 },
                 single: {
                     noState: true, // no state and getters will be created for this
