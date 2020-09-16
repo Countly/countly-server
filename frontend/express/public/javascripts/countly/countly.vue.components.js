@@ -641,8 +641,12 @@
         });
     };
 
-    var _getReadActionName = function(readName) {
+    var _getReadFetchActionName = function(readName) {
         return "fetch" + readName[0].toUpperCase() + readName.substring(1);
+    };
+
+    var _getReadSetParamsActionName = function(readName) {
+        return "setParamsOf" + readName[0].toUpperCase() + readName.substring(1);
     };
 
     var _getReadStateName = function(readName) {
@@ -691,7 +695,7 @@
                 return writer.handler(context, obj).then(function(response) {
                     if (writer.refresh) {
                         writer.refresh.forEach(function(refreshAction) {
-                            context.dispatch(_getReadActionName(refreshAction));
+                            context.dispatch(_getReadFetchActionName(refreshAction));
                         });
                     }
                     return response;
@@ -703,10 +707,11 @@
         });
 
         Object.keys(reads).forEach(function(fnName) {
-            var actionName = _getReadActionName(fnName);
-            var reader = reads[fnName];
+            var fetchActionName = _getReadFetchActionName(fnName),
+                setParamsActionName = _getReadSetParamsActionName(fnName),
+                reader = reads[fnName];
 
-            actions[actionName] = function(context, obj) {
+            actions[fetchActionName] = function(context, obj) {
                 var currentTransactionId = null,
                     readerParams = null,
                     transactionName = _getReadTransactionName(fnName);
@@ -734,6 +739,13 @@
             };
 
             if (!reader.noState) {
+                actions[setParamsActionName] = function(context, fields) {
+                    context.commit("extendReadParams", {
+                        readName: fnName,
+                        fields: fields
+                    });
+                };
+
                 getters[fnName] = function(state) {
                     var stateKey = _getReadStateName(fnName);
                     return state[stateKey];
@@ -752,6 +764,9 @@
                     if (reader.params) {
                         state[_getReadParamsName(fnName)] = JSON.parse(JSON.stringify(reader.params));
                     }
+                    else {
+                        state[_getReadParamsName(fnName)] = {};
+                    }
                 }
             });
             return state;
@@ -765,9 +780,15 @@
             state[_getReadTransactionName(readName)] += 1;
         };
 
+        var extendReadParams = function(state, obj) {
+            var stateName = _getReadParamsName(obj.readName);
+            state[stateName] = Object.assign({}, state[stateName], obj.fields);
+        };
+
         var mutations = {
             mutateGeneric: mutateGeneric,
-            incrementTransactionId: incrementTransactionId
+            incrementTransactionId: incrementTransactionId,
+            extendReadParams: extendReadParams
         };
 
         return VuexModule(name, {
