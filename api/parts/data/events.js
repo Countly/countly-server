@@ -251,6 +251,10 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.dur, currEvent.dur);
         }
 
+        if (currEvent.count && common.isNumber(currEvent.count)) {
+            currEvent.count = parseInt(currEvent.count, 10);
+        }
+
         common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, currEvent.count);
 
         var dateIds = common.getDateIds(params);
@@ -278,6 +282,10 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 }
 
                 if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
+                    continue;
+                }
+                //if segKey is empty
+                if (segKey === "") {
                     continue;
                 }
 
