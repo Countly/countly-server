@@ -827,15 +827,26 @@
             var self = this;
             if (this.templates) {
                 var templatesDeferred = [];
-                for (var name in this.templates.mapping) {
-                    var fileName = this.templates.mapping[name];
-                    var elementId = self.templates.namespace + "-" + name;
-                    templatesDeferred.push(function(fName, elId) {
-                        return T.get(fName, function(src) {
-                            self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
-                        });
-                    }(fileName, elementId));
-                }
+                this.templates.forEach(function(item) {
+                    if (typeof item === "string") {
+                        templatesDeferred.push(function(fName) {
+                            return T.get(fName, function(src) {
+                                self.elementsToBeRendered.push(src);
+                            });
+                        }(item));
+                        return;
+                    }
+                    for (var name in item.mapping) {
+                        var fileName = item.mapping[name];
+                        var elementId = item.namespace + "-" + name;
+                        templatesDeferred.push(function(fName, elId) {
+                            return T.get(fName, function(src) {
+                                self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
+                            });
+                        }(fileName, elementId));
+                    }
+                });
+
                 return $.when.apply(null, templatesDeferred);
             }
             return true;

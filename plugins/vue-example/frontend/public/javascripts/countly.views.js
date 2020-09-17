@@ -310,14 +310,17 @@ var vuex = [{
 var exampleView = new countlyVue.views.BackboneWrapper({
     component: MainView,
     vuex: vuex,
-    templates: {
-        namespace: 'vue-example',
-        mapping: {
-            'table-template': '/vue-example/templates/table.html',
-            'tg-template': '/vue-example/templates/tg.html',
-            'main-template': '/vue-example/templates/main.html'
+    templates: [
+        "/vue-example/templates/empty.html",
+        {
+            namespace: 'vue-example',
+            mapping: {
+                'table-template': '/vue-example/templates/table.html',
+                'tg-template': '/vue-example/templates/tg.html',
+                'main-template': '/vue-example/templates/main.html'
+            }
         }
-    }
+    ]
 });
 
 app.vueExampleView = exampleView;
