@@ -251,6 +251,10 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.dur, currEvent.dur);
         }
 
+        if (currEvent.count && common.isNumber(currEvent.count)) {
+            currEvent.count = parseInt(currEvent.count);
+        }
+
         common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, currEvent.count);
 
         var dateIds = common.getDateIds(params);
