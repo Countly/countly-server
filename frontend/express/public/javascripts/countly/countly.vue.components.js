@@ -538,7 +538,6 @@
     var VuexDataTable = function(name, options) {
         var resetFn = function() {
             return {
-                sourceAddress: options.sourceAddress,
                 trackedFields: options.trackedFields || [],
                 patches: {}
             };
@@ -552,9 +551,7 @@
         };
 
         var tableGetters = {
-            sourceRows: function(state, getters, rootState, rootGetters) {
-                return rootGetters[state.sourceAddress];
-            },
+            sourceRows: options.sourceRows,
             diff: function(state, getters) {
                 if (state.trackedFields.length === 0 || Object.keys(state.patches).length === 0) {
                     return [];
@@ -830,15 +827,26 @@
             var self = this;
             if (this.templates) {
                 var templatesDeferred = [];
-                for (var name in this.templates.mapping) {
-                    var fileName = this.templates.mapping[name];
-                    var elementId = self.templates.namespace + "-" + name;
-                    templatesDeferred.push(function(fName, elId) {
-                        return T.get(fName, function(src) {
-                            self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
-                        });
-                    }(fileName, elementId));
-                }
+                this.templates.forEach(function(item) {
+                    if (typeof item === "string") {
+                        templatesDeferred.push(function(fName) {
+                            return T.get(fName, function(src) {
+                                self.elementsToBeRendered.push(src);
+                            });
+                        }(item));
+                        return;
+                    }
+                    for (var name in item.mapping) {
+                        var fileName = item.mapping[name];
+                        var elementId = item.namespace + "-" + name;
+                        templatesDeferred.push(function(fName, elId) {
+                            return T.get(fName, function(src) {
+                                self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
+                            });
+                        }(fileName, elementId));
+                    }
+                });
+
                 return $.when.apply(null, templatesDeferred);
             }
             return true;
