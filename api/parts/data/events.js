@@ -280,6 +280,10 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
                     continue;
                 }
+                //if segKey is empty
+                if (segKey === "") {
+                    continue;
+                }
 
                 if (pluginsGetConfig.event_segmentation_limit &&
                         appSegments[currEvent.key] &&
