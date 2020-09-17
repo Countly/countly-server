@@ -538,7 +538,6 @@
     var VuexDataTable = function(name, options) {
         var resetFn = function() {
             return {
-                sourceAddress: options.sourceAddress,
                 trackedFields: options.trackedFields || [],
                 patches: {}
             };
@@ -552,9 +551,7 @@
         };
 
         var tableGetters = {
-            sourceRows: function(state, getters, rootState, rootGetters) {
-                return rootGetters[state.sourceAddress];
-            },
+            sourceRows: options.sourceRows,
             diff: function(state, getters) {
                 if (state.trackedFields.length === 0 || Object.keys(state.patches).length === 0) {
                     return [];
