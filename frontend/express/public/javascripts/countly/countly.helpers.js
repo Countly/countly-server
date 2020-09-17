@@ -1495,7 +1495,7 @@
 
             $(this).parent(".selection").remove();
 
-            var maxToSelect = $multiSelect.data("max");
+            var maxToSelect = $multiSelect.data("max") || 99;
 
             if (maxToSelect) {
                 if (getSelected($multiSelect).length < maxToSelect) {
