@@ -235,7 +235,9 @@ class ReadBatcher {
                         resolve(res);
                     }
                     else {
-                        this.data[collection][id].promise = null;
+                        if (this.data && this.data[collection] && this.data[collection][id] && this.data[collection][id].promise) {
+                            this.data[collection][id].promise = null;
+                        }
                         reject(err);
                     }
                 });
@@ -247,7 +249,9 @@ class ReadBatcher {
                         resolve(res);
                     }
                     else {
-                        this.data[collection][id].promise = null;
+                        if (this.data && this.data[collection] && this.data[collection][id] && this.data[collection][id].promise) {
+                            this.data[collection][id].promise = null;
+                        }
                         reject(err);
                     }
                 });
