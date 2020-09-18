@@ -42,16 +42,16 @@ if (myArgs[0] == "enable" && myArgs[1]) {
             return;
         }
 
-        var parentsNeedToBeEnabled = [];
+        var ancestorsNeedToBeEnabled = [];
 
-        Object.keys(dpcs[pluginName].parents).forEach(function(parentName) {
+        dpcs[pluginName].up.forEach(function(parentName) {
             if (plugins.indexOf(parentName) === -1) {
-                parentsNeedToBeEnabled.push(parentName);
+                ancestorsNeedToBeEnabled.push(parentName);
             }
         });
 
-        if (parentsNeedToBeEnabled.length > 0) {
-            console.log(`> Enabling '${pluginName}' will cause depended plugin(s) (${parentsNeedToBeEnabled.join(', ')}) to be enabled as well.`);
+        if (ancestorsNeedToBeEnabled.length > 0) {
+            console.log(`> Enabling '${pluginName}' will cause depended plugin(s) (${ancestorsNeedToBeEnabled.join(', ')}) to be enabled as well.`);
             console.log("> Do you want to continue?");
         }
         return;
@@ -85,16 +85,16 @@ else if (myArgs[0] == "disable" && myArgs[1]) {
             return;
         }
 
-        var childrenNeedToBeDisabled = [];
+        var descendantsNeedToBeDisabled = [];
 
-        Object.keys(dpcs[pluginName].children).forEach(function(childName) {
+        dpcs[pluginName].down.forEach(function(childName) {
             if (plugins.indexOf(childName) > -1) {
-                childrenNeedToBeDisabled.push(childName);
+                descendantsNeedToBeDisabled.push(childName);
             }
         });
 
-        if (childrenNeedToBeDisabled.length > 0) {
-            console.log(`> Disabling '${pluginName}' will cause dependent plugin(s) (${childrenNeedToBeDisabled.join(', ')}) to be disabled as well.`);
+        if (descendantsNeedToBeDisabled.length > 0) {
+            console.log(`> Disabling '${pluginName}' will cause dependent plugin(s) (${descendantsNeedToBeDisabled.join(', ')}) to be disabled as well.`);
             console.log("> Do you want to continue?");
         }
         return;

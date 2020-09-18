@@ -1,10 +1,15 @@
 var log = require('../api/utils/log.js'),
     _ = require('lodash'),
-    fs = require('fs'); 
+    fs = require('fs');
 
 const CLY_ROOT = "___CLY_ROOT___";
 
-
+/**
+ * Decorates option object
+ * 
+ * @param {object} options Input options object
+ * @returns {object} Output options object
+ */
 function getOptions(options) {
     options = options || {};
     if (options.env === "cli") {
@@ -12,13 +17,71 @@ function getOptions(options) {
             e: console.log,
             i: console.log,
             w: console.log
-        }
+        };
     }
     else {
         options.logger = options.logger || log('plugins:dependencies');
     }
     options.discoveryStrategy = options.discoveryStrategy || "disableChildren";
     return options;
+}
+
+/**
+ * Extends the dependencies graph with either ancestors or descendants of the given plugin
+ * 
+ * @param {object} _graph Dependencies graph 
+ * @param {String} code Plugin id
+ * @param {String} direction Relative direction (up|down)
+ * @returns {undefined} nothing
+ */
+function discoverRelativePlugins(_graph, code, direction) {
+
+    if (!Object.prototype.hasOwnProperty.call(_graph, code)) {
+        return [];
+    }
+
+    direction = direction || "up";
+
+    if (Object.prototype.hasOwnProperty.call(_graph[code], direction)) {
+        return _graph[code][direction];
+    }
+
+    var queue = [code],
+        visited = {},
+        relativeType = "parents";
+    if (direction === "up") {
+        relativeType = "parents";
+    }
+    else {
+        relativeType = "children";
+    }
+    while (queue.length > 0) {
+        var current = queue.pop();
+        if (Object.prototype.hasOwnProperty.call(visited, current)) {
+            continue;
+        }
+
+        if (!_graph[current]) {
+            visited[current] = 1;
+            continue;
+        }
+
+        for (var item in _graph[current][relativeType]) {
+            queue.push(item);
+        }
+        visited[current] = 1;
+    }
+    var relatives = [];
+
+    delete visited[CLY_ROOT];
+
+    for (var itemCode in visited) {
+        if (itemCode !== code) {
+            relatives.push(itemCode);
+        }
+    }
+
+    _graph[code][direction] = relatives;
 }
 
 /**
@@ -36,7 +99,7 @@ function getOptions(options) {
  * This function may report different types of errors; which are generally caused by cyclic dependencies, absent plugins, etc.
  * 
  * @param {Array} plugins We use this array of plugin names to create dependency graph.  
- * @param {*} discoveryStrategy (disableChildren|enableParents) Explained above.
+ * @param {object} options Options object
  * @returns {Object} Returns an object with dpcs and errors fields
  */
 function getDependencies(plugins, options) {
@@ -46,7 +109,7 @@ function getDependencies(plugins, options) {
                 children: {}
             }
         };
-    
+
     var {logger, discoveryStrategy} = getOptions(options);
 
     if (["disableChildren", "enableParents"].indexOf(discoveryStrategy) === -1) {
@@ -85,27 +148,39 @@ function getDependencies(plugins, options) {
         }
     }
 
-    for (var name in dpcs) {
-        for (var parentName in dpcs[name].parents) {
-            if (!Object.prototype.hasOwnProperty.call(dpcs, parentName)) {
+    for (var dname in dpcs) {
+        for (var pname in dpcs[dname].parents) {
+            if (!Object.prototype.hasOwnProperty.call(dpcs, pname)) {
                 if (discoveryStrategy === "enableParents") {
                     // If dependency record is not found even at this point, it means dependency doesn't exist under plugins.
-                    errors[name] = {"reason": "parent_not_found", "cly_dependencies": dpcs[name].parents};
+                    errors[dname] = {"reason": "parent_not_found", "cly_dependencies": dpcs[dname].parents};
                 }
                 else { //else if (discoveryStrategy === "disableChildren") {
-                    errors[name] = {"reason": "child_disabled", "cly_dependencies": dpcs[name].parents};
+                    errors[dname] = {"reason": "child_disabled", "cly_dependencies": dpcs[dname].parents};
                 }
                 break;
             }
             else {
-                dpcs[parentName].children[name] = true;
+                dpcs[pname].children[dname] = true;
             }
         }
+    }
+
+    for (var center in dpcs) {
+        discoverRelativePlugins(dpcs, center, "up");
+        discoverRelativePlugins(dpcs, center, "down");
     }
 
     return {dpcs, errors};
 }
 
+/**
+ * Fixes the order of plugins, enables/disables when there are broken dependencies
+ * 
+ * @param {Array} plugins Plugin List 
+ * @param {Object} options Options object
+ * @returns {Array} Fixed list of the plugins
+ */
 var getFixedPluginList = function(plugins, options) {
 
     options = getOptions(options);
