@@ -20,8 +20,6 @@ if (cluster.isMaster) {
     if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
         log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
     }
-    common.writeBatcher = new WriteBatcher(common.db);
-    common.readBatcher = new ReadBatcher(common.db);
     t.push("master");
     t.push("node");
     t.push(process.argv[1]);
@@ -43,6 +41,9 @@ Promise.all(databases).then(function(dbs) {
     common.db = dbs[0];
     common.outDb = dbs[1];
     countlyFs.setHandler(dbs[2]);
+
+    common.writeBatcher = new WriteBatcher(common.db);
+    common.readBatcher = new ReadBatcher(common.db);
 
     if (dbs[3]) {
         common.drillDb = dbs[3];
@@ -294,9 +295,6 @@ Promise.all(databases).then(function(dbs) {
 
         common.cache = new CacheWorker(common.db);
         common.cache.start();
-
-        common.writeBatcher = new WriteBatcher(common.db);
-        common.readBatcher = new ReadBatcher(common.db);
 
         //since process restarted mark running tasks as errored
         taskManager.errorResults({db: common.db});
