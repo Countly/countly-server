@@ -125,7 +125,6 @@ var plugin = {},
 
         if (query) {
             common.readBatcher.getOne("events", {'_id': common.db.ObjectID(appId)}, {list: 1}, (err, eventData) => {
-
                 if (err) {
                     console.log("err", err);
                     return true;
@@ -151,17 +150,18 @@ var plugin = {},
                     Object.keys(query).forEach(function(key) {
                         var queryObject = query[key];
                         var s = queryObject.update.$set.s;
-    
+
                         if (s === "[CLY]_session" || !overLimit || (overLimit && eventData.list.indexOf(s) >= 0)) {
                             bulk.find(queryObject.criteria).upsert().updateOne(queryObject.update);
                         }
                     });
-    
-    
+
+
                     if (bulk.length > 0) {
                         bulk.execute(function() {});
                     }
                 }
+            });
         }
 
         return true;

@@ -638,7 +638,7 @@ describe('Testing event settings', function() {
 
         it('checking for segmentation in  collections(t5)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("t5" + APP_ID).digest('hex');
-            db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["bad_segment"]}}).toArray(function(err, res) {
+            testUtils.db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["bad_segment"]}}).toArray(function(err, res) {
                 if (res.length == 0) {
                     done();
                 }

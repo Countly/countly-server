@@ -149,7 +149,7 @@ Promise.all(databases).then(function(dbs) {
         }
         process.exit(code);
     }
-    
+
     /**
     *  Handle before exit for gracefull close
     */
@@ -157,7 +157,7 @@ Promise.all(databases).then(function(dbs) {
         console.log('Received exit, trying to save batch state: ', code);
         storeBatchedData(code);
     });
-    
+
     /**
     *  Handle exit events for gracefull close
     */
@@ -169,7 +169,7 @@ Promise.all(databases).then(function(dbs) {
             console.log('Got signal: ' + sig);
         });
     });
-    
+
     /**
     * Uncaught Exception Handler
     */
