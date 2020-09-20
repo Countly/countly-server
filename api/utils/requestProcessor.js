@@ -55,6 +55,7 @@ const reloadConfig = function() {
         }
     });
 };
+
 /**
  * Default request processing handler, which requires request context to operate. Check tcp_example.js
  * @static
@@ -648,6 +649,75 @@ const processRequest = (params) => {
             }
             case '/i/events': {
                 switch (paths[3]) {
+                case 'whitelist_segments':
+                {
+                    validateUserForWrite(params, function() {
+                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
+                            if (err) {
+                                common.returnMessage(params, 400, err);
+                                return;
+                            }
+                            else if (!event) {
+                                common.returnMessage(params, 400, "Could not find record in event collection");
+                                return;
+                            }
+
+                            //rewrite whitelisted
+                            if (params.qstring.whitelisted_segments && params.qstring.whitelisted_segments !== "") {
+                                try {
+                                    params.qstring.whitelisted_segments = JSON.parse(params.qstring.whitelisted_segments);
+                                }
+                                catch (SyntaxError) {
+                                    params.qstring.whitelisted_segments = {}; console.log('Parse ' + params.qstring.whitelisted_segments + ' JSON failed', params.req.url, params.req.body);
+                                }
+
+                                var update = {};
+                                var whObj = params.qstring.whitelisted_segments;
+                                for (let k in whObj) {
+                                    if (Array.isArray(whObj[k]) && whObj[k].length > 0) {
+                                        update.$set = update.$set || {};
+                                        update.$set["whitelisted_segments." + k] = whObj[k];
+                                    }
+                                    else {
+                                        update.$unset = update.$unset || {};
+                                        update.$unset["whitelisted_segments." + k] = true;
+                                    }
+                                }
+
+                                common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, update, function(err2) {
+                                    if (err2) {
+                                        common.returnMessage(params, 400, err2);
+                                    }
+                                    else {
+                                        var data_arr = {update: {}};
+                                        if (update.$set) {
+                                            data_arr.update.$set = update.$set;
+                                        }
+
+                                        if (update.$unset) {
+                                            data_arr.update.$unset = update.$unset;
+                                        }
+                                        data_arr.update = JSON.stringify(data_arr.update);
+                                        common.returnMessage(params, 200, 'Success');
+                                        plugins.dispatch("/systemlogs", {
+                                            params: params,
+                                            action: "segments_whitelisted_for_events",
+                                            data: data_arr
+                                        });
+                                    }
+                                });
+
+                            }
+                            else {
+                                common.returnMessage(params, 400, "Value for 'whitelisted_segments' missing");
+                                return;
+                            }
+
+
+                        });
+                    });
+                    break;
+                }
                 case 'edit_map':
                 {
                     if (!params.qstring.app_id) {
@@ -1994,7 +2064,7 @@ const processRequest = (params) => {
             }
         }
         else {
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+            if (!params.res.finished) {
                 common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
             }
             common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
@@ -2010,28 +2080,74 @@ const processRequest = (params) => {
  * @param {function} done - callbck when processing done
  */
 const processRequestData = (params, app, done) => {
-    plugins.dispatch("/i", {
-        params: params,
-        app: app
-    }, () => {
-        if (params.qstring.events) {
-            if (params.promises) {
-                params.promises.push(countlyApi.data.events.processEvents(params));
-            }
-            else {
-                countlyApi.data.events.processEvents(params);
-            }
-        }
-        else if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.bulk) {
-            common.returnMessage(params, 200, 'Success');
-        }
 
-        if (countlyApi.data.usage.processLocationRequired(params)) {
-            countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
+    //preserve time for user's previous session
+    params.previous_session = params.app_user.lsid;
+    params.previous_session_start = params.app_user.ls;
+    params.request_id = params.request_hash + "_" + params.app_user.uid + "_" + params.time.mstimestamp;
+
+    var ob = {params: params, app: app, updates: []};
+    plugins.dispatch("/sdk/user_properties", ob, function() {
+        var update = {};
+        //check if we already processed app users for this request
+        if (params.app_user.last_req !== params.request_hash && ob.updates.length) {
+            ob.updates.push({$set: {last_req: params.request_hash, ingested: false}});
+            for (let i = 0; i < ob.updates.length; i++) {
+                update = common.mergeQuery(update, ob.updates[i]);
+            }
         }
-        else {
-            continueProcessingRequestData(params, done);
-        }
+        var newUser = params.app_user.fs ? false : true;
+        common.updateAppUser(params, update, function() {
+            if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                common.returnMessage(params, 200, 'Success');
+            }
+            if (params.qstring.begin_session) {
+                plugins.dispatch("/session/retention", {
+                    params: params,
+                    user: params.app_user,
+                    isNewUser: newUser
+                });
+            }
+            if (params.qstring.events) {
+                if (params.promises) {
+                    params.promises.push(countlyApi.data.events.processEvents(params));
+                }
+                else {
+                    countlyApi.data.events.processEvents(params);
+                }
+            }
+            //process the rest of the plugins as usual
+            plugins.dispatch("/i", {
+                params: params,
+                app: app
+            });
+            plugins.dispatch("/sdk/data_ingestion", {params: params}, function(result) {
+                var retry = false;
+                if (result && result.length) {
+                    for (let index = 0; index < result.length; index++) {
+                        if (result[index].status === "rejected") {
+                            retry = true;
+                            break;
+                        }
+                    }
+                }
+                if (!retry && plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                    //acknowledge data ingestion
+                    common.updateAppUser(params, {$set: {ingested: true}});
+                }
+                if (!params.res.finished) {
+                    if (retry) {
+                        common.returnMessage(params, 400, 'Could not ingest data');
+                    }
+                    else {
+                        common.returnMessage(params, 200, 'Success');
+                    }
+                }
+                if (done) {
+                    done();
+                }
+            });
+        });
     });
 };
 
@@ -2067,53 +2183,6 @@ const processFetchRequest = (params, app, done) => {
 
         return done ? done() : false;
     });
-};
-
-/**
- * Continue Processing Request Data
- * @param {params} params - params object
- * @param {function} done - callbck when processing done
- * @returns {void} void
- */
-const continueProcessingRequestData = (params, done) => {
-    if (params.qstring.begin_session) {
-        countlyApi.data.usage.beginUserSession(params, done);
-    }
-    else {
-        if (params.qstring.metrics) {
-            countlyApi.data.usage.processMetrics(params);
-        }
-        if (params.qstring.end_session) {
-            if (params.qstring.session_duration) {
-                countlyApi.data.usage.processSessionDuration(params, () => {
-                    countlyApi.data.usage.endUserSession(params, done);
-                });
-            }
-            else {
-                countlyApi.data.usage.endUserSession(params, done);
-            }
-        }
-        else if (params.qstring.session_duration) {
-            countlyApi.data.usage.processSessionDuration(params, () => {
-                return done ? done() : false;
-            });
-        }
-        else {
-            //update lac only on real change (Artem TM)
-            //common.updateAppUser(params, {$set: {lac: params.time.mstimestamp}});
-
-            // begin_session, session_duration and end_session handle incrementing request count in usage.js
-            const dbDateIds = common.getDateIds(params),
-                updateUsers = {};
-
-            common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
-            const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert': true}, () => {
-            });
-
-            return done ? done() : false;
-        }
-    }
 };
 
 /**
@@ -2189,323 +2258,15 @@ const processBulkRequest = (i, requests, params) => {
 };
 
 /**
- * Validate App for Write API
- * Checks app_key from the http request against "apps" collection.
- * This is the first step of every write request to API.
- * @param {params} params - params object
- * @param {function} done - callback when processing done
- * @param {number} try_times - how many times request was retried
- * @returns {void} void
- */
-const validateAppForWriteAPI = (params, done, try_times) => {
-    var sourceType = "WriteAPI";
-    if (ignorePossibleDevices(params)) {
-        return done ? done() : false;
-    }
-
-    common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
-        if (!app) {
-            common.returnMessage(params, 400, 'App does not exist');
-            params.cancelRequest = "App not found or no Database connection";
-            return done ? done() : false;
-        }
-
-        if (app.paused) {
-            common.returnMessage(params, 400, 'App is currently not accepting data');
-            params.cancelRequest = "App is currently not accepting data";
-            plugins.dispatch("/sdk/cancel", {params: params});
-            return done ? done() : false;
-        }
-
-        if ((params.populator || params.qstring.populator) && app.locked) {
-            common.returnMessage(params, 403, "App is locked");
-            params.cancelRequest = "App is locked";
-            plugins.dispatch("/sdk/cancel", {params: params});
-            return false;
-        }
-
-        params.app_id = app._id;
-        params.app_cc = app.country;
-        params.app_name = app.name;
-        params.appTimezone = app.timezone;
-        params.app = app;
-        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-
-        if (!checksumSaltVerification(params, sourceType)) {
-            return done ? done() : false;
-        }
-
-        if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
-            params.user.tz = parseInt(params.qstring.tz);
-        }
-
-        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
-            params.app_user = user || {};
-
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
-                //check unique millisecond timestamp, if it is the same as the last request had,
-                //then we are having duplicate request, due to sudden connection termination
-                let payload = params.href.substr(3) || "";
-                if (params.req.method.toLowerCase() === 'post') {
-                    payload += params.req.body;
-                }
-                params.request_hash = common.crypto.createHash('sha512').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
-                if (params.app_user.last_req === params.request_hash) {
-                    params.cancelRequest = "Duplicate request";
-                }
-            }
-
-            if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
-                try {
-                    params.qstring.metrics = JSON.parse(params.qstring.metrics);
-                }
-                catch (SyntaxError) {
-                    console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
-                }
-            }
-
-            plugins.dispatch("/sdk", {
-                params: params,
-                app: app
-            }, () => {
-                plugins.dispatch("/sdk/log", {params: params});
-                if (!params.cancelRequest) {
-                    if (!params.app_user.uid) {
-                        //first time we see this user, we need to id him with uid
-                        countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
-                            if (uid) {
-                                params.app_user.uid = uid;
-                                if (!params.app_user._id) {
-                                    //if document was not yet created
-                                    //we try to insert one with uid
-                                    //even if paralel request already inserted uid
-                                    //this insert will fail
-                                    //but we will retry again and fetch new inserted document
-                                    common.db.collection('app_users' + params.app_id).insert({
-                                        _id: params.app_user_id,
-                                        uid: uid,
-                                        did: params.qstring.device_id
-                                    }, {ignore_errors: [11000]}, function() {
-                                        restartRequest(params, done, try_times);
-                                    });
-                                }
-                                else {
-                                    //document was created, but has no uid
-                                    //here we add uid only if it does not exist in db
-                                    //so if paralel request inserted it, we will not overwrite it
-                                    //and retrieve that uid on retry
-                                    common.db.collection('app_users' + params.app_id).update({
-                                        _id: params.app_user_id,
-                                        uid: {$exists: false}
-                                    }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
-                                        restartRequest(params, done, try_times);
-                                    });
-                                }
-                            }
-                            else {
-                                //cannot create uid, so cannot process request now
-                                console.log("Cannot create uid", err, uid);
-                                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                                    common.returnMessage(params, 400, "Cannot create uid");
-                                }
-                            }
-                        });
-                    }
-                    //check if device id was changed
-                    else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-                        const old_id = common.crypto.createHash('sha1')
-                            .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                            .digest('hex');
-
-                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
-                            //remove old device ID and retry request
-                            params.qstring.old_device_id = null;
-                            restartRequest(params, done, try_times);
-                        });
-
-                        //do not proceed with request
-                        return false;
-                    }
-                    else {
-                        processRequestData(params, app, done);
-                    }
-                }
-                else {
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
-                    }
-                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                    return done ? done() : false;
-                }
-            });
-        });
-        if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-            common.returnMessage(params, 200, 'Success');
-            return;
-        }
-    });
-};
-
-/**
- * Validate app for fetch API from sdk
- * @param  {object} params - params object
- * @param  {function} done - callback when processing done
- * @param  {number} try_times - how many times request was retried
- * @returns {function} done - done callback
- */
-const validateAppForFetchAPI = (params, done, try_times) => {
-    var sourceType = "FetchAPI";
-    if (ignorePossibleDevices(params)) {
-        return done ? done() : false;
-    }
-
-    common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
-        if (!app) {
-            common.returnMessage(params, 400, 'App does not exist');
-            params.cancelRequest = "App not found or no Database connection";
-            return done ? done() : false;
-        }
-
-        params.app_id = app._id;
-        params.app_cc = app.country;
-        params.app_name = app.name;
-        params.appTimezone = app.timezone;
-        params.app = app;
-        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-
-        if (!checksumSaltVerification(params, sourceType)) {
-            return done ? done() : false;
-        }
-
-        if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
-            params.user.tz = parseInt(params.qstring.tz);
-        }
-
-        if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
-            try {
-                params.qstring.metrics = JSON.parse(params.qstring.metrics);
-            }
-            catch (SyntaxError) {
-                console.log('Parse metrics JSON failed for sdk fetch request', params.qstring.metrics, params.req.url, params.req.body);
-            }
-        }
-
-        var parallelTasks = [countlyApi.data.usage.setLocation.bind(null, params)];
-
-        var processThisUser = true;
-
-        if (app.paused) {
-            log.d("App is currently not accepting data");
-            processThisUser = false;
-        }
-
-        if ((params.populator || params.qstring.populator) && app.locked) {
-            log.d("App is locked");
-            processThisUser = false;
-        }
-
-        if (!processThisUser) {
-            parallelTasks.push(fetchAppUser.bind(null, params));
-        }
-        else {
-            parallelTasks.push(processUser.bind(null, params, done, try_times));
-        }
-
-        Promise.all(
-            parallelTasks.map((func) => func())).then(() => {
-            processFetchRequest(params, app, done);
-        }).catch(() => {
-            processFetchRequest(params, app, done);
-        });
-    });
-};
-/**
- * @param  {object} params - params object
- * @param  {function} done - callback when processing done
- * @param  {number} try_times - how many times request was retried
- * @returns {Promise} - resolved
- */
-function processUser(params, done, try_times) {
-    return new Promise((resolve) => {
-        fetchAppUser(params).then(() => {
-            if (!params.app_user.uid) {
-                //first time we see this user, we need to id him with uid
-                countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
-                    if (uid) {
-                        params.app_user.uid = uid;
-                        if (!params.app_user._id) {
-                            //if document was not yet created
-                            //we try to insert one with uid
-                            //even if paralel request already inserted uid
-                            //this insert will fail
-                            //but we will retry again and fetch new inserted document
-                            common.db.collection('app_users' + params.app_id).insert({
-                                _id: params.app_user_id,
-                                uid: uid,
-                                did: params.qstring.device_id
-                            }, {ignore_errors: [11000]}, function() {
-                                restartFetchRequest(params, done, try_times, function() {
-                                    return resolve();
-                                });
-                            });
-                        }
-                        else {
-                            //document was created, but has no uid
-                            //here we add uid only if it does not exist in db
-                            //so if paralel request inserted it, we will not overwrite it
-                            //and retrieve that uid on retry
-                            common.db.collection('app_users' + params.app_id).update({
-                                _id: params.app_user_id,
-                                uid: {$exists: false}
-                            }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
-                                restartFetchRequest(params, done, try_times, function() {
-                                    return resolve();
-                                });
-                            });
-                        }
-                    }
-                    else {
-                        //cannot create uid
-                        return resolve();
-                    }
-                });
-            }
-            //check if device id was changed
-            else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-                const old_id = common.crypto.createHash('sha1')
-                    .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                    .digest('hex');
-
-                countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
-                    //remove old device ID and retry request
-                    params.old_device_id = params.qstring.old_device_id; //Preserving old device id for logger
-                    params.qstring.old_device_id = null;
-                    restartFetchRequest(params, done, try_times, function() {
-                        return resolve();
-                    });
-                });
-            }
-            else {
-                return resolve();
-            }
-        });
-    });
-}
-/**
  * @param  {object} params - params object
  * @param  {String} type - source type
  * @param  {Function} done - done callback
  * @returns {Function} - done or boolean value
  */
-const checksumSaltVerification = (params, type) => {
+const checksumSaltVerification = (params) => {
     if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
         const payloads = [];
-        if (type === "WriteAPI") {
-            payloads.push(params.href.substr(3));
-        }
-        else if (type === "FetchAPI") {
-            payloads.push(params.href.substr(7));
-        }
+        payloads.push(params.href.substr(params.fullPath.length + 1));
 
         if (params.req.method.toLowerCase() === 'post') {
             payloads.push(params.req.body);
@@ -2548,6 +2309,287 @@ const checksumSaltVerification = (params, type) => {
     return true;
 };
 
+
+/**
+ * Validate App for Write API
+ * Checks app_key from the http request against "apps" collection.
+ * This is the first step of every write request to API.
+ * @param {params} params - params object
+ * @param {function} done - callback when processing done
+ * @param {number} try_times - how many times request was retried
+ * @returns {void} void
+ */
+const validateAppForWriteAPI = (params, done, try_times) => {
+    if (ignorePossibleDevices(params)) {
+        return done ? done() : false;
+    }
+
+    common.readBatcher.getOne("apps", {'key': params.qstring.app_key + ""}, (err, app) => {
+        if (!app) {
+            common.returnMessage(params, 400, 'App does not exist');
+            params.cancelRequest = "App not found or no Database connection";
+            return done ? done() : false;
+        }
+
+        if (app.paused) {
+            common.returnMessage(params, 400, 'App is currently not accepting data');
+            params.cancelRequest = "App is currently not accepting data";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return done ? done() : false;
+        }
+
+        if ((params.populator || params.qstring.populator) && app.locked) {
+            common.returnMessage(params, 403, "App is locked");
+            params.cancelRequest = "App is locked";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return false;
+        }
+
+        params.app_id = app._id;
+        params.app_cc = app.country;
+        params.app_name = app.name;
+        params.appTimezone = app.timezone;
+        params.app = app;
+        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+
+        if (!checksumSaltVerification(params)) {
+            return done ? done() : false;
+        }
+
+        if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
+            params.user.tz = parseInt(params.qstring.tz);
+        }
+
+        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
+            if (err2) {
+                common.returnMessage(params, 400, 'Cannot get app user');
+                params.cancelRequest = "Cannot get app user or no Database connection";
+                return done ? done() : false;
+            }
+            params.app_user = user || {};
+
+            let payload = params.href.substr(3) || "";
+            if (params.req.method.toLowerCase() === 'post') {
+                payload += params.req.body;
+            }
+            params.request_hash = common.crypto.createHash('sha1').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
+                //check unique millisecond timestamp, if it is the same as the last request had,
+                //then we are having duplicate request, due to sudden connection termination
+                if (params.app_user.last_req === params.request_hash && (!plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.app_user.ingested)) {
+                    params.cancelRequest = "Duplicate request";
+                }
+            }
+
+            if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
+                try {
+                    params.qstring.metrics = JSON.parse(params.qstring.metrics);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
+                }
+            }
+
+            plugins.dispatch("/sdk", {
+                params: params,
+                app: app
+            }, () => {
+                plugins.dispatch("/sdk/log", {params: params});
+                if (!params.cancelRequest) {
+                    processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
+                        if (userErr) {
+                            if (!params.res.finished) {
+                                common.returnMessage(params, 400, userErr);
+                            }
+                        }
+                        else {
+                            processRequestData(params, app, done);
+                        }
+                    });
+                }
+                else {
+                    if (!params.res.finished) {
+                        common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                        //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                    }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                    return done ? done() : false;
+                }
+            });
+        });
+    });
+};
+
+/**
+ * Validate app for fetch API from sdk
+ * @param  {object} params - params object
+ * @param  {function} done - callback when processing done
+ * @param  {number} try_times - how many times request was retried
+ * @returns {function} done - done callback
+ */
+const validateAppForFetchAPI = (params, done, try_times) => {
+    if (ignorePossibleDevices(params)) {
+        return done ? done() : false;
+    }
+    common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err, app) => {
+        if (!app) {
+            common.returnMessage(params, 400, 'App does not exist');
+            params.cancelRequest = "App not found or no Database connection";
+            return done ? done() : false;
+        }
+
+        params.app_id = app._id;
+        params.app_cc = app.country;
+        params.app_name = app.name;
+        params.appTimezone = app.timezone;
+        params.app = app;
+        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+
+        if (!checksumSaltVerification(params)) {
+            return done ? done() : false;
+        }
+
+        if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
+            try {
+                params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            }
+            catch (SyntaxError) {
+                console.log('Parse metrics JSON failed for sdk fetch request', params.qstring.metrics, params.req.url, params.req.body);
+            }
+        }
+
+        var parallelTasks = [countlyApi.data.usage.setLocation(params)];
+
+        var processThisUser = true;
+
+        if (app.paused) {
+            log.d("App is currently not accepting data");
+            processThisUser = false;
+        }
+
+        if ((params.populator || params.qstring.populator) && app.locked) {
+            log.d("App is locked");
+            processThisUser = false;
+        }
+
+        if (!processThisUser) {
+            parallelTasks.push(fetchAppUser(params));
+        }
+        else {
+            parallelTasks.push(fetchAppUser(params).then(() => {
+                processUser(params, validateAppForFetchAPI, done, try_times);
+            }));
+        }
+
+        Promise.all(
+            parallelTasks
+        )
+            .catch((error) => {
+                console.error(error);
+            })
+            .finally(() => {
+                processFetchRequest(params, app, done);
+            });
+    });
+};
+
+/**
+ * Restart Request
+ * @param {params} params - params object
+ * @param {function} initiator - function which initiated request
+ * @param {function} done - callback when processing done
+ * @param {number} try_times - how many times request was retried
+ * @param {function} fail - callback when restart limit reached
+ * @returns {void} void
+ */
+const restartRequest = (params, initiator, done, try_times, fail) => {
+    if (!try_times) {
+        try_times = 1;
+    }
+    else {
+        try_times++;
+    }
+    if (try_times > 5) {
+        console.log("Too many retries", try_times);
+        if (typeof fail === "function") {
+            fail("Cannot process request. Too many retries");
+        }
+        return;
+    }
+    params.retry_request = true;
+    //retry request
+    initiator(params, done, try_times);
+};
+
+/**
+ * @param  {object} params - params object
+ * @param  {function} initiator - function which initiated request
+ * @param  {function} done - callback when processing done
+ * @param  {number} try_times - how many times request was retried
+ * @returns {Promise} - resolved
+ */
+function processUser(params, initiator, done, try_times) {
+    return new Promise((resolve) => {
+        if (!params.app_user.uid) {
+            //first time we see this user, we need to id him with uid
+            countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
+                if (uid) {
+                    params.app_user.uid = uid;
+                    if (!params.app_user._id) {
+                        //if document was not yet created
+                        //we try to insert one with uid
+                        //even if paralel request already inserted uid
+                        //this insert will fail
+                        //but we will retry again and fetch new inserted document
+                        common.db.collection('app_users' + params.app_id).insert({
+                            _id: params.app_user_id,
+                            uid: uid,
+                            did: params.qstring.device_id
+                        }, {ignore_errors: [11000]}, function() {
+                            restartRequest(params, initiator, done, try_times, resolve);
+                        });
+                    }
+                    else {
+                        //document was created, but has no uid
+                        //here we add uid only if it does not exist in db
+                        //so if paralel request inserted it, we will not overwrite it
+                        //and retrieve that uid on retry
+                        common.db.collection('app_users' + params.app_id).update({
+                            _id: params.app_user_id,
+                            uid: {$exists: false}
+                        }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
+                            restartRequest(params, initiator, done, try_times, resolve);
+                        });
+                    }
+                }
+                else {
+                    //cannot create uid, so cannot process request now
+                    console.log("Cannot create uid", err, uid);
+                    resolve("Cannot create uid");
+                }
+            });
+        }
+        //check if device id was changed
+        else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+            const old_id = common.crypto.createHash('sha1')
+                .update(params.qstring.app_key + params.qstring.old_device_id + "")
+                .digest('hex');
+
+            countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(err) {
+                if (err) {
+                    return common.returnMessage(params, 400, 'Cannot update user');
+                }
+                //remove old device ID and retry request
+                params.qstring.old_device_id = null;
+                restartRequest(params, initiator, done, try_times, resolve);
+            });
+        }
+        else {
+            resolve();
+        }
+    });
+}
+
 /**
  * Function to fetch app user from db
  * @param  {object} params - params object
@@ -2577,55 +2619,6 @@ const ignorePossibleDevices = (params) => {
         plugins.dispatch("/sdk/cancel", {params: params});
         return true;
     }
-};
-
-/**
- * Restart Request
- * @param {params} params - params object
- * @param {function} done - callback when processing done
- * @param {number} try_times - how many times request was retried
- * @returns {void} void
- */
-const restartRequest = (params, done, try_times) => {
-    if (!try_times) {
-        try_times = 1;
-    }
-    else {
-        try_times++;
-    }
-    if (try_times > 5) {
-        console.log("Too many retries", try_times);
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-            common.returnMessage(params, 400, "Cannot process request");
-        }
-        return;
-    }
-    params.retry_request = true;
-    //retry request
-    validateAppForWriteAPI(params, done, try_times);
-};
-
-/**
- * Restart Fetch Request
- * @param {params} params - params object
- * @param {function} done - callback when processing done
- * @param {number} try_times - how many times request was retried
- * @param {function} cb - callback when restart limit reached
- * @returns {void} void
- */
-const restartFetchRequest = (params, done, try_times, cb) => {
-    if (!try_times) {
-        try_times = 1;
-    }
-    else {
-        try_times++;
-    }
-    if (try_times > 5) {
-        return cb();
-    }
-    params.retry_request = true;
-    //retry request
-    validateAppForFetchAPI(params, done, try_times);
 };
 
 /**

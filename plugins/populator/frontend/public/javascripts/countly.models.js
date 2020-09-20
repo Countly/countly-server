@@ -1051,7 +1051,7 @@
      * @param {callback} callback - callback function
      **/
     function generateRetentionUser(ts, userCount, ids, templateUp, callback) {
-        bulk = [];
+        var bulker = [];
         for (var userIndex = 0; userIndex < userCount; userIndex++) {
             for (var j = 0; j < ids.length; j++) {
                 var metrics = {};
@@ -1091,7 +1091,7 @@
 
                 var userdetails = {name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: getUserProperties(templateUp)};
 
-                bulk.push({ip_address: predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))], device_id: userIndex + "" + ids[j], begin_session: 1, metrics: metrics, user_details: userdetails, timestamp: ts, hour: getRandomInt(0, 23), dow: getRandomInt(0, 6)});
+                bulker.push({ip_address: predefined_ip_addresses[Math.floor(chance.random() * (predefined_ip_addresses.length - 1))], device_id: userIndex + "" + ids[j], begin_session: 1, metrics: metrics, user_details: userdetails, timestamp: ts, hour: getRandomInt(0, 23), dow: getRandomInt(0, 6), request_id: userIndex + "" + ids[j] + "_" + ts});
                 totalStats.s++;
                 totalStats.u++;
             }
@@ -1102,7 +1102,7 @@
             url: countlyCommon.API_URL + "/i/bulk",
             data: {
                 app_key: countlyCommon.ACTIVE_APP_KEY,
-                requests: JSON.stringify(bulk),
+                requests: JSON.stringify(bulker),
                 populator: true
             },
             success: callback,

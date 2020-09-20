@@ -247,7 +247,7 @@ var common = require('../../../api/utils/common.js'),
                             }
                         }
                     });
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, taskCb);
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, {allowDiskUse: true}, taskCb);
                 }
             });
         }
@@ -366,7 +366,7 @@ var common = require('../../../api/utils/common.js'),
                             apps.push(common.db.ObjectID(params.member.user_of[i]));
                         }
                     }
-                    common.db.collection('apps').find({_id: {$in: apps}}).toArray(function(err, applications) {
+                    common.readBatcher.getMany("apps", {_id: {$in: apps}}, {}, (err, applications) => {
                         if (err) {
                             console.error(err);
                         }
