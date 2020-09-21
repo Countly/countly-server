@@ -589,23 +589,28 @@
                 }
             }
         }
+
+        &.radio-light-skin {
+            .radio-button {
+                background-color: transparent
+            }
+        }
     }
 
     // check
     .cly-vue-check-list {
         .cly-vue-check {
             display: block;
-            padding: 4px 0;  
+            padding: 4px 0;
         }
     }
-    
+
     .cly-vue-check {
-        
         display: inline-block;
-        
+
         &.block {
             display: block;
-            padding: 4px 0;  
+            padding: 4px 0;
         }
 
         &.check-switch-skin {
@@ -720,7 +725,6 @@
 
     //drawer
     .cly-vue-drawer {
-
         $drawer-width: 600px;
 
         position: fixed;
@@ -735,19 +739,20 @@
         z-index: 10001;
 
         .sidecars-view {
-            background-color: #F3F3F3;
+            background-color: #f3f3f3;
             overflow-y: scroll;
         }
-        .steps-view{
+        .steps-view {
             box-sizing: border-box;
             padding-top: 58px;
             padding-bottom: 120px;
         }
 
-        .steps-view, .sidecars-view {
+        .steps-view,
+        .sidecars-view {
             height: 100%;
         }
-        
+
         &.mounted {
             transform: translateX(#{$drawer-width});
         }
@@ -755,7 +760,8 @@
         &.has-sidecars {
             width: #{$drawer-width * 2};
             transform: translateX(#{$drawer-width * 2});
-            .steps-view, .sidecars-view {
+            .steps-view,
+            .sidecars-view {
                 width: 50%;
                 float: left;
             }
@@ -808,7 +814,7 @@
             z-index: 1000;
             .label {
                 height: 100%;
-                width: 20%;
+                width: 30%;
                 text-align: center;
                 cursor: pointer;
                 background-color: #fff;
@@ -861,6 +867,12 @@
             height: 100%;
             float: none;
             overflow-y: auto;
+            .group {
+                padding-bottom: 40px;
+                &.thin {
+                    padding-bottom: 10px;
+                }
+            }
             .section {
                 margin-bottom: 25px;
                 .label {
@@ -868,11 +880,14 @@
                     margin-bottom: 8px;
                     color: #636363;
                 }
-                > .description {
+                .description {
                     font-size: 11px;
                     margin-top: 4px;
                     color: #9c9c9c;
                     line-height: 17px;
+                    &.tall {
+                        margin: 8px 0px;
+                    }
                 }
                 input[type="text"].input {
                     width: 100%;
@@ -881,7 +896,7 @@
                     border: 1px solid #d6d6d6;
                     outline: none;
                     padding: 7px;
-                    font-size: 12px;
+                    font: 12px Ubuntu, Helvetica, sans-serif;
                 }
             }
             &.multi-step {
@@ -892,6 +907,46 @@
                 clear: both;
                 color: rgb(255, 0, 0);
                 font-size: 12px;
+            }
+            .slim {
+                width: 75%;
+                margin-left: 12.5%;
+                margin-top: 20px;
+            }
+            ul.steplist {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+
+                li {
+                    position: relative;
+                    margin-bottom: 0;
+                    padding-bottom: 40px;
+                    &:after {
+                        content: "";
+                        position: absolute;
+                        left: -27px;
+                        top: 4px;
+                        font-family: "Font Awesome 5 Free";
+                        font-weight: 900;
+                        color: #636363;
+                        font-size: 8px;
+                    }
+                    &:before {
+                        content: "";
+                        position: absolute;
+                        left: -23px;
+                        border-left: 1px dashed #d6d6d6;
+                        height: 100%;
+                        width: 1px;
+                    }
+                    &:first-child:before {
+                        top: 6px;
+                    }
+                    &:last-child:before {
+                        height: 6px;
+                    }
+                }
             }
         }
 
