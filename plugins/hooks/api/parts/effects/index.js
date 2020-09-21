@@ -1,6 +1,8 @@
 const HttpEffect = require('./http.js');
 const SDKEventEffect = require('./sdk_event.js');
+const EmailEffect = require('./email.js');
 
 
-module.exports = {HttpEffect, SDKEventEffect};
+
+module.exports = {HttpEffect, SDKEventEffect, EmailEffect};
 

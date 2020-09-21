@@ -3,7 +3,7 @@ const rules = [
         id: "1",
         name: "api endpoint hook 1",
         description: "post method",
-        trigger:{
+        trigger: {
             type: "APIEndPointTrigger",
             configuration: {
                 path: "pxVkjpv3b8pYoDJdGkdaLUMuXRXVURAA",
@@ -31,10 +31,12 @@ const rules = [
             },
             {
                 type: "EmailEffect",
-                address: "abc@abc.com",//"GET"
+                configuration:{
+                    address: "abc@abc.com",//"get"
+                }
             },
             {
-                type:"PushNotificationEffect",
+                type:"pushnotificationeffect",
             },
         ],
         status: 0, 

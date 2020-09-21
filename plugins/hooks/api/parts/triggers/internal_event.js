@@ -1,6 +1,7 @@
 const plugins = require('../../../../pluginManager.js');
 class InternalEventTrigger {
     constructor(option) {
+        this._rules = [];
         this.register(option);
     }
     syncRules(rules) {
@@ -34,7 +35,7 @@ class InternalEventTrigger {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
                 console.log(ob, e, "[InternalEventTrigger]");
-                process(e, ob);
+                this.process(e, ob);
             });
         });
     }

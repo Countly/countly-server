@@ -1,0 +1,163 @@
+<div id="hooks-widget-drawer" class="cly-drawer">
+    <div class="details">
+        <input type="text" id="current_hook_id" hidden/>
+        <div class="section">
+            <div class="label" data-localize='hooks.hook-name' ></div>
+            <div>
+                <input id="hook-name-input" class="input" type="text" placeholder="Enter hooks name"/>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="description">
+                <label class="container">
+                    <input id="use-description-checkbox" type="checkbox"/>
+                    <span class="fas far fa-square"></span>
+                    <span data-localize="hooks.use-description">Use description</span>
+                </label>
+            </div>
+            <div>
+                <input id="hook-description" class="input" type="text" placeholder="Enter hook description" disabled/>
+            </div>
+        </div>
+        <div  class="section">
+            <div class="label" data-localize='hooks.for_applications'></div>
+            <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;" data-max=10>
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='hooks.Select_apps'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="left">
+                        <div data-localize='hooks.trigger'></div>
+                    </div>
+                    <div class="right">
+                        <div data-localize="hooks.compare-remind"></div>
+                    </div>
+                </div>
+
+                <div class="panel-body hooks-trigger-block">
+                        <div class="label" data-localize='hooks.set-hook-trigger'></div>
+                        <div id="single-hook-trigger-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div class="text">
+                                        <div class="default-text" data-localize='hooks.select-trigger'></div>
+                                    </div>
+                                </div>
+                                <div class="right combo"></div>
+                            </div>
+                            <div class="select-items square" style="width: 100%;"></div>
+                        </div>
+                        <div class="hook-trigger-view">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="left">
+                        <div data-localize='hooks.effects'></div>
+                    </div>
+                    <div class="right">
+                        <div data-localize="hooks.compare-remind"></div>
+                    </div>
+                </div>
+                
+                <div class="panel-body hooks-effects-block">
+                    <div class="hook-effects-list">
+                                                
+                    </div>
+                    <div>
+                        <div class="icon-button add-effect-button">+ Add Effect</div>
+                        <div style="clear:both;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="buttons">
+        <div id="create-widget" class="icon-button green disabled" data-localize='hooks.create-hook'></div>
+        <div id="save-widget" class="icon-button green" data-localize='hooks.save-hook'></div>
+    </div>
+
+
+</div>
+
+<script id="template-hook-trigger-APIEndPointTrigger" type="text/x-handlebars-template">
+    <div class="section">
+        <div class="label" data-localize='hooks.trigger-api-endpoint-uri' ></div>
+        <div>
+            <input id="api-endpoint-trigger-uri" class="input" type="text" placeholder="" disabled/>
+        </div>
+    </div>
+    <div class="section">
+        <div class="label" data-localize='hooks.trigger-api-endpoint-introduction' ></div>
+        <div>
+            <div class="api-endpoint-intro">
+
+            </div>
+        </div>
+    </div>
+</script>
+
+<script id="template-hook-trigger-InternalEventTrigger" type="text/x-handlebars-template">
+    <div>InternalTrigger</div>
+</script>
+
+
+
+<script id="template-hook-effect-SDKEventEffect" type="text/x-handlebars-template">
+    <div class="section">
+        <div class="label" data-localize='hooks.' >SDKEventEffect</div>
+        <div>
+            <input id="api-endpoint-trigger-uri" class="input" type="text" placeholder="" disabled/>
+        </div>
+    </div>
+</script>
+
+
+<script id="template-hook-effect-EmailEffect" type="text/x-handlebars-template">
+    <div class="section">
+        <div class="label" data-localize='hooks.to-email-address' ></div>
+        <div>
+            <input class="input emaileffect-email-address" type="text" placeholder="" />
+        </div>
+    </div>
+</script>
+
+<script id="template-hook-effect-selector" type="text/x-handlebars-template">
+    <div class="hook-effect-item">
+        <div class="label" data-localize='hooks.set-hook-effect'></div>
+        <div style="width: 100%; display: flex;align-items: center;">
+            <div class="cly-select single-hook-effect-dropdown" style="flex-grow:1;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='hooks.select-effect'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+            <i class="far fa-times-circle delete-effect-button" style="font-size:18px;margin-left:5px;color:#636363;"></i>
+
+        </div>
+
+        <div class="hook-effect-view">
+        </div>
+    </div>
+</script>

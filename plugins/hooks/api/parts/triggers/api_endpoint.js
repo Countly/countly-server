@@ -1,6 +1,7 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const process = require('process');
+const utils = require('../../utils.js');
 
 class APIEndPointTrigger {
     constructor(options){
@@ -29,9 +30,14 @@ class APIEndPointTrigger {
             return true;
         }
         const  {qstring} = params || {};
+        console.log('process,'+ this._rules.length + ">>>" + process.pid + "." + process.ppid);
+
         this._rules.forEach(rule => {
             // match
             if(rule.trigger.configuration.path === hookPath) {
+                try{
+                    utils.updateRuleTriggerTime(rule._id);
+                }catch(err){console.log(err,"??#3");}
                 // send to pipeline
                 rule.effects.forEach(e => {
                     this.pipeline({
@@ -45,6 +51,7 @@ class APIEndPointTrigger {
     }
 
     register(option) {
+        console.log("register api hookd222", process.pid+ "." + process.ppid);
         plugins.register("/o/hooks", (ob) => {
             const {params} = ob;
             this.process(ob);
