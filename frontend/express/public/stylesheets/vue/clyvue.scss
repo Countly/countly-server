@@ -589,6 +589,12 @@
                 }
             }
         }
+
+        &.radio-light-skin {
+            .radio-button {
+                background-color: transparent
+            }
+        }
     }
 
     // check

@@ -2006,6 +2006,15 @@
                     default: function() {
                         return [];
                     }
+                },
+                skin: { default: "main", type: String}
+            },
+            computed: {
+                skinClass: function() {
+                    if (["main", "light"].indexOf(this.skin) > -1) {
+                        return "radio-" + this.skin + "-skin";
+                    }
+                    return "radio-main-skin";
                 }
             },
             methods: {
@@ -2013,7 +2022,7 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<div class="cly-vue-radio">\
+            template: '<div class="cly-vue-radio" v-bind:class="[skinClass]">\
                             <div class="radio-wrapper">\
                                 <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
                                     <div class="box"></div>\
