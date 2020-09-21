@@ -11,12 +11,12 @@ class HttpEffect{
         switch(method) {
             case 'get':
                 return request.get({url,qs:params, timeout: this._timeout}, function (e, r, body) {
-                    console.log(e, r, body, "[httpeffects]");
+                    console.log(e, body, "[httpeffects]");
                 });
             case 'post': 
                 //support post formData
                 return request.post({url, formData:params, timeout: this._timeout}, function (e, r, body) {
-                    console.log(e, r, body, "[httpeffects]");
+                   console.log(e, body, "[httpeffects]");
                 });
             default:
                 return;
