@@ -599,8 +599,8 @@ function getTopThree(params, collection, callback) {
                 total = total + items[k].value;
             }
             var totalPercent = 0;
-            for (let k = 0; k < items.length; k++) {
-                if (k !== (items.length - 1)) {
+            for (let k = items.length - 1; k >= 0; k--) {
+                if (k !== 0) {
                     items[k].percent = Math.floor(items[k].percent * 100 / total);
                     totalPercent += items[k].percent;
                 }
