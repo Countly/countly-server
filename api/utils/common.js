@@ -2389,18 +2389,23 @@ common.mergeQuery = function(ob1, ob2) {
             else if (key === "$addToSet") {
                 for (let val in ob2[key]) {
                     if (typeof ob1[key][val] !== 'object') {
-                        ob1[key][val] = {'$each': [ob1[key][val]]};
+                        ob1[key][val] = {'$each': [ob1[key][val]]}; //create as object if it is single value
                     }
 
                     if (typeof ob2[key][val] === 'object' && ob2[key][val].$each) {
                         for (let p = 0; p < ob2[key][val].$each.length; p++) {
-                            ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                            if (ob1[key][val].$each.indexOf(ob2[key][val].$each[p]) === -1) {
+                                ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                            }
                         }
                     }
                     else {
-                        ob1[key][val].$each.push(ob2[key][val]);
+                        if (ob1[key][val].$each.indexOf(ob2[key][val]) === -1) {
+                            ob1[key][val].$each.push(ob2[key][val]);
+                        }
                     }
                 }
+
             }
             else if (key === "$push") {
                 for (let val in ob2[key]) {
