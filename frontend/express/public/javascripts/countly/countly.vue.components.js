@@ -994,6 +994,7 @@
                         stepContents: [],
                         sidecarContents: [],
                         constants: {},
+                        localState: {},
                         isMounted: false
                     };
                 },
@@ -1101,7 +1102,7 @@
                                     </span>\
                                 </div>\
                                 <div class="sidecars-view" v-show="hasSidecars">\
-                                    <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                    <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
                                 </div>\
                                 <div class="steps-view">\
                                     <div class="steps-header" v-if="isMultiStep">\
@@ -1114,11 +1115,11 @@
                                         </div>\
                                     </div>\
                                     <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                        <slot name="default" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                        <slot name="default" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
                                     </div>\
                                     <div class="buttons multi-step" v-if="isMultiStep">\
                                         <div class="controls-left-container">\
-                                            <slot name="controls-left" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                            <slot name="controls-left" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
                                         </div>\
                                         <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
                                         <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
