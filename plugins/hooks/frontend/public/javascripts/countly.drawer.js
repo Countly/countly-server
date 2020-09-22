@@ -1,15 +1,15 @@
-
-window.HooksDrawer = function(self) {
+window.HooksDrawer = function(HookView) {
    return {
        prepareDrawer: function() {
-            self.DrawerComponent.drawer = CountlyHelpers.createDrawer({
+           var self = this;
+            HookView.DrawerComponent.drawer = CountlyHelpers.createDrawer({
                 id: "hooks-widget-drawer",
                 form: $('#hooks-widget-drawer'),
                 title: jQuery.i18n.map["hooks.drawer-create-title"],
                 applyChangeTriggers: true,
                 onUpdate: function(e){
-                    console.log(e,self.DrawerComponent.getWidgetSettings(true), "change!!"); 
-                    self.DrawerComponent.checkDisabled();
+                    console.log(e,HookView.DrawerComponent.getWidgetSettings(true), "change!!"); 
+                    HookView.DrawerComponent.checkDisabled();
                 },
                 resetForm: function() {
                     $("#current_hook_id").text('');
@@ -21,18 +21,18 @@ window.HooksDrawer = function(self) {
                     $("#create-widget").show();
 
 
-                    $(self.DrawerComponent.drawer).find('.title span').first().html(jQuery.i18n.map["hooks.drawer-create-title"]);
+                    $(HookView.DrawerComponent.drawer).find('.title span').first().html(jQuery.i18n.map["hooks.drawer-create-title"]);
                     $("#hooks-widget-drawer").find("#widget-types .opt").removeClass("disabled");
                     $("#create-widget").removeClass("disabled");
                 },
                 onClosed: function() {
                 }
             });
-            var self1 = self;
             $("#create-hook").off("click").on("click", function() {
-                self1.DrawerComponent.init();
-                self1.DrawerComponent.drawer.resetForm();
-                self1.DrawerComponent.drawer.open();
+                self.init();
+                self.drawer.resetForm();
+                self.drawer.open();
+                self.checkDisabled();
             });
         },
         init: function() {
@@ -91,14 +91,18 @@ window.HooksDrawer = function(self) {
                 $(".single-hook-effect-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                     $(e.currentTarget.parentElement.nextElementSibling).html($("#template-hook-effect-"+selected).html());
                     (effects[selected]).init();
-                    self.drawer._applyChangeTrigger(self.draw);
+                    self.drawer._applyChangeTrigger(self.drawer);
                     app.localize();
                 });
                 $(".delete-effect-button").off("click").on("click", function(e) {
                     var effectDom = e.currentTarget.parentElement.parentElement;
                     $(effectDom).remove();
+                    self.drawer._applyChangeTrigger(self.drawer);
+                    self.checkDisabled();
                 });
                 self.drawer._applyChangeTrigger(self.drawer);
+                self.checkDisabled();
+                console.log("add effect");
             });
             $(".add-effect-button").trigger("click");
 
@@ -108,7 +112,7 @@ window.HooksDrawer = function(self) {
             $("#create-widget").off().on("click", function() {
                 var hooksConfig = self.getWidgetSettings(true);
                 for (var key in hooksConfig) {
-                    if (!hooksConfig[key]) {
+                    if (hooksConfig[key] === null) {
                         return;
                     }
                 }
@@ -138,17 +142,20 @@ window.HooksDrawer = function(self) {
 
         },
         getWidgetSettings: function(enabled) {
+            var self = this;
             var hookInstance = {
                 name: $("#hook-name-input").val(),
-                has_description: $("#use-description-checkbox").val() === 'on', 
+                has_description:  $("#use-description-checkbox").is(':checked'), 
                 apps: $("#multi-app-dropdown").clyMultiSelectGetSelection(),
+                trigger: null,
+                effects: null,
             }
             if ($("#current_hook_id").text().length > 0) {
                 hookInstance._id = $("#current_hook_id").text();
             }
 
             if (hookInstance.has_description) {
-                hookInstance.description = $("#hook-description").val();
+                hookInstance.description = $("#hook-description").val() || null;
             }
             if (hookInstance.apps.length === 0) {
                 hookInstance.apps = null;
@@ -158,10 +165,10 @@ window.HooksDrawer = function(self) {
             }
             
             // trigger
-            hookInstance.trigger = self.DrawerComponent.getValidTriggerConfig();
+            hookInstance.trigger = self.getValidTriggerConfig();
 
             // effects
-            hookInstance.effects = self.DrawerComponent.getValidEffectsConfig(); 
+            hookInstance.effects = self.getValidEffectsConfig(); 
             return hookInstance;
         },
         checkDisabled: function() {
@@ -169,7 +176,7 @@ window.HooksDrawer = function(self) {
             $("#create-widget").removeClass("disabled");
             $("#save-widget").removeClass("disabled");
             for (var key in hookConfig) {
-                if (!hookConfig[key]) {
+                if (hookConfig[key] == null) {
                     $("#create-widget").addClass("disabled");
                     $("#save-widget").addClass("disabled");
                 }
@@ -240,8 +247,12 @@ window.HooksDrawer = function(self) {
             var effectDoms = $(".hook-effect-item");
             var configs = [];
             var effectModels = hooksPlugin.getHookEffects();
+            if (effectDoms.length === 0) {
+                return null;
+            }
             for(var i = 0; i < effectDoms.length; i++) {
                 var effectType = $(effectDoms[i]).find(".single-hook-effect-dropdown").clySelectGetSelection();
+                
                 if(!effectType) {
                     return null;
                 }
@@ -249,7 +260,9 @@ window.HooksDrawer = function(self) {
                 if(!configuration) {
                     return null;
                 }
-                configs.push({type: effectType, configuration: configuration});
+                var effect = {type: effectType, configuration: configuration};
+                console.log(effect,"effectType")
+                configs.push(effect);
             }
             return configs;
        }
