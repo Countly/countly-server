@@ -1094,16 +1094,16 @@
                 },
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
+                                <div class="title">\
+                                    <span>{{title}}</span>\
+                                    <span class="close" v-on:click="tryClosing">\
+                                        <i class="ion-ios-close-empty"></i>\
+                                    </span>\
+                                </div>\
                                 <div class="sidecars-view" v-show="hasSidecars">\
                                     <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                                 </div>\
                                 <div class="steps-view">\
-                                    <div class="title">\
-                                        <span>{{title}}</span>\
-                                        <span class="close" v-on:click="tryClosing">\
-                                            <i class="ion-ios-close-empty"></i>\
-                                        </span>\
-                                    </div>\
                                     <div class="steps-header" v-if="isMultiStep">\
                                         <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
                                             <div class="wrapper">\

@@ -744,8 +744,8 @@
         }
         .steps-view {
             box-sizing: border-box;
-            padding-top: 58px;
-            padding-bottom: 120px;
+            //padding-top: 58px;
+            padding-bottom: 190px;
         }
 
         .steps-view,
@@ -777,7 +777,7 @@
         }
 
         .title {
-            position: absolute;
+            position: relative;
             padding: 20px;
             font-size: 20px;
             color: #636363;
@@ -805,7 +805,7 @@
             background-color: #fff;
             height: 55px;
             width: 100%;
-            top: 6px;
+            bottom: 5px;
             position: relative;
             border-top: 1px solid #f9f9f9;
             display: flex;
@@ -820,7 +820,7 @@
                 background-color: #fff;
 
                 .wrapper {
-                    margin-top: 20px;
+                    margin-top: 17px;
 
                     .index {
                         font-size: 20px;
