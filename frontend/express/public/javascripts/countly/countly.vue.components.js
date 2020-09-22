@@ -1055,7 +1055,6 @@
                     this.sidecarContents = this.$children.filter(function(child) {
                         return child.isContent && child.role === "sidecar";
                     });
-                    this.setStep(this.stepContents[0].tId);
                     this.isMounted = true;
                 },
                 methods: {
@@ -1105,7 +1104,7 @@
                                     <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
                                 </div>\
                                 <div class="steps-view">\
-                                    <div class="steps-header" v-if="isMultiStep">\
+                                    <div class="steps-header" v-show="isMultiStep">\
                                         <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
                                             <div class="wrapper">\
                                                 <span class="index">{{i + 1}}</span>\
