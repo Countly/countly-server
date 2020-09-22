@@ -5372,6 +5372,46 @@ window.EventsView = countlyView.extend({
             countlyEvent.setActiveEvent(previousEvent);
         }
         this.template = Handlebars.compile($("#template-events").html());
+        
+    },
+    showExceedRemind: function() {
+        function generateDom(text) {
+            const  html = `<div class="event-remind-tooltip" style="display: block;">
+                <div class="content">
+                        <span class="prefix"></span>
+                        <span class="remind-context">${text}</span>
+                        <i class="fas fa-times"></i>
+                </div>
+            </div>`;
+            $(".routename-events #event-alert").append(html);
+            $(".event-remind-tooltip .fa-times").off("click").on("click", function (e) {
+                $(e.currentTarget.parentElement.parentElement).remove()
+            });
+        }
+        $(".routename-events #event-alert").html("");
+        const limitation = countlyEvent.getLimitation();
+
+        if(countlyEvent.getEvents().length >= limitation.event_limit) {
+            var tips = jQuery.i18n.prop("events.max-event-key-limit", limitation.event_limit);
+            generateDom(tips);
+        }
+
+        var event_name = countlyEvent.getEventData().eventName;
+        var segments = countlyEvent.getEventSegmentations();
+        if(segments && segments.length >= limitation.event_segmentation_limit) {
+            var tips = jQuery.i18n.prop("events.max-segmentation-limit", limitation.event_segmentation_limit, event_name);
+            generateDom(tips);
+        }
+
+        var segments = countlyEvent.getEventSegmentations();
+        var metaDB = countlyEvent.getActiveEventSegmentMeta();
+        segments.forEach(function(s) {
+            if(metaDB[s].length >= limitation.event_segmentation_value_limit) {
+                var tips = jQuery.i18n.prop("events.max-unique-value-limit", limitation.event_segmentation_value_limit, s);
+                generateDom(tips);
+            }
+        });
+
     },
     pageScript: function() {
         $(".event-container").unbind("click");
@@ -5686,6 +5726,7 @@ window.EventsView = countlyView.extend({
                     countlyEvent.setActiveEvent(targetEvent);
                 }
             }
+            this.showExceedRemind();
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
@@ -5771,6 +5812,9 @@ window.EventsView = countlyView.extend({
                 }
                 app.localize();
                 $('.nav-search').find("input").trigger("input");
+                if (segmentationChanged || eventChanged) {
+                    self.showExceedRemind();
+                }
             }
         });
     }
