@@ -2477,7 +2477,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         }
         else {
             parallelTasks.push(fetchAppUser(params).then(() => {
-                processUser(params, validateAppForFetchAPI, done, try_times);
+                return processUser(params, validateAppForFetchAPI, done, try_times);
             }));
         }
 
