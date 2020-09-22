@@ -592,7 +592,7 @@
 
         &.radio-light-skin {
             .radio-button {
-                background-color: transparent
+                background-color: transparent;
             }
         }
     }
@@ -868,7 +868,7 @@
             float: none;
             overflow-y: auto;
             .group {
-                padding-bottom: 40px;
+                padding-bottom: 35px;
                 &.thin {
                     padding-bottom: 10px;
                 }
@@ -910,9 +910,14 @@
             }
             .slim {
                 width: 75%;
-                margin-left: 12.5%;
-                margin-top: 20px;
+                margin: 20px auto 0 auto;
             }
+
+            .slim.super {
+                width: 45%;
+                margin: 20% auto 0 auto;
+            }
+
             ul.steplist {
                 list-style: none;
                 padding: 0;
@@ -921,7 +926,7 @@
                 li {
                     position: relative;
                     margin-bottom: 0;
-                    padding-bottom: 40px;
+                    padding-bottom: 35px;
                     &:after {
                         content: "";
                         position: absolute;
