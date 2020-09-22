@@ -1028,6 +1028,11 @@
                     },
                     hasSidecars: function() {
                         return this.sidecarContents.length > 0;
+                    },
+                    info: function() {
+                        return {
+                            currentStepId: this.currentStepId
+                        };
                     }
                 },
                 watch: {
@@ -1090,7 +1095,7 @@
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
                                 <div class="sidecars-view" v-show="hasSidecars">\
-                                    <slot name="sidecars" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                    <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                                 </div>\
                                 <div class="steps-view">\
                                     <div class="title">\
@@ -1109,9 +1114,12 @@
                                         </div>\
                                     </div>\
                                     <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                        <slot name="default" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                        <slot name="default" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
                                     </div>\
                                     <div class="buttons multi-step" v-if="isMultiStep">\
+                                        <div class="controls-left-container">\
+                                            <slot name="controls-left" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                        </div>\
                                         <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
                                         <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
                                         <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\

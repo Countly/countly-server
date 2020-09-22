@@ -974,6 +974,12 @@
             }
         }
 
+        .controls-left-container {
+            display: inline-block;
+            height: 30px;
+            padding-top: 10px;
+        }
+
         .buttons {
             position: absolute;
             right: 0;
