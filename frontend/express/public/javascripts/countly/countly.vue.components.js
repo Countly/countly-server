@@ -994,6 +994,7 @@
                         stepContents: [],
                         sidecarContents: [],
                         constants: {},
+                        localState: {},
                         isMounted: false
                     };
                 },
@@ -1028,6 +1029,11 @@
                     },
                     hasSidecars: function() {
                         return this.sidecarContents.length > 0;
+                    },
+                    info: function() {
+                        return {
+                            currentStepId: this.currentStepId
+                        };
                     }
                 },
                 watch: {
@@ -1049,7 +1055,6 @@
                     this.sidecarContents = this.$children.filter(function(child) {
                         return child.isContent && child.role === "sidecar";
                     });
-                    this.setStep(this.stepContents[0].tId);
                     this.isMounted = true;
                 },
                 methods: {
@@ -1089,17 +1094,17 @@
                 },
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
+                                <div class="title">\
+                                    <span>{{title}}</span>\
+                                    <span class="close" v-on:click="tryClosing">\
+                                        <i class="ion-ios-close-empty"></i>\
+                                    </span>\
+                                </div>\
                                 <div class="sidecars-view" v-show="hasSidecars">\
-                                    <slot name="sidecars" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                    <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
                                 </div>\
                                 <div class="steps-view">\
-                                    <div class="title">\
-                                        <span>{{title}}</span>\
-                                        <span class="close" v-on:click="tryClosing">\
-                                            <i class="ion-ios-close-empty"></i>\
-                                        </span>\
-                                    </div>\
-                                    <div class="steps-header" v-if="isMultiStep">\
+                                    <div class="steps-header" v-show="isMultiStep">\
                                         <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
                                             <div class="wrapper">\
                                                 <span class="index">{{i + 1}}</span>\
@@ -1109,9 +1114,12 @@
                                         </div>\
                                     </div>\
                                     <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                        <slot name="default" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                        <slot name="default" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
                                     </div>\
                                     <div class="buttons multi-step" v-if="isMultiStep">\
+                                        <div class="controls-left-container">\
+                                            <slot name="controls-left" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                        </div>\
                                         <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
                                         <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
                                         <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
