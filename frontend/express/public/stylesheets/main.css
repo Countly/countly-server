@@ -3905,12 +3905,16 @@ color:#E95C6C; transition:color 1s;
 }
 
 .event-remind-tooltip {
-    width: 100%;
     height: 40px;
     background-color: #fcf5ed;
     margin-bottom: 10px;
     display: none;
     border: 1px solid #e3af7f;
+    border-radius: 2px;
+}
+
+.event-remind-tooltip:last-of-type {
+    margin-bottom: 20px;
 }
 
 .event-remind-tooltip .content {
