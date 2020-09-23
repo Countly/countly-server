@@ -141,7 +141,7 @@ const PUSH_CACHE_GROUP = 'P';
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
 
-            if (params.qstring.method === 'user_details') {
+            if (params && params.qstring.method === 'user_details') {
                 return new Promise((res, rej) => {
                     try {
                         common.db.collection(`push_${params.app_id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(common.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
