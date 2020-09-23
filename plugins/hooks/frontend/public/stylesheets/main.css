@@ -125,4 +125,6 @@
     z-index: 1;
 }
 
-
+#hooks-table .options-item .edit-menu .fa {
+    margin-right: 7px;
+}
