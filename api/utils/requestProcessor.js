@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection} = require('./rights.js');
+const {validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection} = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -18,7 +18,7 @@ const fs = require('fs');
 var countlyFs = require('./countlyFs.js');
 var path = require('path');
 const validateUserForWriteAPI = validateUser;
-const validateUserForDataReadAPI = validateUserForRead;
+const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
@@ -1287,7 +1287,7 @@ const processRequest = (params) => {
                     validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getCurrentUserApps, params);
                     break;
                 case 'details':
-                    validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
+                    validateUserForDataReadAPI(params, 'applications', countlyApi.mgmt.apps.getAppsDetails);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1784,27 +1784,27 @@ const processRequest = (params) => {
 
                 switch (params.qstring.method) {
                 case 'total_users':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
                 case 'get_period_obj':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.getPeriodObj, 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.getPeriodObj, 'users');
                     break;
                 case 'locations':
                 case 'sessions':
                 case 'users':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, 'users');
                     break;
                 case 'app_versions':
                 case 'device_details':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'device_details');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, 'device_details');
                     break;
                 case 'devices':
                 case 'carriers':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                     break;
                 case 'cities':
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
-                        validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
+                        validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                     }
                     else {
                         common.returnOutput(params, {});
@@ -1819,30 +1819,30 @@ const processRequest = (params) => {
                             console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                         }
                         if (params.qstring.overview) {
-                            validateUserForDataReadAPI(params, function() {
+                            validateUserForDataReadAPI(params, 'core', function() {
                                 countlyApi.data.fetch.fetchDataEventsOverview(params);
                             });
                         }
                         else {
-                            validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
+                            validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchMergedEventData);
                         }
                     }
                     else {
                         params.truncateEventValuesList = true;
-                        validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                        validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
                     }
                     break;
                 case 'get_events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
                     break;
                 case 'top_events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDataTopEvents);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDataTopEvents);
                     break;
                 case 'all_apps':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
+                    validateUserForDataReadAPI(params, 'applications', countlyApi.data.fetch.fetchAllApps);
                     break;
                 case 'notes':
-                    validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1867,31 +1867,31 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'dashboard':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDashboard);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDashboard);
                     break;
                 case 'countries':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCountries);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchCountries);
                     break;
                 case 'sessions':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchSessions);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchSessions);
                     break;
                 case 'metric':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMetric);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchMetric);
                     break;
                 case 'tops':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTops);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTops);
                     break;
                 case 'loyalty':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchLoyalty);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchLoyalty);
                     break;
                 case 'frequency':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchFrequency);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchFrequency);
                     break;
                 case 'durations':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDurations);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDurations);
                     break;
                 case 'events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEvents);
+                    validateUserForDataReadAPI(params, 'events', countlyApi.data.fetch.fetchEvents);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1959,7 +1959,7 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/notes': {
-                validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
+                validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
                 break;
             }
             default:
