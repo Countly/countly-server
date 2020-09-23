@@ -426,7 +426,7 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/o/pushes', function(ob) {
-        var params = ob.params,
+        var params = ob.params;
             
         if (params.qstring.args) {
             try {
