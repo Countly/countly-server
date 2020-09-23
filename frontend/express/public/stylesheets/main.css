@@ -3938,6 +3938,14 @@ color:#E95C6C; transition:color 1s;
 .event-remind-tooltip .content .remind-context a{
     text-decoration: underline;
 }
+
+.event-remind-tooltip .content .remind-context a:hover{
+    color:#e29c5b;
+}
+
+.event-remind-tooltip .content i:hover{
+    color:#e29c5b;
+}
 .event-remind-tooltip .content i {
     margin-right:10px;
 }

@@ -5376,7 +5376,7 @@ window.EventsView = countlyView.extend({
     },
     showExceedRemind: function() {
         function generateDom(text) {
-            const  html = `<div class="event-remind-tooltip" style="display: block;">
+            var html = `<div class="event-remind-tooltip" style="display: block;">
                 <div class="content">
                         <span class="prefix"></span>
                         <span class="remind-context">${text}</span>
@@ -5389,21 +5389,20 @@ window.EventsView = countlyView.extend({
             });
         }
         $(".routename-events #event-alert").html("");
-        const limitation = countlyEvent.getLimitation();
-
-        if(countlyEvent.getEvents().length >= limitation.event_limit) {
+        var limitation = countlyEvent.getLimitation();
+        var currentEventList = countlyEvent.getEvents() || [];
+        if(currentEventList.length >= limitation.event_limit) {
             var tips = jQuery.i18n.prop("events.max-event-key-limit", limitation.event_limit);
             generateDom(tips);
         }
 
         var event_name = countlyEvent.getEventData().eventName;
-        var segments = countlyEvent.getEventSegmentations();
+        var segments = countlyEvent.getEventSegmentations() || [];
         if(segments && segments.length >= limitation.event_segmentation_limit) {
             var tips = jQuery.i18n.prop("events.max-segmentation-limit", limitation.event_segmentation_limit, event_name);
             generateDom(tips);
         }
 
-        var segments = countlyEvent.getEventSegmentations();
         var metaDB = countlyEvent.getActiveEventSegmentMeta();
         segments.forEach(function(s) {
             if(metaDB[s].length >= limitation.event_segmentation_value_limit) {
