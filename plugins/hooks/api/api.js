@@ -223,7 +223,6 @@ plugins.register("/i/hook/delete", function(ob) {
                 function(err, result) {
                     log.d(err, result, "delete an hook");
                     if (!err) {
-                        deleteJob(hookID);
                         common.returnMessage(params, 200, "Deleted an hook");
                     }
                 }
