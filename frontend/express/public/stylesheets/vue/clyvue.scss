@@ -537,6 +537,32 @@
         }
     }
 
+    .cly-vue-image-radio {
+        .image-radio-wrapper > div {
+            width: 144px;
+            height: 100px;
+            border: 1px solid #d0d0d0;
+            border-radius: 2px;
+            display: inline-block;
+            margin-right: 11px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            cursor: pointer;
+            text-align: center;
+            &:last-child {
+                margin-right: 0px;
+            }
+            &.selected {
+                border-color: #2eb52b;
+            }
+            .button-area {
+                .text {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+
     // radio
     .cly-vue-radio {
         .radio-wrapper {

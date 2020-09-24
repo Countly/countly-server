@@ -2042,6 +2042,46 @@
         }
     ));
 
+    Vue.component("cly-image-radio", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, default: -1, type: [ String, Number ]},
+                items: {
+                    required: true,
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                skin: { default: "main", type: String}
+            },
+            computed: {
+                skinClass: function() {
+                    if (["main", "light"].indexOf(this.skin) > -1) {
+                        return "image-radio-" + this.skin + "-skin";
+                    }
+                    return "image-radio-main-skin";
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                }
+            },
+            template: '<div class="cly-vue-image-radio" v-bind:class="[skinClass]">\
+                            <div class="image-radio-wrapper">\
+                                <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\
+                                    <div class="button-area">\
+                                        <div class="icon"><img :src="item.image" /></div>\
+                                        <div class="text">{{item.label}}</div>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </div>'
+        }
+    ));
+
     Vue.component("cly-text-field", countlyBaseComponent.extend(
         // @vue/component
         {
