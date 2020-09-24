@@ -18,7 +18,7 @@ if [ "$CONTINUE" == "1" ]
 then
     echo "Running database modifications"
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-    CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    #CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
     if [ "$1" != "combined" ]; then
         #upgrade plugins
