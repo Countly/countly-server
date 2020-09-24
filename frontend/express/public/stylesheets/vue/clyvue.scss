@@ -537,6 +537,32 @@
         }
     }
 
+    .cly-vue-image-radio {
+        .image-radio-wrapper > div {
+            width: 144px;
+            height: 100px;
+            border: 1px solid #d0d0d0;
+            border-radius: 2px;
+            display: inline-block;
+            margin-right: 11px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            cursor: pointer;
+            text-align: center;
+            &:last-child {
+                margin-right: 0px;
+            }
+            &.selected {
+                border-color: #2eb52b;
+            }
+            .button-area {
+                .text {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+
     // radio
     .cly-vue-radio {
         .radio-wrapper {
@@ -594,6 +620,67 @@
             .radio-button {
                 background-color: transparent;
             }
+        }
+    }
+
+    // colorpicker
+    .cly-vue-colorpicker {
+        $cp-preview-height: 25px;
+        $cp-preview-border-size: 1px;
+        $cp-picker-body-size: 251px;
+        $cp-picker-body-padding: 12px;
+
+        height: #{$cp-preview-height};
+        .picker-body {
+            position: relative;
+            box-shadow: 0 3px 7px rgba(0,0,0,.08);
+            border: 1px solid #d0d0d0;
+            border-radius: 2px;
+            width: 275px;
+            height: 415px;
+            background-color: #ffffff;
+            top: #{$cp-preview-height + $cp-preview-border-size * 2};
+            left: #{$cp-preview-height};
+            > .vc-sketch {
+                background-color: transparent;
+                padding: #{$cp-picker-body-padding};
+                box-shadow: none;
+                border: none;
+                border-radius: 0;
+                width: #{$cp-picker-body-size};
+                .vc-sketch-saturation-wrap {
+                    height: #{$cp-picker-body-size - 180px};
+                    bottom: #{$cp-picker-body-padding};
+                    .vc-saturation {
+                        height: #{$cp-picker-body-size};
+                    }
+                }
+                .vc-sketch-presets {    
+                    display: none;
+                }
+            }
+            .button-controls {
+                float: right;
+                padding-right: #{$cp-picker-body-padding};
+            }
+        }
+        .preview-box {
+            width: #{$cp-preview-height};
+            height: #{$cp-preview-height};
+            float: left;
+            border-radius: 2px 0 0 2px;
+            border: #{$cp-preview-border-size} solid #d0d0d0;
+            margin-right: -2px;
+        }
+        .preview-input {
+            float: left;
+            height: 23px !important;
+            outline: none;
+            width: calc(100% - 38px);
+            border: 1px solid #dbdbdb;
+            color: #000;
+            font-size: 12px;
+            padding-left: 7px;
         }
     }
 
@@ -867,7 +954,7 @@
             height: 100%;
             float: none;
             overflow-y: auto;
-            .group {
+            .subgroup {
                 padding-bottom: 35px;
                 &.thin {
                     padding-bottom: 10px;
@@ -915,7 +1002,7 @@
 
             .slim.super {
                 width: 45%;
-                margin: 20% auto 0 auto;
+                margin: 10% auto 0 auto;
             }
 
             ul.steplist {

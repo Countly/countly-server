@@ -1148,6 +1148,69 @@
 
     // New components
 
+    var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
+
+    Vue.component("cly-colorpicker", countlyBaseComponent.extend({
+        props: {
+            value: {type: [String, Object], required: true },
+            resetValue: { type: [String, Object], default: "#FFFFFF"}
+        },
+        data: function() {
+            return {
+                isOpened: false
+            };
+        },
+        computed: {
+            previewStyle: function() {
+                return {
+                    "background-color": this.value
+                };
+            },
+            localValue: {
+                get: function() {
+                    return this.value.replace("#", "");
+                },
+                set: function(value) {
+                    var colorValue = "#" + value.replace("#", "");
+                    if (colorValue.match(HEX_COLOR_REGEX)) {
+                        this.setColor({hex: colorValue});
+                    }
+                }
+            }
+        },
+        methods: {
+            setColor: function(color) {
+                this.$emit("input", color.hex);
+            },
+            reset: function() {
+                this.setColor({hex: this.resetValue});
+            },
+            open: function() {
+                this.isOpened = true;
+            },
+            close: function() {
+                this.isOpened = false;
+            }
+        },
+        components: {
+            picker: window.VueColor.Sketch
+        },
+        template: '<div class="cly-vue-colorpicker">\
+                    <div @click="open">\
+                        <div class="preview-box" :style="previewStyle"></div>\
+                        <input class="preview-input" type="text" v-model="localValue" />\
+                    </div>\
+                    <div class="picker-body" v-if="isOpened" v-click-outside="close">\
+                        <picker :preset-colors="[]" :value="value" @input="setColor"></picker>\
+                        <div class="button-controls">\
+                            <cly-button label="Reset" @click="reset" skin="light"></cly-button>\
+                            <cly-button label="Cancel" @click="close" skin="light"></cly-button>\
+                            <cly-button label="Confirm" @click="close" skin="green"></cly-button>\
+                        </div>\
+                    </div>\
+                  </div>'
+    }));
+
     Vue.component("cly-datatable-w", countlyBaseComponent.extend(
         // @vue/component
         {
@@ -2036,6 +2099,46 @@
                                     <div class="box"></div>\
                                     <div class="text">{{item.label}}</div>\
                                     <div class="description">{{item.description}}</div>\
+                                </div>\
+                            </div>\
+                        </div>'
+        }
+    ));
+
+    Vue.component("cly-image-radio", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, default: -1, type: [ String, Number ]},
+                items: {
+                    required: true,
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                skin: { default: "main", type: String}
+            },
+            computed: {
+                skinClass: function() {
+                    if (["main", "light"].indexOf(this.skin) > -1) {
+                        return "image-radio-" + this.skin + "-skin";
+                    }
+                    return "image-radio-main-skin";
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                }
+            },
+            template: '<div class="cly-vue-image-radio" v-bind:class="[skinClass]">\
+                            <div class="image-radio-wrapper">\
+                                <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\
+                                    <div class="button-area">\
+                                        <div class="icon"><img :src="item.image" /></div>\
+                                        <div class="text">{{item.label}}</div>\
+                                    </div>\
                                 </div>\
                             </div>\
                         </div>'
