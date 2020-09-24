@@ -24,8 +24,18 @@ window.HooksDrawer = function(HookView) {
                     $(HookView.DrawerComponent.drawer).find('.title span').first().html(jQuery.i18n.map["hooks.drawer-create-title"]);
                     $("#hooks-widget-drawer").find("#widget-types .opt").removeClass("disabled");
                     $("#create-widget").removeClass("disabled");
+
+                    self.checkDrawerInterval = setInterval(function() {
+                        self.drawer._applyChangeTrigger(self.drawer);
+                        self.checkDisabled();
+                        console.log("check value");
+                        if(!app.activeView.DrawerComponent) {
+                            clearInterval(self.checkDrawerInterval);
+                        }
+                    }, 1000);
                 },
                 onClosed: function() {
+                    clearInterval(self.checkDrawerInterval);
                 }
             });
             $("#create-hook").off("click").on("click", function() {
@@ -103,8 +113,10 @@ window.HooksDrawer = function(HookView) {
                 self.drawer._applyChangeTrigger(self.drawer);
                 self.checkDisabled();
                 console.log("add effect");
+                
             });
             $(".add-effect-button").trigger("click");
+            
 
             self.drawer._applyChangeTrigger();
             $("#save-widget").hide();
@@ -128,7 +140,7 @@ window.HooksDrawer = function(HookView) {
             $("#save-widget").off("click").on("click", function() {
                 var hooksConfig = self.getWidgetSettings();
                 for (var key in hooksConfig) {
-                    if (!hooksConfig[key]) {
+                    if (hooksConfig[key] === null) {
                         return;
                     }
                 }

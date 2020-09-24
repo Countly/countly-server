@@ -158,10 +158,9 @@ window.HooksView = countlyView.extend({
             var hookID = e.target.id;
             var formData = hooksPlugin.getHook(hookID);
             self.DrawerComponent.init();
+            self.DrawerComponent.drawer.open();
             self.DrawerComponent.loadWidgetData(formData);
             $(self.DrawerComponent.drawer).find('.title span').first().html(jQuery.i18n.map["hooks.edit-your-hook"]);
-
-            self.DrawerComponent.drawer.open();
             $(self.DrawerComponent.drawer).addClass("open editing");
         });
 

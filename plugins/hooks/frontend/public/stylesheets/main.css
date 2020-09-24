@@ -1,5 +1,4 @@
 #hooks-widget-drawer .description {display:inline; float: left; margin-left: 0px; margin-top: -10px;}
-
 #hooks-widget-drawer .description .container {
     display: block;
     position: relative;
@@ -51,7 +50,7 @@
     cursor: pointer;
     color: #615a5a;
 }
-#hooks-widget-drawer .api-endpoint-intro {
+#hooks-widget-drawer .trigger-intro {
     color: #636363;
     background-color: #f3e3e3;
     padding: 10px 10px;

@@ -7,7 +7,7 @@ class InternalEventTrigger {
     syncRules(rules) {
         if (rules instanceof Array) {
             const newRules = rules.filter( r => {
-                return r.trigger.type === 'APIEndPointTrigger';
+                return r.trigger.type === 'InternalEventTrigger';
             });
             this._rules = newRules;
         }
@@ -18,7 +18,7 @@ class InternalEventTrigger {
         const  {qstring} = params || {};
         this._rules.forEach(rule => {
             // match
-            if(rule.trigger.configuration.path === hookPath) {
+            if(rule.trigger.configuration.eventType === hookPath) {
                 // send to pipeline
                 rule.effects.forEach(e => {
                     this.pipeline({
