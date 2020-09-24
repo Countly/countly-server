@@ -27,6 +27,7 @@ function mongodb_logrotate () {
     if [ -x "$(command -v logrotate)" ]; then
         INDENT_LEVEL=$(grep dbPath "${MONGODB_CONFIG_FILE}" | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
         INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
+        MONGODB_DATA_PATH=$(grep "dbPath" "${MONGODB_CONFIG_FILE}" | awk -F' ' '{print $2}')
         #delete if any other logRotate directive exist and add logRotate to mongod.conf
         sed -i '/logRotate/d' "$MONGODB_CONFIG_FILE"
         sed -i "s#systemLog:#systemLog:\n${INDENT_STRING}logRotate: reopen#g" "$MONGODB_CONFIG_FILE"
