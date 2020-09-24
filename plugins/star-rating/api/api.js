@@ -142,6 +142,7 @@ const widgetPropertyPreprocessors = {
             return false;
         }
         var widget = validatedArgs.obj;
+        widget.type = "rating";
 
         validateUserForWrite(obParams, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
@@ -531,7 +532,7 @@ const widgetPropertyPreprocessors = {
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
             var collectionName = 'feedback_widgets';
-            var query = {};
+            var query = {type: "rating"};
             if (params.qstring.is_active) {
                 query.is_active = params.qstring.is_active;
             }
@@ -681,6 +682,7 @@ const widgetPropertyPreprocessors = {
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('feedback_widgets').remove({
+            type: "rating",
             "app_id": appId
         });
         common.db.collection('feedback' + appId).drop(function() {});
@@ -727,6 +729,7 @@ const widgetPropertyPreprocessors = {
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('feedback_widgets').remove({
+            type: "rating",
             "app_id": appId
         });
         common.db.collection('feedback' + appId).drop(function() {

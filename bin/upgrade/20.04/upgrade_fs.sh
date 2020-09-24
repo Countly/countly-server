@@ -50,21 +50,13 @@ then
     rm -rf "$DIR/../package-lock.json"
 
     #run upgrade scripts
-    bash "$CUR/scripts/remove_moved_files.sh"
-    bash "$CUR/../19.08/scripts/remove_chrome_cache.sh"
+
 
     #upgrade plugins
     (cd "$DIR/.." && sudo npm install --unsafe-perm)
-    GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
-    if [[ "$GLIBC_VERSION" != "2.25" ]]; then
-        (cd "$DIR/.." && sudo npm install argon2 --build-from-source)
-    fi
     countly plugin upgrade push
     (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
-    countly plugin upgrade attribution
-    countly plugin upgrade web
-    countly plugin enable active_users
-    countly plugin enable performance-monitoring
+    countly plugin upgrade star-rating
     
     #get web sdk
     countly update sdk-web
