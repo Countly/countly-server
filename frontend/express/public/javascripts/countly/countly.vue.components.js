@@ -1148,6 +1148,69 @@
 
     // New components
 
+    var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
+
+    Vue.component("cly-colorpicker", countlyBaseComponent.extend({
+        props: {
+            value: {type: [String, Object], required: true },
+            resetValue: { type: [String, Object], default: "#FFFFFF"}
+        },
+        data: function() {
+            return {
+                isOpened: false
+            };
+        },
+        computed: {
+            previewStyle: function() {
+                return {
+                    "background-color": this.value
+                };
+            },
+            localValue: {
+                get: function() {
+                    return this.value.replace("#", "");
+                },
+                set: function(value) {
+                    var colorValue = "#" + value.replace("#", "");
+                    if (colorValue.match(HEX_COLOR_REGEX)) {
+                        this.setColor({hex: colorValue});
+                    }
+                }
+            }
+        },
+        methods: {
+            setColor: function(color) {
+                this.$emit("input", color.hex);
+            },
+            reset: function() {
+                this.setColor({hex: this.resetValue});
+            },
+            open: function() {
+                this.isOpened = true;
+            },
+            close: function() {
+                this.isOpened = false;
+            }
+        },
+        components: {
+            picker: window.VueColor.Sketch
+        },
+        template: '<div class="cly-vue-colorpicker">\
+                    <div @click="open">\
+                        <div class="preview-box" :style="previewStyle"></div>\
+                        <input class="preview-input" type="text" v-model="localValue" />\
+                    </div>\
+                    <div class="picker-body" v-if="isOpened" v-click-outside="close">\
+                        <picker :preset-colors="[]" :value="value" @input="setColor"></picker>\
+                        <div class="button-controls">\
+                            <cly-button label="Reset" @click="reset" skin="light"></cly-button>\
+                            <cly-button label="Cancel" @click="close" skin="light"></cly-button>\
+                            <cly-button label="Confirm" @click="close" skin="green"></cly-button>\
+                        </div>\
+                    </div>\
+                  </div>'
+    }));
+
     Vue.component("cly-datatable-w", countlyBaseComponent.extend(
         // @vue/component
         {
