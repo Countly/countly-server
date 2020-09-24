@@ -30,7 +30,7 @@
             },
             renderIntro: function() {
                 var url = window.location.protocol + "//" + window.location.host + "/o/hooks/" +  $("#api-endpoint-trigger-uri").val()
-                $(".api-endpoint-intro").html(jQuery.i18n.prop("hooks.trigger-api-endpoint-intro-content", url));
+                $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-api-endpoint-intro-content", url));
             }
         },
         "InternalEventTrigger":{
@@ -47,6 +47,67 @@
                     app.localize(); 
                 });
                 app.localize();
+            },
+            renderConfig: function(trigger) {
+                var configuration = trigger.configuration;
+                $("#single-hook-trigger-internal-event-dropdown").clySelectSetSelection(configuration.eventType, configuration.eventType);
+                switch (configuration.eventType) {
+                    case "/cohort/enter":
+                       setTimeout(function() {
+                           $.when(
+                                countlyCohorts.loadCohorts(),
+                            ).then(function() {
+                                var cohorts = countlyCohorts.getResults();
+                                var cohortItems = []
+                                cohorts.forEach(function(c){
+                                   cohortItems.push({ value: c._id, name: c.name});
+                                })
+                                $("#single-hook-trigger-cohort-dropdown").clySelectSetItems(cohortItems);
+                                 cohortItems.forEach(function(i) {
+                                     if( i.value ===  configuration.cohortID) {
+                                         $("#single-hook-trigger-cohort-dropdown").clySelectSetSelection(i.value, i.name);
+                                     }
+                                })
+                            }).catch(function(err) {console.log(err,"??");});
+                       }, 100)
+                        break;
+                }
+            },
+            getValidConfig: function() {
+                var configuration = {
+                    eventType: $("#single-hook-trigger-internal-event-dropdown").clySelectGetSelection()
+                }
+                if (!configuration.eventType) {
+                    return null;
+                }
+                switch(configuration.eventType) {
+                    case "/cohort/enter":
+                        configuration.cohortID = $("#single-hook-trigger-cohort-dropdown").clySelectGetSelection();
+                        if (!configuration.cohortID) {
+                            return null;
+                        }
+                        break;
+                    default:
+                        return null;
+                }
+                console.log(configuration, "CC");
+                return configuration
+            },
+            loadCohortsData: function(callBack) {
+                var self = this;
+                $.when(
+                    countlyCohorts.loadCohorts(),
+                ).then(function() {
+                    var cohorts = countlyCohorts.getResults();
+                    var cohortItems = []
+                    cohorts.forEach(function(c){
+                       cohortItems.push({ value: c._id, name: c.name});
+                    })
+                    $("#single-hook-trigger-cohort-dropdown").clySelectSetItems(cohortItems);
+                    if (callBack) {
+                        callBack(items)
+                    }
+                });
             },
             loadEventView: function(event) {
                 var html = "";
@@ -67,15 +128,24 @@
                                     <div class="select-items square" style="width: 100%;"></div>
                                 </div>
                             </div>
+                            <div class="section">
+                                <div class="label" data-localize='hooks.trigger-introduction' ></div>
+                                <div>
+                                    <div class="trigger-intro">
+                                    </div>
+                                </div>
+                            </div>
                         `
                         $(".internal-event-configuration-view").html(html);
+                        $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-internal-event-cohorts-enter-intro"));
+                       // this.loadCohortsData(); 
                         $.when(
                             countlyCohorts.loadCohorts(),
                         ).then(function() {
                             var cohorts = countlyCohorts.getResults();
                             var cohortItems = []
                             cohorts.forEach(function(c){
-                               cohortItems.push({ value: c._id, name: c.name}); 
+                               cohortItems.push({ value: c._id, name: c.name});
                             })
                             $("#single-hook-trigger-cohort-dropdown").clySelectSetItems(cohortItems);
                         });
@@ -83,8 +153,6 @@
                     default:
                         $(".internal-event-configuration-view").html(event);
                 }
-            },
-            getValidConfig: function() {
             },
         }
     }
