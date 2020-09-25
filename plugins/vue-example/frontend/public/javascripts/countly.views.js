@@ -261,7 +261,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
                 this.$v.editedObject.selectedProps.$touch();
             }
         },
-        afterEditedObjectChanged: function(newState) {
+        afterObjectCopy: function(newState) {
             if (newState._id !== null) {
                 this.title = "Edit Record";
                 this.saveButtonLabel = "Save Changes";
@@ -270,6 +270,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
                 this.title = "Create New Record";
                 this.saveButtonLabel = "Create Record";
             }
+            return newState;
         }
     },
     validations: {

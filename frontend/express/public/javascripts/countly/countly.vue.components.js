@@ -1045,8 +1045,7 @@
                 },
                 watch: {
                     initialEditedObject: function() {
-                        this.editedObject = this.copyOfEdited();
-                        this.afterEditedObjectChanged(this.editedObject);
+                        this.editedObject = this.afterObjectCopy(this.copyOfEdited());
                         this.reset();
                     },
                     isOpened: function(newState) {
@@ -1069,7 +1068,8 @@
                         this.$emit("close", this.name);
                     },
                     copyOfEdited: function() {
-                        return JSON.parse(JSON.stringify(this.initialEditedObject));
+                        var copied = JSON.parse(JSON.stringify(this.initialEditedObject));
+                        return this.beforeObjectCopy(copied);
                     },
                     setStep: function(newIndex) {
                         if (newIndex >= 0 && newIndex < this.stepContents.length) {
@@ -1096,8 +1096,14 @@
                             this.tryClosing();
                         }
                     },
-                    afterEditedObjectChanged: function() { },
+                    afterObjectCopy: function(newState) {
+                        return newState;
+                    },
+                    beforeObjectCopy: function(newState) {
+                        return newState;
+                    },
                     beforeLeavingStep: function() { },
+                    beforeSubmit: function() { },
                 },
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
@@ -1159,7 +1165,7 @@
 
     Vue.component("cly-colorpicker", countlyBaseComponent.extend({
         props: {
-            value: {type: [String, Object], required: true },
+            value: {type: [String, Object], default: "#FFFFFF"},
             resetValue: { type: [String, Object], default: "#FFFFFF"}
         },
         data: function() {
