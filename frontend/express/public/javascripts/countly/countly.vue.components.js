@@ -1092,7 +1092,7 @@
                     submit: function() {
                         this.beforeLeavingStep();
                         if (!this.$v.$invalid) {
-                            this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                            this.$emit("submit", this.beforeSubmit(JSON.parse(JSON.stringify(this.editedObject))));
                             this.tryClosing();
                         }
                     },
@@ -1102,8 +1102,10 @@
                     beforeObjectCopy: function(newState) {
                         return newState;
                     },
+                    beforeSubmit: function(editedObject) {
+                        return editedObject;
+                    },
                     beforeLeavingStep: function() { },
-                    beforeSubmit: function() { },
                 },
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
