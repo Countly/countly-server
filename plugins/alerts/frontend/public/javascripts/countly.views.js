@@ -704,15 +704,14 @@ window.AlertsView = countlyView.extend({
 
 app.alertsView = new window.AlertsView();
 
-if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.length)) {
     app.route('/manage/alerts', 'alerts', function() {
         this.renderWhenReady(this.alertsView);
     });
 }
 
 $(document).ready(function() {
-    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+    if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.length)) {
         app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
     }
-
 });
