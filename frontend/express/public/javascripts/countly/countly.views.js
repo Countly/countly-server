@@ -3205,7 +3205,7 @@ window.ManageUsersView = countlyView.extend({
         // feature holder object for permission table
         var features = {
             "plugins": countlyGlobal["plugins"],
-            "core": ["applications", "users", "configurations"]
+            "core": ["core", "applications", "users", "configurations"]
         };
 
         // Prepare permission table for new member
@@ -7146,7 +7146,7 @@ app.route("/analytics/events/:subpageid", "events", function(subpageid) {
 });
 
 app.addAppSwitchCallback(function(appId) {
-    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(appId) > -1) {
+    if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(appId) > -1)) {
         $('.sidebar-menu #events-submenu .events-blueprint-side-menu').css("display", "block");
     }
     else {
