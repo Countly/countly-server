@@ -20,7 +20,7 @@
     "mocha": "^8.0.1",
     "nyc": "^15.0.0",
     "should": "13.2.3",
-    "supertest": "4.0.2"
+    "supertest": "5.0.0"
   },
   "scripts": {
     "test": "grunt --verbose"
