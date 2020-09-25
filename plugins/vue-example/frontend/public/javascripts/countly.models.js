@@ -91,6 +91,28 @@
             }
         };
 
+        var tooManyRecordsResource = countlyVue.vuex.Resource("tooManyRecords", {
+            reads: {
+                paged: function(context, actionParams, requestParams) {
+                    return $.when($.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o",
+                        data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
+                            method: 'large-col',
+                            table_params: JSON.stringify(requestParams)
+                        }
+                    })).catch(function() {
+                        return {
+                            rows: [],
+                            totalRows: 0,
+                            notFilteredTotalRows: 0
+                        };
+                    });
+                },
+            }
+        });
+
         var recordsResource = countlyVue.vuex.Resource("myRecords", {
             writes: {
                 save: {
@@ -147,23 +169,6 @@
                         }
                     }));
                 },
-                largeCollection: function(context, actionParams, requestParams) {
-                    return $.when($.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            method: 'large-col',
-                            table_params: JSON.stringify(requestParams)
-                        }
-                    })).catch(function() {
-                        return {
-                            rows: [],
-                            totalRows: 0,
-                            notFilteredTotalRows: 0
-                        };
-                    });
-                },
                 single: {
                     noState: true, // no state and getters will be created for this
                     handler: function(context, id) {
@@ -198,7 +203,7 @@
             getters: getters,
             actions: actions,
             mutations: mutations,
-            submodules: [recordsResource, table]
+            submodules: [recordsResource, tooManyRecordsResource, table]
         });
     };
 
