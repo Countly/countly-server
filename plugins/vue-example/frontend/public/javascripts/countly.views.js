@@ -10,7 +10,7 @@ var TableView = countlyVue.views.BaseView.extend({
             return this.$store.getters["countlyVueExample/table/diff"];
         },
         rTableData: function() {
-            return this.$store.getters["countlyVueExample/myRecords/largeCollection"];
+            return this.$store.getters["countlyVueExample/tooManyRecords/paged"];
         }
     },
     data: function() {
@@ -139,8 +139,8 @@ var TableView = countlyVue.views.BaseView.extend({
         },
         updateRemoteParams: function(remoteParams) {
             var self = this;
-            this.$store.dispatch("countlyVueExample/myRecords/setParamsOfLargeCollection", remoteParams).then(function() {
-                self.$store.dispatch("countlyVueExample/myRecords/fetchLargeCollection");
+            this.$store.dispatch("countlyVueExample/tooManyRecords/setParamsOfPaged", remoteParams).then(function() {
+                self.$store.dispatch("countlyVueExample/tooManyRecords/fetchPaged");
             });
         },
         setRowData: function(row, fields) {
@@ -207,7 +207,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     computed: {
         randomNumbers: function() {
-            return this.$store.getters["countlyVueExample/timeGraph/points"];
+            return this.$store.getters["countlyVueExample/graphPoints"];
         },
         barData: function() {
             return this.$store.getters["countlyVueExample/barData"];
@@ -221,7 +221,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch("countlyVueExample/timeGraph/fetchPoints");
+            this.$store.dispatch("countlyVueExample/fetchGraphPoints");
         }
     }
 });

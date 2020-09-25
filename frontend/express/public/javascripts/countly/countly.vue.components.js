@@ -658,16 +658,19 @@
         return "_" + readName + "_params";
     };
 
-    var _getStructuredAction = function(userDefined) {
+    var _getStructuredAction = function(userDefined, defaultStructure) {
+
+        defaultStructure = defaultStructure || {};
+
         if (typeof userDefined === "function") {
-            return {
+            return _.extend(defaultStructure, {
                 handler: userDefined
-            };
+            });
         }
-        return userDefined;
+        return _.extend(defaultStructure, userDefined);
     };
 
-    var VuexCRUD = function(name, options) {
+    var VuexResource = function(name, options) {
 
         var writes = options.writes || {},
             reads = options.reads || {};
@@ -678,7 +681,11 @@
         }, {});
 
         reads = Object.keys(reads).reduce(function(acc, val) {
-            acc[val] = _getStructuredAction(reads[val]);
+            acc[val] = _getStructuredAction(reads[val], {
+                defaultState: function() {
+                    return [];
+                }
+            });
             return acc;
         }, {});
 
@@ -698,7 +705,7 @@
                     return response;
                 }, function(err) {
                     // eslint-disable-next-line no-console
-                    console.log("VuexCRUD/writeErr@" + name + "/" + fnName, err);
+                    console.log("VuexResource/writeErr@" + name + "/" + fnName, err);
                 });
             };
         });
@@ -731,7 +738,7 @@
                     return data;
                 }, function(err) {
                     // eslint-disable-next-line no-console
-                    console.log("VuexCRUD/readErr@" + name + "/" + fnName, err);
+                    console.log("VuexResource/readErr@" + name + "/" + fnName, err);
                 });
             };
 
@@ -756,7 +763,7 @@
                 var reader = reads[fnName];
                 if (!reader.noState) {
                     var stateKey = _getReadStateName(fnName);
-                    state[stateKey] = [];
+                    state[stateKey] = reader.defaultState();
                     state[_getReadTransactionName(fnName)] = 0;
                     if (reader.params) {
                         state[_getReadParamsName(fnName)] = JSON.parse(JSON.stringify(reader.params));
@@ -808,7 +815,7 @@
         },
         Module: VuexModule,
         DataTable: VuexDataTable,
-        CRUD: VuexCRUD
+        Resource: VuexResource
     };
 
     var BackboneRouteAdapter = function() {};
