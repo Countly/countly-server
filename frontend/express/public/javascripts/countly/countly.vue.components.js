@@ -667,7 +667,7 @@
         return userDefined;
     };
 
-    var VuexCRUD = function(name, options) {
+    var VuexResource = function(name, options) {
 
         var writes = options.writes || {},
             reads = options.reads || {};
@@ -698,7 +698,7 @@
                     return response;
                 }, function(err) {
                     // eslint-disable-next-line no-console
-                    console.log("VuexCRUD/writeErr@" + name + "/" + fnName, err);
+                    console.log("VuexResource/writeErr@" + name + "/" + fnName, err);
                 });
             };
         });
@@ -731,7 +731,7 @@
                     return data;
                 }, function(err) {
                     // eslint-disable-next-line no-console
-                    console.log("VuexCRUD/readErr@" + name + "/" + fnName, err);
+                    console.log("VuexResource/readErr@" + name + "/" + fnName, err);
                 });
             };
 
@@ -808,7 +808,7 @@
         },
         Module: VuexModule,
         DataTable: VuexDataTable,
-        CRUD: VuexCRUD
+        Resource: VuexResource
     };
 
     var BackboneRouteAdapter = function() {};
