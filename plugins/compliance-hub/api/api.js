@@ -4,7 +4,7 @@ var plugin = {},
     appUsers = require('../../../api/parts/mgmt/app_users.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'compliance_hub';
 
@@ -98,7 +98,7 @@ const FEATURE_NAME = 'compliance_hub';
 
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        
+
         if (params.qstring.method === "consents") {
             validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'consents');
             return true;
@@ -110,7 +110,7 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/o/consent", function(ob) {
         var params = ob.params;
         var paths = ob.paths;
-        
+
         switch (paths[3]) {
         case 'current': {
             if (!params.qstring.app_id) {
@@ -246,7 +246,7 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/o/app_users", function(ob) {
         var params = ob.params;
         var paths = ob.paths;
-        
+
         switch (paths[3]) {
         case 'consents': {
             if (!params.qstring.app_id) {

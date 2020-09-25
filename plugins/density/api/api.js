@@ -2,7 +2,7 @@ var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'density';
 
@@ -36,7 +36,7 @@ const FEATURE_NAME = 'density';
     });
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        
+
         if (params.qstring.method === "density") {
             validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'density');
             return true;

@@ -9,7 +9,7 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
 
@@ -45,7 +45,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/i/views", function(ob) {
         var appId = ob.params.qstring.app_id;
-        
+
         return new Promise(function(resolve) {
             validateCreate(ob.params, FEATURE_NAME, function(params) {
                 if (ob.params.qstring.method === "rename_views") {
@@ -573,7 +573,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     }
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        
+
         var segment = params.qstring.segment || "";
         var segmentVal = params.qstring.segmentVal || "";
         if (params.qstring.method === "views") {
@@ -1094,7 +1094,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/o/actions", function(ob) {
         var params = ob.params;
-        
+
         if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
                 common.db.collection('apps').findOne({'key': params.qstring.app_key}, function(err1, app) {

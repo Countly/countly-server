@@ -3,7 +3,7 @@ var common = require('../../../api/utils/common.js'),
     time = require('time'),
     async = require('async'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'reports';
 

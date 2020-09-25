@@ -9,7 +9,7 @@ var plugin = {},
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'crashes';
 
@@ -738,7 +738,7 @@ plugins.setConfigs("crashes", {
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        
+
         if (params.qstring.method === 'crashes') {
             validateRead(params, FEATURE_NAME, function() {
                 if (params.qstring.group) {
@@ -967,7 +967,7 @@ plugins.setConfigs("crashes", {
             return true;
         }
         else if (params.qstring.method === 'user_crashes') {
-            validate(params, FEATURE_NAME, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 if (params.qstring.uid) {
                     var columns = ["group", "reports", "last"];
                     var query = {group: {$ne: 0}, uid: params.qstring.uid};
@@ -1094,7 +1094,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         default:
-            common.returnMessage(obParams, 400, 'Invalid path');
+            common.returnMessage(params, 400, 'Invalid path');
             break;
         }
         return true;
@@ -1302,93 +1302,93 @@ plugins.setConfigs("crashes", {
         case 'add_comment':
             validateCreate(params, FEATURE_NAME, function() {
                 var comment = {};
-                if (obParams.qstring.args.time) {
-                    comment.time = obParams.qstring.args.time;
+                if (params.qstring.args.time) {
+                    comment.time = params.qstring.args.time;
                 }
                 else {
                     comment.time = new Date().getTime();
                 }
 
-                if (obParams.qstring.args.text) {
-                    comment.text = obParams.qstring.args.text;
+                if (params.qstring.args.text) {
+                    comment.text = params.qstring.args.text;
                 }
                 else {
                     comment.text = "";
                 }
 
-                comment.author = obParams.member.full_name;
-                comment.author_id = obParams.member._id + "";
-                comment._id = common.crypto.createHash('sha1').update(obParams.qstring.args.app_id + obParams.qstring.args.crash_id + JSON.stringify(comment) + "").digest('hex');
-                common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).update({'_id': obParams.qstring.args.crash_id }, {"$push": {'comments': comment}}, function() {
-                    plugins.dispatch("/systemlogs", {params: obParams, action: "crash_added_comment", data: {app_id: obParams.qstring.args.app_id, crash_id: obParams.qstring.args.crash_id, comment: comment}});
-                    common.returnMessage(obParams, 200, 'Success');
+                comment.author = params.member.full_name;
+                comment.author_id = params.member._id + "";
+                comment._id = common.crypto.createHash('sha1').update(params.qstring.args.app_id + params.qstring.args.crash_id + JSON.stringify(comment) + "").digest('hex');
+                common.db.collection('app_crashgroups' + params.qstring.args.app_id).update({'_id': params.qstring.args.crash_id }, {"$push": {'comments': comment}}, function() {
+                    plugins.dispatch("/systemlogs", {params: params, action: "crash_added_comment", data: {app_id: params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, comment: comment}});
+                    common.returnMessage(params, 200, 'Success');
                     return true;
                 });
-            }, obParams);
+            });
             break;
         case 'edit_comment':
-            validateUpdate(function() {
-                common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).findOne({'_id': obParams.qstring.args.crash_id }, function(err, crash) {
+            validateUpdate(params, FEATURE_NAME, function() {
+                common.db.collection('app_crashgroups' + params.qstring.args.app_id).findOne({'_id': params.qstring.args.crash_id }, function(err, crash) {
                     var comment;
                     if (crash && crash.comments) {
                         for (var i = 0; i < crash.comments.length; i++) {
-                            if (crash.comments[i]._id === obParams.qstring.args.comment_id) {
+                            if (crash.comments[i]._id === params.qstring.args.comment_id) {
                                 comment = crash.comments[i];
                                 break;
                             }
                         }
                     }
-                    if (comment && (comment.author_id === obParams.member._id + "" || obParams.member.global_admin)) {
+                    if (comment && (comment.author_id === params.member._id + "" || params.member.global_admin)) {
                         var commentBefore = JSON.parse(JSON.stringify(comment));
-                        if (obParams.qstring.args.time) {
-                            comment.edit_time = obParams.qstring.args.time;
+                        if (params.qstring.args.time) {
+                            comment.edit_time = params.qstring.args.time;
                         }
                         else {
                             comment.edit_time = new Date().getTime();
                         }
 
-                        if (obParams.qstring.args.text) {
-                            comment.text = obParams.qstring.args.text;
+                        if (params.qstring.args.text) {
+                            comment.text = params.qstring.args.text;
                         }
 
-                        common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).update({'_id': obParams.qstring.args.crash_id, "comments._id": obParams.qstring.args.comment_id}, {$set: {"comments.$": comment}}, function() {
-                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_edited_comment", data: {app_id: obParams.qstring.args.app_id, crash_id: obParams.qstring.args.crash_id, _id: obParams.qstring.args.comment_id, before: commentBefore, update: comment}});
-                            common.returnMessage(obParams, 200, 'Success');
+                        common.db.collection('app_crashgroups' + params.qstring.args.app_id).update({'_id': params.qstring.args.crash_id, "comments._id": params.qstring.args.comment_id}, {$set: {"comments.$": comment}}, function() {
+                            plugins.dispatch("/systemlogs", {params: params, action: "crash_edited_comment", data: {app_id: params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, _id: params.qstring.args.comment_id, before: commentBefore, update: comment}});
+                            common.returnMessage(params, 200, 'Success');
                             return true;
                         });
                     }
                     else {
-                        common.returnMessage(obParams, 200, 'Success');
+                        common.returnMessage(params, 200, 'Success');
                         return true;
                     }
                 });
-            }, obParams);
+            });
             break;
         case 'delete_comment':
             validateDelete(params, FEATURE_NAME, function() {
-                common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).findOne({'_id': obParams.qstring.args.crash_id }, function(err, crash) {
+                common.db.collection('app_crashgroups' + params.qstring.args.app_id).findOne({'_id': params.qstring.args.crash_id }, function(err, crash) {
                     var comment;
                     if (crash && crash.comments) {
                         for (var i = 0; i < crash.comments.length; i++) {
-                            if (crash.comments[i]._id === obParams.qstring.args.comment_id) {
+                            if (crash.comments[i]._id === params.qstring.args.comment_id) {
                                 comment = crash.comments[i];
                                 break;
                             }
                         }
                     }
-                    if (comment && (comment.author_id === obParams.member._id + "" || obParams.member.global_admin)) {
-                        common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).update({'_id': obParams.qstring.args.crash_id }, { $pull: { comments: { _id: obParams.qstring.args.comment_id } } }, function() {
-                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_deleted_comment", data: {app_id: obParams.qstring.args.app_id, crash_id: obParams.qstring.args.crash_id, comment: comment}});
-                            common.returnMessage(obParams, 200, 'Success');
+                    if (comment && (comment.author_id === params.member._id + "" || params.member.global_admin)) {
+                        common.db.collection('app_crashgroups' + params.qstring.args.app_id).update({'_id': params.qstring.args.crash_id }, { $pull: { comments: { _id: params.qstring.args.comment_id } } }, function() {
+                            plugins.dispatch("/systemlogs", {params: params, action: "crash_deleted_comment", data: {app_id: params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, comment: comment}});
+                            common.returnMessage(params, 200, 'Success');
                             return true;
                         });
                     }
                     else {
-                        common.returnMessage(obParams, 200, 'Success');
+                        common.returnMessage(params, 200, 'Success');
                         return true;
                     }
                 });
-            }, obParams);
+            });
             break;
         case 'delete':
             validateDelete(params, FEATURE_NAME, function() {
@@ -1514,7 +1514,7 @@ plugins.setConfigs("crashes", {
             });
             break;
         default:
-            common.returnMessage(obParams, 400, 'Invalid path');
+            common.returnMessage(params, 400, 'Invalid path');
             break;
         }
         return true;

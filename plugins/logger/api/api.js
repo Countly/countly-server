@@ -1,7 +1,7 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'logger';
 
@@ -264,7 +264,7 @@ const FEATURE_NAME = 'logger';
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        
+
         if (params.qstring.method === 'logs') {
             var filter = {};
             if (typeof params.qstring.filter !== "undefined") {

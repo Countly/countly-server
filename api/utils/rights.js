@@ -636,7 +636,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         return false;
                     }
                 }
-                
+
                 // is member.permission exist?
                 // is member.permission an object?
                 // is params.qstring.app_id property of member.permission object?
@@ -656,7 +656,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                             common.returnMessage(params, 401, 'User does not have view right for this application');
                             reject('User does not have view right for this application');
                             return false;
-                        }    
+                        }
                     }
                     else {
                         if (!((member.user_of && Array.isArray(member.user_of) && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
@@ -766,7 +766,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                             common.returnMessage(params, 401, 'User does not have view right for this application');
                             reject('User does not have view right for this application');
                             return false;
-                        }    
+                        }
                     }
                     else {
                         if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {

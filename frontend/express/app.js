@@ -830,7 +830,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         adminOfApps = sortBy(adminOfApps, member.appSortList || []);
         userOfApps = sortBy(userOfApps, member.appSortList || []);
 
-        
+
         var defaultApp = userOfApps[0];
         var serverSideRendering = req.query.ssr;
         _.extend(req.config, configs);
@@ -920,7 +920,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             req.session.install = null;
             res.clearCookie('install');
         }
-        
+
         plugins.callMethod("renderDashboard", {req: req, res: res, next: next, data: {member: member, adminApps: countlyGlobalAdminApps, userApps: countlyGlobalApps, countlyGlobal: countlyGlobal, toDashboard: toDashboard}});
 
         res.expose(countlyGlobal, 'countlyGlobal');
@@ -986,8 +986,6 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                             userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
                         }
 
-                        
-
                         countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
 
                             for (let i = 0; i < admin_of.length; i++) {
@@ -1016,8 +1014,8 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                         });
                     }
                     else {
-                        var readableAppIds = Object.keys(member.permission.r).filter(app => app !== 'global');
-                        
+                        var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+
                         for (let i = 0; i < readableAppIds.length; i++) {
                             readableAppIds[i] = countlyDb.ObjectID(readableAppIds[i]);
                         }
@@ -1026,7 +1024,7 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                             userOfApps = readableApps;
 
                             // TODO: handle creatable, updatable and deletable arrays
-                            
+
                             for (let i = 0; i < readableApps.length; i++) {
                                 if (readableApps[i].apn) {
                                     readableApps[i].apn.forEach(a => a._id = '' + a._id);

@@ -5,7 +5,7 @@ var Promise = require("bluebird");
 const JOB = require('../../../api/parts/jobs');
 const utils = require('./parts/utils');
 const _ = require('lodash');
-const { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+const { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
 
 (function() {
@@ -81,7 +81,7 @@ const FEATURE_NAME = 'alerts';
 
     plugins.register("/i/alert/save", function(ob) {
         let params = ob.params;
-        
+
         validateCreate(params, FEATURE_NAME, function() {
             let alertConfig = params.qstring.alert_config;
             try {
@@ -143,7 +143,7 @@ const FEATURE_NAME = 'alerts';
 
     plugins.register("/i/alert/delete", function(ob) {
         let params = ob.params;
-        
+
         validateDelete(params, FEATURE_NAME, function() {
             let alertID = params.qstring.alertID;
             try {
@@ -194,7 +194,7 @@ const FEATURE_NAME = 'alerts';
 
     plugins.register("/o/alert/list", function(ob) {
         const params = ob.params;
-        
+
         validateRead(params, FEATURE_NAME, function() {
             try {
                 let query = {};

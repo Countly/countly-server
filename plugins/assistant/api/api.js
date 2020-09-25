@@ -4,7 +4,7 @@ const plugins = require('../../pluginManager.js');
 const log = common.log('assistant:api');
 const assistant = require("./assistant.js");
 const _ = require('underscore');
-const { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+const { validateCreate, validateRead } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'assistant';
 
 (function() {
@@ -20,7 +20,7 @@ const FEATURE_NAME = 'assistant';
         const app_id = params.qstring.app_id;//get target apps id
 
         log.d('Assistant plugin request: Get All Notifications');
-        
+
         validateRead(params, FEATURE_NAME, function() {
             const member = params.member;
             const api_key = member.api_key;
@@ -49,8 +49,8 @@ const FEATURE_NAME = 'assistant';
         const paths = ob.paths;
 
         log.d('Assistant plugin request: /i/assistant');
-        
-        validateCreate(params, FEATURE_NAME, function(params) {
+
+        validateCreate(params, FEATURE_NAME, function() {
             const api_key = params.member.api_key;
 
             let save_action;

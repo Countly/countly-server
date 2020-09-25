@@ -4,7 +4,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { dbUserHasAccessToCollection, dbLoadEventsData, validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js'),
+    { dbUserHasAccessToCollection, dbLoadEventsData, validateRead } = require('../../../api/utils/rights.js'),
     exported = {};
 
 const FEATURE_NAME = 'dbviewer';
@@ -256,7 +256,7 @@ const FEATURE_NAME = 'dbviewer';
             });
         }
 
-        
+
         validateRead(params, FEATURE_NAME, function() {
             // conditions
             var isContainDb = params.qstring.dbs || params.qstring.db;

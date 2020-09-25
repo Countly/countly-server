@@ -8,7 +8,7 @@ var exported = {},
     crypto = require('crypto'),
     async = require('async'),
     log = common.log('compare:api'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'compare';
 

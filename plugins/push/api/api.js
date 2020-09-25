@@ -10,7 +10,7 @@ var plugin = {},
     log = common.log('push:api'),
     plugins = require('../../pluginManager.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'push';
 const PUSH_CACHE_GROUP = 'P';
@@ -374,7 +374,7 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/pushes', function(ob) {
         var params = ob.params,
             paths = ob.paths;
-            
+
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -427,7 +427,7 @@ const PUSH_CACHE_GROUP = 'P';
 
     plugins.register('/o/pushes', function(ob) {
         var params = ob.params;
-            
+
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);

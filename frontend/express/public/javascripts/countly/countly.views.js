@@ -3159,13 +3159,13 @@ window.ManageUsersView = countlyView.extend({
         featureTemplate += featureName + '</b></div>';
         featureTemplate += '<div class="feature-permissions">';
         var isChecked = typeof self.memberPermission.c[appId].allowed[featureName] !== "undefined" ? self.memberPermission.c[appId].allowed[featureName] : false;
-        featureTemplate += 'Create <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + '  id="c-' + appId + '-' + featureName + '">'
+        featureTemplate += 'Create <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + '  id="c-' + appId + '-' + featureName + '">';
         isChecked = typeof self.memberPermission.r[appId].allowed[featureName] !== "undefined" ? self.memberPermission.r[appId].allowed[featureName] : false;
-        featureTemplate += 'Read   <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="r-' + appId + '-' + featureName + '">'
+        featureTemplate += 'Read   <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="r-' + appId + '-' + featureName + '">';
         isChecked = typeof self.memberPermission.u[appId].allowed[featureName] !== "undefined" ? self.memberPermission.u[appId].allowed[featureName] : false;
-        featureTemplate += 'Update <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="u-' + appId + '-' + featureName + '">'
+        featureTemplate += 'Update <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="u-' + appId + '-' + featureName + '">';
         isChecked = typeof self.memberPermission.d[appId].allowed[featureName] !== "undefined" ? self.memberPermission.d[appId].allowed[featureName] : false;
-        featureTemplate += 'Delete <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="d-' + appId + '-' + featureName + '">'
+        featureTemplate += 'Delete <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="d-' + appId + '-' + featureName + '">';
         featureTemplate += '</div></div>';
         return featureTemplate;
     },
@@ -3179,8 +3179,8 @@ window.ManageUsersView = countlyView.extend({
                 r: {},
                 u: {},
                 d: {}
-            }
-            for (var countlyApp in countlyGlobal["apps"]) {
+            };
+            for (var countlyApp in countlyGlobal.apps) {
                 for (var accessType in this.memberPermission) {
                     this.memberPermission[accessType][countlyApp] = {};
                     this.memberPermission[accessType][countlyApp].all = false;
@@ -3191,7 +3191,7 @@ window.ManageUsersView = countlyView.extend({
                 }
             }
         }
-        console.log(this.memberPermission);
+
     },
     initializeAppPermission: function(appObj) {
         appObj = {
@@ -3204,15 +3204,15 @@ window.ManageUsersView = countlyView.extend({
         var self = this;
         // feature holder object for permission table
         var features = {
-            "plugins": countlyGlobal["plugins"],
+            "plugins": countlyGlobal.plugins,
             "core": ["core", "applications", "users", "configurations"]
         };
 
         // Prepare permission table for new member
-        for (var a in countlyGlobal["apps"]) {
+        for (var a in countlyGlobal.apps) {
             if (isFirstRender) {
                 // add apps as options to selector
-                $('#permission-app-selector').append('<option value="' + countlyGlobal["apps"][a]._id + '">' + countlyGlobal["apps"][a].name + '</option>');
+                $('#permission-app-selector').append('<option value="' + countlyGlobal.apps[a]._id + '">' + countlyGlobal.apps[a].name + '</option>');
                 // create permission sections for apps
                 $('.plugins-features').append('<div style="display:none" class="permission-wrapper plugins-wrapper-for-' + a + '"></div>');
                 $('.core-features').append('<div style="display:none" class="permission-wrapper core-wrapper-for-' + a + '"></div>');
@@ -3223,14 +3223,16 @@ window.ManageUsersView = countlyView.extend({
             $('.core-wrapper-for-' + a).empty();
 
             // render permission checkboxes for features/plugins
+            // eslint-disable-next-line
             features.plugins.forEach(function(feature) {
-                $('.plugins-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
+                $('.plugins-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal.apps[a]._id));
             });
             // render permission checkboxes for features/core
+            // eslint-disable-next-line
             features.core.forEach(function(feature) {
-                $('.core-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
+                $('.core-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal.apps[a]._id));
             });
-        };
+        }
 
         if (isFirstRender) {
             // render clear permissions button
@@ -3260,7 +3262,6 @@ window.ManageUsersView = countlyView.extend({
             }
         }
         store.set('permission_model', this.memberPermission);
-        console.log(this.memberPermission);
     },
     showPermissionSection: function(app) {
         $('.permission-wrapper').hide();
@@ -3461,11 +3462,13 @@ window.ManageUsersView = countlyView.extend({
             Handle create new user button
         */
         $("#add-user-mgmt").on("click", function() {
-            
+
             // render permission table
             self.renderPermissionsTable(true);
             // make visible first option of app selector
-            for (var firstApp in countlyGlobal["apps"]) break;
+            for (var firstApp in countlyGlobal.apps) {
+                break;
+            }
             self.showPermissionSection(firstApp);
 
             CountlyHelpers.closeRows(self.dtable);
@@ -3690,14 +3693,14 @@ window.ManageUsersView = countlyView.extend({
         */
         $('body').on("click", ".permission-checkbox", function() {
             // parse permission data from dom
-            var permissionData = $(this).attr('id').split("-"); 
+            var permissionData = $(this).attr('id').split("-");
 
             if (permissionData[0] !== "r") {
                 // call permission modifier for read too
                 self.updatePermission("r", permissionData[1], permissionData[2], $(this).is(":checked"));
                 // update dom for read permission
                 $('#r-' + permissionData[1] + '-' + permissionData[2]).attr('checked', 'checked');
-            };
+            }
 
             // call permission modifier
             self.updatePermission(permissionData[0], permissionData[1], permissionData[2], $(this).is(":checked"));
@@ -3708,12 +3711,9 @@ window.ManageUsersView = countlyView.extend({
         });
 
         $('body').on("click", "#clear-stored-permissions", function() {
-            var accepted = confirm("You will lost all marked permissions below. Are you sure to continue?")
-            if (accepted) {
-                store.remove('permission_model');
-                self.initializeMemberPermission();
-                self.renderPermissionsTable(false);
-            }
+            store.remove('permission_model');
+            self.initializeMemberPermission();
+            self.renderPermissionsTable(false);
         });
     },
     renderCommon: function() {
@@ -3738,7 +3738,7 @@ window.ManageUsersView = countlyView.extend({
         $(this).off('user-mgmt.render').on('user-mgmt.render', function() {
             app.activeView.render();
         });
-        
+
         /* CRUD CONTEXT LOGIC - START */
         // init permission model object with default values
         self.initializeMemberPermission();

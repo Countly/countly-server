@@ -3,7 +3,7 @@ var exported = {},
     common = require('../../../api/utils/common.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'locale';
 
@@ -46,7 +46,7 @@ const FEATURE_NAME = 'locale';
 
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        
+
         if (params.qstring.method === "langs") {
             validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'langs');
             return true;

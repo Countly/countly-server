@@ -454,7 +454,7 @@ const widgetPropertyPreprocessors = {
             }
         }
 
-        validateRead(params, 'star_rating',  function() {
+        validateRead(params, 'star_rating', function() {
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
                 if (!err) {
@@ -527,7 +527,7 @@ const widgetPropertyPreprocessors = {
      */
     plugins.register('/o/feedback/widgets', function(ob) {
         var params = ob.params;
-        
+
         validateRead(params, 'star_rating', function() {
             var collectionName = 'feedback_widgets';
             var query = {};

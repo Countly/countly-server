@@ -4,7 +4,7 @@ var plugin = {},
     log = common.log('two-factor-auth:api'),
     utils = require("../../../api/utils/utils.js"),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateUpdate } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'two_factor_auth';
 
