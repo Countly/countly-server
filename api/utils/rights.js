@@ -10,6 +10,7 @@ var common = require("./common.js"),
     log = require('./log.js')('core:rights');
 
 var authorize = require('./authorizer.js'); //for token validations
+var featuresNoNeedAppId = ['dashboards'];
 
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
@@ -628,12 +629,14 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
-                if (typeof params.qstring.app_id === "undefined") {
-                    common.returnMessage(params, 401, 'No app_id provided');
-                    reject('No app_id provided');
-                    return false;
+                if (featuresNoNeedAppId.indexOf(feature) === -1) {
+                    if (typeof params.qstring.app_id === "undefined") {
+                        common.returnMessage(params, 401, 'No app_id provided');
+                        reject('No app_id provided');
+                        return false;
+                    }
                 }
-
+                
                 // is member.permission exist?
                 // is member.permission an object?
                 // is params.qstring.app_id property of member.permission object?
