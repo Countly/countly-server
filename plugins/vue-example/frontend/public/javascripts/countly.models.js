@@ -93,23 +93,25 @@
 
         var tooManyRecordsResource = countlyVue.vuex.Resource("tooManyRecords", {
             reads: {
-                paged: function(context, actionParams, requestParams) {
-                    return $.when($.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            method: 'large-col',
-                            table_params: JSON.stringify(requestParams)
-                        }
-                    })).catch(function() {
-                        return {
-                            rows: [],
-                            totalRows: 0,
-                            notFilteredTotalRows: 0
-                        };
-                    });
-                },
+                paged: {
+                    handler: function(context, actionParams, requestParams) {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: 'large-col',
+                                table_params: JSON.stringify(requestParams)
+                            }
+                        })).catch(function() {
+                            return {
+                                rows: [],
+                                totalRows: 0,
+                                notFilteredTotalRows: 0
+                            };
+                        });
+                    }
+                }
             }
         });
 
@@ -159,15 +161,20 @@
                 }
             },
             reads: {
-                all: function() {
-                    return $.when($.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            method: 'vue-records'
-                        }
-                    }));
+                all: {
+                    defaultState: function() {
+                        return [];
+                    },
+                    handler: function() {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: 'vue-records'
+                            }
+                        }));
+                    }
                 },
                 single: {
                     noState: true, // no state and getters will be created for this

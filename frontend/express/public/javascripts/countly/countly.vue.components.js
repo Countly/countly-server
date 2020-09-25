@@ -658,13 +658,16 @@
         return "_" + readName + "_params";
     };
 
-    var _getStructuredAction = function(userDefined) {
+    var _getStructuredAction = function(userDefined, defaultStructure) {
+
+        defaultStructure = defaultStructure || {};
+
         if (typeof userDefined === "function") {
-            return {
+            return _.extend(defaultStructure, {
                 handler: userDefined
-            };
+            });
         }
-        return userDefined;
+        return _.extend(defaultStructure, userDefined);
     };
 
     var VuexResource = function(name, options) {
@@ -678,7 +681,11 @@
         }, {});
 
         reads = Object.keys(reads).reduce(function(acc, val) {
-            acc[val] = _getStructuredAction(reads[val]);
+            acc[val] = _getStructuredAction(reads[val], {
+                defaultState: function() {
+                    return [];
+                }
+            });
             return acc;
         }, {});
 
@@ -756,7 +763,7 @@
                 var reader = reads[fnName];
                 if (!reader.noState) {
                     var stateKey = _getReadStateName(fnName);
-                    state[stateKey] = [];
+                    state[stateKey] = reader.defaultState();
                     state[_getReadTransactionName(fnName)] = 0;
                     if (reader.params) {
                         state[_getReadParamsName(fnName)] = JSON.parse(JSON.stringify(reader.params));
