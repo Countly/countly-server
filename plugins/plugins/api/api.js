@@ -13,7 +13,7 @@ const FEATURE_NAME = 'plugins';
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
         
-        validateUpdate(params, FEATURE_NAME, function() {
+        ob.validateUserForGlobalAdmin(params, function() {
             if (process.env.COUNTLY_CONTAINER === 'api') {
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
                 return false;
