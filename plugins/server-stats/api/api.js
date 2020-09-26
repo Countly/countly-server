@@ -36,7 +36,7 @@ var plugins = require('../../pluginManager.js'),
     * Register to /sdk/end for requests that contain begin_session and events
     * @returns {boolean} Returns boolean, always true
     **/
-    plugins.register("/sdk/end", function(ob) {
+    plugins.register("/sdk/data_ingestion", function(ob) {
         var params = ob.params,
             sessionCount = 0,
             eventCount = 0;
@@ -100,26 +100,17 @@ var plugins = require('../../pluginManager.js'),
 
         var utcMoment = common.moment.utc();
 
-        common.db.collection('server_stats_data_points').update(
-            {
-                '_id': appId + "_" + utcMoment.format("YYYY:M")
+        common.writeBatcher.add('server_stats_data_points', appId + "_" + utcMoment.format("YYYY:M"), {
+            $set: {
+                a: appId + "",
+                m: utcMoment.format("YYYY:M")
             },
-            {
-                $set: {
-                    a: appId + "",
-                    m: utcMoment.format("YYYY:M")
-                },
-                $inc: {
-                    e: eventCount,
-                    s: sessionCount,
-                    [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
-                }
-            },
-            {
-                upsert: true
-            },
-            function() {}
-        );
+            $inc: {
+                e: eventCount,
+                s: sessionCount,
+                [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
+            }
+        });
     }
     udp = updateDataPoints;
 

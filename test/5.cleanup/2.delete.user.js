@@ -119,8 +119,5 @@ function tearDown() {
                     done();
                 });
         });
-        after('Close db connection', async function() {
-            testUtils.client.close();
-        });
     });
 }

@@ -5,10 +5,6 @@ var testUtils = require("../testUtils");
 var agent = request.agent(testUtils.url);
 
 describe('Accessing without setup', function() {
-    before('Create db connection', async function() {
-        testUtils.db = await plugins.dbConnection("countly");
-        testUtils.client = testUtils.db.client;
-    });
     describe('GET /i', function() {
         it('should bad request', function(done) {
             agent

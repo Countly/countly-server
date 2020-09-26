@@ -110,6 +110,12 @@ function getPeriodObject() {
     }
 
     if (Array.isArray(_period)) {
+        if ((_period[0] + "").length === 10) {
+            _period[0] *= 1000;
+        }
+        if ((_period[1] + "").length === 10) {
+            _period[1] *= 1000;
+        }
         var fromDate, toDate;
 
         if (Number.isInteger(_period[0]) && Number.isInteger(_period[1])) {
@@ -208,6 +214,30 @@ function getPeriodObject() {
     }
     else if (/([0-9]+)days/.test(_period)) {
         let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([0-9]+)weeks/.test(_period)) {
+        let nDays = parseInt(/([0-9]+)weeks/.exec(_period)[1]) * 7;
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([0-9]+)months/.test(_period)) {
+        let nDays = parseInt(/([0-9]+)months/.exec(_period)[1]) * 30;
         if (nDays < 1) {
             nDays = 30; //if there is less than 1 day
         }

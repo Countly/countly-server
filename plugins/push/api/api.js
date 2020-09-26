@@ -35,6 +35,7 @@ const PUSH_CACHE_GROUP = 'P';
         for (let k in creds.DB_USER_MAP) {
             common.dbUserMap[k] = creds.DB_USER_MAP[k];
         }
+        common.dbUniqueMap.users.push(creds.DB_MAP['messaging-enabled']);
     }
 
     plugins.register('/worker', function() {
@@ -478,10 +479,16 @@ const PUSH_CACHE_GROUP = 'P';
             }
             var postfix = common.crypto.createHash('md5').update(params.qstring.device_id).digest('base64')[0];
             if (Object.keys(updateUsersZero).length) {
+                /* OLD
                 common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero + '_' + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true}, function() {});
+				*/
+                common.writeBatcher.add('users', params.app_id + '_' + dbDateIds.zero + '_' + postfix, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero});
             }
             if (Object.keys(updateUsersMonth).length) {
+                /* OLD
                 common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + '_' + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function() {});
+				*/
+                common.writeBatcher.add('users', params.app_id + '_' + dbDateIds.month + '_' + postfix, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth});
             }
         }
     });
