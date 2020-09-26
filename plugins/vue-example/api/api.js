@@ -2,6 +2,14 @@ var common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     {validateUserForWrite} = require('../../../api/utils/rights.js');
 
+
+const mockCollection = [...Array(100)].map((elem, idx) => {
+    return {
+        _id: idx,
+        name: "File " + Math.floor(Math.random() * 1000)
+    };
+});
+
 (function() {
 
     plugins.register('/o', function(ob) {
@@ -21,6 +29,40 @@ var common = require('../../../api/utils/common.js'),
                 }
                 common.db.collection("vue_example").find(query).toArray(function(err, records) {
                     common.returnOutput(params, records || []);
+                });
+            });
+            return true;
+        }
+        else if (ob.params.qstring.method === 'large-col') {
+            validateUserForDataReadAPI(params, function() {
+                let tableParams = params.qstring.table_params;
+                tableParams = JSON.parse(tableParams);
+                let currentArray = mockCollection.slice();
+                if (tableParams.searchQuery) {
+                    currentArray = currentArray.filter(function(item) {
+                        return item.name.includes(tableParams.searchQuery);
+                    });
+                }
+                if (tableParams.sort && tableParams.sort.length > 0) {
+                    let sorter = tableParams.sort[0];
+                    currentArray.sort(function(a, b) {
+                        if (a[sorter.field] === b[sorter.field]) {
+                            return 0;
+                        }
+                        var comp = a[sorter.field] < b[sorter.field] ? -1 : 1;
+                        if (sorter.type === "asc") {
+                            return comp;
+                        }
+                        return -comp;
+                    });
+                }
+                let startIndex = (tableParams.page - 1) * tableParams.perPage;
+                let endIndex = startIndex + tableParams.perPage;
+                let currentPage = currentArray.slice(startIndex, endIndex);
+                common.returnOutput(params, {
+                    rows: currentPage,
+                    notFilteredTotalRows: mockCollection.length,
+                    totalRows: currentArray.length
                 });
             });
             return true;

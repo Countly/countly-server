@@ -5,8 +5,8 @@
         @close="closeDrawer" 
         @submit="onDrawerSubmit"
         v-bind="drawers.main">
-        <template slot="sidecars">
-            <cly-content id="mainSidecar" role="sidecar" :always-active="true">
+        <template slot-scope="drawerScope" slot="sidecars">
+            <cly-content id="mainSidecar" role="sidecar">
             </cly-content>
         </template>
         <template slot-scope="drawerScope" slot="default">

@@ -8,6 +8,9 @@ var TableView = countlyVue.views.BaseView.extend({
         },
         tableDiff: function() {
             return this.$store.getters["countlyVueExample/table/diff"];
+        },
+        rTableData: function() {
+            return this.$store.getters["countlyVueExample/tooManyRecords/paged"];
         }
     },
     data: function() {
@@ -28,6 +31,12 @@ var TableView = countlyVue.views.BaseView.extend({
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3, description: "Some description..."},
             ],
+            selectedImageRadio: 2,
+            availableImageRadio: [
+                {label: "Type 1", value: 1},
+                {label: "Type 2", value: 2},
+                {label: "Type 3", value: 3},
+            ],
             selectedCheckFlag: true,
             selectedCheck: [1, 2],
             availableCheck: [
@@ -39,7 +48,7 @@ var TableView = countlyVue.views.BaseView.extend({
             selectWItems: manyItems,
             selectDWModel: null,
             selectDWItems: manyItems,
-            gtableColumns: [
+            tableColumns: [
                 {
                     type: "cly-detail-toggler",
                     sortable: false,
@@ -88,6 +97,18 @@ var TableView = countlyVue.views.BaseView.extend({
                         }
                     ]
                 },
+            ],
+            rTableColumns: [
+                {
+                    label: 'ID',
+                    field: '_id',
+                    type: 'number',
+                },
+                {
+                    type: "text",
+                    field: "name",
+                    label: "Name",
+                }
             ]
         };
     },
@@ -114,6 +135,12 @@ var TableView = countlyVue.views.BaseView.extend({
             var self = this;
             this.$store.dispatch("countlyVueExample/myRecords/fetchSingle", row._id).then(function(doc) {
                 self.$emit("open-drawer", "main", doc);
+            });
+        },
+        updateRemoteParams: function(remoteParams) {
+            var self = this;
+            this.$store.dispatch("countlyVueExample/tooManyRecords/setParamsOfPaged", remoteParams).then(function() {
+                self.$store.dispatch("countlyVueExample/tooManyRecords/fetchPaged");
             });
         },
         setRowData: function(row, fields) {
@@ -180,7 +207,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     computed: {
         randomNumbers: function() {
-            return this.$store.getters["countlyVueExample/timeGraph/points"];
+            return this.$store.getters["countlyVueExample/graphPoints"];
         },
         barData: function() {
             return this.$store.getters["countlyVueExample/barData"];
@@ -194,7 +221,7 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch("countlyVueExample/timeGraph/fetchPoints");
+            this.$store.dispatch("countlyVueExample/fetchGraphPoints");
         }
     }
 });
@@ -224,7 +251,17 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
         };
     },
     methods: {
-        afterEditedObjectChanged: function(newState) {
+        beforeLeavingStep: function() {
+            if (this.currentStepId === "step1") {
+                [this.$v.editedObject.name, this.$v.editedObject.field1, this.$v.editedObject.field2].forEach(function(validator) {
+                    validator.$touch();
+                });
+            }
+            else if (this.currentStepId === "step3") {
+                this.$v.editedObject.selectedProps.$touch();
+            }
+        },
+        afterObjectCopy: function(newState) {
             if (newState._id !== null) {
                 this.title = "Edit Record";
                 this.saveButtonLabel = "Save Changes";
@@ -233,6 +270,7 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
                 this.title = "Create New Record";
                 this.saveButtonLabel = "Create Record";
             }
+            return newState;
         }
     },
     validations: {
@@ -279,14 +317,17 @@ var vuex = [{
 var exampleView = new countlyVue.views.BackboneWrapper({
     component: MainView,
     vuex: vuex,
-    templates: {
-        namespace: 'vue-example',
-        mapping: {
-            'table-template': '/vue-example/templates/table.html',
-            'tg-template': '/vue-example/templates/tg.html',
-            'main-template': '/vue-example/templates/main.html'
+    templates: [
+        "/vue-example/templates/empty.html",
+        {
+            namespace: 'vue-example',
+            mapping: {
+                'table-template': '/vue-example/templates/table.html',
+                'tg-template': '/vue-example/templates/tg.html',
+                'main-template': '/vue-example/templates/main.html'
+            }
         }
-    }
+    ]
 });
 
 app.vueExampleView = exampleView;

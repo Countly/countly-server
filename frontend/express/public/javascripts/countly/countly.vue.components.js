@@ -538,7 +538,6 @@
     var VuexDataTable = function(name, options) {
         var resetFn = function() {
             return {
-                sourceAddress: options.sourceAddress,
                 trackedFields: options.trackedFields || [],
                 patches: {}
             };
@@ -552,9 +551,7 @@
         };
 
         var tableGetters = {
-            sourceRows: function(state, getters, rootState, rootGetters) {
-                return rootGetters[state.sourceAddress];
-            },
+            sourceRows: options.sourceRows,
             diff: function(state, getters) {
                 if (state.trackedFields.length === 0 || Object.keys(state.patches).length === 0) {
                     return [];
@@ -641,8 +638,12 @@
         });
     };
 
-    var _getReadActionName = function(readName) {
+    var _getReadFetchActionName = function(readName) {
         return "fetch" + readName[0].toUpperCase() + readName.substring(1);
+    };
+
+    var _getReadSetParamsActionName = function(readName) {
+        return "setParamsOf" + readName[0].toUpperCase() + readName.substring(1);
     };
 
     var _getReadStateName = function(readName) {
@@ -653,16 +654,23 @@
         return "_" + readName + "_lastTransactionId";
     };
 
-    var _getStructuredAction = function(userDefined) {
-        if (typeof userDefined === "function") {
-            return {
-                handler: userDefined
-            };
-        }
-        return userDefined;
+    var _getReadParamsName = function(readName) {
+        return "_" + readName + "_params";
     };
 
-    var VuexCRUD = function(name, options) {
+    var _getStructuredAction = function(userDefined, defaultStructure) {
+
+        defaultStructure = defaultStructure || {};
+
+        if (typeof userDefined === "function") {
+            return _.extend(defaultStructure, {
+                handler: userDefined
+            });
+        }
+        return _.extend(defaultStructure, userDefined);
+    };
+
+    var VuexResource = function(name, options) {
 
         var writes = options.writes || {},
             reads = options.reads || {};
@@ -673,7 +681,11 @@
         }, {});
 
         reads = Object.keys(reads).reduce(function(acc, val) {
-            acc[val] = _getStructuredAction(reads[val]);
+            acc[val] = _getStructuredAction(reads[val], {
+                defaultState: function() {
+                    return [];
+                }
+            });
             return acc;
         }, {});
 
@@ -687,30 +699,33 @@
                 return writer.handler(context, obj).then(function(response) {
                     if (writer.refresh) {
                         writer.refresh.forEach(function(refreshAction) {
-                            context.dispatch(_getReadActionName(refreshAction));
+                            context.dispatch(_getReadFetchActionName(refreshAction));
                         });
                     }
                     return response;
                 }, function(err) {
                     // eslint-disable-next-line no-console
-                    console.log("VuexCRUD/writeErr@" + name + "/" + fnName, err);
+                    console.log("VuexResource/writeErr@" + name + "/" + fnName, err);
                 });
             };
         });
 
         Object.keys(reads).forEach(function(fnName) {
-            var actionName = _getReadActionName(fnName);
-            var reader = reads[fnName];
+            var fetchActionName = _getReadFetchActionName(fnName),
+                setParamsActionName = _getReadSetParamsActionName(fnName),
+                reader = reads[fnName];
 
-            actions[actionName] = function(context, obj) {
+            actions[fetchActionName] = function(context, obj) {
                 var currentTransactionId = null,
+                    readerParams = null,
                     transactionName = _getReadTransactionName(fnName);
 
                 if (!reader.noState) {
                     context.commit("incrementTransactionId", fnName);
                     currentTransactionId = context.state[transactionName];
+                    readerParams = context.state[_getReadParamsName(fnName)];
                 }
-                return reader.handler(context, obj).then(function(data) {
+                return reader.handler(context, obj, readerParams).then(function(data) {
                     if (!reader.noState) {
                         if (currentTransactionId === context.state[transactionName]) {
                             context.commit("mutateGeneric", {
@@ -723,11 +738,18 @@
                     return data;
                 }, function(err) {
                     // eslint-disable-next-line no-console
-                    console.log("VuexCRUD/readErr@" + name + "/" + fnName, err);
+                    console.log("VuexResource/readErr@" + name + "/" + fnName, err);
                 });
             };
 
             if (!reader.noState) {
+                actions[setParamsActionName] = function(context, fields) {
+                    context.commit("extendReadParams", {
+                        readName: fnName,
+                        fields: fields
+                    });
+                };
+
                 getters[fnName] = function(state) {
                     var stateKey = _getReadStateName(fnName);
                     return state[stateKey];
@@ -741,8 +763,14 @@
                 var reader = reads[fnName];
                 if (!reader.noState) {
                     var stateKey = _getReadStateName(fnName);
-                    state[stateKey] = [];
+                    state[stateKey] = reader.defaultState();
                     state[_getReadTransactionName(fnName)] = 0;
+                    if (reader.params) {
+                        state[_getReadParamsName(fnName)] = JSON.parse(JSON.stringify(reader.params));
+                    }
+                    else {
+                        state[_getReadParamsName(fnName)] = {};
+                    }
                 }
             });
             return state;
@@ -756,9 +784,15 @@
             state[_getReadTransactionName(readName)] += 1;
         };
 
+        var extendReadParams = function(state, obj) {
+            var stateName = _getReadParamsName(obj.readName);
+            state[stateName] = Object.assign({}, state[stateName], obj.fields);
+        };
+
         var mutations = {
             mutateGeneric: mutateGeneric,
-            incrementTransactionId: incrementTransactionId
+            incrementTransactionId: incrementTransactionId,
+            extendReadParams: extendReadParams
         };
 
         return VuexModule(name, {
@@ -781,7 +815,7 @@
         },
         Module: VuexModule,
         DataTable: VuexDataTable,
-        CRUD: VuexCRUD
+        Resource: VuexResource
     };
 
     var BackboneRouteAdapter = function() {};
@@ -800,15 +834,26 @@
             var self = this;
             if (this.templates) {
                 var templatesDeferred = [];
-                for (var name in this.templates.mapping) {
-                    var fileName = this.templates.mapping[name];
-                    var elementId = self.templates.namespace + "-" + name;
-                    templatesDeferred.push(function(fName, elId) {
-                        return T.get(fName, function(src) {
-                            self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
-                        });
-                    }(fileName, elementId));
-                }
+                this.templates.forEach(function(item) {
+                    if (typeof item === "string") {
+                        templatesDeferred.push(function(fName) {
+                            return T.get(fName, function(src) {
+                                self.elementsToBeRendered.push(src);
+                            });
+                        }(item));
+                        return;
+                    }
+                    for (var name in item.mapping) {
+                        var fileName = item.mapping[name];
+                        var elementId = item.namespace + "-" + name;
+                        templatesDeferred.push(function(fName, elId) {
+                            return T.get(fName, function(src) {
+                                self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
+                            });
+                        }(fileName, elementId));
+                    }
+                });
+
                 return $.when.apply(null, templatesDeferred);
             }
             return true;
@@ -955,7 +1000,9 @@
                         currentStepIndex: 0,
                         stepContents: [],
                         sidecarContents: [],
-                        constants: {}
+                        constants: {},
+                        localState: {},
+                        isMounted: false
                     };
                 },
                 computed: {
@@ -964,6 +1011,9 @@
                             return this.activeContent.tId;
                         }
                         return null;
+                    },
+                    currentStepId: function() {
+                        return this.activeContentId;
                     },
                     isCurrentStepValid: function() {
                         if (!this.stepValidations || !Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
@@ -986,12 +1036,16 @@
                     },
                     hasSidecars: function() {
                         return this.sidecarContents.length > 0;
+                    },
+                    info: function() {
+                        return {
+                            currentStepId: this.currentStepId
+                        };
                     }
                 },
                 watch: {
                     initialEditedObject: function() {
-                        this.editedObject = this.copyOfEdited();
-                        this.afterEditedObjectChanged(this.editedObject);
+                        this.editedObject = this.afterObjectCopy(this.copyOfEdited());
                         this.reset();
                     },
                     isOpened: function(newState) {
@@ -1007,14 +1061,15 @@
                     this.sidecarContents = this.$children.filter(function(child) {
                         return child.isContent && child.role === "sidecar";
                     });
-                    this.setStep(this.stepContents[0].tId);
+                    this.isMounted = true;
                 },
                 methods: {
                     tryClosing: function() {
                         this.$emit("close", this.name);
                     },
                     copyOfEdited: function() {
-                        return JSON.parse(JSON.stringify(this.initialEditedObject));
+                        var copied = JSON.parse(JSON.stringify(this.initialEditedObject));
+                        return this.beforeObjectCopy(copied);
                     },
                     setStep: function(newIndex) {
                         if (newIndex >= 0 && newIndex < this.stepContents.length) {
@@ -1025,6 +1080,7 @@
                         this.setStep(this.currentStepIndex - 1);
                     },
                     nextStep: function() {
+                        this.beforeLeavingStep();
                         if (this.isCurrentStepValid) {
                             this.setStep(this.currentStepIndex + 1);
                         }
@@ -1034,26 +1090,36 @@
                         this.setStep(0);
                     },
                     submit: function() {
+                        this.beforeLeavingStep();
                         if (!this.$v.$invalid) {
-                            this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                            this.$emit("submit", this.beforeSubmit(JSON.parse(JSON.stringify(this.editedObject))));
                             this.tryClosing();
                         }
                     },
-                    afterEditedObjectChanged: function() { },
+                    afterObjectCopy: function(newState) {
+                        return newState;
+                    },
+                    beforeObjectCopy: function(newState) {
+                        return newState;
+                    },
+                    beforeSubmit: function(editedObject) {
+                        return editedObject;
+                    },
+                    beforeLeavingStep: function() { },
                 },
                 template: '<div class="cly-vue-drawer"\
-                                v-bind:class="{open: isOpened, \'has-sidecars\': hasSidecars}">\
+                                v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
+                                <div class="title">\
+                                    <span>{{title}}</span>\
+                                    <span class="close" v-on:click="tryClosing">\
+                                        <i class="ion-ios-close-empty"></i>\
+                                    </span>\
+                                </div>\
                                 <div class="sidecars-view" v-show="hasSidecars">\
-                                    <slot name="sidecars" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                    <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
                                 </div>\
                                 <div class="steps-view">\
-                                    <div class="title">\
-                                        <span>{{title}}</span>\
-                                        <div class="close" v-on:click="tryClosing">\
-                                            <i class="ion-ios-close-empty"></i>\
-                                        </div>\
-                                    </div>\
-                                    <div class="steps-header" v-if="isMultiStep">\
+                                    <div class="steps-header" v-show="isMultiStep">\
                                         <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\
                                             <div class="wrapper">\
                                                 <span class="index">{{i + 1}}</span>\
@@ -1063,9 +1129,12 @@
                                         </div>\
                                     </div>\
                                     <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                        <slot name="default" :editedObject="editedObject" :$v="$v" :constants="constants"></slot>\
+                                        <slot name="default" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
                                     </div>\
                                     <div class="buttons multi-step" v-if="isMultiStep">\
+                                        <div class="controls-left-container">\
+                                            <slot name="controls-left" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                        </div>\
                                         <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
                                         <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
                                         <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\
@@ -1093,6 +1162,69 @@
     };
 
     // New components
+
+    var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
+
+    Vue.component("cly-colorpicker", countlyBaseComponent.extend({
+        props: {
+            value: {type: [String, Object], default: "#FFFFFF"},
+            resetValue: { type: [String, Object], default: "#FFFFFF"}
+        },
+        data: function() {
+            return {
+                isOpened: false
+            };
+        },
+        computed: {
+            previewStyle: function() {
+                return {
+                    "background-color": this.value
+                };
+            },
+            localValue: {
+                get: function() {
+                    return this.value.replace("#", "");
+                },
+                set: function(value) {
+                    var colorValue = "#" + value.replace("#", "");
+                    if (colorValue.match(HEX_COLOR_REGEX)) {
+                        this.setColor({hex: colorValue});
+                    }
+                }
+            }
+        },
+        methods: {
+            setColor: function(color) {
+                this.$emit("input", color.hex);
+            },
+            reset: function() {
+                this.setColor({hex: this.resetValue});
+            },
+            open: function() {
+                this.isOpened = true;
+            },
+            close: function() {
+                this.isOpened = false;
+            }
+        },
+        components: {
+            picker: window.VueColor.Sketch
+        },
+        template: '<div class="cly-vue-colorpicker">\
+                    <div @click="open">\
+                        <div class="preview-box" :style="previewStyle"></div>\
+                        <input class="preview-input" type="text" v-model="localValue" />\
+                    </div>\
+                    <div class="picker-body" v-if="isOpened" v-click-outside="close">\
+                        <picker :preset-colors="[]" :value="value" @input="setColor"></picker>\
+                        <div class="button-controls">\
+                            <cly-button label="Reset" @click="reset" skin="light"></cly-button>\
+                            <cly-button label="Cancel" @click="close" skin="light"></cly-button>\
+                            <cly-button label="Confirm" @click="close" skin="green"></cly-button>\
+                        </div>\
+                    </div>\
+                  </div>'
+    }));
 
     Vue.component("cly-datatable-w", countlyBaseComponent.extend(
         // @vue/component
@@ -1453,7 +1585,7 @@
             },
             computed: {
                 isActive: function() {
-                    return this.alwaysActive || this.$parent.activeContentId === this.id;
+                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
                 },
                 tName: function() {
                     return this.name;
@@ -1960,6 +2092,15 @@
                     default: function() {
                         return [];
                     }
+                },
+                skin: { default: "main", type: String}
+            },
+            computed: {
+                skinClass: function() {
+                    if (["main", "light"].indexOf(this.skin) > -1) {
+                        return "radio-" + this.skin + "-skin";
+                    }
+                    return "radio-main-skin";
                 }
             },
             methods: {
@@ -1967,12 +2108,52 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<div class="cly-vue-radio">\
+            template: '<div class="cly-vue-radio" v-bind:class="[skinClass]">\
                             <div class="radio-wrapper">\
                                 <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\
                                     <div class="box"></div>\
                                     <div class="text">{{item.label}}</div>\
                                     <div class="description">{{item.description}}</div>\
+                                </div>\
+                            </div>\
+                        </div>'
+        }
+    ));
+
+    Vue.component("cly-image-radio", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, default: -1, type: [ String, Number ]},
+                items: {
+                    required: true,
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                skin: { default: "main", type: String}
+            },
+            computed: {
+                skinClass: function() {
+                    if (["main", "light"].indexOf(this.skin) > -1) {
+                        return "image-radio-" + this.skin + "-skin";
+                    }
+                    return "image-radio-main-skin";
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                }
+            },
+            template: '<div class="cly-vue-image-radio" v-bind:class="[skinClass]">\
+                            <div class="image-radio-wrapper">\
+                                <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\
+                                    <div class="button-area">\
+                                        <div class="icon"><img :src="item.image" /></div>\
+                                        <div class="text">{{item.label}}</div>\
+                                    </div>\
                                 </div>\
                             </div>\
                         </div>'
@@ -2546,15 +2727,33 @@
         },
         props: {
             rows: {
-                type: Array
+                type: Array,
+                default: function() {
+                    return [];
+                }
             },
             columns: {
                 type: Array
-            }
+            },
+            mode: {
+                type: String,
+                default: null
+            },
+            totalRows: {
+                type: Number,
+                default: 0
+            },
+            notFilteredTotalRows: {
+                type: Number,
+                default: 0
+            },
         },
         computed: {
             notFilteredTotal: function() {
-                if (!this.rows) {
+                if (this.isRemote) {
+                    return this.notFilteredTotalRows;
+                }
+                else if (!this.rows) {
                     return 0;
                 }
                 return this.rows.length;
@@ -2579,6 +2778,17 @@
                     return col;
                 });
                 return extended;
+            },
+            isRemote: function() {
+                return this.internalMode === "remote";
+            },
+            internalTotalRows: function() {
+                if (this.isRemote) {
+                    return this.totalRows;
+                }
+                else {
+                    return this.rows.length;
+                }
             }
         },
         data: function() {
@@ -2591,6 +2801,14 @@
                 optionsPosition: {
                     right: '37px',
                     top: '0'
+                },
+                isLoading: false,
+                internalMode: this.mode,
+                remoteParams: {
+                    page: 1,
+                    perPage: 10,
+                    searchQuery: null,
+                    sort: []
                 }
             };
         },
@@ -2616,11 +2834,6 @@
                     self.optionsOpened = true;
                 });
             },
-            onSearch: function(params) {
-                if (params.searchTerm) {
-                    this.$refs.controls.goToFirstPage();
-                }
-            },
             addTableFns: function(propsObj) {
                 var newProps = {
                     props: propsObj,
@@ -2630,7 +2843,40 @@
                     }
                 };
                 return newProps;
-            }
+            },
+            updateRemoteParams: function(props) {
+                this.remoteParams = Object.assign({}, this.remoteParams, props);
+                this.$emit("remote-params-change", this.remoteParams);
+            },
+            // vgt event handlers
+            onSearch: function(params) {
+                if (params.searchTerm) {
+                    this.$refs.controls.goToFirstPage();
+                }
+            },
+            onPageChange: function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({page: params.currentPage});
+                }
+            },
+            onSortChange: function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({sort: params});
+                }
+            },
+            onPerPageChange: _.debounce(function(params) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({perPage: params.currentPerPage});
+                }
+            }, 500)
+        },
+        watch: {
+            searchQuery: _.debounce(function(newVal) {
+                if (this.isRemote) {
+                    this.updateRemoteParams({searchQuery: newVal});
+                    this.isLoading = true;
+                }
+            }, 500)
         },
         template: '<div>\
                         <row-options\
@@ -2655,7 +2901,15 @@
                                 enabled: true,\
                                 externalQuery: searchQuery\
                             }"\
+                            \
                             @on-search="onSearch"\
+                            @on-page-change="onPageChange"\
+                            @on-sort-change="onSortChange"\
+                            @on-per-page-change="onPerPageChange"\
+                            :mode="internalMode"\
+                            :totalRows="internalTotalRows"\
+                            :isLoading.sync="isLoading"\
+                            \
                             styleClass="cly-vgt-table striped">\
                                 <template slot="pagination-top" slot-scope="props">\
                                     <custom-controls\
@@ -2677,6 +2931,8 @@
                                 </div>\
                                 <div slot="emptystate">\
                                     {{ i18n("common.table.no-data") }}\
+                                </div>\
+                                <div slot="loadingContent">\
                                 </div>\
                         </vue-good-table>\
                     </div>'

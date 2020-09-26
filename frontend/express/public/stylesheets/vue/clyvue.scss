@@ -537,6 +537,32 @@
         }
     }
 
+    .cly-vue-image-radio {
+        .image-radio-wrapper > div {
+            width: 144px;
+            height: 100px;
+            border: 1px solid #d0d0d0;
+            border-radius: 2px;
+            display: inline-block;
+            margin-right: 11px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            cursor: pointer;
+            text-align: center;
+            &:last-child {
+                margin-right: 0px;
+            }
+            &.selected {
+                border-color: #2eb52b;
+            }
+            .button-area {
+                .text {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+
     // radio
     .cly-vue-radio {
         .radio-wrapper {
@@ -589,23 +615,89 @@
                 }
             }
         }
+
+        &.radio-light-skin {
+            .radio-button {
+                background-color: transparent;
+            }
+        }
+    }
+
+    // colorpicker
+    .cly-vue-colorpicker {
+        $cp-preview-height: 25px;
+        $cp-preview-border-size: 1px;
+        $cp-picker-body-size: 251px;
+        $cp-picker-body-padding: 12px;
+
+        height: #{$cp-preview-height};
+        .picker-body {
+            position: relative;
+            box-shadow: 0 3px 7px rgba(0,0,0,.08);
+            border: 1px solid #d0d0d0;
+            border-radius: 2px;
+            width: 275px;
+            height: 415px;
+            background-color: #ffffff;
+            top: #{$cp-preview-height + $cp-preview-border-size * 2};
+            left: #{$cp-preview-height};
+            > .vc-sketch {
+                background-color: transparent;
+                padding: #{$cp-picker-body-padding};
+                box-shadow: none;
+                border: none;
+                border-radius: 0;
+                width: #{$cp-picker-body-size};
+                .vc-sketch-saturation-wrap {
+                    height: #{$cp-picker-body-size - 180px};
+                    bottom: #{$cp-picker-body-padding};
+                    .vc-saturation {
+                        height: #{$cp-picker-body-size};
+                    }
+                }
+                .vc-sketch-presets {    
+                    display: none;
+                }
+            }
+            .button-controls {
+                float: right;
+                padding-right: #{$cp-picker-body-padding};
+            }
+        }
+        .preview-box {
+            width: #{$cp-preview-height};
+            height: #{$cp-preview-height};
+            float: left;
+            border-radius: 2px 0 0 2px;
+            border: #{$cp-preview-border-size} solid #d0d0d0;
+            margin-right: -2px;
+        }
+        .preview-input {
+            float: left;
+            height: 23px !important;
+            outline: none;
+            width: calc(100% - 38px);
+            border: 1px solid #dbdbdb;
+            color: #000;
+            font-size: 12px;
+            padding-left: 7px;
+        }
     }
 
     // check
     .cly-vue-check-list {
         .cly-vue-check {
             display: block;
-            padding: 4px 0;  
+            padding: 4px 0;
         }
     }
-    
+
     .cly-vue-check {
-        
         display: inline-block;
-        
+
         &.block {
             display: block;
-            padding: 4px 0;  
+            padding: 4px 0;
         }
 
         &.check-switch-skin {
@@ -720,13 +812,12 @@
 
     //drawer
     .cly-vue-drawer {
-
         $drawer-width: 600px;
 
         position: fixed;
         width: #{$drawer-width};
         height: 100%;
-        transform: translateX(#{$drawer-width});
+        transform: translateX(#{$drawer-width * 2});
         transition: transform 0.3s;
         right: 0;
         top: 0;
@@ -735,23 +826,29 @@
         z-index: 10001;
 
         .sidecars-view {
-            background-color: #F3F3F3;
+            background-color: #f3f3f3;
             overflow-y: scroll;
         }
-        .steps-view{
+        .steps-view {
             box-sizing: border-box;
-            padding-top: 58px;
-            padding-bottom: 120px;
+            //padding-top: 58px;
+            padding-bottom: 190px;
         }
 
-        .steps-view, .sidecars-view {
+        .steps-view,
+        .sidecars-view {
             height: 100%;
+        }
+
+        &.mounted {
+            transform: translateX(#{$drawer-width});
         }
 
         &.has-sidecars {
             width: #{$drawer-width * 2};
             transform: translateX(#{$drawer-width * 2});
-            .steps-view, .sidecars-view {
+            .steps-view,
+            .sidecars-view {
                 width: 50%;
                 float: left;
             }
@@ -767,22 +864,23 @@
         }
 
         .title {
-            position: absolute;
+            position: relative;
             padding: 20px;
             font-size: 20px;
             color: #636363;
             background-color: #fff;
-            width: 100%;
+            width: inherit;
             top: 0px;
             box-sizing: border-box;
             .close {
-                position: fixed;
-                right: 20px;
-                top: 9px;
                 font-size: 42px;
                 color: #9c9c9c;
                 transition: color 1s;
                 cursor: pointer;
+                float: right;
+                vertical-align: top;
+                bottom: 12px;
+                position: relative;
                 &:hover {
                     color: #333;
                     transition: color 1s;
@@ -794,7 +892,7 @@
             background-color: #fff;
             height: 55px;
             width: 100%;
-            top: 6px;
+            bottom: 5px;
             position: relative;
             border-top: 1px solid #f9f9f9;
             display: flex;
@@ -803,13 +901,13 @@
             z-index: 1000;
             .label {
                 height: 100%;
-                width: 20%;
+                width: 30%;
                 text-align: center;
                 cursor: pointer;
                 background-color: #fff;
 
                 .wrapper {
-                    margin-top: 20px;
+                    margin-top: 17px;
 
                     .index {
                         font-size: 20px;
@@ -856,6 +954,12 @@
             height: 100%;
             float: none;
             overflow-y: auto;
+            .subgroup {
+                padding-bottom: 35px;
+                &.thin {
+                    padding-bottom: 10px;
+                }
+            }
             .section {
                 margin-bottom: 25px;
                 .label {
@@ -863,11 +967,14 @@
                     margin-bottom: 8px;
                     color: #636363;
                 }
-                > .description {
+                .description {
                     font-size: 11px;
                     margin-top: 4px;
                     color: #9c9c9c;
                     line-height: 17px;
+                    &.tall {
+                        margin: 8px 0px;
+                    }
                 }
                 input[type="text"].input {
                     width: 100%;
@@ -876,7 +983,7 @@
                     border: 1px solid #d6d6d6;
                     outline: none;
                     padding: 7px;
-                    font-size: 12px;
+                    font: 12px Ubuntu, Helvetica, sans-serif;
                 }
             }
             &.multi-step {
@@ -887,6 +994,51 @@
                 clear: both;
                 color: rgb(255, 0, 0);
                 font-size: 12px;
+            }
+            .slim {
+                width: 75%;
+                margin: 20px auto 0 auto;
+            }
+
+            .slim.super {
+                width: 45%;
+                margin: 10% auto 0 auto;
+            }
+
+            ul.steplist {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+
+                li {
+                    position: relative;
+                    margin-bottom: 0;
+                    padding-bottom: 35px;
+                    &:after {
+                        content: "";
+                        position: absolute;
+                        left: -27px;
+                        top: 4px;
+                        font-family: "Font Awesome 5 Free";
+                        font-weight: 900;
+                        color: #636363;
+                        font-size: 8px;
+                    }
+                    &:before {
+                        content: "";
+                        position: absolute;
+                        left: -23px;
+                        border-left: 1px dashed #d6d6d6;
+                        height: 100%;
+                        width: 1px;
+                    }
+                    &:first-child:before {
+                        top: 6px;
+                    }
+                    &:last-child:before {
+                        height: 6px;
+                    }
+                }
             }
         }
 
@@ -907,6 +1059,12 @@
                 padding: 20px;
                 position: relative;
             }
+        }
+
+        .controls-left-container {
+            display: inline-block;
+            height: 30px;
+            padding-top: 10px;
         }
 
         .buttons {

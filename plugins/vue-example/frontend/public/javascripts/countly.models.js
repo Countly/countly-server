@@ -23,6 +23,7 @@
 
         var getEmptyState = function() {
             return {
+                graphPoints: [],
                 pieData: {
                     "dp": [
                         {"data": [[0, 20]], "label": "Test1", "color": "#52A3EF"},
@@ -54,6 +55,9 @@
             },
             lineData: function(state) {
                 return state.lineData;
+            },
+            graphPoints: function(state) {
+                return state.graphPoints;
             }
         };
 
@@ -63,11 +67,55 @@
             },
             refresh: function(context) {
                 context.dispatch("countlyVueExample/myRecords/fetchAll", null, {root: true});
-                context.dispatch("countlyVueExample/timeGraph/fetchPoints", null, {root: true});
+                context.dispatch("fetchGraphPoints");
+            },
+            fetchGraphPoints: function(context) {
+                return $.when($.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        method: 'get-random-numbers'
+                    }
+                })).then(function(obj) {
+                    context.commit("setGraphPoints", [obj, obj.map(function(x) {
+                        return x / 2;
+                    })]);
+                });
             }
         };
 
-        var recordsCRUD = countlyVue.vuex.CRUD("myRecords", {
+        var mutations = {
+            setGraphPoints: function(state, val) {
+                state.graphPoints = val;
+            }
+        };
+
+        var tooManyRecordsResource = countlyVue.vuex.Resource("tooManyRecords", {
+            reads: {
+                paged: {
+                    handler: function(context, actionParams, requestParams) {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: 'large-col',
+                                table_params: JSON.stringify(requestParams)
+                            }
+                        })).catch(function() {
+                            return {
+                                rows: [],
+                                totalRows: 0,
+                                notFilteredTotalRows: 0
+                            };
+                        });
+                    }
+                }
+            }
+        });
+
+        var recordsResource = countlyVue.vuex.Resource("myRecords", {
             writes: {
                 save: {
                     refresh: ["all"],
@@ -113,15 +161,20 @@
                 }
             },
             reads: {
-                all: function() {
-                    return $.when($.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            method: 'vue-records'
-                        }
-                    }));
+                all: {
+                    defaultState: function() {
+                        return [];
+                    },
+                    handler: function() {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: 'vue-records'
+                            }
+                        }));
+                    }
                 },
                 single: {
                     noState: true, // no state and getters will be created for this
@@ -142,27 +195,10 @@
             }
         });
 
-        var timeGraphCRUD = countlyVue.vuex.CRUD("timeGraph", {
-            reads: {
-                points: function() {
-                    return $.when($.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            method: 'get-random-numbers'
-                        }
-                    })).then(function(obj) {
-                        return [obj, obj.map(function(x) {
-                            return x / 2;
-                        })];
-                    });
-                }
-            }
-        });
-
         var table = countlyVue.vuex.DataTable("table", {
-            sourceAddress: "countlyVueExample/myRecords/all",
+            sourceRows: function(_state, _getters, _rootState, _rootGetters) {
+                return _rootGetters["countlyVueExample/myRecords/all"] || [];
+            },
             trackedFields: ["status"],
             keyFn: function(row) {
                 return row._id;
@@ -173,7 +209,8 @@
             resetFn: getEmptyState,
             getters: getters,
             actions: actions,
-            submodules: [recordsCRUD, timeGraphCRUD, table]
+            mutations: mutations,
+            submodules: [recordsResource, tooManyRecordsResource, table]
         });
     };
 
