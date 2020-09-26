@@ -3,7 +3,8 @@ var manager = require('../../../plugins/pluginManager.js'),
     fs = require('fs'),
     path = require('path'),
     pluginsListPath = path.resolve(__dirname, '../../../plugins/plugins.json'),
-    async = require('async');
+    async = require('async'),
+    readline = require("readline");
 
 var plugins = manager.getPlugins();
 var myArgs = process.argv.slice(2);
@@ -47,33 +48,54 @@ if (myArgs[0] == "enable" && myArgs[1]) {
             }
         });
 
-        if (ancestorsNeedToBeEnabled.length > 0) {
-            console.log(`> Enabling '${pluginName}' will cause depended plugin(s) (${ancestorsNeedToBeEnabled.join(', ')}) to be enabled as well.`);
-            console.log("> Do you want to continue?");
-        }
+        function runInstall(installList){
+            var data = {},
+                pluginsCopy = plugins.slice();
 
-        var installList = ancestorsNeedToBeEnabled.concat(pluginName),
-            data = {},
-            pluginsCopy = plugins.slice();
-
-        async.eachSeries(installList, function(toBeInstalled, callback) {
-            manager.installPlugin(toBeInstalled, function(pluginErr) {
-                if (!pluginErr) {
-                    data[toBeInstalled] = true;
-                    pluginsCopy.push(toBeInstalled);
-                    callback();
-                }
-                else {
-                    console.log("Could not be enabled:", toBeInstalled);
-                    callback(pluginErr);
+            async.eachSeries(installList, function(toBeInstalled, callback) {
+                manager.installPlugin(toBeInstalled, function(pluginErr) {
+                    if (!pluginErr) {
+                        data[toBeInstalled] = true;
+                        pluginsCopy.push(toBeInstalled);
+                        callback();
+                    }
+                    else {
+                        console.log("Could not be enabled:", toBeInstalled);
+                        callback(pluginErr);
+                    }
+                });
+            }, function(generalErr) {
+                save_changes(data, pluginsCopy);
+                if (generalErr) {
+                    console.log("Install completed with errors:", generalErr);
                 }
             });
-        }, function(generalErr) {
-            save_changes(data, pluginsCopy);
-            if (generalErr) {
-                console.log("Install completed with errors:", generalErr);
-            }
-        });
+        }
+
+        if (ancestorsNeedToBeEnabled.length > 0) {
+            var message = `> Enabling '${pluginName}' will cause depended plugin(s) (${ancestorsNeedToBeEnabled.join(', ')}) to be enabled as well.`;
+            message += "\n> Do you want to continue (y/N)? ";
+
+            var rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+
+            rl.question(message, function(answer) {
+                answer = answer.toLowerCase().trim();
+                if (answer === "y") {
+                    runInstall(ancestorsNeedToBeEnabled.concat([pluginName]));
+                }
+                else {
+                    console.log("Install aborted.");
+                }
+                rl.close();
+            });         
+                
+        }
+        else {
+            runInstall([pluginName]);
+        }
 
     }
     else {
@@ -101,33 +123,53 @@ else if (myArgs[0] == "disable" && myArgs[1]) {
             }
         });
 
-        if (descendantsNeedToBeDisabled.length > 0) {
-            console.log(`> Disabling '${pluginName}' will cause dependent plugin(s) (${descendantsNeedToBeDisabled.join(', ')}) to be disabled as well.`);
-            console.log("> Do you want to continue?");
-        }
+        function runUninstall(uninstallList) {
+            var data = {},
+                pluginsCopy = plugins.slice();
 
-        var uninstallList = descendantsNeedToBeDisabled.concat([pluginName]),
-            data = {},
-            pluginsCopy = plugins.slice();
-
-        async.eachSeries(uninstallList, function(toBeUninstalled, callback) {
-            manager.uninstallPlugin(toBeUninstalled, function(pluginErr) {
-                if (!pluginErr) {
-                    data[toBeUninstalled] = false;
-                    pluginsCopy.splice(pluginsCopy.indexOf(toBeUninstalled), 1);
-                    callback();
-                }
-                else {
-                    console.log("Could not be disabled:", toBeUninstalled);
-                    callback(pluginErr);
+            async.eachSeries(uninstallList, function(toBeUninstalled, callback) {
+                manager.uninstallPlugin(toBeUninstalled, function(pluginErr) {
+                    if (!pluginErr) {
+                        data[toBeUninstalled] = false;
+                        pluginsCopy.splice(pluginsCopy.indexOf(toBeUninstalled), 1);
+                        callback();
+                    }
+                    else {
+                        console.log("Could not be disabled:", toBeUninstalled);
+                        callback(pluginErr);
+                    }
+                });
+            }, function(generalErr) {
+                save_changes(data, pluginsCopy);
+                if (generalErr) {
+                    console.log("Uninstall completed with errors:", generalErr);
                 }
             });
-        }, function(generalErr) {
-            save_changes(data, pluginsCopy);
-            if (generalErr) {
-                console.log("Uninstall completed with errors:", generalErr);
-            }
-        });
+        }
+
+        if (descendantsNeedToBeDisabled.length > 0) {
+            var message = `> Disabling '${pluginName}' will cause dependent plugin(s) (${descendantsNeedToBeDisabled.join(', ')}) to be disabled as well.`;
+            message += "\n> Do you want to continue (y/N)? ";
+
+            var rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+
+            rl.question(message, function(answer) {
+                answer = answer.toLowerCase().trim();
+                if (answer === "y") {
+                    runUninstall(descendantsNeedToBeDisabled.concat([pluginName]));
+                }
+                else {
+                    console.log("Uninstall aborted.");
+                }
+                rl.close();
+            });            
+        }
+        else {
+            runUninstall([pluginName]);
+        }
     }
     else {
         console.log("Plugin already uninstalled");
