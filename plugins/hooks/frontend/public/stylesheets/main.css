@@ -1,3 +1,7 @@
+#hooks-widget-drawer.open {
+    width: 800px;
+}
+
 #hooks-widget-drawer .description {display:inline; float: left; margin-left: 0px; margin-top: -10px;}
 #hooks-widget-drawer .description .container {
     display: block;
@@ -55,7 +59,7 @@
     background-color: #f3e3e3;
     padding: 10px 10px;
 }
-#hooks-widget-drawer .api-endpoint-intro span {
+#hooks-widget-drawer .trigger-intro span {
     margin: 10px 0px;
     display: block;
     font-weight: bold;

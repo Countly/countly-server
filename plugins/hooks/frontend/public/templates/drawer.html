@@ -106,8 +106,7 @@
     <div class="section">
         <div class="label" data-localize='hooks.trigger-api-endpoint-introduction' ></div>
         <div>
-            <div class="api-endpoint-intro">
-
+            <div class="trigger-intro">
             </div>
         </div>
     </div>
@@ -149,7 +148,23 @@
 
 <script id="template-hook-effect-HTTPEffect" type="text/x-handlebars-template">
     <div class="section">
-        <div class="label" data-localize='hooks.' >HTTPEffect</div>
+        <div class="label" data-localize='hooks.http-effect-url' ></div>
+        <div style="display: flex;">
+            <div style="flex-grow:1; margin-right:10px;"> 
+                <input id="http-effect-url" class="input" type="text" placeholder="" />
+            </div>
+            
+            <div class="cly-select http-effect-method-dropdown" style="">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='hooks.select-http-effect-method'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
         </div>
     </div>
 </script>

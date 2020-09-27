@@ -1,8 +1,16 @@
 const plugins = require('../../../../pluginManager.js');
+const common = require('../../../../../api/utils/common.js');
+const utils = require('../../utils.js');
+
 class InternalEventTrigger {
-    constructor(option) {
+    constructor(options) {
         this._rules = [];
-        this.register(option);
+        this.pipeline = () => {};
+        if(options.pipeline) {
+            this.pipeline = options.pipeline;
+        }
+        this.register();
+
     }
     syncRules(rules) {
         if (rules instanceof Array) {
@@ -13,22 +21,38 @@ class InternalEventTrigger {
         }
     }
 
-    async process(hookPath, ob) {
-        const {params} = ob;
-        const  {qstring} = params || {};
-        this._rules.forEach(rule => {
+    async process(eventType, ob) {
+        for(let i = 0; i < this._rules.length; i++){
+            const rule = this._rules[i];
             // match
-            if(rule.trigger.configuration.eventType === hookPath) {
-                // send to pipeline
-                rule.effects.forEach(e => {
-                    this.pipeline({
-                        effect: e,
-                        params: qstring,
-                        rule: rule // optional
-                    });
-                });
+            if(rule.trigger.configuration.eventType === eventType) {
+               switch(eventType) {
+               case "/cohort/enter": 
+                    const {cohort, uids} = ob;
+                    if (rule.trigger.configuration.cohortID === cohort._id) {
+                        common.db.collection('app_users' + cohort.app_id).find({"uid":{"$in": uids}}).toArray(
+                            (uidErr, result) => {
+                                console.log(uidErr, result);
+                                if(uidErr) {
+                                    console.log(uidErr);
+                                    return;
+                                }
+                                try{
+                                    utils.updateRuleTriggerTime(rule._id);
+                                }catch(err){console.log(err,"??#3");}
+                                rule.effects.forEach(e => {
+                                    this.pipeline({
+                                        params: {cohort, users: result},
+                                        rule: rule,
+                                        effect: e,
+                                    });
+                                });
+                            }
+                        )
+                    }
+               }
             }
-        });
+        };
     }
                 
     register(option) {

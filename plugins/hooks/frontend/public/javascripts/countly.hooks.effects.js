@@ -21,7 +21,14 @@
         },
         "HTTPEffect": {
             name: jQuery.i18n.map["hooks.HTTPEffect"],
-            init: function() {},
+            init: function() {
+                var methods = [
+                    {value:"get", name:"GET"},
+                    {value:"post", name:" POST"}, 
+                ]
+                $(".http-effect-method-dropdown").clySelectSetItems(methods);
+                $(".http-effect-method-dropdown").clySelectSetSelection(methods[0].value, methods[0].name);
+            },
         },
         "SDKEventEffect": {
             name: jQuery.i18n.map["hooks.SDKEventEffect"],

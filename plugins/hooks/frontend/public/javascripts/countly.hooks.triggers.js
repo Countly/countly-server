@@ -38,7 +38,7 @@
             init: function() {
                 var self = this;
                 var internalEvents = [
-                    {value: "/crashes/new", name: "/crashes/new"},
+            //        {value: "/crashes/new", name: "/crashes/new"},
                     {value: "/cohort/enter", name: "/cohort/enter"},
                 ];
                 $("#single-hook-trigger-internal-event-dropdown").clySelectSetItems(internalEvents);
