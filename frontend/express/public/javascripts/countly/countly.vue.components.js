@@ -381,6 +381,18 @@
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
     window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
 
+    var objectWithoutProperties = function(obj, excluded) {
+        if (!obj || !excluded || excluded.length === 0) {
+            return obj;
+        }
+        return Object.keys(obj).reduce(function(acc, val) {
+            if (excluded.indexOf(val) === -1) {
+                acc[val] = obj[val];
+            }
+            return acc;
+        }, {});
+    };
+
     // @vue/component
     var autoRefreshMixin = {
         mounted: function() {
@@ -1002,6 +1014,7 @@
                         sidecarContents: [],
                         constants: {},
                         localState: {},
+                        inScope: [],
                         isMounted: false
                     };
                 },
@@ -1037,10 +1050,23 @@
                     hasSidecars: function() {
                         return this.sidecarContents.length > 0;
                     },
-                    info: function() {
-                        return {
-                            currentStepId: this.currentStepId
-                        };
+                    passedScope: function() {
+                        var defaultKeys = ["editedObject", "$v", "constants", "localState"],
+                            self = this;
+
+                        var passed = defaultKeys.reduce(function(acc, val) {
+                            acc[val] = self[val];
+                            return acc;
+                        }, {});
+
+                        if (this.inScopeReadOnly) {
+                            passed.readOnly = this.inScopeReadOnly.reduce(function(acc, val) {
+                                acc[val] = self[val];
+                                return acc;
+                            }, {});
+                        }
+
+                        return passed;
                     }
                 },
                 watch: {
@@ -1116,7 +1142,9 @@
                                     </span>\
                                 </div>\
                                 <div class="sidecars-view" v-show="hasSidecars">\
-                                    <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                    <slot name="sidecars"\
+                                        v-bind="passedScope">\
+                                    </slot>\
                                 </div>\
                                 <div class="steps-view">\
                                     <div class="steps-header" v-show="isMultiStep">\
@@ -1129,11 +1157,15 @@
                                         </div>\
                                     </div>\
                                     <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                        <slot name="default" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                        <slot name="default"\
+                                            v-bind="passedScope">\
+                                        </slot>\
                                     </div>\
                                     <div class="buttons multi-step" v-if="isMultiStep">\
                                         <div class="controls-left-container">\
-                                            <slot name="controls-left" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                            <slot name="controls-left"\
+                                                v-bind="passedScope">\
+                                            </slot>\
                                         </div>\
                                         <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
                                         <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
@@ -2171,7 +2203,12 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<input type="text" class="cly-vue-text-field input" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
+            computed: {
+                defaultListeners: function() {
+                    return objectWithoutProperties(this.$listeners, ["input"]);
+                }
+            },
+            template: '<input type="text" class="cly-vue-text-field input" v-on="defaultListeners" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
         }
     ));
 
@@ -2314,8 +2351,14 @@
                     this.$emit('input', e);
                 }
             },
+            computed: {
+                defaultListeners: function() {
+                    return objectWithoutProperties(this.$listeners, ["input"]);
+                }
+            },
             template: '<textarea class="cly-vue-text-area"\
                             v-bind="$attrs"\
+                            v-on="defaultListeners"\
                             :value="value"\
                             @input="setValue($event.target.value)">\
                         </textarea>'
