@@ -422,7 +422,7 @@ const widgetPropertyPreprocessors = {
         var skip = parseInt(params.qstring.iDisplayStart);
         var limit = parseInt(params.qstring.iDisplayLength);
         var colNames = ['rating', 'comment', 'email', 'ts'];
-        
+
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
         }
