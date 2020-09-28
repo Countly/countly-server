@@ -1014,6 +1014,7 @@
                         sidecarContents: [],
                         constants: {},
                         localState: {},
+                        inScope: [],
                         isMounted: false
                     };
                 },
@@ -1054,8 +1055,14 @@
                             currentStepId: this.currentStepId
                         };
                     },
-                    localComputed: function() {
-                        return {};
+                    passedScope: function() {
+                        var defaultKeys = ["info", "editedObject", "$v", "constants", "localState"],
+                            self = this;
+
+                        return defaultKeys.concat(this.inScope).reduce(function(acc, val) {
+                            acc[val] = self[val];
+                            return acc;
+                        }, {});
                     }
                 },
                 watch: {
@@ -1132,12 +1139,7 @@
                                 </div>\
                                 <div class="sidecars-view" v-show="hasSidecars">\
                                     <slot name="sidecars"\
-                                        :info="info"\
-                                        :editedObject="editedObject"\
-                                        :$v="$v"\
-                                        :constants="constants"\
-                                        :localState="localState"\
-                                        :localComputed="localComputed">\
+                                        v-bind="passedScope">\
                                     </slot>\
                                 </div>\
                                 <div class="steps-view">\
@@ -1152,23 +1154,13 @@
                                     </div>\
                                     <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
                                         <slot name="default"\
-                                            :info="info"\
-                                            :editedObject="editedObject"\
-                                            :$v="$v"\
-                                            :constants="constants"\
-                                            :localState="localState"\
-                                            :localComputed="localComputed">\
+                                            v-bind="passedScope">\
                                         </slot>\
                                     </div>\
                                     <div class="buttons multi-step" v-if="isMultiStep">\
                                         <div class="controls-left-container">\
                                             <slot name="controls-left"\
-                                                :info="info"\
-                                                :editedObject="editedObject"\
-                                                :$v="$v"\
-                                                :constants="constants"\
-                                                :localState="localState"\
-                                                :localComputed="localComputed">\
+                                                v-bind="passedScope">\
                                             </slot>\
                                         </div>\
                                         <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
