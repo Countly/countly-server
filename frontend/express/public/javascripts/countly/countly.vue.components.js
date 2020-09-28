@@ -1050,13 +1050,8 @@
                     hasSidecars: function() {
                         return this.sidecarContents.length > 0;
                     },
-                    info: function() {
-                        return {
-                            currentStepId: this.currentStepId
-                        };
-                    },
                     passedScope: function() {
-                        var defaultKeys = ["info", "editedObject", "$v", "constants", "localState"],
+                        var defaultKeys = ["editedObject", "$v", "constants", "localState"],
                             self = this;
 
                         return defaultKeys.concat(this.inScope).reduce(function(acc, val) {
