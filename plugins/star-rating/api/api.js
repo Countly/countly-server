@@ -422,7 +422,7 @@ const widgetPropertyPreprocessors = {
         var skip = parseInt(params.qstring.iDisplayStart);
         var limit = parseInt(params.qstring.iDisplayLength);
         var colNames = ['rating', 'comment', 'email', 'ts'];
-        query.ts = countlyCommon.getTimestampRangeQuery(params, true);
+        
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
         }
@@ -457,6 +457,7 @@ const widgetPropertyPreprocessors = {
 
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
+            query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
                 if (!err) {
