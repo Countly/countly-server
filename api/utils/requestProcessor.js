@@ -206,6 +206,11 @@ const processRequest = (params) => {
                     common.returnMessage(params, 400, 'Missing parameter "requests"');
                     return false;
                 }
+                if (!Array.isArray(requests)) {
+                    console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
+                    common.returnMessage(params, 400, 'Invalid parameter "requests"');
+                    return false;
+                }
                 if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                     common.returnMessage(params, 200, 'Success');
                 }
