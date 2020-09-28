@@ -381,6 +381,18 @@
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
     window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
 
+    var objectWithoutProperties = function(obj, excluded) {
+        if (!obj || !excluded || excluded.length === 0) {
+            return obj;
+        }
+        return Object.keys(obj).reduce(function(acc, val) {
+            if (excluded.indexOf(val) === -1) {
+                acc[val] = obj[val];
+            }
+            return acc;
+        }, {});
+    };
+
     // @vue/component
     var autoRefreshMixin = {
         mounted: function() {
@@ -1116,7 +1128,13 @@
                                     </span>\
                                 </div>\
                                 <div class="sidecars-view" v-show="hasSidecars">\
-                                    <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                    <slot name="sidecars"\
+                                        :info="info"\
+                                        :editedObject="editedObject"\
+                                        :$v="$v"\
+                                        :constants="constants"\
+                                        :localState="localState">\
+                                    </slot>\
                                 </div>\
                                 <div class="steps-view">\
                                     <div class="steps-header" v-show="isMultiStep">\
@@ -2171,7 +2189,12 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<input type="text" class="cly-vue-text-field input" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
+            computed: {
+                defaultListeners: function() {
+                    return objectWithoutProperties(this.$listeners, ["input"]);
+                }
+            },
+            template: '<input type="text" class="cly-vue-text-field input" v-on="defaultListeners" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
         }
     ));
 
@@ -2314,8 +2337,14 @@
                     this.$emit('input', e);
                 }
             },
+            computed: {
+                defaultListeners: function() {
+                    return objectWithoutProperties(this.$listeners, ["input"]);
+                }
+            },
             template: '<textarea class="cly-vue-text-area"\
                             v-bind="$attrs"\
+                            v-on="defaultListeners"\
                             :value="value"\
                             @input="setValue($event.target.value)">\
                         </textarea>'
