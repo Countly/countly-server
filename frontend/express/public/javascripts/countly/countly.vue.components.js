@@ -1054,10 +1054,19 @@
                         var defaultKeys = ["editedObject", "$v", "constants", "localState"],
                             self = this;
 
-                        return defaultKeys.concat(this.inScope).reduce(function(acc, val) {
+                        var passed = defaultKeys.reduce(function(acc, val) {
                             acc[val] = self[val];
                             return acc;
                         }, {});
+
+                        if (this.inScopeReadOnly) {
+                            passed.readOnly = this.inScopeReadOnly.reduce(function(acc, val) {
+                                acc[val] = self[val];
+                                return acc;
+                            }, {});
+                        }
+
+                        return passed;
                     }
                 },
                 watch: {
