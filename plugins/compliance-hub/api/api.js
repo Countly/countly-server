@@ -6,7 +6,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js'),
     { validateRead } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'compliance_hub';
+const FEATURE_NAME = 'compliance';
 
 (function() {
     //write api call
