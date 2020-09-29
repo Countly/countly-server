@@ -1,10 +1,9 @@
-const ejs = require("ejs"),
-    path = require('path'),
-    fs = require('fs');
+const fs = require('fs');
 const locale = require("../../../api/utils/localization.js");
 const reportUtils = {};
 /**
  * load ReportTemplate file
+ * @param {string} templatePath - template file path
  * @returns {Promise} - template promise object.
  */
 reportUtils.readReportTemplate = (templatePath) => {

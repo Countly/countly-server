@@ -509,7 +509,7 @@ var metricProps = {
                                         const metricPropsString = {};
                                         for (let k in metricProps) {
                                             metricPropsString[k] = metricProps[k].map((item) =>{
-                                                return props["reports.metric-"+item];
+                                                return props["reports.metric-" + item];
                                             });
                                         }
                                         report.properties = props;
