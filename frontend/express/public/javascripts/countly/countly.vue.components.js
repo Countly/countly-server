@@ -1013,7 +1013,7 @@
                         stepContents: [],
                         sidecarContents: [],
                         constants: {},
-                        localState: {},
+                        localState: this.getInitialLocalState(),
                         inScope: [],
                         isMounted: false
                     };
@@ -1113,6 +1113,7 @@
                     },
                     reset: function() {
                         this.$v.$reset();
+                        this.resetLocalState();
                         this.setStep(0);
                     },
                     submit: function() {
@@ -1131,7 +1132,13 @@
                     beforeSubmit: function(editedObject) {
                         return editedObject;
                     },
-                    beforeLeavingStep: function() { },
+                    getInitialLocalState: function() {
+                        return {};
+                    },
+                    resetLocalState: function() {
+                        this.localState = this.getInitialLocalState();
+                    },
+                    beforeLeavingStep: function() { }
                 },
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
