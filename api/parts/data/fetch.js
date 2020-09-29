@@ -1376,11 +1376,10 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                     uniqDeviceIds: { $addToSet: '$uid'}
                                 }
                             },
-                            {$unwind: "$uniqDeviceIds"},
                             {
-                                $group: {
+                                $project: {
                                     _id: "$_id",
-                                    u: { $sum: 1 }
+                                    u: { $size: "$uniqDeviceIds" }
                                 }
                             }
                         ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
@@ -1399,11 +1398,11 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                     }
                                 }
                             }
-                            callback(appUsersDbResult);
+                            callback(appUsersDbResult || {});
                         });
                     }
                     else {
-                        callback(appUsersDbResult);
+                        callback(appUsersDbResult || {});
                     }
                 });
             }
