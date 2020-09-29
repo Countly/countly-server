@@ -594,8 +594,10 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
         curMsTimestamp = tmpMoment.valueOf();
     }
 
-    currDateWithoutTimestamp.tz(appTimezone);
-    tmpMoment.tz(appTimezone);
+    if (appTimezone) {
+        currDateWithoutTimestamp.tz(appTimezone);
+        tmpMoment.tz(appTimezone);
+    }
 
     /**
    * @typedef timeObject
@@ -1730,7 +1732,10 @@ common.versionCompare = function(v1, v2, options) {
 * @returns {number} adjusted timestamp for timezone
 */
 common.adjustTimestampByTimezone = function(ts, tz) {
-    var d = moment().tz(tz);
+    var d = moment();
+    if (tz) {
+        d.tz(tz);
+    }
     return ts + (d.utcOffset() * 60);
 };
 
