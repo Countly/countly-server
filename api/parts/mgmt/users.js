@@ -865,7 +865,7 @@ usersApi.fetchNotes = async function(params) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
         filtedAppIds = appIds.filter((appId) => {
-            if (params.member.global_admin || params.member.user_of.indexOf(appId) > -1 || params.member.admin_of.indexOf(appId) > -1) {
+            if (params.member.global_admin || (params.member.user_of && params.member.user_of.indexOf(appId) > -1) || (params.member.admin_of && params.member.admin_of.indexOf(appId) > -1)) {
                 return true;
             }
             return false;

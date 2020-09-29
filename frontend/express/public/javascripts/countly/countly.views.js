@@ -3205,7 +3205,7 @@ window.ManageUsersView = countlyView.extend({
         // feature holder object for permission table
         var features = {
             "plugins": countlyGlobal.plugins,
-            "core": ["core", "applications", "users", "configurations"]
+            "others": ["events", "core", "applications", "manage-users", "configurations"]
         };
 
         // Prepare permission table for new member
@@ -3229,7 +3229,7 @@ window.ManageUsersView = countlyView.extend({
             });
             // render permission checkboxes for features/core
             // eslint-disable-next-line
-            features.core.forEach(function(feature) {
+            features.others.forEach(function(feature) {
                 $('.core-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal.apps[a]._id));
             });
         }
@@ -3241,7 +3241,7 @@ window.ManageUsersView = countlyView.extend({
         }
     },
     updatePermission: function(type, app, scope, value) {
-        var cores = {"applications": true, "users": true, "configurations": true};
+        var cores = {"core":true, "applications": true, "manage-users": true, "configurations": true};
         if (value) {
             if (typeof this.memberPermission[type][app] === "undefined") {
                 this.memberPermission[type][app] = this.initializeAppPermission(this.memberPermission[type][app]);
@@ -5207,7 +5207,7 @@ window.EventsOverviewView = countlyView.extend({
         this.eventmap = countlyEvent.getEventMap();
 
         var app_admin = false;
-        if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
+        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1)) {
             app_admin = true;
         }
 
@@ -5684,7 +5684,7 @@ window.EventsView = countlyView.extend({
             self = this;
 
         var showManagmentButton = false;
-        (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1);
+        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1))
         {
             showManagmentButton = true;
         }

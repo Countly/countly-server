@@ -703,7 +703,7 @@ window.ChinaView = countlyView.extend({
 
 
 app.ChinaView = new window.ChinaView();
-if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.length) {
     app.route('/analytics/EChartMap', 'EChartMap', function() {
         if (window.echarts) {
             this.renderWhenReady(this.ChinaView);
