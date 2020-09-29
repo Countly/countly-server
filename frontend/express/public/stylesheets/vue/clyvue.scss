@@ -540,7 +540,6 @@
     .cly-vue-generic-radio {
         .generic-radio-wrapper > div {
             width: 144px;
-            height: 100px;
             border: 1px solid #d0d0d0;
             border-radius: 2px;
             display: inline-block;
@@ -549,6 +548,7 @@
             background-color: #fff;
             cursor: pointer;
             text-align: center;
+            padding: 10px 0px;
             &:last-child {
                 margin-right: 0px;
             }
@@ -633,7 +633,7 @@
         height: #{$cp-preview-height};
         .picker-body {
             position: relative;
-            box-shadow: 0 3px 7px rgba(0,0,0,.08);
+            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
             border: 1px solid #d0d0d0;
             border-radius: 2px;
             width: 275px;
@@ -641,6 +641,7 @@
             background-color: #ffffff;
             top: #{$cp-preview-height + $cp-preview-border-size * 2};
             left: #{$cp-preview-height};
+            z-index: 9999;
             > .vc-sketch {
                 background-color: transparent;
                 padding: #{$cp-picker-body-padding};
@@ -655,7 +656,7 @@
                         height: #{$cp-picker-body-size};
                     }
                 }
-                .vc-sketch-presets {    
+                .vc-sketch-presets {
                     display: none;
                 }
             }
