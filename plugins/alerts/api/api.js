@@ -29,7 +29,8 @@ const _ = require('lodash');
 	 */
     function updateJobForAlert(alert) {
         if (alert.enabled) {
-            JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(alert.period);
+            //JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(alert.period);
+            JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule("every 20 seconds");
         }
         else {
             deleteJob(alert._id);

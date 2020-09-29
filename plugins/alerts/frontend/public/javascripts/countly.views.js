@@ -22,7 +22,6 @@ var alertDefine = {
             { value: 'Bounce rate', name: 'Bounce rate (%)' },
             { value: 'Number of page views', name: 'Number of page views' },
             { value: 'Purchases', name: 'Purchases' },
-            { value: 'Number of ratings', name: 'Number of ratings' },
         ],
         condition: [
             { value: 'increased by at least', name: 'increased by at least' },
@@ -47,7 +46,16 @@ var alertDefine = {
             { value: 'increased by at least', name: 'increased by at least' },
             { value: 'decreased by at least', name: 'decreased by at least' },
         ]
-    }
+    },
+    rating: {
+        target: [
+            { value: 'Number of ratings', name: 'Number of ratings' },
+        ],
+        condition: [
+            { value: 'increased by at least', name: 'increased by at least' },
+            { value: 'decreased by at least', name: 'decreased by at least' },
+        ]
+    },
 };
 
 // dynamic to get value for different settings properties.
@@ -363,7 +371,7 @@ window.AlertsView = countlyView.extend({
                         self.loadAppViewData();
                     }
                     else if (selected === 'Number of ratings') {
-                        source = $("#metric2-condition-template").html();
+                        source = $("#rating-condition-template").html();
                         $('.alert-condition-block').html(source);
                         $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
                         self.loadRatingOptions();
@@ -425,6 +433,7 @@ window.AlertsView = countlyView.extend({
                 switch (dataType) {
                 case 'metric':
                 case 'crash':
+                case 'rating':
                     metricClickListner();
                     break;
                 case 'event':
@@ -597,6 +606,7 @@ window.AlertsView = countlyView.extend({
             switch (data.alertDataType) {
             case 'metric':
             case 'crash':
+            case 'rating':
                 var appSelected = [];
                 for (var index in data.selectedApps) {
                     var appId = data.selectedApps[index];
@@ -704,6 +714,7 @@ window.AlertsView = countlyView.extend({
             var alertConfig = this.getWidgetSettings();
             if (!alertConfig.selectedApps) {
                 $("#single-target-dropdown").addClass("disabled");
+                $("#single-target2-dropdown").addClass("disabled");
                 $("#single-target-condition-dropdown").addClass("disabled");
                 $("#alert-compare-value").addClass("disabled");
                 $("#alert-compare-value-input").attr("disabled", "true");
