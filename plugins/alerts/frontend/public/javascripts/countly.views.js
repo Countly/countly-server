@@ -21,7 +21,8 @@ var alertDefine = {
             { value: 'Average session duration', name: 'Average session duration' },
             { value: 'Bounce rate', name: 'Bounce rate (%)' },
             { value: 'Number of page views', name: 'Number of page views' },
-            { value: 'Purchases', name: 'Purchases' }
+            { value: 'Purchases', name: 'Purchases' },
+            { value: 'Number of ratings', name: 'Number of ratings' },
         ],
         condition: [
             { value: 'increased by at least', name: 'increased by at least' },
@@ -129,7 +130,6 @@ window.AlertsView = countlyView.extend({
                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                 });
             }
-
             pluginsData.push({
                 id: alertsList[i]._id,
                 appNameList: appNameList.join(', '),
@@ -295,6 +295,22 @@ window.AlertsView = countlyView.extend({
         $("#alerts-today-sum").text(count.today);
     },
     widgetDrawer: {
+        loadRatingOptions: function(selected) {
+            var ratings = [
+                {value: 1, name: jQuery.i18n.map["star.one-star"]},
+                {value: 2, name: jQuery.i18n.map["star.two-star"]},
+                {value: 3, name: jQuery.i18n.map["star.three-star"]},
+                {value: 4, name: jQuery.i18n.map["star.four-star"]},
+                {value: 5, name: jQuery.i18n.map["star.five-star"]},
+            ];
+            $("#single-target2-dropdown").clySelectSetItems(ratings);
+            if (selected) {
+                $("#single-target2-dropdown").clySelectSetSelection(ratings[selected - 1].value, ratings[selected - 1].name);
+            }
+            else {
+                $("#single-target2-dropdown").clySelectSetSelection("", "Select a rating");
+            }
+        },
         loadAppViewData: function(selectedView) {
             var appID = $("#single-app-dropdown").clySelectGetSelection();
             var self = this;
@@ -345,6 +361,12 @@ window.AlertsView = countlyView.extend({
                         $('.alert-condition-block').html(source);
                         $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
                         self.loadAppViewData();
+                    }
+                    else if (selected === 'Number of ratings') {
+                        source = $("#metric2-condition-template").html();
+                        $('.alert-condition-block').html(source);
+                        $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
+                        self.loadRatingOptions();
                     }
                     else if (selected === 'Bounce rate') {
                         source = $("#metric2-condition-template").html();
@@ -591,6 +613,9 @@ window.AlertsView = countlyView.extend({
 
                 if (data.alertDataSubType2 && (data.alertDataSubType === 'Number of page views' || data.alertDataSubType === 'Bounce rate')) {
                     this.loadAppViewData(data.alertDataSubType2);
+                }
+                if (data.alertDataSubType2 && (data.alertDataSubType === 'Number of ratings')) {
+                    this.loadRatingOptions(data.alertDataSubType2);
                 }
                 break;
             case 'event':

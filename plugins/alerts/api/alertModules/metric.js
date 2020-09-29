@@ -145,6 +145,16 @@ const UserAlert = {
                             alertList.push(result);
                         }
                     }
+                    else if (alertConfigs.alertDataSubType === 'Number of ratings') {
+                        const {lastDateValue, todayValue} = yield getRatingData(alertConfigs.selectedApps[i], alertConfigs.alertDataSubType2);
+                        const result = utils.compareValues(alertConfigs, {todayValue, lastDateValue}, null, i);
+                        log.d(`For app Ratings ${result} ${lastDateValue},${todayValue},${alertConfigs.selectedApps[i]}`, result);
+                        if (result.matched) {
+                            const app = yield utils.getAppInfo(result.currentApp);
+                            result.app = app;
+                            alertList.push(result);
+                        }
+                    }
                     else {
                         const data = yield getUserAndSessionData(db, alertConfigs.selectedApps[i], "7days");
                         const result = getCompareValues(alertConfigs, data, i);
@@ -155,8 +165,6 @@ const UserAlert = {
                             alertList.push(result);
                         }
                     }
-
-
                 }
                 if (alertList.length > 0) {
                     self.alert(alertConfigs, alertList);
@@ -167,7 +175,6 @@ const UserAlert = {
                 log.e(e, e.stack);
             }
         })();
-
     }
 };
 
@@ -310,8 +317,69 @@ function getCompareValues(alertConfigs, data, index) {
     else if (alertConfigs.alertDataSubType === 'Bounce rate') {
         keyName = 'b';
     }
+
     return utils.compareValues(alertConfigs, data, keyName, index);
 }
 
+/**
+ * fetch  rating info
+ * @param {string} app_id - id of app
+ * @param {int} rating - start from 1
+ * @return {object} promise
+ */
+function getRatingData(app_id, rating) {
+    const calCumulativeData = function(result, periodArray) {
+        const cumulativeData = [
+            { count: 0, percent: 0 },
+            { count: 0, percent: 0 },
+            { count: 0, percent: 0 },
+            { count: 0, percent: 0 },
+            { count: 0, percent: 0 },
+        ];
+
+        for (var i = 0; i < periodArray.length; i++) {
+            var dateArray = periodArray[i].split('.');
+            var year = dateArray[0];
+            var month = dateArray[1];
+            var day = dateArray[2];
+            if (result[year] && result[year][month] && result[year][month][day]) {
+                for (var r in result[year][month][day]) {
+                    var rank = (r.split("**"))[2];
+                    if (cumulativeData[rank - 1]) {
+                        cumulativeData[rank - 1].count += result[year][month][day][r].c;
+                    }
+                }
+            }
+        }
+        return cumulativeData;
+    };
+    return new Promise((resolve, reject) => {
+        const starRatingCollection = 'events' + crypto.createHash('sha1').update('[CLY]_star_rating' + app_id).digest('hex');
+        try {
+            fetch.fetchTimeObj(
+                starRatingCollection,
+                {
+                    app_id: "platform_version_rate",
+                    qstring: {
+                        period: "1days",
+                    }
+                },
+                false,
+                function(result) {
+                    const periodObj = countlyCommon.getPeriodObj({qstring: {period: "1days"}, app_id: app_id});
+                    const {currentPeriodArr, previousPeriodArr} = periodObj;
+                    const currentData = calCumulativeData(result, currentPeriodArr);
+                    const previousData = calCumulativeData(result, previousPeriodArr);
+                    log.d(currentData, previousData, "Alert get Rating data");
+                    resolve({todayValue: currentData[rating - 1].count, lastDateValue: previousData[rating - 1].count});
+                }
+            );
+        }
+        catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+}
 
 module.exports = UserAlert;
