@@ -1013,7 +1013,7 @@
                         stepContents: [],
                         sidecarContents: [],
                         constants: {},
-                        localState: {},
+                        localState: this.getInitialLocalState(),
                         inScope: [],
                         isMounted: false
                     };
@@ -1113,6 +1113,7 @@
                     },
                     reset: function() {
                         this.$v.$reset();
+                        this.resetLocalState();
                         this.setStep(0);
                     },
                     submit: function() {
@@ -1131,7 +1132,13 @@
                     beforeSubmit: function(editedObject) {
                         return editedObject;
                     },
-                    beforeLeavingStep: function() { },
+                    getInitialLocalState: function() {
+                        return {};
+                    },
+                    resetLocalState: function() {
+                        this.localState = this.getInitialLocalState();
+                    },
+                    beforeLeavingStep: function() { }
                 },
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
@@ -1198,6 +1205,9 @@
     var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
 
     Vue.component("cly-colorpicker", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
         props: {
             value: {type: [String, Object], default: "#FFFFFF"},
             resetValue: { type: [String, Object], default: "#FFFFFF"}
@@ -1250,9 +1260,9 @@
                     <div class="picker-body" v-if="isOpened" v-click-outside="close">\
                         <picker :preset-colors="[]" :value="value" @input="setColor"></picker>\
                         <div class="button-controls">\
-                            <cly-button label="Reset" @click="reset" skin="light"></cly-button>\
-                            <cly-button label="Cancel" @click="close" skin="light"></cly-button>\
-                            <cly-button label="Confirm" @click="close" skin="green"></cly-button>\
+                            <cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\
+                            <cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\
+                            <cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\
                         </div>\
                     </div>\
                   </div>'
@@ -2152,7 +2162,7 @@
         }
     ));
 
-    Vue.component("cly-image-radio", countlyBaseComponent.extend(
+    Vue.component("cly-generic-radio", countlyBaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -2164,14 +2174,14 @@
                         return [];
                     }
                 },
-                skin: { default: "main", type: String}
+                skin: { default: "main", type: String},
             },
             computed: {
                 skinClass: function() {
                     if (["main", "light"].indexOf(this.skin) > -1) {
-                        return "image-radio-" + this.skin + "-skin";
+                        return "generic-radio-" + this.skin + "-skin";
                     }
-                    return "image-radio-main-skin";
+                    return "generic-radio-main-skin";
                 }
             },
             methods: {
@@ -2179,11 +2189,11 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<div class="cly-vue-image-radio" v-bind:class="[skinClass]">\
-                            <div class="image-radio-wrapper">\
+            template: '<div class="cly-vue-generic-radio" v-bind:class="[skinClass]">\
+                            <div class="generic-radio-wrapper">\
                                 <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\
                                     <div class="button-area">\
-                                        <div class="icon"><img :src="item.image" /></div>\
+                                        <div class="component"><component :is="item.cmp" /></div>\
                                         <div class="text">{{item.label}}</div>\
                                     </div>\
                                 </div>\
@@ -3017,6 +3027,9 @@
     }));
 
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
         props: {
             diff: {
                 type: Array
@@ -3025,6 +3038,9 @@
         computed: {
             hasDiff: function() {
                 return this.diff.length > 0;
+            },
+            madeChanges: function() {
+                return this.i18n("common.diff-helper.changes", this.diff.length);
             }
         },
         methods: {
@@ -3037,12 +3053,12 @@
         },
         template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\
                         <div class="message">\
-                            <span class="text-dark">You made {{diff.length}} changes.</span>\
-                            <span class="text-light">Do you want to keep them?</span>\
+                            <span class="text-dark">{{madeChanges}}</span>\
+                            <span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\
                         </div>\
                         <div class="buttons">\
-                            <cly-button label="Discard Changes" skin="light" class="discard-btn" @click="discard"></cly-button>\
-                            <cly-button label="Save Changes" skin="green" class="save-btn" @click="save"></cly-button>\
+                            <cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\
+                            <cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\
                         </div>\
                     </div>'
     }));
