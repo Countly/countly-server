@@ -31,9 +31,9 @@ var TableView = countlyVue.views.BaseView.extend({
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3, description: "Some description..."},
             ],
-            selectedImageRadio: 2,
-            availableImageRadio: [
-                {label: "Type 1", value: 1},
+            selectedGenericRadio: 2,
+            availableGenericRadio: [
+                {label: "Type 1", value: 1, cmp: {'template': '<div>Template</div>'}},
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3},
             ],

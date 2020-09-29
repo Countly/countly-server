@@ -2152,7 +2152,7 @@
         }
     ));
 
-    Vue.component("cly-image-radio", countlyBaseComponent.extend(
+    Vue.component("cly-generic-radio", countlyBaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -2164,14 +2164,14 @@
                         return [];
                     }
                 },
-                skin: { default: "main", type: String}
+                skin: { default: "main", type: String},
             },
             computed: {
                 skinClass: function() {
                     if (["main", "light"].indexOf(this.skin) > -1) {
-                        return "image-radio-" + this.skin + "-skin";
+                        return "generic-radio-" + this.skin + "-skin";
                     }
-                    return "image-radio-main-skin";
+                    return "generic-radio-main-skin";
                 }
             },
             methods: {
@@ -2179,11 +2179,11 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<div class="cly-vue-image-radio" v-bind:class="[skinClass]">\
-                            <div class="image-radio-wrapper">\
+            template: '<div class="cly-vue-generic-radio" v-bind:class="[skinClass]">\
+                            <div class="generic-radio-wrapper">\
                                 <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\
                                     <div class="button-area">\
-                                        <div class="icon"><img :src="item.image" /></div>\
+                                        <div class="component"><component :is="item.cmp" /></div>\
                                         <div class="text">{{item.label}}</div>\
                                     </div>\
                                 </div>\
