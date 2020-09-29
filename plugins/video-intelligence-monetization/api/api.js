@@ -64,7 +64,7 @@ const FEATURE_NAME = 'video';
     plugins.register('/o', function(ob) {
         if (ob.params.qstring.method === 'monetization') {
             var params = ob.params;
-            
+
             var expectedPeriodNames = ["month", "day", "yesterday", "hour"];
             if (typeof params.qstring.period !== "string") {
                 common.returnMessage(params, 400, 'Period must be defined.');

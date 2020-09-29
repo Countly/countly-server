@@ -3241,7 +3241,7 @@ window.ManageUsersView = countlyView.extend({
         }
     },
     updatePermission: function(type, app, scope, value) {
-        var cores = {"core":true, "applications": true, "manage-users": true, "configurations": true};
+        var cores = { "core":true, "applications": true, "manage-users": true, "configurations": true };
         if (value) {
             if (typeof this.memberPermission[type][app] === "undefined") {
                 this.memberPermission[type][app] = this.initializeAppPermission(this.memberPermission[type][app]);
@@ -5684,8 +5684,7 @@ window.EventsView = countlyView.extend({
             self = this;
 
         var showManagmentButton = false;
-        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1))
-        {
+        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1)) {
             showManagmentButton = true;
         }
         var eventCount = countlyEvent.getEvents().length;
