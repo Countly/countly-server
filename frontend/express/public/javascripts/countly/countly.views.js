@@ -3241,7 +3241,7 @@ window.ManageUsersView = countlyView.extend({
         }
     },
     updatePermission: function(type, app, scope, value) {
-        var cores = { "core":true, "applications": true, "manage-users": true, "configurations": true };
+        var cores = { "core": true, "applications": true, "manage-users": true, "configurations": true };
         if (value) {
             if (typeof this.memberPermission[type][app] === "undefined") {
                 this.memberPermission[type][app] = this.initializeAppPermission(this.memberPermission[type][app]);
