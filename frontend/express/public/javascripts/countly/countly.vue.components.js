@@ -2577,12 +2577,8 @@
                 _mixins.i18n
             ],
             props: {
-                link: {type: String}
-            },
-            data: function() {
-                return {
-                    title: this.i18n("common.back")
-                };
+                title: {type: String, required: false},
+                link: {type: String, required: false}
             },
             methods: {
                 back: function() {
@@ -2594,8 +2590,16 @@
                     }
                 }
             },
+            computed: {
+                innerTitle: function() {
+                    if (this.title) {
+                        return this.title;
+                    }
+                    return this.i18n("common.back");
+                }
+            },
             template: '<a @click="back" class="cly-vue-back-link"> \
-                            <span>{{title}}</span>\
+                            <span>{{innerTitle}}</span>\
                         </a>'
         }
     ));
