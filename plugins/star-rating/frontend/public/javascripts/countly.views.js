@@ -2295,6 +2295,11 @@ app.route("/analytics/star-rating/:tab", 'star', function(tab) {
     this.renderWhenReady(this.starView);
 });
 
+
+app.addPageScript("/manage/reports", function() {
+    countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+})
+
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
