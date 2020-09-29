@@ -89,7 +89,7 @@ taskmanager.longtask = function(options) {
             }
             if (!options.app_id) {
                 if (options.params) {
-                    options.app_id = (options.params.app_id || options.params.app._id || options.params.qstring.app_id) + "";
+                    options.app_id = (options.params.app_id || (options.params.app && options.params.app._id) || options.params.qstring.app_id) + "";
                 }
             }
             if (options.params && options.params.qstring && options.params.qstring.task_id) {
