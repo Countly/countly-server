@@ -2383,7 +2383,7 @@
             ],
             props: {
                 value: {
-                    type: Object,
+                    type: [Object, String, Number, Boolean],
                     default: function() {
                         return { name: "", value: null };
                     }
@@ -2399,6 +2399,7 @@
                 disabled: { type: Boolean, default: false },
                 aligned: { type: String, default: "left" },
                 skin: { type: String, default: 'default' },
+                listDelayWarning: {type: String, default: null}
             },
             mounted: function() {
                 $(this.$refs.scrollable).slimScroll({
@@ -2415,7 +2416,9 @@
                     searchQuery: "", // debounced search query value
                     navigatedIndex: null,
                     opened: false,
-                    waitingItems: false
+                    waitingItems: false,
+                    hasFocus: false,
+                    scroller: null
                 };
             },
             computed: {
@@ -2480,10 +2483,12 @@
                     }
                 },
                 groupIndex: function() {
-                    var index = [];
-                    var currentGroup = -1;
+                    var index = [],
+                        currentGroup = -1,
+                        self = this;
+
                     this.items.forEach(function(item, idx) {
-                        if (!Object.prototype.hasOwnProperty.call(item, "value")) {
+                        if (self.isItemGroup(item)) {
                             currentGroup = idx;
                             index.push(-1);
                         }
@@ -2492,11 +2497,14 @@
                         }
                     });
                     return index;
+                },
+                isKeyboardNavAvailable: function() {
+                    return this.opened && this.hasFocus;
                 }
             },
             methods: {
                 setItem: function(item) {
-                    if (item.value) {
+                    if (!this.isItemGroup(item)) {
                         this.$emit("input", item);
                         this.opened = false;
                     }
@@ -2514,13 +2522,119 @@
                     if (!this.disabled) {
                         this.opened = !this.opened;
                     }
+                },
+                findItemByValue: function(value) {
+                    var found = this.items.filter(function(item) {
+                        return item.value === value;
+                    });
+                    if (found.length > 0) {
+                        return found[0];
+                    }
+                    return null;
+                },
+                selectNavigatedElement: function() {
+                    if (this.navigatedIndex !== null && this.navigatedIndex < this.visibleItems.length) {
+                        this.setItem(this.visibleItems[this.navigatedIndex]);
+                    }
+                },
+                setNavigatedIndex: function(navigatedIndex) {
+                    this.navigatedIndex = navigatedIndex;
+                },
+                scrollToNavigatedIndex: function() {
+                    var self = this,
+                        $scrollable = $(self.$refs.scrollable);
+
+                    if (self.navigatedIndex !== null && $scrollable) {
+                        var y = ($scrollable.scrollTop() + $(self.$refs["tmpItemRef_" + self.navigatedIndex]).position().top) + "px";
+                        $scrollable.slimScroll({scrollTo: y});
+                    }
+                },
+                isItemGroup: function(element) {
+                    if (!Object.prototype.hasOwnProperty.call(element, "value")) {
+                        return true;
+                    }
+                    if (element.group) {
+                        return true;
+                    }
+                    return false;
+                },
+                getNextNonGroupIndex: function(startFrom, direction) {
+                    for (var offset = 0; offset < this.visibleItems.length; offset++) {
+                        var current = (direction * offset + startFrom);
+                        if (current < 0) {
+                            current = this.visibleItems.length + current;
+                        }
+                        current = current % this.visibleItems.length;
+                        if (!this.isItemGroup(this.visibleItems[current])) {
+                            return current;
+                        }
+                    }
+                },
+                upKeyEvent: function() {
+                    if (!this.isKeyboardNavAvailable) {
+                        return;
+                    }
+
+                    if (this.navigatedIndex === null) {
+                        this.navigatedIndex = this.visibleItems.length - 1;
+                    }
+                    else {
+                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex - 1, -1);
+                    }
+
+                    this.scrollToNavigatedIndex();
+                },
+                downKeyEvent: function() {
+                    if (!this.isKeyboardNavAvailable) {
+                        return;
+                    }
+
+                    if (this.navigatedIndex === null) {
+                        this.navigatedIndex = 0;
+                    }
+                    else {
+                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex + 1, 1);
+                    }
+
+                    this.scrollToNavigatedIndex();
+                },
+                escKeyEvent: function() {
+                    if (this.navigatedIndex === null && this.opened) {
+                        this.close();
+                        return;
+                    }
+                    else if (this.navigatedIndex !== null) {
+                        this.navigatedIndex = null;
+                    }
+                },
+                enterKeyEvent: function() {
+                    if (this.navigatedIndex === null) {
+                        return;
+                    }
+
+                    this.selectNavigatedElement();
                 }
             },
             watch: {
+                value: {
+                    immediate: true,
+                    handler: function(passedValue) {
+                        if (typeof passedValue !== 'object') {
+                            var item = this.findItemByValue(passedValue);
+                            if (item) {
+                                this.setItem(item);
+                            }
+                            else {
+                                this.setItem({name: passedValue, value: passedValue});
+                            }
+                        }
+                    }
+                },
                 opened: function(newValue) {
                     if (!newValue) {
                         this.tempSearchQuery = "";
                         this.searchQuery = "";
+                        this.navigatedIndex = null;
                     }
                 },
                 tempSearchQuery: _.debounce(function(newVal) {
@@ -2534,9 +2648,18 @@
                     handler: function() {
                         this.waitingItems = false;
                     }
+                },
+                visibleItems: function() {
+                    this.navigatedIndex = null; // reset navigation on visible items change
                 }
             },
-            template: '<div class="cly-vue-select" v-bind:class="containerClasses" v-click-outside="close">\
+            template: '<div class="cly-vue-select"\
+                            v-bind:class="containerClasses"\
+                            v-click-outside="close"\
+                            @keydown.up.prevent="upKeyEvent"\
+                            @keydown.down.prevent="downKeyEvent"\
+                            @keydown.esc="escKeyEvent"\
+                            @keydown.enter="enterKeyEvent">\
                             <div class="select-inner" @click="toggle">\
                                 <div class="text-container">\
                                     <div v-if="selectedItem" class="text" style="width:80%">\
@@ -2550,17 +2673,25 @@
                             </div>\
                             <div class="search" v-if="searchable" v-show="opened">\
                                 <div class="inner">\
-                                <input type="search" v-model="tempSearchQuery"/>\<i class="fa fa-search"></i>\
+                                <input type="search"\
+                                    @focus="hasFocus = true"\
+                                    v-model="tempSearchQuery"/>\
+                                <i class="fa fa-search"></i>\
                                 </div>\
                             </div>\
                             <div class="items-list square" style="width:100%;" v-show="opened">\
                                 <div ref="scrollable" class="scrollable">\
-                                    <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
-                                    <div v-for="(item, i) in visibleItems" :key="i" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
-                                        <div v-if="!item.value">\
+                                    <div class="warning" v-if="dynamicItems && listDelayWarning">{{ listDelayWarning }}</div>\
+                                    <div v-for="(item, i) in visibleItems" :key="i"\
+                                        @mouseover="setNavigatedIndex(i)"\
+                                        @mouseleave="setNavigatedIndex(null)"\
+                                        @click="setItem(item)"\
+                                        :ref="\'tmpItemRef_\' + i"\
+                                        :class="{item: !isItemGroup(item), group : isItemGroup(item), navigated: i === navigatedIndex}">\
+                                        <div v-if="isItemGroup(item)">\
                                             <span v-text="item.name"></span>\
                                         </div>\
-                                        <div v-if="item.value" v-bind:data-value="item.value">\
+                                        <div v-else v-bind:data-value="item.value">\
                                             <span v-text="item.name"></span>\
                                         </div>\
                                     </div>\
@@ -2873,7 +3004,8 @@
                     return this.totalRows;
                 }
                 else {
-                    return this.rows.length;
+                    // vgt-table should determine itself.
+                    return;
                 }
             }
         },
