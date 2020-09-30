@@ -2221,6 +2221,35 @@
             }
         }
     }
+
+    .cly-vue-back-link {
+        cursor: pointer;
+        color: #616161;
+        font-size: 12px;
+        display: inline-block;
+        text-transform: uppercase;
+        margin-bottom: 25px;
+
+        &:visited {
+            cursor: pointer;
+            color: #616161;
+            font-size: 12px;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        &:before {
+            content: "←";
+            margin-right: 5px;
+            color:#616161;
+        }
+
+        &:hover {
+            span {
+                text-decoration: underline;
+            }
+        }
+    }
 }
 .cly-vue-tooltip {
     display: block !important;

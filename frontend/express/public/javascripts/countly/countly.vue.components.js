@@ -1,4 +1,4 @@
-/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _ */
+/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app */
 
 (function(CountlyVueComponents, $) {
 
@@ -2701,6 +2701,39 @@
         }
     ));
 
+    Vue.component("cly-back-link", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                title: {type: String, required: false},
+                link: {type: String, required: false}
+            },
+            methods: {
+                back: function() {
+                    if (this.link) {
+                        app.back(this.link);
+                    }
+                    else {
+                        app.back();
+                    }
+                }
+            },
+            computed: {
+                innerTitle: function() {
+                    if (this.title) {
+                        return this.title;
+                    }
+                    return this.i18n("common.back");
+                }
+            },
+            template: '<a @click="back" class="cly-vue-back-link"> \
+                            <span>{{innerTitle}}</span>\
+                        </a>'
+        }
+    ));
 
     var clyDataTableControls = countlyBaseComponent.extend({
         mixins: [
