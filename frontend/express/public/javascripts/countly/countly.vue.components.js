@@ -2486,7 +2486,7 @@
                     var index = [];
                     var currentGroup = -1;
                     this.items.forEach(function(item, idx) {
-                        if (!Object.prototype.hasOwnProperty.call(item, "value")) {
+                        if (this.isItemGroup(item)) {
                             currentGroup = idx;
                             index.push(-1);
                         }
@@ -2502,7 +2502,7 @@
             },
             methods: {
                 setItem: function(item) {
-                    if (item.value) {
+                    if (!this.isItemGroup(item)) {
                         this.$emit("input", item);
                         this.opened = false;
                     }
@@ -2547,6 +2547,36 @@
                         $scrollable.slimScroll({scrollTo: y});
                     }
                 },
+                isItemGroup: function(element) {
+                    if (!Object.prototype.hasOwnProperty.call(element, "value")) {
+                        return true;
+                    }
+                    if (element.group) {
+                        return true;
+                    }
+                    return false;
+                },
+                getNextNonGroupIndex: function(startFrom, direction) {
+                    if (direction === 1) {
+                        for (var offset = 0; offset < this.visibleItems.length; offset++) {
+                            var current = (offset + startFrom) % this.visibleItems.length;
+                            if (!this.isItemGroup(this.visibleItems[current])) {
+                                return current;
+                            }
+                        }
+                    }
+                    else {
+                        for (var offset = 0; offset < this.visibleItems.length; offset++) {
+                            var current = startFrom - offset;
+                            if (current < 0) {
+                                current = this.visibleItems.length + current;
+                            }
+                            if (!this.isItemGroup(this.visibleItems[current])) {
+                                return current;
+                            }
+                        }
+                    }
+                },
                 upKeyEvent: function() {
                     if (!this.isKeyboardNavAvailable) {
                         return;
@@ -2556,11 +2586,7 @@
                         this.navigatedIndex = this.visibleItems.length - 1;
                     }
                     else {
-                        this.navigatedIndex--;
-
-                        if (this.navigatedIndex < 0) {
-                            this.navigatedIndex = this.visibleItems.length - 1;
-                        }
+                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex - 1, -1);
                     }
 
                     this.scrollToNavigatedIndex();
@@ -2574,7 +2600,7 @@
                         this.navigatedIndex = 0;
                     }
                     else {
-                        this.navigatedIndex = (this.navigatedIndex + 1) % this.visibleItems.length;
+                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex + 1, 1);
                     }
 
                     this.scrollToNavigatedIndex();
@@ -2669,11 +2695,11 @@
                                         @mouseleave="setNavigatedIndex(null)"\
                                         @click="setItem(item)"\
                                         :ref="\'tmpItemRef_\' + i"\
-                                        :class="{item: item.value, group : !item.value, navigated: i === navigatedIndex}">\
-                                        <div v-if="!item.value">\
+                                        :class="{item: !isItemGroup(item), group : isItemGroup(item), navigated: i === navigatedIndex}">\
+                                        <div v-if="isItemGroup(item)">\
                                             <span v-text="item.name"></span>\
                                         </div>\
-                                        <div v-if="item.value" v-bind:data-value="item.value">\
+                                        <div v-else v-bind:data-value="item.value">\
                                             <span v-text="item.name"></span>\
                                         </div>\
                                     </div>\

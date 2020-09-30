@@ -16,7 +16,7 @@ var TableView = countlyVue.views.BaseView.extend({
     data: function() {
         var manyItems = [];
 
-        for (var i = 1;i <= 50;i++) {
+        for (var i = 0;i <= 50;i++) {
             if (i > 0 && i % 10 === 0) {
                 manyItems.push({name: (i - i % 10) + "s"});
             }
