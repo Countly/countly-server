@@ -2399,6 +2399,7 @@
                 disabled: { type: Boolean, default: false },
                 aligned: { type: String, default: "left" },
                 skin: { type: String, default: 'default' },
+                listDelayWarning: {type: String, default: null}
             },
             mounted: function() {
                 $(this.$refs.scrollable).slimScroll({
@@ -2555,7 +2556,7 @@
                             </div>\
                             <div class="items-list square" style="width:100%;" v-show="opened">\
                                 <div ref="scrollable" class="scrollable">\
-                                    <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
+                                    <div class="warning" v-if="dynamicItems && listDelayWarning">{{ listDelayWarning }}</div>\
                                     <div v-for="(item, i) in visibleItems" :key="i" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
                                         <div v-if="!item.value">\
                                             <span v-text="item.name"></span>\
