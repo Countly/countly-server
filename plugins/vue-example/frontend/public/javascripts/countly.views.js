@@ -44,7 +44,7 @@ var TableView = countlyVue.views.BaseView.extend({
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3},
             ],
-            selectWModel: null,
+            selectWModel: 1, // it would automatically find the record {"name": "Type 1", "value": 1}
             selectWItems: manyItems,
             selectDWModel: null,
             selectDWItems: manyItems,

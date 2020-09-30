@@ -2383,7 +2383,7 @@
             ],
             props: {
                 value: {
-                    type: Object,
+                    type: [Object, String, Number, Boolean],
                     default: function() {
                         return { name: "", value: null };
                     }
@@ -2515,9 +2515,32 @@
                     if (!this.disabled) {
                         this.opened = !this.opened;
                     }
+                },
+                findItemByValue: function(value) {
+                    var found = this.items.filter(function(item) {
+                        return item.value === value;
+                    });
+                    if (found.length > 0) {
+                        return found[0];
+                    }
+                    return null;
                 }
             },
             watch: {
+                value: {
+                    immediate: true,
+                    handler: function(passedValue) {
+                        if (typeof passedValue !== 'object') {
+                            var item = this.findItemByValue(passedValue);
+                            if (item) {
+                                this.setItem(item);
+                            }
+                            else {
+                                this.setItem({name: passedValue, value: passedValue});
+                            }
+                        }
+                    }
+                },
                 opened: function(newValue) {
                     if (!newValue) {
                         this.tempSearchQuery = "";
