@@ -339,11 +339,24 @@ namespace apns {
 		} else {
 			obj->stats.state &= ~(ST_ERROR_NONRECOVERABLE | ST_ERROR_RECOVERABLE);
 			obj->stats.state |= ST_RESOLVED;
+
 			char addr[17] = {'\0'};
-			uv_ip4_name((struct sockaddr_in*) response->ai_addr, addr, 16);
-			LOG_INFO("dns resolved: " << addr << ", has next? " << !!response->ai_next);
+			while (response) {
+				uv_ip4_name((struct sockaddr_in*) response->ai_addr, addr, 16);
+				LOG_INFO("dns resolved: " << addr << ", has next? " << !!response->ai_next);
+
+				std::string key(addr);
+				auto iterator = obj->addresses.find(key);
+				if (iterator != obj->addresses.end()) {
+					break;
+				}
+
+				obj->addresses[key] = response;
+				response = response->ai_next;
+			}
+			LOG_INFO("dns resolved: " << obj->addresses.size() << " hosts");
+
 			resolver->Resolve(Nan::New(addr).ToLocalChecked());
-			persistentHandle->conn->address = response;
 
 			persistent->Reset();
 			delete persistentHandle;

@@ -52,6 +52,15 @@ window.component('push.popup', function(popup) {
             }
         }
 
+        var aid = message.apps()[0];
+        if (aid && !(CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.HUAWEI + '._id') ||
+            CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.ANDROID + '._id') ||
+            CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.IOS + '._id'))) {
+            m.endComputation();
+            return window.CountlyHelpers.alert(t('push.error.no-app-credentials'), 'popStyleGreen', {title: t('push.error.no.credentials'), image: 'empty-icon', button_title: t('push.error.i.understand')});
+        }
+
+
         if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length) && (!push.dashboard.events || !push.dashboard.events.length)) {
             m.endComputation();
             return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'popStyleGreen', {title: t('push.error.no.cohorts'), image: 'empty-icon', button_title: t('push.error.i.understand')});

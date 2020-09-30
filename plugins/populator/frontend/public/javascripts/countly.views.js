@@ -113,6 +113,7 @@ window.PopulatorView = countlyView.extend({
 
         $("#templates-tab").off("click", ".edit-icon").on("click", ".edit-icon", function(e) {
             var menu = $(e.currentTarget).parents(".populator-template-options-item").find(".edit-menu");
+            $("#templates-tab .edit-menu").not(menu).hide();
             menu.toggle();
             /*
             if (!menu.is(":hidden")) {

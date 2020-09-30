@@ -17,6 +17,7 @@ var fetch = {},
     _ = require('underscore'),
     crypto = require('crypto'),
     usage = require('./usage.js'),
+    STATUS_MAP = require('../jobs/job').STATUS_MAP,
     plugins = require('../../../plugins/pluginManager.js');
 
 /**
@@ -26,7 +27,7 @@ var fetch = {},
 **/
 fetch.prefetchEventData = function(collection, params) {
     if (!params.qstring.event) {
-        common.db.collection('events').findOne({'_id': params.app_id}, function(err, result) {
+        common.readBatcher.getOne("events", {'_id': params.app_id}, (err, result) => {
             if (result && result.list) {
                 if (result.order && result.order.length) {
                     for (let i = 0; i < result.order.length; i++) {
@@ -598,8 +599,8 @@ function getTopThree(params, collection, callback) {
                 total = total + items[k].value;
             }
             var totalPercent = 0;
-            for (let k = 0; k < items.length; k++) {
-                if (k !== (items.length - 1)) {
+            for (let k = items.length - 1; k >= 0; k--) {
+                if (k !== 0) {
                     items[k].percent = Math.floor(items[k].percent * 100 / total);
                     totalPercent += items[k].percent;
                 }
@@ -1375,11 +1376,10 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                     uniqDeviceIds: { $addToSet: '$uid'}
                                 }
                             },
-                            {$unwind: "$uniqDeviceIds"},
                             {
-                                $group: {
+                                $project: {
                                     _id: "$_id",
-                                    u: { $sum: 1 }
+                                    u: { $size: "$uniqDeviceIds" }
                                 }
                             }
                         ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
@@ -1398,11 +1398,11 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                     }
                                 }
                             }
-                            callback(appUsersDbResult);
+                            callback(appUsersDbResult || {});
                         });
                     }
                     else {
-                        callback(appUsersDbResult);
+                        callback(appUsersDbResult || {});
                     }
                 });
             }
@@ -1475,7 +1475,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     if (typeof options.unique === "undefined") {
-        options.unique = common.dbMap.unique;
+        options.unique = common.dbUniqueMap[collection] || common.dbUniqueMap["*"];
     }
 
     if (!Array.isArray(options.unique)) {
@@ -1491,11 +1491,11 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     if (typeof options.levels.daily === "undefined") {
-        options.levels.daily = [common.dbMap.total, common.dbMap.new, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+        options.levels.daily = [];
     }
 
     if (typeof options.levels.monthly === "undefined") {
-        options.levels.monthly = [common.dbMap.total, common.dbMap.new, common.dbMap.duration, common.dbMap.events, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+        options.levels.monthly = [];
     }
 
     if (params.qstring.action === "refresh") {
@@ -1638,6 +1638,24 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     /**
+     *  Object to clear
+     *  @param {object} ob - zero document
+     */
+    function clearNoneUnique(ob) {
+        for (var i in ob) {
+            if (i === "meta") {
+                continue;
+            }
+            if (ob[i] && typeof ob[i] === "object" && options.unique.indexOf(i) === -1) {
+                clearNoneUnique(ob[i]);
+            }
+            else if (options.unique.indexOf(i) === -1) {
+                delete ob[i];
+            }
+        }
+    }
+
+    /**    
     * Merge multiple db documents into one
     * @param {array} dataObjects - array with db documents
     * @param {boolean} isRefresh - is it refresh data only for today
@@ -1649,7 +1667,6 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     **/
     function getMergedObj(dataObjects, isRefresh, levels, truncateEventValuesList) {
         var mergedDataObj = {};
-
         if (dataObjects) {
             for (let i = 0; i < dataObjects.length; i++) {
                 if (!dataObjects[i] || !dataObjects[i].m) {
@@ -1691,7 +1708,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                             }
                         }
                     }
-
+                    clearNoneUnique(dataObjects[i].d || {});
                     if (mergedDataObj[year]) {
                         mergedDataObj[year] = deepMerge(mergedDataObj[year], dataObjects[i].d);
                     }
@@ -1709,14 +1726,17 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
                     if (!isRefresh) {
                         for (let day in dataObjects[i].d) {
+                            if (options.unique.indexOf(day) !== -1) {
+                                continue;
+                            }
                             for (let prop in dataObjects[i].d[day]) {
-                                if ((collection === 'users' || dataObjects[i].s === 'no-segment') && prop <= 23 && prop >= 0) {
+                                if (options.unique.indexOf(prop) !== -1 || prop <= 23 && prop >= 0) {
                                     continue;
                                 }
 
                                 if (typeof dataObjects[i].d[day][prop] === 'object') {
                                     for (let secondLevel in dataObjects[i].d[day][prop]) {
-                                        if (levels.daily.indexOf(secondLevel) !== -1) {
+                                        if ((levels.daily.length) ? levels.daily.indexOf(secondLevel) !== -1 : options.unique.indexOf(secondLevel) === -1) {
                                             if (!mergedDataObj[year][month][prop]) {
                                                 mergedDataObj[year][month][prop] = {};
                                             }
@@ -1741,7 +1761,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                                         }
                                     }
                                 }
-                                else if (levels.monthly.indexOf(prop) !== -1) {
+                                else if ((levels.monthly.length) ? levels.monthly.indexOf(prop) !== -1 : options.unique.indexOf(prop) === -1) {
 
                                     if (mergedDataObj[year][month][prop]) {
                                         mergedDataObj[year][month][prop] += dataObjects[i].d[day][prop];
@@ -1763,8 +1783,15 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                 }
             }
 
-            //truncate large meta on refresh
-
+            //Fixing meta  to be escaped.(Because return output will escape keys and make values incompatable)
+            for (let i in mergedDataObj.meta) {
+                for (var p = 0; p < mergedDataObj.meta[i].length; p++) {
+                    if (mergedDataObj.meta[i][p] && typeof mergedDataObj.meta[i][p] === 'string') {
+                        mergedDataObj.meta[i][p] = mergedDataObj.meta[i][p].replace(new RegExp("\"", "g"), '&quot;');
+                    }
+                }
+            }
+            //truncate large meta on refresh		
             if (isRefresh) {
                 var metric_length = plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit;
                 if (metric_length > 0) {
@@ -1788,7 +1815,6 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                 }
             }
         }
-
         return mergedDataObj;
     }
 }
@@ -1826,5 +1852,102 @@ function union(x, y) {
 
     return res;
 }
+
+/**
+* Get data for jobs listing for jobs api
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.fetchJobs = async function(metric, params) {
+    try {
+        if (params.qstring.name) {
+            await fetch.jobDetails(metric, params);
+        }
+        else {
+            await fetch.alljobs(metric, params);
+        }
+    }
+    catch (e) {
+        console.log(e);
+        common.returnOutput(params, 500, "Fetching jobs failed");
+    }
+};
+
+/**
+* Get all jobs grouped by job name for jobs api
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.alljobs = async function(metric, params) {
+    const columns = ["name", "schedule", "next", "finished", "status", "total"];
+    let sort = {};
+    let total = await common.db._native.collection('jobs').aggregate([
+        {
+            $group: { _id: "$name" }
+        },
+        {
+            $count: 'total'
+        }
+    ]).toArray();
+    total = total.length > 0 ? total[0].total : 0;
+    const pipeline = [
+        {
+            $sort: {
+                finished: -1
+            }
+        },
+        {
+            $group: {
+                _id: "$name",
+                name: {$first: "$name"},
+                status: {$first: "$status"},
+                schedule: {$first: "$schedule"},
+                next: {$first: "$next"},
+                finished: {$first: "$finished"},
+                total: {$sum: 1}
+            }
+        }
+    ];
+    if (params.qstring.sSearch) {
+        pipeline.unshift({
+            $match: {name: {$regex: new RegExp(params.qstring.sSearch, "i")}}
+        });
+    }
+    const cursor = common.db._native.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
+    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
+    items = items.map((job) => {
+        job.status = STATUS_MAP[job.status];
+        return job;
+    });
+    cursor.close();
+    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || []});
+};
+
+/**
+* Get all documents for a given job name
+* @param {string} metric - name of the collection where to get data from
+* @param {params} params - params object with app_id and date
+*/
+fetch.jobDetails = async function(metric, params) {
+    const columns = ["schedule", "next", "finished", "status", "data", "duration"];
+    let sort = {};
+    const cursor = common.db._native.collection('jobs').find({name: params.qstring.name});
+    const total = await cursor.count();
+    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
+    items = items.map((job) => {
+        job.status = STATUS_MAP[job.status];
+        return job;
+    });
+    cursor.close();
+    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || []});
+};
 
 module.exports = fetch;

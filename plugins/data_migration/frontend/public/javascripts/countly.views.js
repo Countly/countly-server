@@ -103,7 +103,8 @@ window.DataMigrationView = countlyView.extend({
             "You don't have any imports": "no-imports",
             "Export already failed": "export-already-failed",
             "Export already finished": "export-already-finished",
-            "Data has already been sent": "export-already-sent"
+            "Data has already been sent": "export-already-sent",
+            "You have already exported data.": "export-already-done"
         };
         $(this.el).html(this.template(this.templateData));
 
@@ -445,6 +446,7 @@ window.DataMigrationView = countlyView.extend({
                 error: function(xhr, status, error) {
                     overlay.hide();
                     var resp = self.get_response_text(xhr, status, error);
+                    resp = self.get_translation(resp);
                     var splitted = resp.split(':');
 
                     if (jQuery.i18n.map["data-migration." + resp]) {
@@ -545,7 +547,7 @@ window.DataMigrationView = countlyView.extend({
             addedfile: function(file) {
                 if (self.check_ext(file.name)) {
                     var iSize = 0;
-                    if ($.browser.msie) {
+                    if (window.ActiveXObject) {
                         var objFSO = new ActiveXObject("Scripting.FileSystemObject");
                         var sPath = file.value;
                         var objFile = objFSO.getFile(sPath);

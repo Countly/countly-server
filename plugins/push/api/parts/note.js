@@ -665,7 +665,7 @@ class Note {
         let ret = {};
         Object.values(this.messagePerLocale || {}).filter(v => typeof v === 'object').forEach(v => {
             Object.values(v).forEach(z => {
-                ret[z.k] = 1;
+                ret[z.k.replace(S, '.')] = 1;
             });
         });
         this._compilationDataFields = JSON.parse(JSON.stringify(ret));
@@ -683,11 +683,12 @@ class Note {
         };
 
         Object.keys(this.compilationDataFields()).forEach(k => {
+
             if (k.indexOf('.') === -1 && typeof user[k] !== 'undefined') {
                 ret[k] = user[k];
             }
             else if (k.indexOf('custom.') !== -1 && user.custom && typeof user.custom[k.substr(7)] !== 'undefined') {
-                ret[k] = user.custom[k.substr(7)];
+                ret[k.replace('.', S)] = user.custom[k.substr(7)];
             }
         });
         return ret;

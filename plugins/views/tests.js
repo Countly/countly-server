@@ -177,6 +177,8 @@ function verifyTotals(period) {
                     }
                     for (var i = 0; i < resDecoded.aaData.length; i++) {
                         if (verifyMetrics(err, resDecoded.aaData[i], done, tableResponse[period].aaData[i]) == false) {
+                            console.log("GOT: " + JSON.stringify(resDecoded.aaData));
+                            console.log("NEED:" + JSON.stringify(tableResponse[period].aaData));
                             return done("wrong values");
                         }
                     }
@@ -358,9 +360,9 @@ describe('Testing views plugin', function() {
     });
 
     describe('Adding some scrolling', function() {
-        it('adding 2 days ago(with visit)', function(done) {
+        it('adding 2 days ago(calling with visit, shouldnt record visit)', function(done) {
 
-            pushValues("30days", 0, {"t": 1, "s": 1, "scr": 60, "scr-calc": 20});
+            pushValues("30days", 0, { "s": 1, "scr": 60, "scr-calc": 20});
             var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600, "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 26 * 60 * 60 * 1000 * 2) + '&events=' + data)
@@ -388,13 +390,12 @@ describe('Testing views plugin', function() {
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
-
-        it('adding 1 day ago(visit, new user)', function(done) {
-            pushValues("30days", 0, {"uvalue": 1, "u": 1, "n": 1, "t": 1, "s": 1, "scr": 60, "scr-calc": 6});
-            pushValues("yesterday", 0, {"uvalue": 1, "u": 1, "n": 1, "t": 1, "s": 1, "scr": 60, "scr-calc": 30});
-            var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600, "visit": 1, "start": 1}}]);
+        it('adding 1 day ago', function(done) {
+            pushValues("30days", 0, { "scr": 60, "scr-calc": 6});
+            pushValues("yesterday", 0, { "scr": 60, "scr-calc": 30});
+            var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600}}]);
             request
-                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user3" + '&timestamp=' + (myTime - 24 * 60 * 60 * 1000) + '&events=' + data)
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 24 * 60 * 60 * 1000) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {

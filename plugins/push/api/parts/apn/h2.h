@@ -149,7 +149,7 @@ namespace apns {
 		std::string topic;
 		std::string expiration;
 		std::vector<std::string *> messages;
-		struct addrinfo *address;
+		std::unordered_map <std::string, addrinfo*> addresses;		// requests in socket, key is stream_id
 
 		uv_loop_t* loop;
 		int fd;

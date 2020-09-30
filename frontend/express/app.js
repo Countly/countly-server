@@ -1539,5 +1539,7 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
 countlyDb.collection('apps').createIndex({"key": 1}, { unique: true }, function() {});
 countlyDb.collection('members').createIndex({"api_key": 1}, { unique: true }, function() {});
 countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
+countlyDb.collection('jobs').createIndex({ finished: 1 }, function() {});
+countlyDb.collection('jobs').createIndex({ name: 1 }, function() {});
 
 app.listen(countlyConfig.web.port, countlyConfig.web.host || '');
