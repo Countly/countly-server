@@ -2554,14 +2554,15 @@
 
                     if (this.navigatedIndex === null) {
                         this.navigatedIndex = this.visibleItems.length - 1;
-                        return;
+                    }
+                    else {
+                        this.navigatedIndex--;
+
+                        if (this.navigatedIndex < 0) {
+                            this.navigatedIndex = this.visibleItems.length - 1;
+                        }
                     }
 
-                    this.navigatedIndex--;
-
-                    if (this.navigatedIndex < 0) {
-                        this.navigatedIndex = this.visibleItems.length - 1;
-                    }
                     this.scrollToNavigatedIndex();
                 },
                 downKeyEvent: function() {
@@ -2571,10 +2572,11 @@
 
                     if (this.navigatedIndex === null) {
                         this.navigatedIndex = 0;
-                        return;
+                    }
+                    else {
+                        this.navigatedIndex = (this.navigatedIndex + 1) % this.visibleItems.length;
                     }
 
-                    this.navigatedIndex = (this.navigatedIndex + 1) % this.visibleItems.length;
                     this.scrollToNavigatedIndex();
                 },
                 escKeyEvent: function() {
