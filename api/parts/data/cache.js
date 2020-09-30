@@ -727,12 +727,13 @@ function createCollection(db, name, size = 1e7) {
                     createCollection(db, name, size).then(resolve, reject);
                 }, 1000);
             }
-            db._native.createCollection(name, {capped: true, size: size}, (e, col) => {
-                if (e) {
+            db._native.createCollection(name, {capped: true, size: size}, (e) => {
+                if (e && e.codeName !== "NamespaceExists") {
                     log.e(`Error while creating capped collection ${name}:`, e);
                     return reject(e);
                 }
 
+                let col = db.collection(name);
                 col.find().sort({_id: -1}).limit(1).toArray((err, arr) => {
                     if (err) {
                         log.e(`Error while looking for last record in ${name}:`, err);
