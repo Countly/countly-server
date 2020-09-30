@@ -2840,7 +2840,8 @@
                     return this.totalRows;
                 }
                 else {
-                    return this.rows.length;
+                    // vgt-table should determine itself.
+                    return;
                 }
             }
         },
