@@ -2559,23 +2559,14 @@
                     return false;
                 },
                 getNextNonGroupIndex: function(startFrom, direction) {
-                    if (direction === 1) {
-                        for (var offset = 0; offset < this.visibleItems.length; offset++) {
-                            var current = (offset + startFrom) % this.visibleItems.length;
-                            if (!this.isItemGroup(this.visibleItems[current])) {
-                                return current;
-                            }
+                    for (var offset = 0; offset < this.visibleItems.length; offset++) {
+                        var current = (direction * offset + startFrom);
+                        if (current < 0) {
+                            current = this.visibleItems.length + current;
                         }
-                    }
-                    else {
-                        for (var offset = 0; offset < this.visibleItems.length; offset++) {
-                            var current = startFrom - offset;
-                            if (current < 0) {
-                                current = this.visibleItems.length + current;
-                            }
-                            if (!this.isItemGroup(this.visibleItems[current])) {
-                                return current;
-                            }
+                        current = current % this.visibleItems.length;
+                        if (!this.isItemGroup(this.visibleItems[current])) {
+                            return current;
                         }
                     }
                 },
@@ -2667,8 +2658,8 @@
                             v-click-outside="close"\
                             @keydown.up.prevent="upKeyEvent"\
                             @keydown.down.prevent="downKeyEvent"\
-                            @keyup.esc="escKeyEvent"\
-                            @keyup.enter="enterKeyEvent">\
+                            @keydown.esc="escKeyEvent"\
+                            @keydown.enter="enterKeyEvent">\
                             <div class="select-inner" @click="toggle">\
                                 <div class="text-container">\
                                     <div v-if="selectedItem" class="text" style="width:80%">\
