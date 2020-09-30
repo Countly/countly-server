@@ -252,6 +252,16 @@ window.LoggerView = countlyView.extend({
                         },
                         "sType": "string",
                         "bSortable": false
+                    },
+                    //hidden semgments column, to make searchable by segments
+                    {
+                        "mData": function(row) {
+                            return JSON.stringify(row.t);
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["userdata.segment"],
+                        "noExport": true,
+                        "bVisible": false
                     }
                 ]
             }));

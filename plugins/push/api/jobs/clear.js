@@ -50,7 +50,7 @@ class ClearJob extends job.Job {
             });
         }
         else if (this.data.cid) {
-            db.collection('apps').find({$or: [{'plugins.push.a._id': this.data.cid.toString()}, {'plugins.push.i._id': this.data.cid.toString()}]}).toArray((err, ok) => {
+            db.collection('apps').find({$or: [{'plugins.push.a._id': this.data.cid.toString()}, {'plugins.push.i._id': this.data.cid.toString()}, {'plugins.push.h._id': this.data.cid.toString()}]}).toArray((err, ok) => {
                 if (err) {
                     done(err);
                 }

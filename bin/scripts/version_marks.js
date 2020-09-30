@@ -1,8 +1,6 @@
 const fs = require('fs'),
     pluginManager = require('../../plugins/pluginManager.js');
 
-var countlyDb = null;
-
 const fsMarkedVersionPath = __dirname + "/../../countly_marked_version.json";
 
 function writeMsg(type, msg) {
@@ -111,7 +109,7 @@ function writeFsVersion(targetVersion) {
     }
 }
 
-function readDbVersion(closeConn, projection, cb) {
+function readDbVersion(countlyDb, closeConn, projection, cb) {
     countlyDb.collection('plugins').find({'_id': 'version'}, projection).toArray(function(err, versionDocs) {
         if (err) {
             writeMsg("error", err);
@@ -134,36 +132,40 @@ function readDbVersion(closeConn, projection, cb) {
 }
 
 function compareDbVersion(targetVersion) {
-    readDbVersion(true, {"version": 1}, function(versionDoc) {
-        if (versionDoc.version === "") {
-            writeMsg("info", -1);
-            return;
-        }
-        writeMsg("info", compareVersions(versionDoc.version, targetVersion));
+    pluginManager.dbConnection().then((countlyDb) => {
+        readDbVersion(countlyDb, true, {"version": 1}, function(versionDoc) {
+            if (versionDoc.version === "") {
+                writeMsg("info", -1);
+                return;
+            }
+            writeMsg("info", compareVersions(versionDoc.version, targetVersion));
+        });
     });
 }
 
 function writeDbVersion(targetVersion) {
-    readDbVersion(false, {"version": 1, 'history': 1, "_id": 1}, function(versionDoc) {
-        if (versionDoc.version === "" || versionDoc.version !== targetVersion) {
-            versionDoc.history.push({
-                version: targetVersion,
-                updated: Date.now()
-            });
-            countlyDb.collection('plugins').update({'_id': 'version'}, {
-                $set: {
-                    "history": versionDoc.history,
-                    "version": targetVersion
-                }
-            }, {'upsert': true}, function() {
-                writeMsg("info", 1);
+    pluginManager.dbConnection().then((countlyDb) => {
+        readDbVersion(countlyDb, false, {"version": 1, 'history': 1, "_id": 1}, function(versionDoc) {
+            if (versionDoc.version === "" || versionDoc.version !== targetVersion) {
+                versionDoc.history.push({
+                    version: targetVersion,
+                    updated: Date.now()
+                });
+                countlyDb.collection('plugins').update({'_id': 'version'}, {
+                    $set: {
+                        "history": versionDoc.history,
+                        "version": targetVersion
+                    }
+                }, {'upsert': true}, function() {
+                    writeMsg("info", 1);
+                    countlyDb.close();
+                });
+            }
+            else {
+                writeMsg("info", 0);
                 countlyDb.close();
-            });
-        }
-        else {
-            writeMsg("info", 0);
-            countlyDb.close();
-        }
+            }
+        });
     });
 }
 
@@ -176,14 +178,12 @@ if (myArgs.length === 2) {
     targetVersion = myArgs[1];
     switch (command) {
     case 'compare_db':
-        countlyDb = pluginManager.dbConnection();
         compareDbVersion(targetVersion);
         break;
     case 'compare_fs':
         compareFsVersion(targetVersion);
         break;
     case 'write_db':
-        countlyDb = pluginManager.dbConnection();
         writeDbVersion(targetVersion);
         break;
     case 'write_fs':

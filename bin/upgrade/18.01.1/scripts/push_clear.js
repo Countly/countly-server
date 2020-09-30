@@ -1,5 +1,4 @@
-var pluginManager = require('../../../../plugins/pluginManager.js'),
-    countlyDb = pluginManager.dbConnection();
+var pluginManager = require('../../../../plugins/pluginManager.js');
 
 async function sequence(arr, f, def = 0) {
     return await arr.reduce(async(promise, item) => {
@@ -24,9 +23,8 @@ function split(data, batch) {
     }
     return chunks;
 }
-
-countlyDb.onOpened(() => {
-    countlyDb._native.listCollections().toArray((err, names) => {
+pluginManager.dbConnection().then((countlyDb) => {
+    countlyDb.listCollections().toArray((err, names) => {
         if (names) {
             names = names.map(n => n.name).filter(n => n.indexOf('push_') === 0 && n.indexOf('_') === n.lastIndexOf('_'));
             if (names.length) {
@@ -36,7 +34,7 @@ countlyDb.onOpened(() => {
                     sequence(split(names, 10), names => {
                         return new Promise((res, rej) => {
                             console.log(`${i++} batch out of ${total}`);
-                            Promise.all(names.map(n => countlyDb._native.collection(n).drop())).then(res, res);
+                            Promise.all(names.map(n => countlyDb.collection(n).drop())).then(res, res);
                         });
                     }).then(() => {
                         console.log('...done');

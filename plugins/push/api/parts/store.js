@@ -450,6 +450,26 @@ class Store extends Base {
         }), note._id);
     }
 
+    /**
+     * Get uids by message $in
+     * @param  {Array} min  Array of mids
+     * @return {Promise}    resoves to array of uids
+     */
+    _filterMessage(min) {
+        return new Promise((res, rej) => {
+            this.db.collection(`push_${this.app._id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(this.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+                if (err) {
+                    rej(err);
+                }
+                else {
+                    ids = (ids || []).map(id => id._id);
+                    log.d(`filtered by message: uids out of ${ids.length}`);
+                    res(ids);
+                }
+            });
+        });
+    }
+
     /** fetchedQuery
      * @param {object} note - note object
      * @param {array} uids - array of user ids
@@ -461,6 +481,19 @@ class Store extends Base {
 
         if (note.queryUser) {
             query = note.queryUser;
+
+            if (query.message) {
+                let filtered = await this._filterMessage(query.message.$in);
+                delete query.message;
+
+                if (uids) {
+                    uids = uids.filter(uid => filtered.indexOf(uid) !== -1);
+                }
+                else {
+                    uids = filtered;
+                }
+            }
+
             if (query.$and) {
                 if (uids) {
                     query.$and.push({uid: {$in: uids}});
@@ -1018,6 +1051,9 @@ class Loader extends Store {
     ack(ids) {
         log.i('Acking %d in %s', ids && ids.length || 0, this.collectionName);
         return new Promise((resolve, reject) => {
+            if (!ids.length) {
+                return resolve(0);
+            }
             this.collection.deleteMany({_id: {$in: ids}}, (err, res) => {
                 log.i('Acked %j in %s', res && res.deletedCount || err, this.collectionName);
                 if (err) {
@@ -1292,7 +1328,8 @@ class Loader extends Store {
      */
     pushNote(mid, uids, date, recur) {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
-        log.i('Recording message %s for uids %j', mid, uids);
+        log.i('Recording message %s for %d uids', mid, uids.length);
+        log.d('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
             this.db.collection(`push_${this.app._id}`).updateMany({_id: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
                 if (err) {
@@ -1414,8 +1451,20 @@ class Loader extends Store {
      */
     recordSentEvent(note, sent) {
         let common1 = require('../../../../api/utils/common.js');
+
         if (!common1.db) {
             common1.db = this.db;
+        }
+
+        if (!common1.writeBatcher) {
+            try {
+                const {WriteBatcher, ReadBatcher} = require('../../../../api/parts/data/batcher.js');
+                common1.writeBatcher = new WriteBatcher(common1.db);
+                common1.readBatcher = new ReadBatcher(common1.db);
+            }
+            catch (e) {
+                // ignore
+            }
         }
 
         plugins.internalEvents.push('[CLY]_push_sent');
@@ -1436,12 +1485,14 @@ class Loader extends Store {
         log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
         require('../../../../api/parts/data/events.js').processEvents(params);
 
-        try {
-            log.d('Recording %d data points', sent);
-            require('../../../server-stats/api/api.js').updateDataPoints(this.app._id, 0, sent);
-        }
-        catch (e) {
-            log.d('Error during dp recording', e);
+        if (sent > 0) {
+            try {
+                log.d('Recording %d data points', sent);
+                require('../../../server-stats/api/api.js').updateDataPoints(this.app._id, 0, sent);
+            }
+            catch (e) {
+                log.d('Error during dp recording', e);
+            }
         }
     }
 }
@@ -1512,6 +1563,21 @@ class StoreGroup {
                     else if (note.test === false) {
                         return [
                             [app, C.DB_USER_MAP.gcm_prod, new C.Credentials(this.db.ObjectID(creds1._id))],
+                        ];
+                    }
+                    else {
+                        return [];
+                    }
+                }
+                else if (platform === N.Platform.HUAWEI) {
+                    if (note.test === true) {
+                        return [
+                            [app, C.DB_USER_MAP.hms_test, new C.Credentials(this.db.ObjectID(creds1._id))],
+                        ];
+                    }
+                    else if (note.test === false) {
+                        return [
+                            [app, C.DB_USER_MAP.hms_prod, new C.Credentials(this.db.ObjectID(creds1._id))],
                         ];
                     }
                     else {

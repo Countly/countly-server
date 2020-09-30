@@ -144,6 +144,10 @@ class TopEventsJob extends job.Job {
                 for (const period of TopEventsJob.PERIODS) {
                     const data = {};
                     const ob = { app_id: app._id, appTimezone: app.timezone, qstring: { period: period } };
+                    if (period === "hour") {
+                        ob.time = common.initTimeObj(app.timezone, new Date().getTime());
+                        ob.qstring.action = "refresh";
+                    }
                     for (const event of eventMap) {
                         const collectionNameEvents = this.eventsCollentions({event, id: app._id});
                         await this.getEventsCount({collectionNameEvents, ob, data, event});

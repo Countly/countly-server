@@ -18,6 +18,8 @@ function mongodb_configure () {
         sed -i "/#operationProfiling/d" ${MONGODB_CONFIG_FILE}
         sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGODB_CONFIG_FILE}
     fi
+
+    sed -i "s#storage:#storage:\n${INDENT_STRING}wiredTiger:\n${INDENT_STRING}${INDENT_STRING}engineConfig:\n${INDENT_STRING}${INDENT_STRING}${INDENT_STRING}directoryForIndexes: true#g" ${MONGODB_CONFIG_FILE}
 }
 
 function mongodb_logrotate () {
@@ -44,6 +46,8 @@ postrotate
 endscript
 }
 EOF
+
+        sed -i "s#/var/lib/mongo#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         if [ -f /etc/lsb-release ]; then
@@ -61,19 +65,8 @@ postrotate
 endscript
 }
 EOF
-        fi
 
-        if [ -f /etc/redhat-release ]; then
-            #mongodb might need to be started
-            if grep -q -i "release 6" /etc/redhat-release ; then
-                service mongod restart > /dev/null || echo "mongodb service does not exist"
-            else
-                systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
-            fi
-        fi
-
-        if [ -f /etc/lsb-release ]; then
-            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
+        sed -i "s#/var/lib/mongodb#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         message_ok 'Logrotate configured'
@@ -144,6 +137,39 @@ EOF
 	fi 2> /dev/null
 
     message_ok "Disabled transparent hugepages"
+}
+
+function fix_mongod_service_type () {
+    if [[ ! $(/sbin/init --version) =~ upstart ]]; then
+        SERVICE_FILE_PATH=$(systemctl status mongod | grep "loaded" | awk -F';' '{print $1}' | awk -F'(' '{print $2}')
+
+        if grep -q "Type=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/Type=/d" "${SERVICE_FILE_PATH}"
+        fi
+
+        sed -i "s#\[Service\]#\[Service\]\nType=simple#g" "${SERVICE_FILE_PATH}"
+
+        systemctl daemon-reload
+	fi 2> /dev/null
+}
+
+function fix_mongod_service_limits () {
+    if [[ ! $(/sbin/init --version) =~ upstart ]]; then
+        SERVICE_FILE_PATH=$(systemctl status mongod | grep "loaded" | awk -F';' '{print $1}' | awk -F'(' '{print $2}')
+
+        if grep -q "LimitNPROC=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/LimitNPROC=/d" "${SERVICE_FILE_PATH}"
+        fi
+
+        if grep -q "LimitNOFILE=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/LimitNOFILE=/d" "${SERVICE_FILE_PATH}"
+        fi
+
+        sed -i "s#\[Service\]#\[Service\]\nLimitNPROC=256000#g" "${SERVICE_FILE_PATH}"
+        sed -i "s#\[Service\]#\[Service\]\nLimitNOFILE=392000#g" "${SERVICE_FILE_PATH}"
+
+        systemctl daemon-reload
+	fi 2> /dev/null
 }
 
 function message_warning () {
@@ -250,17 +276,15 @@ function mongodb_check() {
     fi
 
     #Set swappiness to 1
-    if grep -q "vm.swappiness" "/etc/sysctl.conf"; then
-        sed -i "/vm.swappiness/d" /etc/sysctl.conf
-    fi
-
+    update_sysctl "vm.swappiness" "1"
     message_ok "Swappiness set to 1"
 
     #File handle security limits
     update_sysctl "fs.file-max" "392000"
     update_sysctl "kernel.pid_max" "256000"
     update_sysctl "kernel.threads-max" "256000"
-    update_sysctl "vm.max_map_count" "512000"
+    update_sysctl "vm.max_map_count" "2048000"
+    update_sysctl "net.ipv4.ip_local_port_range" "1024 65535"
 
     message_ok "Configured file handle kernel limits"
 
@@ -333,6 +357,11 @@ function mongodb_check() {
             message_warning "Command timedatectl not found"
         fi
     fi
+
+    #change mongod systemd service type to 'simple' to prevent systemd timeout interrupt on wiredtiger's long boot
+    fix_mongod_service_type
+    #match service system limits to mongodb user's limits
+    fix_mongod_service_limits
 
     echo -e "\nSome of changes may need reboot!\n"
 }

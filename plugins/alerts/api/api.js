@@ -39,16 +39,15 @@ const _ = require('lodash');
 	 * load job list
 	 */
     function loadJobs() {
-        common.db.collection("alerts").find({})
-            .toArray(function(err, alertsList) {
-                log.d(alertsList, "get alert configs");
-                alertsList && alertsList.forEach(t => {
-                    //period type
-                    if (t.period) {
-                        updateJobForAlert(t);
-                    }
-                });
+        common.readBatcher.getMany("alerts", {}, function(err, alertsList) {
+            log.d(alertsList, "get alert configs");
+            alertsList && alertsList.forEach(t => {
+                //period type
+                if (t.period) {
+                    updateJobForAlert(t);
+                }
             });
+        });
     }
 
 

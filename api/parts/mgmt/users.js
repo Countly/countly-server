@@ -254,7 +254,9 @@ usersApi.createUser = function(params) {
         newMember.email = newMember.email.trim();
 
         common.db.collection('members').insert(newMember, { safe: true }, function(err, member) {
-            member = member.ops;
+            if (!err && member && member.ops) {
+                member = member.ops;
+            }
             if (member && member.length && !err) {
 
                 member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));

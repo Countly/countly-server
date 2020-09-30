@@ -3065,7 +3065,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 200 * testUtils.testScalingFactor);
                 });
         });
     });

@@ -53,82 +53,90 @@ const readFromEnd = (file, size) => {
         var bytes = obParams.qstring.bytes ? parseInt(obParams.qstring.bytes) : 0;
 
         validate(obParams, function(params) {
-            if (params.qstring.log && logs[params.qstring.log]) {
-                if (params.qstring.download) {
-                    if (bytes === 0) {
-                        fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
-                            if (err) {
-                                data = "";
-                            }
-                            common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
-                        });
+            walk(dir + "/../../../log", function(errList, logfiles) {
+                if (errList) {
+                    console.error(errList);
+                }
+                else {
+                    logs = logfiles;
+                }
+                if (params.qstring.log && logs[params.qstring.log]) {
+                    if (params.qstring.download) {
+                        if (bytes === 0) {
+                            fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
+                                if (err) {
+                                    data = "";
+                                }
+                                common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
+                            });
+                        }
+                        else {
+                            readFromEnd(dir + "/" + logs[params.qstring.log], bytes)
+                                .then(function(data) {
+                                    common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
+                                }).catch(function() {
+                                    if (!params.res.finished) {
+                                        common.returnRaw(params, 200, "", {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
+                                    }
+                                });
+                        }
                     }
                     else {
-                        readFromEnd(dir + "/" + logs[params.qstring.log], bytes)
-                            .then(function(data) {
-                                common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
-                            }).catch(function() {
-                                if (!params.res.finished) {
-                                    common.returnRaw(params, 200, "", {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
+                        if (bytes === 0) {
+                            fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
+                                if (err) {
+                                    data = "";
                                 }
+                                common.returnOutput(params, data);
                             });
+                        }
+                        else {
+                            readFromEnd(dir + "/" + logs[params.qstring.log], bytes)
+                                .then(function(data) {
+                                    common.returnOutput(params, data);
+                                }).catch(function() {
+                                    if (!params.res.finished) {
+                                        common.returnOutput(params, "");
+                                    }
+                                });
+                        }
                     }
                 }
                 else {
-                    if (bytes === 0) {
-                        fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
-                            if (err) {
-                                data = "";
-                            }
-                            common.returnOutput(params, data);
-                        });
-                    }
-                    else {
-                        readFromEnd(dir + "/" + logs[params.qstring.log], bytes)
-                            .then(function(data) {
-                                common.returnOutput(params, data);
-                            }).catch(function() {
-                                if (!params.res.finished) {
-                                    common.returnOutput(params, "");
+                    var readLog = function(key, done) {
+                        var finished = false;
+                        if (bytes === 0) {
+                            fs.readFile(dir + "/" + logs[key], 'utf8', function(err, data) {
+                                if (err) {
+                                    data = "";
                                 }
+                                done(null, {key: key, val: data});
                             });
-                    }
+                        }
+                        else {
+                            readFromEnd(dir + "/" + logs[key], bytes)
+                                .then(function(data) {
+                                    if (!finished) {
+                                        finished = true;
+                                        done(null, {key: key, val: data});
+                                    }
+                                }).catch(function() {
+                                    if (!finished) {
+                                        finished = true;
+                                        done(null, {key: key, val: ""});
+                                    }
+                                });
+                        }
+                    };
+                    async.map(Object.keys(logs), readLog, function(err, results) {
+                        var ret = {};
+                        for (var i = 0; i < results.length; i++) {
+                            ret[results[i].key] = results[i].val;
+                        }
+                        common.returnOutput(params, ret);
+                    });
                 }
-            }
-            else {
-                var readLog = function(key, done) {
-                    var finished = false;
-                    if (bytes === 0) {
-                        fs.readFile(dir + "/" + logs[key], 'utf8', function(err, data) {
-                            if (err) {
-                                data = "";
-                            }
-                            done(null, {key: key, val: data});
-                        });
-                    }
-                    else {
-                        readFromEnd(dir + "/" + logs[key], bytes)
-                            .then(function(data) {
-                                if (!finished) {
-                                    finished = true;
-                                    done(null, {key: key, val: data});
-                                }
-                            }).catch(function() {
-                                if (!finished) {
-                                    finished = true;
-                                    done(null, {key: key, val: ""});
-                                }
-                            });
-                    }
-                };
-                async.map(Object.keys(logs), readLog, function(err, results) {
-                    var ret = {};
-                    for (var i = 0; i < results.length; i++) {
-                        ret[results[i].key] = results[i].val;
-                    }
-                    common.returnOutput(params, ret);
-                });
-            }
+            });
         });
         return true;
     });
@@ -139,20 +147,53 @@ const readFromEnd = (file, size) => {
         var validate = ob.validateUserForGlobalAdmin; //user validation
 
         validate(obParams, function(params) {
-            if (params.qstring.log && logs[params.qstring.log]) {
-                plugins.dispatch("/systemlogs", {params: params, action: "errologs_clear", data: {log: params.qstring.log}});
-                fs.truncate(dir + "/" + logs[params.qstring.log], 0, function(err) {
-                    if (err) {
-                        common.returnMessage(params, 200, err);
-                    }
-                    else {
-                        common.returnMessage(params, 200, 'Success');
-                    }
-                });
-            }
+            walk(dir + "/../../../log", function(errList, logfiles) {
+                if (errList) {
+                    console.error(errList);
+                }
+                else {
+                    logs = logfiles;
+                }
+                if (params.qstring.log && logs[params.qstring.log]) {
+                    plugins.dispatch("/systemlogs", {params: params, action: "errologs_clear", data: {log: params.qstring.log}});
+                    fs.truncate(dir + "/" + logs[params.qstring.log], 0, function(err) {
+                        if (err) {
+                            common.returnMessage(params, 200, err);
+                        }
+                        else {
+                            common.returnMessage(params, 200, 'Success');
+                        }
+                    });
+                }
+            });
         });
         return true;
     });
+
+    var walk = function(dir_path, done) {
+        var results = {};
+        fs.readdir(dir_path, function(err, list) {
+            if (err) {
+                return done(err);
+            }
+            var pending = list.length;
+            if (!pending) {
+                return done(null, results);
+            }
+            list.forEach(function(file) {
+                if (file && file.startsWith("countly-") && file.endsWith(".log")) {
+                    results[file.replace("countly-", "").replace(".log", "")] = '../../../log/' + file;
+                    if (!--pending) {
+                        done(null, results);
+                    }
+                }
+                else
+                if (!--pending) {
+                    done(null, results);
+                }
+            });
+        });
+    };
 }(plugin));
 
 module.exports = plugin;

@@ -20,10 +20,14 @@ const DB_USER_MAP = {
     'gcm_0': `${Platform.ANDROID}p`, // production
     'gcm_test': `${Platform.ANDROID}t`, // testing
     'gcm_2': `${Platform.ANDROID}t`, // testing
+    'hms_prod': `${Platform.HUAWEI}p`, // production
+    'hms_0': `${Platform.HUAWEI}p`, // production
+    'hms_test': `${Platform.HUAWEI}t`, // testing
+    'hms_2': `${Platform.HUAWEI}t`, // testing
     'messages': 'msgs' // messages sent
 };
 
-const FIELDS = ['ip', 'ia', 'id', 'ap', 'at'];
+const FIELDS = ['ip', 'ia', 'id', 'ap', 'at', 'hp', 'ht'];
 
 const CRED_TYPE = {
     [Platform.IOS]: {
@@ -34,6 +38,10 @@ const CRED_TYPE = {
     [Platform.ANDROID]: {
         GCM: 'gcm',
         FCM: 'fcm',
+    },
+
+    [Platform.HUAWEI]: {
+        TOKEN: 'hms',
     }
 };
 
@@ -41,12 +49,17 @@ const CRED_TYPE = {
 class Credentials {
     /** constructor
      * @param {string} cid - credentials id
+     * @param {string} aid - app id
+     * @param {string} field - field
      */
-    constructor(cid) {
+    constructor(cid, aid, field) {
         if (!(this instanceof Credentials)) {
-            return new Credentials(cid);
+            return new Credentials(cid, aid, field);
         }
         this._id = cid;
+        this._aid = aid;
+        this._platform = field && field.substr(0, 1) || undefined;
+        this._loads = 0;
         // properties loaded from db object:
         //      this.platform = Platform.IOS
         //      this.type = one of CRED_TYPE[this.platform]
@@ -72,14 +85,23 @@ class Credentials {
      * @returns {Promise} - promise
      */
     load(db) {
+        this._loads++;
         if (typeof this._id === 'string') {
             this._id = db.ObjectID(this._id);
         }
         log.d('loading credentials %j', this._id);
         return new Promise((resolve, reject) => {
             db.collection('credentials').findOne(this._id, (err, data) => {
-                if (err || !data) {
+                if (err) {
                     reject(err || 'Credentials ' + this._id + ' not found');
+                }
+                else if (!data) {
+                    if (this._loads < 5) {
+                        this.loadByApp(db).then(resolve, reject);
+                    }
+                    else {
+                        reject(err || 'Credentials ' + this._id + ' not found: too much loads');
+                    }
                 }
                 else {
                     log.d('loaded credentials %j', this._id);
@@ -167,6 +189,34 @@ class Credentials {
                         reject(e.message || e.stack || e);
                     }
                     resolve();
+                }
+            });
+        });
+    }
+
+    /**
+     * Lookup credentials by app & platform instead of _id (credentials were deleted)
+     * @param  {DB} db database
+     * @return {Promise}    resolves to credentials or errors
+     */
+    loadByApp(db) {
+        return new Promise((res, rej) => {
+            db.collection('apps').findOne({_id: db.ObjectID(this._aid)}, (err, data) => {
+                if (err || !data) {
+                    rej(err || 'Credentials ' + this._id + ' not found');
+                }
+                else if (!this._platform || !data.plugins || !data.plugins.push || !data.plugins.push[this._platform] || !data.plugins.push[this._platform]._id) {
+                    rej(err || 'Credentials ' + this._id + ' not found: no app creds');
+                }
+                else {
+                    let i = data.plugins.push[this._platform]._id;
+                    if (this._id.toString() !== i.toString()) {
+                        this._id = i;
+                        this.load(db).then(res, rej);
+                    }
+                    else {
+                        rej(err || 'Credentials ' + this._id + ' not found: app creds are the same');
+                    }
                 }
             });
         });

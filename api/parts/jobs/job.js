@@ -7,7 +7,7 @@ const EventEmitter = require('events'),
     ipc = require('./ipc.js'),
     log = require('../../utils/log.js')('jobs:job'),
     retry = require('./retry.js'),
-    ObjectID = require('mongoskin').ObjectID;
+    ObjectID = require('mongodb').ObjectID;
 
 const STATUS = {
         SCHEDULED: 0,
@@ -17,6 +17,15 @@ const STATUS = {
         ABORTED: 4,
         PAUSED: 5,
         WAITING: 6
+    },
+    STATUS_MAP = {
+        0: "SCHEDULED",
+        1: "RUNNING",
+        2: "DONE",
+        3: "CANCELLED",
+        4: "ABORTED",
+        5: "PAUSED",
+        6: "WAITING"
     },
     ERROR = {
         CRASH: 'crash',
@@ -1096,5 +1105,6 @@ module.exports = {
     IPCFaçadeJob: IPCFaçadeJob,
     TransientJob: TransientJob,
     STATUS: STATUS,
+    STATUS_MAP: STATUS_MAP,
     debounce: debounce
 };

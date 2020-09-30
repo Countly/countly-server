@@ -34,7 +34,7 @@ function check_ext(file) {
     if (last === 'tar' || last === 'zip' || last === 'tgz') {
         return true;
     }
-    else if (plast === 'tar' && plast === 'gz') {
+    else if (plast === 'tar' && last === 'gz') {
         return true;
     }
     CountlyHelpers.alert(jQuery.i18n.map["plugin-upload.badformat"], "popStyleGreen", {title: jQuery.i18n.map["common.error"], image: "token-warning"});

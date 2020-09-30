@@ -37,6 +37,11 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
     // Because of this, our algorithm needs to understand if the x-coord and
     // y-coord should be getting smaller or larger and properly cap the values
     // based on (x,y).
+    
+    fromX = fromX || 0;
+    fromY = fromY || 0;
+    toX = toX || 0;
+    toY = toY || 0;
     var lt = function (a, b) { return a <= b; };
     var gt = function (a, b) { return a >= b; };
     var capmin = function (a, b) { return Math.min(a, b); };
@@ -1356,6 +1361,12 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
 
             surface = new Canvas("flot-base", placeholder);
             overlay = new Canvas("flot-overlay", placeholder); // overlay canvas for interactive features
+            
+            //catch cases when canvas does not exist
+            surface.width = surface.width || 0;
+            surface.height = surface.height || 0;
+            overlay.width = overlay.width || 0;
+            overlay.height = overlay.height || 0;
 
             ctx = surface.context;
             octx = overlay.context;

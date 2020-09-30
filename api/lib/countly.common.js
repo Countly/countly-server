@@ -105,11 +105,17 @@ function getPeriodObject() {
         }
         catch (SyntaxError) {
             console.log("period JSON parse failed");
-            _period = "month";
+            _period = "30days";
         }
     }
 
     if (Array.isArray(_period)) {
+        if ((_period[0] + "").length === 10) {
+            _period[0] *= 1000;
+        }
+        if ((_period[1] + "").length === 10) {
+            _period[1] *= 1000;
+        }
         var fromDate, toDate;
 
         if (Number.isInteger(_period[0]) && Number.isInteger(_period[1])) {
@@ -208,6 +214,30 @@ function getPeriodObject() {
     }
     else if (/([0-9]+)days/.test(_period)) {
         let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([0-9]+)weeks/.test(_period)) {
+        let nDays = parseInt(/([0-9]+)weeks/.exec(_period)[1]) * 7;
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([0-9]+)months/.test(_period)) {
+        let nDays = parseInt(/([0-9]+)months/.exec(_period)[1]) * 30;
         if (nDays < 1) {
             nDays = 30; //if there is less than 1 day
         }
@@ -1735,7 +1765,10 @@ countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
     var ts = {};
 
     tmpArr = periodObj.currentPeriodArr[0].split(".");
-    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).tz(params.appTimezone);
+    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+    if (params.appTimezone) {
+        ts.$gte.tz(params.appTimezone);
+    }
     if (inSeconds) {
         ts.$gte = ts.$gte.valueOf() / 1000 - ts.$gte.utcOffset() * 60;
     }
@@ -1744,7 +1777,10 @@ countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
     }
 
     tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
-    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days').tz(params.appTimezone);
+    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+    if (params.appTimezone) {
+        ts.$lt.tz(params.appTimezone);
+    }
     if (inSeconds) {
         ts.$lt = ts.$lt.valueOf() / 1000 - ts.$lt.utcOffset() * 60;
     }
@@ -1858,7 +1894,7 @@ countlyCommon.decode = function(str) {
 * @param {(string|string[]|number[])} defaultPeriod - default period value in case it's not supplied in the params
 * @returns {module:api/lib/countly.common.periodObj} period object
 */
-countlyCommon.getPeriodObj = function(params, defaultPeriod = "month") {
+countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
     let appTimezone = params.appTimezone || (params.app && params.app.timezone);
 
     params.qstring.period = params.qstring.period || defaultPeriod;

@@ -1167,9 +1167,10 @@ function initializeViewsWidget() {
     /**
      * Function to return view name
      * @param  {String} view - View value
+     * @param  {String} appType - optional. App type. Used to set correct labels for web type
      * @returns {String} name - View name
      */
-    function returnViewName(view) {
+    function returnViewName(view, appType) {
         var name = "Unknown";
 
         var viewName = viewsMetric.filter(function(obj) {
@@ -1178,7 +1179,14 @@ function initializeViewsWidget() {
 
         if (viewName.length) {
             name = viewName[0].name;
+            if (appType === "web" && viewName[0].value === "u") {
+                name = jQuery.i18n.prop("web.common.table.total-users");
+            }
+            if (appType === "web" && viewName[0].value === "n") {
+                name = jQuery.i18n.prop("web.common.table.new-users");
+            }
         }
+
 
         return name;
     }
@@ -1227,6 +1235,22 @@ function initializeViewsWidget() {
         var selectedApp = $singleAppDrop.clySelectGetSelection();
         var selectedViews = $multiViewsDrop.clyMultiSelectGetSelection();
 
+        if (selectedApp) {
+            if (countlyGlobal.apps[selectedApp].type === "web") {
+                $("#multi-views-dropdown").find("div[data-value='u']").html(jQuery.i18n.prop("web.common.table.total-users"));
+                $("#multi-views-dropdown").find("div[data-value='n']").html(jQuery.i18n.prop("web.common.table.new-users"));
+
+                $("#multi-views-dropdown").find(".selection[data-value='u']").html(jQuery.i18n.prop("web.common.table.total-users"));
+                $("#multi-views-dropdown").find(".selection[data-value='n']").html(jQuery.i18n.prop("web.common.table.new-users"));
+
+            }
+            else {
+                $("#multi-views-dropdown").find("div[data-value='u']").html(jQuery.i18n.prop("views.u"));
+                $("#multi-views-dropdown").find("div[data-value='n']").html(jQuery.i18n.prop("views.n"));
+                $("#multi-views-dropdown").find(".selection[data-value='u']").html(jQuery.i18n.prop("views.u"));
+                $("#multi-views-dropdown").find(".selection[data-value='n']").html(jQuery.i18n.prop("views.n"));
+            }
+        }
         var settings = {
             apps: (selectedApp) ? [ selectedApp ] : [],
             views: selectedViews
@@ -1290,6 +1314,13 @@ function initializeViewsWidget() {
      * @param  {Object} widgetData - Widget data object
      */
     function formatData(widgetData) {
+        var appType = "mobile";
+        if (widgetData.apps && widgetData.apps[0]) {
+            if (countlyGlobal.apps[widgetData.apps[0]].type === "web") {
+                appType = "web";
+            }
+
+        }
         var data = widgetData.dashData.data,
             views = widgetData.views;
 
@@ -1298,7 +1329,7 @@ function initializeViewsWidget() {
 
         for (i = 0; i < views.length; i++) {
             viewsValueNames.push({
-                name: returnViewName(views[i]),
+                name: returnViewName(views[i], appType),
                 value: views[i]
             });
         }
