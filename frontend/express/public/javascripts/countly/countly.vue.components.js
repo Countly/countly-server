@@ -2483,10 +2483,12 @@
                     }
                 },
                 groupIndex: function() {
-                    var index = [];
-                    var currentGroup = -1;
+                    var index = [],
+                        currentGroup = -1,
+                        self = this;
+
                     this.items.forEach(function(item, idx) {
-                        if (this.isItemGroup(item)) {
+                        if (self.isItemGroup(item)) {
                             currentGroup = idx;
                             index.push(-1);
                         }
@@ -2620,7 +2622,6 @@
                     }
 
                     this.selectNavigatedElement();
-                    this.close();
                 }
             },
             watch: {
