@@ -2416,7 +2416,8 @@
                     searchQuery: "", // debounced search query value
                     navigatedIndex: null,
                     opened: false,
-                    waitingItems: false
+                    waitingItems: false,
+                    hasFocus: false
                 };
             },
             computed: {
@@ -2493,6 +2494,9 @@
                         }
                     });
                     return index;
+                },
+                isKeyboardNavAvailable: function() {
+                    return this.opened && this.hasFocus;
                 }
             },
             methods: {
@@ -2560,7 +2564,11 @@
                     }
                 }
             },
-            template: '<div class="cly-vue-select" v-bind:class="containerClasses" v-click-outside="close">\
+            template: '<div class="cly-vue-select" tabindex="0"\
+                            @blur="hasFocus = false"\
+                            @focus="hasFocus = true"\
+                            v-bind:class="containerClasses"\
+                            v-click-outside="close">\
                             <div class="select-inner" @click="toggle">\
                                 <div class="text-container">\
                                     <div v-if="selectedItem" class="text" style="width:80%">\
@@ -2574,7 +2582,10 @@
                             </div>\
                             <div class="search" v-if="searchable" v-show="opened">\
                                 <div class="inner">\
-                                <input type="search" v-model="tempSearchQuery"/>\<i class="fa fa-search"></i>\
+                                <input type="search"\
+                                    @focus="hasFocus = true"\
+                                    v-model="tempSearchQuery"/>\
+                                <i class="fa fa-search"></i>\
                                 </div>\
                             </div>\
                             <div class="items-list square" style="width:100%;" v-show="opened">\
