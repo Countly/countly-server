@@ -1301,7 +1301,7 @@
                 &.hidden {
                     display: none;
                 }
-                &:hover {
+                &.navigated {
                     background-color: #f3f3f3;
                 }
                 &:last-child,
