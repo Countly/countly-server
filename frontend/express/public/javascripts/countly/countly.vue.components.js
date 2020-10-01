@@ -1003,7 +1003,7 @@
         toStandardResponse: function(response) {
             response = response || {};
             return {
-                rows: response.aaData || {},
+                rows: response.aaData || [],
                 totalRows: response.iTotalDisplayRecords || 0,
                 notFilteredTotalRows: response.iTotalRecords || 0
             };
