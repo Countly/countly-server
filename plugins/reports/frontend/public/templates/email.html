@@ -188,7 +188,7 @@
                                                 <td style="padding: 0 0 10px 0;">
                                                     <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                         <tr>
-                                                            <th align="<% if(k == 0){ %>left<% } else {%>right<%} %>" style="font-family: arial, sans-serif;color: #979797;  font-size: 16px;word-wrap:break-word;word-break:break-all; font-weight: 400;"><%= item %></th>
+                                                            <th align="<% if(k == 0){ %>left<% } else {%>right<%} %>" style="font-family: arial, sans-serif;color: #979797;  font-size: 13px;word-wrap:break-word;word-break:break-all; font-weight: 400;"><%= item %></th>
                                                         </tr>
                                                     </table>
                                                 </td>
@@ -218,9 +218,9 @@
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                     <tr>
                                                         <% if (properties["reports."+keyName]) { %>
-                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px;word-wrap:break-word;word-break:break-all;"><%= properties["reports."+keyName] %></td>
+                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 13px;word-wrap:break-word;word-break:break-all;"><%= properties["reports."+keyName] %></td>
                                                         <% }else{ %>
-                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px;word-wrap:break-word;word-break:break-all;"><%= keyName %></td>
+                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 13px;word-wrap:break-word;word-break:break-all;"><%= keyName %></td>
                                                         <% } %>
                                                     </tr>
                                                 </table>
@@ -243,7 +243,7 @@
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                     <tr>
-                                                        <td align="right" style="font-family: Arial, sans-serif; <% if (apps[i].results[j][key].change != "NA" && apps[i].results[j][key].change != "0%") { %> <% if (apps[i].results[j][key].trend == "d" && j != "crash") { %> color: red; <% } else if (apps[i].results[j][key].trend == "u" && j != "crash"){ %> color: green; <% } else if (apps[i].results[j][key].trend == "d" && j == "crash") { %> color: green2; <% } else { %> color: red; <% } %> <% } else { %> color:#333333; <% } %> font-size: 16px;"><%= apps[i].results[j][key].change %></td>
+                                                        <td align="right" style="font-family: Arial, sans-serif; <% if (apps[i].results[j][key].change != "NA" && apps[i].results[j][key].change != "0%") { %> <% if (apps[i].results[j][key].trend == "d" && j != "crash") { %> color: red; <% } else if (apps[i].results[j][key].trend == "u" && j != "crash"){ %> color: green; <% } else if (apps[i].results[j][key].trend == "d" && j == "crash") { %> color: green2; <% } else { %> color: red; <% } %> <% } else { %> color:#333333; <% } %> font-size: 13px;"><%= apps[i].results[j][key].change %></td>
                                                     </tr>
                                                 </table>
                                             </td>
