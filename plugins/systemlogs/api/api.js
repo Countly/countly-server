@@ -289,6 +289,7 @@ var pluginOb = {},
      */
     function processRecording(ob) {
         var user = ob.user || ob.params.member;
+        ob.data = ob.data || {};
         if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {
