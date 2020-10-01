@@ -982,8 +982,37 @@
         this.abortFn();
     };
 
+    var DataTable = {
+        toLegacyRequest: function(requestParams, cols) {
+            var convertedParams = {};
+            convertedParams.iDisplayStart = (requestParams.page - 1) * requestParams.perPage;
+            convertedParams.iDisplayLength = requestParams.perPage;
+            if (cols && requestParams.sort && requestParams.sort.length > 0) {
+                var sorter = requestParams.sort[0];
+                var sortFieldIndex = cols.indexOf(sorter.field);
+                if (sortFieldIndex > -1) {
+                    convertedParams.iSortCol_0 = sortFieldIndex;
+                    convertedParams.sSortDir_0 = sorter.type;
+                }
+            }
+            if (requestParams.searchQuery) {
+                convertedParams.sSearch = requestParams.searchQuery;
+            }
+            return convertedParams;
+        },
+        toStandardResponse: function(response) {
+            response = response || {};
+            return {
+                rows: response.aaData || [],
+                totalRows: response.iTotalDisplayRecords || 0,
+                notFilteredTotalRows: response.iTotalRecords || 0
+            };
+        }
+    };
+
     var _helpers = {
-        DelayedAction: DelayedAction
+        DelayedAction: DelayedAction,
+        DataTable: DataTable
     };
 
     var _components = {
