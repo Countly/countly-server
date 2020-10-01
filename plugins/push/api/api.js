@@ -117,6 +117,8 @@ const PUSH_CACHE_GROUP = 'P';
                 });
             }
             else if (event === '[CLY]_push_action') {
+                events = events.filter(e => !!e.sg.i);
+            
                 let ids = events.map(e => e.sg.i);
                 ids = ids.filter((id, i) => ids.indexOf(id) === i).map(id => common.db.ObjectID(id));
 
