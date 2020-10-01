@@ -992,8 +992,6 @@ function trim_ending_slashes(address) {
 
 
                 if (response && response.body) {
-                    message = response.body;
-
                     try {
                         var resp = JSON.parse(response.body);
                         message = resp.result || resp;
