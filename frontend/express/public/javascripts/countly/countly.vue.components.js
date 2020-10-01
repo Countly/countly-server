@@ -1,4 +1,4 @@
-/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _ */
+/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app */
 
 (function(CountlyVueComponents, $) {
 
@@ -380,6 +380,18 @@
     Vue.use(window.vuelidate.default);
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
     window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
+
+    var objectWithoutProperties = function(obj, excluded) {
+        if (!obj || !excluded || excluded.length === 0) {
+            return obj;
+        }
+        return Object.keys(obj).reduce(function(acc, val) {
+            if (excluded.indexOf(val) === -1) {
+                acc[val] = obj[val];
+            }
+            return acc;
+        }, {});
+    };
 
     // @vue/component
     var autoRefreshMixin = {
@@ -970,8 +982,37 @@
         this.abortFn();
     };
 
+    var DataTable = {
+        toLegacyRequest: function(requestParams, cols) {
+            var convertedParams = {};
+            convertedParams.iDisplayStart = (requestParams.page - 1) * requestParams.perPage;
+            convertedParams.iDisplayLength = requestParams.perPage;
+            if (cols && requestParams.sort && requestParams.sort.length > 0) {
+                var sorter = requestParams.sort[0];
+                var sortFieldIndex = cols.indexOf(sorter.field);
+                if (sortFieldIndex > -1) {
+                    convertedParams.iSortCol_0 = sortFieldIndex;
+                    convertedParams.sSortDir_0 = sorter.type;
+                }
+            }
+            if (requestParams.searchQuery) {
+                convertedParams.sSearch = requestParams.searchQuery;
+            }
+            return convertedParams;
+        },
+        toStandardResponse: function(response) {
+            response = response || {};
+            return {
+                rows: response.aaData || {},
+                totalRows: response.iTotalDisplayRecords || 0,
+                notFilteredTotalRows: response.iTotalRecords || 0
+            };
+        }
+    };
+
     var _helpers = {
-        DelayedAction: DelayedAction
+        DelayedAction: DelayedAction,
+        DataTable: DataTable
     };
 
     var _components = {
@@ -1001,7 +1042,8 @@
                         stepContents: [],
                         sidecarContents: [],
                         constants: {},
-                        localState: {},
+                        localState: this.getInitialLocalState(),
+                        inScope: [],
                         isMounted: false
                     };
                 },
@@ -1037,10 +1079,23 @@
                     hasSidecars: function() {
                         return this.sidecarContents.length > 0;
                     },
-                    info: function() {
-                        return {
-                            currentStepId: this.currentStepId
-                        };
+                    passedScope: function() {
+                        var defaultKeys = ["editedObject", "$v", "constants", "localState"],
+                            self = this;
+
+                        var passed = defaultKeys.reduce(function(acc, val) {
+                            acc[val] = self[val];
+                            return acc;
+                        }, {});
+
+                        if (this.inScopeReadOnly) {
+                            passed.readOnly = this.inScopeReadOnly.reduce(function(acc, val) {
+                                acc[val] = self[val];
+                                return acc;
+                            }, {});
+                        }
+
+                        return passed;
                     }
                 },
                 watch: {
@@ -1087,6 +1142,7 @@
                     },
                     reset: function() {
                         this.$v.$reset();
+                        this.resetLocalState();
                         this.setStep(0);
                     },
                     submit: function() {
@@ -1105,7 +1161,13 @@
                     beforeSubmit: function(editedObject) {
                         return editedObject;
                     },
-                    beforeLeavingStep: function() { },
+                    getInitialLocalState: function() {
+                        return {};
+                    },
+                    resetLocalState: function() {
+                        this.localState = this.getInitialLocalState();
+                    },
+                    beforeLeavingStep: function() { }
                 },
                 template: '<div class="cly-vue-drawer"\
                                 v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\
@@ -1116,7 +1178,9 @@
                                     </span>\
                                 </div>\
                                 <div class="sidecars-view" v-show="hasSidecars">\
-                                    <slot name="sidecars" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                    <slot name="sidecars"\
+                                        v-bind="passedScope">\
+                                    </slot>\
                                 </div>\
                                 <div class="steps-view">\
                                     <div class="steps-header" v-show="isMultiStep">\
@@ -1129,11 +1193,15 @@
                                         </div>\
                                     </div>\
                                     <div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\
-                                        <slot name="default" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                        <slot name="default"\
+                                            v-bind="passedScope">\
+                                        </slot>\
                                     </div>\
                                     <div class="buttons multi-step" v-if="isMultiStep">\
                                         <div class="controls-left-container">\
-                                            <slot name="controls-left" :info="info" :editedObject="editedObject" :$v="$v" :constants="constants" :localState="localState"></slot>\
+                                            <slot name="controls-left"\
+                                                v-bind="passedScope">\
+                                            </slot>\
                                         </div>\
                                         <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\
                                         <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\
@@ -1166,6 +1234,9 @@
     var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
 
     Vue.component("cly-colorpicker", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
         props: {
             value: {type: [String, Object], default: "#FFFFFF"},
             resetValue: { type: [String, Object], default: "#FFFFFF"}
@@ -1218,9 +1289,9 @@
                     <div class="picker-body" v-if="isOpened" v-click-outside="close">\
                         <picker :preset-colors="[]" :value="value" @input="setColor"></picker>\
                         <div class="button-controls">\
-                            <cly-button label="Reset" @click="reset" skin="light"></cly-button>\
-                            <cly-button label="Cancel" @click="close" skin="light"></cly-button>\
-                            <cly-button label="Confirm" @click="close" skin="green"></cly-button>\
+                            <cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\
+                            <cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\
+                            <cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\
                         </div>\
                     </div>\
                   </div>'
@@ -2120,7 +2191,7 @@
         }
     ));
 
-    Vue.component("cly-image-radio", countlyBaseComponent.extend(
+    Vue.component("cly-generic-radio", countlyBaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -2132,14 +2203,14 @@
                         return [];
                     }
                 },
-                skin: { default: "main", type: String}
+                skin: { default: "main", type: String},
             },
             computed: {
                 skinClass: function() {
                     if (["main", "light"].indexOf(this.skin) > -1) {
-                        return "image-radio-" + this.skin + "-skin";
+                        return "generic-radio-" + this.skin + "-skin";
                     }
-                    return "image-radio-main-skin";
+                    return "generic-radio-main-skin";
                 }
             },
             methods: {
@@ -2147,11 +2218,11 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<div class="cly-vue-image-radio" v-bind:class="[skinClass]">\
-                            <div class="image-radio-wrapper">\
+            template: '<div class="cly-vue-generic-radio" v-bind:class="[skinClass]">\
+                            <div class="generic-radio-wrapper">\
                                 <div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\
                                     <div class="button-area">\
-                                        <div class="icon"><img :src="item.image" /></div>\
+                                        <div class="component"><component :is="item.cmp" /></div>\
                                         <div class="text">{{item.label}}</div>\
                                     </div>\
                                 </div>\
@@ -2171,7 +2242,12 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<input type="text" class="cly-vue-text-field input" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
+            computed: {
+                defaultListeners: function() {
+                    return objectWithoutProperties(this.$listeners, ["input"]);
+                }
+            },
+            template: '<input type="text" class="cly-vue-text-field input" v-on="defaultListeners" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
         }
     ));
 
@@ -2314,8 +2390,14 @@
                     this.$emit('input', e);
                 }
             },
+            computed: {
+                defaultListeners: function() {
+                    return objectWithoutProperties(this.$listeners, ["input"]);
+                }
+            },
             template: '<textarea class="cly-vue-text-area"\
                             v-bind="$attrs"\
+                            v-on="defaultListeners"\
                             :value="value"\
                             @input="setValue($event.target.value)">\
                         </textarea>'
@@ -2330,7 +2412,7 @@
             ],
             props: {
                 value: {
-                    type: Object,
+                    type: [Object, String, Number, Boolean],
                     default: function() {
                         return { name: "", value: null };
                     }
@@ -2346,6 +2428,7 @@
                 disabled: { type: Boolean, default: false },
                 aligned: { type: String, default: "left" },
                 skin: { type: String, default: 'default' },
+                listDelayWarning: {type: String, default: null}
             },
             mounted: function() {
                 $(this.$refs.scrollable).slimScroll({
@@ -2362,7 +2445,9 @@
                     searchQuery: "", // debounced search query value
                     navigatedIndex: null,
                     opened: false,
-                    waitingItems: false
+                    waitingItems: false,
+                    hasFocus: false,
+                    scroller: null
                 };
             },
             computed: {
@@ -2427,10 +2512,12 @@
                     }
                 },
                 groupIndex: function() {
-                    var index = [];
-                    var currentGroup = -1;
+                    var index = [],
+                        currentGroup = -1,
+                        self = this;
+
                     this.items.forEach(function(item, idx) {
-                        if (!Object.prototype.hasOwnProperty.call(item, "value")) {
+                        if (self.isItemGroup(item)) {
                             currentGroup = idx;
                             index.push(-1);
                         }
@@ -2439,11 +2526,14 @@
                         }
                     });
                     return index;
+                },
+                isKeyboardNavAvailable: function() {
+                    return this.opened && this.hasFocus;
                 }
             },
             methods: {
                 setItem: function(item) {
-                    if (item.value) {
+                    if (!this.isItemGroup(item)) {
                         this.$emit("input", item);
                         this.opened = false;
                     }
@@ -2461,13 +2551,119 @@
                     if (!this.disabled) {
                         this.opened = !this.opened;
                     }
+                },
+                findItemByValue: function(value) {
+                    var found = this.items.filter(function(item) {
+                        return item.value === value;
+                    });
+                    if (found.length > 0) {
+                        return found[0];
+                    }
+                    return null;
+                },
+                selectNavigatedElement: function() {
+                    if (this.navigatedIndex !== null && this.navigatedIndex < this.visibleItems.length) {
+                        this.setItem(this.visibleItems[this.navigatedIndex]);
+                    }
+                },
+                setNavigatedIndex: function(navigatedIndex) {
+                    this.navigatedIndex = navigatedIndex;
+                },
+                scrollToNavigatedIndex: function() {
+                    var self = this,
+                        $scrollable = $(self.$refs.scrollable);
+
+                    if (self.navigatedIndex !== null && $scrollable) {
+                        var y = ($scrollable.scrollTop() + $(self.$refs["tmpItemRef_" + self.navigatedIndex]).position().top) + "px";
+                        $scrollable.slimScroll({scrollTo: y});
+                    }
+                },
+                isItemGroup: function(element) {
+                    if (!Object.prototype.hasOwnProperty.call(element, "value")) {
+                        return true;
+                    }
+                    if (element.group) {
+                        return true;
+                    }
+                    return false;
+                },
+                getNextNonGroupIndex: function(startFrom, direction) {
+                    for (var offset = 0; offset < this.visibleItems.length; offset++) {
+                        var current = (direction * offset + startFrom);
+                        if (current < 0) {
+                            current = this.visibleItems.length + current;
+                        }
+                        current = current % this.visibleItems.length;
+                        if (!this.isItemGroup(this.visibleItems[current])) {
+                            return current;
+                        }
+                    }
+                },
+                upKeyEvent: function() {
+                    if (!this.isKeyboardNavAvailable) {
+                        return;
+                    }
+
+                    if (this.navigatedIndex === null) {
+                        this.navigatedIndex = this.visibleItems.length - 1;
+                    }
+                    else {
+                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex - 1, -1);
+                    }
+
+                    this.scrollToNavigatedIndex();
+                },
+                downKeyEvent: function() {
+                    if (!this.isKeyboardNavAvailable) {
+                        return;
+                    }
+
+                    if (this.navigatedIndex === null) {
+                        this.navigatedIndex = 0;
+                    }
+                    else {
+                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex + 1, 1);
+                    }
+
+                    this.scrollToNavigatedIndex();
+                },
+                escKeyEvent: function() {
+                    if (this.navigatedIndex === null && this.opened) {
+                        this.close();
+                        return;
+                    }
+                    else if (this.navigatedIndex !== null) {
+                        this.navigatedIndex = null;
+                    }
+                },
+                enterKeyEvent: function() {
+                    if (this.navigatedIndex === null) {
+                        return;
+                    }
+
+                    this.selectNavigatedElement();
                 }
             },
             watch: {
+                value: {
+                    immediate: true,
+                    handler: function(passedValue) {
+                        if (typeof passedValue !== 'object') {
+                            var item = this.findItemByValue(passedValue);
+                            if (item) {
+                                this.setItem(item);
+                            }
+                            else {
+                                this.setItem({name: passedValue, value: passedValue});
+                            }
+                        }
+                    }
+                },
                 opened: function(newValue) {
                     if (!newValue) {
                         this.tempSearchQuery = "";
                         this.searchQuery = "";
+                        this.navigatedIndex = null;
                     }
                 },
                 tempSearchQuery: _.debounce(function(newVal) {
@@ -2481,9 +2677,18 @@
                     handler: function() {
                         this.waitingItems = false;
                     }
+                },
+                visibleItems: function() {
+                    this.navigatedIndex = null; // reset navigation on visible items change
                 }
             },
-            template: '<div class="cly-vue-select" v-bind:class="containerClasses" v-click-outside="close">\
+            template: '<div class="cly-vue-select"\
+                            v-bind:class="containerClasses"\
+                            v-click-outside="close"\
+                            @keydown.up.prevent="upKeyEvent"\
+                            @keydown.down.prevent="downKeyEvent"\
+                            @keydown.esc="escKeyEvent"\
+                            @keydown.enter="enterKeyEvent">\
                             <div class="select-inner" @click="toggle">\
                                 <div class="text-container">\
                                     <div v-if="selectedItem" class="text" style="width:80%">\
@@ -2497,17 +2702,25 @@
                             </div>\
                             <div class="search" v-if="searchable" v-show="opened">\
                                 <div class="inner">\
-                                <input type="search" v-model="tempSearchQuery"/>\<i class="fa fa-search"></i>\
+                                <input type="search"\
+                                    @focus="hasFocus = true"\
+                                    v-model="tempSearchQuery"/>\
+                                <i class="fa fa-search"></i>\
                                 </div>\
                             </div>\
                             <div class="items-list square" style="width:100%;" v-show="opened">\
                                 <div ref="scrollable" class="scrollable">\
-                                    <div class="warning" v-if="dynamicItems">{{ i18n("drill.big-list-warning") }}</div>\
-                                    <div v-for="(item, i) in visibleItems" :key="i" v-on:click="setItem(item)" v-bind:class="{item: item.value, group : !item.value}">\
-                                        <div v-if="!item.value">\
+                                    <div class="warning" v-if="dynamicItems && listDelayWarning">{{ listDelayWarning }}</div>\
+                                    <div v-for="(item, i) in visibleItems" :key="i"\
+                                        @mouseover="setNavigatedIndex(i)"\
+                                        @mouseleave="setNavigatedIndex(null)"\
+                                        @click="setItem(item)"\
+                                        :ref="\'tmpItemRef_\' + i"\
+                                        :class="{item: !isItemGroup(item), group : isItemGroup(item), navigated: i === navigatedIndex}">\
+                                        <div v-if="isItemGroup(item)">\
                                             <span v-text="item.name"></span>\
                                         </div>\
-                                        <div v-if="item.value" v-bind:data-value="item.value">\
+                                        <div v-else v-bind:data-value="item.value">\
                                             <span v-text="item.name"></span>\
                                         </div>\
                                     </div>\
@@ -2517,6 +2730,39 @@
         }
     ));
 
+    Vue.component("cly-back-link", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                title: {type: String, required: false},
+                link: {type: String, required: false}
+            },
+            methods: {
+                back: function() {
+                    if (this.link) {
+                        app.back(this.link);
+                    }
+                    else {
+                        app.back();
+                    }
+                }
+            },
+            computed: {
+                innerTitle: function() {
+                    if (this.title) {
+                        return this.title;
+                    }
+                    return this.i18n("common.back");
+                }
+            },
+            template: '<a @click="back" class="cly-vue-back-link"> \
+                            <span>{{innerTitle}}</span>\
+                        </a>'
+        }
+    ));
 
     var clyDataTableControls = countlyBaseComponent.extend({
         mixins: [
@@ -2787,7 +3033,8 @@
                     return this.totalRows;
                 }
                 else {
-                    return this.rows.length;
+                    // vgt-table should determine itself.
+                    return;
                 }
             }
         },
@@ -2974,6 +3221,9 @@
     }));
 
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
         props: {
             diff: {
                 type: Array
@@ -2982,6 +3232,9 @@
         computed: {
             hasDiff: function() {
                 return this.diff.length > 0;
+            },
+            madeChanges: function() {
+                return this.i18n("common.diff-helper.changes", this.diff.length);
             }
         },
         methods: {
@@ -2994,12 +3247,12 @@
         },
         template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\
                         <div class="message">\
-                            <span class="text-dark">You made {{diff.length}} changes.</span>\
-                            <span class="text-light">Do you want to keep them?</span>\
+                            <span class="text-dark">{{madeChanges}}</span>\
+                            <span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\
                         </div>\
                         <div class="buttons">\
-                            <cly-button label="Discard Changes" skin="light" class="discard-btn" @click="discard"></cly-button>\
-                            <cly-button label="Save Changes" skin="green" class="save-btn" @click="save"></cly-button>\
+                            <cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\
+                            <cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\
                         </div>\
                     </div>'
     }));

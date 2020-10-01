@@ -16,7 +16,7 @@ var TableView = countlyVue.views.BaseView.extend({
     data: function() {
         var manyItems = [];
 
-        for (var i = 1;i <= 50;i++) {
+        for (var i = 0;i <= 50;i++) {
             if (i > 0 && i % 10 === 0) {
                 manyItems.push({name: (i - i % 10) + "s"});
             }
@@ -31,9 +31,9 @@ var TableView = countlyVue.views.BaseView.extend({
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3, description: "Some description..."},
             ],
-            selectedImageRadio: 2,
-            availableImageRadio: [
-                {label: "Type 1", value: 1},
+            selectedGenericRadio: 2,
+            availableGenericRadio: [
+                {label: "Type 1", value: 1, cmp: {'template': '<div>Template</div>'}},
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3},
             ],
@@ -44,7 +44,7 @@ var TableView = countlyVue.views.BaseView.extend({
                 {label: "Type 2", value: 2},
                 {label: "Type 3", value: 3},
             ],
-            selectWModel: null,
+            selectWModel: 1, // it would automatically find the record {"name": "Type 1", "value": 1}
             selectWItems: manyItems,
             selectDWModel: null,
             selectDWItems: manyItems,

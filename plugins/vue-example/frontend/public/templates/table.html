@@ -98,13 +98,13 @@
                 </div>
                 <div class="example-component" style="height: 250px;">
                     <div class="example-cell">
-                        Image RadioButtons
+                        Generic RadioButtons
                     </div>
                     <div class="example-cell">
-                        <cly-image-radio v-bind:items="availableImageRadio" v-model="selectedImageRadio"></cly-image-radio>
+                        <cly-generic-radio v-bind:items="availableGenericRadio" v-model="selectedGenericRadio"></cly-generic-radio>
                     </div>
                     <div class="example-cell">
-                        Selected value: {{selectedImageRadio}}
+                        Selected value: {{selectedGenericRadio}}
                     </div>
                 </div>
                 <div class="example-component">
@@ -184,6 +184,7 @@
                             style="width:220px"
                             :items="selectDWItems" 
                             :dynamic-items="true"
+                            :list-delay-warning="i18n('drill.big-list-warning')"
                             v-model="selectDWModel"
                             @search="onDSSearch"
                             placeholder="Select an item">
