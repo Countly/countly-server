@@ -778,7 +778,7 @@
                     state[stateKey] = reader.defaultState();
                     state[_getReadTransactionName(fnName)] = 0;
                     if (reader.params) {
-                        state[_getReadParamsName(fnName)] = JSON.parse(JSON.stringify(reader.params));
+                        state[_getReadParamsName(fnName)] = reader.params();
                     }
                     else {
                         state[_getReadParamsName(fnName)] = {};
