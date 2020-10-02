@@ -30,6 +30,26 @@
         });
     };
 
+    countlyTaskManager.getLastReports = function(callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/tasks/list",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "query": JSON.stringify({"manually_create": false}),
+                "display_loader": false,
+                'sSortDir_0': 'desc',
+                "iSortCol_0": 8//sort by started
+            },
+            dataType: "json",
+            success: function(json) {
+                json = json || {};
+                json.aaData = json.aaData || [];
+                callback(json.aaData);
+            }
+        });
+    };
+
     countlyTaskManager.fetchResult = function(id, callback) {
         return $.ajax({
             type: "GET",
@@ -235,14 +255,15 @@
             monitor[countlyCommon.ACTIVE_APP_ID] = [];
         }
         if (monitor[countlyCommon.ACTIVE_APP_ID].indexOf(id) === -1) {
+            $(".orange-side-notification-banner-wrapper").css("display", "block");
             monitor[countlyCommon.ACTIVE_APP_ID].push(id);
             store.set("countly_task_monitor", monitor);
             if (!silent) {
-                CountlyHelpers.notify({
+                /*CountlyHelpers.notify({
                     title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
                     message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
                     info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
-                });
+                });*/
             }
         }
         else {
@@ -258,6 +279,7 @@
 
     countlyTaskManager.tick = function() {
         var assistantAvailable = true;
+        app.updateLongTaskViewsNofification();
         if (typeof countlyAssistant === "undefined") {
             assistantAvailable = false;
         }
@@ -266,6 +288,10 @@
             var id = monitor[countlyCommon.ACTIVE_APP_ID][curTask];
             countlyTaskManager.check(id, function(res) {
                 if (res === false || res.result === "completed" || res.result === "errored") {
+                    $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
+                    app.haveUnreadReports = true;
+                    app.updateLongTaskViewsNofification();
+
                     //get it from storage again, in case it has changed
                     monitor = store.get("countly_task_monitor") || {};
                     //get index of task, cause it might have been changed
