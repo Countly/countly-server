@@ -2803,14 +2803,17 @@
             notFilteredTotal: {
                 type: Number
             },
+            initialPaging: {
+                type: Object
+            }
         },
         data: function() {
             return {
                 firstPage: 1,
-                currentPage: 1,
-                perPage: 10,
-                searchVisible: false,
-                displayItems: 10
+                currentPage: this.initialPaging.page,
+                perPage: this.initialPaging.perPage,
+                searchVisible: !!this.searchQuery,
+                displayItems: this.initialPaging.perPage
             };
         },
         computed: {
@@ -2828,8 +2831,8 @@
             }
         },
         mounted: function() {
-            this.updatePerPage();
-            this.goToFirstPage();
+            // this.updatePerPage();
+            // this.goToFirstPage();
             this.updateInfo();
         },
         methods: {
@@ -2993,6 +2996,10 @@
                 type: Number,
                 default: 0
             },
+            persistKey: {
+                type: String,
+                default: null
+            }
         },
         computed: {
             notFilteredTotal: function() {
@@ -3038,10 +3045,16 @@
                 }
             }
         },
+        created: function() {
+            if (this.isRemote) {
+                this.$emit("remote-params-change", this.currentParams);
+            }
+        },
         data: function() {
+            var persisted = this.getPersistedParams();
             return {
                 pageInfo: '',
-                searchQuery: '',
+                searchQuery: persisted.searchQuery,
                 optionsOpened: false,
                 optionsRowData: {},
                 optionsItems: [],
@@ -3051,15 +3064,37 @@
                 },
                 isLoading: false,
                 internalMode: this.mode,
-                remoteParams: {
-                    page: 1,
-                    perPage: 10,
-                    searchQuery: null,
-                    sort: []
-                }
+                initialPaging: {
+                    page: persisted.page,
+                    perPage: persisted.perPage
+                },
+                currentParams: persisted
             };
         },
         methods: {
+            getPersistedParams: function() {
+                var loadedState = localStorage.getItem(this.persistKey);
+                var defaultState = {
+                    page: 1,
+                    perPage: 10,
+                    searchQuery: '',
+                    sort: []
+                };
+                try {
+                    if (loadedState) {
+                        return JSON.parse(loadedState);
+                    }
+                    return defaultState;
+                }
+                catch (ex) {
+                    return defaultState;
+                }
+            },
+            persistParams: function() {
+                if (this.persistKey) {
+                    localStorage.setItem(this.persistKey, JSON.stringify(this.currentParams));
+                }
+            },
             onInfoChanged: function(text) {
                 this.pageInfo = text;
             },
@@ -3091,36 +3126,27 @@
                 };
                 return newProps;
             },
-            updateRemoteParams: function(props) {
-                this.remoteParams = Object.assign({}, this.remoteParams, props);
-                this.$emit("remote-params-change", this.remoteParams);
-            },
-            // vgt event handlers
-            onSearch: function(params) {
-                if (params.searchTerm) {
-                    this.$refs.controls.goToFirstPage();
+            updateParams: function(props) {
+                this.currentParams = Object.assign({}, this.currentParams, props);
+                if (this.isRemote) {
+                    this.$emit("remote-params-change", this.currentParams);
                 }
+                this.persistParams();
             },
             onPageChange: function(params) {
-                if (this.isRemote) {
-                    this.updateRemoteParams({page: params.currentPage});
-                }
+                this.updateParams({page: params.currentPage});
             },
             onSortChange: function(params) {
-                if (this.isRemote) {
-                    this.updateRemoteParams({sort: params});
-                }
+                this.updateParams({sort: params});
             },
             onPerPageChange: _.debounce(function(params) {
-                if (this.isRemote) {
-                    this.updateRemoteParams({perPage: params.currentPerPage});
-                }
+                this.updateParams({perPage: params.currentPerPage});
             }, 500)
         },
         watch: {
             searchQuery: _.debounce(function(newVal) {
+                this.updateParams({searchQuery: newVal});
                 if (this.isRemote) {
-                    this.updateRemoteParams({searchQuery: newVal});
                     this.isLoading = true;
                 }
             }, 500)
@@ -3149,7 +3175,6 @@
                                 externalQuery: searchQuery\
                             }"\
                             \
-                            @on-search="onSearch"\
                             @on-page-change="onPageChange"\
                             @on-sort-change="onSortChange"\
                             @on-per-page-change="onPerPageChange"\
@@ -3163,6 +3188,7 @@
                                     @infoChanged="onInfoChanged"\
                                     @queryChanged="searchQuery = $event"\
                                     ref="controls"\
+                                    :initial-paging="initialPaging"\
                                     :search-query="searchQuery"\
                                     :total="props.total"\
                                     :notFilteredTotal="notFilteredTotal"\
