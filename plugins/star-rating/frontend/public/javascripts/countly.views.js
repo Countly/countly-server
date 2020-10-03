@@ -8,7 +8,7 @@ window.starView = countlyView.extend({
 
     },
     templateData: {
-        "page-title": jQuery.i18n.map["star.menu-title"],
+        "page-title": jQuery.i18n.map["feedback.ratings-tab-table-title"],
         platform_version: null,
         rating: null,
         timeSeriesData: null
