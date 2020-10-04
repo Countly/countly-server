@@ -650,171 +650,6 @@
         });
     };
 
-    var _getReadFetchActionName = function(readName) {
-        return "fetch" + readName[0].toUpperCase() + readName.substring(1);
-    };
-
-    var _getReadSetParamsActionName = function(readName) {
-        return "setParamsOf" + readName[0].toUpperCase() + readName.substring(1);
-    };
-
-    var _getReadStateName = function(readName) {
-        return "_" + readName;
-    };
-
-    var _getReadTransactionName = function(readName) {
-        return "_" + readName + "_lastTransactionId";
-    };
-
-    var _getReadParamsName = function(readName) {
-        return "_" + readName + "_params";
-    };
-
-    var _getStructuredAction = function(userDefined, defaultStructure) {
-
-        defaultStructure = defaultStructure || {};
-
-        if (typeof userDefined === "function") {
-            return _.extend(defaultStructure, {
-                handler: userDefined
-            });
-        }
-        return _.extend(defaultStructure, userDefined);
-    };
-
-    var VuexResource = function(name, options) {
-
-        var writes = options.writes || {},
-            reads = options.reads || {};
-
-        writes = Object.keys(writes).reduce(function(acc, val) {
-            acc[val] = _getStructuredAction(writes[val]);
-            return acc;
-        }, {});
-
-        reads = Object.keys(reads).reduce(function(acc, val) {
-            acc[val] = _getStructuredAction(reads[val], {
-                defaultState: function() {
-                    return [];
-                }
-            });
-            return acc;
-        }, {});
-
-        var actions = {},
-            getters = {};
-
-        Object.keys(writes).forEach(function(fnName) {
-            actions[fnName] = function(context, obj) {
-                var writer = writes[fnName];
-
-                return writer.handler(context, obj).then(function(response) {
-                    if (writer.refresh) {
-                        writer.refresh.forEach(function(refreshAction) {
-                            context.dispatch(_getReadFetchActionName(refreshAction));
-                        });
-                    }
-                    return response;
-                }, function(err) {
-                    // eslint-disable-next-line no-console
-                    console.log("VuexResource/writeErr@" + name + "/" + fnName, err);
-                });
-            };
-        });
-
-        Object.keys(reads).forEach(function(fnName) {
-            var fetchActionName = _getReadFetchActionName(fnName),
-                setParamsActionName = _getReadSetParamsActionName(fnName),
-                reader = reads[fnName];
-
-            actions[fetchActionName] = function(context, obj) {
-                var currentTransactionId = null,
-                    readerParams = null,
-                    transactionName = _getReadTransactionName(fnName);
-
-                if (!reader.noState) {
-                    context.commit("incrementTransactionId", fnName);
-                    currentTransactionId = context.state[transactionName];
-                    readerParams = context.state[_getReadParamsName(fnName)];
-                }
-                return reader.handler(context, obj, readerParams).then(function(data) {
-                    if (!reader.noState) {
-                        if (currentTransactionId === context.state[transactionName]) {
-                            context.commit("mutateGeneric", {
-                                key: _getReadStateName(fnName),
-                                value: data
-                            });
-                        }
-                        // else { } Race condition (response for an older request has arrived later)
-                    }
-                    return data;
-                }, function(err) {
-                    // eslint-disable-next-line no-console
-                    console.log("VuexResource/readErr@" + name + "/" + fnName, err);
-                });
-            };
-
-            if (!reader.noState) {
-                actions[setParamsActionName] = function(context, fields) {
-                    context.commit("extendReadParams", {
-                        readName: fnName,
-                        fields: fields
-                    });
-                };
-
-                getters[fnName] = function(state) {
-                    var stateKey = _getReadStateName(fnName);
-                    return state[stateKey];
-                };
-            }
-        });
-
-        var resetFn = function() {
-            var state = {};
-            Object.keys(reads).forEach(function(fnName) {
-                var reader = reads[fnName];
-                if (!reader.noState) {
-                    var stateKey = _getReadStateName(fnName);
-                    state[stateKey] = reader.defaultState();
-                    state[_getReadTransactionName(fnName)] = 0;
-                    if (reader.params) {
-                        state[_getReadParamsName(fnName)] = reader.params();
-                    }
-                    else {
-                        state[_getReadParamsName(fnName)] = {};
-                    }
-                }
-            });
-            return state;
-        };
-
-        var mutateGeneric = function(state, obj) {
-            state[obj.key] = obj.value;
-        };
-
-        var incrementTransactionId = function(state, readName) {
-            state[_getReadTransactionName(readName)] += 1;
-        };
-
-        var extendReadParams = function(state, obj) {
-            var stateName = _getReadParamsName(obj.readName);
-            state[stateName] = Object.assign({}, state[stateName], obj.fields);
-        };
-
-        var mutations = {
-            mutateGeneric: mutateGeneric,
-            incrementTransactionId: incrementTransactionId,
-            extendReadParams: extendReadParams
-        };
-
-        return VuexModule(name, {
-            resetFn: resetFn,
-            actions: actions,
-            getters: getters,
-            mutations: mutations
-        });
-    };
-
     var _vuex = {
         getGlobalStore: function() {
             return _globalVuexStore;
@@ -826,8 +661,7 @@
             }
         },
         Module: VuexModule,
-        DataTable: VuexDataTable,
-        Resource: VuexResource
+        DataTable: VuexDataTable
     };
 
     var BackboneRouteAdapter = function() {};
@@ -1002,11 +836,15 @@
         },
         toStandardResponse: function(response) {
             response = response || {};
-            return {
+            var fields = {
                 rows: response.aaData || [],
                 totalRows: response.iTotalDisplayRecords || 0,
                 notFilteredTotalRows: response.iTotalRecords || 0
             };
+            if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
+                fields.echo = parseInt(response.sEcho);
+            }
+            return fields;
         }
     };
 
