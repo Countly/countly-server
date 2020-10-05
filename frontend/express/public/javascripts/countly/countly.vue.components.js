@@ -1,6 +1,6 @@
 /* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app */
 
-(function(CountlyVueComponents, $) {
+(function(CountlyVueComponents, countlyVue, $) {
 
     /**
      * CLY Select list VueJS component. It supports big lists and search.
@@ -1060,13 +1060,17 @@
         BaseView: countlyBaseView
     };
 
-    window.countlyVue = {
+    var rootElements = {
         mixins: _mixins,
         vuex: _vuex,
         views: _views,
         components: _components,
         helpers: _helpers
     };
+
+    for (var key in rootElements) {
+        countlyVue[key] = rootElements[key];
+    }
 
     // New components
 
@@ -3122,4 +3126,4 @@
                     </div>'
     }));
 
-}(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
+}(window.CountlyVueComponents = window.CountlyVueComponents || {}, window.countlyVue = window.countlyVue || {}, jQuery));
