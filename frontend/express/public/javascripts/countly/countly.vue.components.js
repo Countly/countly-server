@@ -650,171 +650,6 @@
         });
     };
 
-    var _getReadFetchActionName = function(readName) {
-        return "fetch" + readName[0].toUpperCase() + readName.substring(1);
-    };
-
-    var _getReadSetParamsActionName = function(readName) {
-        return "setParamsOf" + readName[0].toUpperCase() + readName.substring(1);
-    };
-
-    var _getReadStateName = function(readName) {
-        return "_" + readName;
-    };
-
-    var _getReadTransactionName = function(readName) {
-        return "_" + readName + "_lastTransactionId";
-    };
-
-    var _getReadParamsName = function(readName) {
-        return "_" + readName + "_params";
-    };
-
-    var _getStructuredAction = function(userDefined, defaultStructure) {
-
-        defaultStructure = defaultStructure || {};
-
-        if (typeof userDefined === "function") {
-            return _.extend(defaultStructure, {
-                handler: userDefined
-            });
-        }
-        return _.extend(defaultStructure, userDefined);
-    };
-
-    var VuexResource = function(name, options) {
-
-        var writes = options.writes || {},
-            reads = options.reads || {};
-
-        writes = Object.keys(writes).reduce(function(acc, val) {
-            acc[val] = _getStructuredAction(writes[val]);
-            return acc;
-        }, {});
-
-        reads = Object.keys(reads).reduce(function(acc, val) {
-            acc[val] = _getStructuredAction(reads[val], {
-                defaultState: function() {
-                    return [];
-                }
-            });
-            return acc;
-        }, {});
-
-        var actions = {},
-            getters = {};
-
-        Object.keys(writes).forEach(function(fnName) {
-            actions[fnName] = function(context, obj) {
-                var writer = writes[fnName];
-
-                return writer.handler(context, obj).then(function(response) {
-                    if (writer.refresh) {
-                        writer.refresh.forEach(function(refreshAction) {
-                            context.dispatch(_getReadFetchActionName(refreshAction));
-                        });
-                    }
-                    return response;
-                }, function(err) {
-                    // eslint-disable-next-line no-console
-                    console.log("VuexResource/writeErr@" + name + "/" + fnName, err);
-                });
-            };
-        });
-
-        Object.keys(reads).forEach(function(fnName) {
-            var fetchActionName = _getReadFetchActionName(fnName),
-                setParamsActionName = _getReadSetParamsActionName(fnName),
-                reader = reads[fnName];
-
-            actions[fetchActionName] = function(context, obj) {
-                var currentTransactionId = null,
-                    readerParams = null,
-                    transactionName = _getReadTransactionName(fnName);
-
-                if (!reader.noState) {
-                    context.commit("incrementTransactionId", fnName);
-                    currentTransactionId = context.state[transactionName];
-                    readerParams = context.state[_getReadParamsName(fnName)];
-                }
-                return reader.handler(context, obj, readerParams).then(function(data) {
-                    if (!reader.noState) {
-                        if (currentTransactionId === context.state[transactionName]) {
-                            context.commit("mutateGeneric", {
-                                key: _getReadStateName(fnName),
-                                value: data
-                            });
-                        }
-                        // else { } Race condition (response for an older request has arrived later)
-                    }
-                    return data;
-                }, function(err) {
-                    // eslint-disable-next-line no-console
-                    console.log("VuexResource/readErr@" + name + "/" + fnName, err);
-                });
-            };
-
-            if (!reader.noState) {
-                actions[setParamsActionName] = function(context, fields) {
-                    context.commit("extendReadParams", {
-                        readName: fnName,
-                        fields: fields
-                    });
-                };
-
-                getters[fnName] = function(state) {
-                    var stateKey = _getReadStateName(fnName);
-                    return state[stateKey];
-                };
-            }
-        });
-
-        var resetFn = function() {
-            var state = {};
-            Object.keys(reads).forEach(function(fnName) {
-                var reader = reads[fnName];
-                if (!reader.noState) {
-                    var stateKey = _getReadStateName(fnName);
-                    state[stateKey] = reader.defaultState();
-                    state[_getReadTransactionName(fnName)] = 0;
-                    if (reader.params) {
-                        state[_getReadParamsName(fnName)] = JSON.parse(JSON.stringify(reader.params));
-                    }
-                    else {
-                        state[_getReadParamsName(fnName)] = {};
-                    }
-                }
-            });
-            return state;
-        };
-
-        var mutateGeneric = function(state, obj) {
-            state[obj.key] = obj.value;
-        };
-
-        var incrementTransactionId = function(state, readName) {
-            state[_getReadTransactionName(readName)] += 1;
-        };
-
-        var extendReadParams = function(state, obj) {
-            var stateName = _getReadParamsName(obj.readName);
-            state[stateName] = Object.assign({}, state[stateName], obj.fields);
-        };
-
-        var mutations = {
-            mutateGeneric: mutateGeneric,
-            incrementTransactionId: incrementTransactionId,
-            extendReadParams: extendReadParams
-        };
-
-        return VuexModule(name, {
-            resetFn: resetFn,
-            actions: actions,
-            getters: getters,
-            mutations: mutations
-        });
-    };
-
     var _vuex = {
         getGlobalStore: function() {
             return _globalVuexStore;
@@ -826,8 +661,7 @@
             }
         },
         Module: VuexModule,
-        DataTable: VuexDataTable,
-        Resource: VuexResource
+        DataTable: VuexDataTable
     };
 
     var BackboneRouteAdapter = function() {};
@@ -1002,11 +836,15 @@
         },
         toStandardResponse: function(response) {
             response = response || {};
-            return {
+            var fields = {
                 rows: response.aaData || [],
                 totalRows: response.iTotalDisplayRecords || 0,
                 notFilteredTotalRows: response.iTotalRecords || 0
             };
+            if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
+                fields.echo = parseInt(response.sEcho);
+            }
+            return fields;
         }
     };
 
@@ -1016,6 +854,7 @@
     };
 
     var _components = {
+        BaseComponent: countlyBaseComponent,
         BaseDrawer: countlyBaseComponent.extend(
             // @vue/component
             {
@@ -2803,14 +2642,17 @@
             notFilteredTotal: {
                 type: Number
             },
+            initialPaging: {
+                type: Object
+            }
         },
         data: function() {
             return {
                 firstPage: 1,
-                currentPage: 1,
-                perPage: 10,
-                searchVisible: false,
-                displayItems: 10
+                currentPage: this.initialPaging.page,
+                perPage: this.initialPaging.perPage,
+                searchVisible: !!this.searchQuery,
+                displayItems: this.initialPaging.perPage
             };
         },
         computed: {
@@ -2828,8 +2670,8 @@
             }
         },
         mounted: function() {
-            this.updatePerPage();
-            this.goToFirstPage();
+            // this.updatePerPage();
+            // this.goToFirstPage();
             this.updateInfo();
         },
         methods: {
@@ -2993,6 +2835,10 @@
                 type: Number,
                 default: 0
             },
+            persistKey: {
+                type: String,
+                default: null
+            }
         },
         computed: {
             notFilteredTotal: function() {
@@ -3038,10 +2884,16 @@
                 }
             }
         },
+        created: function() {
+            if (this.isRemote) {
+                this.$emit("remote-params-change", this.currentParams);
+            }
+        },
         data: function() {
+            var persisted = this.getPersistedParams();
             return {
                 pageInfo: '',
-                searchQuery: '',
+                searchQuery: persisted.searchQuery,
                 optionsOpened: false,
                 optionsRowData: {},
                 optionsItems: [],
@@ -3051,15 +2903,37 @@
                 },
                 isLoading: false,
                 internalMode: this.mode,
-                remoteParams: {
-                    page: 1,
-                    perPage: 10,
-                    searchQuery: null,
-                    sort: []
-                }
+                initialPaging: {
+                    page: persisted.page,
+                    perPage: persisted.perPage
+                },
+                currentParams: persisted
             };
         },
         methods: {
+            getPersistedParams: function() {
+                var loadedState = localStorage.getItem(this.persistKey);
+                var defaultState = {
+                    page: 1,
+                    perPage: 10,
+                    searchQuery: '',
+                    sort: []
+                };
+                try {
+                    if (loadedState) {
+                        return JSON.parse(loadedState);
+                    }
+                    return defaultState;
+                }
+                catch (ex) {
+                    return defaultState;
+                }
+            },
+            persistParams: function() {
+                if (this.persistKey) {
+                    localStorage.setItem(this.persistKey, JSON.stringify(this.currentParams));
+                }
+            },
             onInfoChanged: function(text) {
                 this.pageInfo = text;
             },
@@ -3091,36 +2965,27 @@
                 };
                 return newProps;
             },
-            updateRemoteParams: function(props) {
-                this.remoteParams = Object.assign({}, this.remoteParams, props);
-                this.$emit("remote-params-change", this.remoteParams);
-            },
-            // vgt event handlers
-            onSearch: function(params) {
-                if (params.searchTerm) {
-                    this.$refs.controls.goToFirstPage();
+            updateParams: function(props) {
+                this.currentParams = Object.assign({}, this.currentParams, props);
+                if (this.isRemote) {
+                    this.$emit("remote-params-change", this.currentParams);
                 }
+                this.persistParams();
             },
             onPageChange: function(params) {
-                if (this.isRemote) {
-                    this.updateRemoteParams({page: params.currentPage});
-                }
+                this.updateParams({page: params.currentPage});
             },
             onSortChange: function(params) {
-                if (this.isRemote) {
-                    this.updateRemoteParams({sort: params});
-                }
+                this.updateParams({sort: params});
             },
             onPerPageChange: _.debounce(function(params) {
-                if (this.isRemote) {
-                    this.updateRemoteParams({perPage: params.currentPerPage});
-                }
+                this.updateParams({perPage: params.currentPerPage});
             }, 500)
         },
         watch: {
             searchQuery: _.debounce(function(newVal) {
+                this.updateParams({searchQuery: newVal});
                 if (this.isRemote) {
-                    this.updateRemoteParams({searchQuery: newVal});
                     this.isLoading = true;
                 }
             }, 500)
@@ -3149,7 +3014,6 @@
                                 externalQuery: searchQuery\
                             }"\
                             \
-                            @on-search="onSearch"\
                             @on-page-change="onPageChange"\
                             @on-sort-change="onSortChange"\
                             @on-per-page-change="onPerPageChange"\
@@ -3163,6 +3027,7 @@
                                     @infoChanged="onInfoChanged"\
                                     @queryChanged="searchQuery = $event"\
                                     ref="controls"\
+                                    :initial-paging="initialPaging"\
                                     :search-query="searchQuery"\
                                     :total="props.total"\
                                     :notFilteredTotal="notFilteredTotal"\

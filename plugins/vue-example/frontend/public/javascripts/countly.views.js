@@ -138,10 +138,8 @@ var TableView = countlyVue.views.BaseView.extend({
             });
         },
         updateRemoteParams: function(remoteParams) {
-            var self = this;
-            this.$store.dispatch("countlyVueExample/tooManyRecords/setParamsOfPaged", remoteParams).then(function() {
-                self.$store.dispatch("countlyVueExample/tooManyRecords/fetchPaged");
-            });
+            this.$store.commit("countlyVueExample/tooManyRecords/setRequestParams", remoteParams);
+            this.$store.dispatch("countlyVueExample/tooManyRecords/fetchPaged");
         },
         setRowData: function(row, fields) {
             this.$store.commit("countlyVueExample/table/patch", {row: row, fields: fields});
@@ -154,7 +152,7 @@ var TableView = countlyVue.views.BaseView.extend({
                     _delayedDelete: new countlyVue.helpers.DelayedAction(
                         "You deleted a record.",
                         function() {
-                            self.$store.dispatch("countlyVueExample/myRecords/delete", row._id);
+                            self.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
                         },
                         function() {
                             self.$store.commit("countlyVueExample/table/unpatch", {row: row, fields: ["_delayedDelete"]});
@@ -164,7 +162,7 @@ var TableView = countlyVue.views.BaseView.extend({
             );
         },
         onDelete: function(row) {
-            this.$store.dispatch("countlyVueExample/myRecords/delete", row._id);
+            this.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
         },
         onDSSearch: function(query) {
             var self = this;
