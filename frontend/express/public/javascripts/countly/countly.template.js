@@ -1,4 +1,4 @@
-/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T*/
+/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager'*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -737,10 +737,12 @@ var AppRouter = Backbone.Router.extend({
             node.callback(category, node, menu);
         }
     },
-    updateLongTaskViewsNofification: function() {
-
-        countlyTaskManager.getLastReports(function(loaded) {
-
+    updateLongTaskViewsNofification: function(appChanged) {
+        countlyTaskManager.getLastReports(function(data) {
+            if (appChanged) {
+                app.haveUnreadReports = false;
+                $(".orange-side-notification-banner-wrapper").css("display", "none");
+            }
             if (app.haveUnreadReports) {
                 $("#manage-long-tasks-icon").addClass('unread');
             }
@@ -748,10 +750,7 @@ var AppRouter = Backbone.Router.extend({
                 $("#manage-long-tasks-icon").removeClass('unread');
             }
 
-            $(".manage-long-tasks-menu .tasks").html();
-
             var newHtml = "<table>";
-            var data = loaded.data;
             for (var k = 0; k < data.length; k++) {
                 var color = "#E98010";
                 if (data[k].status === "completed") {
@@ -775,7 +774,13 @@ var AppRouter = Backbone.Router.extend({
                 newHtml = newHtml + "<tr" + trclass + dataLink + '><td><p class="title">' + name + '</p><p style="text-transform:capitalize">' + data[k].type + '<span>|</span>' + countlyCommon.formatTimeAgo(data[k].start) + '</p></td>' + '<td ><span class="status-color"><i class="fa fa-circle" style="color:' + color + ';"></i>' + data[k].status + '</span></td>';
             }
             newHtml += "<table>";
-            $(".manage-long-tasks-menu .tasks").html(newHtml);
+
+            if (data.length === 0) {
+                $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='graph-description' style='border:0'>" + jQuery.i18n.map["common.table.no-data"] + "</div>");
+            }
+            else {
+                $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='tasks'>" + newHtml + "</div>");
+            }
 
             $(".manage-long-tasks-menu .tasks tr").on("click", function() {
                 var link = $(this).data("link");
@@ -797,7 +802,6 @@ var AppRouter = Backbone.Router.extend({
             else {
                 $(".manage-long-tasks-menu .tasks-wrapper").css("height", "");
             }
-
         });
     },
     /**
@@ -3595,6 +3599,7 @@ var AppRouter = Backbone.Router.extend({
                 if (window.components && window.components.slider && window.components.slider.instance) {
                     window.components.slider.instance.close();
                 }
+                app.updateLongTaskViewsNofification(true);
             }
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal.apps[appId].type;
