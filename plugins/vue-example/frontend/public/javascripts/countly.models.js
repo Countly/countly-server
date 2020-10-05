@@ -94,13 +94,13 @@
         // Paged Resource
 
         var tooManyRecordsResource = countlyVue.vuex.Module("tooManyRecords", {
-            resetFn: function(){
+            resetFn: function() {
                 return {
                     paged: {
                         rows: []
                     },
                     requestParams: {}
-                }
+                };
             },
             getters: {
                 paged: function(state) {
@@ -126,25 +126,25 @@
                             table_params: JSON.stringify(context.state.requestParams)
                         }
                     }))
-                    .then(function(res) {
-                        context.commit("setPaged", res);
-                    })
-                    .catch(function() {
-                        context.commit("setPaged", {
-                            rows: [],
-                            totalRows: 0,
-                            notFilteredTotalRows: 0
+                        .then(function(res) {
+                            context.commit("setPaged", res);
+                        })
+                        .catch(function() {
+                            context.commit("setPaged", {
+                                rows: [],
+                                totalRows: 0,
+                                notFilteredTotalRows: 0
+                            });
                         });
-                    });
                 }
             }
         });
 
         var recordsResource = countlyVue.vuex.Module("myRecords", {
-            resetFn: function(){
+            resetFn: function() {
                 return {
                     all: []
-                }
+                };
             },
             getters: {
                 all: function(state) {
@@ -198,7 +198,7 @@
                             app_id: countlyCommon.ACTIVE_APP_ID,
                             method: 'vue-records'
                         }
-                    })).then(function(res){
+                    })).then(function(res) {
                         context.commit("setAll", res);
                     });
                 },
