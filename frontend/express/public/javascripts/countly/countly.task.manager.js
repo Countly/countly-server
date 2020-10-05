@@ -39,6 +39,8 @@
                 "query": JSON.stringify({"manually_create": false}),
                 "display_loader": false,
                 'sSortDir_0': 'desc',
+				'iDisplayLength':10,
+				'iDisplayStart':0,
                 "iSortCol_0": 8//sort by started
             },
             dataType: "json",
