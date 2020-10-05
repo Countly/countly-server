@@ -854,6 +854,7 @@
     };
 
     var _components = {
+        BaseComponent: countlyBaseComponent,
         BaseDrawer: countlyBaseComponent.extend(
             // @vue/component
             {
