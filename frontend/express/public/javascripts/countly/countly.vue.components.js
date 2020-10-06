@@ -1,6 +1,6 @@
 /* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app */
 
-(function(CountlyVueComponents, $) {
+(function(CountlyVueComponents, countlyVue, $) {
 
     /**
      * CLY Select list VueJS component. It supports big lists and search.
@@ -1060,13 +1060,17 @@
         BaseView: countlyBaseView
     };
 
-    window.countlyVue = {
+    var rootElements = {
         mixins: _mixins,
         vuex: _vuex,
         views: _views,
         components: _components,
         helpers: _helpers
     };
+
+    for (var key in rootElements) {
+        countlyVue[key] = rootElements[key];
+    }
 
     // New components
 
@@ -1519,14 +1523,19 @@
             props: {
                 title: { type: String, required: true },
                 dateSelector: { type: Boolean, required: false, default: true },
+                hasLeftBottom: { type: Boolean, required: false, default: false },
+                onlyHead: { type: Boolean, required: false, default: false }
             },
             template: '<div class="cly-vue-panel widget">\
                             <div class="widget-header">\
                                 <div class="left">\
                                     <div>\
                                         <slot name="left-top">\
-                                            <div class="title">{{title}}</div>\
+                                            <div class="title" :class="{small: hasLeftBottom}">{{title}}</div>\
                                         </slot>\
+                                        <div v-if="hasLeftBottom">\
+                                            <slot name="left-bottom"></slot>\
+                                        </div>\
                                     </div>\
                                 </div>\
                                 <div class="right">\
@@ -1535,7 +1544,7 @@
                                     </slot>\
                                 </div>\
                             </div>\
-                            <div class="widget-content help-zone-vb">\
+                            <div class="widget-content help-zone-vb" :class="{\'no-border\': onlyHead}">\
                                 <slot/>\
                             </div>\
                         </div>',
@@ -2547,7 +2556,7 @@
                                 <i class="fa fa-search"></i>\
                                 </div>\
                             </div>\
-                            <div class="items-list square" style="width:100%;" v-show="opened">\
+                            <div class="items-list square" v-show="opened">\
                                 <div ref="scrollable" class="scrollable">\
                                     <div class="warning" v-if="dynamicItems && listDelayWarning">{{ listDelayWarning }}</div>\
                                     <div v-for="(item, i) in visibleItems" :key="i"\
@@ -3122,4 +3131,34 @@
                     </div>'
     }));
 
-}(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));
+    Vue.component("cly-menubox", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="close">\
+                        <div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\
+                            <a>{{label}}</a>\
+                            <div style="arrows-wrapper">\
+                                <span class="down ion-chevron-down"></span>\
+                                <span class="up ion-chevron-up"></span>\
+                            </div>\
+                        </div>\
+                        <div class="menu-body" v-show="isOpened">\
+                            <slot></slot>\
+                        </div>\
+                    </div>',
+        props: {
+            label: { type: String, default: '' },
+            isOpened: { type: Boolean, default: false }
+        },
+        methods: {
+            toggle: function() {
+                this.setStatus(!this.isOpened);
+            },
+            close: function() {
+                this.setStatus(false);
+            },
+            setStatus: function(targetState) {
+                this.$emit('status-changed', targetState);
+            }
+        }
+    }));
+
+}(window.CountlyVueComponents = window.CountlyVueComponents || {}, window.countlyVue = window.countlyVue || {}, jQuery));

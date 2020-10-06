@@ -1115,6 +1115,104 @@
                 margin-left: 20px;
             }
         }
+        .widget-content.no-border {
+            border: none;
+        }
+    }
+
+    .cly-vue-menubox {
+        &.menubox-default-skin {
+            display: inline-block;
+            .menu-toggler {
+                padding: 6px 25px 0px 3px;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+                color: #444;
+                font-weight: normal;
+                font-size: 13px;
+                font-family: Ubuntu, Helvetica, sans-serif;
+                position: relative;
+                cursor: pointer;
+                max-width: 400px;
+
+                .arrows-wrapper {
+                    display: table-cell;
+                    vertical-align: middle;
+                    position: relative;
+                    float: left;
+                    width: 30px;
+                }
+
+                .up,
+                .down {
+                    font-size: 9px;
+                    line-height: 9px;
+                    color: #717171;
+                    opacity: 0.8;
+                    margin-left: 6px;
+                }
+                span.up {
+                    display: none;
+                }
+                &.active span.up {
+                    display: inline;
+                }
+                &.active span.down {
+                    display: none;
+                }
+                a {
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    float: left;
+                }
+                &:hover {
+                    color: #2fa732;
+                    span {
+                        color: #2fa732;
+                    }
+                }
+            }
+
+            .menu-body {
+                box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
+                background-color: #fff;
+                position: absolute;
+                left: 10px;
+                top: 55px;
+                z-index: 100;
+                border: 1px solid #d0d0d0;
+                border-radius: 2px;
+                padding: 20px;
+                table {
+                    width: 100%;
+                    tr td {
+                        padding: 5px 0px;
+                        &:first-child {
+                            text-align: right;
+                            width: 50px;
+                            white-space: nowrap;
+                            padding-right: 10px;
+                        }
+                    }
+                }
+                .cly-vue-select {
+                    background-color: #fdfdfd;
+                    width: 100%;
+                    .select-items {
+                        width: 100%;
+                    }
+                    .placeholder {
+                        color: #d0d0d0;
+                    }
+                }
+
+                .controls {
+                    float: right;
+                    margin-top: 10px;
+                }
+            }
+        }
     }
 
     .cly-vue-text-area {
@@ -2241,7 +2339,7 @@
         &:before {
             content: "←";
             margin-right: 5px;
-            color:#616161;
+            color: #616161;
         }
 
         &:hover {
