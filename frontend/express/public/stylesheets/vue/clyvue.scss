@@ -1085,6 +1085,7 @@
             box-sizing: border-box;
             bottom: 0;
             overflow: auto;
+
             .cly-vue-button {
                 float: none;
                 font-size: 15px;
@@ -1108,6 +1109,14 @@
     }
 
     .cly-vue-panel {
+        .widget-header .left {
+            .title {
+                //Adding margin 0 to overwrite 3px margin added by legacy css
+                //The 3px margin is set on the parent within the component
+                margin: 0px;
+            }
+        }
+
         .widget-header .right {
             .cly-vue-button {
                 float: right;
@@ -1239,7 +1248,6 @@
         user-select: none;
         display: inline-block;
         width: 135px;
-        height: 27px;
         border: 1px solid #d0d0d0;
         border-radius: 2px;
         cursor: pointer;
@@ -1251,7 +1259,7 @@
             opacity: 0.4 !important;
             cursor: default;
         }
-        &:not(.disabled):hover .right.combo:before {
+        &:not(.disabled):hover .drop.combo:before {
             color: #2fa732;
         }
 
@@ -1280,7 +1288,7 @@
         &.active {
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
-            .right {
+            .drop {
                 border-bottom-right-radius: 0;
                 &.combo:before {
                     content: "\f126";
@@ -1297,20 +1305,22 @@
         }
 
         .text-container {
-            float: left;
-            width: 100%;
+            width: 90%;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .text {
-            padding: 6px 9px;
-            padding-right: 25px;
+            //In order to change the text row height change line-height only.
+            //The dropdown arrow on right will auto align vertically.
+            padding: 0px 9px;
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
             color: #444;
             font-weight: normal;
             font: 13px Ubuntu, Helvetica, sans-serif;
-            line-height: 111%;
+            line-height: 27px;
         }
 
         .search {
@@ -1459,23 +1469,24 @@
             }
         }
 
-        .right {
+        .drop {
             opacity: 0.8;
-            right: 0;
-            position: absolute;
-            width: 15px;
-            height: 100%;
-            line-height: 27px;
+            width: 10%;
+            display: inline-block;
+            vertical-align: middle;
+
             &:hover {
                 opacity: 1;
             }
+
             &.combo:before {
                 color: #717171;
                 font-family: "Ionicons";
                 content: "\f123";
                 font-size: 9px;
-                position: absolute;
-                right: 8px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
         }
 
@@ -1495,60 +1506,41 @@
             width: auto;
             background-color: transparent;
             margin-right: 5px;
-            .text {
-                padding-left: 3px;
-                padding-right: 6px;
-            }
+
             .text-container {
-                float: unset;
-                display: inline-block;
-                vertical-align: middle;
                 width: auto;
-                max-width: 150px;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                white-space: nowrap;
+
+                .text {
+                    padding: 0px 4px 0px 0px;
+                }
             }
-            .right {
-                float: unset;
+
+            .drop {
                 width: auto;
-                height: auto;
-                line-height: inherit;
-                opacity: 0.8;
-                right: 0;
-                position: relative;
-                display: inline-block;
-                vertical-align: middle;
 
                 &.combo:before {
                     color: #fff;
                     background-color: #444444;
-                    font-family: "Ionicons";
-                    content: "\f123";
-                    font-size: 9px;
-                    position: relative;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
                     width: 12px;
                     height: 12px;
                     border-radius: 4px;
-                    right: 0px;
                 }
             }
+
             &:hover {
-                .right {
+                .drop {
                     opacity: 1;
                 }
 
                 .text {
                     color: #2fa732;
                 }
-                .right.combo:before {
+                .drop.combo:before {
                     color: #fff;
                     background-color: #444444;
                 }
             }
+
             .items-list,
             .search {
                 width: 220px;
@@ -1571,7 +1563,7 @@
                 .text {
                     color: #fff;
                 }
-                .right.combo:before {
+                .drop.combo:before {
                     color: #fff;
                 }
                 &.disabled {
@@ -1580,7 +1572,7 @@
                     .text {
                         color: #444;
                     }
-                    .right.combo:before {
+                    .drop.combo:before {
                         color: #717171;
                     }
                 }

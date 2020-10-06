@@ -1529,7 +1529,7 @@
             template: '<div class="cly-vue-panel widget">\
                             <div class="widget-header">\
                                 <div class="left">\
-                                    <div>\
+                                    <div style="margin-left: 3px;">\
                                         <slot name="left-top">\
                                             <div class="title" :class="{small: hasLeftBottom}">{{title}}</div>\
                                         </slot>\
@@ -2546,7 +2546,7 @@
                                         <span class="text-light-gray">{{placeholder}}</span>\
                                     </div>\
                                 </div>\
-                                <div class="right combo"></div>\
+                                <div class="drop combo"></div>\
                             </div>\
                             <div class="search" v-if="searchable" v-show="opened">\
                                 <div class="inner">\
