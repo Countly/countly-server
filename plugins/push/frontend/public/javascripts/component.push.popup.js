@@ -67,7 +67,7 @@ window.component('push.popup', function(popup) {
         }
 
         push.popup.slider = C.slider.show({
-            key: 'meow',
+            key: 'meow' + Math.random(),
             title: function () {
                 var els = [
                     t('pu.po.title')
