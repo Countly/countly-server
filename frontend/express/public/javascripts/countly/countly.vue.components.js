@@ -3131,4 +3131,34 @@
                     </div>'
     }));
 
+    Vue.component("cly-menubox", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="close">\
+                        <div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\
+                            <a>{{label}}</a>\
+                            <div style="arrows-wrapper">\
+                                <span class="down ion-chevron-down"></span>\
+                                <span class="up ion-chevron-up"></span>\
+                            </div>\
+                        </div>\
+                        <div class="menu-body" v-show="isOpened">\
+                            <slot></slot>\
+                        </div>\
+                    </div>',
+        props: {
+            label: { type: String, default: '' },
+            isOpened: { type: Boolean, default: false }
+        },
+        methods: {
+            toggle: function() {
+                this.setStatus(!this.isOpened);
+            },
+            close: function() {
+                this.setStatus(false);
+            },
+            setStatus: function(targetState) {
+                this.$emit('status-changed', targetState);
+            }
+        }
+    }));
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, window.countlyVue = window.countlyVue || {}, jQuery));
