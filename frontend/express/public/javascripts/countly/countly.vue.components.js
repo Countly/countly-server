@@ -1521,7 +1521,7 @@
         // @vue/component
         {
             props: {
-                title: { type: String, required: true },
+                title: { type: String, required: false },
                 dateSelector: { type: Boolean, required: false, default: true },
                 hasLeftBottom: { type: Boolean, required: false, default: false },
                 onlyHead: { type: Boolean, required: false, default: false }
@@ -2539,10 +2539,10 @@
                             @keydown.enter="enterKeyEvent">\
                             <div class="select-inner" @click="toggle">\
                                 <div class="text-container">\
-                                    <div v-if="selectedItem" class="text" style="width:80%">\
+                                    <div v-if="selectedItem" class="text">\
                                         <span>{{selectedItem.name}}</span>\
                                     </div>\
-                                    <div v-if="!selectedItem" class="text" style="width:80%">\
+                                    <div v-if="!selectedItem" class="text">\
                                         <span class="text-light-gray">{{placeholder}}</span>\
                                     </div>\
                                 </div>\

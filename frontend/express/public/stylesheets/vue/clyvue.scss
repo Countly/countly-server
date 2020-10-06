@@ -1293,12 +1293,14 @@
             position: relative;
             width: 100%;
             height: 100%;
+            font-size: 0;
         }
 
         .text-container {
             float: left;
             width: 100%;
         }
+
         .text {
             padding: 6px 9px;
             padding-right: 25px;
@@ -1489,15 +1491,18 @@
         }
 
         &.select-slim-skin {
-            float: left;
             border: none;
             width: auto;
             background-color: transparent;
             margin-right: 5px;
             .text {
                 padding-left: 3px;
+                padding-right: 6px;
             }
             .text-container {
+                float: unset;
+                display: inline-block;
+                vertical-align: middle;
                 width: auto;
                 max-width: 150px;
                 text-overflow: ellipsis;
@@ -1505,17 +1510,43 @@
                 white-space: nowrap;
             }
             .right {
-                float: left;
+                float: unset;
+                width: auto;
+                height: auto;
+                line-height: inherit;
+                opacity: 0.8;
+                right: 0;
+                position: relative;
+                display: inline-block;
+                vertical-align: middle;
+
                 &.combo:before {
-                    right: auto;
+                    color: #fff;
+                    background-color: #444444;
+                    font-family: "Ionicons";
+                    content: "\f123";
+                    font-size: 9px;
+                    position: relative;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 4px;
+                    right: 0px;
                 }
             }
             &:hover {
+                .right {
+                    opacity: 1;
+                }
+
                 .text {
                     color: #2fa732;
                 }
                 .right.combo:before {
-                    color: #2fa732;
+                    color: #fff;
+                    background-color: #444444;
                 }
             }
             .items-list,
