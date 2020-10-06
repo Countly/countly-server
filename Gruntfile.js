@@ -273,7 +273,7 @@ module.exports = function(grunt) {
                 files = fs.readdirSync(stylesheets);
                 files.forEach(function(name) {
                     var file = path.join(stylesheets, name);
-                    if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0  && name.indexOf('.scss') === -1) {
+                    if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.indexOf('.scss') === -1) {
                         css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
                     }
                 });
