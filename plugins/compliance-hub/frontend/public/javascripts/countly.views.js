@@ -1,5 +1,6 @@
 /*global countlyView,countlyDeviceDetails,countlyAppUsers,countlyDevice,$,countlyConsentManager,countlyGlobal,countlyCommon,moment,CountlyHelpers,jQuery,app,ConsentManagementView,T,Backbone,countlyUserdata */
 window.ConsentManagementView = countlyView.extend({
+    featureName: 'compliance',
     curSegment: "",
     initialize: function() {},
     beforeRender: function() {
@@ -361,7 +362,7 @@ window.ConsentManagementView = countlyView.extend({
                 data = self.dtableusers.fnGetData(row[0]);
                 //now show hide list options based on user data
 
-                var have_rights = countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(+countlyCommon.ACTIVE_APP_ID) > -1;
+                var have_rights = countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(+countlyCommon.ACTIVE_APP_ID) > -1 || countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), self.featureName);
                 $(".cly-button-menu a.export-user").css("display", "none");
                 $(".cly-button-menu a.export-download").css("display", "none");
                 $(".cly-button-menu a.export-delete").css("display", "none");
@@ -608,7 +609,7 @@ app.route("/manage/compliance", "compliance", function() {
 });
 
 app.addPageScript("/users/#", function() {
-    if (app.activeView && app.activeView.tabs) {
+    if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.consentManagementView.featureName)) {
         var formatConsent = function(d) {
             // `d` is the original data object for the row
             var str = '';
@@ -762,5 +763,7 @@ app.addPageScript("/users/#", function() {
 });
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.consentManagementView.featureName)) {
+        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
+    }
 });
