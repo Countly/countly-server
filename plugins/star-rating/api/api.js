@@ -428,11 +428,7 @@ const widgetPropertyPreprocessors = {
         var skip = parseInt(params.qstring.iDisplayStart);
         var limit = parseInt(params.qstring.iDisplayLength);
         var colNames = ['rating', 'comment', 'email', 'ts'];
-<<<<<<< HEAD
-
-=======
         
->>>>>>> [reports] add star rating report function.
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
         }
@@ -892,7 +888,7 @@ const widgetPropertyPreprocessors = {
                     }
 
                     const result = {
-                        title: await reportUtils.getLocaleLangString(member.lang, "star-rating.plugin-title"),
+                        title: await reportUtils.getLocaleLangString(member.lang, "reports.star-rating"),
                         colums: columsString,
                         table: tableData,
                     };

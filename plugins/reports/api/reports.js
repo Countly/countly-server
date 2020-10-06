@@ -217,7 +217,7 @@ var metricProps = {
                                         // process outside reports plugin
                                         // set plugin report dispatch max duration to 30s
                                         const cancelReportCallTimeout = setTimeout(() => {
-                                            done2("cancel report plugin dispatcher", null);
+                                            done2("cancel report plugin dispatcher:" + metric, null);
                                         }, 30000);
                                         plugins.dispatch("/email/report", {
                                             params: {
