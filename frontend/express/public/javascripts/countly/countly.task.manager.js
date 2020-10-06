@@ -39,8 +39,8 @@
                 "query": JSON.stringify({"manually_create": false}),
                 "display_loader": false,
                 'sSortDir_0': 'desc',
-				'iDisplayLength':10,
-				'iDisplayStart':0,
+                'iDisplayLength': 10,
+                'iDisplayStart': 0,
                 "iSortCol_0": 8//sort by started
             },
             dataType: "json",
@@ -257,10 +257,10 @@
             monitor[countlyCommon.ACTIVE_APP_ID] = [];
         }
         if (monitor[countlyCommon.ACTIVE_APP_ID].indexOf(id) === -1) {
-            $(".orange-side-notification-banner-wrapper").css("display", "block");
             monitor[countlyCommon.ACTIVE_APP_ID].push(id);
             store.set("countly_task_monitor", monitor);
             if (!silent) {
+                $(".orange-side-notification-banner-wrapper").css("display", "block");
                 /*CountlyHelpers.notify({
                     title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
                     message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
@@ -291,8 +291,6 @@
             countlyTaskManager.check(id, function(res) {
                 if (res === false || res.result === "completed" || res.result === "errored") {
                     $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
-                    app.haveUnreadReports = true;
-                    app.updateLongTaskViewsNofification();
 
                     //get it from storage again, in case it has changed
                     monitor = store.get("countly_task_monitor") || {};
@@ -307,6 +305,10 @@
                     //notify task completed
                     if (res && res.result === "completed") {
                         countlyTaskManager.fetchResult(id, function(res1) {
+                            if (res1 && res1.manually_create === false) {
+                                app.haveUnreadReports = true;
+                                app.updateLongTaskViewsNofification();
+                            }
                             if (res1 && res1.view) {
                                 if (!assistantAvailable) {
                                     CountlyHelpers.notify({
@@ -332,6 +334,10 @@
                     else if (res && res.result === "errored") {
                         countlyTaskManager.fetchResult(id, function(res1) {
                             if (res1 && res1.view) {
+                                if (res1 && res1.manually_create === false) {
+                                    app.haveUnreadReports = true;
+                                    app.updateLongTaskViewsNofification();
+                                }
                                 if (!assistantAvailable) {
                                     CountlyHelpers.notify({
                                         title: jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
