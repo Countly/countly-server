@@ -1,5 +1,6 @@
-/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,T,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
+/*globals countlyView,countlyAuth,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,T,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
 window.CrashesView = countlyView.extend({
+    featureName: 'crashes',
     convertFilter: {
         "sg.crash": {prop: "_id", type: "string"},
         "sg.cpu": {prop: "cpu", type: "segment"},
@@ -2245,6 +2246,11 @@ app.route('/crashes/:group', 'crashgroup', function(group) {
 });
 
 app.addPageScript("/drill#", function() {
+    
+    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.crashesView.featureName)) {
+        return;
+    }
+
     var drillClone;
     var self = app.drillView;
     var record_crashes = countlyGlobal.record_crashes;
@@ -2294,7 +2300,7 @@ app.addPageScript("/drill#", function() {
 });
 
 app.addPageScript("/users/#", function() {
-    if (app.activeView && app.activeView.tabs) {
+    if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.crashesView.featureName)) {
         var ul = app.activeView.tabs.find("ul");
         $("<li><a href='#usertab-crashes'>" + jQuery.i18n.map["crashes.title"] + "</a></li>").appendTo(ul);
         $("<div id='usertab-crashes'></div>").appendTo(app.activeView.tabs);
@@ -2378,8 +2384,10 @@ $(document).ready(function() {
         }
     });
 
-    app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-    app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.crashesView.featureName)) {
+        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+        app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    }
 
     //check if configuration view exists
     if (app.configurationsView) {
