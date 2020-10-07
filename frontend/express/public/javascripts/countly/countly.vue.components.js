@@ -1521,7 +1521,7 @@
         // @vue/component
         {
             props: {
-                title: { type: String, required: true },
+                title: { type: String, required: false },
                 dateSelector: { type: Boolean, required: false, default: true },
                 hasLeftBottom: { type: Boolean, required: false, default: false },
                 onlyHead: { type: Boolean, required: false, default: false }
@@ -1529,7 +1529,7 @@
             template: '<div class="cly-vue-panel widget">\
                             <div class="widget-header">\
                                 <div class="left">\
-                                    <div>\
+                                    <div style="margin-left: 3px;">\
                                         <slot name="left-top">\
                                             <div class="title" :class="{small: hasLeftBottom}">{{title}}</div>\
                                         </slot>\
@@ -2539,14 +2539,14 @@
                             @keydown.enter="enterKeyEvent">\
                             <div class="select-inner" @click="toggle">\
                                 <div class="text-container">\
-                                    <div v-if="selectedItem" class="text" style="width:80%">\
+                                    <div v-if="selectedItem" class="text">\
                                         <span>{{selectedItem.name}}</span>\
                                     </div>\
-                                    <div v-if="!selectedItem" class="text" style="width:80%">\
+                                    <div v-if="!selectedItem" class="text">\
                                         <span class="text-light-gray">{{placeholder}}</span>\
                                     </div>\
                                 </div>\
-                                <div class="right combo"></div>\
+                                <div class="drop combo"></div>\
                             </div>\
                             <div class="search" v-if="searchable" v-show="opened">\
                                 <div class="inner">\
@@ -2987,6 +2987,12 @@
             onSortChange: function(params) {
                 this.updateParams({sort: params});
             },
+            onRowMouseover: function(params) {
+                this.$emit("row-mouseover", params);
+            },
+            onRowMouseleave: function(params) {
+                this.$emit("row-mouseleave", params);
+            },
             onPerPageChange: _.debounce(function(params) {
                 this.updateParams({perPage: params.currentPerPage});
             }, 500)
@@ -3026,6 +3032,8 @@
                             @on-page-change="onPageChange"\
                             @on-sort-change="onSortChange"\
                             @on-per-page-change="onPerPageChange"\
+                            @on-row-mouseenter="onRowMouseover"\
+                            @on-row-mouseleave="onRowMouseleave"\
                             :mode="internalMode"\
                             :totalRows="internalTotalRows"\
                             :isLoading.sync="isLoading"\
