@@ -7,9 +7,6 @@ var pluginOb = {},
     plugins.appTypes.push("web");
     plugins.register("/sdk", function(ob) {
         var params = ob.params;
-        if (params.qstring.sdk_version && (!params.app.sdk_version || common.versionCompare(params.qstring.sdk_version, params.app.sdk_version, {delimiter: "."}) === 1)) {
-            common.db.collection("apps").update({_id: params.app._id}, {$set: {sdk_version: params.qstring.sdk_version}});
-        }
 
         var agent = parser((params.qstring.metrics && params.qstring.metrics._ua) ? params.qstring.metrics._ua : params.req.headers['user-agent']);
         var data = { os: agent.os.name, os_version: agent.os.version };
