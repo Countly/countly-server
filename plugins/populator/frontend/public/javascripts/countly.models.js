@@ -553,6 +553,9 @@
                     event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
                 });
             }
+            else if (id === "[CLY]_orientation") {
+                event.segmentation = {mode: (Math.random() > 0.5) ? "landscape" : "portrait"};
+            }
             else if (eventTemplate && eventTemplate.segments) {
                 event.segmentation = {};
                 Object.keys(eventTemplate.segments).forEach(function(key) {
@@ -713,7 +716,7 @@
                 this.isRegistered = true;
                 this.stats.u++;
                 // note login event was here
-                events = this.getEvent("[CLY]_view").concat(this.getEvents(4, template && template.events));
+                events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.5) {
                     this.hasPush = true;
@@ -727,7 +730,7 @@
                 }
             }
             else {
-                events = this.getEvent("[CLY]_view").concat(this.getEvents(4, template && template.events));
+                events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
             }
 
@@ -755,7 +758,7 @@
                 this.ts = this.ts + 30;
                 this.stats.x++;
                 this.stats.d += 30;
-                var events = this.getEvent("[CLY]_view").concat(this.getEvents(2, template && template.events));
+                var events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(2, template && template.events));
                 req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.8) {
                     this.timer = setTimeout(function() {
