@@ -477,7 +477,7 @@ class Store extends Base {
      * @param  {Object} min filter condition: [oid], {$in: [oid]}, {$nin: [oid]}
      * @return {Promise}    resoves to array of uids
      */
-    _filterMessage(min) {
+    _filterMessage(message) {
         return new Promise((res, rej) => {
             let query = (min.$in || min.$nin) ? min : {$in: min};
             if (min.$in) {

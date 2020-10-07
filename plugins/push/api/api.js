@@ -138,15 +138,27 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/drill/preprocess_query', ({query, params}) => {
-        if (query.message && query.message.$in) {
-            let min = query.message.$in;
+        if (query.message) {
+            let mid = query.message.$in || query.message.$nin,
+                not = !!query.message.$nin;
+
+            if (!mid) {
+                return;
+            }
+
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
 
             if (params && params.qstring.method === 'user_details') {
                 return new Promise((res, rej) => {
                     try {
-                        common.db.collection(`push_${params.app_id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(common.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+                        mid = mid.map(common.db.ObjectID);
+
+                        let q = {msgs: {$elemMatch: {'0': {$in: mid}}}};
+                        if (not) {
+                            q = {msgs: {$not: q.msgs}};
+                        }
+                        common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
                             if (err) {
                                 rej(err);
                             }
@@ -168,9 +180,22 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/drill/postprocess_uids', ({uids, params}) => new Promise((res, rej) => {
-        if (uids.length && params.initialQueryObject && params.initialQueryObject.message) {
+        let message = params.initialQueryObject && params.initialQueryObject.message;
+        if (uids.length && message) {
             log.d(`filtering ${uids.length} uids by message`);
-            return common.db.collection(`push_${params.app_id}`).find({_id: {$in: uids}, msgs: {$elemMatch: {'0': common.db.ObjectID(params.initialQueryObject.message)}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+
+            let q;
+            if (message.$in) {
+                q = {_id: {$in: uids}, msgs: {$elemMatch: {'0': {$in: message.$in.map(common.db.ObjectID)}}}};
+            }
+            else if (message.$nin) {
+                q = {$and: [{_id: {$in: uids}}, {msgs: {$not: {$elemMatch: {'0': {$in: message.$nin.map(common.db.ObjectID)}}}}}]};
+            }
+            else {
+                q = {_id: {$in: uids}, msgs: {$elemMatch: {'0': {$in: message.map(common.db.ObjectID)}}}};
+            }
+
+            return common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
                 if (err) {
                     rej(err);
                 }

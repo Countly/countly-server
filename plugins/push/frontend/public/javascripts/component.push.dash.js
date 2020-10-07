@@ -248,6 +248,7 @@ window.component('push.dash', function (dash) {
                     message = self.messages().find(function (m) { return m._id() === id; });
                 if (id) {
                     $('.message-menu').find('.view-recipients').data('id', id);
+                    $('.message-menu').find('.resend').data('id', id);
                     $('.message-menu').find('.duplicate-message').data('id', id);
                     $('.message-menu').find('.resend-message').data('id', id);
                     $('.message-menu').find('.edit-message').data('id', id);
@@ -284,9 +285,23 @@ window.component('push.dash', function (dash) {
                     }
                     components.push.popup.show(json, true);
                 } else if ($(data.target).hasClass('resend-message') && message) {
-                    var json = message.toJSON(false, true, true);
-                    var cond = json.userConditions || (json.userConditions = {});
-                    cond.message = {$nin: [message._id]};
+                    var json = message.toJSON(false, true, true),
+                        uc = json.userConditions,
+                        add = {message: {$nin: [message._id()]}};
+                    if (!uc) {
+                        uc = add;
+                    } else {
+                        if (typeof uc === 'string') {
+                            uc = JSON.parse(json.userConditions);
+                        }
+                        if (uc.$and) {
+                            uc.$and.push(add);
+                        } else {
+                            uc.message = add.message;
+                        }
+                    }
+                    json.userConditions = JSON.stringify(uc);
+
                     if (!message.active) {
                         delete json.date;
                     }
