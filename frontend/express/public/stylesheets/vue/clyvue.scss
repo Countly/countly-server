@@ -1512,19 +1512,23 @@
             width: auto;
             background-color: transparent;
 
-            .text-container {
-                width: auto;
-            }
+            .select-inner {
+                padding: 0px;
 
-            .drop {
-                width: auto;
+                .text-container {
+                    width: auto;
+                }
 
-                &.combo:before {
-                    color: #fff;
-                    background-color: #444444;
-                    width: 12px;
-                    height: 12px;
-                    border-radius: 4px;
+                .drop {
+                    width: auto;
+
+                    &.combo:before {
+                        color: #fff;
+                        background-color: #444444;
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 4px;
+                    }
                 }
             }
 
