@@ -2987,6 +2987,12 @@
             onSortChange: function(params) {
                 this.updateParams({sort: params});
             },
+            onRowMouseover: function(params) {
+                this.$emit("row-mouseover", params);
+            },
+            onRowMouseleave: function(params) {
+                this.$emit("row-mouseleave", params);
+            },
             onPerPageChange: _.debounce(function(params) {
                 this.updateParams({perPage: params.currentPerPage});
             }, 500)
@@ -3026,6 +3032,8 @@
                             @on-page-change="onPageChange"\
                             @on-sort-change="onSortChange"\
                             @on-per-page-change="onPerPageChange"\
+                            @on-row-mouseenter="onRowMouseover"\
+                            @on-row-mouseleave="onRowMouseleave"\
                             :mode="internalMode"\
                             :totalRows="internalTotalRows"\
                             :isLoading.sync="isLoading"\
