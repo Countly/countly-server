@@ -117,6 +117,8 @@ const PUSH_CACHE_GROUP = 'P';
                 });
             }
             else if (event === '[CLY]_push_action') {
+                events = events.filter(e => !!e.sg.i);
+
                 let ids = events.map(e => e.sg.i);
                 ids = ids.filter((id, i) => ids.indexOf(id) === i).map(id => common.db.ObjectID(id));
 
@@ -141,7 +143,7 @@ const PUSH_CACHE_GROUP = 'P';
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
 
-            if (params.qstring.method === 'user_details') {
+            if (params && params.qstring.method === 'user_details') {
                 return new Promise((res, rej) => {
                     try {
                         common.db.collection(`push_${params.app_id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(common.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {

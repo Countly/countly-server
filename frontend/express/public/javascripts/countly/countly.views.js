@@ -5827,6 +5827,7 @@ window.LongTaskView = countlyView.extend({
             "all": jQuery.i18n.map["common.all"],
             "funnels": jQuery.i18n.map["sidebar.funnels"] || "Funnels",
             "drill": jQuery.i18n.map["drill.drill"] || "Drill",
+            "flows": jQuery.i18n.map["flows.flows"] || "Flows",
             "retention": jQuery.i18n.map["retention.retention"] || "Retention",
             "formulas": jQuery.i18n.map["calculated-metrics.formulas"] || "Formulas",
             "dbviewer": jQuery.i18n.map["dbviewer.title"] || "DBViewer"
@@ -6048,8 +6049,9 @@ window.LongTaskView = countlyView.extend({
         this.showTableColumns(self);
     },
     showTableColumns: function(self) {
-        var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
-        var automaticallyColumns = [false, true, true, true, false, false, false, false, true, true];
+        var manuallyColumns = [true, true, false, true, true, true, true, true, false, false, true, true];
+        var automaticallyColumns = [false, true, true, true, false, false, false, false, false, true, false, true];
+        //                         [NAME, DATA, STAT(R),ORIGIN, TYPE,PERIOD,VISIB,LASTUp,Started,duration,status(SUB),but]
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
