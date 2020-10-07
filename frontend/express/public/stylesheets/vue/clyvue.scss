@@ -539,7 +539,7 @@
 
     .cly-vue-generic-radio {
         .generic-radio-wrapper > div {
-            width: 144px;
+            width: calc(50% - 8px);
             border: 1px solid #d0d0d0;
             border-radius: 2px;
             display: inline-block;
