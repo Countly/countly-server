@@ -246,6 +246,9 @@ taskmanager.saveResult = function(options, data, callback) {
         update.status = "errored";
         update.errormsg = message;
     }
+    else {
+        update.errormsg = "";//rewrite any old error message
+    }
 
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
         options.db.collection("long_tasks").update({_id: options.id}, {
@@ -563,13 +566,14 @@ taskmanager.deleteResult = function(options, callback) {
 */
 taskmanager.errorResults = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").update({status: "running"}, {$set: {status: "errored"}}, {multi: true}, function() {
-        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored"}}, {multi: true}, function() {
+    options.db.collection("long_tasks").update({status: "running"}, {$set: {status: "errored", errormsg: "Task was killed during server restart."}}, {multi: true}, function() {
+        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored", errormsg: "Task was killed during server restart."}}, {multi: true}, function() {
             options.db.collection("long_tasks").find({status: "errored", subtask: {$exists: true}}).toArray(function(err, res) {
                 if (res && res.length > 0) {
                     for (var k = 0; k < res.length; k++) {
                         var updateSub = {$set: {}};
                         updateSub.$set["subtasks." + res[k]._id + ".status"] = "errored";
+                        updateSub.$set["subtasks." + res[k]._id + ".errormsg"] = "Task was killed during server restart.";
                         options.db.collection("long_tasks").update({_id: res[k].subtask}, updateSub, {}, function(/*err,res*/) {});
                     }
                 }
@@ -578,7 +582,6 @@ taskmanager.errorResults = function(options, callback) {
                 }
             });
         });
-        //callback);
     });
 };
 
@@ -608,6 +611,35 @@ taskmanager.rerunTask = function(options, callback) {
         }, function(err, res) {
             request(reqData, function(error, response, body) {
                 //we got a redirect, we need to follow it
+                var code = "";
+                var msg = "";
+                if (response && response.statusCode) {
+                    code = response.statusCode;
+                    msg = response.statusMessage || "";
+                    if (response.body && response.body !== '') {
+                        if (typeof response.body === 'string') {
+                            try {
+                                msg = JSON.parse(response.body);
+                                if (msg.result) {
+                                    msg = msg.result;
+                                }
+                            }
+                            catch (exp) {
+                                log.e('Parse ' + response.body + ' JSON failed');
+                                msg = response.body;
+                            }
+                        }
+                        else {
+                            if (response.body.result) {
+                                msg = response.body.result;
+                            }
+                            else {
+                                msg = JSON.stringify(response.body);
+                            }
+                        }
+                    }
+                }
+
                 if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
                     reqData.uri = response.headers.location;
                     runTask(options1, reqData, function() {});
@@ -615,12 +647,25 @@ taskmanager.rerunTask = function(options, callback) {
                 //we got response, if it contains task_id, then task is rerunning
                 //if it does not, then possibly task completed faster this time and we can get new result
                 else if (body && !body.task_id) {
-                    taskmanager.saveResult({
-                        db: options1.db,
-                        id: options1.id,
-                        subtask: options1.subtask,
-                        request: res.request
-                    }, body);
+                    if (code === 200) {
+                        taskmanager.saveResult({
+                            db: options1.db,
+                            id: options1.id,
+                            subtask: options1.subtask,
+                            request: res.request
+                        }, body);
+                    }
+                    else {
+                        taskmanager.saveResult({
+                            db: options1.db,
+                            id: options1.id,
+                            subtask: options1.subtask,
+                            errormsg: msg,
+                            errored: true,
+                            request: res.request
+                        }, body);
+
+                    }
                 }
             });
             callback1(null, "Success");
