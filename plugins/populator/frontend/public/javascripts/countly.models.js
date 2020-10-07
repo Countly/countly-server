@@ -1,8 +1,8 @@
 /*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
 (function(countlyPopulator) {
     var metric_props = {
-        mobile: ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"],
-        web: ["_os", "_os_version", "_resolution", "_device", "_app_version", "_density", "_locale", "_store", "_browser"],
+        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_carrier", "_app_version", "_density", "_locale", "_store"],
+        web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_app_version", "_density", "_locale", "_store", "_browser"],
         desktop: ["_os", "_os_version", "_resolution", "_app_version", "_locale"]
     };
     var props = {
@@ -21,6 +21,7 @@
         _device_android: ["GT-S5830L", "HTC6525LVW", "MB860", "LT18i", "LG-P500", "Desire V", "Wildfire S A510e"],
         _device_ios: ["iPhone8,1", "iPhone9,1", "iPhone9,2", "iPod7,1", "iPad3,6"],
         _device_windows_phone: ["Lumia 535", "Lumia 540", "Lumia 640 XL"],
+        _device_type: ["console", "mobile", "tablet", "smarttv", "wearable", "embedded", "desktop"],
         _manufacture_android: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Huaiwei", "Lenovo", "Acer"],
         _manufacture_ios: ["Apple"],
         _manufacture_windows_phone: ["Nokia", "Microsoft"],

@@ -265,6 +265,11 @@ usage.getPredefinedMetrics = function(params, userProps) {
                     short_code: common.dbUserMap.platform
                 },
                 {
+                    name: "_device_type",
+                    set: "device_type",
+                    short_code: common.dbUserMap.device_type
+                },
+                {
                     name: "_os_version",
                     set: "os_versions",
                     short_code: common.dbUserMap.platform_version

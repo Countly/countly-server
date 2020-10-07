@@ -1,4 +1,4 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation, JobsView, JobDetailView */
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation, JobsView, JobDetailView */
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
@@ -1877,6 +1877,84 @@ window.ResolutionView = countlyView.extend({
             countlyCommon.drawGraph(resolutionData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(resolutionData.chartDPNew, "#dashboard-graph2", "pie");
             CountlyHelpers.refreshTable(self.dtable, resolutionData.chartData);
+        });
+    }
+});
+
+window.DeviceTypeView = countlyView.extend({
+    beforeRender: function() {
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("device_type")).then(function() {});
+    },
+    renderCommon: function(isRefresh) {
+        var deviceTypeData = countlyDeviceDetails.getData(false, false, "device_type", "device_type");
+
+        this.templateData = {
+            "page-title": jQuery.i18n.map["device_type.title"],
+            "logo-class": "device_type",
+            "graph-type-double-pie": true,
+            "pie-titles": {
+                "left": jQuery.i18n.map["common.total-users"],
+                "right": jQuery.i18n.map["common.new-users"]
+            },
+            "chart-helper": "device_type.chart"
+        };
+
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+
+            countlyCommon.drawGraph(deviceTypeData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(deviceTypeData.chartDPNew, "#dashboard-graph2", "pie");
+
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": deviceTypeData.chartData,
+                "aoColumns": [
+                    { "mData": "device_type", "sTitle": jQuery.i18n.map["device_type.title"], "bSortable": false },
+                    {
+                        "mData": "t",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
+                    },
+                    {
+                        "mData": "u",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.total-users"]
+                    },
+                    {
+                        "mData": "n",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.new-users"]
+                    }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
+        }
+    },
+    refresh: function() {
+        var self = this;
+        $.when(this.beforeRender()).then(function() {
+            if (app.activeView !== self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var deviceTypeData = countlyDeviceDetails.getData(false, false, "device_type", "device_type");
+
+            countlyCommon.drawGraph(deviceTypeData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(deviceTypeData.chartDPNew, "#dashboard-graph2", "pie");
+            CountlyHelpers.refreshTable(self.dtable, deviceTypeData.chartData);
         });
     }
 });
@@ -7319,6 +7397,7 @@ app.platformView = new PlatformView();
 app.appVersionView = new AppVersionView();
 app.carrierView = new CarrierView();
 app.resolutionView = new ResolutionView();
+app.deviceTypeView = new DeviceTypeView();
 app.durationView = new DurationView();
 app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
@@ -7370,6 +7449,9 @@ app.route("/analytics/carriers", "carriers", function() {
 });
 app.route("/analytics/resolutions", "resolutions", function() {
     this.renderWhenReady(this.resolutionView);
+});
+app.route("/analytics/device_type", "device_type", function() {
+    this.renderWhenReady(this.deviceTypeView);
 });
 app.route("/analytics/durations", "durations", function() {
     this.renderWhenReady(this.durationView);

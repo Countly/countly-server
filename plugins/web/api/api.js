@@ -70,6 +70,10 @@ var pluginOb = {},
                     params.qstring.metrics._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
                 }
             }
+
+            if (!params.qstring.metrics._device_type && params.app.type === "web") {
+                params.qstring.metrics._device_type = agent.device.type || "desktop";
+            }
         }
 
         //check if view events need to have platform segment
