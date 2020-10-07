@@ -1299,29 +1299,36 @@
         }
 
         .select-inner {
+            //In order to change row height change height property only.
+            //The dropdown arrow on right will auto align vertically.
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: auto;
             font-size: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 27px;
+            padding: 5px 8px;
+            box-sizing: border-box;
         }
 
         .text-container {
-            width: 90%;
-            display: inline-block;
-            vertical-align: middle;
+            width: 100%;
+            margin: 0px;
+            box-sizing: border-box;
+            overflow: hidden;
+            margin-right: 4px;
         }
 
         .text {
-            //In order to change the text row height change line-height only.
-            //The dropdown arrow on right will auto align vertically.
-            padding: 0px 9px;
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
             color: #444;
             font-weight: normal;
-            font: 13px Ubuntu, Helvetica, sans-serif;
-            line-height: 27px;
+            font: 13px Ubuntu,Helvetica,sans-serif;
+            padding: 0;
+            margin: 0;
         }
 
         .search {
@@ -1472,9 +1479,7 @@
 
         .drop {
             opacity: 0.8;
-            width: 10%;
-            display: inline-block;
-            vertical-align: middle;
+            width: auto;
 
             &:hover {
                 opacity: 1;
@@ -1506,14 +1511,9 @@
             border: none;
             width: auto;
             background-color: transparent;
-            margin-right: 5px;
 
             .text-container {
                 width: auto;
-
-                .text {
-                    padding: 0px 4px 0px 0px;
-                }
             }
 
             .drop {
