@@ -1,6 +1,7 @@
 /*global
     Handlebars,
     CountlyHelpers,
+    countlyAuth,
     countlyGlobal,
     countlyView,
     ReportingView,
@@ -13,6 +14,7 @@
  */
 
 window.ReportingView = countlyView.extend({
+    featureName: 'reports',
     statusChanged: {},
     emailInput: {},
     initialize: function() {
@@ -265,6 +267,18 @@ window.ReportingView = countlyView.extend({
             $("#add-report").on("click", function() {
                 self.widgetDrawer.init("core");
             });
+
+            if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+                $('#add-report').hide();
+            }
+
+            if (!countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+                $('.edit-report').hide();
+            }
+
+            if (!countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+                $('.delete-report').hide();
+            }
         }
     },
 
@@ -967,5 +981,7 @@ app.route('/manage/reports', 'reports', function() {
 });
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.reportingView.featureName)) {
+        app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+    }
 });
