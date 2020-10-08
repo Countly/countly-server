@@ -791,7 +791,6 @@
         font: 12px Ubuntu, Helvetica, sans-serif;
         line-height: 15px;
         overflow: auto;
-        margin-left: 8px;
 
         &.button-green-skin {
             background-color: #2eb52b;
@@ -806,7 +805,6 @@
         &.button-orange-skin{
             background-color: #ef9c42;
             color: #fff;
-            margin-left: 0px;
             border-radius: 3px;
         }
         &:hover {
