@@ -3142,10 +3142,12 @@
     Vue.component("cly-menubox", countlyBaseComponent.extend({
         template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="close">\
                         <div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\
-                            <a>{{label}}</a>\
-                            <div style="arrows-wrapper">\
-                                <span class="down ion-chevron-down"></span>\
-                                <span class="up ion-chevron-up"></span>\
+                            <div class="text-container">\
+                                <div class="text">{{label}}</div>\
+                            </div>\
+                            <div class="arrows-wrapper">\
+                                <div class="down ion-chevron-down"></div>\
+                                <div class="up ion-chevron-up"></div>\
                             </div>\
                         </div>\
                         <div class="menu-body" v-show="isOpened">\

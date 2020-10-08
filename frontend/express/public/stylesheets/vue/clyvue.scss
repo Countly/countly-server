@@ -1144,52 +1144,69 @@
         &.menubox-default-skin {
             display: inline-block;
             .menu-toggler {
-                padding: 6px 25px 0px 3px;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                white-space: nowrap;
-                color: #444;
-                font-weight: normal;
-                font-size: 13px;
-                font-family: Ubuntu, Helvetica, sans-serif;
-                position: relative;
-                cursor: pointer;
                 max-width: 400px;
+                width: auto;
+                height: 27px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+
+                .text-container {
+                    overflow: hidden;
+                    margin-right: 4px;
+
+                    .text {
+                        font-size: 13px;
+                        font-family: Ubuntu,Helvetica,sans-serif;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        color: #444;
+                    }
+                }
 
                 .arrows-wrapper {
-                    display: table-cell;
-                    vertical-align: middle;
-                    position: relative;
-                    float: left;
-                    width: 30px;
+                    width: auto;
+                    height: auto;
+                    padding: 0;
+                    margin: 0;
+
+                    .up,
+                    .down {
+                        width: auto;
+                        opacity: 0.8;
+                    }
+
+                    .down:before, .up:before {
+                        font-size: 9px;
+                        color: #fff;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 4px;
+                        background-color: #444;
+                    }
                 }
 
-                .up,
-                .down {
-                    font-size: 9px;
-                    line-height: 9px;
-                    color: #717171;
-                    opacity: 0.8;
-                    margin-left: 6px;
-                }
-                span.up {
+                div.up {
                     display: none;
                 }
-                &.active span.up {
-                    display: inline;
+                &.active div.up {
+                    display: block;
                 }
-                &.active span.down {
+                &.active div.down {
                     display: none;
-                }
-                a {
-                    text-overflow: ellipsis;
-                    overflow: hidden;
-                    float: left;
                 }
                 &:hover {
-                    color: #2fa732;
-                    span {
+                    .text {
                         color: #2fa732;
+                    }
+
+                    .up:before, .down:before {
+                        background-color: #000;
                     }
                 }
             }
@@ -1315,7 +1332,6 @@
             width: auto;
             font-size: 0;
             display: flex;
-            justify-content: space-around;
             align-items: center;
             height: 27px;
             padding: 5px 8px;
@@ -1396,7 +1412,7 @@
             border-radius: 2px;
             background-color: #fff;
             border: 1px solid #d0d0d0;
-            width: 135px;
+            width: 100%;
 
             .scrollable {
                 max-height: 188px;
@@ -1554,11 +1570,6 @@
                     color: #fff;
                     background-color: #444444;
                 }
-            }
-
-            .items-list,
-            .search {
-                width: 220px;
             }
         }
 
