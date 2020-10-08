@@ -1164,5 +1164,7 @@ app.route('/manage/db/indexes/:dbs/:collection', 'dbs', function(db, collection)
 });
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.dbviewerView.featureName)) {
+        app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
+    }
 });
