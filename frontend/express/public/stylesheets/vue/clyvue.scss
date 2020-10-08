@@ -773,7 +773,7 @@
                     color: #444;
                     vertical-align: top;
                     margin-top: 3px;
-                    margin-left: 8px;
+                    margin-left: 5px;
                     line-height: 12px;
                     cursor: pointer;
                 }
@@ -802,6 +802,12 @@
             color: #717171;
             background-color: #fdfdfd;
             box-shadow: inset 0 0 0 1px #dcdcdc;
+        }
+        &.button-orange-skin{
+            background-color: #ef9c42;
+            color: #fff;
+            margin-left: 0px;
+            border-radius: 3px;
         }
         &:hover {
             opacity: 0.8;
@@ -995,6 +1001,10 @@
                 clear: both;
                 color: rgb(255, 0, 0);
                 font-size: 12px;
+            }
+            .regular {
+                width: 85%;
+                margin: 20px auto 0 auto;
             }
             .slim {
                 width: 75%;
@@ -1326,7 +1336,7 @@
             white-space: nowrap;
             color: #444;
             font-weight: normal;
-            font: 13px Ubuntu,Helvetica,sans-serif;
+            font: 13px Ubuntu, Helvetica, sans-serif;
             padding: 0;
             margin: 0;
         }

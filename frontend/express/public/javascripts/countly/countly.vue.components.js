@@ -2217,7 +2217,7 @@
                     return classes;
                 },
                 skinClass: function() {
-                    if (["green", "light"].indexOf(this.skin) > -1) {
+                    if (["green", "light", "orange"].indexOf(this.skin) > -1) {
                         return "button-" + this.skin + "-skin";
                     }
                     return "button-light-skin";
