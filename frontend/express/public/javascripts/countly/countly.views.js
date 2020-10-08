@@ -859,6 +859,7 @@ window.LoyaltyView = countlyView.extend({
 
             this.byDisabled = true;
             if (typeof extendViewWithFilter === "function") {
+                this.hideDrillEventMetaProperties = true;
                 extendViewWithFilter(this);
                 $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
                     self.initDrill();
