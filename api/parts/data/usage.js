@@ -232,6 +232,20 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 params.qstring.metrics._app_version += ".0";
             }
         }
+        if (!params.qstring.metrics._device_type && params.qstring.metrics._os === "iOS" && params.qstring.metrics._device) {
+            if ((params.qstring.metrics._device + "").startsWith("iPhone") || (params.qstring.metrics._device_type + "").startsWith("iPod")) {
+                params.qstring.metrics._device_type = "mobile";
+            }
+            else if ((params.qstring.metrics._device + "").startsWith("iPad")) {
+                params.qstring.metrics._device_type = "tablet";
+            }
+            else if ((params.qstring.metrics._device + "").startsWith("Watch")) {
+                params.qstring.metrics._device_type = "wearable";
+            }
+            else if ((params.qstring.metrics._device + "").startsWith("AppleTV")) {
+                params.qstring.metrics._device_type = "smarttv";
+            }
+        }
     }
 
     var predefinedMetrics = [

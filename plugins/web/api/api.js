@@ -68,8 +68,13 @@ var pluginOb = {},
                 }
             }
 
-            if (!params.qstring.metrics._device_type && params.app.type === "web") {
-                params.qstring.metrics._device_type = agent.device.type || "desktop";
+            if (!params.qstring.metrics._device_type) {
+                params.qstring.metrics._device_type = agent.device.type;
+
+                //if still undefined and app is web then it must be desktop
+                if (!params.qstring.metrics._device_type && params.app.type === "web") {
+                    params.qstring.metrics._device_type = "desktop";
+                }
             }
         }
 
