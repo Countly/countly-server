@@ -360,7 +360,15 @@ class CacheWorker {
             remove: this.remove.bind(this, group),
             purge: this.purge.bind(this, group),
             has: this.has.bind(this, group),
-            iterate: f => this.data.read(group).iterate(f)
+            iterate: f => {
+                let g = this.data.read(group);
+                if (g) {
+                    g.iterate(f);
+                }
+                else {
+                    log.e('no cache group %s to iterate on', group);
+                }
+            }
         };
     }
 }
@@ -704,7 +712,15 @@ class CacheMaster {
             remove: this.remove.bind(this, group),
             purge: this.purge.bind(this, group),
             has: this.has.bind(this, group),
-            iterate: f => this.data.read(group).iterate(f)
+            iterate: f => {
+                let g = this.data.read(group);
+                if (g) {
+                    g.iterate(f);
+                }
+                else {
+                    log.e('no cache group %s to iterate on', group);
+                }
+            }
         };
     }
 
