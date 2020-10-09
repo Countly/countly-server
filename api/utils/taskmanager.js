@@ -611,61 +611,77 @@ taskmanager.rerunTask = function(options, callback) {
         }, function(err, res) {
             request(reqData, function(error, response, body) {
                 //we got a redirect, we need to follow it
-                var code = "";
-                var msg = "";
-                if (response && response.statusCode) {
-                    code = response.statusCode;
-                    msg = response.statusMessage || "";
-                    if (response.body && response.body !== '') {
-                        if (typeof response.body === 'string') {
-                            try {
-                                msg = JSON.parse(response.body);
-                                if (msg.result) {
-                                    msg = msg.result;
-                                }
-                            }
-                            catch (exp) {
-                                log.e('Parse ' + response.body + ' JSON failed');
-                                msg = response.body;
-                            }
-                        }
-                        else {
-                            if (response.body.result) {
-                                msg = response.body.result;
-                            }
-                            else {
-                                msg = JSON.stringify(response.body);
-                            }
-                        }
-                    }
-                }
-
                 if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
                     reqData.uri = response.headers.location;
                     runTask(options1, reqData, function() {});
                 }
                 //we got response, if it contains task_id, then task is rerunning
                 //if it does not, then possibly task completed faster this time and we can get new result
-                else if (body && !body.task_id) {
-                    if (code === 200) {
-                        taskmanager.saveResult({
-                            db: options1.db,
-                            id: options1.id,
-                            subtask: options1.subtask,
-                            request: res.request
-                        }, body);
+                else if (body) {
+                    if (!body.task_id) {
+                        var code = "";
+                        var msg = "";
+                        if (response && response.statusCode) {
+                            code = response.statusCode;
+                            msg = response.statusMessage || "";
+                            if (response.body && response.body !== '') {
+                                if (typeof response.body === 'string') {
+                                    try {
+                                        msg = JSON.parse(response.body);
+                                        if (msg.result) {
+                                            msg = msg.result;
+                                        }
+                                    }
+                                    catch (exp) {
+                                        log.e('Parse ' + response.body + ' JSON failed');
+                                        msg = response.body;
+                                    }
+                                }
+                                else {
+                                    if (response.body.result) {
+                                        msg = response.body.result;
+                                    }
+                                    else {
+                                        msg = JSON.stringify(response.body);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (code === 200) {
+                            taskmanager.saveResult({
+                                db: options1.db,
+                                id: options1.id,
+                                subtask: options1.subtask,
+                                request: res.request
+                            }, body);
+                        }
+                        else {
+                            taskmanager.saveResult({
+                                db: options1.db,
+                                id: options1.id,
+                                subtask: options1.subtask,
+                                errormsg: msg,
+                                errored: true,
+                                request: res.request
+                            }, body);
+
+                        }
                     }
                     else {
-                        taskmanager.saveResult({
-                            db: options1.db,
-                            id: options1.id,
-                            subtask: options1.subtask,
-                            errormsg: msg,
-                            errored: true,
-                            request: res.request
-                        }, body);
-
+                        //we have task id. so it is running and will update itself
                     }
+                }
+                else {
+                    //We don't have body. Something is definetly wrong. Try logging error
+                    taskmanager.saveResult({
+                        db: options1.db,
+                        id: options1.id,
+                        subtask: options1.subtask,
+                        errormsg: "Missing body. " + JSON.stringify(error || {}),
+                        errored: true,
+                        request: res.request
+                    }, body);
                 }
             });
             callback1(null, "Success");
