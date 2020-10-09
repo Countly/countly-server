@@ -5383,7 +5383,7 @@ window.EventsView = countlyView.extend({
                         <i class="fas fa-times"></i>
                 </div>
             </div>`;
-            $(".routename-events #event-alert").append(html);
+            setTimeout(function(){ $(".routename-events #event-alert").append(html) }, 0);
             $(".event-remind-tooltip .fa-times").off("click").on("click", function (e) {
                 $(e.currentTarget.parentElement.parentElement).remove()
             });
