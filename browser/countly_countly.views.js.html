@@ -6174,8 +6174,8 @@ window.LongTaskView = countlyView.extend({
         this.showTableColumns(self);
     },
     showTableColumns: function(self) {
-        var manuallyColumns = [true, true, false, true, true, true, true, true, false, false, true, true];
-        var automaticallyColumns = [false, true, true, true, false, false, false, false, false, true, false, true];
+        var manuallyColumns = [true, true, true, true, true, true, true, true, false, false, true];
+        var automaticallyColumns = [false, true, true, true, false, false, false, false, false, true, true];
         //                         [NAME, DATA, STAT(R),ORIGIN, TYPE,PERIOD,VISIB,LASTUp,Started,duration,status(SUB),but]
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
@@ -6221,7 +6221,50 @@ window.LongTaskView = countlyView.extend({
             },
             {
                 "mData": function(row) {
-                    return '&lt;span class="status-color" style="color:' + self.getStatusColor(row.status) + ';">&lt;i class="fa fa-circle" aria-hidden="true">&lt;/i>' + (self.states[row.status] || row.status) + "&lt;/span>";
+                    if (row.taskgroup &amp;&amp; row.subtasks) {
+                        var difStats = false;
+                        var stat = "completed";
+                        var dd = "";
+
+                        for (var k in row.subtasks) {
+                            if (row.subtasks[k].status !== stat) {
+                                difStats = true;
+                            }
+                            var color = "green";
+                            if (row.subtasks[k].status === "errored") {
+                                color = "red";
+                            }
+                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                color = "blue";
+                            }
+                            if (row.subtasks[k].errormsg) {
+                                dd += "&lt;div class='have_error_message table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.subtasks[k].status + "&lt;p class='error_message_div'>" + row.subtasks[k].errormsg + "&lt;/div>&lt;/div>";
+                            }
+                            else {
+                                dd += "&lt;div class='table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.subtasks[k].status + "&lt;/div>";
+                            }
+
+                        }
+                        if (difStats) {
+                            return dd;
+                        }
+                        else {
+                            if (row.errormsg &amp;&amp; row.status === "errored") {
+                                return '&lt;span class="status-color" style="color:' + self.getStatusColor(row.status) + ';">&lt;i class="fa fa-circle" aria-hidden="true">&lt;/i>' + (self.states[row.status] || row.status) + "&lt;p class='error_message_div'>" + row.errormsg + "&lt;/p>&lt;/span>";
+                            }
+                            else {
+                                return '&lt;span class="status-color" style="color:' + self.getStatusColor(row.status) + ';">&lt;i class="fa fa-circle" aria-hidden="true">&lt;/i>' + (self.states[row.status] || row.status) + "&lt;/span>";
+                            }
+                        }
+                    }
+                    else {
+                        if (row.errormsg) {
+                            return '&lt;span class="status-color" style="color:' + self.getStatusColor(row.status) + ';">&lt;i class="fa fa-circle" aria-hidden="true">&lt;/i>' + (self.states[row.status] || row.status) + "&lt;p class='error_message_div'>" + row.errormsg + "&lt;/p>&lt;/span>";
+                        }
+                        else {
+                            return '&lt;span class="status-color" style="color:' + self.getStatusColor(row.status) + ';">&lt;i class="fa fa-circle" aria-hidden="true">&lt;/i>' + (self.states[row.status] || row.status) + "&lt;/span>";
+                        }
+                    }
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["common.status"]
@@ -6316,66 +6359,6 @@ window.LongTaskView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["events.table.dur"]
             },
             {
-                "mData": function(row/*, type*/) {
-                    var color = "green";
-                    if (row.taskgroup &amp;&amp; row.subtasks) {
-                        var difStats = false;
-                        var stat = "completed";
-                        var dd = "";
-
-                        for (var k in row.subtasks) {
-                            if (row.subtasks[k].status !== stat) {
-                                difStats = true;
-                            }
-                            color = "green";
-                            if (row.subtasks[k].status === "errored") {
-                                color = "red";
-                            }
-                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
-                                color = "blue";
-                            }
-                            if (row.subtasks[k].errormsg) {
-                                dd += "&lt;div class='have_error_message table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.subtasks[k].status + "&lt;div class='error_message_div'>" + row.subtasks[k].errormsg + "&lt;/div>&lt;/div>";
-                            }
-                            else {
-                                dd += "&lt;div class='table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.subtasks[k].status + "&lt;/div>";
-                            }
-
-                        }
-                        if (difStats) {
-                            return dd;
-                        }
-                        else {
-                            color = "green";
-                            if (row.status === "errored") {
-                                color = "red";
-                            }
-                            if (row.status === "running" || row.status === "rerunning") {
-                                color = "yellow";
-                            }
-                            if (row.errormsg) {
-                                return "&lt;div class='have_error_message table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.status + "&lt;div class='error_message_div'>" + row.errormsg + "&lt;/div>&lt;/div>";
-                            }
-                            else {
-                                return "&lt;div class='table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.status + "&lt;/div>";
-                            }
-                        }
-                    }
-                    else {
-                        if (row.status === "errored") {
-                            color = "red";
-                        }
-                        if (row.status === "running" || row.status === "rerunning") {
-                            color = "yellow";
-                        }
-                        return "&lt;div class='table_status_dot table_status_dot_" + color + "'>&lt;span >" + "&lt;/span>" + row.status + "&lt;/div>";
-                    }
-                },
-                "bSortable": false,
-                "sType": "string",
-                "sTitle": jQuery.i18n.map["common.status"]
-            },
-            {
                 "mData": function() {
                     return '&lt;a class="cly-list-options">&lt;/a>';
                 },
@@ -6425,7 +6408,7 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
-        this.addErrorTooltips();
+        // this.addErrorTooltips();
         this.dtable.fnSort([ [8, 'desc'] ]);
         $(this.el).append('&lt;div class="cly-button-menu tasks-menu" tabindex="1">' +
             '&lt;a class="item view-task" href="" data-localize="common.view">&lt;/a>' +
@@ -6508,13 +6491,13 @@ window.LongTaskView = countlyView.extend({
                         if (!result) {
                             return true;
                         }
-                        countlyTaskManager.update(id, function(res) {
+                        countlyTaskManager.update(id, function(res, error) {
                             if (res.result === "Success") {
                                 countlyTaskManager.monitor(id, true);
                                 self.refresh();
                             }
                             else {
-                                CountlyHelpers.alert(res.result, "red");
+                                CountlyHelpers.alert(error, "red");
                             }
                         });
                     }, [jQuery.i18n.map["common.no-dont-do-that"], jQuery.i18n.map["taskmanager.yes-rerun-report"]], {title: jQuery.i18n.map["taskmanager.confirm-rerun-title"], image: "rerunning-task"});
@@ -7611,7 +7594,7 @@ Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Oct 08 2020 17:34:28 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Fri Oct 09 2020 08:34:38 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
