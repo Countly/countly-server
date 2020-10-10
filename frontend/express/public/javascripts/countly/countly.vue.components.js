@@ -875,7 +875,7 @@
                 data: function() {
                     return {
                         title: '',
-                        saveButtonLabel: this.i18n("common.drawer.confirm"),
+                        saveButtonLabel: this.i18n("common.confirm"),
                         editedObject: this.copyOfEdited(),
                         currentStepIndex: 0,
                         stepContents: [],
@@ -2082,20 +2082,46 @@
     Vue.component("cly-text-field", countlyBaseComponent.extend(
         // @vue/component
         {
+            mixins: [
+                _mixins.i18n
+            ],
             props: {
-                value: {required: true, type: [ String, Number ], default: ''}
+                value: {required: true, type: [ String, Number ], default: ''},
+                removable: {type: Boolean, default: false},
+                removeText: {type: String, default: ''},
+                disabled: {type: Boolean, default: false}
             },
             methods: {
                 setValue: function(e) {
                     this.$emit('input', e);
+                },
+                removeMe: function() {
+                    this.$emit('remove-me');
                 }
             },
             computed: {
                 defaultListeners: function() {
                     return objectWithoutProperties(this.$listeners, ["input"]);
+                },
+                innerRemoveText: function() {
+                    if (this.removeText) {
+                        return this.removeText;
+                    }
+                    return this.i18n("common.remove");
                 }
             },
-            template: '<input type="text" class="cly-vue-text-field input" v-on="defaultListeners" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
+            template: '<div class="cly-vue-text-field">\
+                            <div class="remove-button"\
+                                v-if="removable && !disabled"\
+                                @click="removeMe">\
+                                {{innerRemoveText}}\
+                            </div>\
+                            <input type="text" class="input"\
+                                v-on="defaultListeners" v-bind="$attrs"\
+                                v-bind:value="value"\
+                                v-bind:disabled="disabled"\
+                                v-on:input="setValue($event.target.value)">\
+                        </div>'
         }
     ));
 
@@ -2105,14 +2131,22 @@
             props: {
                 value: {default: false, type: Boolean},
                 label: {type: String, default: ''},
-                skin: { default: "switch", type: String}
+                skin: { default: "switch", type: String},
+                disabled: {type: Boolean, default: false}
             },
             computed: {
-                skinClass: function() {
+                topClasses: function() {
+                    var classes = [];
                     if (["switch", "tick"].indexOf(this.skin) > -1) {
-                        return "check-" + this.skin + "-skin";
+                        classes.push("check-" + this.skin + "-skin");
                     }
-                    return "check-switch-skin";
+                    else {
+                        classes.push("check-switch-skin");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
                 },
                 labelClass: function() {
                     return this.getClass(this.value);
@@ -2120,7 +2154,9 @@
             },
             methods: {
                 setValue: function(e) {
-                    this.$emit('input', e);
+                    if (!this.disabled) {
+                        this.$emit('input', e);
+                    }
                 },
                 getClass: function(value) {
                     var classes = ["check-label"];
@@ -2136,7 +2172,7 @@
                     return classes;
                 }
             },
-            template: '<div class="cly-vue-check" v-bind:class="[skinClass]">\
+            template: '<div class="cly-vue-check" v-bind:class="topClasses">\
                             <div class="check-wrapper">\
                                 <input type="checkbox" class="check-checkbox" :checked="value">\
                                 <div v-bind:class="labelClass" @click="setValue(!value)"></div>\
@@ -3167,6 +3203,43 @@
             },
             setStatus: function(targetState) {
                 this.$emit('status-changed', targetState);
+            }
+        }
+    }));
+
+    Vue.component("cly-button-menu", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-button-menu button-menu-default-skin" v-click-outside="close">\
+                        <div class="toggler" @click="toggle"></div>\
+                        <div class="menu-body" :class="{active: opened}">\
+                            <a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\
+                                <i :class="item.icon"></i>\
+                                <span>{{item.label}}</span>\
+                            </a>\
+                        </div>\
+                    </div>',
+        props: {
+            items: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
+        data: function() {
+            return {
+                opened: false
+            };
+        },
+        methods: {
+            toggle: function() {
+                this.opened = !this.opened;
+            },
+            close: function() {
+                this.opened = false;
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey);
+                this.close();
             }
         }
     }));

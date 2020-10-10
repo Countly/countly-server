@@ -696,6 +696,8 @@
     .cly-vue-check {
         display: inline-block;
 
+        $check-disabled-color: #c6c6c6;
+
         &.block {
             display: block;
             padding: 4px 0;
@@ -739,6 +741,14 @@
                     }
                 }
             }
+            &.disabled {
+                .check-checkbox:checked + .check-label {
+                    opacity: 0.5;
+                }
+                .check-label {
+                    cursor: default;
+                }
+            }
         }
 
         &.check-tick-skin {
@@ -746,6 +756,12 @@
                 .check-label {
                     color: #2fa732;
                     cursor: pointer;
+                }
+            }
+            &.disabled {
+                .check-label {
+                    color: #{$check-disabled-color};
+                    cursor: default;
                 }
             }
         }
@@ -778,6 +794,11 @@
                     cursor: pointer;
                 }
             }
+            &.disabled {
+                .check-text {
+                    cursor: default;
+                }
+            }
         }
     }
 
@@ -802,7 +823,7 @@
             background-color: #fdfdfd;
             box-shadow: inset 0 0 0 1px #dcdcdc;
         }
-        &.button-orange-skin{
+        &.button-orange-skin {
             background-color: #ef9c42;
             color: #fff;
             border-radius: 3px;
@@ -1156,7 +1177,7 @@
 
                     .text {
                         font-size: 13px;
-                        font-family: Ubuntu,Helvetica,sans-serif;
+                        font-family: Ubuntu, Helvetica, sans-serif;
                         text-overflow: ellipsis;
                         overflow: hidden;
                         white-space: nowrap;
@@ -1176,7 +1197,8 @@
                         opacity: 0.8;
                     }
 
-                    .down:before, .up:before {
+                    .down:before,
+                    .up:before {
                         font-size: 9px;
                         color: #fff;
                         display: flex;
@@ -1203,7 +1225,8 @@
                         color: #2fa732;
                     }
 
-                    .up:before, .down:before {
+                    .up:before,
+                    .down:before {
                         background-color: #000;
                     }
                 }
@@ -1263,6 +1286,106 @@
         box-sizing: border-box;
         overflow: hidden;
     }
+
+    .cly-vue-text-field {
+        display: inline-block;
+        width: 100%;
+        position: relative;
+        .remove-button {
+            font-family: Ubuntu;
+            font-size: 12px;
+            color: #d06d6d;
+            display: none;
+            position: absolute;
+            padding: 7px 8px;
+            top: 1px;
+            right: 1px;
+            background-color: white;
+        }
+        &:hover .remove-button {
+            display: block;
+            cursor: pointer;
+        }
+    }
+
+    .cly-vue-button-menu {
+        position: relative;
+        .toggler {
+            color: #a7a7a7;
+            font-size: 20px;
+            vertical-align: middle;
+            line-height: 12px;
+            float: right;
+            height: 11px;
+            text-align: center;
+            border: 1px solid transparent;
+            border-radius: 1px;
+            width: 16px;
+            cursor: pointer;
+            &:before {
+                font-family: "Ionicons";
+                content: "\f396";
+            }
+        }
+        .menu-body {
+            padding: 10px 0;
+            opacity: 0;
+            transition: opacity 0.3s, z-index 0.9s;
+            z-index: -1;
+            position: absolute;
+            background-color: #fff;
+            right: -3px;
+            top: 20px;
+            border-radius: 2px;
+            outline: none;
+            border: 1px solid #d0d0d0;
+            .item {
+                cursor: pointer;
+                padding: 8px 20px;
+                font-size: 13px;
+                white-space: nowrap;
+                color: #474747;
+                display: block;
+                &:hover {
+                    background-color: #f3f3f3;
+                }
+                i {
+                    margin-right: 7px;
+                    width: 13px;
+                }
+            }
+            &.active {
+                opacity: 1;
+                transition: opacity 0.2s;
+                z-index: 2;
+            }
+            &:before {
+                border: 4px solid rgba(194, 225, 245, 0);
+                border-bottom-color: #fff;
+                right: 7px;
+                top: -8px;
+                content: " ";
+                height: 0;
+                width: 0;
+                position: absolute;
+                pointer-events: none;
+                z-index: 2;
+            }
+            &:after {
+                border: 5px solid rgba(194, 225, 245, 0);
+                border-bottom-color: #d0d0d0;
+                right: 6px;
+                top: -10px;
+                content: " ";
+                height: 0;
+                width: 0;
+                position: absolute;
+                pointer-events: none;
+                z-index: 1;
+            }
+        }
+    }
+
     .widget-header .cly-vue-select {
         background-color: #ececec;
         position: relative;
