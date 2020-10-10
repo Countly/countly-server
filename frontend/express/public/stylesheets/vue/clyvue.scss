@@ -696,6 +696,8 @@
     .cly-vue-check {
         display: inline-block;
 
+        $check-disabled-color: #c6c6c6;
+
         &.block {
             display: block;
             padding: 4px 0;
@@ -739,6 +741,14 @@
                     }
                 }
             }
+            &.disabled {
+                .check-checkbox:checked + .check-label {
+                    opacity: 0.5;
+                }
+                .check-label {
+                    cursor: default;
+                }
+            }
         }
 
         &.check-tick-skin {
@@ -746,6 +756,12 @@
                 .check-label {
                     color: #2fa732;
                     cursor: pointer;
+                }
+            }
+            &.disabled {
+                .check-label {
+                    color: #{$check-disabled-color};
+                    cursor: default;
                 }
             }
         }
@@ -776,6 +792,11 @@
                     margin-left: 5px;
                     line-height: 12px;
                     cursor: pointer;
+                }
+            }
+            &.disabled {
+                .check-text {
+                    cursor: default;
                 }
             }
         }

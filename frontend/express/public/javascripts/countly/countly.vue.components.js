@@ -2105,14 +2105,22 @@
             props: {
                 value: {default: false, type: Boolean},
                 label: {type: String, default: ''},
-                skin: { default: "switch", type: String}
+                skin: { default: "switch", type: String},
+                disabled: {type: Boolean, default: false}
             },
             computed: {
-                skinClass: function() {
+                topClasses: function() {
+                    var classes = [];
                     if (["switch", "tick"].indexOf(this.skin) > -1) {
-                        return "check-" + this.skin + "-skin";
+                        classes.push("check-" + this.skin + "-skin");
                     }
-                    return "check-switch-skin";
+                    else {
+                        classes.push("check-switch-skin");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
                 },
                 labelClass: function() {
                     return this.getClass(this.value);
@@ -2120,7 +2128,9 @@
             },
             methods: {
                 setValue: function(e) {
-                    this.$emit('input', e);
+                    if (!this.disabled) {
+                        this.$emit('input', e);
+                    }
                 },
                 getClass: function(value) {
                     var classes = ["check-label"];
@@ -2136,7 +2146,7 @@
                     return classes;
                 }
             },
-            template: '<div class="cly-vue-check" v-bind:class="[skinClass]">\
+            template: '<div class="cly-vue-check" v-bind:class="topClasses">\
                             <div class="check-wrapper">\
                                 <input type="checkbox" class="check-checkbox" :checked="value">\
                                 <div v-bind:class="labelClass" @click="setValue(!value)"></div>\
