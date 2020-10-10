@@ -875,7 +875,7 @@
                 data: function() {
                     return {
                         title: '',
-                        saveButtonLabel: this.i18n("common.drawer.confirm"),
+                        saveButtonLabel: this.i18n("common.confirm"),
                         editedObject: this.copyOfEdited(),
                         currentStepIndex: 0,
                         stepContents: [],
@@ -2082,20 +2082,43 @@
     Vue.component("cly-text-field", countlyBaseComponent.extend(
         // @vue/component
         {
+            mixins: [
+                _mixins.i18n
+            ],
             props: {
-                value: {required: true, type: [ String, Number ], default: ''}
+                value: {required: true, type: [ String, Number ], default: ''},
+                removable: {type: Boolean, default: false},
+                removeText: {type: String, default: ''},
             },
             methods: {
                 setValue: function(e) {
                     this.$emit('input', e);
+                },
+                removeMe: function() {
+                    this.$emit('remove-me');
                 }
             },
             computed: {
                 defaultListeners: function() {
                     return objectWithoutProperties(this.$listeners, ["input"]);
+                },
+                innerRemoveText: function() {
+                    if (this.removeText) {
+                        return this.removeText;
+                    }
+                    return this.i18n("common.remove");
                 }
             },
-            template: '<input type="text" class="cly-vue-text-field input" v-on="defaultListeners" v-bind="$attrs" v-bind:value="value" v-on:input="setValue($event.target.value)">'
+            template: '<div class="cly-vue-text-field">\
+                            <div class="remove-button" v-if="removable && !disabled"\
+                                @click="removeMe">\
+                                {{innerRemoveText}}\
+                            </div>\
+                            <input type="text" class="input"\
+                                    v-on="defaultListeners" v-bind="$attrs"\
+                                    v-bind:value="value"\
+                                    v-on:input="setValue($event.target.value)">\
+                        </div>'
         }
     ));
 

@@ -1284,6 +1284,26 @@
         box-sizing: border-box;
         overflow: hidden;
     }
+    .cly-vue-text-field {
+        display:inline-block; 
+        width:100%;
+        position: relative;
+        .remove-button {
+            font-family: Ubuntu;
+            font-size: 12px;
+            color: #d06d6d;
+            display: none;
+            position: absolute;
+            padding: 7px 8px;
+            top: 1px;
+            right: 1px;
+            background-color: white;
+        }
+        &:hover .remove-button {
+            display: block;
+            cursor: pointer;
+        }
+    }
     .widget-header .cly-vue-select {
         background-color: #ececec;
         position: relative;
