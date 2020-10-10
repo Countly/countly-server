@@ -3207,4 +3207,41 @@
         }
     }));
 
+    Vue.component("cly-button-menu", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-button-menu button-menu-default-skin" v-click-outside="close">\
+                        <div class="toggler" @click="toggle"></div>\
+                        <div class="menu-body" :class="{active: opened}">\
+                            <a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\
+                                <i :class="item.icon"></i>\
+                                <span>{{item.label}}</span>\
+                            </a>\
+                        </div>\
+                    </div>',
+        props: {
+            items: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
+        data: function() {
+            return {
+                opened: false
+            };
+        },
+        methods: {
+            toggle: function() {
+                this.opened = !this.opened;
+            },
+            close: function() {
+                this.opened = false;
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey);
+                this.close();
+            }
+        }
+    }));
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, window.countlyVue = window.countlyVue || {}, jQuery));
