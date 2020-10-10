@@ -2089,6 +2089,7 @@
                 value: {required: true, type: [ String, Number ], default: ''},
                 removable: {type: Boolean, default: false},
                 removeText: {type: String, default: ''},
+                disabled: {type: Boolean, default: false}
             },
             methods: {
                 setValue: function(e) {
@@ -2110,14 +2111,16 @@
                 }
             },
             template: '<div class="cly-vue-text-field">\
-                            <div class="remove-button" v-if="removable && !disabled"\
+                            <div class="remove-button"\
+                                v-if="removable && !disabled"\
                                 @click="removeMe">\
                                 {{innerRemoveText}}\
                             </div>\
                             <input type="text" class="input"\
-                                    v-on="defaultListeners" v-bind="$attrs"\
-                                    v-bind:value="value"\
-                                    v-on:input="setValue($event.target.value)">\
+                                v-on="defaultListeners" v-bind="$attrs"\
+                                v-bind:value="value"\
+                                v-bind:disabled="disabled"\
+                                v-on:input="setValue($event.target.value)">\
                         </div>'
         }
     ));
