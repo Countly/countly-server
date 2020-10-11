@@ -1,4 +1,4 @@
-/*global countlyAnalyticsAPI, CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyTotalUsers, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
+/*global countlyAnalyticsAPI, countlyAuth, CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyTotalUsers, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
 
 window.WebDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
@@ -503,16 +503,18 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 });
 
 $(document).ready(function() {
-    app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'web')) {
+        app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+    }
 
     app.addAppSwitchCallback(function(appId) {
         if (countlyGlobal.apps[appId].type === "web") {
