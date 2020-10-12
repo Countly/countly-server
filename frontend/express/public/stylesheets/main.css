@@ -3902,3 +3902,54 @@ p.error_message_div {
     position: absolute;
     pointer-events: none;
 }
+
+.event-remind-tooltip {
+    height: 40px;
+    background-color: #fcf5ed;
+    margin-bottom: 10px;
+    display: none;
+    border: 1px solid #e3af7f;
+    border-radius: 2px;
+}
+
+.event-remind-tooltip:last-of-type {
+    margin-bottom: 20px;
+}
+
+.event-remind-tooltip .content {
+    font-size: 14px;
+    color: #e3af7f;
+    display: flex;
+    align-items: center;
+}
+
+.event-remind-tooltip .content .prefix {
+    width: 5px;
+    background: #e3af7f;
+    height: 40px;
+}
+
+.event-remind-tooltip .content .remind-context {
+    margin-left: 10px;
+    flex-grow: 1;
+}
+
+.event-remind-tooltip .content .remind-context a{
+    text-decoration: underline;
+}
+
+.event-remind-tooltip .content .remind-context a:hover{
+    color:#e29c5b;
+}
+
+.event-remind-tooltip .content i:hover{
+    color:#e29c5b;
+}
+.event-remind-tooltip .content i {
+    margin-right:10px;
+}
+
+.event-remind-tooltip .content i:hover {
+    cursor: pointer;
+}
+>>>>>>> [events] add event key & segmentation value limitation reminds

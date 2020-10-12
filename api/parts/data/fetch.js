@@ -248,6 +248,12 @@ fetch.fetchCollection = function(collection, params) {
                     }
                 }
             }
+            const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+            result.limits = {
+                event_limit: pluginsGetConfig.event_limit,
+                event_segmentation_limit: pluginsGetConfig.event_segmentation_limit,
+                event_segmentation_value_limit: pluginsGetConfig.event_segmentation_value_limit,
+            };
         }
 
         common.returnOutput(params, result);
