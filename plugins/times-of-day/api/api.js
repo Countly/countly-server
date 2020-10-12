@@ -124,8 +124,7 @@ var plugin = {},
 
 
         if (query) {
-            common.db.collection('events').findOne({ _id: common.db.ObjectID(appId) }, { list: 1 }, function(err, eventData) {
-
+            common.readBatcher.getOne("events", {'_id': common.db.ObjectID(appId)}, {list: 1}, (err, eventData) => {
                 if (err) {
                     console.log("err", err);
                     return true;
@@ -136,20 +135,31 @@ var plugin = {},
                 var limit = plugins.getConfig("api", params.app && params.app.plugins, true).event_limit;
                 var overLimit = eventData.list.count > limit;
 
-                var bulk = common.db.collection(collectionName).initializeUnorderedBulkOp();
 
-                Object.keys(query).forEach(function(key) {
-                    var queryObject = query[key];
-                    var s = queryObject.update.$set.s;
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).batch_processing === true) {
+                    Object.keys(query).forEach(function(key) {
+                        var queryObject = query[key];
+                        var s = queryObject.update.$set.s;
+                        if (s === "[CLY]_session" || !overLimit || (overLimit && eventData.list.indexOf(s) >= 0)) {
+                            common.writeBatcher.add(collectionName, queryObject.criteria._id, queryObject.update);
+                        }
+                    });
+                }
+                else {
+                    var bulk = common.db.collection(collectionName).initializeUnorderedBulkOp();
+                    Object.keys(query).forEach(function(key) {
+                        var queryObject = query[key];
+                        var s = queryObject.update.$set.s;
 
-                    if (s === "[CLY]_session" || !overLimit || (overLimit && eventData.list.indexOf(s) >= 0)) {
-                        bulk.find(queryObject.criteria).upsert().updateOne(queryObject.update);
+                        if (s === "[CLY]_session" || !overLimit || (overLimit && eventData.list.indexOf(s) >= 0)) {
+                            bulk.find(queryObject.criteria).upsert().updateOne(queryObject.update);
+                        }
+                    });
+
+
+                    if (bulk.length > 0) {
+                        bulk.execute(function() {});
                     }
-                });
-
-
-                if (bulk.length > 0) {
-                    bulk.execute(function() {});
                 }
             });
         }
@@ -161,6 +171,7 @@ var plugin = {},
         var params = ob.params;
 
         if (params.qstring.method === "times-of-day") {
+            var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
             var appId = params.qstring.app_id;
             var todType = params.qstring.tod_type;
 
@@ -174,15 +185,17 @@ var plugin = {},
 
             var collectionName = "timesofday" + appId;
 
-            fetchTodData(collectionName, criteria, function(err, result) {
-                if (err) {
-                    console.log("Error while fetching times of day data: ", err.message);
-                    common.returnMessage(params, 400, "Something went wrong");
-                    return false;
-                }
+            validateUserForDataReadAPI(params, function() {
+                fetchTodData(collectionName, criteria, function(err, result) {
+                    if (err) {
+                        console.log("Error while fetching times of day data: ", err.message);
+                        common.returnMessage(params, 400, "Something went wrong");
+                        return false;
+                    }
 
-                common.returnOutput(params, result);
-                return true;
+                    common.returnOutput(params, result);
+                    return true;
+                });
             });
             return true;
         }

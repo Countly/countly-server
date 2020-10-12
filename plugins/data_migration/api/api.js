@@ -37,6 +37,9 @@ function delete_all_exports() {
                 }
             });
         }
+        else {
+            resolve();
+        }
     });
 }
 /**
@@ -979,16 +982,40 @@ function trim_ending_slashes(address) {
             }
 
             request(opts, function(error, response, body) {
-                if (error) {
+
+                var code = 400;
+                var message = "Redirect error. Tried to redirect to:" + app.redirect_url;
+
+                if (response && response.statusCode) {
+                    code = response.statusCode;
+                }
+
+
+                if (response && response.body) {
+                    try {
+                        var resp = JSON.parse(response.body);
+                        message = resp.result || resp;
+                    }
+                    catch (e) {
+                        if (response.result) {
+                            message = response.result;
+                        }
+                        else {
+                            message = response.body;
+                        }
+                    }
+                }
+                if (error) { //error
                     console.log("Redirect error", error, body, opts, app, params);
                 }
+
+
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                    common.returnMessage(params, code, message);
+                }
             });
-
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                common.returnMessage(params, 200, 'Success');
-            }
-
             params.cancelRequest = "Redirected: " + app.redirect_url;
+            params.waitForResponse = true;
             return false;
         }
         return false;

@@ -27,6 +27,7 @@ pluginManager.dbConnection().then((countlyDb) => {
             // we don't want to enable widget before user customize properties
             widget.is_active = "false";
             widget.hide_sticker = false;
+            widget.type = "rating";
     
             countlyDb.collection("feedback_widgets").insert(widget, function(err) {
                 if (!err) {

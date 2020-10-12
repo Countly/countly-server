@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 49.1 (51147) - http://www.bohemiancoding.com/sketch -->
-    <title>Artboard Copy 4</title>
-    <desc>Created with Sketch.</desc>
-    <defs></defs>
-    <g id="Artboard-Copy-4" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="Group-8">
-            <circle id="Oval" fill="#C8CED3" cx="24" cy="24" r="24"></circle>
-            <path d="M16.8,32.4000146 L36,28.8000146" id="Path-2" stroke="#FEFEFE" stroke-width="3.60000014" stroke-linecap="round"></path>
-            <ellipse id="Combined-Shape" fill="#FEFEFE" cx="31.8" cy="18" rx="3" ry="3.6"></ellipse>
-            <ellipse id="Combined-Shape" fill="#FEFEFE" transform="translate(15.000000, 18.000000) scale(-1, 1) translate(-15.000000, -18.000000) " cx="15" cy="18" rx="3" ry="3.6"></ellipse>
+    <title>2_gray</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="2_gray">
+            <ellipse id="Oval" fill="#C8CED3" fill-rule="nonzero" cx="24.0340485" cy="24.1230798" rx="23.9046417" ry="23.6307696"></ellipse>
+            <line x1="14.4011175" y1="34.8554019" x2="33.524831" y2="31.3107864" id="Path-2" stroke="#FEFEFE" stroke-width="2.46153846" stroke-linecap="round" transform="translate(23.962974, 33.083094) rotate(10.500709) translate(-23.962974, -33.083094) "></line>
+            <ellipse id="Oval-3-Copy" fill="#FEFEFE" fill-rule="nonzero" cx="12.798696" cy="20.0369258" rx="4.1833123" ry="4.13538468"></ellipse>
+            <ellipse id="Oval-3-Copy-2" fill="#FEFEFE" fill-rule="nonzero" cx="35.5081056" cy="20.0369258" rx="4.1833123" ry="4.13538468"></ellipse>
         </g>
     </g>
 </svg>
