@@ -241,10 +241,10 @@ window.ConsentManagementView = countlyView.extend({
                     {
                         "mData": function(row, type) {
                             if (type === "display") {
-                                return countlyCommon.formatTimeAgo(row.ls || 0) + '<a class="cly-list-options" style="float:right; margin-right:2px;"></a>';
+                                return countlyCommon.formatTimeAgo(row.lac || 0) + '<a class="cly-list-options" style="float:right; margin-right:2px;"></a>';
                             }
                             else {
-                                return row.ls || 0;
+                                return row.lac || 0;
                             }
                         },
                         "sType": "format-ago",

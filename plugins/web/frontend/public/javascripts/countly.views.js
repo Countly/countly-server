@@ -258,10 +258,10 @@ window.WebDashboardView = countlyView.extend({
             {
                 "mData": function(row, type) {
                     if (type === "display") {
-                        return (row.ls) ? countlyCommon.formatTimeAgo(row.ls) : jQuery.i18n.map["web.never"];
+                        return (row.lac) ? countlyCommon.formatTimeAgo(row.lac) : jQuery.i18n.map["web.never"];
                     }
                     else {
-                        return (row.ls) ? row.ls : 0;
+                        return (row.lac) ? row.lac : 0;
                     }
                 },
                 "sType": "format-ago",
