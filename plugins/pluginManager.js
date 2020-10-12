@@ -1,11 +1,15 @@
-var plugins = require('./plugins.json', 'dont-enclose'),
+var pluginDependencies = require('./pluginDependencies.js'),
+    path = require('path'),
+    plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
+        "discoveryStrategy": "disableChildren",
+        "overwrite": path.resolve(__dirname, './plugins.json')
+    }),
     pluginsApis = {},
     mongodb = require('mongodb'),
     cluster = require('cluster'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
-    path = require('path'),
     url = require('url'),
     querystring = require('querystring'),
     cp = require('child_process'),
@@ -629,7 +633,10 @@ var pluginManager = function pluginManager() {
     **/
     this.reloadPlugins = function() {
         delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
-        plugins = require('./plugins.json', 'dont-enclose');
+        plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
+            "discoveryStrategy": "disableChildren",
+            "overwrite": path.resolve(__dirname, './plugins.json')
+        });
     };
 
     /**
