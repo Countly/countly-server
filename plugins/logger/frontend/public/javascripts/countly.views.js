@@ -1,5 +1,6 @@
-/*global countlyView, store, $, countlyLogger, T, countlyCommon, countlyGlobal, jQuery, moment, app, LoggerView, CountlyHelpers*/
+/*global countlyView, countlyAuth, store, $, countlyLogger, T, countlyCommon, countlyGlobal, jQuery, moment, app, LoggerView, CountlyHelpers*/
 window.LoggerView = countlyView.extend({
+    featureName: 'logger',
     initialize: function() {
         this.filter = (store.get("countly_loggerfilter")) ? store.get("countly_loggerfilter") : "logger-all";
     },
@@ -370,5 +371,7 @@ app.route('/manage/logger', 'logger', function() {
 });
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "logger", url: "#/manage/logger", text: "logger.title", priority: 60});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.loggerView.featureName)) {
+        app.addSubMenu("management", {code: "logger", url: "#/manage/logger", text: "logger.title", priority: 60});
+    }
 });

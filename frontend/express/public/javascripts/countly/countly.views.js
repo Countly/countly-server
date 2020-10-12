@@ -5857,6 +5857,7 @@ window.DownloadView = countlyView.extend({
 });
 
 window.LongTaskView = countlyView.extend({
+    featureName: 'core',
     initialize: function() {
         this.template = Handlebars.compile($("#report-manager-template").html());
         this.taskCreatedBy = 'manually';
@@ -6083,6 +6084,20 @@ window.LongTaskView = countlyView.extend({
             $(".report-manager-data-col").addClass("report-manager-automatically-created");
         }
         this.showTableColumns(self);
+
+        if (countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            $('.edit-task').hide();
+            $('.rerun-task').hide();
+        }
+
+        if (countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            $('.delete-task').hide();
+        }
+
+        if (countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            $('#create-report').hide();
+        }
+
     },
     showTableColumns: function(self) {
         var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
