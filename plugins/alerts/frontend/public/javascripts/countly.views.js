@@ -721,6 +721,7 @@ window.AlertsView = countlyView.extend({
             }
             else {
                 $("#single-target-dropdown").removeClass("disabled");
+                $("#single-target2-dropdown").removeClass("disabled");
                 $("#single-target-condition-dropdown").removeClass("disabled");
                 $("#alert-compare-value").removeClass("disabled");
                 $("#alert-compare-value-input").removeAttr("disabled");
