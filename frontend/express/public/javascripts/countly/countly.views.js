@@ -858,7 +858,7 @@ window.LoyaltyView = countlyView.extend({
             $(".d-table").stickyTableHeaders();
 
             this.byDisabled = true;
-            if (typeof extendViewWithFilter === "function") {
+            if (typeof extendViewWithFilter === "function" && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'drill')) {
                 extendViewWithFilter(this);
                 $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
                     this.initDrill();
@@ -898,6 +898,8 @@ window.LoyaltyView = countlyView.extend({
                         }
                     }, 500);
                 });
+            } else {
+                $('#view-filter').hide();
             }
         }
     },
