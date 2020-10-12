@@ -1,5 +1,6 @@
-/*global $, jQuery, countlyCommon, countlyDeviceDetails, countlyView, countlyTotalUsers, countlyDensity, T, app, addDrill, CountlyHelpers, DensityView*/
+/*global $, jQuery, countlyCommon, countlyAuth, countlyDeviceDetails, countlyView, countlyTotalUsers, countlyDensity, T, app, addDrill, CountlyHelpers, DensityView*/
 window.DensityView = countlyView.extend({
+    featureName: 'density',
     initialize: function() {
 
     },
@@ -135,5 +136,7 @@ app.route("/analytics/density", 'desity', function() {
 });
 
 $(document).ready(function() {
-    app.addSubMenu("analytics", {code: "analytics-density", url: "#/analytics/density", text: "sidebar.analytics.densities", priority: 45});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.densityView.featureName)) {
+        app.addSubMenu("analytics", {code: "analytics-density", url: "#/analytics/density", text: "sidebar.analytics.densities", priority: 45});
+    }
 });

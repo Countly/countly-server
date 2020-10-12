@@ -1,5 +1,6 @@
 /*global 
     CountlyHelpers,
+    countlyAuth,
     countlyGlobal,
     countlyView,
     countlySources,
@@ -12,6 +13,7 @@
     SourcesView
  */
 window.SourcesView = countlyView.extend({
+    featureName: 'sources',
     beforeRender: function() {
         this.dataMap = {};
         return $.when(countlySources.initialize(true)).then(function() {});
@@ -239,6 +241,8 @@ app.route("/analytics/keywords", 'keywords', function() {
 });
 
 $(document).ready(function() {
-    app.addSubMenu("analytics", {code: "analytics-sources", url: "#/analytics/sources", text: "sources.title", priority: 90});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-keywords", url: "#/analytics/keywords", text: "keywords.title", priority: 95});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.sourcesView.featureName)) {
+        app.addSubMenu("analytics", {code: "analytics-sources", url: "#/analytics/sources", text: "sources.title", priority: 90});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-keywords", url: "#/analytics/keywords", text: "keywords.title", priority: 95});
+    }
 });
