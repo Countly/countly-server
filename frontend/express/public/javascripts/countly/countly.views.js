@@ -2333,16 +2333,18 @@ window.ManageAppsView = countlyView.extend({
             });
             var appTimezone = timezones[countlyGlobal.apps[app_id].country];
 
-            for (var i = 0; i < appTimezone.z.length; i++) {
-                for (var tzone in appTimezone.z[i]) {
-                    if (appTimezone.z[i][tzone] === countlyGlobal.apps[app_id].timezone) {
-                        var appEditTimezone = store.get('first_app') ? $("#first-app-edit-timezone").find(".read") : $("#app-edit-timezone").find(".read"),
-                            appCountryCode = countlyGlobal.apps[app_id].country;
-                        appEditTimezone.find(".flag").css({"background-image": "url(" + countlyGlobal.cdn + "images/flags/" + appCountryCode.toLowerCase() + ".png)"});
-                        appEditTimezone.find(".country").text(appTimezone.n);
-                        appEditTimezone.find(".timezone").text(tzone);
-                        store.get('first_app') ? initCountrySelect("#first-app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]) : initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
-                        break;
+            if (appTimezone && appTimezone.z) {
+                for (var i = 0; i < appTimezone.z.length; i++) {
+                    for (var tzone in appTimezone.z[i]) {
+                        if (appTimezone.z[i][tzone] === countlyGlobal.apps[app_id].timezone) {
+                            var appEditTimezone = store.get('first_app') ? $("#first-app-edit-timezone").find(".read") : $("#app-edit-timezone").find(".read"),
+                                appCountryCode = countlyGlobal.apps[app_id].country;
+                            appEditTimezone.find(".flag").css({"background-image": "url(" + countlyGlobal.cdn + "images/flags/" + appCountryCode.toLowerCase() + ".png)"});
+                            appEditTimezone.find(".country").text(appTimezone.n);
+                            appEditTimezone.find(".timezone").text(tzone);
+                            store.get('first_app') ? initCountrySelect("#first-app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]) : initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
+                            break;
+                        }
                     }
                 }
             }

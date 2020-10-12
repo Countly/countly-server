@@ -2468,7 +2468,7 @@ var AppRouter = Backbone.Router.extend({
             $appNavigation.on("click", function() {
                 var appList = $(this).find(".list"),
                     apps = _.sortBy(countlyGlobal.apps, function(app) {
-                        return app.name.toLowerCase();
+                        return (app.name + "").toLowerCase();
                     });
 
                 appList.html("");
