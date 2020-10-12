@@ -1,4 +1,4 @@
-#alert-widget-drawer { width:715px; transform: translateX(715px); }
+#alert-widget-drawer { width:715px; transform: translateX(915px); }
 #alert-widget-drawer.open { transform: translateX(0); }
 
 #alert-widget-drawer #alert-widget-drawer-edit-title { display: none; }
@@ -260,10 +260,10 @@
     font-weight: normal;
     font: 13px Ubuntu,Helvetica,sans-serif;
     box-sizing:border-box;
-    width: calc(100% - 40px);
+    width: calc(100% - 20px);
   }
 
-  #alert-view  .alert-compare-value-class input::placeholder{
+#alert-view  .alert-compare-value-class input::placeholder{
     padding: 6px 25px 6px 0;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -283,12 +283,12 @@
     content: "%";
     position: absolute;
     top: 0;
-    right: 50px;
-    line-height: 27px;
+    right: 30px;
+    line-height: 29px;
     color: #6d6d6d;
 }
 #alert-view .alert-compare-value-class2:after {
-    right: 50px !important;
+    right: 30px !important;
 }
 
 #alert-view .alert-compare-value-class input::-webkit-outer-spin-button,
@@ -302,7 +302,7 @@
 #alert-view .alert-compare-value-class2 input{
     /* min-width: 110px !important; */
     box-sizing: border-box;
-    width: calc(100% - 40px) !important;
+    width: calc(100% - 20px) !important;
 }
 
 
@@ -334,4 +334,9 @@
 #alert-widget-drawer .selectize-control.multi .selectize-input > div {
     padding: 6px 22px 6px 6px !important;
     line-height: 8px !important;
+}
+#alert-widget-drawer .scroll-list .item:hover {
+    text-overflow: clip;
+    white-space: normal;
+    word-break: break-word;
 }
