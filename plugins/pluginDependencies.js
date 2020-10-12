@@ -49,10 +49,7 @@ function discoverRelativePlugins(_graph, code, direction) {
     var queue = [code],
         visited = {},
         relativeType = "parents";
-    if (direction === "up") {
-        relativeType = "parents";
-    }
-    else {
+    if (direction !== "up") {
         relativeType = "children";
     }
     while (queue.length > 0) {
