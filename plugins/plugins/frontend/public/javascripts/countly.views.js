@@ -1609,7 +1609,7 @@ app.addPageScript("/manage/plugins", function() {
      *  Change state of plugins
      *  @param {Array} pluginList - list of plugins to change state for
      *  @param {Boolean} newState - State to change to
-     */    
+     */
     function changeStateOf(pluginList, newState) {
         pluginList.forEach(function(item) {
             $("#plugin-" + item).prop('checked', newState);
