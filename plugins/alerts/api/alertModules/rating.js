@@ -30,7 +30,7 @@ const RatingAlert = {
                     let appsListTitle = 'several apps';
                     if (result.length <= 3) {
                         const appName = [];
-                        result.map((data)=>{
+                        result.map((data) => {
                             appName.push(data.app.name);
                         });
                         appsListTitle = appName.join(', ');
@@ -46,7 +46,7 @@ const RatingAlert = {
                         subTitle: `Countly Alert: ` + alertConfigs.alertName,
                         host,
                         compareDescribe: alertConfigs.compareDescribe,
-                        apps: result.map((data)=>{
+                        apps: result.map((data) => {
                             const item = {
                                 id: data.app._id,
                                 name: data.app.name,
