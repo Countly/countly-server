@@ -22,7 +22,13 @@ describe('Empty app data reading', function() {
                     }
                     var ob = JSON.parse(res.text);
                     for (var key in ob) {
-                        ob.should.have.property(key).and.eql({});
+                        ob.should.have.property(key).and.eql({
+                          limits: {
+                            event_limit: 500,
+                            event_segmentation_limit: 100,
+                            event_segmentation_value_limit: 1000
+                          }
+                        });
                     }
                     done();
                 });
