@@ -110,6 +110,12 @@ function getPeriodObject() {
     }
 
     if (Array.isArray(_period)) {
+        if ((_period[0] + "").length === 10) {
+            _period[0] *= 1000;
+        }
+        if ((_period[1] + "").length === 10) {
+            _period[1] *= 1000;
+        }
         var fromDate, toDate;
 
         if (Number.isInteger(_period[0]) && Number.isInteger(_period[1])) {
@@ -208,6 +214,30 @@ function getPeriodObject() {
     }
     else if (/([0-9]+)days/.test(_period)) {
         let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([0-9]+)weeks/.test(_period)) {
+        let nDays = parseInt(/([0-9]+)weeks/.exec(_period)[1]) * 7;
+        if (nDays < 1) {
+            nDays = 30; //if there is less than 1 day
+        }
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
+    }
+    else if (/([0-9]+)months/.test(_period)) {
+        let nDays = parseInt(/([0-9]+)months/.exec(_period)[1]) * 30;
         if (nDays < 1) {
             nDays = 30; //if there is less than 1 day
         }
@@ -1008,11 +1038,11 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         sum += rangeTotal[i];
     }
 
-    for (let i = 0; i < maxItems; i++) {
+    for (let i = maxItems - 1; i >= 0; i--) {
         var percent = Math.floor((rangeTotal[i] / sum) * 100);
         totalPercent += percent;
 
-        if (i === (maxItems - 1)) {
+        if (i === 0) {
             percent += 100 - totalPercent;
         }
 
@@ -1735,7 +1765,10 @@ countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
     var ts = {};
 
     tmpArr = periodObj.currentPeriodArr[0].split(".");
-    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).tz(params.appTimezone);
+    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+    if (params.appTimezone) {
+        ts.$gte.tz(params.appTimezone);
+    }
     if (inSeconds) {
         ts.$gte = ts.$gte.valueOf() / 1000 - ts.$gte.utcOffset() * 60;
     }
@@ -1744,7 +1777,10 @@ countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
     }
 
     tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
-    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days').tz(params.appTimezone);
+    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+    if (params.appTimezone) {
+        ts.$lt.tz(params.appTimezone);
+    }
     if (inSeconds) {
         ts.$lt = ts.$lt.valueOf() / 1000 - ts.$lt.utcOffset() * 60;
     }

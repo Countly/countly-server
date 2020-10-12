@@ -23,8 +23,15 @@ COPY . .
 
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
 	rpm -i /tmp/tini.rpm && \
+	\
 	yum -y install openssl-devel gcc-c++-4.8.5 make git make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools && \
-	git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 --single-branch --branch=v1.30.0 --depth=1 && \
+	wget https://www.openssl.org/source/openssl-1.1.1f.tar.gz && \
+    tar -zxvf openssl-1.1.1f.tar.gz -C /tmp && \
+    rm openssl-1.1.1f.tar.gz && \
+    ( cd /tmp/openssl-1.1.1f; \
+      ./config --prefix=/usr && make depend && make && make install_sw ) && \
+    \
+	git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 --single-branch --branch=v1.41.0 --depth=1 && \
 	(cd /tmp/nghttp2; \
 	 export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install) && \
 	\
