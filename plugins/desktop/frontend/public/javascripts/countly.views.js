@@ -1,12 +1,19 @@
 /*global $, countlyAnalyticsAPI, countlyAuth, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyTotalUsers, countlySession, countlyCommon, app */
 window.DesktopDashboardView = countlyView.extend({
+    featureName: 'desktop',
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
     initialize: function() {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function() {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         this.maps = {
             "map-list-sessions": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.sessions"], type: 'number', metric: "t"},
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
@@ -19,7 +26,7 @@ window.DesktopDashboardView = countlyView.extend({
         return $.when.apply($, defs).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal.config.use_google) {
+        if (countlyGlobal.config.use_google && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
@@ -87,6 +94,9 @@ window.DesktopDashboardView = countlyView.extend({
         });
     },
     renderCommon: function(isRefresh, isDateChange) {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         var sessionData = countlySession.getSessionData(),
             locationData = countlyLocation.getLocationData({maxCountries: 10});
 
@@ -189,7 +199,9 @@ window.DesktopDashboardView = countlyView.extend({
         this.refresh(true);
     },
     refresh: function(isFromIdle) {
-
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         var self = this;
         $.when(this.beforeRender()).then(function() {
             if (app.activeView !== self) {
