@@ -232,6 +232,24 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 params.qstring.metrics._app_version += ".0";
             }
         }
+        if (!params.qstring.metrics._device_type && params.qstring.metrics._device) {
+            var device = (params.qstring.metrics._device + "");
+            if (params.qstring.metrics._os === "iOS" && (device.startsWith("iPhone") || device.startsWith("iPod"))) {
+                params.qstring.metrics._device_type = "mobile";
+            }
+            else if (params.qstring.metrics._os === "iOS" && device.startsWith("iPad")) {
+                params.qstring.metrics._device_type = "tablet";
+            }
+            else if (params.qstring.metrics._os === "watchOS" && device.startsWith("Watch")) {
+                params.qstring.metrics._device_type = "wearable";
+            }
+            else if (params.qstring.metrics._os === "tvOS" && device.startsWith("AppleTV")) {
+                params.qstring.metrics._device_type = "smarttv";
+            }
+            else if (params.qstring.metrics._os === "macOS" && (device.startsWith("Mac") || device.startsWith("iMac"))) {
+                params.qstring.metrics._device_type = "desktop";
+            }
+        }
     }
 
     var predefinedMetrics = [
@@ -263,6 +281,11 @@ usage.getPredefinedMetrics = function(params, userProps) {
                     name: "_os",
                     set: "os",
                     short_code: common.dbUserMap.platform
+                },
+                {
+                    name: "_device_type",
+                    set: "device_type",
+                    short_code: common.dbUserMap.device_type
                 },
                 {
                     name: "_os_version",

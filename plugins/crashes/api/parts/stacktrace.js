@@ -64,7 +64,6 @@ var trace = {
         }
         else if (crash._plcrash) {
             let stack = trace.processPLCrashThreads(crash._error);
-            crash._name = stack[0];
             let lines = crash._error.replace(/\r\n|\r|\n/g, "\n").split("\n");
             let parsingBinaryList = false;
             let firstBinary = true;
@@ -81,6 +80,20 @@ var trace = {
                     }
                     else if (lines[line].startsWith("OS Version:")) {
                         crash._os_version = lines[line].split(":").pop().split("(")[0].trim().split(" ").pop();
+                    }
+                    else if (!crash._name && lines[line].startsWith("Application Specific Information:") && lines[line + 1]) {
+                        let offset = 1;
+                        if (lines[line + offset].startsWith("ProductBuildVersion:")) {
+                            offset++;
+                        }
+                        if (lines[line + offset]) {
+                            crash._name = lines[line + offset]
+                                .replace("***", "")
+                                .replace("UNCAUGHT EXCEPTION", "")
+                                .replace("Terminating app due to uncaught exception", "")
+                                .replace("reason: ", "")
+                                .trim();
+                        }
                     }
                     else if (lines[line].startsWith("Binary Images:")) {
                         crash._binary_images = {};
@@ -117,6 +130,9 @@ var trace = {
             }
             catch (ex) {
                 console.log("Problem parsing PLCrashReport", crash);
+            }
+            if (!crash._name) {
+                crash._name = stack[0];
             }
             callback(stack.join("\n"));
         }

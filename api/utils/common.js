@@ -196,6 +196,7 @@ common.dbUserMap = {
     'total_session_duration': 'tsd',
     'session_count': 'sc',
     'device': 'd',
+    'device_type': 'dt',
     'carrier': 'c',
     'city': 'cty',
     'region': 'rgn',

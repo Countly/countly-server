@@ -1017,6 +1017,8 @@ fetch.metricToCollection = function(metric) {
         return ["device_details", "os_versions", countlyDeviceDetails];
     case 'resolutions':
         return ["device_details", "resolutions", countlyDeviceDetails];
+    case 'device_type':
+        return ["device_details", "device_type", countlyDeviceDetails];
     case 'device_details':
         return ['device_details', null, countlyDeviceDetails];
     case 'devices':
@@ -1277,6 +1279,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
     */
     var shortcodesForMetrics = {
         "devices": "d",
+        "device_type": "dt",
         "app_versions": "av",
         "os": "p",
         "platforms": "p",

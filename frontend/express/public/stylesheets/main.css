@@ -2742,12 +2742,11 @@ color:#E95C6C; transition:color 1s;
 .table_status_dot_blue span{
     background-color: #55a8ed;
 }
-.table_status_dot .error_message_div {
-    display: none;
+p.error_message_div {
+    margin:5px;
+	line-height: 12px;
 }
-.table_status_dot.have_error_message:hover{
-    cursor: pointer;
-}
+
 #token-manager-view  .tokenvalue{float:left;  cursor:pointer;
     text-align: center;
     border: none;

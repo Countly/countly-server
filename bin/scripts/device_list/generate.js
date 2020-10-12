@@ -3,7 +3,8 @@
 
 //https://www.theiphonewiki.com/wiki/Models
 //https://gist.github.com/adamawolf/3048717
-var devices = require("./ios.json");
+//scrape_mac_devices.txt
+var devices = require("./apple.json");
 
 //https://m.media-amazon.com/images/G/01/mobile-apps/dex/firetablets/tablet-device-specs-data._TTH_.json
 //https://developer.amazon.com/docs/fire-tv/device-specifications.html?v=ftveditioninsigniahd
