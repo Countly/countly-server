@@ -94,7 +94,7 @@ const RatingAlert = {
                 for (let i = 0; i < alertConfigs.selectedApps.length; i++) {
                     const rightHour = yield utils.checkAppLocalTimeHour(alertConfigs.selectedApps[i], 23);
                     if (!rightHour) {
-                        // return done();
+                        return done();
                     }
 
                     log.d("APP time is 23:59, start job");
