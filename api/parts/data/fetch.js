@@ -253,7 +253,7 @@ fetch.fetchCollection = function(collection, params) {
                 event_limit: pluginsGetConfig.event_limit,
                 event_segmentation_limit: pluginsGetConfig.event_segmentation_limit,
                 event_segmentation_value_limit: pluginsGetConfig.event_segmentation_value_limit,
-            }
+            };
         }
 
         common.returnOutput(params, result);

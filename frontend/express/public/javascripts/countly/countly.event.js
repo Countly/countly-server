@@ -1032,9 +1032,8 @@
     }
     countlyEvent.getLimitation = function() {
         return _activeEvents.limits;
-    }
+    };
     countlyEvent.getActiveEventSegmentMeta = function() {
         return _activeEventDb.meta;
-    }
-
+    };
 }(window.countlyEvent = window.countlyEvent || {}, jQuery));
