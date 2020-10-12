@@ -75,7 +75,7 @@
                 continue;
             }
 
-            if(!_graph[current]) {
+            if (!_graph[current]) {
                 visited[current] = 1;
                 continue;
             }
