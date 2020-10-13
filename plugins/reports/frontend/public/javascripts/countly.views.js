@@ -481,7 +481,7 @@ window.ReportingView = countlyView.extend({
             var selectedApps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
             self.loadEventsForApps(selectedApps);
             self.checkEventsSectionView();
-
+            $(".include-events").clyMultiSelectClearSelection();
         });
         self.loadEventsForApps = function(targetApps) {
             countlyEvent.getEventsForApps(targetApps, function(eventData) {
@@ -734,7 +734,7 @@ window.ReportingView = countlyView.extend({
             $("#reports-multi-metrics-dropdown").clyMultiSelectClearSelection();
             $("#reports-multi-metrics-dropdown .select-items .item").removeClass("selected");
             $("#reports-multi-metrics-dropdown").clyMultiSelectSetItems(countlyReporting.getMetrics());
-
+            $(".include-events").clyMultiSelectClearSelection();
 
             $("#reports-dow-section").css("display", "none");
             $("#reports-frequency").find(".check").removeClass("selected");
