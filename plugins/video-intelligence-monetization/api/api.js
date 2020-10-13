@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
     countlyModel = require('../../../api/lib/countly.model.js'),
     countlyEvents = countlyModel.load("event"),
-    { validateRead } = require('../../api/utils/right.js');
+    { validateRead } = require('../../../api/utils/right.js');
 
 const FEATURE_NAME = 'video';
 

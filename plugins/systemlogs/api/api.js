@@ -1,7 +1,10 @@
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'manage-systemlogs';
 
 (function() {
 
@@ -38,7 +41,7 @@ var pluginOb = {},
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
             query._id = {$ne: "meta_v2"};
-            validate(params, function(paramsNew) {
+            validateRead(params, FEATURE_NAME, function(paramsNew) {
                 var columns = [null, "ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
                     total--;
@@ -83,7 +86,7 @@ var pluginOb = {},
             return true;
         }
         else if (params.qstring.method === 'systemlogs_meta') {
-            validate(params, function(paramsNew) {
+            validateRead(params, FEATURE_NAME, function(paramsNew) {
                 //get all users
                 common.db.collection('members').find({}, {username: 1, email: 1, full_name: 1}).toArray(function(err1, users) {
                     common.db.collection('systemlogs').findOne({_id: "meta_v2"}, {_id: 0}, function(err2, res) {
@@ -106,7 +109,7 @@ var pluginOb = {},
 
     plugins.register("/i/systemlogs", function(ob) {
         var params = ob.params;
-        ob.validateUserForWriteAPI(params, function() {
+        validateCreate(params, FEATURE_NAME, function() {
             if (typeof params.qstring.data === "string") {
                 try {
                     params.qstring.data = JSON.parse(params.qstring.data);

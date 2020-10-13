@@ -1,6 +1,9 @@
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
-    udp;
+    udp,
+    {validateRead} = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'server-stats';
 
 (function() {
 
@@ -160,7 +163,7 @@ var plugins = require('../../pluginManager.js'),
             $or: []
         };
 
-        ob.validateUserForMgmtReadAPI(function() {
+        validateRead(params, FEATURE_NAME, function() {
             if (!params.member.global_admin) {
                 var apps = params.member.user_of || [];
                 for (let i = 0; i < periodsToFetch.length; i++) {
@@ -186,7 +189,7 @@ var plugins = require('../../pluginManager.js'),
                 fetchDatapoints(params, filter, periodsToFetch);
             }
 
-        }, params);
+        });
 
         return true;
     });
@@ -197,7 +200,7 @@ var plugins = require('../../pluginManager.js'),
     **/
     plugins.register("/o/server-stats/punch-card", function(ob) {
         var params = ob.params;
-        ob.validateUserForMgmtReadAPI(async() => {
+        validateRead(params, FEATURE_NAME, async() => {
             try {
                 const _punchCard = await punchCard(params);
                 common.returnOutput(params, _punchCard);
@@ -206,7 +209,7 @@ var plugins = require('../../pluginManager.js'),
                 console.log("Error while fetching punch card data: ", error.message);
                 common.returnMessage(params, 400, "Something went wrong");
             }
-        }, params);
+        });
 
         return true;
     });
