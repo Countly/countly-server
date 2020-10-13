@@ -872,6 +872,21 @@ window.starView = countlyView.extend({
                 bSortable: false
             }];
 
+            if (countlyGlobal.plugins.indexOf("users") >= 0) {
+                columnsDefine.push(
+                    {
+                        "mData": function(row) {
+                            return "<a class='table-link green external' href='#/users/" + row.uid + "'>" + jQuery.i18n.map["userdata.view"] + "</a>";
+                        },
+                        sType: "string",
+                        "bSortable": false,
+                        "sTitle": '',
+                        "sClass": "center",
+                        "sWidth": "90px"
+                    }
+                );
+            }
+
             this.commentsTable = $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": this.templateData.commentsData,
                 "aoColumns": columnsDefine
