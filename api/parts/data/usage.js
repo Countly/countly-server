@@ -857,7 +857,7 @@ plugins.register("/i", function(ob) {
                         end_session: true
                     });
 
-                    updates.push({$set: {sd: 0}});
+                    updates.push({$set: {sd: 0, data: {}}});
                     let updateUser = {};
                     for (let i = 0; i < updates.length; i++) {
                         updateUser = common.mergeQuery(updateUser, updates[i]);
@@ -1090,6 +1090,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     end_session: false
                 });
                 userProps.sd = 0;
+                userProps.data = {};
             }
             processUserSession(params.app_user, params);
 
@@ -1141,6 +1142,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
     }
 
     if (params.qstring.events) {
+        var eventCount = 0;
         for (let i = 0; i < params.qstring.events.length; i++) {
             let currEvent = params.qstring.events[i];
             if (currEvent.key === "[CLY]_orientation") {
@@ -1148,6 +1150,16 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     userProps.ornt = currEvent.segmentation.mode;
                 }
             }
+            if (!(currEvent.key + "").startsWith("[CLY]_")) {
+                eventCount++;
+            }
+        }
+        if (eventCount > 0) {
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+
+            update.$inc["data.events"] = eventCount;
         }
     }
 
