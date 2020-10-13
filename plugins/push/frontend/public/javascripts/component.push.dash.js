@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, components, $, countlyView, countlyGlobal, countlyCommon, CountlyHelpers */
+/* globals m, components, $, countlyView, countlyGlobal, countlyAuth, countlyCommon, CountlyHelpers */
 
 window.component('push.dash', function (dash) {
     var C = window.components,
@@ -381,7 +381,7 @@ window.component('push.dash', function (dash) {
             m.component(components.widget, {
                 header: {
                     title: 'pu.dash.users',
-                    view: (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) ?
+                    view: ((countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), 'push')) ?
                         [
                             m('div', {
                                 style: {
@@ -519,7 +519,7 @@ window.component('push.dash', function (dash) {
     C.push.initPersOpts = function() {
         var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
             props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
-            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(7), title: f.name}); });
+            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.replace('.', '|'), title: f.name}); });
 
         C.push.PERS_OPTS = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
                 .concat(props)
