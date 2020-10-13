@@ -224,15 +224,15 @@ const processRequest = (params) => {
                 }
 
                 switch (paths[3]) {
-                case 'create':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.createUser, params);
-                    break;
-                case 'update':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.updateUser, params);
-                    break;
-                case 'delete':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.deleteUser, params);
-                    break;
+                    case 'create':
+                        validateCreate(params, 'manage-users', countlyApi.mgmt.users.createUser);
+                        break;
+                    case 'update':
+                        validateUpdate(params, 'manage-users', countlyApi.mgmt.users.updateUser);
+                        break;
+                    case 'delete':
+                        validateDelete(params, 'manage-users', countlyApi.mgmt.users.deleteUser);
+                        break;
                 case 'deleteOwnAccount':
                     validateUserForWriteAPI(countlyApi.mgmt.users.deleteOwnAccount, params);
                     break;
@@ -530,27 +530,21 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(() => {
-                        if (!(params.member.global_admin)) {
-                            common.returnMessage(params, 401, 'User is not a global administrator');
-                            return false;
-                        }
-                        countlyApi.mgmt.apps.createApp(params);
-                    }, params);
+                    validateCreate(params, 'manage-apps', countlyApi.mgmt.apps.createApp);
                     break;
                 case 'update':
                     if (paths[4] === 'plugins') {
-                        validateUserForDataWriteAPI(params, countlyApi.mgmt.apps.updateAppPlugins);
+                        validateUpdate(params, 'manage-plugins', countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
-                        validateUserForWriteAPI(countlyApi.mgmt.apps.updateApp, params);
+                        validateUpdate(params, 'manage-apps', countlyApi.mgmt.apps.updateApp);
                     }
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(countlyApi.mgmt.apps.deleteApp, params);
+                    validateDelete(params, 'manage-apps', countlyApi.mgmt.apps.deleteApp);
                     break;
                 case 'reset':
-                    validateUserForWriteAPI(countlyApi.mgmt.apps.resetApp, params);
+                    validateDelete(params, 'manage-apps', countlyApi.mgmt.apps.resetApp);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1191,7 +1185,7 @@ const processRequest = (params) => {
             case '/o/users': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getAllUsers, params);
+                    validateRead(params, 'manage-users', countlyApi.mgmt.users.getAllUsers);
                     break;
                 case 'me':
                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
