@@ -196,8 +196,8 @@ class CacheWorker {
                 if (!this.data.read(g)) {
                     this.data.write(g, new DataStore(ret[g].size, ret[g].age));
                 }
-            })
-        })
+            });
+        });
     }
 
     /**
@@ -437,7 +437,7 @@ class CacheMaster {
                 });
                 return ret;
             }
-            
+
             let store = this.data.read(g);
             if (!store) {
                 throw new Error('No such store ' + g);
