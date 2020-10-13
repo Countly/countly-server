@@ -380,10 +380,12 @@ plugins.setConfigs("crashes", {
                         }
                         updateUser.hadAnyNonfatalCrash = report.ts;
                     }
-
+                    let updateData = {$inc: {}};
+                    updateData.$inc["data.crashes"] = 1;
                     if (Object.keys(updateUser).length) {
-                        ob.updates.push({$set: updateUser});
+                        updateData.$set = updateUser;
                     }
+                    ob.updates.push(updateData);
 
                     var set = {group: hash, 'uid': report.uid, last: report.ts};
                     if (dbAppUser && dbAppUser.sc) {
@@ -571,7 +573,7 @@ plugins.setConfigs("crashes", {
                                         }
                                     }
 
-                                    var update = {};
+                                    let update = {};
                                     if (Object.keys(groupSet).length > 0) {
                                         update.$set = groupSet;
                                     }
@@ -667,7 +669,7 @@ plugins.setConfigs("crashes", {
                                     });
                                 };
 
-                                var update = {$set: {group: 0, 'uid': report.uid}};
+                                let update = {$set: {group: 0, 'uid': report.uid}};
                                 if (!user || !user.reports) {
                                     var inc = {crashes: 1};
                                     if (!report.nonfatal) {
