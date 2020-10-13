@@ -28,10 +28,10 @@
     .report-email-subtitle{ font-size: 16px; font-weight: normal; padding: 15px 0px 0px 0px; line-height:16px; }
 
     .mobile-table {
-        display: none;
+        display: none !important;
     }
     .desktop-table {
-        display: grid;
+        display: grid !important;
     }
 
     /* MOBILE STYLES */
@@ -40,7 +40,7 @@
             margin:0px 0px !important;
         }
         .mobile-table {
-            display: grid;
+            display: grid !important;
         }
         .desktop-table {
             display: none;
@@ -196,7 +196,7 @@
                 </tr>
 
                 <% if (metricProps && metricProps[j]) { %>
-                <tr class="desktop-table">
+                <tr class="desktop-table" style="display : none; ">
                     <td style="padding: 5px 0 0 0; border-bottom: 1px dashed #dddddd;">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%" style="display:inline-table">
                             <tr>
@@ -226,7 +226,7 @@
                 <% for(var key in apps[i].results[j]) {%>
                 <% if (metrics[key] || j == "events") { var keyName = key; %>
                 <% if (j == "events") { keyName = apps[i].results[j][key].name || keyName;}%>
-                <tr class="desktop-table">
+                <tr class="desktop-table" style="display : none; ">
                     <td style="padding: 10px 0 0 0;">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%" style="display:inline-table">
                             <tr>
@@ -274,7 +274,7 @@
                         </table>
                     </td>
                 </tr>
-                <tr class="mobile-table">
+                <tr class="mobile-table" >
                     <td style="padding: 10px 0 0 0;">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%" style="display:inline-table">
                             <tr>
@@ -286,7 +286,7 @@
                                                     <tr>
                                                         <td style="font-family: arial, sans-serif;color: #979797;  font-size: 13px;word-wrap:break-word;word-break:break-all; font-weight: 400;">
                                                             <%= metricProps[j][0] %>
-                                                        </td> 
+                                                        </td>
                                                         <% if (properties["reports."+keyName]) { %>
                                                         <td align="right" style="font-family: Arial, sans-serif; color: #333333; font-size: 13px;word-wrap:break-word;word-break:break-all; font-weight: bold;"><%= properties["reports."+keyName] %></td>
                                                         <% }else{ %>
@@ -363,7 +363,7 @@
                 </tr>
                 <% } %>
                 <% } %>
-                <tr class="desktop-table">
+                <tr class="desktop-table" style="display : none; ">
                     <td style="padding: 10px 0 17px 0; border-top: 1px dashed #DDDDDD;">
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
@@ -386,7 +386,7 @@
                         </table>
                     </td>
                 </tr>
-                
+
 
                 <% } %>
                 <% } %>
@@ -397,7 +397,7 @@
 
                 <% } %>
                 <% } %>
-                <tr  class="desktop-table">
+		<tr class="desktop-table" style="display : none; ">
                     <td>
                         <!-- ONE COLUMN SECTION -->
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -433,7 +433,8 @@
 
                     </td>
                 </tr>
-                <tr class="desktop-table"> 
+
+                <tr class="desktop-table" style="display : none; ">
                     <td>
                         <!-- FOOTER -->
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -446,8 +447,8 @@
                                                 <a style="color: #979797;" href="https://count.ly" target="_blank"><%= version.title %></a>
                                             </td>
                                             <td align="right" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
-                                                <a style="color: #979797;padding:0 5px;" href="<%= host %>/dashboard#/manage/reports" target="_blank"><%= properties["reports.settings"] %></a> | 
-                                                <a style="color: #979797; padding:0 5px;" href="<%= version.page %>" target="_blank"><%= properties["reports.get-help"] %></a>  | 
+                                                <a style="color: #979797;padding:0 5px;" href="<%= host %>/dashboard#/manage/reports" target="_blank"><%= properties["reports.settings"] %></a> |
+                                                <a style="color: #979797; padding:0 5px;" href="<%= version.page %>" target="_blank"><%= properties["reports.get-help"] %></a>  |
                                                 <a style="color: #979797;padding:0 0 0 5px;" href="<%= version.page %>" target="_blank"><%= properties["reports.view-in-browser"] %></a>
                                             </td>
                                         </tr>
