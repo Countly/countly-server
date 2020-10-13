@@ -26,7 +26,7 @@ window.DesktopDashboardView = countlyView.extend({
         return $.when.apply($, defs).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal.config.use_google && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName) {
+        if (countlyGlobal.config.use_google && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
