@@ -3244,4 +3244,6 @@
         }
     }));
 
+    Vue.component("cly-dropzone", window.vue2Dropzone);
+
 }(window.CountlyVueComponents = window.CountlyVueComponents || {}, window.countlyVue = window.countlyVue || {}, jQuery));
