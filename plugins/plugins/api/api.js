@@ -5,21 +5,17 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateRead, validateUpdate, validateUser } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'plugins';
+const FEATURE_NAME = 'manage-plugins';
 
 (function() {
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
-
-        ob.validateUserForGlobalAdmin(params, function() {
+        
+        validateUpdate(params, FEATURE_NAME, function() {
             if (process.env.COUNTLY_CONTAINER === 'api') {
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
-                return false;
-            }
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
                 return false;
             }
             if (typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin !== 'plugins') {
@@ -174,7 +170,7 @@ const FEATURE_NAME = 'plugins';
                 });
             });
         };
-
+        
         validateUser(function() {
             if (!params.member.global_admin) {
                 common.returnMessage(params, 401, 'User is not a global administrator');
@@ -193,7 +189,7 @@ const FEATURE_NAME = 'plugins';
 
     plugins.register("/o/internal-events", function(ob) {
         var params = ob.params;
-
+        
         validateRead(params, FEATURE_NAME, function() {
             var events = [];
             common.arrayAddUniq(events, plugins.internalEvents.concat(plugins.internalDrillEvents));
@@ -204,7 +200,7 @@ const FEATURE_NAME = 'plugins';
 
     plugins.register("/i/configs", function(ob) {
         var params = ob.params;
-
+        
         validateUpdate(params, FEATURE_NAME, function() {
             if (!params.member.global_admin) {
                 common.returnMessage(params, 401, 'User is not a global administrator');
@@ -251,7 +247,7 @@ const FEATURE_NAME = 'plugins';
 
     plugins.register("/o/configs", function(ob) {
         var params = ob.params;
-
+        
         validateUser(function() {
             if (!params.member.global_admin) {
                 common.returnMessage(params, 401, 'User is not a global administrator');
@@ -266,7 +262,7 @@ const FEATURE_NAME = 'plugins';
 
     plugins.register("/i/userconfigs", function(ob) {
         var params = ob.params;
-
+        
         validateUpdate(params, FEATURE_NAME, function() {
             var data = {};
             if (params.qstring.configs) {
@@ -304,7 +300,7 @@ const FEATURE_NAME = 'plugins';
 
     plugins.register("/o/userconfigs", function(ob) {
         var params = ob.params;
-
+        
         validateUser(function() {
             var confs = plugins.getUserConfigs(params.member.settings);
             common.returnOutput(params, confs);
