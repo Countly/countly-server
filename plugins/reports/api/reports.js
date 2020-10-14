@@ -879,18 +879,24 @@ var metricProps = {
             for (let i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.currentPeriodArr[i]);
                 tmp_x = clearCrashObject(tmp_x);
-                currentUnique += tmp_x.cru;
-                currentTotal += tmp_x.cr;
+                if ((tmp_x.cruf !== undefined) && (tmp_x.crunf !== undefined)) {
+                    currentUnique += tmp_x.cruf + tmp_x.crunf;
+                }
+                currentTotal += tmp_x.crf + tmp_x.crnf;
                 currentNonfatal += tmp_x.crnf;
                 currentFatal += tmp_x.crf;
                 currentResolved += tmp_x.crru;
+                console.log(tmp_x.cruf, tmp_x.crunf, "?uuuu");
+                console.log(tmp_x.crf, tmp_x.crnf, "?aaaa");
             }
 
             for (let i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
                 tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousPeriodArr[i]);
                 tmp_y = clearCrashObject(tmp_y);
-                previousUnique += tmp_y.cru;
-                previousTotal += tmp_y.cr;
+                if ((tmp_y.cruf !== undefined) &&  (tmp_y.crunf !== undefined)) {
+                    previousUnique += tmp_y.cruf + tmp_y.crunf;
+                }
+                previousTotal += tmp_y.crf + tmp_y.crnf;
                 previousNonfatal += tmp_y.crnf;
                 previousFatal += tmp_y.crf;
                 previousResolved += tmp_y.crru;
@@ -902,12 +908,12 @@ var metricProps = {
             tmp_x = clearCrashObject(tmp_x);
             tmp_y = clearCrashObject(tmp_y);
 
-            currentTotal = tmp_x.cr;
-            previousTotal = tmp_y.cr;
+            currentTotal = tmp_x.crf + tmp_x.crnf;
+            previousTotal = tmp_y.crf + tmp_y.crnf;
             currentNonfatal = tmp_x.crnf;
             previousNonfatal = tmp_y.crnf;
-            currentUnique = tmp_x.cru;
-            previousUnique = tmp_y.cru;
+            currentUnique = tmp_x.cruf + tmp_x.crunf;
+            previousUnique = tmp_y.cruf + tmp_y.crunf;
             currentFatal = tmp_x.crf;
             previousFatal = tmp_y.crf;
             currentResolved = tmp_x.crru;
