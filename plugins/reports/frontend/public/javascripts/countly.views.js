@@ -731,6 +731,8 @@ window.ReportingView = countlyView.extend({
             $("#reports-time-dropdown").clySelectSetSelection("", jQuery.i18n.prop("reports.select_time"));
             $("#reports-multi-app-dropdown").clyMultiSelectClearSelection();
             $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
+            $("#reports-multi-app-dropdown .select-items .item").removeClass("disabled");
+
 
             $("#reports-multi-metrics-dropdown").clyMultiSelectClearSelection();
             $("#reports-multi-metrics-dropdown .select-items .item").removeClass("selected");
