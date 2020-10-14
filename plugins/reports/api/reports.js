@@ -322,12 +322,12 @@ var metricProps = {
                     };
 
                     if (!plugins.isPluginEnabled(reportType)) {
-                        return callback("No data to report", {report: report});
+                        return callback("Plugin is not disabled, no data to report. Report type: " + reportType, {report: report});
                     }
 
                     plugins.dispatch("/email/report", { params: params }, function() {
                         if (!params.report || !params.report.data) {
-                            return callback("No data to report", {report: report});
+                            return callback("No data to report from other plugins", {report: report});
                         }
 
                         return callback(null, report.data);
@@ -348,7 +348,7 @@ var metricProps = {
                         var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
 
                         report.date = startDate.getDate() + " " + monthName;
-                        report.period = "yesterday";
+                        report.period = "hour";
                     }
                     else if (report.frequency === "weekly") {
                         endDate = new Date();
