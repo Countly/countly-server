@@ -1,5 +1,6 @@
 /*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView,T */
 window.PluginsView = countlyView.extend({
+    featureName: 'plugins',
     initialize: function() {
         this.filter = (store.get("countly_pluginsfilter")) ? store.get("countly_pluginsfilter") : "plugins-all";
     },
@@ -168,6 +169,11 @@ window.PluginsView = countlyView.extend({
                     $fixedHeader.css({ width: width });
                 }
             });
+
+            if (!countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+                $('.on-off-switch').hide();
+                $('#plugins-table > thead > tr > th.shrink.sorting').html('');
+            }
         }
     },
     refresh: function(Refreshme) {
@@ -1588,9 +1594,11 @@ app.addPageScript("/manage/plugins", function() {
 
 $(document).ready(function() {
     if (countlyGlobal.member && countlyGlobal.member.global_admin) {
-        if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
+        if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend' && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.pluginsView.featureName)) {
             app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
         }
-        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
+        if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.pluginsView.featureName)) {
+            app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
+        }
     }
 });

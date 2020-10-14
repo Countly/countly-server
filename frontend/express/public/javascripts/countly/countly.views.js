@@ -1936,6 +1936,7 @@ window.DurationView = countlyView.extend({
 });
 
 window.ManageAppsView = countlyView.extend({
+    featureName: 'manage-apps',
     initialize: function() {
         this.template = Handlebars.compile($("#template-management-applications").html());
         this.templatePlugins = Handlebars.compile($("#template-management-plugins").html());
@@ -3133,10 +3134,29 @@ window.ManageAppsView = countlyView.extend({
             $("#app-container-new .name").text(newAppName);
             $(".new-app-name").text(newAppName);
         });
+
+        if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            $('#add-app-button').hide();    
+        }
+
+        if (countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            $('#app-edit-button').hide();
+            $('#app-lock-button').hide();
+            $('#view-app > div:nth-child(3)').hide();
+            $('#management-applications-description').hide();
+            $('.app-details-plugins').hide();
+        }
+
+        if (!countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            $('#app-reset-button').hide();
+            $('#app-delete-button').hide();
+            $('#app-clear-button').hide();
+        }
     }
 });
 
 window.ManageUsersView = countlyView.extend({
+    featureName: 'manage-users',
     /*
         Listen for;
             user-mgmt.user-created : On new user created. Param : new user form model.
@@ -3390,7 +3410,18 @@ window.ManageUsersView = countlyView.extend({
         }));
         self.dtable.fnSort([ [0, 'asc'] ]);
         self.dtable.stickyTableHeaders();
-        CountlyHelpers.expandRows(self.dtable, self.editUser, self);
+
+        if (countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            CountlyHelpers.expandRows(self.dtable, self.editUser, self);
+        }
+        else {
+            $('#user-table .expand-row-icon').hide();
+        }
+
+        if (!countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            $('.delete-user').hide();
+        }
+
         app.addDataExport("userinfo", function() {
             var ret = [];
             var elem;
@@ -3717,6 +3748,10 @@ window.ManageUsersView = countlyView.extend({
             self.initializeMemberPermission();
             self.renderPermissionsTable(false);
         });
+
+        if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            $('#add-user-mgmt').hide();
+        }
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
