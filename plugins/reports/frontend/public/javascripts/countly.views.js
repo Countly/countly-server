@@ -482,6 +482,7 @@ window.ReportingView = countlyView.extend({
             self.loadEventsForApps(selectedApps);
             self.checkEventsSectionView();
             $(".include-events").clyMultiSelectClearSelection();
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
         self.loadEventsForApps = function(targetApps) {
             countlyEvent.getEventsForApps(targetApps, function(eventData) {
