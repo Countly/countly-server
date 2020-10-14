@@ -3208,7 +3208,7 @@
     }));
 
     Vue.component("cly-button-menu", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-button-menu button-menu-default-skin" v-click-outside="close">\
+        template: '<div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">\
                         <div class="toggler" @click="toggle"></div>\
                         <div class="menu-body" :class="{active: opened}">\
                             <a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\
@@ -3223,7 +3223,16 @@
                 default: function() {
                     return [];
                 }
-            }
+            },
+            skin: { default: "default", type: String}
+        },
+        computed: {
+            skinClass: function() {
+                if (["default", "single"].indexOf(this.skin) > -1) {
+                    return "button-menu-" + this.skin + "-skin";
+                }
+                return "button-menu-default-skin";
+            },
         },
         data: function() {
             return {

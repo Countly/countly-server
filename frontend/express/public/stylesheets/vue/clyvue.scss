@@ -1384,6 +1384,21 @@
                 z-index: 1;
             }
         }
+        &.button-menu-single-skin {
+            .toggler {
+                padding: 6px 5px;
+                margin-top: 8px;
+            }
+            .toggler:hover {
+                border: 1px solid #d0d0d0;
+                background-color: white;
+                color: #6b6b6b;
+            }
+            .menu-body {
+                right: 2px;
+                top: 32px;
+            }
+        }
     }
 
     .widget-header .cly-vue-select {
