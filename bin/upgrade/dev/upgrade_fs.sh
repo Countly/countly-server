@@ -26,6 +26,7 @@ then
 
 
     countly plugin upgrade star-rating
+    countly plugin upgrade users
     countly plugin upgrade push
     (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
 
