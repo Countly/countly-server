@@ -682,21 +682,21 @@
                 var templatesDeferred = [];
                 this.templates.forEach(function(item) {
                     if (typeof item === "string") {
-                        templatesDeferred.push(function(fName) {
+                        templatesDeferred.push((function(fName) {
                             return T.get(fName, function(src) {
                                 self.elementsToBeRendered.push(src);
                             });
-                        }(item));
+                        })(item));
                         return;
                     }
                     for (var name in item.mapping) {
                         var fileName = item.mapping[name];
                         var elementId = item.namespace + "-" + name;
-                        templatesDeferred.push(function(fName, elId) {
+                        templatesDeferred.push((function(fName, elId) {
                             return T.get(fName, function(src) {
                                 self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
                             });
-                        }(fileName, elementId));
+                        })(fileName, elementId));
                     }
                 });
 
