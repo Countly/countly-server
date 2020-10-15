@@ -1802,7 +1802,7 @@
                         return [];
                     }
                 },
-                bucket: { required: false, default: null, type: Object },
+                bucket: { required: false, default: null, type: String },
                 overrideBucket: { required: false, default: false, type: Boolean },
                 frozen: {default: false, type: Boolean},
                 configPaths: { required: true, type: Array },
