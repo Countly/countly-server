@@ -1803,7 +1803,7 @@
                     }
                 },
                 bucket: { required: false, default: null, type: Object },
-                overrideBucket: { required: false, default: null, type: Object },
+                overrideBucket: { required: false, default: false, type: Boolean },
                 frozen: {default: false, type: Boolean},
                 configPaths: { required: true, type: Array },
                 configSmall: { required: false, default: false, type: Boolean },
