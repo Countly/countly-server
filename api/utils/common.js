@@ -1977,23 +1977,24 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set = {};
                 }
                 if (!update.$set.fac) {
-                    if (user.fs && user.fs * 1000 < params.time.mstimestamp) {
-                        update.$set.fac = user.fs * 1000;
+                    if (user.fs && user.fs < params.time.timestamp) {
+                        update.$set.fac = user.fs;
                     }
                     else {
-                        update.$set.fac = params.time.mstimestamp;
+                        update.$set.fac = params.time.timestamp;
                     }
                 }
+                update.$set.first_sync = Math.round(Date.now() / 1000);
             }
 
-            if (typeof user.lac === "undefined" || user.lac < params.time.mstimestamp) {
+            if (typeof user.lac === "undefined" || (user.lac + "").length === 13 || user.lac < params.time.timestamp) {
                 if (!update.$set) {
                     update.$set = {};
                 }
                 if (!update.$set.lac) {
-                    update.$set.lac = params.time.mstimestamp;
+                    update.$set.lac = params.time.timestamp;
                 }
-                update.$set.last_sync = Date.now();
+                update.$set.last_sync = Math.round(Date.now() / 1000);
             }
 
             if (!user.sdk) {
