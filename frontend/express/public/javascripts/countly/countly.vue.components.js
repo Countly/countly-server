@@ -678,25 +678,31 @@
         },
         beforeRender: function() {
             var self = this;
+
+            var getDeferred = function(fName, elId) {
+                if (!elId) {
+                    return T.get(fName, function(src) {
+                        self.elementsToBeRendered.push(src);
+                    });
+                }
+                else {
+                    return T.get(fName, function(src) {
+                        self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
+                    });
+                }
+            };
+
             if (this.templates) {
                 var templatesDeferred = [];
                 this.templates.forEach(function(item) {
                     if (typeof item === "string") {
-                        templatesDeferred.push((function(fName) {
-                            return T.get(fName, function(src) {
-                                self.elementsToBeRendered.push(src);
-                            });
-                        })(item));
+                        templatesDeferred.push(getDeferred(item));
                         return;
                     }
                     for (var name in item.mapping) {
                         var fileName = item.mapping[name];
                         var elementId = item.namespace + "-" + name;
-                        templatesDeferred.push((function(fName, elId) {
-                            return T.get(fName, function(src) {
-                                self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
-                            });
-                        })(fileName, elementId));
+                        templatesDeferred.push(getDeferred(fileName, elementId));
                     }
                 });
 
