@@ -1008,48 +1008,48 @@
                     },
                     beforeLeavingStep: function() { }
                 },
-                template: '<div class="cly-vue-drawer"' +
-                                'v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">' +
-                                '<div class="title">' +
-                                    '<span>{{title}}</span>' +
-                                    '<span class="close" v-on:click="tryClosing">' +
-                                        '<i class="ion-ios-close-empty"></i>' +
-                                    '</span>' +
-                                '</div>' +
-                                '<div class="sidecars-view" v-show="hasSidecars">' +
-                                    '<slot name="sidecars"' +
-                                        'v-bind="passedScope">' +
-                                    '</slot>' +
-                                '</div>' +
-                                '<div class="steps-view">' +
-                                    '<div class="steps-header" v-show="isMultiStep">' +
-                                        '<div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">' +
-                                            '<div class="wrapper">' +
-                                                '<span class="index">{{i + 1}}</span>' +
-                                                '<span class="done-icon"><i class="fa fa-check"></i></span>' +
-                                                '<span class="text">{{currentContent.name}}</span>' +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</div>' +
-                                    '<div class="details" v-bind:class="{\'multi-step\':isMultiStep}">' +
-                                        '<slot name="default"' +
-                                            'v-bind="passedScope">' +
-                                        '</slot>' +
-                                    '</div>' +
-                                    '<div class="buttons multi-step" v-if="isMultiStep">' +
-                                        '<div class="controls-left-container">' +
-                                            '<slot name="controls-left"' +
-                                                'v-bind="passedScope">' +
-                                            '</slot>' +
-                                        '</div>' +
-                                        '<cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>' +
-                                        '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>' +
-                                        '<cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>' +
-                                    '</div>' +
-                                    '<div class="buttons single-step" v-if="!isMultiStep">' +
-                                        '<cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>' +
-                                    '</div>' +
-                                '</div>' +
+                template: '<div class="cly-vue-drawer"\n' +
+                                'v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\n' +
+                                '<div class="title">\n' +
+                                    '<span>{{title}}</span>\n' +
+                                    '<span class="close" v-on:click="tryClosing">\n' +
+                                        '<i class="ion-ios-close-empty"></i>\n' +
+                                    '</span>\n' +
+                                '</div>\n' +
+                                '<div class="sidecars-view" v-show="hasSidecars">\n' +
+                                    '<slot name="sidecars"\n' +
+                                        'v-bind="passedScope">\n' +
+                                    '</slot>\n' +
+                                '</div>\n' +
+                                '<div class="steps-view">\n' +
+                                    '<div class="steps-header" v-show="isMultiStep">\n' +
+                                        '<div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\n' +
+                                            '<div class="wrapper">\n' +
+                                                '<span class="index">{{i + 1}}</span>\n' +
+                                                '<span class="done-icon"><i class="fa fa-check"></i></span>\n' +
+                                                '<span class="text">{{currentContent.name}}</span>\n' +
+                                            '</div>\n' +
+                                        '</div>\n' +
+                                    '</div>\n' +
+                                    '<div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\n' +
+                                        '<slot name="default"\n' +
+                                            'v-bind="passedScope">\n' +
+                                        '</slot>\n' +
+                                    '</div>\n' +
+                                    '<div class="buttons multi-step" v-if="isMultiStep">\n' +
+                                        '<div class="controls-left-container">\n' +
+                                            '<slot name="controls-left"\n' +
+                                                'v-bind="passedScope">\n' +
+                                            '</slot>\n' +
+                                        '</div>\n' +
+                                        '<cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\n' +
+                                        '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
+                                        '<cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\n' +
+                                    '</div>\n' +
+                                    '<div class="buttons single-step" v-if="!isMultiStep">\n' +
+                                        '<cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
+                                    '</div>\n' +
+                                '</div>\n' +
                             '</div>'
             }
         )
@@ -1124,19 +1124,19 @@
         components: {
             picker: window.VueColor.Sketch
         },
-        template: '<div class="cly-vue-colorpicker">' +
-                    '<div @click="open">' +
-                        '<div class="preview-box" :style="previewStyle"></div>' +
-                        '<input class="preview-input" type="text" v-model="localValue" />' +
-                    '</div>' +
-                    '<div class="picker-body" v-if="isOpened" v-click-outside="close">' +
-                        '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>' +
-                        '<div class="button-controls">' +
-                            '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>' +
-                            '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>' +
-                            '<cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>' +
-                        '</div>' +
-                    '</div>' +
+        template: '<div class="cly-vue-colorpicker">\n' +
+                    '<div @click="open">\n' +
+                        '<div class="preview-box" :style="previewStyle"></div>\n' +
+                        '<input class="preview-input" type="text" v-model="localValue" />\n' +
+                    '</div>\n' +
+                    '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
+                        '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
+                        '<div class="button-controls">\n' +
+                            '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
+                            '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
+                            '<cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\n' +
+                        '</div>\n' +
+                    '</div>\n' +
                   '</div>'
     }));
 
@@ -1416,11 +1416,11 @@
                     });
                 }
             },
-            template: '<div class="cly-vue-datatable-w" ref="wrapper">' +
-                            '<div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">' +
-                                '<a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>' +
-                            '</div>' +
-                            '<table ref="dtable" cellpadding="0" cellspacing="0" class="d-table-vue-wrapper"></table>' +
+            template: '<div class="cly-vue-datatable-w" ref="wrapper">\n' +
+                            '<div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\n' +
+                                '<a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j"><i :class="optionItem.icon"></i><span>{{optionItem.label}}</span></a>\n' +
+                            '</div>\n' +
+                            '<table ref="dtable" cellpadding="0" cellspacing="0" class="d-table-vue-wrapper"></table>\n' +
                         '</div>'
         }
     ));
@@ -1465,15 +1465,15 @@
                     this.$emit("input", tId);
                 }
             },
-            template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]">' +
-                            '<ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]">' +
-                                '<li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}">' +
-                                    '<a v-html="tab.tName"></a>' +
-                                '</li>' +
-                            '</ul>' +
-                            '<div class="cly-vue-tabs-container">' +
-                                '<slot/>' +
-                            '</div>' +
+            template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]">\n' +
+                            '<ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]">\n' +
+                                '<li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}">\n' +
+                                    '<a v-html="tab.tName"></a>\n' +
+                                '</li>\n' +
+                            '</ul>\n' +
+                            '<div class="cly-vue-tabs-container">\n' +
+                                '<slot/>\n' +
+                            '</div>\n' +
                         '</div>'
         }
     ));
@@ -1511,8 +1511,8 @@
                     return this.componentId + "-" + this.id;
                 }
             },
-            template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">' +
-                            '<div v-show="isActive"><slot/></div>' +
+            template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
+                            '<div v-show="isActive"><slot/></div>\n' +
                         '</div>'
         }
     ));
@@ -1526,27 +1526,27 @@
                 hasLeftBottom: { type: Boolean, required: false, default: false },
                 onlyHead: { type: Boolean, required: false, default: false }
             },
-            template: '<div class="cly-vue-panel widget">' +
-                            '<div class="widget-header">' +
-                                '<div class="left">' +
-                                    '<div style="margin-left: 3px;">' +
-                                        '<slot name="left-top">' +
-                                            '<div class="title" :class="{small: hasLeftBottom}">{{title}}</div>' +
-                                        '</slot>' +
-                                        '<div v-if="hasLeftBottom">' +
-                                            '<slot name="left-bottom"></slot>' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                                '<div class="right">' +
-                                    '<slot name="right-top">' +
-                                        '<cly-global-date-selector-w v-once v-if="dateSelector"></cly-global-date-selector-w>' +
-                                    '</slot>' +
-                                '</div>' +
-                            '</div>' +
-                            '<div class="widget-content help-zone-vb" :class="{\'no-border\': onlyHead}">' +
-                                '<slot/>' +
-                            '</div>' +
+            template: '<div class="cly-vue-panel widget">\n' +
+                            '<div class="widget-header">\n' +
+                                '<div class="left">\n' +
+                                    '<div style="margin-left: 3px;">\n' +
+                                        '<slot name="left-top">\n' +
+                                            '<div class="title" :class="{small: hasLeftBottom}">{{title}}</div>\n' +
+                                        '</slot>\n' +
+                                        '<div v-if="hasLeftBottom">\n' +
+                                            '<slot name="left-bottom"></slot>\n' +
+                                        '</div>\n' +
+                                    '</div>\n' +
+                                '</div>\n' +
+                                '<div class="right">\n' +
+                                    '<slot name="right-top">\n' +
+                                        '<cly-global-date-selector-w v-once v-if="dateSelector"></cly-global-date-selector-w>\n' +
+                                    '</slot>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
+                            '<div class="widget-content help-zone-vb" :class="{\'no-border\': onlyHead}">\n' +
+                                '<slot/>\n' +
+                            '</div>\n' +
                         '</div>',
         }
     ));
@@ -1742,42 +1742,42 @@
                     }
                 }
             },
-            template: '<div class="cly-vue-global-date-selector-w help-zone-vs">' +
-                            '<div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >' +
-                                '<i class="material-icons">date_range</i>' +
-                                '<span class="inst-selected-date">{{currentPeriodLabel}}</span>' +
-                                '<span class="down ion-chevron-down"></span>' +
-                                '<span class="up ion-chevron-up"></span>' +
-                            '</div>' +
-                            '<div class="inst-date-picker" v-show="isOpened">' +
-                                '<div class="date-selector-buttons">' +
-                                    '<div class="button date-selector" v-for="item in fixedPeriods" :key="item.value" v-bind:class="{active: currentPeriod == item.value}" @click="setPeriod(item.value)">{{item.name}}</div>' +
-                                    '<div class="button-container">' +
-                                        '<div class="icon-button green inst-date-submit" @click="setCustomPeriod()">{{i18n("common.apply")}}</div>' +
-                                        '<div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}</div>' +
-                                    '</div>' +
-                                '</div>' +
-                                '<div class="calendar-container">' +
-                                    '<table>' +
-                                        '<tr>' +
-                                            '<td class="calendar-block">' +
-                                                '<div class="calendar inst-date-from" ref="instDateFrom"></div>' +
-                                            '</td>' +
-                                            '<td class="calendar-block">' +
-                                                '<div class="calendar inst-date-to" ref="instDateTo"></div>' +
-                                            '</td>' +
-                                        '</tr>' +
-                                        '<tr>' +
-                                            '<td class="calendar-block">' +
-                                                '<input type="text" class="calendar-input-field inst-date-from-input" v-model="dateFromLabel" @keyup.enter="dateFromInputSubmit"></input><span class="date-input-label">{{i18n("common.from")}}</span>' +
-                                            '</td>' +
-                                            '<td class="calendar-block">' +
-                                                '<input type="text" class="calendar-input-field inst-date-to-input" v-model="dateToLabel" @keyup.enter="dateToInputSubmit"></input><span class="date-input-label">{{i18n("common.to")}}</span>' +
-                                            '</td>' +
-                                        '</tr>' +
-                                    '</table>' +
-                                '</div>' +
-                            '</div>' +
+            template: '<div class="cly-vue-global-date-selector-w help-zone-vs">\n' +
+                            '<div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\n' +
+                                '<i class="material-icons">date_range</i>\n' +
+                                '<span class="inst-selected-date">{{currentPeriodLabel}}</span>\n' +
+                                '<span class="down ion-chevron-down"></span>\n' +
+                                '<span class="up ion-chevron-up"></span>\n' +
+                            '</div>\n' +
+                            '<div class="inst-date-picker" v-show="isOpened">\n' +
+                                '<div class="date-selector-buttons">\n' +
+                                    '<div class="button date-selector" v-for="item in fixedPeriods" :key="item.value" v-bind:class="{active: currentPeriod == item.value}" @click="setPeriod(item.value)">{{item.name}}</div>\n' +
+                                    '<div class="button-container">\n' +
+                                        '<div class="icon-button green inst-date-submit" @click="setCustomPeriod()">{{i18n("common.apply")}}</div>\n' +
+                                        '<div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}</div>\n' +
+                                    '</div>\n' +
+                                '</div>\n' +
+                                '<div class="calendar-container">\n' +
+                                    '<table>\n' +
+                                        '<tr>\n' +
+                                            '<td class="calendar-block">\n' +
+                                                '<div class="calendar inst-date-from" ref="instDateFrom"></div>\n' +
+                                            '</td>\n' +
+                                            '<td class="calendar-block">\n' +
+                                                '<div class="calendar inst-date-to" ref="instDateTo"></div>\n' +
+                                            '</td>\n' +
+                                        '</tr>\n' +
+                                        '<tr>\n' +
+                                            '<td class="calendar-block">\n' +
+                                                '<input type="text" class="calendar-input-field inst-date-from-input" v-model="dateFromLabel" @keyup.enter="dateFromInputSubmit"></input><span class="date-input-label">{{i18n("common.from")}}</span>\n' +
+                                            '</td>\n' +
+                                            '<td class="calendar-block">\n' +
+                                                '<input type="text" class="calendar-input-field inst-date-to-input" v-model="dateToLabel" @keyup.enter="dateToInputSubmit"></input><span class="date-input-label">{{i18n("common.to")}}</span>\n' +
+                                            '</td>\n' +
+                                        '</tr>\n' +
+                                    '</table>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
                         '</div>'
         }
     ));
@@ -1918,14 +1918,14 @@
                     });
                 }
             },
-            template: '<div class="cly-vue-time-graph-w">' +
-                            '<div ref="container" class="graph-container"></div>' +
-                            '<div class="cly-vue-graph-no-data" v-if="!hasData">' +
-                                '<div class="inner">' +
-                                    '<div class="icon"></div>' +
-                                    '<div class="text">{{i18n("common.graph.no-data")}}</div>' +
-                                '</div>' +
-                            '</div>' +
+            template: '<div class="cly-vue-time-graph-w">\n' +
+                            '<div ref="container" class="graph-container"></div>\n' +
+                            '<div class="cly-vue-graph-no-data" v-if="!hasData">\n' +
+                                '<div class="inner">\n' +
+                                    '<div class="icon"></div>\n' +
+                                    '<div class="text">{{i18n("common.graph.no-data")}}</div>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
                         '</div>'
         }
     ));
@@ -1988,14 +1988,14 @@
                         this.options);
                 }
             },
-            template: '<div class="cly-vue-graph-w">' +
-                            '<div ref="container" class="graph-container"></div>' +
-                            '<div class="cly-vue-graph-no-data" v-if="!hasData">' +
-                                '<div class="inner">' +
-                                    '<div class="icon"></div>' +
-                                    '<div class="text">{{i18n("common.graph.no-data")}}</div>' +
-                                '</div>' +
-                            '</div>' +
+            template: '<div class="cly-vue-graph-w">\n' +
+                            '<div ref="container" class="graph-container"></div>\n' +
+                            '<div class="cly-vue-graph-no-data" v-if="!hasData">\n' +
+                                '<div class="inner">\n' +
+                                    '<div class="icon"></div>\n' +
+                                    '<div class="text">{{i18n("common.graph.no-data")}}</div>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
                         '</div>'
         }
     ));
@@ -2027,14 +2027,14 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<div class="cly-vue-radio" v-bind:class="[skinClass]">' +
-                            '<div class="radio-wrapper">' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">' +
-                                    '<div class="box"></div>' +
-                                    '<div class="text">{{item.label}}</div>' +
-                                    '<div class="description">{{item.description}}</div>' +
-                                '</div>' +
-                            '</div>' +
+            template: '<div class="cly-vue-radio" v-bind:class="[skinClass]">\n' +
+                            '<div class="radio-wrapper">\n' +
+                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\n' +
+                                    '<div class="box"></div>\n' +
+                                    '<div class="text">{{item.label}}</div>\n' +
+                                    '<div class="description">{{item.description}}</div>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
                         '</div>'
         }
     ));
@@ -2066,15 +2066,15 @@
                     this.$emit('input', e);
                 }
             },
-            template: '<div class="cly-vue-generic-radio" v-bind:class="[skinClass]">' +
-                            '<div class="generic-radio-wrapper">' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">' +
-                                    '<div class="button-area">' +
-                                        '<div class="component"><component :is="item.cmp" /></div>' +
-                                        '<div class="text">{{item.label}}</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
+            template: '<div class="cly-vue-generic-radio" v-bind:class="[skinClass]">\n' +
+                            '<div class="generic-radio-wrapper">\n' +
+                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\n' +
+                                    '<div class="button-area">\n' +
+                                        '<div class="component"><component :is="item.cmp" /></div>\n' +
+                                        '<div class="text">{{item.label}}</div>\n' +
+                                    '</div>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
                         '</div>'
         }
     ));
@@ -2110,17 +2110,17 @@
                     return this.i18n("common.remove");
                 }
             },
-            template: '<div class="cly-vue-text-field">' +
-                            '<div class="remove-button"' +
-                                'v-if="removable && !disabled"' +
-                                '@click="removeMe">' +
-                                '{{innerRemoveText}}' +
-                            '</div>' +
-                            '<input type="text" class="input"' +
-                                'v-on="defaultListeners" v-bind="$attrs"' +
-                                'v-bind:value="value"' +
-                                'v-bind:disabled="disabled"' +
-                                'v-on:input="setValue($event.target.value)">' +
+            template: '<div class="cly-vue-text-field">\n' +
+                            '<div class="remove-button"\n' +
+                                'v-if="removable && !disabled"\n' +
+                                '@click="removeMe">\n' +
+                                '{{innerRemoveText}}\n' +
+                            '</div>\n' +
+                            '<input type="text" class="input"\n' +
+                                'v-on="defaultListeners" v-bind="$attrs"\n' +
+                                'v-bind:value="value"\n' +
+                                'v-bind:disabled="disabled"\n' +
+                                'v-on:input="setValue($event.target.value)">\n' +
                         '</div>'
         }
     ));
@@ -2172,12 +2172,12 @@
                     return classes;
                 }
             },
-            template: '<div class="cly-vue-check" v-bind:class="topClasses">' +
-                            '<div class="check-wrapper">' +
-                                '<input type="checkbox" class="check-checkbox" :checked="value">' +
-                                '<div v-bind:class="labelClass" @click="setValue(!value)"></div>' +
-                                '<span v-if="label" class="check-text" @click="setValue(!value)">{{label}}</span>' +
-                            '</div>' +
+            template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
+                            '<div class="check-wrapper">\n' +
+                                '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
+                                '<div v-bind:class="labelClass" @click="setValue(!value)"></div>\n' +
+                                '<span v-if="label" class="check-text" @click="setValue(!value)">{{label}}</span>\n' +
+                            '</div>\n' +
                         '</div>'
         }
     ));
@@ -2229,9 +2229,9 @@
                     }
                 }
             },
-            template: '<div class="cly-vue-check-list">' +
-                            '<cly-check v-for="(item, i) in items" :key="i" v-bind:skin="skin" v-bind:label="item.label" v-bind:value="uncompressed[i]" v-on:input="setValue(item.value, $event)">' +
-                            '</cly-check>' +
+            template: '<div class="cly-vue-check-list">\n' +
+                            '<cly-check v-for="(item, i) in items" :key="i" v-bind:skin="skin" v-bind:label="item.label" v-bind:value="uncompressed[i]" v-on:input="setValue(item.value, $event)">\n' +
+                            '</cly-check>\n' +
                         '</div>'
         }
     ));
@@ -2279,11 +2279,11 @@
                     return objectWithoutProperties(this.$listeners, ["input"]);
                 }
             },
-            template: '<textarea class="cly-vue-text-area"' +
-                            'v-bind="$attrs"' +
-                            'v-on="defaultListeners"' +
-                            ':value="value"' +
-                            '@input="setValue($event.target.value)">' +
+            template: '<textarea class="cly-vue-text-area"\n' +
+                            'v-bind="$attrs"\n' +
+                            'v-on="defaultListeners"\n' +
+                            ':value="value"\n' +
+                            '@input="setValue($event.target.value)">\n' +
                         '</textarea>'
         }
     ));
@@ -2566,50 +2566,50 @@
                     this.navigatedIndex = null; // reset navigation on visible items change
                 }
             },
-            template: '<div class="cly-vue-select"' +
-                            'v-bind:class="containerClasses"' +
-                            'v-click-outside="close"' +
-                            '@keydown.up.prevent="upKeyEvent"' +
-                            '@keydown.down.prevent="downKeyEvent"' +
-                            '@keydown.esc="escKeyEvent"' +
-                            '@keydown.enter="enterKeyEvent">' +
-                            '<div class="select-inner" @click="toggle">' +
-                                '<div class="text-container">' +
-                                    '<div v-if="selectedItem" class="text">' +
-                                        '<span>{{selectedItem.name}}</span>' +
-                                    '</div>' +
-                                    '<div v-if="!selectedItem" class="text">' +
-                                        '<span class="text-light-gray">{{placeholder}}</span>' +
-                                    '</div>' +
-                                '</div>' +
-                                '<div class="drop combo"></div>' +
-                            '</div>' +
-                            '<div class="search" v-if="searchable" v-show="opened">' +
-                                '<div class="inner">' +
-                                '<input type="search"' +
-                                    '@focus="hasFocus = true"' +
-                                    'v-model="tempSearchQuery"/>' +
-                                '<i class="fa fa-search"></i>' +
-                                '</div>' +
-                            '</div>' +
-                            '<div class="items-list square" v-show="opened">' +
-                                '<div ref="scrollable" class="scrollable">' +
-                                    '<div class="warning" v-if="dynamicItems && listDelayWarning">{{ listDelayWarning }}</div>' +
-                                    '<div v-for="(item, i) in visibleItems" :key="i"' +
-                                        '@mouseover="setNavigatedIndex(i)"' +
-                                        '@mouseleave="setNavigatedIndex(null)"' +
-                                        '@click="setItem(item)"' +
-                                        ':ref="\'tmpItemRef_\' + i"' +
-                                        ':class="{item: !isItemGroup(item), group : isItemGroup(item), navigated: i === navigatedIndex}">' +
-                                        '<div v-if="isItemGroup(item)">' +
-                                            '<span v-text="item.name"></span>' +
-                                        '</div>' +
-                                        '<div v-else v-bind:data-value="item.value">' +
-                                            '<span v-text="item.name"></span>' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
+            template: '<div class="cly-vue-select"\n' +
+                            'v-bind:class="containerClasses"\n' +
+                            'v-click-outside="close"\n' +
+                            '@keydown.up.prevent="upKeyEvent"\n' +
+                            '@keydown.down.prevent="downKeyEvent"\n' +
+                            '@keydown.esc="escKeyEvent"\n' +
+                            '@keydown.enter="enterKeyEvent">\n' +
+                            '<div class="select-inner" @click="toggle">\n' +
+                                '<div class="text-container">\n' +
+                                    '<div v-if="selectedItem" class="text">\n' +
+                                        '<span>{{selectedItem.name}}</span>\n' +
+                                    '</div>\n' +
+                                    '<div v-if="!selectedItem" class="text">\n' +
+                                        '<span class="text-light-gray">{{placeholder}}</span>\n' +
+                                    '</div>\n' +
+                                '</div>\n' +
+                                '<div class="drop combo"></div>\n' +
+                            '</div>\n' +
+                            '<div class="search" v-if="searchable" v-show="opened">\n' +
+                                '<div class="inner">\n' +
+                                '<input type="search"\n' +
+                                    '@focus="hasFocus = true"\n' +
+                                    'v-model="tempSearchQuery"/>\n' +
+                                '<i class="fa fa-search"></i>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
+                            '<div class="items-list square" v-show="opened">\n' +
+                                '<div ref="scrollable" class="scrollable">\n' +
+                                    '<div class="warning" v-if="dynamicItems && listDelayWarning">{{ listDelayWarning }}</div>\n' +
+                                    '<div v-for="(item, i) in visibleItems" :key="i"\n' +
+                                        '@mouseover="setNavigatedIndex(i)"\n' +
+                                        '@mouseleave="setNavigatedIndex(null)"\n' +
+                                        '@click="setItem(item)"\n' +
+                                        ':ref="\'tmpItemRef_\' + i"\n' +
+                                        ':class="{item: !isItemGroup(item), group : isItemGroup(item), navigated: i === navigatedIndex}">\n' +
+                                        '<div v-if="isItemGroup(item)">\n' +
+                                            '<span v-text="item.name"></span>\n' +
+                                        '</div>\n' +
+                                        '<div v-else v-bind:data-value="item.value">\n' +
+                                            '<span v-text="item.name"></span>\n' +
+                                        '</div>\n' +
+                                    '</div>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
                         '</div>'
         }
     ));
@@ -2642,8 +2642,8 @@
                     return this.i18n("common.back");
                 }
             },
-            template: '<a @click="back" class="cly-vue-back-link"> ' +
-                            '<span>{{innerTitle}}</span>' +
+            template: '<a @click="back" class="cly-vue-back-link"> \n' +
+                            '<span>{{innerTitle}}</span>\n' +
                         '</a>'
         }
     ));
@@ -2652,24 +2652,24 @@
         mixins: [
             _mixins.i18n
         ],
-        template: '<div class="cly-vgt-custom-controls">' +
-                        '<div class="cly-vgt-custom-search">' +
-                            '<div class="magnifier-wrapper" @click="toggleSearch">' +
-                                '<i class="fa fa-search"></i>' +
-                            '</div>' +
-                            '<input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-bind:value="searchQuery" @input="queryChanged($event.target.value)"/>' +
-                        '</div>' +
-                        '<div class="cly-vgt-custom-paginator">' +
-                            '<div class="display-items">' +
-                                '<label>{{ i18n("common.show-items") }} <input type="number" v-model.number="displayItems"></label>' +
-                            '</div>' +
-                            '<div class="buttons">' +
-                                '<span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>' +
-                                '<span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>' +
-                                '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>' +
-                                '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>' +
-                            '</div>' +
-                        '</div>' +
+        template: '<div class="cly-vgt-custom-controls">\n' +
+                        '<div class="cly-vgt-custom-search">\n' +
+                            '<div class="magnifier-wrapper" @click="toggleSearch">\n' +
+                                '<i class="fa fa-search"></i>\n' +
+                            '</div>\n' +
+                            '<input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-bind:value="searchQuery" @input="queryChanged($event.target.value)"/>\n' +
+                        '</div>\n' +
+                        '<div class="cly-vgt-custom-paginator">\n' +
+                            '<div class="display-items">\n' +
+                                '<label>{{ i18n("common.show-items") }} <input type="number" v-model.number="displayItems"></label>\n' +
+                            '</div>\n' +
+                            '<div class="buttons">\n' +
+                                '<span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\n' +
+                                '<span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\n' +
+                                '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\n' +
+                                '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
+                            '</div>\n' +
+                        '</div>\n' +
                     '</div>',
         props: {
             searchQuery: {
@@ -2842,10 +2842,10 @@
                 this.tryClosing();
             }
         },
-        template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">' +
-                        '<div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">' +
-                            '<a @click="fireEvent(item.event)" v-for="(item, index) in availableItems" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>' +
-                        '</div>' +
+        template: '<div class="cly-vue-row-options" v-click-outside="tryClosing">\n' +
+                        '<div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\n' +
+                            '<a @click="fireEvent(item.event)" v-for="(item, index) in availableItems" class="item" :key="index"><i :class="item.icon"></i><span>{{ item.label }}</span></a>\n' +
+                        '</div>\n' +
                     '</div>'
     });
 
@@ -3041,63 +3041,63 @@
                 }
             }, 500)
         },
-        template: '<div>' +
-                        '<row-options' +
-                            ':items="optionsItems"' +
-                            ':pos="optionsPosition"' +
-                            ':opened="optionsOpened"' +
-                            ':rowData="optionsRowData"' +
-                            '@close="optionsOpened=false"' +
-                            'v-on="$listeners">' +
-                        '</row-options>' +
-                        '<vue-good-table' +
-                            'v-bind="$attrs"' +
-                            'v-bind:rows="rows"' +
-                            'v-bind:columns="extendedColumns"' +
-                            'v-on="$listeners"' +
-                            ':pagination-options="{' +
-                                'enabled: true,' +
-                                'mode: \'records\',' +
-                                'position: \'top\'' +
-                            '}"' +
-                            ':search-options="{' +
-                                'enabled: true,' +
-                                'externalQuery: searchQuery' +
-                            '}"' +
-                            '@on-page-change="onPageChange"' +
-                            '@on-sort-change="onSortChange"' +
-                            '@on-per-page-change="onPerPageChange"' +
-                            '@on-row-mouseenter="onRowMouseover"' +
-                            '@on-row-mouseleave="onRowMouseleave"' +
-                            ':mode="internalMode"' +
-                            ':totalRows="internalTotalRows"' +
-                            ':isLoading.sync="isLoading"' +
-                            'styleClass="cly-vgt-table striped">' +
-                                '<template slot="pagination-top" slot-scope="props">' +
-                                    '<custom-controls' +
-                                    '@infoChanged="onInfoChanged"' +
-                                    '@queryChanged="searchQuery = $event"' +
-                                    'ref="controls"' +
-                                    ':initial-paging="initialPaging"' +
-                                    ':search-query="searchQuery"' +
-                                    ':total="props.total"' +
-                                    ':notFilteredTotal="notFilteredTotal"' +
-                                    ':pageChanged="props.pageChanged"' +
-                                    ':perPageChanged="props.perPageChanged">' +
-                                    '</custom-controls>' +
-                                '</template>' +
-                                '<template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">' +
-                                    '<slot :name="name" v-bind="addTableFns(slotData)" />' +
-                                '</template>' +
-                                '<div slot="table-actions-bottom">' +
-                                    '{{pageInfo}}' +
-                                '</div>' +
-                                '<div slot="emptystate">' +
-                                    '{{ i18n("common.table.no-data") }}' +
-                                '</div>' +
-                                '<div slot="loadingContent">' +
-                                '</div>' +
-                        '</vue-good-table>' +
+        template: '<div>\n' +
+                        '<row-options\n' +
+                            ':items="optionsItems"\n' +
+                            ':pos="optionsPosition"\n' +
+                            ':opened="optionsOpened"\n' +
+                            ':rowData="optionsRowData"\n' +
+                            '@close="optionsOpened=false"\n' +
+                            'v-on="$listeners">\n' +
+                        '</row-options>\n' +
+                        '<vue-good-table\n' +
+                            'v-bind="$attrs"\n' +
+                            'v-bind:rows="rows"\n' +
+                            'v-bind:columns="extendedColumns"\n' +
+                            'v-on="$listeners"\n' +
+                            ':pagination-options="{\n' +
+                                'enabled: true,\n' +
+                                'mode: \'records\',\n' +
+                                'position: \'top\'\n' +
+                            '}"\n' +
+                            ':search-options="{\n' +
+                                'enabled: true,\n' +
+                                'externalQuery: searchQuery\n' +
+                            '}"\n' +
+                            '@on-page-change="onPageChange"\n' +
+                            '@on-sort-change="onSortChange"\n' +
+                            '@on-per-page-change="onPerPageChange"\n' +
+                            '@on-row-mouseenter="onRowMouseover"\n' +
+                            '@on-row-mouseleave="onRowMouseleave"\n' +
+                            ':mode="internalMode"\n' +
+                            ':totalRows="internalTotalRows"\n' +
+                            ':isLoading.sync="isLoading"\n' +
+                            'styleClass="cly-vgt-table striped">\n' +
+                                '<template slot="pagination-top" slot-scope="props">\n' +
+                                    '<custom-controls\n' +
+                                    '@infoChanged="onInfoChanged"\n' +
+                                    '@queryChanged="searchQuery = $event"\n' +
+                                    'ref="controls"\n' +
+                                    ':initial-paging="initialPaging"\n' +
+                                    ':search-query="searchQuery"\n' +
+                                    ':total="props.total"\n' +
+                                    ':notFilteredTotal="notFilteredTotal"\n' +
+                                    ':pageChanged="props.pageChanged"\n' +
+                                    ':perPageChanged="props.perPageChanged">\n' +
+                                    '</custom-controls>\n' +
+                                '</template>\n' +
+                                '<template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">\n' +
+                                    '<slot :name="name" v-bind="addTableFns(slotData)" />\n' +
+                                '</template>\n' +
+                                '<div slot="table-actions-bottom">\n' +
+                                    '{{pageInfo}}\n' +
+                                '</div>\n' +
+                                '<div slot="emptystate">\n' +
+                                    '{{ i18n("common.table.no-data") }}\n' +
+                                '</div>\n' +
+                                '<div slot="loadingContent">\n' +
+                                '</div>\n' +
+                        '</vue-good-table>\n' +
                     '</div>'
     }));
 
@@ -3107,15 +3107,15 @@
                 type: Object
             }
         },
-        template: '<div class="cly-vue-dt-detail-toggler">' +
-                        '<div @click="scope.fns.setRowData(scope.props.row, {isDetailRowShown: !scope.props.row.isDetailRowShown})">' +
-                            '<div v-if="!scope.props.row.isDetailRowShown">' +
-                                '<i class="material-icons expand-row-icon">keyboard_arrow_down</i>' +
-                            '</div>' +
-                            '<div v-else>' +
-                               '<i class="material-icons expand-row-icon">keyboard_arrow_up</i>' +
-                            '</div>' +
-                        '</div>' +
+        template: '<div class="cly-vue-dt-detail-toggler">\n' +
+                        '<div @click="scope.fns.setRowData(scope.props.row, {isDetailRowShown: !scope.props.row.isDetailRowShown})">\n' +
+                            '<div v-if="!scope.props.row.isDetailRowShown">\n' +
+                                '<i class="material-icons expand-row-icon">keyboard_arrow_down</i>\n' +
+                            '</div>\n' +
+                            '<div v-else>\n' +
+                               '<i class="material-icons expand-row-icon">keyboard_arrow_up</i>\n' +
+                            '</div>\n' +
+                        '</div>\n' +
                    '</div>'
     }));
 
@@ -3125,14 +3125,14 @@
                 type: Object
             }
         },
-        template: '<div class="cly-vue-dt-options">' +
-                        '<div v-if="scope.props.row._delayedDelete" class="undo-row">' +
-                            '{{ scope.props.row._delayedDelete.message }}' +
-                            '<a @click="scope.props.row._delayedDelete.abort()">Undo.</a>' +
-                        '</div>' +
-                        '<span>' +
-                            '<a class="cly-row-options-trigger" @click="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>' +
-                        '</span>' +
+        template: '<div class="cly-vue-dt-options">\n' +
+                        '<div v-if="scope.props.row._delayedDelete" class="undo-row">\n' +
+                            '{{ scope.props.row._delayedDelete.message }}\n' +
+                            '<a @click="scope.props.row._delayedDelete.abort()">Undo.</a>\n' +
+                        '</div>\n' +
+                        '<span>\n' +
+                            '<a class="cly-row-options-trigger" @click="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\n' +
+                        '</span>\n' +
                     '</div>'
     }));
 
@@ -3161,32 +3161,32 @@
                 this.$emit("discard");
             }
         },
-        template: '<div class="cly-vue-diff-helper" v-if="hasDiff">' +
-                        '<div class="message">' +
-                            '<span class="text-dark">{{madeChanges}}</span>' +
-                            '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>' +
-                        '</div>' +
-                        '<div class="buttons">' +
-                            '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>' +
-                           '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>' +
-                        '</div>' +
+        template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\n' +
+                        '<div class="message">\n' +
+                            '<span class="text-dark">{{madeChanges}}</span>\n' +
+                            '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+                        '</div>\n' +
+                        '<div class="buttons">\n' +
+                            '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
+                           '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\n' +
+                        '</div>\n' +
                     '</div>'
     }));
 
     Vue.component("cly-menubox", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="close">' +
-                        '<div class="menu-toggler" :class="{active: isOpened}" @click="toggle">' +
-                            '<div class="text-container">' +
-                                '<div class="text">{{label}}</div>' +
-                            '</div>' +
-                            '<div class="arrows-wrapper">' +
-                                '<div class="down ion-chevron-down"></div>' +
-                                '<div class="up ion-chevron-up"></div>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="menu-body" v-show="isOpened">' +
-                            '<slot></slot>' +
-                        '</div>' +
+        template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="close">\n' +
+                        '<div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\n' +
+                            '<div class="text-container">\n' +
+                                '<div class="text">{{label}}</div>\n' +
+                            '</div>\n' +
+                            '<div class="arrows-wrapper">\n' +
+                                '<div class="down ion-chevron-down"></div>\n' +
+                                '<div class="up ion-chevron-up"></div>\n' +
+                            '</div>\n' +
+                        '</div>\n' +
+                        '<div class="menu-body" v-show="isOpened">\n' +
+                            '<slot></slot>\n' +
+                        '</div>\n' +
                     '</div>',
         props: {
             label: { type: String, default: '' },
@@ -3206,14 +3206,14 @@
     }));
 
     Vue.component("cly-button-menu", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">' +
-                        '<div class="toggler" @click="toggle"></div>' +
-                        '<div class="menu-body" :class="{active: opened}">' +
-                            '<a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">' +
-                                '<i :class="item.icon"></i>' +
-                                '<span>{{item.label}}</span>' +
-                            '</a>' +
-                        '</div>' +
+        template: '<div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">\n' +
+                        '<div class="toggler" @click="toggle"></div>\n' +
+                        '<div class="menu-body" :class="{active: opened}">\n' +
+                            '<a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\n' +
+                                '<i :class="item.icon"></i>\n' +
+                                '<span>{{item.label}}</span>\n' +
+                            '</a>\n' +
+                        '</div>\n' +
                     '</div>',
         props: {
             items: {
