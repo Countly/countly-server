@@ -41,6 +41,10 @@ window.ErrorLogsView = countlyView.extend({
                     });
                 }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["common.yes-clear-it"]], {title: jQuery.i18n.map["errorlogs.confirm-delete-" + id + "-title"] || jQuery.i18n.map["errorlogs.confirm-delete-title"], image: "clear-api-logs"});
             });
+
+            if (!countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+                $('.btn-clear-log').hide();
+            }
         }
     },
     refresh: function() {
