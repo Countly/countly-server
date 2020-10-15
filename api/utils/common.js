@@ -2455,6 +2455,15 @@ common.mergeQuery = function(ob1, ob2) {
                 }
             }
         }
+        //try to fix colliding fields
+        if (ob1 && ob1.$set && ob1.$set.data && ob1.$inc) {
+            for (let key in ob1.$inc) {
+                if (key.startsWith("data.")) {
+                    ob1.$set.data[key.replace("data.", "")] = ob1.$inc[key];
+                    delete ob1.$inc[key];
+                }
+            }
+        }
     }
 
     return ob1;
