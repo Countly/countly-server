@@ -130,8 +130,6 @@ window.AlertsView = countlyView.extend({
         var self = this;
         var alertsList = alertsPlugin.getAlertsList();
         app.alertsView.updateCount();
-        
-        
 
         for (var i = 0; i < alertsList.length; i++) {
             var appNameList = [];
@@ -296,7 +294,7 @@ window.AlertsView = countlyView.extend({
     renderCommon: function(refresh) {
         $(this.el).html(this.template({"email-placeholder": jQuery.i18n.map["alert.email-place-holder"]}));
         if (!refresh) {
-            var views = ["starView", "crashesView"]
+            var views = ["starView", "crashesView"];
             views.forEach(function(view) {
                 if (!app[view]) {
                     CountlyHelpers.notify({
