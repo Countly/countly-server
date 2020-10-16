@@ -1139,11 +1139,15 @@ var pluginManager = function pluginManager() {
         var dbName;
         var dbOptions = {
             poolSize: maxPoolSize,
+            maxPoolSize: maxPoolSize,
             noDelay: true,
             keepAlive: true,
             keepAliveInitialDelay: 30000,
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
+            serverSelectionTimeoutMS: 999999999,
+            maxIdleTimeMS: 0,
+            waitQueueTimeoutMS: 0,
             useNewUrlParser: true,
             useUnifiedTopology: true,
             auto_reconnect: true,
