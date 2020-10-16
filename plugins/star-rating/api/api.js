@@ -812,8 +812,8 @@ const widgetPropertyPreprocessors = {
      * @param {String} app_id app Id
      */
     async function exportPlugin(ids) {
-        const data = await common.db._native.collection("feedback_widgets").find({_id: {$in: ids.map((id) =>common.db.ObjectID(id))}}).toArray();
-        data.forEach(((widget) =>{
+        const data = await common.db._native.collection("feedback_widgets").find({_id: {$in: ids.map((id) => common.db.ObjectID(id))}}).toArray();
+        data.forEach(((widget) => {
             widget.app_id = "APP_ID";
         }));
         const dependencies = [];
@@ -852,7 +852,7 @@ const widgetPropertyPreprocessors = {
      */
     function importPopulator(params, importData) {
         const widget = importData.data;
-        return new Promise((resolve, reject) =>{
+        return new Promise((resolve, reject) => {
             widget._id = common.db.ObjectID(widget._id);
             common.db.collection('feedback_widgets').insert(widget, function(err) {
                 if (!err) {
