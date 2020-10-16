@@ -283,7 +283,7 @@ const templateProperties = {
      * @param {String} app_id app Id
      */
     async function exportPlugin(ids) {
-        const data = await common.db._native.collection("populator_templates").find({_id: {$in: ids.map(id=>common.db.ObjectID(id))}}).toArray();
+        const data = await common.db._native.collection("populator_templates").find({_id: {$in: ids.map((id) =>common.db.ObjectID(id))}}).toArray();
         const dependencies = [];
 
         return {
@@ -320,7 +320,7 @@ const templateProperties = {
      */
     function importPopulator(params, importData) {
         const template = importData.data;
-        return new Promise((resolve, reject)=>{
+        return new Promise((resolve, reject) =>{
             template._id = common.db.ObjectID(template._id);
             common.db.collection('populator_templates').insert(template, function(insertTemplateErr) {
                 if (!insertTemplateErr) {
