@@ -222,6 +222,9 @@ const passToMaster = (worker) => {
             const {collection, query, projection, multi} = msg.data;
             common.readBatcher.invalidate(collection, query, projection, multi);
         }
+        else if (msg.cmd === "dispatchMaster" && msg.event) {
+            plugins.dispatch(msg.event, msg.data);
+        }
         else if (msg.cmd === "dispatch" && msg.event) {
             workers.forEach((w) => {
                 w.send(msg);

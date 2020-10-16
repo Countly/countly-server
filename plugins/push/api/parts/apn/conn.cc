@@ -190,6 +190,7 @@ namespace apns {
 		stats.init_eofs = 0;
 
 		while (!(stats.state & ST_CONNECTED) && stats.init_eofs < H2_MAX_EOFS) {
+			LOG_INFO("CONN " << uv_thread_self() << ": connection attempt ");
 			tcp_init_sem = new uv_sem_t;
 			uv_sem_init(tcp_init_sem, 0);
 
@@ -246,10 +247,33 @@ namespace apns {
 				}
 
 				uv_timer_stop(conn_timer);
-				stats.state &= ~(ST_ERROR_RECOVERABLE | ST_ERROR_NONRECOVERABLE);
-				stats.state |= ST_CONNECTED;
 
-				LOG_INFO("CONN " << uv_thread_self() << ": done with HTTP/2 stack");
+				if (stats.error_connection.empty()) {
+					stats.state &= ~(ST_ERROR_RECOVERABLE | ST_ERROR_NONRECOVERABLE);
+					stats.state |= ST_CONNECTED;
+
+					LOG_INFO("CONN " << uv_thread_self() << ": done with HTTP/2 stack");
+				} else {
+					LOG_INFO("CONN " << uv_thread_self() << ": failed to connect (\"" << stats.error_connection << "\"), will reconnect");
+					if (tcp) {
+						uv_read_stop((uv_stream_t*)tcp);
+						tcp = nullptr;
+					}
+
+					if (ssl) {
+						SSL_free(ssl);
+						ssl = nullptr;
+					}
+
+					// BIO_free(read_bio);
+					// BIO_free(write_bio);
+
+					if (fd) {
+						close(fd);
+						fd = 0;
+					}
+				}
+
 				// foo();
 			} else {
 				LOG_WARNING("CONN " << uv_thread_self() << ": failed to connect, trying next server");
@@ -694,14 +718,24 @@ namespace apns {
 			std::ostringstream out;
 			out << "error in uv_on_read: " << uv_err_name(nread);
 			c->send_error(out.str());
-			if (c->tcp_init_sem) {
+			if (c->h2_sem) {
 				c->stats.init_eofs++;
 				std::ostringstream out;
 				out << c->stats.init_eofs << "-EOF";
 				c->stats.error_connection = out.str();
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read h2_sem");
+				uv_sem_post(c->h2_sem);
+			} else if (c->tcp_init_sem) {
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read tcp_init_sem " << out.str());
+				c->stats.init_eofs++;
+				std::ostringstream out;
+				out << c->stats.init_eofs << "-EOF";
+				c->stats.error_connection = out.str();
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read tcp_init_sem");
 				uv_sem_post(c->tcp_init_sem);
 			} else {
 				c->stats.error_connection = "EOF";
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read stopping the loop");
 				c->conn_thread_stop();
 			}
 		} else if (nread > 0) {

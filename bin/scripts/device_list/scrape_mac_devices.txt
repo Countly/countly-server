@@ -1,0 +1,35 @@
+Scraping for:
+iMac (https://support.apple.com/en-us/HT201634)
+Mac Pro (https://support.apple.com/en-us/HT202888)
+Mac Book Pro (https://support.apple.com/en-us/HT201300)
+Mac Book (https://support.apple.com/en-us/HT201608)
+Mac Book Air (https://support.apple.com/en-us/HT201862)
+Mac mini (https://support.apple.com/en-us/HT201894)
+
+Load script:
+
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.src = 'https://code.jquery.com/jquery-3.5.1.min.js';
+document.head.appendChild(script);
+
+Scrape info:
+var res = {};
+$("#sections > div > div > div > p:has(strong)").each(function(){
+    var el = $(this).find("strong");
+    var val = el.text().trim();
+    if (el[0].nextSibling) {
+        var limit = 10;
+        var count = 0;
+        var e = el[0];
+        var key = (e.nextSibling.nodeValue + "");
+        while (e.nextSibling && count !== limit && !key.trim().startsWith("Model Identifier:")) {
+            count++;
+            e = e.nextSibling;
+            key = (e.nodeValue + "");
+        }
+        key = key.replace("Model Identifier:", "").trim();
+        res[key] = val;
+    }
+});
+console.log(JSON.stringify(res, null, 4));

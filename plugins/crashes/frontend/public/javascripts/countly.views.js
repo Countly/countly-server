@@ -1089,7 +1089,7 @@ window.CrashesView = countlyView.extend({
         countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
         this.pageScripts();
     },
-    getFilters: function(currEvent) {
+    getFilters: function() {
         var self = this;
         var usedFilters = {};
 
@@ -1101,7 +1101,7 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-        var defaultFilters = countlySegmentation.getFilters(currEvent),
+        var defaultFilters = countlySegmentation.getFilters(),
             allFilters = "";
         var filters = [];
         for (var i = 0; i < defaultFilters.length; i++) {

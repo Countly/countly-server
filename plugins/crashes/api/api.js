@@ -55,7 +55,9 @@ plugins.setConfigs("crashes", {
                             }
                         }
                         const group = res[i].group;
-                        bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
+                        if (Object.keys(updates).length) {
+                            bulk.find({uid: newUid, group: group}).upsert().updateOne(updates);
+                        }
                         bulk.find({uid: oldUid, group: group}).remove();
                     }
                     bulk.execute(function(bulkerr) {
@@ -378,10 +380,12 @@ plugins.setConfigs("crashes", {
                         }
                         updateUser.hadAnyNonfatalCrash = report.ts;
                     }
-
+                    let updateData = {$inc: {}};
+                    updateData.$inc["data.crashes"] = 1;
                     if (Object.keys(updateUser).length) {
-                        ob.updates.push({$set: updateUser});
+                        updateData.$set = updateUser;
                     }
+                    ob.updates.push(updateData);
 
                     var set = {group: hash, 'uid': report.uid, last: report.ts};
                     if (dbAppUser && dbAppUser.sc) {
@@ -569,7 +573,7 @@ plugins.setConfigs("crashes", {
                                         }
                                     }
 
-                                    var update = {};
+                                    let update = {};
                                     if (Object.keys(groupSet).length > 0) {
                                         update.$set = groupSet;
                                     }
@@ -665,7 +669,7 @@ plugins.setConfigs("crashes", {
                                     });
                                 };
 
-                                var update = {$set: {group: 0, 'uid': report.uid}};
+                                let update = {$set: {group: 0, 'uid': report.uid}};
                                 if (!user || !user.reports) {
                                     var inc = {crashes: 1};
                                     if (!report.nonfatal) {

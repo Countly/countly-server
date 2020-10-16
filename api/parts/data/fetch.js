@@ -599,8 +599,8 @@ function getTopThree(params, collection, callback) {
                 total = total + items[k].value;
             }
             var totalPercent = 0;
-            for (let k = 0; k < items.length; k++) {
-                if (k !== (items.length - 1)) {
+            for (let k = items.length - 1; k >= 0; k--) {
+                if (k !== 0) {
                     items[k].percent = Math.floor(items[k].percent * 100 / total);
                     totalPercent += items[k].percent;
                 }
@@ -1018,6 +1018,8 @@ fetch.metricToCollection = function(metric) {
         return ["device_details", "os_versions", countlyDeviceDetails];
     case 'resolutions':
         return ["device_details", "resolutions", countlyDeviceDetails];
+    case 'device_type':
+        return ["device_details", "device_type", countlyDeviceDetails];
     case 'device_details':
         return ['device_details', null, countlyDeviceDetails];
     case 'devices':
@@ -1278,6 +1280,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
     */
     var shortcodesForMetrics = {
         "devices": "d",
+        "device_type": "dt",
         "app_versions": "av",
         "os": "p",
         "platforms": "p",
@@ -1376,11 +1379,10 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                     uniqDeviceIds: { $addToSet: '$uid'}
                                 }
                             },
-                            {$unwind: "$uniqDeviceIds"},
                             {
-                                $group: {
+                                $project: {
                                     _id: "$_id",
-                                    u: { $sum: 1 }
+                                    u: { $size: "$uniqDeviceIds" }
                                 }
                             }
                         ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
@@ -1399,11 +1401,11 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                     }
                                 }
                             }
-                            callback(appUsersDbResult);
+                            callback(appUsersDbResult || {});
                         });
                     }
                     else {
-                        callback(appUsersDbResult);
+                        callback(appUsersDbResult || {});
                     }
                 });
             }

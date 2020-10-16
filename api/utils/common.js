@@ -197,6 +197,7 @@ common.dbUserMap = {
     'total_session_duration': 'tsd',
     'session_count': 'sc',
     'device': 'd',
+    'device_type': 'dt',
     'carrier': 'c',
     'city': 'cty',
     'region': 'rgn',
@@ -2389,18 +2390,23 @@ common.mergeQuery = function(ob1, ob2) {
             else if (key === "$addToSet") {
                 for (let val in ob2[key]) {
                     if (typeof ob1[key][val] !== 'object') {
-                        ob1[key][val] = {'$each': [ob1[key][val]]};
+                        ob1[key][val] = {'$each': [ob1[key][val]]}; //create as object if it is single value
                     }
 
                     if (typeof ob2[key][val] === 'object' && ob2[key][val].$each) {
                         for (let p = 0; p < ob2[key][val].$each.length; p++) {
-                            ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                            if (ob1[key][val].$each.indexOf(ob2[key][val].$each[p]) === -1) {
+                                ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                            }
                         }
                     }
                     else {
-                        ob1[key][val].$each.push(ob2[key][val]);
+                        if (ob1[key][val].$each.indexOf(ob2[key][val]) === -1) {
+                            ob1[key][val].$each.push(ob2[key][val]);
+                        }
                     }
                 }
+
             }
             else if (key === "$push") {
                 for (let val in ob2[key]) {
@@ -2446,6 +2452,15 @@ common.mergeQuery = function(ob1, ob2) {
                 for (let val in ob2[key]) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.max(ob1[key][val], ob2[key][val]);
+                }
+            }
+        }
+        //try to fix colliding fields
+        if (ob1 && ob1.$set && ob1.$set.data && ob1.$inc) {
+            for (let key in ob1.$inc) {
+                if (key.startsWith("data.")) {
+                    ob1.$set.data[key.replace("data.", "")] = ob1.$inc[key];
+                    delete ob1.$inc[key];
                 }
             }
         }
