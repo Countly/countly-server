@@ -648,7 +648,10 @@ const moment = require('moment-timezone');
         apc.is_mobile = appData.type === "mobile";//check if app type is mobile or web
 
         //set the current time info based on the apps timezone
-        apc.dateNow = moment().tz(apc.appTimezone);//get current day and time
+        apc.dateNow = moment();//get current day and time
+        if (apc.appTimezone) {
+            apc.dateNow.tz(apc.appTimezone);
+        }
 
         apc.hour = apc.dateNow.hour();
         apc.minutes = apc.dateNow.minute();
