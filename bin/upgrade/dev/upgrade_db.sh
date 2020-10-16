@@ -23,6 +23,7 @@ then
     if [ "$1" != "combined" ]; then
         #upgrade plugins
         countly plugin upgrade star-rating
+        countly plugin upgrade consolidate
         countly plugin upgrade users
     fi
 
