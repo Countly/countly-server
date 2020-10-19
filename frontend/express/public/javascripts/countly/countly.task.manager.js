@@ -239,8 +239,7 @@
         var contentData = data;
         var ownerName = "ReportManager";
         var notifType = 4;//informational notification, check assistant.js for additional types
-
-        countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res) {
+		countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res) {
             if (!res) {
                 CountlyHelpers.notify({
                     title: title,
