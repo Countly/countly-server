@@ -12,7 +12,7 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
         return;
     }
     function upgrade(app, done) {
-        console.log("Removing .old property from " + app.name);
+        console.log("Removing .mt property from " + app.name);
         countlyDb.collection('app_users' + app._id).update({}, {$unset: {mt: ""}}, {multi: true}, done);
     }
     async.forEach(apps, upgrade, function() {

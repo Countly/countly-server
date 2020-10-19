@@ -35,7 +35,7 @@ const plugins = require('../../pluginManager'),
             const conditions = [];
 
             periods.forEach((p) => {
-                timeList[p] = moment().subtract(p, 'days').utc().unix() * 1000;
+                timeList[p] = moment().subtract(p, 'days').utc().unix();
                 let c = {
                     lac: {$lt: timeList[p]},
                 };

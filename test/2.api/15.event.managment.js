@@ -756,7 +756,7 @@ describe('Testing event settings', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    res.text.should.be.exactly("{}");
+                    res.text.should.be.exactly('{"limits":{"event_limit":500,"event_segmentation_limit":100,"event_segmentation_value_limit":1000}}');
                     done();
                 });
         });

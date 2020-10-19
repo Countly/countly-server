@@ -100,9 +100,9 @@ appsApi.getAppsDetails = function(params) {
         params.app.owner = common.db.ObjectID(params.app.owner + "");
     }
     common.db.collection('app_users' + params.qstring.app_id).find({}, {
-        ls: 1,
+        lac: 1,
         _id: 0
-    }).sort({ls: -1}).limit(1).toArray(function(err, last) {
+    }).sort({lac: -1}).limit(1).toArray(function(err, last) {
         common.db.collection('members').findOne({ _id: params.app.owner }, {
             full_name: 1,
             username: 1
@@ -139,7 +139,7 @@ appsApi.getAppsDetails = function(params) {
                                 owner_id: params.app.owner_id || "",
                                 created_at: params.app.created_at || 0,
                                 edited_at: params.app.edited_at || 0,
-                                last_data: (typeof last !== "undefined" && last.length) ? last[0].ls : 0,
+                                last_data: (typeof last !== "undefined" && last.length) ? last[0].lac : 0,
                             },
                             global_admin: global_admins || [],
                             admin: admins || [],
@@ -271,10 +271,7 @@ appsApi.createApp = async function(params) {
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({
-                "lac": 1,
-                "ls": 1
-            }, { background: true }, function() {});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
             common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
@@ -871,13 +868,13 @@ function deletePeriodAppData(appId, fromAppDelete, params, app) {
     Set ls (last session) timestamp of users who had their last session before oldestTimestampWanted to 1
     This prevents these users to be included as "total users" in the reports
     */
-    common.db.collection('app_users' + appId).update({ls: {$lte: oldestTimestampWanted}}, {$set: {ls: 1}});
+    common.db.collection('app_users' + appId).update({ls: {$lte: oldestTimestampWanted}}, {$set: {ls: 1}}, function() {});
 
     /*
     Remove all metric changes that happened before oldestTimestampWanted since we no longer need
     old metric changes
     */
-    common.db.collection('metric_changes' + appId).remove({ts: {$lte: oldestTimestampWanted}});
+    common.db.collection('metric_changes' + appId).remove({ts: {$lte: oldestTimestampWanted}}, function() {});
 
     plugins.dispatch("/i/apps/clear", {
         params: params,

@@ -142,6 +142,7 @@ const widgetPropertyPreprocessors = {
             return false;
         }
         var widget = validatedArgs.obj;
+        widget.type = "rating";
 
         validateUserForWrite(obParams, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
@@ -421,7 +422,7 @@ const widgetPropertyPreprocessors = {
         var skip = parseInt(params.qstring.iDisplayStart);
         var limit = parseInt(params.qstring.iDisplayLength);
         var colNames = ['rating', 'comment', 'email', 'ts'];
-        query.ts = countlyCommon.getTimestampRangeQuery(params, true);
+
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
         }
@@ -456,6 +457,7 @@ const widgetPropertyPreprocessors = {
 
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
+            query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
                 if (!err) {
@@ -531,7 +533,7 @@ const widgetPropertyPreprocessors = {
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
             var collectionName = 'feedback_widgets';
-            var query = {};
+            var query = {type: "rating"};
             if (params.qstring.is_active) {
                 query.is_active = params.qstring.is_active;
             }
@@ -681,6 +683,7 @@ const widgetPropertyPreprocessors = {
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('feedback_widgets').remove({
+            type: "rating",
             "app_id": appId
         });
         common.db.collection('feedback' + appId).drop(function() {});
@@ -727,6 +730,7 @@ const widgetPropertyPreprocessors = {
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('feedback_widgets').remove({
+            type: "rating",
             "app_id": appId
         });
         common.db.collection('feedback' + appId).drop(function() {

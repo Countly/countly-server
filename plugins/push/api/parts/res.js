@@ -214,7 +214,7 @@ class Connection extends res.Resource {
         this.startInterval();
         // log.d('token: %s', this.token ? this.token.current() : undefined);
         return this.connection.send(msgs, this.token ? this.token.current() : undefined).then((res1) => {
-            log.d('!!!!!!!!!!!!!!!!!!!!!!!send promise done with: ', res1);
+            log.d('send promise done');
             this.stopInterval();
             return res1;
         }, (err) => {
