@@ -45,7 +45,7 @@ class InternalEventTrigger {
                                 rule.effects.forEach(e => {
                                     results.forEach((u) => {
                                         this.pipeline({
-                                            params: {cohort, users: u},
+                                            params: {cohort, user: u},
                                             rule: rule,
                                             effect: e,
                                         });
