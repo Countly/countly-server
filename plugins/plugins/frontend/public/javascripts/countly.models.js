@@ -6,6 +6,7 @@
     var _configsData = {};
     var _userConfigsData = {};
     var _themeList = [];
+    var _graph = {};
 
     //Public Methods
     countlyPlugins.initialize = function() {
@@ -16,8 +17,81 @@
             },
             success: function(json) {
                 _pluginsData = json;
+                _graph = {};
+                var dependentsMap = _pluginsData.reduce(function(acc, val) {
+                    Object.keys(val.cly_dependencies).forEach(function(dep) {
+                        if (!Object.prototype.hasOwnProperty.call(acc, dep)) {
+                            acc[dep] = {};
+                        }
+                        acc[dep][val.code] = 1;
+                    });
+                    return acc;
+                }, {});
+                _pluginsData.forEach(function(plugin) {
+                    if (Object.prototype.hasOwnProperty.call(dependentsMap, plugin.code)) {
+                        plugin.dependents = dependentsMap[plugin.code];
+                    }
+                    else {
+                        plugin.dependents = {};
+                    }
+                    _graph[plugin.code] = {title: plugin.title, parents: plugin.cly_dependencies, children: plugin.dependents};
+                });
             }
         });
+    };
+
+    countlyPlugins.getTitle = function(code) {
+        if (!Object.prototype.hasOwnProperty.call(_graph, code)) {
+            return "";
+        }
+
+        return _graph[code].title;
+    };
+
+    countlyPlugins.getRelativePlugins = function(code, direction) {
+
+        if (!Object.prototype.hasOwnProperty.call(_graph, code)) {
+            return [];
+        }
+
+        direction = direction || "up";
+
+        if (Object.prototype.hasOwnProperty.call(_graph[code], direction)) {
+            return _graph[code][direction];
+        }
+
+        var queue = [code],
+            visited = {},
+            relativeType = "parents";
+        if (direction !== "up") {
+            relativeType = "children";
+        }
+        while (queue.length > 0) {
+            var current = queue.pop();
+            if (Object.prototype.hasOwnProperty.call(visited, current)) {
+                continue;
+            }
+
+            if (!_graph[current]) {
+                visited[current] = 1;
+                continue;
+            }
+
+            for (var item in _graph[current][relativeType]) {
+                queue.push(item);
+            }
+            visited[current] = 1;
+        }
+        var relatives = [];
+        for (var itemCode in visited) {
+            if (itemCode !== code) {
+                relatives.push(itemCode);
+            }
+        }
+
+        _graph[code][direction] = relatives;
+
+        return relatives;
     };
 
     countlyPlugins.toggle = function(plugins, callback) {

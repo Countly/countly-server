@@ -196,6 +196,7 @@ common.dbUserMap = {
     'total_session_duration': 'tsd',
     'session_count': 'sc',
     'device': 'd',
+    'device_type': 'dt',
     'carrier': 'c',
     'city': 'cty',
     'region': 'rgn',
@@ -1976,23 +1977,24 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set = {};
                 }
                 if (!update.$set.fac) {
-                    if (user.fs && user.fs * 1000 < params.time.mstimestamp) {
-                        update.$set.fac = user.fs * 1000;
+                    if (user.fs && user.fs < params.time.timestamp) {
+                        update.$set.fac = user.fs;
                     }
                     else {
-                        update.$set.fac = params.time.mstimestamp;
+                        update.$set.fac = params.time.timestamp;
                     }
                 }
+                update.$set.first_sync = Math.round(Date.now() / 1000);
             }
 
-            if (typeof user.lac === "undefined" || user.lac < params.time.mstimestamp) {
+            if (typeof user.lac === "undefined" || (user.lac + "").length === 13 || user.lac < params.time.timestamp) {
                 if (!update.$set) {
                     update.$set = {};
                 }
                 if (!update.$set.lac) {
-                    update.$set.lac = params.time.mstimestamp;
+                    update.$set.lac = params.time.timestamp;
                 }
-                update.$set.last_sync = Date.now();
+                update.$set.last_sync = Math.round(Date.now() / 1000);
             }
 
             if (!user.sdk) {
@@ -2428,6 +2430,15 @@ common.mergeQuery = function(ob1, ob2) {
                 for (let val in ob2[key]) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.max(ob1[key][val], ob2[key][val]);
+                }
+            }
+        }
+        //try to fix colliding fields
+        if (ob1 && ob1.$set && ob1.$set.data && ob1.$inc) {
+            for (let key in ob1.$inc) {
+                if (key.startsWith("data.")) {
+                    ob1.$set.data[key.replace("data.", "")] = ob1.$inc[key];
+                    delete ob1.$inc[key];
                 }
             }
         }
