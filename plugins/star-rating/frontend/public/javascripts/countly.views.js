@@ -1,4 +1,4 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
+/*global $, countlyReporting, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
@@ -2313,7 +2313,7 @@ app.route("/analytics/star-rating/:tab", 'star', function(tab) {
 
 app.addPageScript("/manage/reports", function() {
     countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
-})
+});
 
 app.addPageScript("/drill#", function() {
     var drillClone;

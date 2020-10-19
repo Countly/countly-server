@@ -8,9 +8,7 @@ var exported = {},
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
     path = require('path'),
-    fs = require('fs');
-var locale = require("../../../api/utils/localization.js");
-var reportUtils = require('../../reports/api/utils.js');
+    reportUtils = require('../../reports/api/utils.js');
 
 const widgetProperties = {
     popup_header_text: {
@@ -428,7 +426,7 @@ const widgetPropertyPreprocessors = {
         var skip = parseInt(params.qstring.iDisplayStart);
         var limit = parseInt(params.qstring.iDisplayLength);
         var colNames = ['rating', 'comment', 'email', 'ts'];
-        
+
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
         }
@@ -799,10 +797,7 @@ const widgetPropertyPreprocessors = {
             if (metric !== 'star-rating') {
                 return;
             }
-            const appID = app._id + "";
-            const collectionName = "events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appID).digest('hex');
-
-            const calCumulativeData =  function(result, periodArray) {
+            const calCumulativeData = function(result, periodArray) {
                 const cumulativeData = [
                     { count: 0, percent: 0 },
                     { count: 0, percent: 0 },
@@ -810,7 +805,7 @@ const widgetPropertyPreprocessors = {
                     { count: 0, percent: 0 },
                     { count: 0, percent: 0 },
                 ];
-                
+
                 for (var i = 0; i < periodArray.length; i++) {
                     var dateArray = periodArray[i].split('.');
                     var year = dateArray[0];
@@ -826,10 +821,14 @@ const widgetPropertyPreprocessors = {
                     }
                 }
                 return cumulativeData;
-            }
-            
+            };
+
+            /**
+             * fetch event data
+             * @return {object} - promise object
+             **/
             const fetchData = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     const starRatingCollection = 'events' + crypto.createHash('sha1').update('[CLY]_star_rating' + app._id).digest('hex');
                     fetch.fetchTimeObj(
                         starRatingCollection,
@@ -841,60 +840,61 @@ const widgetPropertyPreprocessors = {
                         },
                         false,
                         function(result) {
-                            const periodObj = countlyCommon.getPeriodObj({qstring:{period: report.period}, app: app});
+                            const periodObj = countlyCommon.getPeriodObj({qstring: {period: report.period}, app: app});
                             const {currentPeriodArr, previousPeriodArr} = periodObj;
                             const currentData = calCumulativeData(result, currentPeriodArr);
                             const previousData = calCumulativeData(result, previousPeriodArr);
                             let sum = 0;
                             currentData.forEach((item, index) => {
                                 sum += item.count;
-                                if (previousData[index].count > 0 ) {
-                                    item.change =  (((item.count / previousData[index].count) - 1)* 100).toFixed(2) + "%";
-                                } else {
+                                if (previousData[index].count > 0) {
+                                    item.change = (((item.count / previousData[index].count) - 1) * 100).toFixed(2) + "%";
+                                }
+                                else {
                                     item.change = 'NA';
                                 }
                             });
-                            currentData.forEach((item, index) => {
-                                if (sum > 0 ) {
-                                    item.percent =  (((item.count / sum))* 100).toFixed(2) + "%";
+                            currentData.forEach((item) => {
+                                if (sum > 0) {
+                                    item.percent = (((item.count / sum)) * 100).toFixed(2) + "%";
                                 }
                             });
                             resolve(currentData);
                         }
                     );
                 });
-            }
-            const  results = await fetchData();
+            };
+            const results = await fetchData();
             const coloums = {
-                        name: "star.rating",
-                        count: "star.number-of-ratings-cap",
-                        percent: "star.percentage-cap",
-                        change: "star.change",
-                    };
+                name: "star.rating",
+                count: "star.number-of-ratings-cap",
+                percent: "star.percentage-cap",
+                change: "star.change",
+            };
 
-                    const columsString = [];
-                    for (let ck in coloums) {
-                        const col = await reportUtils.getLocaleLangString(member.lang, coloums[ck]);
-                        columsString.push(col);
-                    }
+            const columsString = [];
+            for (let ck in coloums) {
+                const col = await reportUtils.getLocaleLangString(member.lang, coloums[ck]);
+                columsString.push(col);
+            }
 
-                    const tableData = [];
-                    const keyIndex = ['one', 'two', 'three', 'four', 'five'];
-                    for (let i = 0; i < results.length; i++) {
-                        const ratingTitle = await reportUtils.getLocaleLangString(member.lang, 'star.' + keyIndex[i] + '-star');
-                        const data = results[i];
-                        const row = [ratingTitle, data.count, data.percent, data.change];
-                        tableData.push(row);
-                    }
+            const tableData = [];
+            const keyIndex = ['one', 'two', 'three', 'four', 'five'];
+            for (let i = 0; i < results.length; i++) {
+                const ratingTitle = await reportUtils.getLocaleLangString(member.lang, 'star.' + keyIndex[i] + '-star');
+                const data = results[i];
+                const row = [ratingTitle, data.count, data.percent, data.change];
+                tableData.push(row);
+            }
 
-                    const result = {
-                        title: await reportUtils.getLocaleLangString(member.lang, "reports.star-rating"),
-                        colums: columsString,
-                        table: tableData,
-                    };
-                    const templateString = await reportUtils.readReportTemplate(path.resolve(__dirname, '../frontend/public/templates/report.html'));
-                    const reportString = ejs.render(templateString, {...result});
-                    ob.reportAPICallback(null, {html: reportString});
+            const result = {
+                title: await reportUtils.getLocaleLangString(member.lang, "reports.star-rating"),
+                colums: columsString,
+                table: tableData,
+            };
+            const templateString = await reportUtils.readReportTemplate(path.resolve(__dirname, '../frontend/public/templates/report.html'));
+            const reportString = ejs.render(templateString, {...result});
+            ob.reportAPICallback(null, {html: reportString});
             return;
         }
         catch (err) {

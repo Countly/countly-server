@@ -893,7 +893,7 @@ var metricProps = {
             for (let i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
                 tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousPeriodArr[i]);
                 tmp_y = clearCrashObject(tmp_y);
-                if ((tmp_y.cruf !== undefined) &&  (tmp_y.crunf !== undefined)) {
+                if ((tmp_y.cruf !== undefined) && (tmp_y.crunf !== undefined)) {
                     previousUnique += tmp_y.cruf + tmp_y.crunf;
                 }
                 previousTotal += tmp_y.crf + tmp_y.crnf;
