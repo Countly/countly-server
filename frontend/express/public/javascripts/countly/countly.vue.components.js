@@ -2018,22 +2018,32 @@
                         return [];
                     }
                 },
-                skin: { default: "main", type: String}
+                skin: { default: "main", type: String},
+                disabled: {type: Boolean, default: false}
             },
             computed: {
-                skinClass: function() {
+                topClasses: function() {
+                    var classes = [];
                     if (["main", "light"].indexOf(this.skin) > -1) {
-                        return "radio-" + this.skin + "-skin";
+                        classes.push("radio-" + this.skin + "-skin");
                     }
-                    return "radio-main-skin";
+                    else {
+                        classes.push("radio-main-skin");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
                 }
             },
             methods: {
                 setValue: function(e) {
-                    this.$emit('input', e);
+                    if (!this.disabled) {
+                        this.$emit('input', e);
+                    }
                 }
             },
-            template: '<div class="cly-vue-radio" v-bind:class="[skinClass]">\n' +
+            template: '<div class="cly-vue-radio" v-bind:class="topClasses">\n' +
                             '<div class="radio-wrapper">\n' +
                                 '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\n' +
                                     '<div class="box"></div>\n' +

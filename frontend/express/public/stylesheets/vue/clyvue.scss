@@ -621,6 +621,26 @@
                 background-color: transparent;
             }
         }
+
+        &.disabled {
+            .radio-button {
+                cursor: default;
+                &.selected {
+                    background-color: #f4f4f4;
+                    .box {
+                        background-color: #c6c6c6;
+                    }
+                }
+
+                .box {
+                    cursor: default;
+                }
+
+                .text {
+                    cursor: default;
+                }
+            }
+        }
     }
 
     // colorpicker
