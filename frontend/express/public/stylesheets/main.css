@@ -2642,7 +2642,7 @@ p.error_message_div {
     position: absolute;
     top: 41px;
     left: 2px;
-    width: 280px;
+    min-width: 280px;
     max-height: 145px;
     margin-left: 0px;
     background-color: #FFF;
