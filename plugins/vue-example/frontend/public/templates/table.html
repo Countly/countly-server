@@ -61,7 +61,7 @@
                             :notFilteredTotalRows="rTableData.notFilteredTotalRows"
                             mode="remote"
                             @remote-params-change="updateRemoteParams"
-                            @set-row-data="">
+                            @set-row-data="setRowData">
                             <template slot="table-row" slot-scope="scope">
                                 <span>
                                     {{scope.props.formattedRow[scope.props.column.field]}}

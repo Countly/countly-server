@@ -804,6 +804,9 @@
 
     //button
     .cly-vue-button {
+        + .cly-vue-button {
+            margin-left: 8px;
+        }
         min-height: 14px;
         cursor: pointer;
         float: left;
