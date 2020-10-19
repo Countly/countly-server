@@ -2889,9 +2889,20 @@
             persistKey: {
                 type: String,
                 default: null
+            },
+            striped: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
+            innerStyles: function() {
+                var styles = ['cly-vgt-table'];
+                if (this.striped) {
+                    styles.push("striped");
+                }
+                return styles.join(" ");
+            },
             notFilteredTotal: function() {
                 if (this.isRemote) {
                     return this.notFilteredTotalRows;
@@ -3029,6 +3040,9 @@
             onSortChange: function(params) {
                 this.updateParams({sort: params});
             },
+            onRowClick: function(params) {
+                this.$emit("row-click", params);
+            },
             onRowMouseover: function(params) {
                 this.$emit("row-mouseover", params);
             },
@@ -3075,10 +3089,11 @@
                             '@on-per-page-change="onPerPageChange"\n' +
                             '@on-row-mouseenter="onRowMouseover"\n' +
                             '@on-row-mouseleave="onRowMouseleave"\n' +
+                            '@on-row-click="onRowClick"\n' +
                             ':mode="internalMode"\n' +
                             ':totalRows="internalTotalRows"\n' +
                             ':isLoading.sync="isLoading"\n' +
-                            'styleClass="cly-vgt-table striped">\n' +
+                            ':styleClass="innerStyles">\n' +
                                 '<template slot="pagination-top" slot-scope="props">\n' +
                                     '<custom-controls\n' +
                                     '@infoChanged="onInfoChanged"\n' +

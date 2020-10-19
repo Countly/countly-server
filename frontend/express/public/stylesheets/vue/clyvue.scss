@@ -1766,6 +1766,19 @@
                 background-color: #f1f1f1;
             }
         }
+        tbody > tr.vgt-detail-row {
+            background-color: #f9f9f9;
+        }
+        &:not(.striped) > tbody > tr {
+            border-bottom: solid 1px #e1e1e1;
+            border-top: solid 1px #e1e1e1;
+            &.clickable:hover {
+                background-color: #f1f1f1;
+            }
+            &:last-child {
+                border-bottom: none;
+            }
+        }
     }
     // grey ramp
     $base-grey: #d0d0d0 !default;
@@ -1855,9 +1868,6 @@
         & tr {
             &.clickable {
                 cursor: pointer;
-                &:hover {
-                    background-color: $highlight-color;
-                }
             }
             .undo-row {
                 position: absolute;
