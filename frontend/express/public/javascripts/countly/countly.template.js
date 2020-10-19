@@ -1,4 +1,4 @@
-/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager'*/
+/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -776,7 +776,7 @@ var AppRouter = Backbone.Router.extend({
             newHtml += "<table>";
 
             if (data.length === 0) {
-                $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='graph-description' style='border:0'>" + jQuery.i18n.map["common.table.no-data"] + "</div>");
+                $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='graph-description' style='border:0'>" + jQuery.i18n.map["taskmanager.empty-warning"] + "</div>");
             }
             else {
                 $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='tasks'>" + newHtml + "</div>");

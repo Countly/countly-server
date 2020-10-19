@@ -261,6 +261,7 @@
             store.set("countly_task_monitor", monitor);
             if (!silent) {
                 $(".orange-side-notification-banner-wrapper").css("display", "block");
+				app.updateLongTaskViewsNofification();
                 /*CountlyHelpers.notify({
                     title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
                     message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
@@ -290,7 +291,6 @@
             var id = monitor[countlyCommon.ACTIVE_APP_ID][curTask];
             countlyTaskManager.check(id, function(res) {
                 if (res === false || res.result === "completed" || res.result === "errored") {
-                    $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
 
                     //get it from storage again, in case it has changed
                     monitor = store.get("countly_task_monitor") || {};
@@ -306,6 +306,7 @@
                     if (res && res.result === "completed") {
                         countlyTaskManager.fetchResult(id, function(res1) {
                             if (res1 && res1.manually_create === false) {
+                                $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                 app.haveUnreadReports = true;
                                 app.updateLongTaskViewsNofification();
                             }
@@ -335,6 +336,7 @@
                         countlyTaskManager.fetchResult(id, function(res1) {
                             if (res1 && res1.view) {
                                 if (res1 && res1.manually_create === false) {
+                                    $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                     app.haveUnreadReports = true;
                                     app.updateLongTaskViewsNofification();
                                 }

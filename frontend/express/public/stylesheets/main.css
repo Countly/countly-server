@@ -2513,6 +2513,13 @@ h4 + .mgmt-plugins-row {
 	background-color:#ffffff;
 }
 
+.manage-long-tasks-menu .tasks-wrapper .graph-description{
+	text-align: center;
+    vertical-align: middle;
+    line-height: 140px;
+	height:140px;
+}
+
 .manage-long-tasks-menu .tasks table{
 	width:100%;
 	
@@ -2558,6 +2565,7 @@ h4 + .mgmt-plugins-row {
     color: #636363;
     vertical-align: middle;
 	margin-left:6px;
+	margin-top:-3px;
 }
 
 .orange-side-notification-banner-wrapper{
