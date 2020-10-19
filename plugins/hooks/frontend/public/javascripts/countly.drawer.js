@@ -113,11 +113,8 @@ window.HooksDrawer = function(HookView) {
                 self.drawer._applyChangeTrigger(self.drawer);
                 self.checkDisabled();
                 console.log("add effect");
-                
             });
             $(".add-effect-button").trigger("click");
-            
-
             self.drawer._applyChangeTrigger();
             $("#save-widget").hide();
 
@@ -151,7 +148,6 @@ window.HooksDrawer = function(HookView) {
                     });
                 });
             });
-
         },
         getWidgetSettings: function(enabled) {
             var self = this;
@@ -196,7 +192,6 @@ window.HooksDrawer = function(HookView) {
         },
         loadWidgetData: function(data) {
             this.drawer.resetForm();
-            console.log(data,"!!");
             var self = this;
             $("#current_hook_id").text(data._id);
             $("#hook-name-input").val(data.name);

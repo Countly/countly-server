@@ -91,10 +91,6 @@ class Hooks {
      }
 }
 
-//hook rules CRUD apis
-class HookManager {
-    
-}
 
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;

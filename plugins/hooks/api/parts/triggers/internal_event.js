@@ -10,7 +10,6 @@ class InternalEventTrigger {
             this.pipeline = options.pipeline;
         }
         this.register();
-
     }
     syncRules(rules) {
         if (rules instanceof Array) {
@@ -32,20 +31,25 @@ class InternalEventTrigger {
                     if (rule.trigger.configuration.cohortID === cohort._id) {
                         common.db.collection('app_users' + cohort.app_id).find({"uid":{"$in": uids}}).toArray(
                             (uidErr, result) => {
-                                console.log(uidErr, result);
+                                console.log(uidErr, result, "!!ddd");
                                 if(uidErr) {
                                     console.log(uidErr);
                                     return;
                                 }
-                                try{
+                                try {
                                     utils.updateRuleTriggerTime(rule._id);
-                                }catch(err){console.log(err,"??#3");}
+                                }
+                                catch(err) {
+                                    console.log(err,"??#3");
+                                }
                                 rule.effects.forEach(e => {
-                                    this.pipeline({
-                                        params: {cohort, users: result},
-                                        rule: rule,
-                                        effect: e,
-                                    });
+                                    results.forEach((u) => {
+                                        this.pipeline({
+                                            params: {cohort, users: u},
+                                            rule: rule,
+                                            effect: e,
+                                        });
+                                    })
                                 });
                             }
                         )

@@ -22,7 +22,7 @@
         </div>
         <div  class="section">
             <div class="label" data-localize='hooks.for_applications'></div>
-            <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;" data-max=10>
+            <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;" data-max=1>
                 <div class="select-inner">
                     <div class="text-container">
                         <div class="text">
@@ -164,6 +164,15 @@
                     <div class="right combo"></div>
                 </div>
                 <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="label" data-localize='hooks.query-string-or-json-body' ></div>
+        <div style="display: flex;">
+            <div style="flex-grow:1; "> 
+                <textarea name="http-effect-params" rows="5"  cols="60"></textarea>
             </div>
         </div>
     </div>

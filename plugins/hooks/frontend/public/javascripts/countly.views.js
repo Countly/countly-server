@@ -148,7 +148,6 @@ window.HooksView = countlyView.extend({
             this.dtable.stickyTableHeaders();
             this.dtable.fnSort([[0, 'asc']]);
         } catch (e) {
-            console.log(e,"!!");
         };
         $(window).click(function() {
             $(".options-item").find(".edit").next(".edit-menu").fadeOut();
@@ -182,7 +181,6 @@ window.HooksView = countlyView.extend({
         $(".hook-switcher").off("click").on("click", function() {
             var pluginId = this.id.toString().replace(/^plugin-/, '');
             var newStatus = $(this).is(":checked");
-            console.log("!!");
             var list = hooksPlugin.getHookList();
             var hookRecord = _.filter(list, function(item) {
                 return item._id === pluginId;

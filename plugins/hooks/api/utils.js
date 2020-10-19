@@ -38,7 +38,7 @@ utils.parseStringTemplate = function(str, data) {
         props.forEach(prop => {
             obj = obj[prop] || undefined;
         });
-        if (obj) { return JSON.stringify(obj)};
+        if (obj) { return obj;}
         return null;
     });
 }
