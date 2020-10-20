@@ -1349,6 +1349,9 @@
                 font-family: "Ionicons";
                 content: "\f396";
             }
+            &:hover {
+                color: #6b6b6b;
+            }
         }
         .menu-body {
             padding: 10px 0;
@@ -2427,6 +2430,9 @@
             &:before {
                 font-family: "Ionicons";
                 content: "\f396";
+            }
+            &:hover {
+                color: #6b6b6b;
             }
         }
     }
