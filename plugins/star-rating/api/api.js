@@ -856,7 +856,7 @@ const widgetPropertyPreprocessors = {
                             });
                             currentData.forEach((item) => {
                                 if (sum > 0) {
-                                    item.percent = (((item.count / sum)) * 100).toFixed(2) + "%";
+                                    item.percent = ((item.count / sum) * 100).toFixed(2) + "%";
                                 }
                             });
                             resolve(currentData);
