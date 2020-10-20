@@ -107,3 +107,193 @@
 	</div>
 </div>
 </div>
+<div class="cly-drawer create-user-drawer">
+    <div class="title" style="position: fixed; width: 100%;top: 0px; box-sizing:border-box">
+        <span id="create-user-drawer-title" data-localize="management-users.create-new-user"></span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details create-user-drawer-detail" style="height:100%;overflow-y:auto">
+    	<div class="left-area">
+    		<label>Full name</label>
+	    	<input class="drawer-input" placeholder="Enter full name" autocomplete="off" type="text"/>
+	    	<label>User name</label>
+	    	<input class="drawer-input" placeholder="Enter user name" autocomplete="off" type="text"/>
+	    	<label>E-mail</label>
+	    	<input class="drawer-input" placeholder="Enter e-mail" autocomplete="new-password" type="email"/>
+	    	<label>User group</label>
+	    	<input class="drawer-input" autocomplete="new-password" type="text"/>
+	    </div>
+	    <div class="right-area">
+	    	<label>Profile Picture</label>
+	    	<div class="img-upload">
+	    		<div class="upload-message">Drag & drop or browse files to add picture</div>
+	    	</div>
+	    </div>
+	    <div style="clear:both"></div>
+	    <div class="access-area">
+	    	<div class="header">
+	    		<div class="section-title">Role</div>
+	    	</div>
+	    	<div class="content">
+	    		<div class="checkbox-container">
+                    <input id="is-global-admin" data-state="0" type="checkbox">
+                    <div class="is-global-admin-checkbox fa fa-square-o check-green"></div>
+                    <div class="checkbox-label">Global Administrator</div>
+                    <div style="clear:both"></div>
+                </div>
+	    	</div>
+	    </div>
+	    <div id="sub-header-1th">
+	    	<div class="drawer-header">Permission Settings</div>
+	    	<div class="drawer-information">User has access to 4 apps</div>
+	    	<div style="clear:both"></div>
+	    </div>
+	    <div class="admin-access access-area">
+	    	<div class="header">
+	    		<div class="section-title">Grant Admin Access to App(s)</div>
+	    		<div class="subtitle">User will have admin access to selected app(s)</div>
+	    	</div>
+	    	<div class="app-selector access-area">
+	    		<div class="selector-label">Apps</div>
+	    		<div class="selector-wrapper">
+                    <input type="text" id="admin-app-selector">
+                </div>
+                <div style="clear:both"></div>
+	    	</div>
+	    </div>
+	    <div class="user-access access-area">
+	    	<div class="header">
+	    		<div class="section-title">Grant User Access to App(s)</div>
+	    	</div>
+	    	<div class="app-selector access-area">
+	    		<div class="selector-label">Apps</div>
+	    		<div class="selector-wrapper">
+                    <input type="text" id="user-app-selector">
+                </div>
+                <div style="clear:both"></div>
+	    	</div>
+	    	<div class="permission-header">
+	    		<div class="table-description first-description">Feature</div>
+	    		<div class="table-description">
+	    			<div class="checkbox-container">
+	                    <input id="mark-all-create" data-state="0" type="checkbox">
+	                    <div class="mark-all-create-checkbox fa fa-square-o check-green"></div>
+	                    <div class="checkbox-label">Create</div>
+	                    <div style="clear:both"></div>
+	                </div>
+	    		</div>
+	    		<div class="table-description">
+	    			<div class="checkbox-container">
+	                    <input id="mark-all-read" data-state="0" type="checkbox">
+	                    <div class="mark-all-read-checkbox fa fa-square-o check-green"></div>
+	                    <div class="checkbox-label">Read</div>
+	                    <div style="clear:both"></div>
+	                </div>
+	    		</div>
+	    		<div class="table-description">
+	    			<div class="checkbox-container">
+	                    <input id="mark-all-update" data-state="0" type="checkbox">
+	                    <div class="mark-all-update-checkbox fa fa-square-o check-green"></div>
+	                    <div class="checkbox-label">Update</div>
+	                    <div style="clear:both"></div>
+	                </div>
+	    		</div>
+	    		<div class="table-description">
+	    			<div class="checkbox-container">
+	                    <input id="mark-all-delete" data-state="0" type="checkbox">
+	                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+	                    <div class="checkbox-label">Delete</div>
+	                    <div style="clear:both"></div>
+	                </div>
+	    		</div>
+	    	</div>
+	    	<div class="permission-table">
+	    		<div class="permission-item">
+	    			<div class="permission-column first-column">Core Features</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div style="clear:both"></div>
+	    		</div>
+	    		<div class="permission-item gray">
+	    			<div class="permission-column first-column">Events</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div style="clear:both"></div>
+	    		</div>
+	    		<div class="permission-item">
+	    			<div class="permission-column first-column">Applications</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div class="permission-column">
+	    				<div class="checkbox-container">
+		                    <input id="mark-all-delete" data-state="0" type="checkbox">
+		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
+		                </div>
+	    			</div>
+	    			<div style="clear:both"></div>
+	    		</div>
+	    	</div>
+	    </div>
+    	<div class="create-user-drawer-bottom"></div>
+    </div>
+</div>

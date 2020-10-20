@@ -3181,13 +3181,13 @@ window.ManageUsersView = countlyView.extend({
         featureTemplate += featureName + '</b></div>';
         featureTemplate += '<div class="feature-permissions">';
         var isChecked = typeof self.memberPermission.c[appId].allowed[featureName] !== "undefined" ? self.memberPermission.c[appId].allowed[featureName] : false;
-        featureTemplate += 'Create <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + '  id="c-' + appId + '-' + featureName + '">';
+        featureTemplate += 'Create <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + '  id="c-' + appId + '-' + featureName + '">'
         isChecked = typeof self.memberPermission.r[appId].allowed[featureName] !== "undefined" ? self.memberPermission.r[appId].allowed[featureName] : false;
-        featureTemplate += 'Read   <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="r-' + appId + '-' + featureName + '">';
+        featureTemplate += 'Read   <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="r-' + appId + '-' + featureName + '">'
         isChecked = typeof self.memberPermission.u[appId].allowed[featureName] !== "undefined" ? self.memberPermission.u[appId].allowed[featureName] : false;
-        featureTemplate += 'Update <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="u-' + appId + '-' + featureName + '">';
+        featureTemplate += 'Update <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="u-' + appId + '-' + featureName + '">'
         isChecked = typeof self.memberPermission.d[appId].allowed[featureName] !== "undefined" ? self.memberPermission.d[appId].allowed[featureName] : false;
-        featureTemplate += 'Delete <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="d-' + appId + '-' + featureName + '">';
+        featureTemplate += 'Delete <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="d-' + appId + '-' + featureName + '">'
         featureTemplate += '</div></div>';
         return featureTemplate;
     },
@@ -3201,8 +3201,8 @@ window.ManageUsersView = countlyView.extend({
                 r: {},
                 u: {},
                 d: {}
-            };
-            for (var countlyApp in countlyGlobal.apps) {
+            }
+            for (var countlyApp in countlyGlobal["apps"]) {
                 for (var accessType in this.memberPermission) {
                     this.memberPermission[accessType][countlyApp] = {};
                     this.memberPermission[accessType][countlyApp].all = false;
@@ -3213,7 +3213,6 @@ window.ManageUsersView = countlyView.extend({
                 }
             }
         }
-
     },
     initializeAppPermission: function(appObj) {
         appObj = {
@@ -3227,14 +3226,14 @@ window.ManageUsersView = countlyView.extend({
         // feature holder object for permission table
         var features = {
             "plugins": countlyGlobal.plugins,
-            "others": ["events", "core", "applications", "manage-users", "configurations"]
+            "others": ["core", "events", "applications", "manage-users", "configurations"]
         };
 
         // Prepare permission table for new member
-        for (var a in countlyGlobal.apps) {
+        for (var a in countlyGlobal["apps"]) {
             if (isFirstRender) {
                 // add apps as options to selector
-                $('#permission-app-selector').append('<option value="' + countlyGlobal.apps[a]._id + '">' + countlyGlobal.apps[a].name + '</option>');
+                $('#permission-app-selector').append('<option value="' + countlyGlobal["apps"][a]._id + '">' + countlyGlobal["apps"][a].name + '</option>');
                 // create permission sections for apps
                 $('.plugins-features').append('<div style="display:none" class="permission-wrapper plugins-wrapper-for-' + a + '"></div>');
                 $('.core-features').append('<div style="display:none" class="permission-wrapper core-wrapper-for-' + a + '"></div>');
@@ -3245,16 +3244,14 @@ window.ManageUsersView = countlyView.extend({
             $('.core-wrapper-for-' + a).empty();
 
             // render permission checkboxes for features/plugins
-            // eslint-disable-next-line
             features.plugins.forEach(function(feature) {
-                $('.plugins-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal.apps[a]._id));
+                $('.plugins-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
             });
-            // render permission checkboxes for features/core
-            // eslint-disable-next-line
+            // render permission checkboxes for features/others
             features.others.forEach(function(feature) {
-                $('.core-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal.apps[a]._id));
+                $('.core-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
             });
-        }
+        };
 
         if (isFirstRender) {
             // render clear permissions button
@@ -3263,7 +3260,7 @@ window.ManageUsersView = countlyView.extend({
         }
     },
     updatePermission: function(type, app, scope, value) {
-        var cores = { "core": true, "applications": true, "manage-users": true, "configurations": true };
+        var cores = {"core":true, "applications": true, "manage-users": true, "configurations": true};
         if (value) {
             if (typeof this.memberPermission[type][app] === "undefined") {
                 this.memberPermission[type][app] = this.initializeAppPermission(this.memberPermission[type][app]);
@@ -3291,7 +3288,15 @@ window.ManageUsersView = countlyView.extend({
         $('.plugins-wrapper-for-' + app).show();
     },
     template: null,
-    initialize: function() {},
+    appOptions: [],
+    initialize: function() {
+        for (var app in countlyGlobal.apps) {
+            this.appOptions.push({
+                key: countlyGlobal.apps[app].name,
+                val: app
+            })
+        }
+    },
     beforeRender: function() {
         if (this.template) {
             return true;
@@ -3410,7 +3415,7 @@ window.ManageUsersView = countlyView.extend({
         }));
         self.dtable.fnSort([ [0, 'asc'] ]);
         self.dtable.stickyTableHeaders();
-
+        
         if (countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
             CountlyHelpers.expandRows(self.dtable, self.editUser, self);
         }
@@ -3495,13 +3500,12 @@ window.ManageUsersView = countlyView.extend({
             Handle create new user button
         */
         $("#add-user-mgmt").on("click", function() {
-
+            $('.create-user-drawer').addClass("open");
+            /*
             // render permission table
             self.renderPermissionsTable(true);
             // make visible first option of app selector
-            for (var firstApp in countlyGlobal.apps) {
-                break;
-            }
+            for (var firstApp in countlyGlobal["apps"]) break;
             self.showPermissionSection(firstApp);
 
             CountlyHelpers.closeRows(self.dtable);
@@ -3511,8 +3515,12 @@ window.ManageUsersView = countlyView.extend({
             $(".create-user-row").slideDown();
             self.initTable();
             $(this).hide();
-
             $(self).trigger('user-mgmt.new-user-button-clicked');
+            */
+        });
+
+        $(".cly-drawer").find(".close").off("click").on("click", function() {
+            $(this).parents(".cly-drawer").removeClass("open");
         });
 
         $("#listof-apps .app").on('click', function() {
@@ -3726,14 +3734,14 @@ window.ManageUsersView = countlyView.extend({
         */
         $('body').on("click", ".permission-checkbox", function() {
             // parse permission data from dom
-            var permissionData = $(this).attr('id').split("-");
+            var permissionData = $(this).attr('id').split("-"); 
 
             if (permissionData[0] !== "r") {
                 // call permission modifier for read too
                 self.updatePermission("r", permissionData[1], permissionData[2], $(this).is(":checked"));
                 // update dom for read permission
                 $('#r-' + permissionData[1] + '-' + permissionData[2]).attr('checked', 'checked');
-            }
+            };
 
             // call permission modifier
             self.updatePermission(permissionData[0], permissionData[1], permissionData[2], $(this).is(":checked"));
@@ -3744,14 +3752,143 @@ window.ManageUsersView = countlyView.extend({
         });
 
         $('body').on("click", "#clear-stored-permissions", function() {
-            store.remove('permission_model');
-            self.initializeMemberPermission();
-            self.renderPermissionsTable(false);
+            var accepted = confirm("You will lost all marked permissions below. Are you sure to continue?")
+            if (accepted) {
+                store.remove('permission_model');
+                self.initializeMemberPermission();
+                self.renderPermissionsTable(false);
+            }
         });
-
         if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
             $('#add-user-mgmt').hide();
         }
+
+        // jQuery selectize handler for projection input
+        $('#user-app-selector').selectize({
+            persist: true,
+            maxItems: null,
+            valueField: 'val',
+            labelField: 'key',
+            searchField: ['key'],
+            options: this.appOptions,
+            render: {
+                item: function(item) {
+                    return '<div>' + item.key + '</div>';
+                },
+                option: function(item) {
+                    var label = item.key;
+                    return '<div>' + '<span class="label">' + label + '</span>' + '</div>';
+                }
+            },
+            createFilter: function() {
+                return true;
+            },
+            create: function(input) {
+                return {
+                    "key": input
+                };
+            },
+            onItemRemove: function(input) {
+                [].splice(index, 1);
+            }
+        });
+
+        // jQuery selectize handler for projection input
+        $('#admin-app-selector').selectize({
+            persist: true,
+            maxItems: null,
+            valueField: 'val',
+            labelField: 'key',
+            searchField: ['key'],
+            options: this.appOptions,
+            render: {
+                item: function(item) {
+                    return '<div>' + item.key + '</div>';
+                },
+                option: function(item) {
+                    var label = item.key;
+                    return '<div>' + '<span class="label">' + label + '</span>' + '</div>';
+                }
+            },
+            createFilter: function() {
+                return true;
+            },
+            create: function(input) {
+                return {
+                    "key": input
+                };
+            },
+            onItemRemove: function(input) {
+                [].splice(index, 1);
+            }
+        });
+
+        $('#feedback-page-selector').val("furkan,basaran");
+
+        $('#is-global-admin').on('click', function() {
+            if ($('#is-global-admin').data('state') === 1) {
+                $('.is-global-admin-checkbox').removeClass('fa-check-square');
+                $('.is-global-admin-checkbox').addClass('fa-square-o');
+                $('#is-global-admin').data('state', 0);
+            }
+            else {
+                $('.is-global-admin-checkbox').addClass('fa-check-square');
+                $('.is-global-admin-checkbox').removeClass('fa-square-o');
+                $('#is-global-admin').data('state', 1);
+            }
+        });
+
+        $('#mark-all-create').on('click', function() {
+            if ($('#mark-all-create').data('state') === 1) {
+                $('.mark-all-create-checkbox').removeClass('fa-check-square');
+                $('.mark-all-create-checkbox').addClass('fa-square-o');
+                $('#mark-all-create').data('state', 0);
+            }
+            else {
+                $('.mark-all-create-checkbox').addClass('fa-check-square');
+                $('.mark-all-create-checkbox').removeClass('fa-square-o');
+                $('#mark-all-create').data('state', 1);
+            }
+        });
+
+        $('#mark-all-read').on('click', function() {
+            if ($('#mark-all-read').data('state') === 1) {
+                $('.mark-all-read-checkbox').removeClass('fa-check-square');
+                $('.mark-all-read-checkbox').addClass('fa-square-o');
+                $('#mark-all-read').data('state', 0);
+            }
+            else {
+                $('.mark-all-read-checkbox').addClass('fa-check-square');
+                $('.mark-all-read-checkbox').removeClass('fa-square-o');
+                $('#mark-all-read').data('state', 1);
+            }
+        });
+
+        $('#mark-all-update').on('click', function() {
+            if ($('#mark-all-update').data('state') === 1) {
+                $('.mark-all-update-checkbox').removeClass('fa-check-square');
+                $('.mark-all-update-checkbox').addClass('fa-square-o');
+                $('#mark-all-update').data('state', 0);
+            }
+            else {
+                $('.mark-all-update-checkbox').addClass('fa-check-square');
+                $('.mark-all-update-checkbox').removeClass('fa-square-o');
+                $('#mark-all-update').data('state', 1);
+            }
+        });
+
+        $('#mark-all-delete').on('click', function() {
+            if ($('#mark-all-delete').data('state') === 1) {
+                $('.mark-all-delete-checkbox').removeClass('fa-check-square');
+                $('.mark-all-delete-checkbox').addClass('fa-square-o');
+                $('#mark-all-delete').data('state', 0);
+            }
+            else {
+                $('.mark-all-delete-checkbox').addClass('fa-check-square');
+                $('.mark-all-delete-checkbox').removeClass('fa-square-o');
+                $('#mark-all-delete').data('state', 1);
+            }
+        });
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
@@ -3775,7 +3912,7 @@ window.ManageUsersView = countlyView.extend({
         $(this).off('user-mgmt.render').on('user-mgmt.render', function() {
             app.activeView.render();
         });
-
+        
         /* CRUD CONTEXT LOGIC - START */
         // init permission model object with default values
         self.initializeMemberPermission();
