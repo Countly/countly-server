@@ -264,7 +264,7 @@ var metricProps = {
                                     events = events || {};
                                     events.list = events.list || [];
                                     if (report.selectedEvents) {
-                                        events.list = events.list.filter((e)=>{
+                                        events.list = events.list.filter((e) => {
                                             return report.selectedEvents.indexOf(`${app._id}***${e}`) > -1;
                                         });
                                     }
@@ -348,7 +348,7 @@ var metricProps = {
                         var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
 
                         report.date = startDate.getDate() + " " + monthName;
-                        report.period = "hour";
+                        report.period = "yesterday";
                     }
                     else if (report.frequency === "weekly") {
                         endDate = new Date();
@@ -508,7 +508,7 @@ var metricProps = {
                                         props["reports.get-help"] = localize.format(props["reports.get-help"]);
                                         const metricPropsString = {};
                                         for (let k in metricProps) {
-                                            metricPropsString[k] = metricProps[k].map((item) =>{
+                                            metricPropsString[k] = metricProps[k].map((item) => {
                                                 return props["reports.metric-" + item];
                                             });
                                         }
@@ -886,8 +886,6 @@ var metricProps = {
                 currentNonfatal += tmp_x.crnf;
                 currentFatal += tmp_x.crf;
                 currentResolved += tmp_x.crru;
-                console.log(tmp_x.cruf, tmp_x.crunf, "?uuuu");
-                console.log(tmp_x.crf, tmp_x.crnf, "?aaaa");
             }
 
             for (let i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
