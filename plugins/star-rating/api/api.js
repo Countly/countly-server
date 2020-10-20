@@ -790,6 +790,90 @@ const widgetPropertyPreprocessors = {
         });
     });
 
+    plugins.register("/export", async function({plugin, selectedIds}) {
+        if (plugin === "feedback_widgets") {
+            const data = await exportPlugin(selectedIds);
+            return data;
+        }
+    });
+
+    plugins.register("/import", async function({params, importData}) {
+        if (importData.name === 'feedback_widgets') {
+            await importPopulator(params, importData);
+            return true;
+        }
+        return false;
+    });
+
+    plugins.register("/import/validate", function({params, pluginData, pluginName}) {
+        if (pluginName === 'feedback_widgets') {
+            return validateImport(params, pluginData);
+        }
+        else {
+            return false;
+        }
+    });
+
+    /**
+     * 
+     * @param {String[]} ids ids of documents to be exported
+     * @param {String} app_id app Id
+     */
+    async function exportPlugin(ids) {
+        const data = await common.db._native.collection("feedback_widgets").find({_id: {$in: ids.map((id) => common.db.ObjectID(id))}}).toArray();
+        data.forEach(((widget) => {
+            widget.app_id = "APP_ID";
+        }));
+        const dependencies = [];
+
+        return {
+            name: 'feedback_widgets',
+            data: data,
+            dependencies: dependencies
+        };
+    }
+
+    /**
+     * Validation before import
+     * 
+     * @param {Object} params params object 
+     * @param {Object} widget feedback widget Object
+     * @returns {Promise<Object>} validation result
+    */
+    function validateImport(params, widget) {
+        return {
+            code: 200,
+            message: "Success",
+            data: {
+                newId: common.db.ObjectID(),
+                oldId: widget._id
+            }
+        };
+    }
+
+    /**
+     * Insert Feedback Objects
+     * 
+     * @param {Object} params params object
+     * @param {Object} importData iomport data Object - MUTABLE
+     * @returns {Promise} promise array of all inserts
+     */
+    function importPopulator(params, importData) {
+        const widget = importData.data;
+        return new Promise((resolve, reject) => {
+            widget._id = common.db.ObjectID(widget._id);
+            common.db.collection('feedback_widgets').insert(widget, function(err) {
+                if (!err) {
+                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                    return resolve();
+                }
+                else {
+                    return reject();
+                }
+            });
+        });
+    }
+
     plugins.register("/email/report", async function(ob) {
         const {params, metric} = ob;
         const {report, app, member} = params;

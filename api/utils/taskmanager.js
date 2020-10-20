@@ -33,6 +33,7 @@ const log = require('./log.js')('core:taskmanager');
 * @param {boolean} options.global - the task is private or global visit. 
 * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
 * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
+* @param {boolean} options.forceCreateTask - force createTask with id supplied ( for import)
 * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
 * @example
 * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
@@ -100,6 +101,19 @@ taskmanager.longtask = function(options) {
                 options.start = start;
                 taskmanager.createTask(options);
             }
+        }
+        // force createTask with id supplied ( for import)
+        if (options.id && options.forceCreateTask) {
+            if (options.params && options.params.member && options.params.member._id) {
+                options.creator = options.params.member._id + "";
+            }
+            if (!options.app_id) {
+                if (options.params) {
+                    options.app_id = (options.params.app_id || options.params.app._id || options.params.qstring.app_id) + "";
+                }
+            }
+            options.start = start;
+            taskmanager.createTask(options);
         }
         options.outputData(null, {task_id: options.id});
     }

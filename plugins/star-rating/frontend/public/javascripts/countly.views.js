@@ -2373,3 +2373,25 @@ $(document).ready(function() {
         priority: 20
     });
 });
+
+app.addPageScript("/manage/export/export-features", function() {
+    $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
+        var widgets = starRatingPlugin.getFeedbackWidgetsData();
+        var widgetsList = [];
+        widgets.forEach(function(widget) {
+            widgetsList.push({
+                id: widget._id,
+                name: widget.popup_header_text
+            });
+        });
+
+        var selectItem = {
+            id: "feedback_widgets",
+            name: "Feedback Widgets",
+            children: widgetsList
+        };
+        if (widgetsList.length) {
+            app.exportView.addSelectTable(selectItem);
+        }
+    });
+});
