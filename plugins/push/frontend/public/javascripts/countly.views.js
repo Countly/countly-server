@@ -176,7 +176,7 @@ app.addPageScript('/drill#', function() {
         return;
     }
     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
-        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1) {
+        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
             var content =
             '<div class="item" id="action-create-message">' +
                 '<div class="item-icon">' +
