@@ -1,4 +1,4 @@
-/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T*/
+/* global Backbone, Handlebars, countlyEvent, countlyAuth, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -1266,9 +1266,11 @@ var AppRouter = Backbone.Router.extend({
             self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
             self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
             self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
-            self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
-            self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
-            if (countlyGlobal.member.global_admin) {
+            if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'core')) {
+                self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+                self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
+            }
+            if (countlyGlobal.member.global_admin || (countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), 'core') && countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), 'core'))) {
                 self.addSubMenu("events", {code: "manage-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
             }
             self.addMenu("utilities", {
@@ -1284,10 +1286,10 @@ var AppRouter = Backbone.Router.extend({
 
             self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
 
-            if (countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) {
+            if ((countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) || countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'manage-apps')) {
                 self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
             }
-            if (countlyGlobal.member.global_admin) {
+            if (countlyGlobal.member.global_admin || countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'manage-users')) {
                 self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
             }
 

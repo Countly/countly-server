@@ -4,7 +4,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    {dbUserHasAccessToCollection, dbLoadEventsData} = require('../../../api/utils/rights.js'),
+    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser } = require('../../../api/utils/rights.js'),
     exported = {};
 
 (function() {
@@ -254,8 +254,7 @@ var common = require('../../../api/utils/common.js'),
             });
         }
 
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function() {
+        validateUser(params, function() {
             // conditions
             var isContainDb = params.qstring.dbs || params.qstring.db;
             var isContainCollection = params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1;

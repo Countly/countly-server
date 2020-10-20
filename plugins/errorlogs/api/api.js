@@ -4,7 +4,11 @@ var plugin = {},
     path = require("path"),
     async = require('async'),
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    {validateRead, validateCreate, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
+
+
+const FEATURE_NAME = 'manage-errorlogs';
 
 /**
  * Read from end
@@ -52,7 +56,7 @@ const readFromEnd = (file, size) => {
         var validate = ob.validateUserForGlobalAdmin; //user validation
         var bytes = obParams.qstring.bytes ? parseInt(obParams.qstring.bytes) : 0;
 
-        validate(obParams, function(params) {
+        validateRead(obParams, FEATURE_NAME, function(params) {
             if (params.qstring.log && logs[params.qstring.log]) {
                 if (params.qstring.download) {
                     if (bytes === 0) {
@@ -138,7 +142,7 @@ const readFromEnd = (file, size) => {
         var obParams = ob.params; //request params
         var validate = ob.validateUserForGlobalAdmin; //user validation
 
-        validate(obParams, function(params) {
+        validateDelete(obParams, FEATURE_NAME, function(params) {
             if (params.qstring.log && logs[params.qstring.log]) {
                 plugins.dispatch("/systemlogs", {params: params, action: "errologs_clear", data: {log: params.qstring.log}});
                 fs.truncate(dir + "/" + logs[params.qstring.log], 0, function(err) {

@@ -1,5 +1,6 @@
 /*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $, T*/
 window.DataMigrationView = countlyView.extend({
+    featureName: 'data_migration',
     //need to provide at least empty initialize function
     //to prevent using default template
     initialize: function() {},
@@ -241,6 +242,18 @@ window.DataMigrationView = countlyView.extend({
                 self.import_drawer.open();
                 self.resizeFileUploadBox();
             });
+
+            if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+                $('#show_data_export_form').hide();
+            }
+
+            if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+                $('#show_data_import_form').hide();
+            }
+
+            if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName) && !countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+                $('#import-export-button').hide();
+            }
         }
         $("#tabs").tabs();
 
@@ -838,7 +851,7 @@ app.DataMigrationView = new DataMigrationView();
 
 
 
-if (countlyGlobal.member.global_admin) {
+if (countlyGlobal.member.global_admin || countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.DataMigrationView.featureName)) {
     //register route
     app.route('/manage/data-migration', 'datamigration', function() {
         this.renderWhenReady(this.DataMigrationView);

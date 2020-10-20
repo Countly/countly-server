@@ -2,7 +2,11 @@ var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     log = common.log('datamigration:api'),
     plugins = require('../../pluginManager.js'),
-    migration_helper = require("./data_migration_helper.js");
+    migration_helper = require("./data_migration_helper.js"),
+    {validateRead, validateDelete, validateUpdate, validateCreate} = require('../../../api/utils/rights.js');
+
+
+const FEATURE_NAME = 'data_migration';
 const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
@@ -186,7 +190,7 @@ function trim_ending_slashes(address) {
             }
         }
 
-        validate(params, function() {
+        validateCreate(params, FEATURE_NAME, function() {
             if (params.qstring.test_con) {
                 common.returnMessage(params, 200, "valid");
                 return;
@@ -254,7 +258,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateDelete(params, FEATURE_NAME, function() {
             delete_all_exports()
                 .then(function() {
                     if (fs.existsSync(path.resolve(__dirname, './../import'))) {
@@ -285,7 +289,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateDelete(params, FEATURE_NAME, function() {
             if (params.qstring.exportid) {
                 common.db.collection("data_migrations").findOne({_id: params.qstring.exportid}, function(err, res) {
                     if (err) {
@@ -344,7 +348,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateDelete(params, FEATURE_NAME, function() {
             if (params.qstring.exportid && params.qstring.exportid !== '') {
                 var data_migrator = new migration_helper(common.db);
                 data_migrator.clean_up_data('import', params.qstring.exportid, true).then(function() {
@@ -389,7 +393,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateUpdate(params, FEATURE_NAME, function() {
             if (params.qstring.exportid) {
                 common.db.collection("data_migrations").findOne({_id: params.qstring.exportid}, function(err, res) {
                     if (err) {
@@ -445,7 +449,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getmyexports Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             common.db.collection("data_migrations").find().sort({ts: -1}).toArray(function(err, res) {
                 if (err) {
                     common.returnMessage(ob.params, 404, err.message);
@@ -503,7 +507,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getmyimports Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             var ret_arr = {};
             var have_any = false;
             var myfiles = "";
@@ -586,7 +590,7 @@ function trim_ending_slashes(address) {
             }
         }
 
-        validate(params, function() {
+        validateCreate(params, FEATURE_NAME, function() {
             var ttl, multi;
             //passed in minutes
             if (params.qstring.ttl) {
@@ -637,7 +641,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getstatus Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME function() {
             if (typeof params.qstring.exportid !== "undefined") {
                 common.db.collection("data_migrations").findOne({_id: params.qstring.exportid}, function(err, res) {
                     if (err) {
@@ -674,7 +678,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getstatus Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             var fileSizeLimit = 0;
 
             cp.exec("nginx -t", (error, stdout, stderr) => {
@@ -747,7 +751,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateCreate(params, FEATURE_NAME, function() {
             var dir = __dirname + '/../export';
             if (!fs.existsSync(dir)) {
                 try {
@@ -835,7 +839,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             if (!params.qstring.server_token || params.qstring.server_token === '') {
                 common.returnMessage(params, 404, 'Missing parameter "server_token"');
                 return true;
@@ -911,7 +915,7 @@ function trim_ending_slashes(address) {
                 log.e('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validate(params, function() {
+        validateCreate(params, FEATURE_NAME, function() {
 
             if (params.qstring.exportid) {
                 if (!params.qstring.server_token || params.qstring.server_token === '') {

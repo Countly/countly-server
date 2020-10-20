@@ -1,5 +1,6 @@
-/*global $, countlyTotalUsers, countlyLanguage, jQuery, app, LanguageView, countlyGlobalLang, Handlebars, countlyView, addDrill, countlyCommon, CountlyHelpers*/
+/*global $, countlyTotalUsers, countlyAuth, countlyLanguage, jQuery, app, LanguageView, countlyGlobalLang, Handlebars, countlyView, addDrill, countlyCommon, CountlyHelpers*/
 window.LanguageView = countlyView.extend({
+    featureName: 'locale',
     beforeRender: function() {
         return $.when(countlyLanguage.initialize(), countlyTotalUsers.initialize("languages")).then(function() {});
     },
@@ -94,5 +95,7 @@ $(document).ready(function() {
     Handlebars.registerHelper('languageTitle', function(context) {
         return countlyGlobalLang.languages[context];
     });
-    app.addSubMenu("analytics", {code: "analytics-languages", url: "#/analytics/languages", text: "sidebar.analytics.languages", priority: 80});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.languageView.featureName)) {
+        app.addSubMenu("analytics", {code: "analytics-languages", url: "#/analytics/languages", text: "sidebar.analytics.languages", priority: 80});
+    }
 });

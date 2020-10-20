@@ -2,6 +2,7 @@
     countlyGlobal,
     countlyView,
     countlyCommon,
+    countlyAuth,
     jQuery,
     app,
     _,
@@ -14,6 +15,7 @@
     $,
  */
 window.slippingView = countlyView.extend({
+    featureName: 'slipping_away_users',
     beforeRender: function() {
         var query = this._query || {};
         return $.when(countlySlippingPlugin.initialize(query)).then(function() {});
@@ -125,6 +127,10 @@ window.slippingView = countlyView.extend({
         else {
             countlyCommon.drawGraph(slippingChartData.chartDP, "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(this.dtable, slippingData);
+        }
+
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'drill')) {
+            $('#view-filter').hide();
         }
     },
     drillInitProcess: function(self) {
@@ -280,10 +286,13 @@ app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
     this.renderWhenReady(this.slippingView);
 });
 $(document).ready(function() {
-    if (typeof extendViewWithFilter === "function") {
-        extendViewWithFilter(app.slippingView);
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.slippingView.featureName)) {
+        if (typeof extendViewWithFilter === "function") {
+            extendViewWithFilter(app.slippingView);
+        }
+        app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
     }
-    app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
+    
     if (app.configurationsView) {
         app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
         app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");

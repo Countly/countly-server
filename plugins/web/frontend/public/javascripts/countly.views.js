@@ -1,13 +1,20 @@
-/*global countlyAnalyticsAPI, CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyTotalUsers, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
+/*global countlyAnalyticsAPI, countlyAuth, CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyTotalUsers, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
 
 window.WebDashboardView = countlyView.extend({
+    featureName: 'web',
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
     initialize: function() {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function(isRefresh) {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         this.maps = {
             "map-list-sessions": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.sessions"], type: 'number', metric: "t"},
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
@@ -18,7 +25,7 @@ window.WebDashboardView = countlyView.extend({
         return $.when.apply($, defs).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal.config.use_google) {
+        if (countlyGlobal.config.use_google && !countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
@@ -86,6 +93,9 @@ window.WebDashboardView = countlyView.extend({
         });
     },
     renderCommon: function(isRefresh, isDateChange) {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         var sessionData = countlySession.getSessionData(),
             locationData = countlyLocation.getLocationData({maxCountries: 7});
         this.locationData = locationData;
@@ -305,6 +315,9 @@ window.WebDashboardView = countlyView.extend({
         this.refresh(true);
     },
     refresh: function(isFromIdle) {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         var self = this;
         $.when(this.beforeRender(true)).then(function() {
             if (app.activeView !== self) {
@@ -503,16 +516,18 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 });
 
 $(document).ready(function() {
-    app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'web')) {
+        app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+    }
 
     app.addAppSwitchCallback(function(appId) {
         if (countlyGlobal.apps[appId].type === "web") {

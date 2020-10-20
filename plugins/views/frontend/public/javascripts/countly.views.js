@@ -1,6 +1,7 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyAuth, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
+    featureName: 'views',
     selectedMetric: "u",
     haveActionColumn: false,
     selectedView: null,
@@ -1020,6 +1021,9 @@ app.route("/analytics/views/action-map/*view", 'views', function(view) {
 });
 
 app.addPageScript("/drill#", function() {
+    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), app.viewsView.featureName) || !countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), 'drill')) {
+        return;
+    }
     var drillClone;
     var self = app.drillView;
     var record_views = countlyGlobal.record_views;
@@ -1069,6 +1073,10 @@ app.addPageScript("/drill#", function() {
 });
 
 app.addPageScript("/custom#", function() {
+    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), app.viewsView.featureName) || !countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), 'dashboards')) {
+        return;
+    }
+
     addWidgetType();
     addSettingsSection();
     /**
@@ -1131,8 +1139,11 @@ $(document).ready(function() {
             countlyViews.loadList(appId);
         }
     });
-    app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
-    app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
+
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'))) {
+        app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
+        app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
+    }    
 
     //check if configuration view exists
     if (app.configurationsView) {

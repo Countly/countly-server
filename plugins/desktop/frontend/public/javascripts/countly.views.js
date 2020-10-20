@@ -1,23 +1,32 @@
-/*global $, countlyAnalyticsAPI, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyTotalUsers, countlySession, countlyCommon, app */
+/*global $, countlyAnalyticsAPI, countlyAuth, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyTotalUsers, countlySession, countlyCommon, app */
 window.DesktopDashboardView = countlyView.extend({
+    featureName: 'desktop',
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
     initialize: function() {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function() {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         this.maps = {
             "map-list-sessions": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.sessions"], type: 'number', metric: "t"},
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        var defs = [countlyAnalyticsAPI.initialize(["platforms", "resolutions", "langs"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])];
+        //do not wait on country initialization
+        countlyTotalUsers.initialize("countries");
+        var defs = [countlyAnalyticsAPI.initialize(["platforms", "resolutions", "langs"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])];
 
         return $.when.apply($, defs).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal.config.use_google) {
+        if (countlyGlobal.config.use_google && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
@@ -85,6 +94,9 @@ window.DesktopDashboardView = countlyView.extend({
         });
     },
     renderCommon: function(isRefresh, isDateChange) {
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         var sessionData = countlySession.getSessionData(),
             locationData = countlyLocation.getLocationData({maxCountries: 10});
 
@@ -187,7 +199,9 @@ window.DesktopDashboardView = countlyView.extend({
         this.refresh(true);
     },
     refresh: function(isFromIdle) {
-
+        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            return;
+        }
         var self = this;
         $.when(this.beforeRender()).then(function() {
             if (app.activeView !== self) {
@@ -315,15 +329,17 @@ window.DesktopDashboardView = countlyView.extend({
 app.addAppType("desktop", DesktopDashboardView);
 
 $(document).ready(function() {
-    app.addSubMenuForType("desktop", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
-    app.addSubMenuForType("desktop", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
-    app.addSubMenuForType("desktop", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
-    app.addSubMenuForType("desktop", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
-    app.addSubMenuForType("desktop", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
-    app.addSubMenuForType("desktop", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
-    app.addSubMenuForType("desktop", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
+    if (countlyAuth.validateRead(countlyGlobal.member), store.get('countly_active_app'), 'desktop') {
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
 
-    app.addSubMenuForType("desktop", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
-    app.addSubMenuForType("desktop", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
-    app.addSubMenuForType("desktop", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+        app.addSubMenuForType("desktop", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
+        app.addSubMenuForType("desktop", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
+        app.addSubMenuForType("desktop", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+    }
 });

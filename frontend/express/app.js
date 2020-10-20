@@ -830,6 +830,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         adminOfApps = sortBy(adminOfApps, member.appSortList || []);
         userOfApps = sortBy(userOfApps, member.appSortList || []);
 
+
         var defaultApp = userOfApps[0];
         var serverSideRendering = req.query.ssr;
         _.extend(req.config, configs);
@@ -919,6 +920,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             req.session.install = null;
             res.clearCookie('install');
         }
+
         plugins.callMethod("renderDashboard", {req: req, res: res, next: next, data: {member: member, adminApps: countlyGlobalAdminApps, userApps: countlyGlobalApps, countlyGlobal: countlyGlobal, toDashboard: toDashboard}});
 
         res.expose(countlyGlobal, 'countlyGlobal');
@@ -958,52 +960,86 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                     var adminOfAppIds = [],
                         userOfAppIds = [];
 
-                    if (member.admin_of.length === 1 && member.admin_of[0] === "") {
-                        member.admin_of = [];
-                    }
+                    /*
+                    We keep this section for backward compatibility.
+                    This block will run if member has legacy permission properties like user_of, admin_of.
+                    */
+                    if (typeof member.permission === "undefined") {
 
-                    for (let i = 0; i < member.admin_of.length; i++) {
-                        if (member.admin_of[i] === "") {
-                            continue;
+                        if (member.admin_of.length === 1 && member.admin_of[0] === "") {
+                            member.admin_of = [];
                         }
 
-                        adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
-                    }
+                        for (let i = 0; i < member.admin_of.length; i++) {
+                            if (member.admin_of[i] === "") {
+                                continue;
+                            }
 
-                    for (let i = 0; i < member.user_of.length; i++) {
-                        if (member.user_of[i] === "") {
-                            continue;
+                            adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
                         }
 
-                        userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
-                    }
+                        for (let i = 0; i < member.user_of.length; i++) {
+                            if (member.user_of[i] === "") {
+                                continue;
+                            }
 
-                    countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
-
-                        for (let i = 0; i < admin_of.length; i++) {
-                            countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
-                            countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
+                            userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
                         }
 
-                        countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
-                            adminOfApps = admin_of;
-                            userOfApps = user_of;
+                        countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
 
-                            for (let i = 0; i < user_of.length; i++) {
-                                if (user_of[i].apn) {
-                                    user_of[i].apn.forEach(a => a._id = '' + a._id);
+                            for (let i = 0; i < admin_of.length; i++) {
+                                countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
+                                countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
+                            }
+
+                            countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
+                                adminOfApps = admin_of;
+                                userOfApps = user_of;
+
+                                for (let i = 0; i < user_of.length; i++) {
+                                    if (user_of[i].apn) {
+                                        user_of[i].apn.forEach(a => a._id = '' + a._id);
+                                    }
+                                    if (user_of[i].gcm) {
+                                        user_of[i].gcm.forEach(a => a._id = '' + a._id);
+                                    }
+                                    countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                    countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                    countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
                                 }
-                                if (user_of[i].gcm) {
-                                    user_of[i].gcm.forEach(a => a._id = '' + a._id);
+
+                                renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                            });
+                        });
+                    }
+                    else {
+                        var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+
+                        for (let i = 0; i < readableAppIds.length; i++) {
+                            readableAppIds[i] = countlyDb.ObjectID(readableAppIds[i]);
+                        }
+
+                        countlyDb.collection('apps').find({ _id: { '$in': readableAppIds } }).toArray(function(err4, readableApps) {
+                            userOfApps = readableApps;
+
+                            // TODO: handle creatable, updatable and deletable arrays
+
+                            for (let i = 0; i < readableApps.length; i++) {
+                                if (readableApps[i].apn) {
+                                    readableApps[i].apn.forEach(a => a._id = '' + a._id);
                                 }
-                                countlyGlobalApps[user_of[i]._id] = user_of[i];
-                                countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
-                                countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                if (readableApps[i].gcm) {
+                                    readableApps[i].gcm.forEach(a => a._id = '' + a._id);
+                                }
+                                countlyGlobalApps[readableApps[i]._id] = readableApps[i];
+                                countlyGlobalApps[readableApps[i]._id]._id = "" + readableApps[i]._id;
+                                countlyGlobalApps[readableApps[i]._id].type = countlyGlobalApps[readableApps[i]._id].type || "mobile";
                             }
 
                             renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
                         });
-                    });
+                    }
                 }
             }
             else {

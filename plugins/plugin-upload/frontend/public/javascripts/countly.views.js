@@ -59,6 +59,9 @@ if (countlyGlobal.member.global_admin) {
 
     app.addPageScript("/manage/plugins", function() {
         $(document).ready(function() { //creates upload form
+            if (countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), 'plugin-upload')) {
+                return false;
+            }
             $.when(T.render('/plugin-upload/templates/drawer.html', function(src) {
                 //create button
                 $(".widget .widget-header .left").after('<a style="float: right; margin-top: 6px;" class="icon-button green" id="show-plugin-upload" data-localize="plugin-upload.add-plugin">' + jQuery.i18n.map["plugin-upload.add-plugin"] + '</a>');

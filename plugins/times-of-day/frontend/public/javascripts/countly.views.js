@@ -1,6 +1,6 @@
-/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
+/*global $,countlyView,countlyAuth,countlyGlobal,T,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
-
+    featureName: 'times-of-day',
     initialize: function() {
     },
 
@@ -283,8 +283,10 @@ app.addPageScript("/custom#", function() {
 });
 
 $(document).ready(function() {
-    app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
-    initializeTimesOfDayWidget();
+    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+        app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
+        initializeTimesOfDayWidget();
+    }
 });
 
 /**

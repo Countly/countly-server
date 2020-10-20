@@ -1,7 +1,9 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals app, $, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery, countlyManagementView, Backbone */
+/* globals app, $, countlyGlobal, countlyAuth, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery, countlyManagementView, Backbone */
+
+const featureName = 'push';
 
 app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyManagementView.extend({
     initialize: function() {
@@ -170,11 +172,11 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
 }));
 
 app.addPageScript('/drill#', function() {
-    if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) {
+    if ((Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) || !countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), featureName)) {
         return;
     }
     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
-        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
+        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1) {
             var content =
             '<div class="item" id="action-create-message">' +
                 '<div class="item-icon">' +
@@ -229,7 +231,7 @@ app.addPageScript('/drill#', function() {
 * Modify user profile views with push additions
 **/
 function modifyUserDetailsForPush() {
-    if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) {
+    if ((Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) || !countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), featureName)) {
         return;
     }
     if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {

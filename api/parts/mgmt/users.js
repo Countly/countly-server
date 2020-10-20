@@ -205,13 +205,9 @@ usersApi.createUser = function(params) {
                 'required': false,
                 'type': 'String'
             },
-            'admin_of': {
-                'required': false,
-                'type': 'Array'
-            },
-            'user_of': {
-                'required': false,
-                'type': 'Array'
+            'permission': {
+                'required': true,
+                'type': 'Object'
             },
             'global_admin': {
                 'required': false,
@@ -243,12 +239,15 @@ usersApi.createUser = function(params) {
     async function createUser() {
         //var passwordNoHash = newMember.password;
         var secret = countlyConfig.passwordSecret || "";
-
+        var accessTypes = ["c", "r", "u", "d"];
         newMember.password = await common.argon2Hash(newMember.password + secret);
         newMember.password_changed = 0;
         newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
-        newMember.admin_of = newMember.admin_of || [];
-        newMember.user_of = newMember.user_of || [];
+        for (var type in accessTypes) {
+            if (typeof newMember.permission[accessTypes[type]] === "undefined") {
+                newMember.permission[accessTypes[type]] = {};
+            }
+        }
         newMember.locked = false;
         newMember.username = newMember.username.trim();
         newMember.email = newMember.email.trim();
@@ -866,7 +865,7 @@ usersApi.fetchNotes = async function(params) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
         filtedAppIds = appIds.filter((appId) => {
-            if (params.member.global_admin || params.member.user_of.indexOf(appId) > -1 || params.member.admin_of.indexOf(appId) > -1) {
+            if (params.member.global_admin || (params.member.user_of && params.member.user_of.indexOf(appId) > -1) || (params.member.admin_of && params.member.admin_of.indexOf(appId) > -1)) {
                 return true;
             }
             return false;

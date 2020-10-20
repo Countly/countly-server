@@ -4,7 +4,10 @@ var common = require('../../../api/utils/common.js'),
     async = require('async'),
     crypto = require('crypto'),
     countlyModel = require('../../../api/lib/countly.model.js'),
-    countlyEvents = countlyModel.load("event");
+    countlyEvents = countlyModel.load("event"),
+    { validateRead } = require('../../../api/utils/right.js');
+
+const FEATURE_NAME = 'video';
 
 (function() {
 
@@ -61,7 +64,7 @@ var common = require('../../../api/utils/common.js'),
     plugins.register('/o', function(ob) {
         if (ob.params.qstring.method === 'monetization') {
             var params = ob.params;
-            var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+
             var expectedPeriodNames = ["month", "day", "yesterday", "hour"];
             if (typeof params.qstring.period !== "string") {
                 common.returnMessage(params, 400, 'Period must be defined.');
@@ -72,7 +75,7 @@ var common = require('../../../api/utils/common.js'),
                 return true;
             }
             else {
-                validateUserForDataReadAPI(params, function() {
+                validateRead(params, FEATURE_NAME, function() {
                     var defaultEvents = ['VI_AdClick', 'VI_AdStart', 'VI_AdComplete'];
                     if (!params.qstring.event && !params.qstring.events) {
                         params.qstring.events = defaultEvents;
