@@ -1,4 +1,4 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation, JobsView, JobDetailView */
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation, JobsView, JobDetailView */
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
@@ -859,6 +859,7 @@ window.LoyaltyView = countlyView.extend({
 
             this.byDisabled = true;
             if (typeof extendViewWithFilter === "function") {
+                this.hideDrillEventMetaProperties = true;
                 extendViewWithFilter(this);
                 $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
                     self.initDrill();
@@ -1881,6 +1882,84 @@ window.ResolutionView = countlyView.extend({
     }
 });
 
+window.DeviceTypeView = countlyView.extend({
+    beforeRender: function() {
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("device_type")).then(function() {});
+    },
+    renderCommon: function(isRefresh) {
+        var deviceTypeData = countlyDeviceDetails.getData(false, false, "device_type", "device_type");
+
+        this.templateData = {
+            "page-title": jQuery.i18n.map["device_type.title"],
+            "logo-class": "device_type",
+            "graph-type-double-pie": true,
+            "pie-titles": {
+                "left": jQuery.i18n.map["common.total-users"],
+                "right": jQuery.i18n.map["common.new-users"]
+            },
+            "chart-helper": "device_type.chart"
+        };
+
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+
+            countlyCommon.drawGraph(deviceTypeData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(deviceTypeData.chartDPNew, "#dashboard-graph2", "pie");
+
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": deviceTypeData.chartData,
+                "aoColumns": [
+                    { "mData": "device_type", "sTitle": jQuery.i18n.map["device_type.title"], "bSortable": false },
+                    {
+                        "mData": "t",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
+                    },
+                    {
+                        "mData": "u",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.total-users"]
+                    },
+                    {
+                        "mData": "n",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.new-users"]
+                    }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
+        }
+    },
+    refresh: function() {
+        var self = this;
+        $.when(this.beforeRender()).then(function() {
+            if (app.activeView !== self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var deviceTypeData = countlyDeviceDetails.getData(false, false, "device_type", "device_type");
+
+            countlyCommon.drawGraph(deviceTypeData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(deviceTypeData.chartDPNew, "#dashboard-graph2", "pie");
+            CountlyHelpers.refreshTable(self.dtable, deviceTypeData.chartData);
+        });
+    }
+});
+
 window.DurationView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize()).then(function() {});
@@ -2254,16 +2333,18 @@ window.ManageAppsView = countlyView.extend({
             });
             var appTimezone = timezones[countlyGlobal.apps[app_id].country];
 
-            for (var i = 0; i < appTimezone.z.length; i++) {
-                for (var tzone in appTimezone.z[i]) {
-                    if (appTimezone.z[i][tzone] === countlyGlobal.apps[app_id].timezone) {
-                        var appEditTimezone = store.get('first_app') ? $("#first-app-edit-timezone").find(".read") : $("#app-edit-timezone").find(".read"),
-                            appCountryCode = countlyGlobal.apps[app_id].country;
-                        appEditTimezone.find(".flag").css({"background-image": "url(" + countlyGlobal.cdn + "images/flags/" + appCountryCode.toLowerCase() + ".png)"});
-                        appEditTimezone.find(".country").text(appTimezone.n);
-                        appEditTimezone.find(".timezone").text(tzone);
-                        store.get('first_app') ? initCountrySelect("#first-app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]) : initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
-                        break;
+            if (appTimezone && appTimezone.z) {
+                for (var i = 0; i < appTimezone.z.length; i++) {
+                    for (var tzone in appTimezone.z[i]) {
+                        if (appTimezone.z[i][tzone] === countlyGlobal.apps[app_id].timezone) {
+                            var appEditTimezone = store.get('first_app') ? $("#first-app-edit-timezone").find(".read") : $("#app-edit-timezone").find(".read"),
+                                appCountryCode = countlyGlobal.apps[app_id].country;
+                            appEditTimezone.find(".flag").css({"background-image": "url(" + countlyGlobal.cdn + "images/flags/" + appCountryCode.toLowerCase() + ".png)"});
+                            appEditTimezone.find(".country").text(appTimezone.n);
+                            appEditTimezone.find(".timezone").text(tzone);
+                            store.get('first_app') ? initCountrySelect("#first-app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]) : initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
+                            break;
+                        }
                     }
                 }
             }
@@ -5373,6 +5454,50 @@ window.EventsView = countlyView.extend({
         }
         this.template = Handlebars.compile($("#template-events").html());
     },
+    showExceedRemind: function() {
+        /**
+         * generate event limitaion remind tooltips
+         * @param {string} text - i18n text for reminding
+         */
+        function generateDom(text) {
+            var html = '<div class="event-remind-tooltip" style="display: block;">' +
+                '<div class="content">' +
+                        '<span class="prefix"></span>' +
+                        '<span class="remind-context">' + text + '</span>' +
+                        '<i class="fas fa-times"></i>' +
+                '</div>' +
+            '</div>';
+            setTimeout(function() {
+                $(".routename-events #event-alert").append(html);
+            }, 0);
+            $(".event-remind-tooltip .fa-times").off("click").on("click", function(e) {
+                $(e.currentTarget.parentElement.parentElement).remove();
+            });
+        }
+        $(".routename-events #event-alert").html("");
+        var limitation = countlyEvent.getLimitation();
+        var currentEventList = countlyEvent.getEvents() || [];
+        if (currentEventList.length >= limitation.event_limit) {
+            var tips = jQuery.i18n.prop("events.max-event-key-limit", limitation.event_limit);
+            generateDom(tips);
+        }
+
+        var event_name = countlyEvent.getEventData().eventName;
+        var segments = countlyEvent.getEventSegmentations() || [];
+        if (segments && segments.length >= limitation.event_segmentation_limit) {
+            var tips2 = jQuery.i18n.prop("events.max-segmentation-limit", limitation.event_segmentation_limit, event_name);
+            generateDom(tips2);
+        }
+
+        var metaDB = countlyEvent.getActiveEventSegmentMeta();
+        segments.forEach(function(s) {
+            if (metaDB[s].length >= limitation.event_segmentation_value_limit) {
+                var tips3 = jQuery.i18n.prop("events.max-unique-value-limit", limitation.event_segmentation_value_limit, s);
+                generateDom(tips3);
+            }
+        });
+
+    },
     pageScript: function() {
         $(".event-container").unbind("click");
         $(".segmentation-option").unbind("click");
@@ -5686,6 +5811,7 @@ window.EventsView = countlyView.extend({
                     countlyEvent.setActiveEvent(targetEvent);
                 }
             }
+            this.showExceedRemind();
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
@@ -5771,6 +5897,9 @@ window.EventsView = countlyView.extend({
                 }
                 app.localize();
                 $('.nav-search').find("input").trigger("input");
+                if (segmentationChanged || eventChanged) {
+                    self.showExceedRemind();
+                }
             }
         });
     }
@@ -5827,6 +5956,7 @@ window.LongTaskView = countlyView.extend({
             "all": jQuery.i18n.map["common.all"],
             "funnels": jQuery.i18n.map["sidebar.funnels"] || "Funnels",
             "drill": jQuery.i18n.map["drill.drill"] || "Drill",
+            "flows": jQuery.i18n.map["flows.flows"] || "Flows",
             "retention": jQuery.i18n.map["retention.retention"] || "Retention",
             "formulas": jQuery.i18n.map["calculated-metrics.formulas"] || "Formulas",
             "dbviewer": jQuery.i18n.map["dbviewer.title"] || "DBViewer"
@@ -6048,8 +6178,9 @@ window.LongTaskView = countlyView.extend({
         this.showTableColumns(self);
     },
     showTableColumns: function(self) {
-        var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
-        var automaticallyColumns = [false, true, true, true, false, false, false, false, true, true];
+        var manuallyColumns = [true, true, true, true, true, true, true, true, false, false, true];
+        var automaticallyColumns = [false, true, true, true, false, false, false, false, false, true, true];
+        //                         [NAME, DATA, STAT(R),ORIGIN, TYPE,PERIOD,VISIB,LASTUp,Started,duration,status(SUB),but]
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
@@ -6094,7 +6225,50 @@ window.LongTaskView = countlyView.extend({
             },
             {
                 "mData": function(row) {
-                    return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "</span>";
+                    if (row.taskgroup && row.subtasks) {
+                        var difStats = false;
+                        var stat = "completed";
+                        var dd = "";
+
+                        for (var k in row.subtasks) {
+                            if (row.subtasks[k].status !== stat) {
+                                difStats = true;
+                            }
+                            var color = "green";
+                            if (row.subtasks[k].status === "errored") {
+                                color = "red";
+                            }
+                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                color = "blue";
+                            }
+                            if (row.subtasks[k].errormsg) {
+                                dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<p class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
+                            }
+                            else {
+                                dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
+                            }
+
+                        }
+                        if (difStats) {
+                            return dd;
+                        }
+                        else {
+                            if (row.errormsg && row.status === "errored") {
+                                return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
+                            }
+                            else {
+                                return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "</span>";
+                            }
+                        }
+                    }
+                    else {
+                        if (row.errormsg) {
+                            return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
+                        }
+                        else {
+                            return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "</span>";
+                        }
+                    }
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["common.status"]
@@ -6189,66 +6363,6 @@ window.LongTaskView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["events.table.dur"]
             },
             {
-                "mData": function(row/*, type*/) {
-                    var color = "green";
-                    if (row.taskgroup && row.subtasks) {
-                        var difStats = false;
-                        var stat = "completed";
-                        var dd = "";
-
-                        for (var k in row.subtasks) {
-                            if (row.subtasks[k].status !== stat) {
-                                difStats = true;
-                            }
-                            color = "green";
-                            if (row.subtasks[k].status === "errored") {
-                                color = "red";
-                            }
-                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
-                                color = "blue";
-                            }
-                            if (row.subtasks[k].errormsg) {
-                                dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<div class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
-                            }
-                            else {
-                                dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
-                            }
-
-                        }
-                        if (difStats) {
-                            return dd;
-                        }
-                        else {
-                            color = "green";
-                            if (row.status === "errored") {
-                                color = "red";
-                            }
-                            if (row.status === "running" || row.status === "rerunning") {
-                                color = "yellow";
-                            }
-                            if (row.errormsg) {
-                                return "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "<div class='error_message_div'>" + row.errormsg + "</div></div>";
-                            }
-                            else {
-                                return "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "</div>";
-                            }
-                        }
-                    }
-                    else {
-                        if (row.status === "errored") {
-                            color = "red";
-                        }
-                        if (row.status === "running" || row.status === "rerunning") {
-                            color = "yellow";
-                        }
-                        return "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "</div>";
-                    }
-                },
-                "bSortable": false,
-                "sType": "string",
-                "sTitle": jQuery.i18n.map["common.status"]
-            },
-            {
                 "mData": function() {
                     return '<a class="cly-list-options"></a>';
                 },
@@ -6298,7 +6412,7 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
-        this.addErrorTooltips();
+        // this.addErrorTooltips();
         this.dtable.fnSort([ [8, 'desc'] ]);
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
             '<a class="item view-task" href="" data-localize="common.view"></a>' +
@@ -6381,13 +6495,13 @@ window.LongTaskView = countlyView.extend({
                         if (!result) {
                             return true;
                         }
-                        countlyTaskManager.update(id, function(res) {
+                        countlyTaskManager.update(id, function(res, error) {
                             if (res.result === "Success") {
                                 countlyTaskManager.monitor(id, true);
                                 self.refresh();
                             }
                             else {
-                                CountlyHelpers.alert(res.result, "red");
+                                CountlyHelpers.alert(error, "red");
                             }
                         });
                     }, [jQuery.i18n.map["common.no-dont-do-that"], jQuery.i18n.map["taskmanager.yes-rerun-report"]], {title: jQuery.i18n.map["taskmanager.confirm-rerun-title"], image: "rerunning-task"});
@@ -7317,6 +7431,7 @@ app.platformView = new PlatformView();
 app.appVersionView = new AppVersionView();
 app.carrierView = new CarrierView();
 app.resolutionView = new ResolutionView();
+app.deviceTypeView = new DeviceTypeView();
 app.durationView = new DurationView();
 app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
@@ -7368,6 +7483,9 @@ app.route("/analytics/carriers", "carriers", function() {
 });
 app.route("/analytics/resolutions", "resolutions", function() {
     this.renderWhenReady(this.resolutionView);
+});
+app.route("/analytics/device_type", "device_type", function() {
+    this.renderWhenReady(this.deviceTypeView);
 });
 app.route("/analytics/durations", "durations", function() {
     this.renderWhenReady(this.durationView);

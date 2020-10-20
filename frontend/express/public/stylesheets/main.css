@@ -2906,12 +2906,11 @@ color:#E95C6C; transition:color 1s;
 .table_status_dot_blue span{
     background-color: #55a8ed;
 }
-.table_status_dot .error_message_div {
-    display: none;
+p.error_message_div {
+    margin:5px;
+	line-height: 12px;
 }
-.table_status_dot.have_error_message:hover{
-    cursor: pointer;
-}
+
 #token-manager-view  .tokenvalue{float:left;  cursor:pointer;
     text-align: center;
     border: none;
@@ -2947,7 +2946,7 @@ color:#E95C6C; transition:color 1s;
     position: absolute;
     top: 41px;
     left: 2px;
-    width: 280px;
+    min-width: 280px;
     max-height: 145px;
     margin-left: 0px;
     background-color: #FFF;
@@ -4067,3 +4066,54 @@ color:#E95C6C; transition:color 1s;
     position: absolute;
     pointer-events: none;
 }
+
+.event-remind-tooltip {
+    height: 40px;
+    background-color: #fcf5ed;
+    margin-bottom: 10px;
+    display: none;
+    border: 1px solid #e3af7f;
+    border-radius: 2px;
+}
+
+.event-remind-tooltip:last-of-type {
+    margin-bottom: 20px;
+}
+
+.event-remind-tooltip .content {
+    font-size: 14px;
+    color: #e3af7f;
+    display: flex;
+    align-items: center;
+}
+
+.event-remind-tooltip .content .prefix {
+    width: 5px;
+    background: #e3af7f;
+    height: 40px;
+}
+
+.event-remind-tooltip .content .remind-context {
+    margin-left: 10px;
+    flex-grow: 1;
+}
+
+.event-remind-tooltip .content .remind-context a{
+    text-decoration: underline;
+}
+
+.event-remind-tooltip .content .remind-context a:hover{
+    color:#e29c5b;
+}
+
+.event-remind-tooltip .content i:hover{
+    color:#e29c5b;
+}
+.event-remind-tooltip .content i {
+    margin-right:10px;
+}
+
+.event-remind-tooltip .content i:hover {
+    cursor: pointer;
+}
+>>>>>>> [events] add event key & segmentation value limitation reminds

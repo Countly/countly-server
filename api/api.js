@@ -77,7 +77,7 @@ Promise.all(databases).then(function(dbs) {
         offline_mode: false,
         reports_regenerate_interval: 3600,
         send_test_email: "",
-        data_retention_period: 0,
+        //data_retention_period: 0,
         batch_processing: true,
         batch_on_master: false,
         batch_period: 10,
@@ -286,7 +286,7 @@ Promise.all(databases).then(function(dbs) {
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
             jobs.job('api:task').replace().schedule('every 5 minutes');
             //jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
-            jobs.job('api:appExpire').replace().schedule('every 1 day');
+            //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
     }
     else {

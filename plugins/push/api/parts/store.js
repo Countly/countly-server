@@ -353,15 +353,15 @@ class Store extends Base {
                     chunk.forEach(u => u.x = this.tmp);
                 }
                 log.d('Inserting %d chunk into %s', chunk.length, this.collectionName);
-                this.collection.insertMany(chunk, {ordered: false}, (err, result) => {
+                this.collection.insertMany(chunk, {ordered: false, ignore_errors: [11000]}, (err, result) => {
                     if (err) {
                         if (err.code === 11000) {
                             if (err.name === 'BulkWriteError') {
-                                log.d('Many duplicates: %j / %j / %j / %j', err.result && err.result.nInserted, chunk.length, result, err);
+                                log.d('Many duplicates: %j / %j', err.result && err.result.nInserted, chunk.length);
                                 res(err.result.nInserted);
                             }
                             else {
-                                log.d('One duplicate: %j / %j / %j', chunk.length, result, err);
+                                log.d('One duplicate: %j', chunk.length);
                                 res(chunk.length - 1);
                             }
                         }
@@ -1100,7 +1100,7 @@ class Loader extends Store {
                         ids = [];
 
                         Object.keys(notes).forEach(id => {
-                            log.d('Counting note %s in messages %j', id, msgs);
+                            log.d('Counting note %s in %d messages', id, msgs.length);
                             let rem = [], note = notes[id];
                             if (note.autoEvents && note.autoEvents.length) {
                                 log.d('Counting note %s events case: %j', id, note.autoEvents);
@@ -1111,7 +1111,7 @@ class Loader extends Store {
                                 rem = msgs.filter(m => m.n === id && m.d < maxDate).map(m => m._id);
                             }
 
-                            log.d('Counting note %s: discarding %j', id, rem);
+                            log.d('Counting note %s: discarding %d', id, rem.length);
                             if (rem.length) {
                                 ids = ids.concat(rem);
                                 ret[id] = (ret[id] || 0) + rem.length;
@@ -1329,7 +1329,6 @@ class Loader extends Store {
     pushNote(mid, uids, date, recur) {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
         log.i('Recording message %s for %d uids', mid, uids.length);
-        log.d('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
             this.db.collection(`push_${this.app._id}`).updateMany({_id: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
                 if (err) {

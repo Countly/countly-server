@@ -258,10 +258,10 @@ window.WebDashboardView = countlyView.extend({
             {
                 "mData": function(row, type) {
                     if (type === "display") {
-                        return (row.ls) ? countlyCommon.formatTimeAgo(row.ls) : jQuery.i18n.map["web.never"];
+                        return (row.lac) ? countlyCommon.formatTimeAgo(row.lac) : jQuery.i18n.map["web.never"];
                     }
                     else {
-                        return (row.ls) ? row.ls : 0;
+                        return (row.lac) ? row.lac : 0;
                     }
                 },
                 "sType": "format-ago",
@@ -508,6 +508,7 @@ $(document).ready(function() {
     app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
     app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
     app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
+    app.addSubMenuForType("web", "analytics", {code: "analytics-device_type", url: "#/analytics/device_type", text: "device_type.title", priority: 45});
     app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
     app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
     app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});

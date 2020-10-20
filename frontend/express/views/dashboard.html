@@ -43,6 +43,7 @@
     	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
     <% } else { %>
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
+		<link rel="stylesheet" href="<%- cdn %>stylesheets/vue/clyvue.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css?<%= countlyVersion %>" />
@@ -86,7 +87,15 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.xss.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/es6-promise.auto.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuex.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-color.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuelidate.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/v-tooltip.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/validators.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2Dropzone.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js?<%= countlyVersion %>"></script>
@@ -101,7 +110,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/jsoneditor.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/Sortable.min.js?<%= countlyVersion %>"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
 
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
@@ -480,7 +489,7 @@
 				</div>
 			</div>
 		</div>
-	</script>
+    </script>
 
 	<script id="template-date-time-selector" type="text/x-handlebars-template">
 		<div class="date-time-selector-container">
@@ -703,7 +712,7 @@
                     <a id='country-toggle' class='icon-button light btn-header'></a>
                 </div>
 			</div>
-            <div class="widget-tips"><a href="/dashboard#/manage/configurations/frontend"><span data-localize="countries.google-api-key-remind"></a></span></div>
+            <div class="widget-tips"><a href="#/manage/configurations/frontend"><span data-localize="countries.google-api-key-remind"></a></span></div>
 			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:480px;">
 				<div id="geo-chart-outer" class="big"><div><div id="geo-chart"></div></div></div>
 			</div>
@@ -1375,7 +1384,7 @@
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
                                     <div class="col">
-                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
                                         <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
                                     </div>
                                     {{/eachOfObjectValue}}
@@ -1386,7 +1395,7 @@
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventData30Day}}
                                     <div class="col">
-                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
                                         <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
                                     </div>
                                     {{/eachOfObjectValue}}
@@ -1461,7 +1470,7 @@
 
                                         {{#if this.value.name}}
                                         <td class="event-overview-grid-block cly-widget">
-                                            <div class="title"><a href="/dashboard#/{{../../../active-app-id}}/analytics/events/key/{{encodeURIComponent this.value.name}}">{{this.value.name}}</a></div>
+                                            <div class="title"><a href="#/analytics/events/key/{{encodeURIComponent this.value.name}}">{{this.value.name}}</a></div>
                                             {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
                                             <table>
                                                 <tr>
@@ -1593,6 +1602,7 @@
             </div>
         </div>
         {{else}}
+        
 		<div id="event-nav">
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
@@ -1616,6 +1626,7 @@
 		</div>
 
 		<div id="event-main" style="margin-left:199px;">
+        <div id="event-alert"></div>
 		<div class="widget">
 			<div class="widget-header" id="events-widget-header">
 				<div class="left">
@@ -2265,7 +2276,7 @@
 
     <script id="template-graph-notes-view" type="text/x-handlebars-template">
         <div class="note-table-view-navigator">
-            <a href="/dashboard" class="back-link" >
+            <a href="#/" class="back-link" >
                 <span data-localize="notes.note-back-to-overview"></span>
             </a>
         </div>

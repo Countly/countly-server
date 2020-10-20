@@ -232,6 +232,24 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 params.qstring.metrics._app_version += ".0";
             }
         }
+        if (!params.qstring.metrics._device_type && params.qstring.metrics._device) {
+            var device = (params.qstring.metrics._device + "");
+            if (params.qstring.metrics._os === "iOS" && (device.startsWith("iPhone") || device.startsWith("iPod"))) {
+                params.qstring.metrics._device_type = "mobile";
+            }
+            else if (params.qstring.metrics._os === "iOS" && device.startsWith("iPad")) {
+                params.qstring.metrics._device_type = "tablet";
+            }
+            else if (params.qstring.metrics._os === "watchOS" && device.startsWith("Watch")) {
+                params.qstring.metrics._device_type = "wearable";
+            }
+            else if (params.qstring.metrics._os === "tvOS" && device.startsWith("AppleTV")) {
+                params.qstring.metrics._device_type = "smarttv";
+            }
+            else if (params.qstring.metrics._os === "macOS" && (device.startsWith("Mac") || device.startsWith("iMac"))) {
+                params.qstring.metrics._device_type = "desktop";
+            }
+        }
     }
 
     var predefinedMetrics = [
@@ -263,6 +281,11 @@ usage.getPredefinedMetrics = function(params, userProps) {
                     name: "_os",
                     set: "os",
                     short_code: common.dbUserMap.platform
+                },
+                {
+                    name: "_device_type",
+                    set: "device_type",
+                    short_code: common.dbUserMap.device_type
                 },
                 {
                     name: "_os_version",
@@ -834,7 +857,7 @@ plugins.register("/i", function(ob) {
                         end_session: true
                     });
 
-                    updates.push({$set: {sd: 0}});
+                    updates.push({$set: {sd: 0, data: {}}});
                     let updateUser = {};
                     for (let i = 0; i < updates.length; i++) {
                         updateUser = common.mergeQuery(updateUser, updates[i]);
@@ -1067,6 +1090,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     end_session: false
                 });
                 userProps.sd = 0;
+                userProps.data = {};
             }
             processUserSession(params.app_user, params);
 
@@ -1118,6 +1142,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
     }
 
     if (params.qstring.events) {
+        var eventCount = 0;
         for (let i = 0; i < params.qstring.events.length; i++) {
             let currEvent = params.qstring.events[i];
             if (currEvent.key === "[CLY]_orientation") {
@@ -1125,6 +1150,16 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     userProps.ornt = currEvent.segmentation.mode;
                 }
             }
+            if (!(currEvent.key + "").startsWith("[CLY]_")) {
+                eventCount++;
+            }
+        }
+        if (eventCount > 0) {
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+
+            update.$inc["data.events"] = eventCount;
         }
     }
 
