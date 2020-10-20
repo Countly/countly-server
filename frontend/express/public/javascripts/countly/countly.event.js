@@ -1,4 +1,4 @@
-/*global countlyCommon, _, jQuery*/
+/*global countlyCommon, _, countlyGlobal, jQuery*/
 // eslint-disable-next-line no-shadow-restricted-names
 (function(countlyEvent, $, undefined) {
 
@@ -1038,8 +1038,7 @@
     /**
      * Deferred function to get events for target appids
      * @param  {Array} appIds - app ids
-     * @param  {function} callback- callback style provided
-     * @returns {Promise} - deferred promise
+     * @param  {function} callback - callback style provided
      */
     countlyEvent.getEventsForApps = function(appIds, callback) {
         /**
@@ -1099,7 +1098,7 @@
 
             callback(ret);
         });
-    }
+
 
         /**
          * Function to extract event
@@ -1108,11 +1107,11 @@
          */
         function extractEvents(data, returnArray) {
             /**
-             * Function to get the events long name
-             * @param  {String} eventKey - event name
-             * @param  {Object} eventMap - event map object
-             * @returns {String} event name
-             */
+                 * Function to get the events long name
+                 * @param  {String} eventKey - event name
+                 * @param  {Object} eventMap - event map object
+                 * @returns {String} event name
+                 */
             function getEventLongName(eventKey, eventMap) {
                 var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
                 if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
@@ -1134,6 +1133,7 @@
                 }
             }
         }
+    };
 
     countlyEvent.getLimitation = function() {
         return _activeEvents.limits;
