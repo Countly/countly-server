@@ -218,8 +218,13 @@ window.HooksView = countlyView.extend({
 
         // load menu
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
+            $(".options-item").find(".edit").next(".edit-menu").fadeOut();
             $(this).next(".edit-menu").fadeToggle();
             event.stopPropagation();
+        });
+
+        $(window).click(function() {
+            $(".options-item").find(".edit").next(".edit-menu").fadeOut();
         });
     }
 });
