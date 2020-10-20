@@ -381,7 +381,7 @@ app.route('/manage/logger', 'logger', function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.loggerView.featureName)) {
+    if (countlyAuth.validateRead(app.loggerView.featureName)) {
         app.addSubMenu("management", {code: "logger", url: "#/manage/logger", text: "logger.title", priority: 60});
     }
 });

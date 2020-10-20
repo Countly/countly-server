@@ -1,7 +1,7 @@
 /*global $, jQuery, app, countlyAuth, countlyView, countlyCommon, T, CountlyHelpers, DataPointsView, countlyDataPoints, moment*/
 
 window.DataPointsView = countlyView.extend({
-    featureName: 'server-stats',
+    featureName: 'global_server-stats',
     beforeRender: function() {
         var self = this;
         self.date_range = this.getDateRange("current");
@@ -176,7 +176,7 @@ app.route("/manage/data-points", '', function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.dataPointsView.featureName)) {
+    if (countlyAuth.validateRead(app.dataPointsView.featureName)) {
         app.addMenu("management", {code: "data-point", url: "#/manage/data-points", text: "server-stats.data-points", icon: '<div class="logo-icon ion-ios-analytics"></div>', priority: 80});
     }
 });

@@ -241,7 +241,7 @@ app.route("/analytics/keywords", 'keywords', function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.sourcesView.featureName)) {
+    if (countlyAuth.validateRead(app.sourcesView.featureName)) {
         app.addSubMenu("analytics", {code: "analytics-sources", url: "#/analytics/sources", text: "sources.title", priority: 90});
         app.addSubMenuForType("web", "analytics", {code: "analytics-keywords", url: "#/analytics/keywords", text: "keywords.title", priority: 95});
     }

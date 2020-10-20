@@ -1,4 +1,4 @@
-/*global countlyView, CountlyHelpers,countlyGlobal, app, T, Dropzone, countlyCommon, jQuery, $ */
+/*global countlyView, CountlyHelpers,countlyGlobal, app, T, Dropzone, countlyCommon, jQuery, $, countlyAuth */
 window.PluginUploadView = countlyView.extend({
 
     //need to provide at least empty initialize function
@@ -54,12 +54,12 @@ function highlight_my_uploaded_plugin(myname) { //sometimes it gets called a lit
     }
 }
 
-if (countlyGlobal.member.global_admin) {
+if (countlyAuth.validateCreate("global_plugin-upload")) {
     var myDropzone;
 
     app.addPageScript("/manage/plugins", function() {
         $(document).ready(function() { //creates upload form
-            if (countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), 'plugin-upload')) {
+            if (countlyAuth.validateCreate('global_plugin-upload')) {
                 return false;
             }
             $.when(T.render('/plugin-upload/templates/drawer.html', function(src) {

@@ -1,17 +1,17 @@
 /*global $, countlyAnalyticsAPI, countlyAuth, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyTotalUsers, countlySession, countlyCommon, app */
 window.DesktopDashboardView = countlyView.extend({
-    featureName: 'desktop',
+    featureName: 'core',
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
     initialize: function() {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function() {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         this.maps = {
@@ -26,7 +26,7 @@ window.DesktopDashboardView = countlyView.extend({
         return $.when.apply($, defs).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal.config.use_google && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (countlyGlobal.config.use_google && countlyAuth.validateRead(this.featureName)) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
@@ -94,7 +94,7 @@ window.DesktopDashboardView = countlyView.extend({
         });
     },
     renderCommon: function(isRefresh, isDateChange) {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         var sessionData = countlySession.getSessionData(),
@@ -199,7 +199,7 @@ window.DesktopDashboardView = countlyView.extend({
         this.refresh(true);
     },
     refresh: function(isFromIdle) {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         var self = this;
@@ -329,7 +329,7 @@ window.DesktopDashboardView = countlyView.extend({
 app.addAppType("desktop", DesktopDashboardView);
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member), store.get('countly_active_app'), 'desktop') {
+    if (countlyAuth.validateRead('desktop')) {
         app.addSubMenuForType("desktop", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
         app.addSubMenuForType("desktop", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
         app.addSubMenuForType("desktop", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});

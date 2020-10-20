@@ -1,8 +1,8 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateUser, validateGlobalAdmin} = require('../../../api/utils/rights.js');
-
+    {validateRead, validateCreate, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
+const FEATURE_NAME = 'populator';
 const templateProperties = {
     name: {
         required: true,
@@ -28,6 +28,9 @@ const templateProperties = {
 
 (function() {
 
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     const createTemplate = function(ob) {
         const obParams = ob.params;
 
@@ -61,7 +64,7 @@ const templateProperties = {
 
         template.isDefault = template.isDefault === 'true' ? true : false;
 
-        validateGlobalAdmin(obParams, function(params) {
+        validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection('populator_templates').insert(template, function(insertTemplateErr, result) {
                 if (!insertTemplateErr) {
                     common.returnMessage(ob.params, 201, 'Successfully created ' + result.insertedIds[0]);
@@ -79,7 +82,7 @@ const templateProperties = {
 
     const removeTemplate = function(ob) {
         const obParams = ob.params;
-        validateGlobalAdmin(obParams, function(params) {
+        validateDelete(obParams, FEATURE_NAME, function(params) {
             let templateId;
 
             try {
@@ -107,7 +110,7 @@ const templateProperties = {
 
     const editTemplate = function(ob) {
         const obParams = ob.params;
-        validateGlobalAdmin(obParams, function(params) {
+        validateUpdate(obParams, FEATURE_NAME, function(params) {
             let templateId;
 
             try {
@@ -167,22 +170,6 @@ const templateProperties = {
         return true;
     };
 
-    plugins.register("/i", function(ob) {
-        const obParams = ob.params;
-        if (obParams.qstring.method === "populator_template") {
-            if (obParams.qstring.action === "create") {
-                createTemplate(obParams);
-            }
-            else if (obParams.qstring.action === "edit") {
-                editTemplate(obParams);
-            }
-            else if (obParams.qstring.action.remove === "remove") {
-                removeTemplate(obParams);
-            }
-        }
-        return true;
-    });
-
     /*
      * @apiName: CreatePopulatorTemplate
      * @type: GET
@@ -218,7 +205,7 @@ const templateProperties = {
         const obParams = ob.params;
         const query = {};
 
-        validateUser(obParams, function() {
+        validateRead(obParams, FEATURE_NAME, function() {
             if (obParams.qstring.template_id) {
                 try {
                     query._id = common.db.ObjectID(obParams.qstring.template_id);

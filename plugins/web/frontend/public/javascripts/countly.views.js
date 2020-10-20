@@ -1,18 +1,18 @@
 /*global countlyAnalyticsAPI, countlyAuth, CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyTotalUsers, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
 
 window.WebDashboardView = countlyView.extend({
-    featureName: 'web',
+    featureName: 'core',
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
     initialize: function() {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function(isRefresh) {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         this.maps = {
@@ -27,7 +27,7 @@ window.WebDashboardView = countlyView.extend({
         return $.when.apply($, defs).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal.config.use_google && !countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (countlyGlobal.config.use_google && countlyAuth.validateRead(this.featureName)) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
@@ -95,7 +95,7 @@ window.WebDashboardView = countlyView.extend({
         });
     },
     renderCommon: function(isRefresh, isDateChange) {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         var sessionData = countlySession.getSessionData(),
@@ -317,7 +317,7 @@ window.WebDashboardView = countlyView.extend({
         this.refresh(true);
     },
     refresh: function(isFromIdle) {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         var self = this;
@@ -518,11 +518,11 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'web')) {
+    if (countlyAuth.validateRead('web')) {
         app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
         app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
         app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-device_type", url: "#/analytics/device_type", text: "device_type.title", priority: 45});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-device_type", url: "#/analytics/device_type", text: "device_type.title", priority: 45});
         app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
         app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
         app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});

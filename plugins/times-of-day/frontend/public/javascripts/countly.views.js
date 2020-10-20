@@ -283,7 +283,7 @@ app.addPageScript("/custom#", function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+    if (countlyAuth.validateRead(self.featureName)) {
         app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
         initializeTimesOfDayWidget();
     }

@@ -1321,7 +1321,7 @@ window.CrashgroupView = countlyView.extend({
         this.templateData = {
             "page-title": jQuery.i18n.map["crashes.crashes-by"],
             "note-placeholder": jQuery.i18n.map["crashes.editnote"],
-            "hasPermission": (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) ? true : false,
+            "hasPermission": countlyAuth.validateUpdate("crashes"),
             "url": url,
             "data": crashData,
             "error": crashData.name.substr(0, 80),
@@ -2249,8 +2249,8 @@ app.route('/crashes/:group', 'crashgroup', function(group) {
 });
 
 app.addPageScript("/drill#", function() {
-    
-    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.crashesView.featureName)) {
+
+    if (!countlyAuth.validateRead(app.crashesView.featureName)) {
         return;
     }
 
@@ -2303,7 +2303,7 @@ app.addPageScript("/drill#", function() {
 });
 
 app.addPageScript("/users/#", function() {
-    if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.crashesView.featureName)) {
+    if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(app.crashesView.featureName)) {
         var ul = app.activeView.tabs.find("ul");
         $("<li><a href='#usertab-crashes'>" + jQuery.i18n.map["crashes.title"] + "</a></li>").appendTo(ul);
         $("<div id='usertab-crashes'></div>").appendTo(app.activeView.tabs);
@@ -2387,7 +2387,7 @@ $(document).ready(function() {
         }
     });
 
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.crashesView.featureName)) {
+    if (countlyAuth.validateRead(app.crashesView.featureName)) {
         app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
         app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
     }

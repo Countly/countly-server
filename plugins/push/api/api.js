@@ -16,7 +16,9 @@ const FEATURE_NAME = 'push';
 const PUSH_CACHE_GROUP = 'P';
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.setConfigs("push", {
         proxyhost: "",
         proxyport: "",
@@ -414,9 +416,6 @@ const PUSH_CACHE_GROUP = 'P';
             break;
         case 'mime':
             validateRead(params, FEATURE_NAME, push.mimeInfo, params);
-            break;
-        case 'huawei':
-            push.huawei(params);
             break;
         case 'huawei':
             push.huawei(params);

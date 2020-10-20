@@ -3,10 +3,13 @@ var exported = {},
     plugins = require('../../pluginManager.js'),
     { validateRead } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'logger';
+const FEATURE_NAME = 'global_logger';
 
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     var processSDKRequest = function(params) {
         if (params.logging_is_allowed) {
             params.log_processed = true;

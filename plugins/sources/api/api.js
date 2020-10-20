@@ -4,7 +4,7 @@ var pluginInstance = {},
     stores = require("../stores.json"),
     fetch = require('../../../api/parts/data/fetch.js'),
     urlParse = require('url');
-
+const FEATURE_NAME = 'sources';
 var searchEngineKeyWord = {
     "q": true,
     "search": true,
@@ -25,7 +25,9 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
     plugins.setConfigs("sources", {
         sources_length_limit: 100
     });
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugin.urlParser = function(url) {
         var qIndex = url.indexOf("?");
         var path = qIndex > 0 ? url.substring(0, qIndex) : url;

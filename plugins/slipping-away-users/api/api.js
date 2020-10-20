@@ -16,7 +16,9 @@ const FEATURE_NAME = 'slipping_away_users';
         p4: 60,
         p5: 90,
     });
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/o/slipping", function(ob) {
         const params = ob.params;
         const app_id = params.qstring.app_id;

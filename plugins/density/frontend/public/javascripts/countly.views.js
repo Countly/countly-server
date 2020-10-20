@@ -136,7 +136,7 @@ app.route("/analytics/density", 'desity', function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.densityView.featureName)) {
+    if (countlyAuth.validateRead(app.densityView.featureName)) {
         app.addSubMenu("analytics", {code: "analytics-density", url: "#/analytics/density", text: "sidebar.analytics.densities", priority: 45});
     }
 });

@@ -5,7 +5,7 @@ var exported = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
-
+const FEATURE_NAME = 'star-rating';
 const widgetProperties = {
     popup_header_text: {
         required: false,
@@ -123,6 +123,10 @@ const widgetPropertyPreprocessors = {
 };
 
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     /**
      *    register internalEvent
      */
@@ -143,7 +147,7 @@ const widgetPropertyPreprocessors = {
         }
         var widget = validatedArgs.obj;
 
-        validateCreate(obParams, 'star_rating', function(params) {
+        validateCreate(obParams, 'FEATURE_NAME', function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Successfully created " + result.insertedIds[0]);
@@ -160,7 +164,7 @@ const widgetPropertyPreprocessors = {
     };
     var removeFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        validateDelete(obParams, 'star_rating', function(params) {
+        validateDelete(obParams, 'FEATURE_NAME', function(params) {
             var widgetId = params.qstring.widget_id;
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
@@ -208,7 +212,7 @@ const widgetPropertyPreprocessors = {
     };
     var editFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        validateUpdate(obParams, 'star_rating', function(params) {
+        validateUpdate(obParams, 'FEATURE_NAME', function(params) {
             let widgetId;
 
             try {
@@ -454,7 +458,7 @@ const widgetPropertyPreprocessors = {
             }
         }
 
-        validateRead(params, 'star_rating', function() {
+        validateRead(params, 'FEATURE_NAME', function() {
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
                 if (!err) {
@@ -528,7 +532,7 @@ const widgetPropertyPreprocessors = {
     plugins.register('/o/feedback/widgets', function(ob) {
         var params = ob.params;
 
-        validateRead(params, 'star_rating', function() {
+        validateRead(params, 'FEATURE_NAME', function() {
             var collectionName = 'feedback_widgets';
             var query = {};
             if (params.qstring.is_active) {

@@ -16,6 +16,9 @@ const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true};
 //keys to not use as segmentation
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.setConfigs("views", {
         view_limit: 50000,
         view_name_limit: 100,

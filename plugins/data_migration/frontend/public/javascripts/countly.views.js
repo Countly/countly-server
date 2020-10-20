@@ -1,6 +1,6 @@
-/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $, T*/
+/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $, T, countlyAuth*/
 window.DataMigrationView = countlyView.extend({
-    featureName: 'data_migration',
+    featureName: 'global_data_migration',
     //need to provide at least empty initialize function
     //to prevent using default template
     initialize: function() {},
@@ -244,15 +244,15 @@ window.DataMigrationView = countlyView.extend({
                 self.resizeFileUploadBox();
             });
 
-            if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            if (!countlyAuth.validateRead(this.featureName)) {
                 $('#show_data_export_form').hide();
             }
 
-            if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            if (!countlyAuth.validateCreate(this.featureName)) {
                 $('#show_data_import_form').hide();
             }
 
-            if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName) && !countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            if (!countlyAuth.validateRead(this.featureName) && !countlyAuth.validateCreate(this.featureName)) {
                 $('#import-export-button').hide();
             }
         }
@@ -853,7 +853,7 @@ app.DataMigrationView = new DataMigrationView();
 
 
 
-if (countlyGlobal.member.global_admin || countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.DataMigrationView.featureName)) {
+if (countlyAuth.validateRead(app.DataMigrationView.featureName)) {
     //register route
     app.route('/manage/data-migration', 'datamigration', function() {
         this.renderWhenReady(this.DataMigrationView);
@@ -901,7 +901,7 @@ if (countlyGlobal.member.global_admin || countlyAuth.validateRead(countlyGlobal.
 
     $(document).ready(function() {
         //Adding as menu item : Managment>Data migration. Before help toggle button.
-        if (countlyGlobal.member.global_admin) {
+        if (countlyAuth.validateRead("global_data_migration")) {
             app.addMenu("management", {code: "data-migration", url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon fa fa-arrows-alt-h"></div>', priority: 90});
         }
         var curapp = countlyCommon.ACTIVE_APP_ID;

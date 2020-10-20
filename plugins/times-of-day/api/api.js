@@ -1,9 +1,14 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    moment = require('moment');
-
+    moment = require('moment'),
+    {validateRead} = require('../../../api/utils/rights.js');
+const FEATURE_NAME = 'times-of-day';
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/i", function(ob) {
         var params = ob.params;
 
@@ -186,16 +191,17 @@ var plugin = {},
             }
 
             var collectionName = "timesofday" + appId;
+            validateRead(params, FEATURE_NAME, function() {
+                fetchTodData(collectionName, criteria, function(err, result) {
+                    if (err) {
+                        console.log("Error while fetching times of day data: ", err.message);
+                        common.returnMessage(params, 400, "Something went wrong");
+                        return false;
+                    }
 
-            fetchTodData(collectionName, criteria, function(err, result) {
-                if (err) {
-                    console.log("Error while fetching times of day data: ", err.message);
-                    common.returnMessage(params, 400, "Something went wrong");
-                    return false;
-                }
-
-                common.returnOutput(params, result);
-                return true;
+                    common.returnOutput(params, result);
+                    return true;
+                });
             });
             return true;
         }

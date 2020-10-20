@@ -1018,7 +1018,7 @@ app.route("/analytics/views/action-map/*view", 'views', function(view) {
 });
 
 app.addPageScript("/drill#", function() {
-    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), app.viewsView.featureName) || !countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), 'drill')) {
+    if (!countlyAuth.validateRead(app.viewsView.featureName) || !countlyAuth.validateRead('drill')) {
         return;
     }
     var drillClone;
@@ -1070,7 +1070,7 @@ app.addPageScript("/drill#", function() {
 });
 
 app.addPageScript("/custom#", function() {
-    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), app.viewsView.featureName) || !countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), 'dashboards')) {
+    if (!countlyAuth.validateRead(app.viewsView.featureName) || !countlyAuth.validateRead('dashboards')) {
         return;
     }
 
@@ -1137,10 +1137,10 @@ $(document).ready(function() {
         }
     });
 
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'))) {
+    if (countlyAuth.validateRead(app.viewsView.featureName)) {
         app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
         app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
-    }    
+    }
 
     //check if configuration view exists
     if (app.configurationsView) {

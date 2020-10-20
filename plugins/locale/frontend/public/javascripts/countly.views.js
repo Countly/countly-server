@@ -95,7 +95,7 @@ $(document).ready(function() {
     Handlebars.registerHelper('languageTitle', function(context) {
         return countlyGlobalLang.languages[context];
     });
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.languageView.featureName)) {
+    if (countlyAuth.validateRead(app.languageView.featureName)) {
         app.addSubMenu("analytics", {code: "analytics-languages", url: "#/analytics/languages", text: "sidebar.analytics.languages", priority: 80});
     }
 });

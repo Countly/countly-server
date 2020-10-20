@@ -3,10 +3,12 @@ var plugins = require('../../pluginManager.js'),
     udp,
     {validateRead} = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'server-stats';
+const FEATURE_NAME = 'global_server-stats';
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {

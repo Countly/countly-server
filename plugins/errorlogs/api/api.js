@@ -5,10 +5,10 @@ var plugin = {},
     async = require('async'),
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateRead, validateCreate, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
+    {validateRead, validateDelete} = require('../../../api/utils/rights.js');
 
 
-const FEATURE_NAME = 'manage-errorlogs';
+const FEATURE_NAME = 'global_errorlogs';
 
 /**
  * Read from end
@@ -47,13 +47,15 @@ const readFromEnd = (file, size) => {
 };
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     var logs = {api: "../../../log/countly-api.log", dashboard: "../../../log/countly-dashboard.log"};
     var dir = path.resolve(__dirname, '');
     //write api call
     plugins.register("/o/errorlogs", function(ob) {
         //get parameters
         var obParams = ob.params; //request params
-        var validate = ob.validateUserForGlobalAdmin; //user validation
         var bytes = obParams.qstring.bytes ? parseInt(obParams.qstring.bytes) : 0;
 
         validateRead(obParams, FEATURE_NAME, function(params) {
@@ -148,7 +150,6 @@ const readFromEnd = (file, size) => {
     plugins.register("/i/errorlogs", function(ob) {
         //get parameters
         var obParams = ob.params; //request params
-        var validate = ob.validateUserForGlobalAdmin; //user validation
 
         validateDelete(obParams, FEATURE_NAME, function(params) {
             walk(dir + "/../../../log", function(errList, logfiles) {

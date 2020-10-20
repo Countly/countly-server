@@ -8,6 +8,9 @@ var common = require('../../../api/utils/common.js'),
 const FEATURE_NAME = 'reports';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
