@@ -28,6 +28,6 @@ else
 	  fi
 	done <<< "$a"
 
-	(cd /opt/countly && npx grunt dist-all && npm prune --production && npm cache clean --force)
+	(cd /opt/countly && npx grunt dist-all)
 
 fi

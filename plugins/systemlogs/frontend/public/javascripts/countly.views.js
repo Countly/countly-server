@@ -3,7 +3,7 @@
 window.SystemLogsView = countlyView.extend({
     featureName: 'systemlogs',
     initialize: function() {
-
+        this.loaded = false;
     },
     beforeRender: function() {
         var self = this;
@@ -95,12 +95,14 @@ window.SystemLogsView = countlyView.extend({
                 "bServerSide": true,
                 "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=systemlogs",
                 "fnServerData": function(sSource, aoData, fnCallback) {
-                    $.ajax({
+                    self.request = $.ajax({
                         "dataType": 'json',
                         "type": "POST",
                         "url": sSource,
                         "data": aoData,
                         "success": function(data) {
+                            self.loaded = true;
+                            self.request = null;
                             fnCallback(data);
                             CountlyHelpers.reopenRows(self.dtable, self.expandTable, self);
                         }
@@ -208,7 +210,7 @@ window.SystemLogsView = countlyView.extend({
                 }
                 app.navigate("#/manage/systemlogs/query/" + JSON.stringify(self._query));
                 self.dtable.fnPageChange(0);
-                self.refresh();
+                self.refresh(true);
             });
 
             $(".user-segmentation .segmentation-option").on("click", function() {
@@ -221,12 +223,19 @@ window.SystemLogsView = countlyView.extend({
                 }
                 app.navigate("#/manage/systemlogs/query/" + JSON.stringify(self._query));
                 self.dtable.fnPageChange(0);
-                self.refresh();
+                self.refresh(true);
             });
         }
     },
-    refresh: function() {
-        this.dtable.fnDraw(false);
+    refresh: function(force) {
+        if (this.loaded || force) {
+            this.loaded = false;
+            if (this.request) {
+                this.request.abort();
+            }
+            this.request = null;
+            this.dtable.fnDraw(false);
+        }
     },
     renderField: function(key, field, sub) {
         var ret = "";

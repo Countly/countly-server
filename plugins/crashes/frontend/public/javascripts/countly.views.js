@@ -96,6 +96,9 @@ window.CrashesView = countlyView.extend({
                         $("#view-filter .bar-values").text(jQuery.i18n.prop('crashes.of-users', data.iTotalDisplayRecords, data.iTotalRecords));
                         $("#view-filter .bar span").text(Math.floor((data.iTotalDisplayRecords / data.iTotalRecords) * 100) + "%");
                         $("#view-filter .bar .bar-inner").animate({width: Math.floor((data.iTotalDisplayRecords / data.iTotalRecords) * 100) + "%"}, 1000);
+                        $(".extable-link").off('click').on('click', function(e) {
+                            e.stopPropagation();
+                        });
                     }
                 });
             },
@@ -1087,7 +1090,7 @@ window.CrashesView = countlyView.extend({
         countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
         this.pageScripts();
     },
-    getFilters: function(currEvent) {
+    getFilters: function() {
         var self = this;
         var usedFilters = {};
 
@@ -1099,7 +1102,7 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-        var defaultFilters = countlySegmentation.getFilters(currEvent),
+        var defaultFilters = countlySegmentation.getFilters(),
             allFilters = "";
         var filters = [];
         for (var i = 0; i < defaultFilters.length; i++) {

@@ -10,7 +10,7 @@ const FEATURE_NAME = 'compliance';
 
 (function() {
     //write api call
-    plugins.register("/i", function(ob) {
+    plugins.register("/sdk/user_properties", function(ob) {
         var params = ob.params;
         if (typeof params.qstring.consent === "string") {
             try {
@@ -72,8 +72,7 @@ const FEATURE_NAME = 'compliance';
                 if (type.length === 1) {
                     type = type[0];
                 }
-
-                common.updateAppUser(params, {$set: update}, true);
+                ob.updates.push({$set: update});
                 var m = params.qstring.metrics || {};
                 common.db.collection("consent_history" + params.app_id).insert({
                     before: params.app_user.consent || {},

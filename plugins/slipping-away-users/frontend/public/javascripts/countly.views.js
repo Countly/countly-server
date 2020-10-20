@@ -288,6 +288,7 @@ app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
 $(document).ready(function() {
     if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.slippingView.featureName)) {
         if (typeof extendViewWithFilter === "function") {
+        app.slippingView.hideDrillEventMetaProperties = true;
             extendViewWithFilter(app.slippingView);
         }
         app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});

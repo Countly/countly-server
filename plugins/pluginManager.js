@@ -421,6 +421,19 @@ var pluginManager = function pluginManager() {
         events[event].push(callback);
     };
 
+    // TODO: Remove this function and all it calls when moving to Node 12.
+    var promiseAllSettledBluebirdToStandard = function(bluebirdResults) {
+        return bluebirdResults.map((bluebirdResult) => {
+            const isFulfilled = bluebirdResult.isFulfilled();
+
+            const status = isFulfilled ? 'fulfilled' : 'rejected';
+            const value = isFulfilled ? bluebirdResult.value() : undefined;
+            const reason = isFulfilled ? undefined : bluebirdResult.reason();
+
+            return { status, value, reason };
+        });
+    };
+
     /**
     * Dispatch specific event on api side
     * @param {string} event - event to dispatch
@@ -440,6 +453,7 @@ var pluginManager = function pluginManager() {
                     }
                     catch (error) {
                         promise = Promise.reject(error);
+                        console.error(error.stack);
                     }
                     if (promise) {
                         used = true;
@@ -450,20 +464,21 @@ var pluginManager = function pluginManager() {
             catch (ex) {
                 console.error(ex.stack);
             }
+
             //should we create a promise for this dispatch
             if (params && params.params && params.params.promises) {
                 params.params.promises.push(new Promise(function(resolve) {
                     Promise.allSettled(promises).then(function(results) {
                         resolve();
                         if (callback) {
-                            callback(null, results);
+                            callback(null, promiseAllSettledBluebirdToStandard(results));
                         }
                     });
                 }));
             }
             else if (callback) {
                 Promise.allSettled(promises).then(function(results) {
-                    callback(null, results);
+                    callback(null, promiseAllSettledBluebirdToStandard(results));
                 });
             }
         }
@@ -769,28 +784,12 @@ var pluginManager = function pluginManager() {
         var self = this;
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
-        var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
 
-        m.stdout.on('data', (data) => {
-            console.log(data.toString());
-        });
-
-        m.stderr.on('data', (data) => {
-            console.log(data.toString());
-        });
-
-        m.on('close', (code) => {
-            console.log('Done running install.js with %j', code);
-            if (parseInt(code, 10) !== 0) {
-                errors = true;
-                return callback(errors);
-            }
-
+        new Promise(function(resolve) {
             var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
             if (eplugin && eplugin.prepackaged) {
-                return callback(errors);
+                return resolve(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
@@ -799,15 +798,33 @@ var pluginManager = function pluginManager() {
                         errors = true;
                         console.log('error: %j', error2);
                     }
-                    console.log('Done installing plugin %j', plugin);
-                    callback(errors);
+                    console.log('Done running npm install %j', plugin);
+                    resolve(errors);
                 });
             }
             else {
-                errors = true;
-                callback(errors);
+                resolve(errors);
                 console.log('Server is in offline mode, this command cannot be run. %j');
             }
+        }).then(function(result) {
+            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            var m = cp.spawn("nodejs", [scriptPath]);
+
+            m.stdout.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            m.stderr.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            m.on('close', (code) => {
+                console.log('Done installing plugin %j', code);
+                if (parseInt(code, 10) !== 0) {
+                    errors = true;
+                }
+                callback(errors || result);
+            });
         });
     };
 
@@ -821,28 +838,12 @@ var pluginManager = function pluginManager() {
         var self = this;
         console.log('Upgrading plugin %j...', plugin);
         callback = callback || function() {};
-        var scriptPath = path.join(__dirname, plugin, 'install.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
 
-        m.stdout.on('data', (data) => {
-            console.log(data.toString());
-        });
-
-        m.stderr.on('data', (data) => {
-            console.log(data.toString());
-        });
-
-        m.on('close', (code) => {
-            console.log('Done running install.js with %j', code);
-            if (parseInt(code, 10) !== 0) {
-                errors = true;
-                return callback(errors);
-            }
-
+        new Promise(function(resolve) {
             var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
             if (eplugin && eplugin.prepackaged) {
-                return callback(errors);
+                return resolve(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
@@ -851,15 +852,33 @@ var pluginManager = function pluginManager() {
                         errors = true;
                         console.log('error: %j', error2);
                     }
-                    console.log('Done upgrading plugin %j', plugin);
-                    callback(errors);
+                    console.log('Done running npm update with %j', plugin);
+                    resolve(errors);
                 });
             }
             else {
-                errors = true;
-                callback(errors);
+                resolve(errors);
                 console.log('Server is in offline mode, this command cannot be run. %j');
             }
+        }).then(function(result) {
+            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            var m = cp.spawn("nodejs", [scriptPath]);
+
+            m.stdout.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            m.stderr.on('data', (data) => {
+                console.log(data.toString());
+            });
+
+            m.on('close', (code) => {
+                console.log('Done upgrading plugin %j', code);
+                if (parseInt(code, 10) !== 0) {
+                    errors = true;
+                }
+                callback(errors || result);
+            });
         });
     };
 
@@ -899,7 +918,7 @@ var pluginManager = function pluginManager() {
     **/
     this.prepareProduction = function(callback) {
         console.log('Preparing production files');
-        exec('countly task locales', {cwd: path.dirname(process.argv[1])}, function(error, stdout) {
+        exec('countly task dist-all', {cwd: path.dirname(process.argv[1])}, function(error, stdout) {
             console.log('Done preparing production files with %j / %j', error, stdout);
             var errors;
             if (error && error !== 'Error: Command failed: ') {
@@ -1120,11 +1139,15 @@ var pluginManager = function pluginManager() {
         var dbName;
         var dbOptions = {
             poolSize: maxPoolSize,
+            maxPoolSize: maxPoolSize,
             noDelay: true,
             keepAlive: true,
             keepAliveInitialDelay: 30000,
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
+            serverSelectionTimeoutMS: 999999999,
+            maxIdleTimeMS: 0,
+            waitQueueTimeoutMS: 0,
             useNewUrlParser: true,
             useUnifiedTopology: true,
             auto_reconnect: true,

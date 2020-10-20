@@ -41,6 +41,9 @@ function delete_all_exports() {
                 }
             });
         }
+        else {
+            resolve();
+        }
     });
 }
 /**

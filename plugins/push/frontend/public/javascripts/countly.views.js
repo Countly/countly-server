@@ -44,6 +44,11 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
             help: c.a && c.a && c.a.key && c.a.key.length > 50 ? t : '',
             ehelp: c.a && c.a && c.a.key && c.a.key.length < 50 ? t : ''
         };
+        this.templateData.h = {
+            _id: c.h && c.h._id || '',
+            key: c.h && c.h && c.h.key || '',
+            secret: c.h && c.h && c.h.secret || ''
+        };
         this.templateData.rate = {
             rate: c.rate && c.rate.rate || '',
             period: c.rate && c.rate.period || ''
@@ -107,6 +112,16 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                 }
             }
         }
+
+        if (!t.h.key && t.h.secret) {
+            return jQuery.i18n.map['mgmt-plugins.push.error.h.key'];
+        }
+        if (t.h.key && !t.h.secret) {
+            return jQuery.i18n.map['mgmt-plugins.push.error.h.secret'];
+        }
+        if (t.h.key && (parseInt(t.h.key) + '') !== t.h.key) {
+            return jQuery.i18n.map['mgmt-plugins.push.error.h.keynum'];
+        }
     },
 
     loadFile: function() {
@@ -165,6 +180,9 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                 data.push.a = null;
             }
 
+            if (!data.push.h.key || !data.push.h.secret) {
+                data.push.h = null;
+            }
 
             return data;
         });

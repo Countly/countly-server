@@ -110,28 +110,32 @@ window.DataPointsView = countlyView.extend({
             self.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": countlyDataPoints.getTableData(),
                 "aoColumns": [
-                    { "mData": "app-name", "sType": "string", "sTitle": jQuery.i18n.map["compare.apps.app-name"] || "App Name", "sClass": "break" },
                     {
-                        "mData": "sessions",
+                        "mData": function(row) {
+                            return row["app-name"] || "";
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["compare.apps.app-name"] || "App Name",
+                        "sClass": "break"
+                    },
+                    {
                         "sType": "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        "mData": function(row) {
+                            return countlyCommon.formatNumber(row.sessions || 0);
                         },
                         "sTitle": jQuery.i18n.map["sidebar.analytics.sessions"]
                     },
                     {
-                        "mData": "events",
                         "sType": "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        "mData": function(row) {
+                            return countlyCommon.formatNumber(row.events || 0);
                         },
                         "sTitle": jQuery.i18n.map["sidebar.events"]
                     },
                     {
-                        "mData": "data-points",
                         "sType": "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        "mData": function(row) {
+                            return countlyCommon.formatNumber(row["data-points"] || 0);
                         },
                         "sTitle": jQuery.i18n.map["server-stats.data-points"]
                     }

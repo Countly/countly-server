@@ -1,27 +1,34 @@
 <div class="widget">
-	<div class="widget-header">
-		<div class="left">
-			<div class="title">{{page-title}}</div>
-		</div>
-	</div>
-</div>
-<div class="errorlogs">
-<div id="tabs">
-    <ul>
-    {{#eachOfObject logs}}
-        <li><a href="#log-{{property}}">{{property}} log</a></li>
-	{{/eachOfObject}}
-    </ul>
-    {{#eachOfObject logs}}
-    <div id="log-{{property}}" class="errorlog">
-        <div style="overflow: auto; padding-bottom: 10px;">
-			<a class="icon-button red btn-header btn-clear-log" data-id="{{property}}" data-localize="errorlogs.clear"></a>
-			<a href="{{../download}}{{property}}" target="_blank" class="icon-button light btn-header" data-localize="errorlogs.download"></a>
-		</div>
-        <pre>
-        {{value}}
-        </pre>
+    <div class="widget-header">
+        <div class="left">
+            <div class="title">{{page-title}}</div>
+        </div>
     </div>
-    {{/eachOfObject}}
-</div>
+    <div class="error-log-selector-block">
+        <div class="section">
+            <div id="error-logger-selector" class="cly-select" style="width:300px; float: left;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text"></div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width:300px;">
+                </div>
+            </div>
+        </div>
+        <div class="section right">
+            <a class="icon-button red btn-header btn-clear-log" data-id="{{logName}}" data-localize="errorlogs.clear"></a>
+            <a href="{{download}}{{logName}}" target="_blank" class="icon-button light btn-header" data-localize="errorlogs.download"></a>
+        </div>
+    </div>
+
+
+    <div class="errorlogs">
+        <div class="pre-block">
+            <pre>
+                {{logData}}
+            </pre>
+        </div>
+    </div>
 </div>

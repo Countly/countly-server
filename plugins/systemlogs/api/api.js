@@ -40,7 +40,6 @@ const FEATURE_NAME = 'manage-systemlogs';
                 countlyCommon.getPeriodObj(params);
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
-            query._id = {$ne: "meta_v2"};
             validateRead(params, FEATURE_NAME, function(paramsNew) {
                 var columns = [null, "ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
@@ -293,6 +292,7 @@ const FEATURE_NAME = 'manage-systemlogs';
      */
     function processRecording(ob) {
         var user = ob.user || ob.params.member;
+        ob.data = ob.data || {};
         if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {

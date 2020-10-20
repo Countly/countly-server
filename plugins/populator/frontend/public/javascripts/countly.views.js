@@ -114,6 +114,7 @@ window.PopulatorView = countlyView.extend({
 
         $("#templates-tab").off("click", ".edit-icon").on("click", ".edit-icon", function(e) {
             var menu = $(e.currentTarget).parents(".populator-template-options-item").find(".edit-menu");
+            $("#templates-tab .edit-menu").not(menu).hide();
             menu.toggle();
             /*
             if (!menu.is(":hidden")) {
@@ -686,6 +687,29 @@ $(document).ready(function() {
         }
         else {
             $(".populator-menu").hide();
+        }
+    });
+});
+
+app.addPageScript("/manage/export/export-features", function() {
+    countlyPopulator.getTemplates(function(templates) {
+        var templateList = [];
+        templates.forEach(function(template) {
+            if (!template.isDefault) {
+                templateList.push({
+                    id: template._id,
+                    name: template.name
+                });
+            }
+        });
+
+        var selectItem = {
+            id: "populator",
+            name: "Populator Templates",
+            children: templateList
+        };
+        if (templateList.length) {
+            app.exportView.addSelectTable(selectItem);
         }
     });
 });
