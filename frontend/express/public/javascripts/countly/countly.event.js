@@ -1007,6 +1007,7 @@
             return eventData;
         }
     };
+
     /** function set meta */
     function setMeta() {
         _activeSegmentationObj = _activeEventDb.meta || {};
@@ -1098,6 +1099,7 @@
 
             callback(ret);
         });
+    }
 
         /**
          * Function to extract event
@@ -1132,6 +1134,7 @@
                 }
             }
         }
+
     countlyEvent.getLimitation = function() {
         return _activeEvents.limits;
     };
