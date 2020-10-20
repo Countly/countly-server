@@ -51,7 +51,7 @@
             }
         });
     };
-  
+
     countlyTaskManager.get_response_text = function(xhr, status, error) {
         var resp;
         if (xhr.responseText) {
