@@ -2191,8 +2191,8 @@
             template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
                             '<div class="check-wrapper">\n' +
                                 '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
-                                '<div v-bind:class="labelClass" @click="setValue(!value)"></div>\n' +
-                                '<span v-if="label" class="check-text" @click="setValue(!value)">{{label}}</span>\n' +
+                                '<div v-bind:class="labelClass" @click.stop="setValue(!value)"></div>\n' +
+                                '<span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}</span>\n' +
                             '</div>\n' +
                         '</div>'
         }
@@ -3162,7 +3162,7 @@
                             '<a @click="scope.props.row._delayedDelete.abort()">Undo.</a>\n' +
                         '</div>\n' +
                         '<span>\n' +
-                            '<a class="cly-row-options-trigger" @click="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\n' +
+                            '<a class="cly-row-options-trigger" @click.stop="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\n' +
                         '</span>\n' +
                     '</div>'
     }));
@@ -3238,7 +3238,7 @@
 
     Vue.component("cly-button-menu", countlyBaseComponent.extend({
         template: '<div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">\n' +
-                        '<div class="toggler" @click="toggle"></div>\n' +
+                        '<div class="toggler" @click.stop="toggle"></div>\n' +
                         '<div class="menu-body" :class="{active: opened}">\n' +
                             '<a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\n' +
                                 '<i :class="item.icon"></i>\n' +
