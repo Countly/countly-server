@@ -840,8 +840,9 @@
             }
             return convertedParams;
         },
-        toStandardResponse: function(response) {
+        toStandardResponse: function(response, requestOptions) {
             response = response || {};
+            requestOptions = requestOptions || {};
             var fields = {
                 rows: response.aaData || [],
                 totalRows: response.iTotalDisplayRecords || 0,
@@ -849,6 +850,21 @@
             };
             if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
                 fields.echo = parseInt(response.sEcho);
+            }
+            if (Object.prototype.hasOwnProperty.call(requestOptions, "url")) {
+                var pairs = [];
+                for (var dataKey in requestOptions.data) {
+                    if (dataKey === "iDisplayStart" || dataKey === "iDisplayLength") {
+                        continue;
+                    }
+                    pairs.push(dataKey + "=" + requestOptions.data[dataKey]);
+                }
+                pairs.push("api_key=" + countlyGlobal.member.api_key);
+
+                fields.exportSettings = {
+                    resourcePath: requestOptions.url + "?" + pairs.join("&"),
+                    resourceProp: "aaData"
+                };
             }
             return fields;
         }
@@ -2889,7 +2905,7 @@
                     '</div>'
     });
 
-    var exportLocalData = function(params) {
+    var exportTableData = function(params) {
 
         /** gets file name for export
         * @returns {string} file name
@@ -2932,14 +2948,29 @@
             });
             return retData;
         }
-        var formData = {
-            type: params.type,
-            data: JSON.stringify(getExportData()),
-            filename: getFileName(),
-            api_key: countlyGlobal.member.api_key
-        };
+        var formData = null,
+            url = null;
 
-        var url = countlyCommon.API_URL + "/o/export/data";
+        if (params.settings.resourcePath) {
+            url = countlyCommon.API_URL + "/o/export/request";
+            formData = {
+                type: params.type,
+                path: params.settings.resourcePath,
+                prop: params.settings.resourceProp,
+                filename: getFileName(),
+                api_key: countlyGlobal.member.api_key
+            };
+        }
+        else {
+            countlyCommon.API_URL + "/o/export/data";
+            formData = {
+                type: params.type,
+                data: JSON.stringify(getExportData()),
+                filename: getFileName(),
+                api_key: countlyGlobal.member.api_key
+            };
+        }
+
         var form = $('<form method="POST" action="' + url + '">');
 
         $.each(formData, function(k, v) {
@@ -3158,14 +3189,12 @@
                 this.updateParams({perPage: params.currentPerPage});
             }, 500),
             exportData: function(type) {
-                if (!this.exportSettings.isRemote) {
-                    exportLocalData({
-                        rows: this.$refs.table.processedRows[0].children,
-                        columns: this.columns,
-                        type: type,
-                        settings: this.exportSettings
-                    });
-                }
+                exportTableData({
+                    rows: this.$refs.table.processedRows[0].children,
+                    columns: this.columns,
+                    type: type,
+                    settings: this.exportSettings
+                });
             }
         },
         watch: {
