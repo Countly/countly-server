@@ -453,7 +453,7 @@ appsApi.updateAppPlugins = function(params) {
         Object.keys(params.qstring.args).forEach(k => {
             if (plugins.getPlugins().indexOf(k) !== -1) {
                 promises.push(new Promise((resolve, reject) => {
-                    plugins.dispatch('/i/apps/update/plugins/' + k, {
+                    plugins.dispatch('/apps/update/plugins/' + k, {
                         params: params,
                         app: app,
                         config: params.qstring.args[k]

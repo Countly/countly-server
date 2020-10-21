@@ -498,7 +498,7 @@ const PUSH_CACHE_GROUP = 'P';
         }
     });
 
-    plugins.register('/i/apps/update/plugins/push', push.appPluginsUpdate);
+    plugins.register('/apps/update/plugins/push', push.appPluginsUpdate);
 
     plugins.register('/i/apps/reset', function(ob) {
         var appId = ob.appId;
