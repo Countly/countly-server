@@ -30,6 +30,28 @@
         });
     };
 
+    countlyTaskManager.getLastReports = function(callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/tasks/list",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "query": JSON.stringify({"manually_create": false}),
+                "display_loader": false,
+                'sSortDir_0': 'desc',
+                'iDisplayLength': 10,
+                'iDisplayStart': 0,
+                "iSortCol_0": 8//sort by started
+            },
+            dataType: "json",
+            success: function(json) {
+                json = json || {};
+                json.aaData = json.aaData || [];
+                callback(json.aaData);
+            }
+        });
+    };
+
     countlyTaskManager.get_response_text = function(xhr, status, error) {
         var resp;
         if (xhr.responseText) {
@@ -239,7 +261,6 @@
         var contentData = data;
         var ownerName = "ReportManager";
         var notifType = 4;//informational notification, check assistant.js for additional types
-
         countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res) {
             if (!res) {
                 CountlyHelpers.notify({
@@ -260,11 +281,13 @@
             monitor[countlyCommon.ACTIVE_APP_ID].push(id);
             store.set("countly_task_monitor", monitor);
             if (!silent) {
-                CountlyHelpers.notify({
+                $(".orange-side-notification-banner-wrapper").css("display", "block");
+                app.updateLongTaskViewsNofification();
+                /*CountlyHelpers.notify({
                     title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
                     message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
                     info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
-                });
+                });*/
             }
         }
         else {
@@ -280,6 +303,7 @@
 
     countlyTaskManager.tick = function() {
         var assistantAvailable = true;
+        app.updateLongTaskViewsNofification();
         if (typeof countlyAssistant === "undefined") {
             assistantAvailable = false;
         }
@@ -288,6 +312,7 @@
             var id = monitor[countlyCommon.ACTIVE_APP_ID][curTask];
             countlyTaskManager.check(id, function(res) {
                 if (res === false || res.result === "completed" || res.result === "errored") {
+
                     //get it from storage again, in case it has changed
                     monitor = store.get("countly_task_monitor") || {};
                     //get index of task, cause it might have been changed
@@ -301,6 +326,11 @@
                     //notify task completed
                     if (res && res.result === "completed") {
                         countlyTaskManager.fetchResult(id, function(res1) {
+                            if (res1 && res1.manually_create === false) {
+                                $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
+                                app.haveUnreadReports = true;
+                                app.updateLongTaskViewsNofification();
+                            }
                             if (res1 && res1.view) {
                                 if (!assistantAvailable) {
                                     CountlyHelpers.notify({
@@ -326,6 +356,11 @@
                     else if (res && res.result === "errored") {
                         countlyTaskManager.fetchResult(id, function(res1) {
                             if (res1 && res1.view) {
+                                if (res1 && res1.manually_create === false) {
+                                    $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
+                                    app.haveUnreadReports = true;
+                                    app.updateLongTaskViewsNofification();
+                                }
                                 if (!assistantAvailable) {
                                     CountlyHelpers.notify({
                                         title: jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),

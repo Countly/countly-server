@@ -1,4 +1,4 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
+/*global $, countlyReporting, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
@@ -2310,6 +2310,11 @@ app.route("/analytics/star-rating/:tab", 'star', function(tab) {
     this.renderWhenReady(this.starView);
 });
 
+
+app.addPageScript("/manage/reports", function() {
+    countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+});
+
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
@@ -2366,5 +2371,27 @@ $(document).ready(function() {
         text: "star.menu-title",
         icon: '<div class="logo ion-android-star-half"></div>',
         priority: 20
+    });
+});
+
+app.addPageScript("/manage/export/export-features", function() {
+    $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
+        var widgets = starRatingPlugin.getFeedbackWidgetsData();
+        var widgetsList = [];
+        widgets.forEach(function(widget) {
+            widgetsList.push({
+                id: widget._id,
+                name: widget.popup_header_text
+            });
+        });
+
+        var selectItem = {
+            id: "feedback_widgets",
+            name: "Feedback Widgets",
+            children: widgetsList
+        };
+        if (widgetsList.length) {
+            app.exportView.addSelectTable(selectItem);
+        }
     });
 });
