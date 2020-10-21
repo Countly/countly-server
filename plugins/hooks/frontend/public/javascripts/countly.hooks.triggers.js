@@ -155,7 +155,7 @@
                         `
                         $(".internal-event-configuration-view").html(html);
                         $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-internal-event-cohorts-enter-intro"));
-                       // self.loadCohortsData();
+                        self.loadCohortsData();
                       //  $.when(
                       //      countlyCohorts.loadCohorts(),
                       //  ).then(function() {
