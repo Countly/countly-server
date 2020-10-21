@@ -2685,6 +2685,18 @@
                                 '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\n' +
                                 '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
                             '</div>\n' +
+                            '<div class="export-toggler" @click="toggleExportDialog"><i class="fa fa-download"></i></div>\n' +
+                        '</div>\n' +
+                        '<div class="export-dialog-container" v-if="isExportDialogOpened" v-click-outside="closeExportDialog">\n' +
+                            '<div class="export-dialog">\n' +
+                                '<p>{{i18n("export.export-as")}}</p>\n' +
+                                '<div class="button-selector light">\n' +
+                                    '<div class="button" @click="selectedExportType = \'csv\'" :class="{active: selectedExportType === \'csv\'}">.CSV</div>\n' +
+                                    '<div class="button" @click="selectedExportType = \'xlsx\'" :class="{active: selectedExportType === \'xlsx\'}">.XLSX</div>\n' +
+                                    '<div class="button" @click="selectedExportType = \'json\'" :class="{active: selectedExportType === \'json\'}">.JSON</div>\n' +
+                                '</div>\n' +
+                                '<cly-button skin="green" @click="exportData" :label="i18n(\'export.export\')"></cly-button>\n' +
+                            '</div>\n' +
                         '</div>\n' +
                     '</div>',
         props: {
@@ -2713,7 +2725,9 @@
                 currentPage: this.initialPaging.page,
                 perPage: this.initialPaging.perPage,
                 searchVisible: !!this.searchQuery,
-                displayItems: this.initialPaging.perPage
+                displayItems: this.initialPaging.perPage,
+                isExportDialogOpened: false,
+                selectedExportType: 'csv'
             };
         },
         computed: {
@@ -2800,6 +2814,14 @@
                 if (this.nextAvailable) {
                     this.currentPage++;
                 }
+            },
+            closeExportDialog: function() {
+                this.isExportDialogOpened = false;
+            },
+            toggleExportDialog: function() {
+                this.isExportDialogOpened = !this.isExportDialogOpened;
+            },
+            exportData: function() {
             }
         },
         watch: {
