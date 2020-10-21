@@ -1,4 +1,4 @@
-/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app */
+/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app, countlyGlobal */
 
 (function(CountlyVueComponents, countlyVue, $) {
 
@@ -2822,6 +2822,8 @@
                 this.isExportDialogOpened = !this.isExportDialogOpened;
             },
             exportData: function() {
+                this.$emit("exportData", this.selectedExportType);
+                this.closeExportDialog();
             }
         },
         watch: {
@@ -2887,6 +2889,71 @@
                     '</div>'
     });
 
+    var exportLocalData = function(params) {
+
+        /** gets file name for export
+        * @returns {string} file name
+        */
+        function getFileName() {
+            var name = "countly";
+            if (params.settings.title) {
+                name = params.settings.title.replace(/[\r\n]+/g, "");
+            }
+            if (params.settings.timeDependent) {
+                //include export range
+                name += "_for_" + countlyCommon.getDateRange();
+            }
+            else {
+                //include export date
+                name += "_on_" + moment().format("DD-MMM-YYYY");
+            }
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+        }
+
+        /** gets export data from data table
+        * @returns {array} table data
+        */
+        function getExportData() {
+            var retData = [];
+            params.rows.forEach(function(row) {
+                var ob = {};
+                params.columns.forEach(function(col) {
+                    try {
+                        if (!(row && Object.prototype.hasOwnProperty.call(row, col.field)) || (col && col.noExport)) {
+                            return;
+                        }
+                        ob[col.label] = row[col.field];
+                    }
+                    catch (e) {
+                        //not important
+                    }
+                });
+                retData.push(ob);
+            });
+            return retData;
+        }
+        var formData = {
+            type: params.type,
+            data: JSON.stringify(getExportData()),
+            filename: getFileName(),
+            api_key: countlyGlobal.member.api_key
+        };
+
+        var url = countlyCommon.API_URL + "/o/export/data";
+        var form = $('<form method="POST" action="' + url + '">');
+
+        $.each(formData, function(k, v) {
+            if (CountlyHelpers.isJSON(v)) {
+                form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
+            }
+            else {
+                form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+            }
+        });
+        $('body').append(form);
+        form.submit();
+    };
+
     Vue.component("cly-datatable", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
@@ -2925,6 +2992,12 @@
             striped: {
                 type: Boolean,
                 default: true
+            },
+            exportSettings: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
             }
         },
         computed: {
@@ -3083,7 +3156,17 @@
             },
             onPerPageChange: _.debounce(function(params) {
                 this.updateParams({perPage: params.currentPerPage});
-            }, 500)
+            }, 500),
+            exportData: function(type) {
+                if (!this.exportSettings.isRemote) {
+                    exportLocalData({
+                        rows: this.$refs.table.processedRows[0].children,
+                        columns: this.columns,
+                        type: type,
+                        settings: this.exportSettings
+                    });
+                }
+            }
         },
         watch: {
             searchQuery: _.debounce(function(newVal) {
@@ -3122,6 +3205,7 @@
                             '@on-row-mouseenter="onRowMouseover"\n' +
                             '@on-row-mouseleave="onRowMouseleave"\n' +
                             '@on-row-click="onRowClick"\n' +
+                            'ref="table"\n' +
                             ':mode="internalMode"\n' +
                             ':totalRows="internalTotalRows"\n' +
                             ':isLoading.sync="isLoading"\n' +
@@ -3130,6 +3214,7 @@
                                     '<custom-controls\n' +
                                     '@infoChanged="onInfoChanged"\n' +
                                     '@queryChanged="searchQuery = $event"\n' +
+                                    '@exportData="exportData"\n' +
                                     'ref="controls"\n' +
                                     ':initial-paging="initialPaging"\n' +
                                     ':search-query="searchQuery"\n' +
