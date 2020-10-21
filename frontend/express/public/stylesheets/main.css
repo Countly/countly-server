@@ -1155,6 +1155,32 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 #edit-event-table-container  { width:950px; max-height:400px; overflow:auto; }
 .events .buttons { margin-top:0; padding:13px; box-shadow:inset 0 1px 0 #ccc; border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
 
+#evens-blueprint-config .ui-tabs .ui-tabs-nav{height: 40px; border: none; background-color:transparent; padding-left: 12px;}
+#evens-blueprint-config .ui-tabs .ui-tabs-panel{padding:0;}
+#evens-blueprint-config .ui-tabs .ui-tabs-nav li a{background-color: transparent;  color: #666; padding: 0px 0px 6px 0px;  font-size:15px}
+#evens-blueprint-config .ui-tabs.ui-widget-content .ui-tabs-nav > .ui-state-default {border-top: none;}
+#evens-blueprint-config .ui-tabs .ui-tabs-nav li.ui-tabs-active {border-top: none; border-bottom: none !important; background-color:transparent;}
+#evens-blueprint-config .ui-tabs .ui-tabs-nav li.ui-tabs-active a{color:#333; border-bottom: 2px solid #19cc63 !important;}
+#evens-blueprint-config .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
+#evens-blueprint-config .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
+#events-general-filter.cly-select .right.combo:before{background-color: #444;color: #fff;border-radius: 4px;padding: 1px;position: relative;font-size: 10px;}
+
+#events-blueprint-drawer { z-index: 10000;}
+#events-blueprint-drawer #add-parameter-title { display: block; }
+#events-blueprint-drawer #create-parameter { display: block; }
+#events-blueprint-drawer.editing #edit-event-blueprint-title { display: block; }
+#events-blueprint-drawer.editing #save-parameter { display: block; }
+#events-blueprint-drawer.editing #add-parameter-title { display: none; }
+#events-blueprint-drawer.editing #create-parameter { display: none; }
+#events-blueprint-drawer #rc-parameter-description-section .label span, #events-blueprint-drawer #rc-parameter-description-section .label a {cursor: pointer;}
+#events-blueprint-drawer input::placeholder, #rc-condition-drawer input::placeholder {font:  13px Ubuntu,Helvetica,sans-serif;}
+#events-blueprint-drawer input::-webkit-input-placeholder, #rc-condition-drawer input::-webkit-input-placeholder {font:  13px Ubuntu,Helvetica,sans-serif;}
+#events-blueprint-drawer input::-moz-placeholder, #rc-condition-drawer input::-moz-placeholder {font:  13px Ubuntu,Helvetica,sans-serif;}
+#events-blueprint-drawer input:-ms-input-placeholder, #rc-condition-drawer input:-ms-input-placeholder {font:  13px Ubuntu,Helvetica,sans-serif;}
+#events-blueprint-drawer input, #rc-condition-drawer input{font: 13px Ubuntu,Helvetica,sans-serif;color: #444}
+#events-blueprint-drawer textarea {font: 13px Ubuntu,Helvetica,sans-serif;color: #444;width: 100%; border-radius: 2px; resize: none; color: #444; border: none; box-shadow: inset 0 0 0 1px #d0d0d0; padding: 7px;padding-right: 25px;box-sizing: border-box;height: 30px;overflow: hidden;}
+#events-blueprint-drawer textarea:focus {outline: none;}
+
 #events-custom-settings table.events-table, #events-overview-table table.events-table{ width:100%; padding:0; margin:0;}
 #events-overview-table{border:1px solid #D0D0D0; overflow:auto; border-radius: 2px 2px 0 0;}
 #events-custom-settings table.events-table  th, #events-overview-table table.events-table th { padding:10px 10px; color: #484848; font-weight:normal; font:11px Ubuntu,Helvetica,sans-serif;  border-right:none; background-color:#f3f3f3; text-transform: uppercase; line-height: 12px; border-bottom: 1px solid #E2E2E2; border-top: 1px solid #D0D0D0;}
@@ -1340,6 +1366,7 @@ margin: 50px 0;}
 .button-selector.light .button.active { background-color:#FFF; border:1px solid #2EB52B; position: relative; z-index:10;}
 .button-selector.light .button.disabled { opacity:0.3; cursor:default; }
 
+.cly-list-options-row{color: #6B6B6B;border-radius: 2px;border: solid 1px #d0d0d0;padding: 2px 10px}
 #content .cly-list-options {cursor: pointer; color:#a7a7a7; font-size: 20px; vertical-align: middle; line-height: 12px; }
 #content .cly-list-options:hover {color:#6B6B6B;}
 #content .cly-list-options:before { font-family: 'Ionicons';  content: "\f396"; }
