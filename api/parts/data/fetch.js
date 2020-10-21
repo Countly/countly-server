@@ -94,6 +94,46 @@ fetch.fetchEventData = function(collection, params) {
 };
 
 /**
+* The return the event groups data by app_id.
+* @param {Object} params - params object
+* @param {string} params.app_id - The id of the event group of application id.
+**/
+fetch.fetchEventGroups = function(params) {
+    const COLLECTION_NAME = "event_groups";
+    const {qstring: {app_id}} = params;
+    common.db.collection(COLLECTION_NAME).find({app_id}).toArray(function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        common.returnOutput(params, result);
+    });
+};
+
+/**
+* The return the merged event data for event groups.
+* @param {Object} params - params object
+* @param {string} params._id - The id of the event group.
+**/
+fetch.fetchMergedEventGroups = function(params) {
+    const COLLECTION_NAME = "event_groups";
+    const {qstring: {event}} = params;
+    common.db.collection(COLLECTION_NAME).findOne({_id: event}, function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        let options = {};
+        options.event_groups = true;
+        options.segmentation = result.segments;
+
+        fetch.getMergedEventData(params, result.source_events, options, function(resultMergedEvents) {
+            common.returnOutput(params, resultMergedEvents);
+        });
+    });
+};
+
+/**
 * Get merged data from multiple events in standard data model and output to browser
 * @param {params} params - params object
 **/
@@ -118,9 +158,18 @@ fetch.fetchMergedEventData = function(params) {
 */
 fetch.getMergedEventData = function(params, events, options, callback) {
     var eventKeysArr = [];
+    let sourceEventSegments = [];
 
     for (let i = 0; i < events.length; i++) {
-        eventKeysArr.push(events[i] + params.app_id);
+        if (options.event_groups) {
+            eventKeysArr.push(events[i] + params.app_id);
+            if (options.segmentation[events[i]]) {
+                sourceEventSegments.push(options.segmentation[events[i]]);
+            }
+        }
+        else {
+            eventKeysArr.push(events[i] + params.app_id);
+        }
     }
 
     if (!eventKeysArr.length) {
@@ -129,8 +178,11 @@ fetch.getMergedEventData = function(params, events, options, callback) {
     else {
         async.map(eventKeysArr, getEventData, function(err, allEventData) {
             var mergedEventOutput = {};
+            let meta = {};
 
             for (let i = 0; i < allEventData.length; i++) {
+                meta = Object.assign({}, meta, allEventData[i].meta);
+
                 delete allEventData[i].meta;
 
                 for (let levelOne in allEventData[i]) {
@@ -207,7 +259,30 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                 }
             }
 
-            callback(mergedEventOutput);
+            /**
+            * Create segments for meta
+            * @param {Object} dummyMeta - dummy data
+            * @param {Object} sourceSegments - source segments
+            * @param {Object} options - 
+            * @returns {Object} -
+            **/
+            const createSegmentsForMergedEvents = (dummyMeta, sourceSegments)=>{
+                for (const segment in dummyMeta) {
+                    const _segments = "segments";
+                    if (segment === _segments) {
+                        continue;
+                    }
+                    if (sourceSegments.includes(segment)) {
+                        dummyMeta[_segments] = Array.from(new Set([...dummyMeta[_segments], segment]));
+                    }
+                    else {
+                        delete dummyMeta[segment];
+                    }
+                }
+                return dummyMeta;
+            };
+
+            callback({...mergedEventOutput, "meta": createSegmentsForMergedEvents(meta, sourceEventSegments)});
         });
     }
 
