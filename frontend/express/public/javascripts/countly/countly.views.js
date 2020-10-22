@@ -4298,6 +4298,7 @@ window.EventsBlueprintView = countlyView.extend({
         }
         this.template = Handlebars.compile($("#template-events-blueprint").html());
         this.textLimit = 100;
+        
     },
     initializeTabs: function() {
         var self = this;
@@ -4468,7 +4469,101 @@ window.EventsBlueprintView = countlyView.extend({
 
     },
     initEventsDrawer: function() {},
-    initEventGroupsDrawer: function() {},
+    initEventGroupDrawer: function() {
+        var self = this;
+        this.eventGroupDrawer = CountlyHelpers.createDrawer({
+            id: "event-group-drawer",
+            form: $('#event-groups-blueprint-drawer'),
+            title: jQuery.i18n.map["events.event-group-drawer-create"],
+            applyChangeTriggers: false,
+            resetForm: function() {
+                $(self.eventGroupDrawer).find('.title span').first().html(jQuery.i18n.map["events.event-group-drawer-create"]);
+                $("#current_group_id").text('');
+                $("#group-name-input").val('');
+                $("#event-group-description").val("");
+                $("#event-group-include-events-dropdown").clyMultiSelectClearSelection({});
+                $("#group-count-input").val('');
+                $("#group-sum-input").val('');
+                $("#group-duration-input").val('');
+
+                $("#create-widget").show();
+                self.checkEventGroupDrawerInterval = setInterval(function() {
+                    self.checkEventGroupDrawerDisabled();
+                    console.log("check event group drawer form");
+                    if(!app.activeView.eventGroupDrawer) {
+                        clearInterval(self.checkEventGroupDrawerInterval);
+                    }
+                }, 1000);
+            },
+            onClosed: function() {
+                $(".grid-stack-item").removeClass("marked-for-editing");
+                clearInterval(self.checkEventGroupDrawerInterval);
+            }
+        });
+
+        this.eventGroupDrawer.init();
+        $("#event-group-drawer #use-description-checkbox").off("click").on("click", function(e) {
+            var checked = e.target.checked;
+            if (checked) {
+                $("#event-group-description").attr("disabled", false);
+            } else {
+                $("#event-group-description").val("");
+                $("#event-group-description").attr("disabled", true);
+            }
+        });
+
+        var events = countlyEvent.getEvents(true);
+        var eventsOptions = events.map(function (e) {
+            return {value: e.key, name: e.name};
+        });
+        $("#event-group-include-events-dropdown").clyMultiSelectSetItems(eventsOptions);
+        $("#event-group-drawer #save-widget").hide();
+        $("#event-group-drawer #create-widget").addClass("disabled");
+    },
+    getEventGroupDrawerSetting: function () {
+        var self = this;
+        var groupInstance = {
+            name: $("#group-name-input").val().trim() || null,
+            has_description:  $("#event-group-description").val().trim() || null,
+            app: countlyCommon.ACTIVE_APP_ID,
+            events: null,
+        }
+        if ($("#current_hook_id").text().length > 0) {
+            groupInstance._id = $("#current_group_id").text();
+        }
+
+        var events = $("#event-group-include-events-dropdown").clyMultiSelectGetSelection(); 
+        if (events.length > 0) {
+            groupInstance.events = events
+        }
+
+        // todo : more properties
+        return groupInstance;
+    },
+    checkEventGroupDrawerDisabled: function() {
+        var groupConfig = this.getEventGroupDrawerSetting();
+        $("#create-widget").removeClass("disabled");
+        $("#save-widget").removeClass("disabled");
+        for (var key in groupConfig) {
+            if (groupConfig[key] == null) {
+                $("#create-widget").addClass("disabled");
+                $("#save-widget").addClass("disabled");
+            }
+        }
+    },
+    loadEventGroupDrawerSetting: function (data) {
+        console.log("load event group drawer setting",data);
+        this.eventGroupDrawer.resetForm();
+        $("#current_group_id").text(data._id);
+        $("#group-name-input").val(data.name);
+        // todo: more properties
+        window.dd= this.eventGroupDrawer;
+
+        $(this.eventGroupDrawer).find('.title span').first().html(jQuery.i18n.map["events.edit-your-group"]);
+        $(this.evntGroupDrawer).addClass("open editing");
+        $("#create-widget").hide();
+        $("#save-widget").show();
+    },
     initEventsTable: function() {},
     initEventGroupsTable: function() {},
     selectAllRowsEventGroups: function() {
@@ -5208,6 +5303,18 @@ window.EventsBlueprintView = countlyView.extend({
                 }
             });
             self.rightButtonsEvents();
+
+            self.initEventGroupDrawer();
+            $(".new-event-group-button").off("click").on("click", function (e) {
+                self.eventGroupDrawer.resetForm();
+                self.eventGroupDrawer.open();
+            });
+            $(".modify-event-group-button").off("click").on("click", function (e) {
+                self.eventGroupDrawer.resetForm();
+                self.eventGroupDrawer.open();
+                self.loadEventGroupDrawerSetting({_id:"123", name:"333"});
+                
+            })
         }
     },
     compare_arrays: function(array1, array2) {
