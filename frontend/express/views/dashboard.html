@@ -1217,7 +1217,13 @@
                             <table class="d-table help-zone-vb no-fix events-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
                         </div>
                     </div>
-                    <div id="events-event-groups">Event Groups Screen</div>
+
+                    <div id="events-event-groups">
+                        Event Groups Screen
+                        <button class="new-event-group-button"> + New event group(tmp) </button>
+                        <button class="modify-event-group-button">  Modify event group(tmp) </button>
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -1365,8 +1371,117 @@
         <div id="save-parameter" class="icon-button green" data-localize="common.save"></div>
     </div>
 </div>
-<div id="event-groups-blueprint-drawer" class="cly-drawer"></div>
+
+<div id="event-groups-blueprint-drawer" class="cly-drawer">
+    <div class="details">
+        <input type="text" id="current_group_id" hidden/>
+
+        <div class="section">
+            <div class="label" data-localize='events.event-group-name' ></div>
+            <div>
+                <input id="group-name-input" class="input" type="text" placeholder="Enter event group name"/>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="use-description">
+                <label class="container">
+                    <input id="use-description-checkbox" type="checkbox" />
+                    <span class="fas far fa-square"></span>
+                    <span data-localize="events.group-use-description">Use description</span>
+                </label>
+            </div>
+            <div>
+                <input id="event-group-description" class="input" type="text" placeholder="Enter event group description" disabled/>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="left">
+                        <div data-localize='events.group-include-events'></div>
+                    </div>
+                    <div class="right">
+                        <div data-localize=""></div>
+                    </div>
+                </div>
+
+                <div class="panel-body include-events-block">
+                        <div class="label" data-localize='events.group-select-events'></div>
+                        <div id="event-group-include-events-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;" data-max="100">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div class="text">
+                                        <div class="default-text" data-localize='events.group-select-events-remind'></div>
+                                    </div>
+                                </div>
+                                <div class="right combo"></div>
+                            </div>
+                            <div class="select-items square" style="width: 100%;"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize="events.group-visibility"></div>
+            <div class="description" data-localize="events.group-visibility-description"></div>
+            <div class="event-group-visibility-switcher">
+                <div class="on-off-switch ">
+                    <input type="checkbox" class="on-off-switch-checkbox" id="event-grou-visibility-checkbox" checked="">
+                    <label class="on-off-switch-label"></label>
+                    <span class="text" data-localize="events.group-visibility-checkbox"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="left">
+                        <div data-localize='events.group-properties'></div>
+                    </div>
+                    <div class="right">
+                        <div data-localize=""></div>
+                    </div>
+                </div>
+
+                <div class="panel-body event-group-properties-block">
+                     <div class="section">
+                        <div class="label" data-localize='events.event-group-count' ></div>
+                        <div class="description" data-localize='events.event-group-count-description'></div>
+                        <div>
+                            <input id="group-count-input" class="input" type="text" placeholder="Count"/>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="label" data-localize='events.event-group-sum' ></div>
+                        <div class="description" data-localize='events.event-group-sum-description'></div>
+                        <div>
+                            <input id="group-sum-input" class="input" type="text" placeholder="Sum"/>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="label" data-localize='events.event-group-duration' ></div>
+                        <div class="description" data-localize='events.event-group-duration-description'></div>
+                        <div>
+                            <input id="group-duration-input" class="input" type="text" placeholder="Duration"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+    </div>
+    <div class="buttons">
+        <div id="create-widget" class="icon-button green disabled" data-localize='events.create-group'></div>
+        <div id="save-widget" class="icon-button green disabled" data-localize='events.save-group'></div>
+    </div>
+</div>
     </script>
+
     <script id="template-events-overview"  type="text/x-handlebars-template">
 		<div id="event-main">
             <div class="widget">
