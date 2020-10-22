@@ -206,6 +206,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 
                     params.app_id = app._id;
                     params.appTimezone = app.timezone;
+                    params.app = app;
                     params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                     params.member = member;
 
