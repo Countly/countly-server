@@ -1408,7 +1408,7 @@ const processRequest = (params) => {
                         }
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
-						if(params.qstring.app_ids && params.qstring.app_ids!=""){
+						if(params.qstring.app_ids && params.qstring.app_ids !== ""){
 							var ll = params.qstring.app_ids.split(",");
 							if(ll.length>1){
 								params.qstring.query.app_id = {$in:ll};
