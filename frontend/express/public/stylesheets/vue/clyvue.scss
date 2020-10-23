@@ -1678,9 +1678,6 @@
                 font-family: "Ionicons";
                 content: "\f123";
                 font-size: 9px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
             }
         }
 
@@ -1708,14 +1705,18 @@
                 }
 
                 .drop {
-                    width: auto;
+                    width: 12px;
+                    height: 12px;
+                    background-color: #444;
+                    justify-content: center;
+                    align-items: center;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    font-size: 0;
+                    display: flex;
 
                     &.combo:before {
                         color: #fff;
-                        background-color: #444444;
-                        width: 12px;
-                        height: 12px;
-                        border-radius: 4px;
                     }
                 }
             }
@@ -1723,14 +1724,11 @@
             &:hover {
                 .drop {
                     opacity: 1;
+                    background-color: #2fa732;
                 }
 
                 .text {
                     color: #2fa732;
-                }
-                .drop.combo:before {
-                    color: #fff;
-                    background-color: #444444;
                 }
             }
         }
