@@ -56,8 +56,8 @@ class Hooks {
         db && db.collection("hooks").find({"enabled": true}).toArray(function(err, result) {
             self._cachedRules = result;
             self.syncRulesWithTrigger();
-            console.log("fetch rules !!");
-            console.log(err, result,"!!!", process.pid);
+           // console.log("fetch rules !!");
+           // console.log(err, result,"!!!", process.pid);
         });
     }
 

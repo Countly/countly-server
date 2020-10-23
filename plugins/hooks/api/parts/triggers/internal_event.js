@@ -27,11 +27,11 @@ class InternalEventTrigger {
             if(rule.trigger.configuration.eventType === eventType) {
                switch(eventType) {
                case "/cohort/enter": 
+               case "/cohort/exit":
                     const {cohort, uids} = ob;
                     if (rule.trigger.configuration.cohortID === cohort._id) {
                         common.db.collection('app_users' + cohort.app_id).find({"uid":{"$in": uids}}).toArray(
                             (uidErr, result) => {
-                                console.log(uidErr, result, "!!ddd");
                                 if(uidErr) {
                                     console.log(uidErr);
                                     return;
@@ -43,7 +43,7 @@ class InternalEventTrigger {
                                     console.log(err,"??#3");
                                 }
                                 rule.effects.forEach(e => {
-                                    results.forEach((u) => {
+                                    result.forEach((u) => {
                                         this.pipeline({
                                             params: {cohort, user: u},
                                             rule: rule,
@@ -54,6 +54,22 @@ class InternalEventTrigger {
                             }
                         )
                     }
+                    break;
+               case "/i/app_users/create":
+               case "/i/app_users/update":
+               case "/i/app_users/delete":
+                       const {app_id, user} = ob;
+                       if (rule.apps[0] === app_id + '') {
+                           rule.effects.forEach(e => {
+                               this.pipeline({
+                                   params: {user: user},
+                                   rule: rule,
+                                   effect: e,
+                               });
+                           });
+                       }
+                       console.log(ob, "userprofile!333332");
+                       break;
                }
             }
         };
@@ -83,8 +99,8 @@ const InternalEvents = [
     "/crashes/new",
     "/cohort/enter",
     "/cohort/exit",
-    "/userprofile/create",
-    "/userprofile/update",
-    "/userprofile/delete",
+    "/i/app_users/create",
+    "/i/app_users/update",
+    "/i/app_users/delete",
     "/hooks/trigger",
 ]
