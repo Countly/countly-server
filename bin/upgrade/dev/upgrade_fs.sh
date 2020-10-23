@@ -23,6 +23,23 @@ then
 
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
+    
+    #removing moved files
+    if [ -f "$DIR/../plugins/populator/frontend/public/stylesheets/banking.css" ]; then
+        rm -rf "$DIR/../plugins/populator/frontend/public/stylesheets/banking.css";
+    fi
+    if [ -f "$DIR/../plugins/populator/frontend/public/stylesheets/ecommerce.css" ]; then
+        rm -rf "$DIR/../plugins/populator/frontend/public/stylesheets/ecommerce.css";
+    fi
+    if [ -f "$DIR/../plugins/populator/frontend/public/stylesheets/gaming.css" ]; then
+        rm -rf "$DIR/../plugins/populator/frontend/public/stylesheets/gaming.css";
+    fi
+    if [ -f "$DIR/../plugins/populator/frontend/public/stylesheets/healthcare.css" ]; then
+        rm -rf "$DIR/../plugins/populator/frontend/public/stylesheets/healthcare.css";
+    fi
+    if [ -f "$DIR/../plugins/populator/frontend/public/stylesheets/navigation.css" ]; then
+        rm -rf "$DIR/../plugins/populator/frontend/public/stylesheets/navigation.css";
+    fi
 
 
     countly plugin upgrade star-rating
