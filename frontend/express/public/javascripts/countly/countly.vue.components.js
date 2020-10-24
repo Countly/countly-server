@@ -2962,7 +2962,7 @@
             };
         }
         else {
-            countlyCommon.API_URL + "/o/export/data";
+            url = countlyCommon.API_URL + "/o/export/data";
             formData = {
                 type: params.type,
                 data: JSON.stringify(getExportData()),
