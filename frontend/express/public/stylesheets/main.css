@@ -2478,6 +2478,7 @@ h4 + .mgmt-plugins-row {
 .report-manager-data-col.report-manager-automatically-created { width: 55%; }
 .report-manager-report-desc { color: #AAA; margin-top:5px;}
 .extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
+#report-manager-view .left {width:500px;}
 
 #top-bar .dropdown .manage-long-tasks-menu {
 	background-color:#e9e9e9;

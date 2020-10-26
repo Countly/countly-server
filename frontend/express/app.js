@@ -1549,6 +1549,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
     countlyDb.collection('jobs').createIndex({ finished: 1 }, function() {});
     countlyDb.collection('jobs').createIndex({ name: 1 }, function() {});
+    countlyDb.collection('long_tasks').createIndex({ manually_create: 1, start: -1 }, function() {});
 
     app.listen(countlyConfig.web.port, countlyConfig.web.host || '');
 });
