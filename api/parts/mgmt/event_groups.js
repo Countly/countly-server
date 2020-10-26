@@ -33,30 +33,23 @@ const create = (params) => {
             'required': true,
             'type': 'Object'
         },
-        'segments': {
-            'required': true,
-            'type': 'Object'
-        },
-        'iap': {
-            'required': true,
-            'type': 'Boolean'
-        },
-        'is_visible': {
+        'status': {
             'required': true,
             'type': 'Boolean'
         },
         'order': {
             'required': true,
-            'type': 'Array'
+            'type': 'Number'
         }
     };
+    params.qstring.args = JSON.parse(params.qstring.args);
     const {obj, errors} = common.validateArgs(params.qstring.args, argProps, true);
     if (!obj) {
         common.returnMessage(params, 400, `Error: ${errors}`);
         return false;
     }
-    const _id = `${ID_PREFIX}${crypto.createHash('md5').update(`${JSON.stringify(params.args.source_events)}${params.args.app_id}${Date.now()}`)}`;
-    common.db.collection(COLLECTION_NAME).insert({...params.args, _id}, (error, result) =>{
+    const _id = `${ID_PREFIX}${crypto.createHash('md5').update(`${JSON.stringify(params.qstring.args.source_events)}${params.qstring.app_id}${Date.now()}`).digest('hex')}`;
+    common.db.collection(COLLECTION_NAME).insert({...params.qstring.args, _id}, (error, result) =>{
         if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
