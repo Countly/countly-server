@@ -1930,7 +1930,7 @@ const processRequest = (params) => {
                     }
                     else {
                         if (params.qstring.event.startsWith('[CLY]_group_')) {
-                            validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method); validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventGroups);
+                            validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventGroups);
                         }
                         else {
                             params.truncateEventValuesList = true;
