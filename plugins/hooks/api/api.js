@@ -225,7 +225,7 @@ plugins.register("/i/hook/delete", function(ob) {
             );
         }
         catch (err) {
-            log.e('delete hook failed', alertID);
+            log.e('delete hook failed', hookID);
             common.returnMessage(params, 500, "Failed to delete an hook");
         }
     }, paramsInstance);

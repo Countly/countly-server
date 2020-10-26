@@ -80,7 +80,8 @@ window.HooksDrawer = function(HookView) {
                 $(".hook-trigger-view").html($("#template-hook-trigger-"+selected).html());
                 if(triggers[selected] && (triggers[selected]).init) {
                     (triggers[selected]).init();
-                } else{
+                    app.localize();
+                } else {
                     $(".hook-trigger-view").html("");
                 }
             });
@@ -97,12 +98,12 @@ window.HooksDrawer = function(HookView) {
             $(".add-effect-button").off("click").on("click", function() {
                 $(".hook-effects-list").append($("#template-hook-effect-selector").html()); 
                 $(".single-hook-effect-dropdown").clySelectSetItems(effectsSelectorItems);
-                app.localize();
+                app.localize($(".effects-block"));
                 $(".single-hook-effect-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                     $(e.currentTarget.parentElement.nextElementSibling).html($("#template-hook-effect-"+selected).html());
                     (effects[selected]).init();
                     self.drawer._applyChangeTrigger(self.drawer);
-                    app.localize();
+                    app.localize($(".effects-block"));
                 });
                 $(".delete-effect-button").off("click").on("click", function(e) {
                     var effectDom = e.currentTarget.parentElement.parentElement;
@@ -112,7 +113,6 @@ window.HooksDrawer = function(HookView) {
                 });
                 self.drawer._applyChangeTrigger(self.drawer);
                 self.checkDisabled();
-                console.log("add effect");
             });
             $(".add-effect-button").trigger("click");
             self.drawer._applyChangeTrigger();
@@ -246,7 +246,6 @@ window.HooksDrawer = function(HookView) {
             var config = {};
             config.type = triggerType;
             config.configuration = triggerConfig; 
-            console.log(config,"triggerType");
             return config; 
         },
 

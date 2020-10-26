@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <div class="section">
+        <div class="section trigger-block">
             <div class="panel">
                 <div class="panel-heading">
                     <div class="left">
@@ -65,7 +65,7 @@
             </div>
         </div>
 
-        <div class="section">
+        <div class="section effects-block">
             <div class="panel">
                 <div class="panel-heading">
                     <div class="left">
@@ -126,9 +126,89 @@
             <div class="select-items square" style="width: 100%;"></div>
         </div>
     </div>
-    <div class="section">
-        <div class="label" data-localize='hooks.trigger-' >Define rules </div>
-        <div class="imcoming-drill-query">
+
+    <div class="section" id="filter-definition" style="display:none">
+        <div style="display:none;" id="defalt-filter-block">
+            <div class="query" style="margin-bottom:3px">
+                <div class="and-or" style="padding: 10px 0px; margin-top:-5px">
+                    <div class="block-line-row">
+                        <div class="filter-connector cly-select centered force" style="width:45px; height:24px; margin-left:20px; z-index:1;">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div data-value="AND" class="text" style="font-size:11px; width: 100%; padding: 6px 0px 5px 0px;" data-localize="drill.and">AND</div>
+                                </div>
+                            </div>
+                            <div class="select-items square" style="width:46px; display: none;">
+                                <div data-value="AND" class="item" style="font-size:11px" data-localize="drill.and">AND</div>
+                                <div data-value="OR" class="item" style="font-size:11px" data-localize="drill.or">OR</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="filters">
+                    <div class="filter-name cly-select cly-select-keynav centered text-align-left" style="width:200px;">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" data-localize="drill.select-filter">Select a Filter</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:200px; display: none;">
+                            <div></div>
+                        </div>
+                    </div>
+                    <div class="filter-type cly-select centered force disabled" style="width:100px;">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div data-value="=" class="text" data-localize="drill.opr.is"></div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:200px; display: none;">
+                            <div data-value="rgxcn" class="item str list rgx rgxcn" data-localize="drill.opr.contains"></div>
+                            <div data-value="rgxntc" class="item str list rgx rgxntc" data-localize="drill.opr.notcontain"></div>
+                            <div data-value="=" class="item both eq" data-localize="drill.opr.is"></div>
+                            <div data-value="!=" class="item both neq" data-localize="drill.opr.is-not"></div>
+                        </div>
+                    </div>
+                    <div class="filter-value list cly-select cly-select-keynav centered text-align-left disabled" style="width:200px;">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" data-localize="drill.list">List</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:200px; display: none;">
+                            <div></div>
+                        </div>
+                    </div>
+                    <div class="filter-value string hidden">
+                        <input type="text" placeholder="String"/>
+                    </div>
+                    <div class="filter-value num hidden">
+                        <input type="number" placeholder="Number"/>
+                    </div>
+                    <div class="filter-value date hidden">
+                        <input class="open-date-picker" type="text" placeholder="Date"/>
+                        <div class="date-picker">
+                            <div class="calendar-container calendar-light">
+                                <div class="calendar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="delete text-light-gray"><a class="material-icons" style="padding-top:2px">highlight_off</a></div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-heading" data-localize="block.blocking-rule-definition"></div>
+            <div class="panel-body">
+                <div id="segmentation" style="width:auto; float: none; padding:0; min-width: initial;">
+                    <div id="filter-blocks" class="empty"></div>
+                    <div class="block-line-row"></div>
+                    <button id="filter-add-button" class="btn btn-orange">+ Add Condition</button>
+                </div>
+            </div>
         </div>
     </div>
 </script>
