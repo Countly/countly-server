@@ -1,4 +1,4 @@
-/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app */
+/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app, countlyGlobal */
 
 (function(CountlyVueComponents, countlyVue, $) {
 
@@ -840,8 +840,9 @@
             }
             return convertedParams;
         },
-        toStandardResponse: function(response) {
+        toStandardResponse: function(response, requestOptions) {
             response = response || {};
+            requestOptions = requestOptions || {};
             var fields = {
                 rows: response.aaData || [],
                 totalRows: response.iTotalDisplayRecords || 0,
@@ -849,6 +850,21 @@
             };
             if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
                 fields.echo = parseInt(response.sEcho);
+            }
+            if (Object.prototype.hasOwnProperty.call(requestOptions, "url")) {
+                var pairs = [];
+                for (var dataKey in requestOptions.data) {
+                    if (dataKey === "iDisplayStart" || dataKey === "iDisplayLength") {
+                        continue;
+                    }
+                    pairs.push(dataKey + "=" + requestOptions.data[dataKey]);
+                }
+                pairs.push("api_key=" + countlyGlobal.member.api_key);
+
+                fields.exportSettings = {
+                    resourcePath: requestOptions.url + "?" + pairs.join("&"),
+                    resourceProp: "aaData"
+                };
             }
             return fields;
         }
@@ -1802,8 +1818,8 @@
                         return [];
                     }
                 },
-                bucket: { required: false, default: null, type: Object },
-                overrideBucket: { required: false, default: null, type: Object },
+                bucket: { required: false, default: null, type: String },
+                overrideBucket: { required: false, default: false, type: Boolean },
                 frozen: {default: false, type: Boolean},
                 configPaths: { required: true, type: Array },
                 configSmall: { required: false, default: false, type: Boolean },
@@ -2018,22 +2034,32 @@
                         return [];
                     }
                 },
-                skin: { default: "main", type: String}
+                skin: { default: "main", type: String},
+                disabled: {type: Boolean, default: false}
             },
             computed: {
-                skinClass: function() {
+                topClasses: function() {
+                    var classes = [];
                     if (["main", "light"].indexOf(this.skin) > -1) {
-                        return "radio-" + this.skin + "-skin";
+                        classes.push("radio-" + this.skin + "-skin");
                     }
-                    return "radio-main-skin";
+                    else {
+                        classes.push("radio-main-skin");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
                 }
             },
             methods: {
                 setValue: function(e) {
-                    this.$emit('input', e);
+                    if (!this.disabled) {
+                        this.$emit('input', e);
+                    }
                 }
             },
-            template: '<div class="cly-vue-radio" v-bind:class="[skinClass]">\n' +
+            template: '<div class="cly-vue-radio" v-bind:class="topClasses">\n' +
                             '<div class="radio-wrapper">\n' +
                                 '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\n' +
                                     '<div class="box"></div>\n' +
@@ -2181,8 +2207,8 @@
             template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
                             '<div class="check-wrapper">\n' +
                                 '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
-                                '<div v-bind:class="labelClass" @click="setValue(!value)"></div>\n' +
-                                '<span v-if="label" class="check-text" @click="setValue(!value)">{{label}}</span>\n' +
+                                '<div v-bind:class="labelClass" @click.stop="setValue(!value)"></div>\n' +
+                                '<span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}</span>\n' +
                             '</div>\n' +
                         '</div>'
         }
@@ -2675,6 +2701,18 @@
                                 '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\n' +
                                 '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
                             '</div>\n' +
+                            '<div class="export-toggler" @click="toggleExportDialog"><i class="fa fa-download"></i></div>\n' +
+                        '</div>\n' +
+                        '<div class="export-dialog-container" v-if="isExportDialogOpened" v-click-outside="closeExportDialog">\n' +
+                            '<div class="export-dialog">\n' +
+                                '<p>{{i18n("export.export-as")}}</p>\n' +
+                                '<div class="button-selector light">\n' +
+                                    '<div class="button" @click="selectedExportType = \'csv\'" :class="{active: selectedExportType === \'csv\'}">.CSV</div>\n' +
+                                    '<div class="button" @click="selectedExportType = \'xlsx\'" :class="{active: selectedExportType === \'xlsx\'}">.XLSX</div>\n' +
+                                    '<div class="button" @click="selectedExportType = \'json\'" :class="{active: selectedExportType === \'json\'}">.JSON</div>\n' +
+                                '</div>\n' +
+                                '<cly-button skin="green" @click="exportData" :label="i18n(\'export.export\')"></cly-button>\n' +
+                            '</div>\n' +
                         '</div>\n' +
                     '</div>',
         props: {
@@ -2703,7 +2741,9 @@
                 currentPage: this.initialPaging.page,
                 perPage: this.initialPaging.perPage,
                 searchVisible: !!this.searchQuery,
-                displayItems: this.initialPaging.perPage
+                displayItems: this.initialPaging.perPage,
+                isExportDialogOpened: false,
+                selectedExportType: 'csv'
             };
         },
         computed: {
@@ -2790,6 +2830,16 @@
                 if (this.nextAvailable) {
                     this.currentPage++;
                 }
+            },
+            closeExportDialog: function() {
+                this.isExportDialogOpened = false;
+            },
+            toggleExportDialog: function() {
+                this.isExportDialogOpened = !this.isExportDialogOpened;
+            },
+            exportData: function() {
+                this.$emit("exportData", this.selectedExportType);
+                this.closeExportDialog();
             }
         },
         watch: {
@@ -2855,6 +2905,86 @@
                     '</div>'
     });
 
+    var exportTableData = function(params) {
+
+        /** gets file name for export
+        * @returns {string} file name
+        */
+        function getFileName() {
+            var name = "countly";
+            if (params.settings.title) {
+                name = params.settings.title.replace(/[\r\n]+/g, "");
+            }
+            if (params.settings.timeDependent) {
+                //include export range
+                name += "_for_" + countlyCommon.getDateRange();
+            }
+            else {
+                //include export date
+                name += "_on_" + moment().format("DD-MMM-YYYY");
+            }
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+        }
+
+        /** gets export data from data table
+        * @returns {array} table data
+        */
+        function getExportData() {
+            var retData = [];
+            params.rows.forEach(function(row) {
+                var ob = {};
+                params.columns.forEach(function(col) {
+                    try {
+                        if (!(row && Object.prototype.hasOwnProperty.call(row, col.field)) || (col && col.noExport)) {
+                            return;
+                        }
+                        ob[col.label] = row[col.field];
+                    }
+                    catch (e) {
+                        //not important
+                    }
+                });
+                retData.push(ob);
+            });
+            return retData;
+        }
+        var formData = null,
+            url = null;
+
+        if (params.settings.resourcePath) {
+            url = countlyCommon.API_URL + "/o/export/request";
+            formData = {
+                type: params.type,
+                path: params.settings.resourcePath,
+                prop: params.settings.resourceProp,
+                filename: getFileName(),
+                api_key: countlyGlobal.member.api_key
+            };
+        }
+        else {
+            url = countlyCommon.API_URL + "/o/export/data";
+            formData = {
+                type: params.type,
+                data: JSON.stringify(getExportData()),
+                filename: getFileName(),
+                api_key: countlyGlobal.member.api_key
+            };
+        }
+
+        var form = $('<form method="POST" action="' + url + '">');
+
+        $.each(formData, function(k, v) {
+            if (CountlyHelpers.isJSON(v)) {
+                form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
+            }
+            else {
+                form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+            }
+        });
+        $('body').append(form);
+        form.submit();
+    };
+
     Vue.component("cly-datatable", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
@@ -2889,9 +3019,26 @@
             persistKey: {
                 type: String,
                 default: null
+            },
+            striped: {
+                type: Boolean,
+                default: true
+            },
+            exportSettings: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
             }
         },
         computed: {
+            innerStyles: function() {
+                var styles = ['cly-vgt-table'];
+                if (this.striped) {
+                    styles.push("striped");
+                }
+                return styles.join(" ");
+            },
             notFilteredTotal: function() {
                 if (this.isRemote) {
                     return this.notFilteredTotalRows;
@@ -3029,6 +3176,9 @@
             onSortChange: function(params) {
                 this.updateParams({sort: params});
             },
+            onRowClick: function(params) {
+                this.$emit("row-click", params);
+            },
             onRowMouseover: function(params) {
                 this.$emit("row-mouseover", params);
             },
@@ -3037,7 +3187,15 @@
             },
             onPerPageChange: _.debounce(function(params) {
                 this.updateParams({perPage: params.currentPerPage});
-            }, 500)
+            }, 500),
+            exportData: function(type) {
+                exportTableData({
+                    rows: this.$refs.table.processedRows[0].children,
+                    columns: this.columns,
+                    type: type,
+                    settings: this.exportSettings
+                });
+            }
         },
         watch: {
             searchQuery: _.debounce(function(newVal) {
@@ -3075,14 +3233,17 @@
                             '@on-per-page-change="onPerPageChange"\n' +
                             '@on-row-mouseenter="onRowMouseover"\n' +
                             '@on-row-mouseleave="onRowMouseleave"\n' +
+                            '@on-row-click="onRowClick"\n' +
+                            'ref="table"\n' +
                             ':mode="internalMode"\n' +
                             ':totalRows="internalTotalRows"\n' +
                             ':isLoading.sync="isLoading"\n' +
-                            'styleClass="cly-vgt-table striped">\n' +
+                            ':styleClass="innerStyles">\n' +
                                 '<template slot="pagination-top" slot-scope="props">\n' +
                                     '<custom-controls\n' +
                                     '@infoChanged="onInfoChanged"\n' +
                                     '@queryChanged="searchQuery = $event"\n' +
+                                    '@exportData="exportData"\n' +
                                     'ref="controls"\n' +
                                     ':initial-paging="initialPaging"\n' +
                                     ':search-query="searchQuery"\n' +
@@ -3137,7 +3298,7 @@
                             '<a @click="scope.props.row._delayedDelete.abort()">Undo.</a>\n' +
                         '</div>\n' +
                         '<span>\n' +
-                            '<a class="cly-row-options-trigger" @click="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\n' +
+                            '<a class="cly-row-options-trigger" @click.stop="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\n' +
                         '</span>\n' +
                     '</div>'
     }));
@@ -3213,7 +3374,7 @@
 
     Vue.component("cly-button-menu", countlyBaseComponent.extend({
         template: '<div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">\n' +
-                        '<div class="toggler" @click="toggle"></div>\n' +
+                        '<div class="toggler" @click.stop="toggle"></div>\n' +
                         '<div class="menu-body" :class="{active: opened}">\n' +
                             '<a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\n' +
                                 '<i :class="item.icon"></i>\n' +
