@@ -125,7 +125,7 @@ fetch.fetchMergedEventGroups = function(params) {
         }
         let options = {};
         options.event_groups = true;
-        options.segmentation = result.segments;
+        // options.segmentation = result.segments;
 
         fetch.getMergedEventData(params, result.source_events, options, function(resultMergedEvents) {
             common.returnOutput(params, resultMergedEvents);
@@ -158,18 +158,9 @@ fetch.fetchMergedEventData = function(params) {
 */
 fetch.getMergedEventData = function(params, events, options, callback) {
     var eventKeysArr = [];
-    let sourceEventSegments = [];
 
     for (let i = 0; i < events.length; i++) {
-        if (options.event_groups) {
-            eventKeysArr.push(events[i] + params.app_id);
-            if (options.segmentation[events[i]]) {
-                sourceEventSegments.push(options.segmentation[events[i]]);
-            }
-        }
-        else {
-            eventKeysArr.push(events[i] + params.app_id);
-        }
+        eventKeysArr.push(events[i] + params.app_id);
     }
 
     if (!eventKeysArr.length) {
@@ -181,9 +172,8 @@ fetch.getMergedEventData = function(params, events, options, callback) {
             let meta = {};
 
             for (let i = 0; i < allEventData.length; i++) {
-                meta = Object.assign({}, meta, allEventData[i].meta);
 
-                delete allEventData[i].meta;
+                // delete allEventData[i].meta;
 
                 for (let levelOne in allEventData[i]) {
                     if (typeof allEventData[i][levelOne] !== 'object') {
@@ -258,15 +248,19 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                     }
                 }
             }
+            meta = allEventData.map(x => x.meta).reduce((acc, x) => {
+                for (var key in x) {
+                    if (acc[key]) {
+                        acc[key] = acc[key].concat(x[key]);
+                    }
+                    else {
+                        acc[key] = x[key];
+                    }
+                }
+                return acc;
+            }, {});
 
-            /**
-            * Create segments for meta
-            * @param {Object} dummyMeta - dummy data
-            * @param {Object} sourceSegments - source segments
-            * @param {Object} options - 
-            * @returns {Object} -
-            **/
-            const createSegmentsForMergedEvents = (dummyMeta, sourceSegments)=>{
+            /*const createSegmentsForMergedEvents = (dummyMeta, sourceSegments)=>{
                 for (const segment in dummyMeta) {
                     const _segments = "segments";
                     if (segment === _segments) {
@@ -280,9 +274,9 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                     }
                 }
                 return dummyMeta;
-            };
+            };*/
 
-            callback({...mergedEventOutput, "meta": createSegmentsForMergedEvents(meta, sourceEventSegments)});
+            callback({...mergedEventOutput, "meta": meta});
         });
     }
 
