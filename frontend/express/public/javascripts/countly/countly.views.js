@@ -1909,7 +1909,7 @@ window.DeviceTypeView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": deviceTypeData.chartData,
                 "aoColumns": [
-                    { "mData": "device_type", "sTitle": jQuery.i18n.map["device_type.title"], "bSortable": false },
+                    { "mData": "device_type", "sTitle": jQuery.i18n.map["device_type.table.device_type"], "bSortable": false },
                     {
                         "mData": "t",
                         sType: "formatted-num",

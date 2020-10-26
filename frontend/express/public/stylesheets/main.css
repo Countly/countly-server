@@ -1430,7 +1430,7 @@ margin: 50px 0;}
 #graph-tooltip { pointer-events:none; padding:4px 7px; overflow:hidden; border:1px solid #3C3C3C; border-radius:2px; background-color:rgba(60, 63, 64, 0.86); color:#FFF; font-size:11px; display:none; position:absolute; z-index:100; }
     #graph-tooltip.v2 { padding:0; }
 #graph-tooltip>span { display: block; padding:4px 7px; text-align: center; }
-#graph-tooltip .content { padding:8px 10px; font-size:12px; }
+#graph-tooltip .graph-tooltip-content { padding:8px 10px; font-size:12px; }
 #graph-tooltip .label-value { text-align: center; }
 #graph-tooltip .separator { margin:5px 0; border-top:1px solid #222; border-bottom:1px solid #666; height:0; opacity:0.6; }
 #graph-tooltip .note-line { padding:2px 10px; margin-bottom:5px; text-align:left; font-size:11px; color:#BBB; max-width: 200px; }
