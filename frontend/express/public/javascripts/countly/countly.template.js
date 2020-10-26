@@ -1348,8 +1348,6 @@ var AppRouter = Backbone.Router.extend({
                 self.addSubMenu("events", {code: "manage-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
             }
 
-            app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-
             self.addMenu("utilities", {
                 code: "management",
                 text: "sidebar.utilities",
