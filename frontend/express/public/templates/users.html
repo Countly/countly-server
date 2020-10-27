@@ -115,22 +115,20 @@
     <div class="details create-user-drawer-detail" style="height:100%;overflow-y:auto">
     	<div class="left-area">
     		<label>Full name</label>
-	    	<input class="drawer-input" placeholder="Enter full name" autocomplete="off" type="text"/>
+	    	<input class="drawer-input full-name-text" placeholder="Enter full name" autocomplete="off" type="text"/>
 	    	<label>User name</label>
-	    	<input class="drawer-input" placeholder="Enter user name" autocomplete="off" type="text"/>
+	    	<input class="drawer-input username-text" placeholder="Enter user name" autocomplete="off" type="text"/>
 	    	<label>E-mail</label>
-	    	<input class="drawer-input" placeholder="Enter e-mail" autocomplete="new-password" type="email"/>
-	    	<label>User group</label>
-	    	<input class="drawer-input" autocomplete="new-password" type="text"/>
+	    	<input class="drawer-input email-text" placeholder="Enter e-mail" autocomplete="new-password" type="email"/>
 	    </div>
 	    <div class="right-area">
 	    	<label>Profile Picture</label>
-	    	<div class="img-upload">
-	    		<div class="upload-message">Drag & drop or browse files to add picture</div>
+	    	<div class="img-upload" id="user-avatar-upload-drop">
+	    		<div class="upload-message">Drag & drop or <span style="font-weight:bolder;color:#2EB52B;cursor:pointer;">browse</span> files to add picture</div>
 	    	</div>
 	    </div>
 	    <div style="clear:both"></div>
-	    <div class="access-area">
+	    <div class="access-area role-section">
 	    	<div class="header">
 	    		<div class="section-title">Role</div>
 	    	</div>
@@ -145,7 +143,7 @@
 	    </div>
 	    <div id="sub-header-1th">
 	    	<div class="drawer-header">Permission Settings</div>
-	    	<div class="drawer-information">User has access to 4 apps</div>
+	    	<div class="drawer-information">User has access to <span id="accessible-app-count">0</span> apps</div>
 	    	<div style="clear:both"></div>
 	    </div>
 	    <div class="admin-access access-area">
@@ -208,92 +206,12 @@
 	    		</div>
 	    	</div>
 	    	<div class="permission-table">
-	    		<div class="permission-item">
-	    			<div class="permission-column first-column">Core Features</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div style="clear:both"></div>
-	    		</div>
-	    		<div class="permission-item gray">
-	    			<div class="permission-column first-column">Events</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div style="clear:both"></div>
-	    		</div>
-	    		<div class="permission-item">
-	    			<div class="permission-column first-column">Applications</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div class="permission-column">
-	    				<div class="checkbox-container">
-		                    <input id="mark-all-delete" data-state="0" type="checkbox">
-		                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-		                </div>
-	    			</div>
-	    			<div style="clear:both"></div>
-	    		</div>
 	    	</div>
 	    </div>
-    	<div class="create-user-drawer-bottom"></div>
+    	<div class="create-user-drawer-bottom">
+    		<button id="create-user-button" class="icon-button green create-new-user">
+    			Create user
+    		</button>
+    	</div>
     </div>
 </div>

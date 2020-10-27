@@ -3174,21 +3174,104 @@ window.ManageUsersView = countlyView.extend({
             Ex:
                 $(app.manageUsersView).trigger('user-mgmt.render');
     */
+    dropZone: null,
     memberPermission: {},
+    memberModel: {},
+    admin_apps: [],
+    user_apps: [],
+    accessible_apps: [],
+    odd: true,
+    saveUser: function() {
+        var self = this;
+
+        var isEditMode = $('.cly-drawer').hasClass("editing");
+        var isFallbackMode = $('.fallback').length > 0;
+        var platformName = $('.cly-drawer').find('.cly-select').clySelectGetSelection();
+        var filename = "";
+
+        //first we assume that we we are adding a new file
+        if (!isFallbackMode && self.dropZone && self.dropZone.files) {
+            //if dropzone is used and there is no fallback
+
+            if (self.dropZone.files.length > 0) {
+                //if a file was added, get it's filename
+                filename = self.dropZone.files[self.dropZone.files.length - 1].name;
+            }
+        }
+        else {
+            //dropzone not available, using fallback
+            var splitPath = $("#member-image-file").val().split('\\');
+            filename = splitPath[splitPath.length - 1];
+        }
+
+        if (filename.length === 0 && isEditMode) {
+            //if no file was added and we are in edit mode, check for the previous file
+            //previous file has to be checked in case platform was changed
+
+            var lineWithFilename = "";
+            if (!isFallbackMode) {
+                lineWithFilename = $(".dz-message .tline")[0].innerHTML;
+            }
+            else {
+                lineWithFilename = $(".fallback .tline")[0].innerHTML;
+            }
+            var partArray = lineWithFilename.split(" ");
+            filename = partArray[partArray.length - 1];
+        }
+
+        //get the extension from the found file
+        var extension = filename.substring(filename.lastIndexOf("."), filename.length);
+
+        if (extension !== ".jpeg" && extension !== ".png" && extension !== ".jpg") {
+            CountlyHelpers.notify({
+                title: jQuery.i18n.map["crash_symbolication.form-error.symbol-file.android.title"],
+                message: jQuery.i18n.map["crash_symbolication.form-error.symbol-file.android.msg"],
+                type: "error"
+            });
+            return;
+        }
+
+        $('.left-area').append('user creation in progress...');
+        $("#create-user-button").addClass("disabled");
+
+        var args = {
+            full_name: $('#full-name-text').val(),
+            username: $('#full-name-text').val(),
+            email: $('#full-name-text').val()
+        }
+    },
     renderFeatureTemplate: function(featureName, appId) {
         var self = this;
-        var featureTemplate = '<div><div class="feature-name"><b>';
-        featureTemplate += featureName + '</b></div>';
-        featureTemplate += '<div class="feature-permissions">';
-        var isChecked = typeof self.memberPermission.c[appId].allowed[featureName] !== "undefined" ? self.memberPermission.c[appId].allowed[featureName] : false;
-        featureTemplate += 'Create <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + '  id="c-' + appId + '-' + featureName + '">'
-        isChecked = typeof self.memberPermission.r[appId].allowed[featureName] !== "undefined" ? self.memberPermission.r[appId].allowed[featureName] : false;
-        featureTemplate += 'Read   <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="r-' + appId + '-' + featureName + '">'
-        isChecked = typeof self.memberPermission.u[appId].allowed[featureName] !== "undefined" ? self.memberPermission.u[appId].allowed[featureName] : false;
-        featureTemplate += 'Update <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="u-' + appId + '-' + featureName + '">'
-        isChecked = typeof self.memberPermission.d[appId].allowed[featureName] !== "undefined" ? self.memberPermission.d[appId].allowed[featureName] : false;
-        featureTemplate += 'Delete <input type="checkbox" class="permission-checkbox" ' + (isChecked ? 'checked' : '') + ' id="d-' + appId + '-' + featureName + '">'
-        featureTemplate += '</div></div>';
+        self.odd = !self.odd;
+        var featureTemplate = '';
+        featureTemplate += '<div class="permission-item ' + (self.odd ? 'gray' : '') + '">';
+        featureTemplate += '    <div class="permission-column first-column">' + featureName + '</div>';
+        featureTemplate += '    <div class="permission-column">';
+        featureTemplate += '        <div class="checkbox-container">';
+        featureTemplate += '            <input id="allow-create-for-' + featureName + '" data-state="0" type="checkbox">';
+        featureTemplate += '            <div class="fa fa-square-o check-green"></div>';
+        featureTemplate += '        </div>';
+        featureTemplate += '    </div>';
+        featureTemplate += '    <div class="permission-column">';
+        featureTemplate += '        <div class="checkbox-container">';
+        featureTemplate += '            <input id="allow-read-for-' + featureName + '" data-state="0" type="checkbox">';
+        featureTemplate += '            <div class="fa fa-square-o check-green"></div>';
+        featureTemplate += '        </div>';
+        featureTemplate += '    </div>';
+        featureTemplate += '    <div class="permission-column">';
+        featureTemplate += '        <div class="checkbox-container">';
+        featureTemplate += '            <input id="allow-update-for-' + featureName + '" data-state="0" type="checkbox">';
+        featureTemplate += '            <div class="fa fa-square-o check-green"></div>';
+        featureTemplate += '        </div>';
+        featureTemplate += '    </div>';
+        featureTemplate += '    <div class="permission-column">';
+        featureTemplate += '        <div class="checkbox-container">';
+        featureTemplate += '            <input id="allow-delete-for-' + featureName + '" data-state="0" type="checkbox">';
+        featureTemplate += '            <div class="fa fa-square-o check-green"></div>';
+        featureTemplate += '        </div>';
+        featureTemplate += '    </div>';
+        featureTemplate += '    <div style="clear:both"></div>';
+        featureTemplate += '</div>';
         return featureTemplate;
     },
     initializeMemberPermission: function() {
@@ -3225,10 +3308,11 @@ window.ManageUsersView = countlyView.extend({
         var self = this;
         // feature holder object for permission table
         var features = {
-            "plugins": countlyGlobal.plugins,
+            "plugins": countlyGlobal["plugins"],
             "others": ["core", "events", "applications", "manage-users", "configurations"]
         };
 
+        /*
         // Prepare permission table for new member
         for (var a in countlyGlobal["apps"]) {
             if (isFirstRender) {
@@ -3242,22 +3326,27 @@ window.ManageUsersView = countlyView.extend({
             // clear target wrappers
             $('.plugins-wrapper-for-' + a).empty();
             $('.core-wrapper-for-' + a).empty();
-
-            // render permission checkboxes for features/plugins
-            features.plugins.forEach(function(feature) {
-                $('.plugins-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
-            });
-            // render permission checkboxes for features/others
-            features.others.forEach(function(feature) {
-                $('.core-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
-            });
         };
+        */
+        console.log('renderPermissionsTable');
 
+        // render permission checkboxes for features/plugins
+        features.plugins.forEach(function(feature) {
+            $('.permission-table').append(self.renderFeatureTemplate(feature));
+        });
+
+        // render permission checkboxes for features/others
+        //features.others.forEach(function(feature) {
+        //    $('.core-wrapper-for-' + a).append(self.renderFeatureTemplate(feature, countlyGlobal["apps"][a]._id));
+        //});
+
+        /*
         if (isFirstRender) {
             // render clear permissions button
             // TODO: LOCALIZE IT!
             $('.permission-app-select').append('<button id="clear-stored-permissions">Clear all permissions</button>');
         }
+        */
     },
     updatePermission: function(type, app, scope, value) {
         var cores = {"core":true, "applications": true, "manage-users": true, "configurations": true};
@@ -3281,6 +3370,7 @@ window.ManageUsersView = countlyView.extend({
             }
         }
         store.set('permission_model', this.memberPermission);
+        console.log(this.memberPermission);
     },
     showPermissionSection: function(app) {
         $('.permission-wrapper').hide();
@@ -3501,9 +3591,12 @@ window.ManageUsersView = countlyView.extend({
         */
         $("#add-user-mgmt").on("click", function() {
             $('.create-user-drawer').addClass("open");
-            /*
+            // this trigger for groups plugin hooks
+            $(self).trigger('user-mgmt.new-user-button-clicked');
             // render permission table
             self.renderPermissionsTable(true);
+            
+            /*
             // make visible first option of app selector
             for (var firstApp in countlyGlobal["apps"]) break;
             self.showPermissionSection(firstApp);
@@ -3511,13 +3604,14 @@ window.ManageUsersView = countlyView.extend({
             CountlyHelpers.closeRows(self.dtable);
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
-            app.onUserEdit({}, $(".create-user-row"));
+            
             $(".create-user-row").slideDown();
             self.initTable();
             $(this).hide();
-            $(self).trigger('user-mgmt.new-user-button-clicked');
             */
         });
+
+        CountlyHelpers.initializeSelect($('#user-create-group-selector'));
 
         $(".cly-drawer").find(".close").off("click").on("click", function() {
             $(this).parents(".cly-drawer").removeClass("open");
@@ -3580,84 +3674,7 @@ window.ManageUsersView = countlyView.extend({
             $(".create-user-row").slideUp();
             $('#add-user-mgmt').show();
         });
-        $(".create-user").on("click", function() {
-            $("#listof-apps").hide();
-            $(".row").removeClass("selected");
-            $(".email-check.green-text").remove();
-            $(".username-check.green-text").remove();
 
-            var data = {},
-                currUserDetails = $(".user-details:visible");
-
-            data.full_name = currUserDetails.find(".full-name-text").val();
-            data.username = currUserDetails.find(".username-text").val();
-            data.email = currUserDetails.find(".email-text").val();
-            data.global_admin = currUserDetails.find(".global-admin").hasClass("checked");
-            data.password = currUserDetails.find(".password-text").val();
-            data.permission = self.memberPermission;
-
-            $(".required").fadeOut().remove();
-            var reqSpan = $("<span>").addClass("required").text("*");
-
-            if (!data.password.length) {
-                currUserDetails.find(".password-text").after(reqSpan.clone());
-            }
-            else {
-                $(".password-check").remove();
-                var error = CountlyHelpers.validatePassword(data.password);
-                if (error) {
-                    var invalidSpan = $("<span class='password-check red-text'>").html(error);
-                    currUserDetails.find(".password-text").after(invalidSpan.clone());
-                }
-            }
-
-            if (!data.full_name.length) {
-                currUserDetails.find(".full-name-text").after(reqSpan.clone());
-            }
-
-            if (!data.username.length) {
-                currUserDetails.find(".username-text").after(reqSpan.clone());
-            }
-
-            if (!data.email.length) {
-                currUserDetails.find(".email-text").after(reqSpan.clone());
-            }
-            else if (!CountlyHelpers.validateEmail(data.email)) {
-                $(".email-check").remove();
-                var invalidSpan1 = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
-                currUserDetails.find(".email-text").after(invalidSpan1.clone());
-            }
-
-            if ($(".required").length) {
-                $(".required").fadeIn();
-                return false;
-            }
-            else if ($(".red-text").length) {
-                return false;
-            }
-
-            /*
-            if (!data.global_admin) {
-                data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
-                data.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
-            }
-            */
-
-            app.onUserEdit(data, false);
-
-            $.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.users.w + '/create',
-                data: {
-                    args: JSON.stringify(data)
-                },
-                dataType: "json",
-                success: function() {
-                    $(self).trigger('user-mgmt.user-created', data);
-                    app.activeView.render();
-                }
-            });
-        });
         $('.scrollable').slimScroll({
             height: '100%',
             start: 'top',
@@ -3665,6 +3682,7 @@ window.ManageUsersView = countlyView.extend({
             position: 'right',
             disableFadeOut: false
         });
+
         $("#select-all").on('click', function() {
             $("#listof-apps .app:not(.disabled)").addClass("selected");
             var adminsOf = [];
@@ -3724,14 +3742,11 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
         });
+
         $(".manage-users-table .detail .password-text").off("focus").on("focus", function() {
             $(this).select();
         });
 
-        /*
-            Handle permission checkbox click event
-            Call permission modifier by passed data
-        */
         $('body').on("click", ".permission-checkbox", function() {
             // parse permission data from dom
             var permissionData = $(this).attr('id').split("-"); 
@@ -3759,82 +3774,29 @@ window.ManageUsersView = countlyView.extend({
                 self.renderPermissionsTable(false);
             }
         });
+
         if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
             $('#add-user-mgmt').hide();
         }
 
-        // jQuery selectize handler for projection input
-        $('#user-app-selector').selectize({
-            persist: true,
-            maxItems: null,
-            valueField: 'val',
-            labelField: 'key',
-            searchField: ['key'],
-            options: this.appOptions,
-            render: {
-                item: function(item) {
-                    return '<div>' + item.key + '</div>';
-                },
-                option: function(item) {
-                    var label = item.key;
-                    return '<div>' + '<span class="label">' + label + '</span>' + '</div>';
-                }
-            },
-            createFilter: function() {
-                return true;
-            },
-            create: function(input) {
-                return {
-                    "key": input
-                };
-            },
-            onItemRemove: function(input) {
-                [].splice(index, 1);
-            }
-        });
-
-        // jQuery selectize handler for projection input
-        $('#admin-app-selector').selectize({
-            persist: true,
-            maxItems: null,
-            valueField: 'val',
-            labelField: 'key',
-            searchField: ['key'],
-            options: this.appOptions,
-            render: {
-                item: function(item) {
-                    return '<div>' + item.key + '</div>';
-                },
-                option: function(item) {
-                    var label = item.key;
-                    return '<div>' + '<span class="label">' + label + '</span>' + '</div>';
-                }
-            },
-            createFilter: function() {
-                return true;
-            },
-            create: function(input) {
-                return {
-                    "key": input
-                };
-            },
-            onItemRemove: function(input) {
-                [].splice(index, 1);
-            }
-        });
-
-        $('#feedback-page-selector').val("furkan,basaran");
+        // new user create drawer section
 
         $('#is-global-admin').on('click', function() {
             if ($('#is-global-admin').data('state') === 1) {
                 $('.is-global-admin-checkbox').removeClass('fa-check-square');
                 $('.is-global-admin-checkbox').addClass('fa-square-o');
                 $('#is-global-admin').data('state', 0);
+                $('#sub-header-1th').show();
+                $('.admin-access').show();
+                $('.user-access').show();
             }
             else {
                 $('.is-global-admin-checkbox').addClass('fa-check-square');
                 $('.is-global-admin-checkbox').removeClass('fa-square-o');
                 $('#is-global-admin').data('state', 1);
+                $('#sub-header-1th').hide();
+                $('.admin-access').hide();
+                $('.user-access').hide();    
             }
         });
 
@@ -3843,11 +3805,19 @@ window.ManageUsersView = countlyView.extend({
                 $('.mark-all-create-checkbox').removeClass('fa-check-square');
                 $('.mark-all-create-checkbox').addClass('fa-square-o');
                 $('#mark-all-create').data('state', 0);
+
+                for (var i = 0; i < self.user_apps.length; i++) {
+                    self.memberPermission = removePermissionByType(self.user_apps[i], 'c', self.memberPermission);
+                }
             }
             else {
                 $('.mark-all-create-checkbox').addClass('fa-check-square');
                 $('.mark-all-create-checkbox').removeClass('fa-square-o');
                 $('#mark-all-create').data('state', 1);
+
+                for (var i = 0; i < self.user_apps.length; i++) {
+                    self.memberPermission = givePermissionByType(self.user_apps[i], 'c', self.memberPermission);
+                }
             }
         });
 
@@ -3856,11 +3826,17 @@ window.ManageUsersView = countlyView.extend({
                 $('.mark-all-read-checkbox').removeClass('fa-check-square');
                 $('.mark-all-read-checkbox').addClass('fa-square-o');
                 $('#mark-all-read').data('state', 0);
+
+                for (var i = 0; i < self.user_apps.length; i++) {
+                    self.memberPermission = removePermissionByType(self.user_apps[i], 'r', self.memberPermission);
+                }
             }
             else {
                 $('.mark-all-read-checkbox').addClass('fa-check-square');
                 $('.mark-all-read-checkbox').removeClass('fa-square-o');
                 $('#mark-all-read').data('state', 1);
+
+
             }
         });
 
@@ -3869,6 +3845,10 @@ window.ManageUsersView = countlyView.extend({
                 $('.mark-all-update-checkbox').removeClass('fa-check-square');
                 $('.mark-all-update-checkbox').addClass('fa-square-o');
                 $('#mark-all-update').data('state', 0);
+
+                for (var i = 0; i < self.user_apps.length; i++) {
+                    self.memberPermission = removePermissionByType(self.user_apps[i], 'u', self.memberPermission);
+                }
             }
             else {
                 $('.mark-all-update-checkbox').addClass('fa-check-square');
@@ -3882,12 +3862,310 @@ window.ManageUsersView = countlyView.extend({
                 $('.mark-all-delete-checkbox').removeClass('fa-check-square');
                 $('.mark-all-delete-checkbox').addClass('fa-square-o');
                 $('#mark-all-delete').data('state', 0);
+
+                for (var i = 0; i < self.user_apps.length; i++) {
+                    self.memberPermission = removePermissionByType(self.user_apps[i], 'd', self.memberPermission);
+                }
             }
             else {
                 $('.mark-all-delete-checkbox').addClass('fa-check-square');
                 $('.mark-all-delete-checkbox').removeClass('fa-square-o');
                 $('#mark-all-delete').data('state', 1);
             }
+        });
+
+        // jQuery selectize handler for projection input
+        var userAppSelector = $('#user-app-selector').selectize({
+            persist: true,
+            maxItems: null,
+            valueField: 'val',
+            labelField: 'key',
+            searchField: ['key'],
+            options: this.appOptions,
+            render: {
+                item: function(item) {
+                    return '<div>' + item.key + '</div>';
+                },
+                option: function(item) {
+                    var label = item.key;
+                    return '<div>' + '<span class="label">' + label + '</span>' + '</div>';
+                }
+            },
+            createFilter: function() {
+                return true;
+            },
+            create: function(input) {
+                return {
+                    "key": input
+                };
+            },
+            onItemRemove: function(input) {
+                [].splice($('#user-app-selector').val().split(",").indexOf(input), 1);
+            }
+        });
+
+        // jQuery selectize handler for projection input
+        var adminAppSelector = $('#admin-app-selector').selectize({
+            persist: true,
+            maxItems: null,
+            valueField: 'val',
+            labelField: 'key',
+            searchField: ['key'],
+            options: this.appOptions,
+            render: {
+                item: function(item) {
+                    return '<div>' + item.key + '</div>';
+                },
+                option: function(item) {
+                    var label = item.key;
+                    return '<div>' + '<span class="label">' + label + '</span>' + '</div>';
+                }
+            },
+            createFilter: function() {
+                return true;
+            },
+            create: function(input) {
+                return {
+                    "key": input
+                };
+            },
+            onItemRemove: function(input) {
+                [].splice($('#admin-app-selector').val().split(",").indexOf(input), 1);
+            }
+        });
+
+        /** function saves user */
+        function updateUser(data) {
+            data.user_id = data._id;
+            $.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.users.w + '/update',
+                data: {
+                    args: JSON.stringify(data)
+                },
+                dataType: "json",
+                success: function() {
+                    countlyGlobal.member.full_name = data.full_name;
+                    countlyGlobal.member.username = data.username;
+                    countlyGlobal.member.email = data.email;
+                    if (data.member_image === "delete") {
+                        countlyGlobal.member.member_image = "";
+                    }
+                    else {
+                        countlyGlobal.member.member_image = data.member_image;
+                    }
+
+                    $('.menu').find('.user_name').find('div').first().html($("<div>").text(data.full_name).html());
+                    $('.menu').find('.user_name').find('div').last().html($("<div>").text(data.email).html());
+                    $("#menu-username").text(data.username);
+                    
+                    $(self).trigger('user-mgmt.user-updated', data);
+                    app.activeView.render();
+                }
+            });
+        }
+
+        var memberImageDropzone = new Dropzone("#user-avatar-upload-drop", { 
+            member: null,
+            url: "/member/icon", 
+            paramName: "member_image",
+            params: { _csrf: countlyGlobal.csrf_token },
+            thumbnailWidth: 190, 
+            thumbnailHeight: 232,
+            autoProcessQueue: false,
+            acceptedFiles: '.jpg,.png,.jpeg',
+            previewTemplate: '<div class="dz-preview dz-file-preview"><div class="dz-details"><img data-dz-thumbnail /></div></div>',
+            init: function() {
+                var thisDropzone = this;
+                this.on('sending', function(file, xhr, formData) {
+                    formData.append('member_image_id', thisDropzone.member._id);
+                });
+            }
+        });
+
+        memberImageDropzone.on("addedfile", function(file) {
+            $('.upload-message').hide();
+        });
+
+        memberImageDropzone.on("complete", function() {
+            this.member.user_id = this.member._id;
+            this.member.member_image = '/memberimages/' + this.member.user_id + '.png';
+            updateUser(this.member);
+        });
+
+        $("#create-user-button").on("click", function() {
+            $("#listof-apps").hide();
+            $(".row").removeClass("selected");
+            $(".email-check.green-text").remove();
+            $(".username-check.green-text").remove();
+
+            var currUserDetails = $(".create-user-drawer .left-area");
+
+            self.memberModel.full_name = currUserDetails.find(".full-name-text").val();
+            self.memberModel.username = currUserDetails.find(".username-text").val();
+            self.memberModel.email = currUserDetails.find(".email-text").val();
+            self.memberModel.global_admin = $('#is-global-admin').data('state') === 1;
+            self.memberModel.permission = self.memberPermission;
+            self.memberModel.password = 'Password123+';
+
+            $(".required").fadeOut().remove();
+            var reqSpan = $("<span>").addClass("required").text("*");
+
+            if (!self.memberModel.password.length) {
+                currUserDetails.find(".password-text").after(reqSpan.clone());
+            }
+            else {
+                $(".password-check").remove();
+                var error = CountlyHelpers.validatePassword(self.memberModel.password);
+                if (error) {
+                    var invalidSpan = $("<span class='password-check red-text'>").html(error);
+                    currUserDetails.find(".password-text").after(invalidSpan.clone());
+                }
+            }
+
+            if (!self.memberModel.full_name.length) {
+                currUserDetails.find(".full-name-text").after(reqSpan.clone());
+            }
+
+            if (!self.memberModel.username.length) {
+                currUserDetails.find(".username-text").after(reqSpan.clone());
+            }
+
+            if (!self.memberModel.email.length) {
+                currUserDetails.find(".email-text").after(reqSpan.clone());
+            }
+            else if (!CountlyHelpers.validateEmail(self.memberModel.email)) {
+                $(".email-check").remove();
+                var invalidSpan1 = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
+                currUserDetails.find(".email-text").after(invalidSpan1.clone());
+            }
+
+            if ($(".required").length) {
+                $(".required").fadeIn();
+                return false;
+            }
+            else if ($(".red-text").length) {
+                return false;
+            }
+
+            if (!self.memberModel.global_admin) {
+                //self.memberModel.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
+                //self.memberModel.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
+            }
+
+            app.onUserEdit(self.memberModel, false);
+
+            $.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.users.w + '/create',
+                data: {
+                    args: JSON.stringify(self.memberModel)
+                },
+                dataType: "json",
+                success: function(member) {
+                    $(self).trigger('user-mgmt.user-created', self.memberModel);
+                    // we need to wait until create process done before send upload request,
+                    // because upload request requires member_id as param.
+                    memberImageDropzone.member = member;
+                    memberImageDropzone.processQueue();
+                    app.activeView.render();
+                }
+            });
+        });
+
+        var giveAdminPermissions = function(app_id, permissionObject) {
+            var types = ["c", "r", "u", "d"];
+            for (var i in types) {
+                permissionObject[types[i]][app_id] = {all: true, allowed: {}};
+            }
+            return permissionObject;
+        }
+
+        var removeAdminPermissions = function(app_id, permissionObject) {
+            var types = ["c", "r", "u", "d"];
+            for (var i in types) {
+                permissionObject[types[i]][app_id] = {all: false, allowed: {}};
+            }
+            return permissionObject;
+        }
+
+        var givePermissionByType = function(app_id, permissionType, permissionObject) {
+            permissionObject[permissionType][app_id] = {all: true, allowed: {}};
+            return permissionObject;
+        }
+
+        var removePermissionByType = function(app_id, permissionType, permissionObject) {
+            permissionObject[permissionType][app_id] = {all: false, allowed: {}};
+            return permissionObject;
+        }
+
+        var removeAppFromList = function(app_id, array) {
+            var index = array.indexOf(app_id);
+            if (index > -1) {
+              array.splice(index, 1);
+            }
+            return array;
+        }
+
+        function arrayUnique(array) {
+            var a = array.concat();
+            for(var i=0; i<a.length; ++i) {
+                for(var j=i+1; j<a.length; ++j) {
+                    if(a[i] === a[j])
+                        a.splice(j--, 1);
+                }
+            }
+            return a;
+        }
+
+        function removeEmptyValues(array) {
+            for (var i = 0; i < array.length; i++) {
+                if (array[i] === "")
+                    array.splice(i, 1);
+            }
+            return array;
+        }
+
+        $("#admin-app-selector").off("change").on("change", function() {
+            var admin_apps = $(this).val().split(",");
+            var affected_app = CountlyHelpers.arrayDiff(admin_apps, self.admin_apps)[0] === "" ? CountlyHelpers.arrayDiff(admin_apps, self.admin_apps)[1] : CountlyHelpers.arrayDiff(admin_apps, self.admin_apps)[0];
+            var is_already_added = self.user_apps.indexOf(affected_app) > -1 ? true : false;
+            
+            if (is_already_added) {
+                self.user_apps = removeAppFromList(affected_app, self.user_apps);
+                
+                var selectize = userAppSelector[0].selectize;
+                selectize.setValue(self.user_apps.join());
+            }
+
+            if (admin_apps.length > removeEmptyValues(self.admin_apps).length) {
+                self.memberPermission = giveAdminPermissions(affected_app, self.memberPermission);
+            }
+            else {
+                self.memberPermission = removeAdminPermissions(affected_app, self.memberPermission);
+            }
+            // update model
+            self.admin_apps = admin_apps;
+            self.accessible_apps = removeEmptyValues(arrayUnique(self.admin_apps.concat(self.user_apps)))
+            $('#accessible-app-count').html(self.accessible_apps.length);
+        });
+
+        $("#user-app-selector").off("change").on("change", function() {
+            var user_apps = $(this).val().split(",");
+            var affected_app = CountlyHelpers.arrayDiff(user_apps, self.user_apps)[0] === "" ? CountlyHelpers.arrayDiff(user_apps, self.user_apps)[1] : CountlyHelpers.arrayDiff(user_apps, self.user_apps)[0];
+            var is_already_added = self.admin_apps.indexOf(affected_app) > -1 ? true : false;
+            
+            if (is_already_added) {
+                self.admin_apps = removeAppFromList(affected_app, self.admin_apps);
+
+                var selectize = adminAppSelector[0].selectize;
+                selectize.setValue(self.admin_apps.join());
+            }
+
+            // update model
+            self.user_apps = user_apps;
+            self.accessible_apps = removeEmptyValues(arrayUnique(self.admin_apps.concat(self.user_apps)));
+            $('#accessible-app-count').html(self.accessible_apps.length);
         });
     },
     renderCommon: function() {
@@ -4068,15 +4346,15 @@ window.ManageUsersView = countlyView.extend({
             var reqSpan = $("<span>").addClass("required").text("*");
 
             if (!data.full_name.length) {
-                currUserDetails.find(".full-name-text").after(reqSpan.clone());
+                currUserDetails.find(".full-name-text").before(reqSpan.clone());
             }
 
             if (!data.username.length) {
-                currUserDetails.find(".username-text").after(reqSpan.clone());
+                currUserDetails.find(".username-text").before(reqSpan.clone());
             }
 
             if (!data.email.length) {
-                currUserDetails.find(".email-text").after(reqSpan.clone());
+                currUserDetails.find(".email-text").before(reqSpan.clone());
             }
 
             if ($(".required").length) {
@@ -4170,10 +4448,10 @@ window.ManageUsersView = countlyView.extend({
                 success: function(result) {
                     $(".username-check").remove();
                     if (result) {
-                        self2.after(notExistSpan.clone());
+                        self2.before(notExistSpan.clone());
                     }
                     else {
-                        self2.after(existSpan.clone());
+                        self2.before(existSpan.clone());
                     }
                 }
             });
@@ -4190,7 +4468,7 @@ window.ManageUsersView = countlyView.extend({
             if (!CountlyHelpers.validateEmail($(this).val())) {
                 $(".email-check").remove();
                 var invalidSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
-                $(this).after(invalidSpan.clone());
+                $(this).before(invalidSpan.clone());
                 return false;
             }
 
@@ -4209,10 +4487,10 @@ window.ManageUsersView = countlyView.extend({
                 success: function(result) {
                     $(".email-check").remove();
                     if (result) {
-                        self2.after(notExistSpan.clone());
+                        self2.before(notExistSpan.clone());
                     }
                     else {
-                        self2.after(existSpan.clone());
+                        self2.before(existSpan.clone());
                     }
                 }
             });
@@ -4359,6 +4637,13 @@ window.ManageUsersView = countlyView.extend({
             $('.pp-menu-list').show();
             $('.pp-menu-list').focus();
         });
+
+        /*
+        $('#create-user-button').off("click").on("click", function(e) {
+            e.preventDefault();
+            self.saveUser();
+        });
+        */
     },
     editUser: function(d, self) {
         $(".create-user-row").slideUp();
