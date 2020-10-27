@@ -3765,4 +3765,19 @@ p.error_message_div {
     margin-top: 2px;
     color: gray;
 }
-  
+
+#events-blueprint-drawer .panel-body .section:last-child {
+    margin-bottom: 0px;
+}
+
+#events-blueprint-drawer .label-desc {
+    color: #696969;
+    opacity: 0.68;
+    font-size: 11px;
+    margin-bottom: 8px;
+    line-height: 15px;
+}
+/*Bug for when on off switch is vertical-align: middle*/
+#eb-event-visibility .on-off-switch-label:before {
+    top: 1px;
+}
