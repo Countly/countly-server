@@ -193,7 +193,7 @@
             {
                 "name": "country",
                 "func": function(rangeArr) {
-                    return countlyLocation.getCountryName(rangeArr);
+                    return rangeArr;
                 }
             },
             { "name": "t" },
@@ -219,7 +219,8 @@
             }
             return {
                 c: [
-                    {v: value.country},
+                    //v - value, f - formatted value
+                    {v: value.country, f: countlyLocation.getCountryName(value.country)},
                     {v: value[ob.metric] === 0 ? null : value[ob.metric]}
                 ]
             };
@@ -272,7 +273,7 @@
             {
                 "name": "country",
                 "func": function(rangeArr) {
-                    return countlyLocation.getCountryName(rangeArr);
+                    return rangeArr;
                 }
             },
             { "name": "t" },
@@ -298,7 +299,8 @@
             }
             return {
                 c: [
-                    {v: value.country},
+                    //v - value, f - formatted value
+                    {v: value.country, f: countlyLocation.getCountryName(value.country)},
                     {v: value[ob.metric]}
                 ]
             };
