@@ -4489,7 +4489,7 @@ window.EventsBlueprintView = countlyView.extend({
                 $("#create-widget").show();
                 self.checkEventGroupDrawerInterval = setInterval(function() {
                     self.checkEventGroupDrawerDisabled();
-                    console.log("check event group drawer form");
+                    // console.log("check event group drawer form");
                     if (!app.activeView.eventGroupDrawer) {
                         clearInterval(self.checkEventGroupDrawerInterval);
                     }
@@ -4515,7 +4515,7 @@ window.EventsBlueprintView = countlyView.extend({
 
         $("#event-group-drawer .on-off-switch input").on("change", function() {
             var isChecked = $(this).is(":checked");
-            var id = $(this).attr("id");
+            // var id = $(this).attr("id");
             if (isChecked) {
                 $(this).parent().find(".text").replaceWith('<span style="opacity: 1" class="text">' + jQuery.i18n.map["events.group-visibility-checkbox"] + '</span>');
             }
@@ -4534,7 +4534,6 @@ window.EventsBlueprintView = countlyView.extend({
 
         $("#event-group-drawer #create-widget").off("click").on("click", function() {
             countlyEvent.createEventGroup(JSON.stringify(self.getEventGroupDrawerSetting()), function(res) {
-                console.log(res);
                 if (res === true) {
                     CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
                     self.refresh(true, false);
@@ -4543,12 +4542,22 @@ window.EventsBlueprintView = countlyView.extend({
                     CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
                 }
             });
-            // self.eventGroupDrawer.close();
-            console.log(self.getEventGroupDrawerSetting());
+            self.eventGroupDrawer.close();
+        });
+        $("#event-group-drawer #save-widget").off("click").on("click", function() {
+            countlyEvent.updateEventGroup(JSON.stringify(self.getEventGroupDrawerSetting()), function(res) {
+                if (res === true) {
+                    CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                    self.refresh(true, false);
+                }
+                else {
+                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                }
+            });
+            self.eventGroupDrawer.close();
         });
     },
     getEventGroupDrawerSetting: function() {
-        var self = this;
         var groupInstance = {
             name: $("#group-name-input").val().trim() || null,
             description: null,
@@ -4566,7 +4575,7 @@ window.EventsBlueprintView = countlyView.extend({
             groupInstance.description = $("#event-group-description").val().trim() || null;
         }
         else {
-            delete groupInstance.description;
+            groupInstance.description = "";
         }
 
         if ($("#current_group_id").text().length > 0) {
@@ -4594,10 +4603,34 @@ window.EventsBlueprintView = countlyView.extend({
         }
     },
     loadEventGroupDrawerSetting: function(data) {
-        console.log("load event group drawer setting", data);
         this.eventGroupDrawer.resetForm();
         $("#current_group_id").text(data._id);
         $("#group-name-input").val(data.name);
+        var eventsOptions = data.source_events.map(function(e) {
+            return {value: e, name: e};
+        });
+        $("#event-group-include-events-dropdown").clyMultiSelectSetSelection(eventsOptions);
+        if (data.description) {
+            $("#event-group-drawer #use-description-checkbox").attr("checked", true);
+            $("#event-group-description").attr("disabled", false);
+            $("#event-group-description").val(data.description);
+        }
+        else {
+            $("#event-group-drawer #use-description-checkbox").attr("checked", false);
+            $("#event-group-description").val("");
+            $("#event-group-description").attr("disabled", true);
+        }
+        if (data.status) {
+            $("#event-group-drawer .on-off-switch input").attr("checked", true);
+        }
+        else {
+            $("#event-group-drawer .on-off-switch input").attr("checked", false);
+        }
+
+        $("#group-count-input").val(data.display_map.c);
+        $("#group-duration-input").val(data.display_map.d);
+        $("#group-sum-input").val(data.display_map.s);
+
         // todo: more properties
         window.dd = this.eventGroupDrawer;
 
@@ -5354,8 +5387,10 @@ window.EventsBlueprintView = countlyView.extend({
             $(".modify-event-group-button").off("click").on("click", function(e) {
                 self.eventGroupDrawer.resetForm();
                 self.eventGroupDrawer.open();
-                self.loadEventGroupDrawerSetting({_id: "123", name: "333"});
-
+                var _id = "[CLY]_group_1b12f7ebfcabde5e8209630effd09f6a";
+                countlyEvent.getEventGroupById(_id, function(result) {
+                    self.loadEventGroupDrawerSetting(result);
+                });
             });
         }
     },

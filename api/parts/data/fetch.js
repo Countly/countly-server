@@ -93,6 +93,24 @@ fetch.fetchEventData = function(collection, params) {
     });
 };
 
+
+/**
+* The return the event groups data by _id.
+* @param {Object} params - params object
+* @param {string} params._id - The id of the event group id.
+**/
+fetch.fetchEventGroupById = function(params) {
+    const COLLECTION_NAME = "event_groups";
+    const {qstring: {_id}} = params;
+    common.db.collection(COLLECTION_NAME).findOne({_id},function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        common.returnOutput(params, result);
+    })
+};
+
 /**
 * The return the event groups data by app_id.
 * @param {Object} params - params object
