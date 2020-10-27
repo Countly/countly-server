@@ -93,21 +93,40 @@
                 return configuration;
             },
             loadEventsData: function (configuration) {
+                
+
                 $("#multi-event-dropdown").clyMultiSelectClearSelection({});
                 $("#multi-event-dropdown").clyMultiSelectSetItems([]);
+                // only one app 
                 const apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                 if (apps.length !== 1) {
                      return;
                 }
                 countlyEvent.getEventsForApps(apps, function(events){
-                    $("#multi-event-dropdown").clyMultiSelectSetItems(events);
-                    if(configuration && configuration.event) {
-                        events.forEach(function(event){
-                            if (event.value === configuration.event[0]) {
-                                $("#multi-event-dropdown").clyMultiSelectSetSelection([event]);
+                    $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + '/o/internal-events',
+                        data: {
+                            app_id: apps[0], 
+                        },
+                        success: function(json) {
+                            var internal_events = []; 
+                            json.forEach(function(event) {
+                                internal_events.push({value: apps[0]+"***"+event, name: jQuery.i18n.map["internal-events." + event] || event, description: '', count: '', sum: ''});
+                            });
+                            events = events.concat(internal_events);
+                            events.unshift({value: apps[0]+"****", name: jQuery.i18n.map["block.any-events"]});
+                            $("#multi-event-dropdown").clyMultiSelectSetItems(events);
+                            if(configuration && configuration.event) {
+                                events.forEach(function(event){
+                                    if (event.value === configuration.event[0]) {
+                                        $("#multi-event-dropdown").clyMultiSelectSetSelection([event]);
+                                    }
+                                });
                             }
-                        });
-                    }
+                        }
+                    });
+                    
                     
                 });
             },
