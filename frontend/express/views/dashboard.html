@@ -1731,7 +1731,12 @@
 			<div class="scrollable" style="max-height:450px;">
 				{{#eachOfArray events}}
                     <div class="searchable event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
-                        <div class="name">{{value.name}}</div>
+                        <div class="name">
+                        {{value.name}}
+                        {{#if value.is_event_group}}
+                        	<div class="group-badge">GROUP</div>
+                    	{{/if}}
+                    	</div>
                     </div>
 				{{/eachOfArray}}
 			</div>
@@ -1743,9 +1748,19 @@
 				<div class="left">
 					<div id="event-update-area">
                         {{#if segmentations}}
-						<div class="title dynamic-title small">{{page-title}}</div>
+						<div class="title dynamic-title small">
+							<div class="event-title">{{page-title}}</div>
+							{{#if is_event_group}}
+								<div class="tag">GROUP</div>
+							{{/if}}
+						</div>
                         {{else}}
-                        <div class="title dynamic-title">{{page-title}}</div>
+                        <div class="title dynamic-title">
+                        	<div class="event-title">{{page-title}}</div>
+                        	{{#if is_event_group}}
+								<div class="tag">GROUP</div>
+							{{/if}}
+                        </div>
                         {{/if}}
 						<div class="event-segmentation">
 							{{#if segmentations}}

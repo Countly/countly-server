@@ -6190,20 +6190,31 @@ window.EventsView = countlyView.extend({
     renderCommon: function(isRefresh) {
         var eventData = countlyEvent.getEventData(),
             eventSummary = countlyEvent.getEventSummary(),
+            eventGroups = countlyEvent.getEventGroups(),
+            events = countlyEvent.getEvents(),
             self = this;
 
+        // manipulate events list & replace keys with event_group names
+        for (var i = 0; i < events.length; i++) {
+            if (eventGroups[events[i].key]) {
+                events[i].name = eventGroups[events[i].key].label;
+                events[i].is_event_group = true;
+            }
+        }
+
         var showManagmentButton = false;
-        (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1);
+        if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1)
         {
             showManagmentButton = true;
         }
         var eventCount = countlyEvent.getEvents().length;
         this.templateData = {
             "page-title": eventData.eventName.toUpperCase(),
+            "is_event_group": eventData.is_event_group,
             "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-description": eventData.eventDescription,
             "logo-class": "events",
-            "events": countlyEvent.getEvents(),
+            "events": events,
             "event-map": countlyEvent.getEventMap(),
             "segmentations": countlyEvent.getEventSegmentations(),
             "active-segmentation": countlyEvent.getActiveSegmentation(),

@@ -1146,10 +1146,10 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 }
 #event-nav.expand .name { width:271px; }
 
-.event-container { position:relative; cursor:pointer; height:28px; padding:4px 12px; overflow:hidden; border-top: 1px solid #D0D0D0; }
+.event-container { position:relative; cursor:pointer; padding:4px 12px; overflow:hidden; border-top: 1px solid #D0D0D0; }
 .event-container:hover { background-color: #dedede; }
 .event-container.active { background-color: #dedede; }
-.event-container .name { width:151px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding-top:7px; color:#6b6b6b; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; }
+.event-container .name { width:151px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding:5px; color:#6b6b6b; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; }
 
 #event-update-area { float:left; }
 #edit-event-table-container  { width:950px; max-height:400px; overflow:auto; }
@@ -3744,3 +3744,25 @@ p.error_message_div {
 .view-more:hover {
     color: #2FA732;
 }
+
+.routename-events .event-title {
+    display: inline-block;
+}
+  
+.routename-events .tag {
+    display: inline-block;
+    margin-left: 10px;
+    border-radius: 2px;
+    position: absolute;
+    padding: 0 5px;
+    font-size: 10px;
+    color: #8e8e8e;
+    border: 1px solid #d4d4d4;
+}
+  
+.routename-events .group-badge {
+    font-size: 10px;
+    margin-top: 2px;
+    color: gray;
+}
+  
