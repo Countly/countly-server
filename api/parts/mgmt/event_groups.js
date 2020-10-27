@@ -36,10 +36,6 @@ const create = (params) => {
         'status': {
             'required': true,
             'type': 'Boolean'
-        },
-        'order': {
-            'required': true,
-            'type': 'Number'
         }
     };
     params.qstring.args = JSON.parse(params.qstring.args);

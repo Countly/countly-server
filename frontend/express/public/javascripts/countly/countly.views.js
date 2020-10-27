@@ -4298,7 +4298,7 @@ window.EventsBlueprintView = countlyView.extend({
         }
         this.template = Handlebars.compile($("#template-events-blueprint").html());
         this.textLimit = 100;
-        
+
     },
     initializeTabs: function() {
         var self = this;
@@ -4490,7 +4490,7 @@ window.EventsBlueprintView = countlyView.extend({
                 self.checkEventGroupDrawerInterval = setInterval(function() {
                     self.checkEventGroupDrawerDisabled();
                     console.log("check event group drawer form");
-                    if(!app.activeView.eventGroupDrawer) {
+                    if (!app.activeView.eventGroupDrawer) {
                         clearInterval(self.checkEventGroupDrawerInterval);
                     }
                 }, 1000);
@@ -4506,36 +4506,78 @@ window.EventsBlueprintView = countlyView.extend({
             var checked = e.target.checked;
             if (checked) {
                 $("#event-group-description").attr("disabled", false);
-            } else {
+            }
+            else {
                 $("#event-group-description").val("");
                 $("#event-group-description").attr("disabled", true);
             }
         });
 
+        $("#event-group-drawer .on-off-switch input").on("change", function() {
+            var isChecked = $(this).is(":checked");
+            var id = $(this).attr("id");
+            if (isChecked) {
+                $(this).parent().find(".text").replaceWith('<span style="opacity: 1" class="text">' + jQuery.i18n.map["events.group-visibility-checkbox"] + '</span>');
+            }
+            else {
+                $(this).parent().find(".text").replaceWith('<span class="text">' + jQuery.i18n.map["events.group-invisibility-checkbox"] + '</span>');
+            }
+        });
+
         var events = countlyEvent.getEvents(true);
-        var eventsOptions = events.map(function (e) {
+        var eventsOptions = events.map(function(e) {
             return {value: e.key, name: e.name};
         });
         $("#event-group-include-events-dropdown").clyMultiSelectSetItems(eventsOptions);
         $("#event-group-drawer #save-widget").hide();
         $("#event-group-drawer #create-widget").addClass("disabled");
+
+        $("#event-group-drawer #create-widget").off("click").on("click", function() {
+            countlyEvent.createEventGroup(JSON.stringify(self.getEventGroupDrawerSetting()), function(res) {
+                console.log(res);
+                if (res === true) {
+                    CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                    self.refresh(true, false);
+                }
+                else {
+                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                }
+            });
+            // self.eventGroupDrawer.close();
+            console.log(self.getEventGroupDrawerSetting());
+        });
     },
-    getEventGroupDrawerSetting: function () {
+    getEventGroupDrawerSetting: function() {
         var self = this;
         var groupInstance = {
             name: $("#group-name-input").val().trim() || null,
-            has_description:  $("#event-group-description").val().trim() || null,
-            app: countlyCommon.ACTIVE_APP_ID,
-            events: null,
+            description: null,
+            app_id: countlyCommon.ACTIVE_APP_ID,
+            source_events: null,
+            status: $("#event-group-drawer .on-off-switch input").is(":checked"),
+            display_map: {
+                c: $("#group-count-input").val().trim() || null,
+                d: $("#group-duration-input").val().trim() || null,
+                s: $("#group-sum-input").val().trim() || null
+            }
+        };
+
+        if (!$("#event-group-description").prop("disabled")) {
+            groupInstance.description = $("#event-group-description").val().trim() || null;
         }
-        if ($("#current_hook_id").text().length > 0) {
+        else {
+            delete groupInstance.description;
+        }
+
+        if ($("#current_group_id").text().length > 0) {
             groupInstance._id = $("#current_group_id").text();
         }
 
-        var events = $("#event-group-include-events-dropdown").clyMultiSelectGetSelection(); 
-        if (events.length > 0) {
-            groupInstance.events = events
+        var source_events = $("#event-group-include-events-dropdown").clyMultiSelectGetSelection();
+        if (source_events.length > 0) {
+            groupInstance.source_events = source_events;
         }
+
 
         // todo : more properties
         return groupInstance;
@@ -4551,13 +4593,13 @@ window.EventsBlueprintView = countlyView.extend({
             }
         }
     },
-    loadEventGroupDrawerSetting: function (data) {
-        console.log("load event group drawer setting",data);
+    loadEventGroupDrawerSetting: function(data) {
+        console.log("load event group drawer setting", data);
         this.eventGroupDrawer.resetForm();
         $("#current_group_id").text(data._id);
         $("#group-name-input").val(data.name);
         // todo: more properties
-        window.dd= this.eventGroupDrawer;
+        window.dd = this.eventGroupDrawer;
 
         $(this.eventGroupDrawer).find('.title span').first().html(jQuery.i18n.map["events.edit-your-group"]);
         $(this.evntGroupDrawer).addClass("open editing");
@@ -5305,16 +5347,16 @@ window.EventsBlueprintView = countlyView.extend({
             self.rightButtonsEvents();
 
             self.initEventGroupDrawer();
-            $(".new-event-group-button").off("click").on("click", function (e) {
+            $(".new-event-group-button").off("click").on("click", function(e) {
                 self.eventGroupDrawer.resetForm();
                 self.eventGroupDrawer.open();
             });
-            $(".modify-event-group-button").off("click").on("click", function (e) {
+            $(".modify-event-group-button").off("click").on("click", function(e) {
                 self.eventGroupDrawer.resetForm();
                 self.eventGroupDrawer.open();
-                self.loadEventGroupDrawerSetting({_id:"123", name:"333"});
-                
-            })
+                self.loadEventGroupDrawerSetting({_id: "123", name: "333"});
+
+            });
         }
     },
     compare_arrays: function(array1, array2) {

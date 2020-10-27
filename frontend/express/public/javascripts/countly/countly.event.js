@@ -164,6 +164,23 @@
 
     };
 
+    countlyEvent.createEventGroup = function(data, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/event_groups/create",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "args": data
+            },
+            success: function() {
+                callback(true);
+            },
+            error: function() {
+                callback(false);
+            }
+        });
+    };
+
     countlyEvent.getTopEventData30Day = function(callback) {
         return $.when($.ajax({
             type: "GET",
