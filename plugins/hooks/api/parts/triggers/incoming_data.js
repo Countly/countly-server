@@ -58,8 +58,9 @@ class IncomingDataTrigger {
 
     async matchFilter (params, rule) {
         const user = JSON.parse(JSON.stringify(params.app_user)) || {};
-        const {filter, event} = rule.trigger.configuration;
+        let {filter, event} = rule.trigger.configuration;
         const targetEventKey = event[0].split("***")[1];
+        filter = filter.dbFilter;
 
         //process metrics before comparing
         const map = {
@@ -116,6 +117,7 @@ class IncomingDataTrigger {
         }
 
         const eventProperties = {c: true, s: true, dur: true};
+        const eventPropertiesMap = {c: "count", s: "sum", dur:"duration"};
         /**
          *  Assert if rule operation applies to value
          *  @param {varies} value - user's value
@@ -151,20 +153,26 @@ class IncomingDataTrigger {
             let matched = true;
             for (let prop in filter) {
                 const parts = prop.split(".");
+                if(parts.length < 2) {
+                    continue; // fix bug
+                }
                 if (parts[0] === "up" || (parts.length === 1 && !eventProperties[parts[0]])) {
-                    const test = parts[0];
+                    let test = parts[0];
                     if (test === "up") {
                         test = parts[1];
                     }
-                    if (!user[test] || !assertOperation(user[test], filter[prop])) {
+                //    if (!user[test] || !assertOperation(user[test], filter[prop])) {
+                    if (!assertOperation(user[test], filter[prop])) {
                         matched = false;
                     }
                 }
-                else if (parts[0] !== "sg" && (!user[parts[0]] || !user[parts[0]][parts[1]] || !assertOperation(user[parts[0]][parts[1]], filter[prop]))) {
+//                else if (parts[0] !== "sg" && (!user[parts[0]] || !user[parts[0]][parts[1]] || !assertOperation(user[parts[0]][parts[1]], filter[prop]))) {
+                 else if (parts[0] !== "sg" && (!assertOperation(user[parts[0]] && user[parts[0]][parts[1]], filter[prop]))) {
+   
                     matched = false;
                 }
             }
-            return !matched;
+            return matched;
         }
 
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
@@ -175,22 +183,22 @@ class IncomingDataTrigger {
                     eventRules[prop] = filter[prop];
                 }
             }
-            console.log(user,filter, assertFilter(user, filter),"@@@2"); 
             if (assertFilter(user, filter)) {
                 //at this point we know that all user filter have been matched
                 //now we only need to check events which match event filter 
                 const events = params.qstring.events.filter(function(event) {
                     if (targetEventKey === event.key || targetEventKey === "*") {
                         let notMatch = false;
-                        console.log("!!!33333");
                         for (let prop in eventRules) {
                             let parts = prop.split(".");
                             if (parts[0] === "sg") {
-                                if (!event.segmentation || !assertOperation(common.convertToType(event.segmentation[parts[1]]), eventRules[prop])) {
+//                                if (!event.segmentation || !assertOperation(common.convertToType(event.segmentation[parts[1]]), eventRules[prop])) {
+                                if (!assertOperation(common.convertToType(event.segmentation && event.segmentation[parts[1]]), eventRules[prop])) {
+
                                     notMatch = true;
                                 }
                             }
-                            else if (!assertOperation(common.convertToType(event[parts[0]]), eventRules[prop])) {
+                            else if (!assertOperation(common.convertToType(event[eventPropertiesMap[parts[0]]]), eventRules[prop])) {
                                 notMatch = true;
                             }
                         }
