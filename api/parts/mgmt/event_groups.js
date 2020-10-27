@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const COLLECTION_NAME = "event_groups";
 const ID_PREFIX = "[CLY]_group_";
 
+
 /**
  * Event Groups CRUD - The function creating to make a new event groups data.
  * @param {Object} params - params
@@ -61,7 +62,8 @@ const create = (params) => {
  * @param {Object} params - 
  */
 const update = (params) => {
-    common.db.collection(COLLECTION_NAME).update({'_id': params.args._id}, {$set: params.args}, (error, result) =>{
+    params.qstring.args = JSON.parse(params.qstring.args);
+    common.db.collection(COLLECTION_NAME).update({'_id': params.qstring.args._id}, {$set: params.qstring.args}, (error, result) =>{
         if (!result.modifiedCount || error) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;

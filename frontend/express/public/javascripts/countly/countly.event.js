@@ -205,6 +205,42 @@
         });
     };
 
+    countlyEvent.updateEventGroup = function(data, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/event_groups/update",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "args": data
+            },
+            success: function() {
+                callback(true);
+            },
+            error: function() {
+                callback(false);
+            }
+        });
+    };
+
+    countlyEvent.getEventGroupById = function(_id, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "get_event_group",
+                "_id": _id
+            },
+            dataType: "json",
+            success: function(json) {
+                callback(json);
+            },
+            error: function(json) {
+                callback(json);
+            }
+        });
+    };
+
     countlyEvent.getTopEventData30Day = function(callback) {
         return $.when($.ajax({
             type: "GET",
