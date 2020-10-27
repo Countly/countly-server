@@ -3081,6 +3081,33 @@
         $(breadcrumbsEl).prependTo(el);
     };
 
+    /**
+     * Function that returns difference between two arrays
+     * @param {Array} a1 - first array
+     * @param {Array} a2 - second array
+     */
+    CountlyHelpers.arrayDiff = function(a1, a2) {
+        var a = [], diff = [];
+
+        for (var i = 0; i < a1.length; i++) {
+            a[a1[i]] = true;
+        }
+
+        for (var i = 0; i < a2.length; i++) {
+            if (a[a2[i]]) {
+                delete a[a2[i]];
+            } else {
+                a[a2[i]] = true;
+            }
+        }
+
+        for (var k in a) {
+            diff.push(k);
+        }
+
+        return diff;
+    }
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");
