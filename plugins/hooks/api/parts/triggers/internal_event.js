@@ -60,6 +60,12 @@ class InternalEventTrigger {
                case "/i/app_users/delete":
                        const {app_id, user} = ob;
                        if (rule.apps[0] === app_id + '') {
+                           try {
+                                utils.updateRuleTriggerTime(rule._id);
+                            }
+                            catch(err) {
+                                console.log(err,"??#3");
+                            }
                            rule.effects.forEach(e => {
                                this.pipeline({
                                    params: {user: user},
@@ -70,7 +76,26 @@ class InternalEventTrigger {
                        }
                        console.log(ob, "userprofile!333332");
                        break;
+               case "/hooks/trigger":
+                       const {params, rule: triggeredRule} = ob;
+                       if (ob.rule._id + "" === rule.trigger.configuration.hookID) {
+                           try {
+                                utils.updateRuleTriggerTime(rule._id);
+                            }
+                            catch(err) {
+                                console.log(err,"??#3");
+                            }
+                           rule.effects.forEach(e => {
+                               this.pipeline({
+                                   params: ob,
+                                   rule: rule,
+                                   effect: e,
+                               });
+                           });
+                       }
+                       break;
                }
+              
             }
         };
     }

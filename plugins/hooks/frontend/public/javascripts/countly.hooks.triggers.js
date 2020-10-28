@@ -1,5 +1,5 @@
 /*global
-    jQuery
+  jQuery
  */
 
 (function(hooksPlugin, jQuery) {
@@ -79,7 +79,6 @@
                             console.log(e);
                         }
                     }
-                    
                 }, 500);
                 
             },
@@ -93,8 +92,6 @@
                 return configuration;
             },
             loadEventsData: function (configuration) {
-                
-
                 $("#multi-event-dropdown").clyMultiSelectClearSelection({});
                 $("#multi-event-dropdown").clyMultiSelectSetItems([]);
                 // only one app 
@@ -1031,10 +1028,12 @@
                     });
                 $("#multi-app-dropdown").on("cly-multi-select-change", function(e) {
                     self.loadCohortsData();
+                    self.loadHooksData();
                 });
                 app.localize();
             },
             renderConfig: function(trigger) {
+                console.log("!!!");
                 var configuration = trigger.configuration;
                 var self = this;
                 $("#single-hook-trigger-internal-event-dropdown")
@@ -1042,9 +1041,10 @@
                 switch (configuration.eventType) {
                     case "/cohort/enter":
                     case "/cohort/exit":
-                        var self = this;
-                        setTimeout(function () {self.loadCohortsData(configuration);}, 200)
-                        
+                        setTimeout(function () {self.loadCohortsData(configuration);}, 200);
+                        break;
+                    case "/hooks/trigger":
+                        setTimeout(function() {self.loadHooksData(configuration);}, 200);
                         break;
                 }
             },
@@ -1066,12 +1066,50 @@
                     case "/i/app_users/create":
                     case "/i/app_users/update":
                     case "/i/app_users/delete":
-                        return configuration; 
+                        return configuration;
+                        break;
+                    case "/hooks/trigger":
+                        configuration.hookID = $("#single-hook-trigger-hooks-dropdown").clySelectGetSelection();
+                        if (!configuration.hookID) {
+                            return null;
+                        }
+                        break;
                     default:
                         return null;
                 }
-                console.log(configuration, "CC");
                 return configuration
+            },
+            loadHooksData: function(configuration) {
+                $("#single-hook-trigger-hooks-dropdown").clySelectSetItems([]);
+                $("#single-hook-trigger-hooks-dropdown").clySelectSetSelection("","");
+                const apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
+                if (apps.length === 0) {
+                     return;
+                }
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + '/hook/list',
+                    data: {},
+                    dataType: "json",
+                    success: function(data) {
+                        var hookList = []
+                        data.hooksList.forEach(function(hook) {
+                            if (hook.apps.indexOf(apps[0]) > -1) {
+                                hookList.push({value:hook._id, name: hook.name});
+                            }
+                        });
+                        $("#single-hook-trigger-hooks-dropdown").clySelectSetItems(hookList);
+                        if (!(configuration && configuration.hookID)) {
+                            return;
+                        }
+
+                        hookList.forEach(function(i) {
+                              if( i.value ===  configuration.hookID) {
+                                  $("#single-hook-trigger-hooks-dropdown").clySelectSetSelection(i.value, i.name);
+                              }
+                         })
+                    }
+                });
             },
             loadCohortsData: function(configuration) {
                 $("#single-hook-trigger-cohort-dropdown").clySelectSetSelection("","");
@@ -1159,6 +1197,25 @@
                         `
                         $(".internal-event-configuration-view").html(html);
                         $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-internal-event-app-users-intro"));
+                        self.loadHooksData();
+                        break;
+                    case '/hooks/trigger': 
+                        html = `
+                            <div class="section">
+                                <div class="label" data-localize='hooks.hook-selector-title'></div>
+                                <div id="single-hook-trigger-hooks-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                                    <div class="select-inner">
+                                        <div class="text-container">
+                                            <div class="text">
+                                                <div class="default-text" data-localize='hooks.hooks-selector-placeholder'></div>
+                                        </div>
+                                        <div class="right combo"></div>
+                                    </div>
+                                    <div class="select-items square" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                        `
+                        $(".internal-event-configuration-view").html(html);
                         break;
                     default:
                         $(".internal-event-configuration-view").html(event);

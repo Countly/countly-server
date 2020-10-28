@@ -37,6 +37,7 @@ class Hooks {
             const t = new Triggers[type]({
                 pipeline: (data) => {
                     this._queueEventEmitter.emit('push', data);
+                    plugins.dispatch("/hooks/trigger", data);
                 }
             });
             this._triggers[type] = t;
