@@ -59,11 +59,6 @@ window.HooksView = countlyView.extend({
             "aaData": pluginsData,
             "aoColumns": [
                 {
-                    "mData": 'name',
-                    "sType": "string",
-                    "sTitle": jQuery.i18n.map["hooks.hook-name"],
-                },
-                {
                     "mData": function(row, type) {
                         if (type === "display") {
                             var disabled = (row.prepackaged) ? 'disabled' : '';
@@ -85,8 +80,28 @@ window.HooksView = countlyView.extend({
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["common.status"],
                     "bSortable": false,
+                    "sWidth":"80px",
+                },
+                {
+                    "mData": function(row, type) {
+                        if (type === "display") {
+                            input = '<div style="color:#444444">' + row.name + '</div>';
+                            if (row.description) {
+                                input +='<div style="color:#aaaaaa">' + row.description + '</div>';
+                            }
+                            return input;
+                        }
+                        else {
+                            return row.enabled;
+                        }
+                    },
+                    "sType": "string",
+                    "bSortable": false,
+                    "sTitle": jQuery.i18n.map["hooks.hook-name"],
+                    "sWidth": "25%",
 
                 },
+                
              /*   {
                     "mData": 'appNameList',
                     "sType": "string",
@@ -96,17 +111,31 @@ window.HooksView = countlyView.extend({
                 */
                 {
                     "mData": function(row, type) {
-                        var input = "";
+                        var triggerNames = {
+                            "APIEndPointTrigger": jQuery.i18n.map["hooks.trigger-api-endpoint-uri"],
+                            "IncomingDataTrigger": jQuery.i18n.map["hooks.IncomingDataTrigger"],
+                            "InternalEventTrigger": jQuery.i18n.map["hooks.InternalEventTrigger"],
+                        }
+                        
                         if (type === "display") {
-                            input += '<span class="text">' + "trigger:" + row.trigger.type + '</span>';
+                            input = '<div style="color:#909090;text-transform:uppercase;">' + jQuery.i18n.map["hooks.trigger"] + '</div>';
+                            input += '<div><span class="text" style="font-size:11px;color:#444444;">' + triggerNames[row.trigger.type] + '</span></div>';
+                            input += '<div style="margin-top:12px; color:#909090;text-transform:uppercase;">' + jQuery.i18n.map["hooks.effects"] + '</div>';
+                            input += '<div style="margin:5px 0 0 2px;">'
+                            input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
+                            input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
+                            input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
+                            input += '</div>';
+
                             return input;
                         }
                         else {
-                            return "";
+                            return row.trigger;
                         }
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["hooks.trigger-and-effects"],
+                    "sWidth": "20%",
                     "bSortable": false,
 
                 },

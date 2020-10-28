@@ -131,3 +131,50 @@
 #hooks-table .options-item .edit-menu .fa {
     margin-right: 7px;
 }
+#hooks-table .table-effect-node {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-left: solid 1px #cecece;
+    line-height: 24px;
+    position: relative;
+}
+
+#hooks-table tr:hover .table-effect-node:last-child:before {
+    background-color: #f1f1f1 !important;
+}
+#hooks-table tr:nth-child(odd) .table-effect-node:last-child:before {
+    padding: 0;
+    margin: 0;
+    content: "";
+    width: 1px;
+    height: 12px;
+    background-color: #fff;
+    position: absolute;
+    left: -1px;
+    bottom: -1px;
+}
+#hooks-table tr:nth-child(even) .table-effect-node:last-child:before {
+    padding: 0;
+    margin: 0;
+    content: "";
+    width: 1px;
+    height: 12px;
+    background-color:#F9F9F9;
+    position: absolute;
+    left: -1px;
+    bottom: -1px;
+}
+#hooks-table .table-effect-node .line-dot {
+    width: 6px;
+    height: 1px;
+    background-color: #cecece;
+}
+
+#hooks-table .table-effect-node .dot {
+  width: 5px;
+  height: 5px;
+  background-color: #aaaaaa;
+  border-radius: 2.5px;
+  margin-right: 6px;
+}
