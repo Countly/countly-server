@@ -1236,8 +1236,8 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 #event-groups-settings-table table.event-groups-table .event_visibility_row_hidden, #events-custom-settings-table table.events-table .event_visibility_row_hidden {color:#DB6E6E}
 #events-custom-settings-table tr.moving {border-left: 1px solid #D0D0D0; }
 
-#events-custom-settings-table .dataTables_wrapper {margin-top:0px;}
-#events-custom-settings-table .dataTable-top {border-top-left-radius: 0px; border-top-right-radius: 0px;}
+#event-groups-settings-table .dataTables_wrapper, #events-custom-settings-table .dataTables_wrapper {margin-top:0px;}
+#event-groups-settings-table .dataTable-top, #events-custom-settings-table .dataTable-top {border-top-left-radius: 0px; border-top-right-radius: 0px;}
 #edit-events-button { padding: 4px 1px; }
 #edit-events-button i { font-size: 23px; margin: 0; line-height: 16px; }
 .overview_empty{color: #a2a2a2;
