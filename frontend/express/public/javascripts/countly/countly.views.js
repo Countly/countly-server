@@ -4850,10 +4850,12 @@ window.EventsBlueprintView = countlyView.extend({
         var self = this;
         self.dtable.find("tbody tr").hover(function() {
             $(this).find(".edit-box").css({"visibility": "visible"});
-            $(this).find(".cly-list-options").addClass('cly-list-options-row');
+            //$(this).find(".cly-list-options").addClass('cly-list-options-row');
+            $(this).find(".edit-event").css({"visibility": "visible"});
         }, function() {
             $(this).find("td .edit-box").css({"visibility": "hidden"});
-            $(this).find(".cly-list-options").removeClass('cly-list-options-row');
+            //$(this).find(".cly-list-options").removeClass('cly-list-options-row');
+            $(this).find(".edit-event").css({"visibility": "hidden"});
         });
         self.dtable.find("tbody td .edit-box").click(function() {
             //Pass the settings variable here
@@ -5145,6 +5147,11 @@ window.EventsBlueprintView = countlyView.extend({
                     "sClass": "events-edit-description-field"
                 },
                 {
+                    "mData": function(row) {
+                        return "<button class='edit-event' data-event='" + JSON.stringify(row) + "'>Edit</button>";
+                    }
+                },
+                {
                     "mData": function() {
                         return '<a class="cly-list-options"></a>';
                     },
@@ -5154,6 +5161,47 @@ window.EventsBlueprintView = countlyView.extend({
                 },
             ];
 
+            $('body').on('click', '.edit-event', function() {
+                $("#events-blueprint-drawer").addClass("open");
+                $('#eb-key-name').val($(this).data('event').key);
+                $('#eb-event-name').val($(this).data('event').name);
+                $('#eb-duration-name').val($(this).data('event').dur);
+                $('#eb-sum-name').val($(this).data('event').sum);
+                $('#eb-count-name').val($(this).data('event').count);
+                $('#eb-event-desc-input').val($(this).data('event').description);
+                var segments = [];
+                for (var i = 0; i < $(this).data('event').segments.length; i++) {
+                    segments.push({name: $(this).data('event').segments[i], value: $(this).data('event').segments[i]})
+                }
+                var omittedSegments = [];
+                for (var i = 0; i < $(this).data('event').omittedSegments.length; i++) {
+                    omittedSegments.push({name: $(this).data('event').omittedSegments[i], value: $(this).data('event').omittedSegments[i]})
+                }
+                $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
+                $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
+
+                if ($(this).data('event').is_visible) {
+                    $('#eb-event-visibility .on-off-switch input').attr('checked', 'checked');
+                    $('#eb-event-visibility > div.on-off-switch > span').html(jQuery.i18n.map["events.edit.event-visible"]);
+                }
+                else {
+                    $('#eb-event-visibility .on-off-switch input').removeAttr('checked');
+                    $('#eb-event-visibility > div.on-off-switch > span').html();
+                }
+
+                if ($(this).data('event').description !== "") {
+                    $('#eb-description-checkbox').removeClass('fa-square-o');    
+                    $('#eb-description-checkbox').addClass('fa-check-square');
+                    $('#eb-event-desc-input').show();
+                }
+                else {
+                    $('#eb-description-checkbox').removeClass('fa-check-square');
+                    $('#eb-description-checkbox').addClass('fa-square-o');
+                    $('#eb-event-desc-input').hide();
+                }
+
+
+            });
 
             $(this.el).html(this.template(this.templateData));
             self.initializeTabs();
@@ -5189,7 +5237,6 @@ window.EventsBlueprintView = countlyView.extend({
             $("#events-event-settings").on("keyup", "textarea", function() {
                 self.check_changes();
             });
-
 
             //General settings, select all checkbox
             $("#events-custom-settings-table").on("click", "#select-all-events", function() {
@@ -5483,7 +5530,7 @@ window.EventsBlueprintView = countlyView.extend({
         }
     },
     initEventDrawer: function() {
-        // var self = this;
+        //var self = this;
 
         $("#eb-description-checkbox, #eb-description-section .label span").on("click", function() {
             var check = $("#eb-description-checkbox").hasClass("fa-check-square");
@@ -5513,9 +5560,21 @@ window.EventsBlueprintView = countlyView.extend({
         });
 
         $("#save-event").on("click", function() {
-            // var settings = self.getEventBlueprintDrawerSettings();
+            var settings = self.getEventBlueprintDrawerSettings();
             //Send these values to server here - ajax call here.
+            var event_map = {};
+            event_map[settings.key] = settings;
+            var omitted_segments = {};
+            omitted_segments[settings.key] = settings.omit_list;
+            countlyEvent.update_map(JSON.stringify(event_map), "", "", JSON.stringify(omitted_segments), function(result) {
+                if (result === true) {
+                    var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true, type: "ok"};
+                    CountlyHelpers.notify(msg);
+                    $("#events-blueprint-drawer").removeClass("open");
+                }
+            });
         });
+
 
         $(".cly-drawer").find(".close").off("click").on("click", function() {
             $(this).parents(".cly-drawer").removeClass("open");
@@ -5554,12 +5613,12 @@ window.EventsBlueprintView = countlyView.extend({
 
         return {
             key: keyName,
-            event_name: eventName,
+            name: eventName,
             description: eventDesc || "",
-            status: status,
-            count_name: countName || "Count",
-            sum_name: sumName || "Sum",
-            duration_name: durationName || "Duration",
+            is_visible: status,
+            count: countName || "Count",
+            sum: sumName || "Sum",
+            dur: durationName || "Duration",
             omit_list: omitList || []
         };
     },
