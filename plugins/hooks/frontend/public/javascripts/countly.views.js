@@ -113,18 +113,42 @@ window.HooksView = countlyView.extend({
                     "mData": function(row, type) {
                         var triggerNames = {
                             "APIEndPointTrigger": jQuery.i18n.map["hooks.trigger-api-endpoint-uri"],
-                            "IncomingDataTrigger": jQuery.i18n.map["hooks.IncomingDataTrigger"],
-                            "InternalEventTrigger": jQuery.i18n.map["hooks.InternalEventTrigger"],
+                            "IncomingDataTrigger": jQuery.i18n.map["hooks.IncomingData"],
+                            "InternalEventTrigger": jQuery.i18n.map["hooks.internal-event-selector-title"],
                         }
                         
                         if (type === "display") {
+                            var triggerText = triggerNames[row.trigger.type];
+                            try {
+                                if (row.trigger.type === "IncomingDataTrigger") {
+                                    var event = row.trigger.configuration.event;
+                                    var parts = event[0].split("***");
+                                    triggerText +=  "<span style='margin-left:5px;font-weight: bold;'>" + parts[1] + "</span>";
+                                }
+                                if (row.trigger.type === "InternalEventTrigger") {
+                                    var event = row.trigger.configuration.eventType;
+                                    triggerText += "<span style='margin-left:5px;font-weight: bold;'>" + event + "</span>";
+                                }
+                            }catch(e) {
+                                console.log(e);
+                            }
+
+                            var effectList = "";
+                            row.effects.forEach(function(effect) {
+                                if (effect.type === "EmailEffect") {
+                                   effectList +=  '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div style="width:90%;text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">E-mail:' + "<span style='margin-left:5px;font-weight: bold;'>" + effect.configuration.address + '</span></div></div>';
+                                }
+                                if (effect.type === "HTTPEffect") {
+                                    effectList +=  '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div style="width:90%;text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">URL:' + "<span style='margin-left:5px;font-weight: bold;'>" + effect.configuration.url + '</span></div></div>';
+                                }
+                            });
                             input = '<div style="color:#909090;text-transform:uppercase;">' + jQuery.i18n.map["hooks.trigger"] + '</div>';
-                            input += '<div><span class="text" style="font-size:11px;color:#444444;">' + triggerNames[row.trigger.type] + '</span></div>';
+                            input += '<div class="text" style="font-size:11px;color:#444444;">' + triggerText + '</div>';
                             input += '<div style="margin-top:12px; color:#909090;text-transform:uppercase;">' + jQuery.i18n.map["hooks.effects"] + '</div>';
                             input += '<div style="margin:5px 0 0 2px;">'
-                            input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
-                            input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
-                            input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
+                            input += effectList;
+                            //input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
+                           // input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
                             input += '</div>';
 
                             return input;
@@ -144,12 +168,14 @@ window.HooksView = countlyView.extend({
                     "sType": "number",
                     "sTitle": jQuery.i18n.map["hooks.trigger-count"],
                     "bSortable": true,
+                    "sWidth": "10%",
                 },
                 {
                     "mData": 'lastTriggerTimestamp',
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["hooks.trigger-last-time"],
                     "bSortable": false,
+                    "sWidth": "10%",
                 },
             ]
         };
@@ -158,7 +184,8 @@ window.HooksView = countlyView.extend({
                 "mData": 'createdByUser',
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["hooks.create-by"],
-                "bSortable": false
+                "bSortable": false,
+                "sWidth": "20%",
             });
         }
         dataTableDefine.aoColumns.push({

@@ -48,11 +48,12 @@
                 ($(dom).find("[name=http-effect-params]")[0]).innerHTML= configuration.requestData;
             },
         },
-        "SDKEventEffect": {
+       /* "SDKEventEffect": {
             name: jQuery.i18n.map["hooks.SDKEventEffect"],
             init: function() {
             },
         }
+        */
     }
 
     /**
