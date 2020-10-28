@@ -4596,7 +4596,7 @@ window.EventsBlueprintView = countlyView.extend({
         $("#create-widget").removeClass("disabled");
         $("#save-widget").removeClass("disabled");
         for (var key in groupConfig) {
-            if (groupConfig[key] == null) {
+            if (groupConfig[key] === null) {
                 $("#create-widget").addClass("disabled");
                 $("#save-widget").addClass("disabled");
             }
@@ -4639,8 +4639,94 @@ window.EventsBlueprintView = countlyView.extend({
         $("#create-widget").hide();
         $("#save-widget").show();
     },
-    initEventsTable: function() {},
-    initEventGroupsTable: function() {},
+    initEventGroupsTable: function() {
+        var self = this;
+        var getEventGroups = countlyEvent.getEventGroupsTable();
+        var aoColumns = [
+            {
+                "mData": function(row) {
+                    return "<i class='fa fa-reorder event-order' data-event-group-id=\"" + row._id + "\"></i>";
+                },
+                "bSortable": false,
+                "sTitle": "",
+                "sClass": 'events-blueprint-order',
+                "sWidth": '30px',
+            },
+            {
+                "mData": function(row) {
+                    if (self.selectedEventGroups[row._id]) {
+                        return "<a class='fa fa-check-square check-green' id=\"" + row._id + "\"></a>";
+                    }
+                    else {
+                        return "<a class='fa fa-square-o check-green'  id=\"" + row._id + "\"></a>";
+                    }
+                },
+                "sType": "numeric",
+                "sClass": "center",
+                "sWidth": "30px",
+                "bSortable": false,
+                "sTitle": "<a class='fa fa-square-o check-green check-header'></a>"
+            },
+            {
+                "mData": function(row) {
+                    return row.name + '(' + row.source_events.length + 'events)';
+                },
+                "sType": "string",
+                "sTitle": jQuery.i18n.map['events.general.event'],
+                "bSortable": false
+            },
+            {
+                "mData": function(row) {
+                    var status;
+                    if (row.status) {
+                        status = '<a style="color: #83C985;padding-right:3px; width:15px;"><i class="fa fa-eye"></i></a><a style="color: #83C985;padding-left:0; width:50px;"><span>' + jQuery.i18n.map["events.general.status.visible"] + '</span>';
+                    }
+                    else {
+                        status = '<a style="color: #DB6E6E;padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></a><a style="color: #DB6E6E;padding-left:0; width:50px;"><span>' + jQuery.i18n.map["events.general.status.hidden"] + '</span>';
+                    }
+                    return status;
+                },
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["events.general.status"],
+                "bSortable": false
+            },
+            {
+                "mData": function(row) {
+                    if (!row.description) {
+                        return '-';
+                    }
+                    return row.description;
+                },
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["events.general.event-description"],
+                "bSortable": false
+            },
+            {
+                "mData": function() {
+                    return '<a class="cly-list-options" style="margin-right:20px;"></a>';
+                },
+                "sType": "string",
+                "sTitle": "",
+                "sClass": 'shrink right',
+                "sWidth": '100px',
+                "bSortable": false,
+                "bSearchable": false
+            }
+        ];
+        this.eventGroupsTable = $('.event-groups-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaData": getEventGroups,
+            "fnRowCallback": function(nRow, aData) {
+                $(nRow).attr("id", aData._id);
+                $(nRow).attr("name", aData.name);
+                $(nRow).attr("status", aData.status);
+                $(nRow).css("height", "72px");
+            },
+            "aoColumns": aoColumns,
+            "fnDrawCallback": function(oSettings) {
+                $.fn.dataTable.defaults.fnDrawCallback(oSettings);
+            }
+        }));
+    },
     selectAllRowsEventGroups: function() {
         var self = this;
         $('.table-blueprint-event-groups-outer-container tbody ').off("click", "td:nth-child(2)").on("click", "td:nth-child(2)", function(e) {
@@ -4668,9 +4754,9 @@ window.EventsBlueprintView = countlyView.extend({
 
                 if (self.selectedEventGroupsName[name]) {
                     self.selectedEventGroupsName[name] = null;
-                    var index = self.selectedEventGroupsNames.indexOf(name);
-                    if (index !== -1) {
-                        self.selectedEventGroupsNames.splice(index, 1);
+                    var index_ = self.selectedEventGroupsNames.indexOf(name);
+                    if (index_ !== -1) {
+                        self.selectedEventGroupsNames.splice(index_, 1);
                     }
                 }
                 else {
@@ -4731,7 +4817,6 @@ window.EventsBlueprintView = countlyView.extend({
                             if (!result) {
                                 return true;
                             }
-                            console.log("delete?", self.selectedEventGroupsIds);
                             countlyEvent.delete_events(self.selectedEventGroupsIds, function(result1) {
                                 if (result1 === true) {
                                     var msg1 = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"], sticky: false, clearAll: true, type: "ok"};
@@ -4745,7 +4830,6 @@ window.EventsBlueprintView = countlyView.extend({
                         }, [jQuery.i18n.map["common.no-dont-delete"], yes_but], {title: title, image: "delete-an-event"});
                     }
                 }
-                console.log(selected, self.selectedEventGroupsIds, self.selectedEventGroupsNames);
                 // if (val === "crash-resolve") {
                 // CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-resolved", self.selectedCrashesIds.length), "red", function(result) {
                 //     if (!result) {
@@ -4808,8 +4892,8 @@ window.EventsBlueprintView = countlyView.extend({
             else {
                 el = tmpEl;
             }
-            var event = el.attr("id");
-            if (event) {
+            var event_ = el.attr("id");
+            if (event_) {
                 if (el.hasClass("delete_single_event")) {
                     var eventName = el.attr('name');
                     if (eventName === "") {
@@ -4896,7 +4980,7 @@ window.EventsBlueprintView = countlyView.extend({
             }
         });
 
-        $(".events-right-menu .edit-cohort").off("click").on("click", function(event/*, data*/) {
+        $(".events-right-menu .edit-cohort").off("click").on("click", function() {
             // self.openDrawer(countlyCohorts.getCurrentCohort());
             // event.stopPropagation();
         });
@@ -5077,7 +5161,8 @@ window.EventsBlueprintView = countlyView.extend({
             if (index !== -1) {
                 self.tabs.tabs("option", "active", index);
             }
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            self.initEventGroupsTable();
+            this.dtable = $('.events-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": tableData,
                 "aoColumns": this.columns,
                 "fnRowCallback": function(nRow, aData) {
@@ -5088,7 +5173,7 @@ window.EventsBlueprintView = countlyView.extend({
                 }
             }));
 
-            $(".d-table").stickyTableHeaders();
+            $(".events-table").stickyTableHeaders();
 
             self.check_changes();
             self.pageScript();
@@ -5382,11 +5467,11 @@ window.EventsBlueprintView = countlyView.extend({
             self.rightButtonsEvents();
 
             self.initEventGroupDrawer();
-            $(".new-event-group-button").off("click").on("click", function(e) {
+            $(".new-event-group-button").off("click").on("click", function() {
                 self.eventGroupDrawer.resetForm();
                 self.eventGroupDrawer.open();
             });
-            $(".modify-event-group-button").off("click").on("click", function(e) {
+            $(".modify-event-group-button").off("click").on("click", function() {
                 self.eventGroupDrawer.resetForm();
                 self.eventGroupDrawer.open();
                 var _id = "[CLY]_group_1b12f7ebfcabde5e8209630effd09f6a";
@@ -5398,7 +5483,7 @@ window.EventsBlueprintView = countlyView.extend({
         }
     },
     initEventDrawer: function() {
-        var self = this;
+        // var self = this;
 
         $("#eb-description-checkbox, #eb-description-section .label span").on("click", function() {
             var check = $("#eb-description-checkbox").hasClass("fa-check-square");
@@ -5428,7 +5513,7 @@ window.EventsBlueprintView = countlyView.extend({
         });
 
         $("#save-event").on("click", function() {
-            var settings = self.getEventBlueprintDrawerSettings();
+            // var settings = self.getEventBlueprintDrawerSettings();
             //Send these values to server here - ajax call here.
         });
 
@@ -5554,7 +5639,7 @@ window.EventsBlueprintView = countlyView.extend({
         var self = this;
 
         this.dtable.fnDestroy(false);
-        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+        this.dtable = $('.events-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": self.tableData,
             "aoColumns": self.columns,
             "fnRowCallback": function(nRow, aData) {
@@ -6362,8 +6447,8 @@ window.EventsView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             CountlyHelpers.applyColors();
             if (eventCount > 0) {
-                for (var i in this.showOnGraph) {
-                    self.showOnGraph[i] = $(".big-numbers.selected." + i).length;
+                for (var k in this.showOnGraph) {
+                    self.showOnGraph[k] = $(".big-numbers.selected." + k).length;
                 }
                 this.drawGraph(eventData);
                 this.drawTable(eventData);

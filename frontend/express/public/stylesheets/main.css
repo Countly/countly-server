@@ -1181,31 +1181,33 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 #events-blueprint-drawer textarea {font: 13px Ubuntu,Helvetica,sans-serif;color: #444;width: 100%; border-radius: 2px; resize: none; color: #444; border: none; box-shadow: inset 0 0 0 1px #d0d0d0; padding: 7px;padding-right: 25px;box-sizing: border-box;height: 30px;overflow: hidden;}
 #events-blueprint-drawer textarea:focus {outline: none;}
 
-#events-custom-settings table.events-table, #events-overview-table table.events-table{ width:100%; padding:0; margin:0;}
+#events-custom-settings table.event-groups-table{ border-left: 1px solid #D0D0D0; border-right: 1px solid #D0D0D0;}
 #events-overview-table{border:1px solid #D0D0D0; overflow:auto; border-radius: 2px 2px 0 0;}
-#events-custom-settings table.events-table  th, #events-overview-table table.events-table th { padding:10px 10px; color: #484848; font-weight:normal; font:11px Ubuntu,Helvetica,sans-serif;  border-right:none; background-color:#f3f3f3; text-transform: uppercase; line-height: 12px; border-bottom: 1px solid #E2E2E2; border-top: 1px solid #D0D0D0;}
 #events-overview-table table.events-table th{border-top:none;}
-#events-custom-settings-table{border-top:none; margin-bottom:30px;}
-#events-custom-settings-table table.events-table  thead tr, #events-overview-table table.events-table thead tr{ background-color:transparent; }
-#events-custom-settings-table table.events-table  td,#events-overview-table table.events-table td { padding: 10px 10px; margin:0;  color:#6B6B6B; font-family: Ubuntu; font-size: 12px; line-height: 18px;  margin: 0;}
-#events-custom-settings-table table.events-table  td:first-child, #events-overview-table table.events-table td:first-child{ width:30px; text-align:center; }
-#events-custom-settings-table table.events-table  td:nth-child(2),#events-overview-table table.events-table td:nth-child(2) { width:30px; }
-#events-custom-settings-table table.events-table  th:nth-child(2),#events-overview-table table.events-table th:nth-child(2) { padding:0; }
-#events-custom-settings-table table.events-table  td.events-edit-name-field{ width:25%; word-break: break-word;}
+#event-groups-settings-table table.event-groups-table, #events-custom-settings table.events-table, #events-overview-table table.events-table{ width:100%; padding:0; margin:0;}
+#event-groups-settings-table table.event-groups-table th, #events-custom-settings table.events-table  th, #events-overview-table table.events-table th { padding:10px 10px; color: #484848; font-weight:normal; font:11px Ubuntu,Helvetica,sans-serif;  border-right:none; background-color:#f3f3f3; text-transform: uppercase; line-height: 12px; border-bottom: 1px solid #E2E2E2; border-top: 1px solid #D0D0D0;}
+#event-groups-settings-table, #events-custom-settings-table{border-top:none; margin-bottom:30px;}
+#event-groups-settings-table table.event-groups-table thead tr, #events-custom-settings-table table.events-table  thead tr, #events-overview-table table.events-table thead tr{ background-color:transparent; }
+#event-groups-settings-table table.event-groups-table td, #events-custom-settings-table table.events-table  td,#events-overview-table table.events-table td { padding: 10px 10px; margin:0;  color:#6B6B6B; font-family: Ubuntu; font-size: 12px; line-height: 18px;  margin: 0;}
+#event-groups-settings-table table.event-groups-table td:first-child, #events-custom-settings-table table.events-table  td:first-child, #events-overview-table table.events-table td:first-child{ width:30px; text-align:center; }
+#event-groups-settings-table table.event-groups-table td:nth-child(2), #events-custom-settings-table table.events-table  td:nth-child(2),#events-overview-table table.events-table td:nth-child(2) { width:30px; }
+#event-groups-settings-table table.event-groups-table th:nth-child(2), #events-custom-settings-table table.events-table  th:nth-child(2),#events-overview-table table.events-table th:nth-child(2) { padding:0; }
+#event-groups-settings-table table.event-groups-table td.events-edit-name-field, #events-custom-settings-table table.events-table  td.events-edit-name-field{ width:25%; word-break: break-word;}
 #events-event-settings table td textarea{color:#6B6B6B; line-height: 140%;}
 #events-event-settings table td input{color:#6B6B6B;}
 #events-overview-table table.events-table td:last-child{width:50px; text-align:right; padding: 0px 10px;}
 .delete-event-overview{color: #DDD; font-size:20px; line-height:20px;}
 .delete-event-overview:hover { color:#E95C6C; transition:color 1s; cursor:pointer;}
-#events-custom-settings-table table.events-table td:last-child  {padding: 10px 0;}
-#events-custom-settings-table table.events-table td:first-child  {padding: 10px 10px;}
-#events-custom-settings-table table.events-table  tr,#events-overview-table table.events-table tr{ background-color:#fff}
-#events-custom-settings-table table.events-table  tr:nth-child(even),#events-overview-table table.events-table tr:nth-child(even){ background-color:#F9F9F9}
-#events-custom-settings-table .event-row-placeholder, #events-overview-table .event-row-placeholder { height:40px; }
-#events-custom-settings-table table.events-table td:last-child{ width: 30px; text-align:center; }
-#events-custom-settings-table .event-order,#events-overview-table .event-order { color:#BBB; cursor:move; }
-#events-custom-settings-table .event-order:hover,#events-overview-table .event-order:hover {color:#999999;}
-#events-custom-settings-table a.check-green {position:relative; top: 2px;}
+#event-groups-settings-table table.event-groups-table tr[id] { cursor: default; }
+#event-groups-settings-table table.event-groups-table td:last-child, #events-custom-settings-table table.events-table td:last-child  {padding: 10px 0;}
+#event-groups-settings-table table.event-groups-table td:first-child, #events-custom-settings-table table.events-table td:first-child  {padding: 10px 10px;}
+#event-groups-settings-table table.event-groups-table tr, #events-custom-settings-table table.events-table  tr,#events-overview-table table.events-table tr{ background-color:#fff}
+#event-groups-settings-table table.event-groups-table tr:nth-child(even), #events-custom-settings-table table.events-table  tr:nth-child(even),#events-overview-table table.events-table tr:nth-child(even){ background-color:#F9F9F9}
+#event-groups-settings-table table.event-groups-table td:last-child, #events-custom-settings-table table.events-table td:last-child{ width: 30px; text-align:center; }
+#event-groups-settings-table .event-row-placeholder, #events-custom-settings-table .event-row-placeholder, #events-overview-table .event-row-placeholder { height:40px; }
+#event-groups-settings-table .event-order, #events-custom-settings-table .event-order,#events-overview-table .event-order { color:#BBB; cursor:move; }
+#event-groups-settings-table .event-order:hover, #events-custom-settings-table .event-order:hover,#events-overview-table .event-order:hover {color:#999999;}
+#event-groups-settings-table a.check-green, #events-custom-settings-table a.check-green {position:relative; top: 2px;}
 #events-event-settings  div.selectize-input{
     -webkit-box-shadow:none;
     box-shadow:none;
@@ -1230,12 +1232,12 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 }
 #events-overview-table tr.moving {}
 #events-overview-table th:nth-child(2){width: 45%;}
-#events-custom-settings-table table.events-table .event_visibility_row_visible {color:#83C985;}
-#events-custom-settings-table table.events-table .event_visibility_row_hidden {color:#DB6E6E}
+#event-groups-settings-table table.event-groups-table .event_visibility_row_visible, #events-custom-settings-table table.events-table .event_visibility_row_visible {color:#83C985;}
+#event-groups-settings-table table.event-groups-table .event_visibility_row_hidden, #events-custom-settings-table table.events-table .event_visibility_row_hidden {color:#DB6E6E}
 #events-custom-settings-table tr.moving {border-left: 1px solid #D0D0D0; }
 
-#events-custom-settings-table .dataTables_wrapper {margin-top:0px;}
-#events-custom-settings-table .dataTable-top {border-top-left-radius: 0px; border-top-right-radius: 0px;}
+#event-groups-settings-table .dataTables_wrapper, #events-custom-settings-table .dataTables_wrapper {margin-top:0px;}
+#event-groups-settings-table .dataTable-top, #events-custom-settings-table .dataTable-top {border-top-left-radius: 0px; border-top-right-radius: 0px;}
 #edit-events-button { padding: 4px 1px; }
 #edit-events-button i { font-size: 23px; margin: 0; line-height: 16px; }
 .overview_empty{color: #a2a2a2;

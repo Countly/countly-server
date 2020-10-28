@@ -63,8 +63,8 @@ const create = (params) => {
  */
 const update = (params) => {
     params.qstring.args = JSON.parse(params.qstring.args);
-    common.db.collection(COLLECTION_NAME).update({'_id': params.qstring.args._id}, {$set: params.qstring.args}, (error, result) =>{
-        if (!result.modifiedCount || error) {
+    common.db.collection(COLLECTION_NAME).update({'_id': params.qstring.args._id}, {$set: params.qstring.args}, (error) =>{
+        if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
         }
