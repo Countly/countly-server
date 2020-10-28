@@ -1341,34 +1341,92 @@
     </div>
 
     <div class="details">
-        <div class="section" id="rc-parameter-name-section">
+        <div class="section">
             <div class="label" style="margin-bottom:4px;" data-localize="events.edit.event-key"></div>
-            <div class="label" style="color: #696969;opacity: 0.68;font-size: 11px;" data-localize="events.edit.event-key-description" class="config-help"></div>
+            <div class="label-desc" data-localize="events.edit.event-key-description" class="config-help"></div>
             <div>
-                <input id="events-blueprint-event-key-input" class="input" type="text" disabled="true"">
+                <input id="eb-key-name" class="input" type="text" disabled="true"">
             </div>
         </div>
-        <div class="section" id="rc-parameter-name-section">
+        <div class="section">
             <div class="label" style="margin-bottom:4px;" data-localize="events.edit.event-name"></div>
-            <div class="label" style="color: #696969;opacity: 0.68;font-size: 11px;" data-localize="events.edit.event-name-description" class="config-help"></div>
+            <div class="label-desc" data-localize="events.edit.event-name-description" class="config-help"></div>
             <div>
-                <input id="events-blueprint-event-name-input" class="input" type="text"">
+                <input id="eb-event-name" class="input" type="text">
             </div>
         </div>
-        <div class="section" id="apm-default-threshold">
-            <div class="label" style="position: relative">
-                <a class='fa fa-square-o check-green' id="default-threshold-checkbox" style="position:relative; vertical-align:middle; bottom: 1px"></a>
+        <div class="section" id="eb-description-section">
+            <div class="label" style="position: relative; margin-bottom: 4px;">
+                <a class='fa fa-square-o check-green' id="eb-description-checkbox" style="position:relative; vertical-align:middle; bottom: 1px"></a>
                 <span data-localize="events.blueprint-drawer-use-description" style="position: absolute; left: 20px"></span>
             </div>
-            <div class="description" data-localize="events.edit.event-description-description"></div>
-            <div id="apm-threshold-input">
-                <input class="input" id="events-blueprint-event-desc-input" type="text" data-localize="placeholder.apm-threshold">
+            <div class="description" data-localize="events.edit.event-description-description" style="margin-bottom: 8px;"></div>
+            <input id="eb-event-desc-input" class="input" data-localize="placeholder.events.edit.description" type="text" style="display: none;" />
+        </div>
+        <div class="section" id="eb-event-visibility">
+            <div class="label" style="margin-bottom:4px;" data-localize="events.edit.event-visibility"></div>
+            <div class="label-desc" data-localize="events.edit.event-visible-description" class="config-help"></div>
+            <div class="on-off-switch">
+                <input style="vertical-align: middle;" type="checkbox" class="on-off-switch-checkbox alert-switcher" id="event-status-toggler">
+                <label style="vertical-align: middle;" class="on-off-switch-label" for="event-status-toggler"></label>
+                <span class="label" style="vertical-align: middle; margin-bottom: 0px"></span>
+            </div>
+        </div>
+        <div class="section" id="eb-event-properties-section">
+            <div class="panel">
+                <div class="panel-heading" data-localize="events.edit.event-properties"></div>
+                <div class="panel-body">
+                    <div class="section">
+                        <div class="label" style="margin-bottom:4px;" data-localize="events.edit.display-count"></div>
+                        <div class="label-desc" data-localize="events.edit.display-count-description" class="config-help"></div>
+                        <div>
+                            <input id="eb-count-name" data-localize="placeholder.events.edit.count" class="input" type="text">
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="label" style="margin-bottom:4px;" data-localize="events.edit.display-sum"></div>
+                        <div class="label-desc" data-localize="events.edit.display-sum-description" class="config-help"></div>
+                        <div>
+                            <input id="eb-sum-name" data-localize="placeholder.events.edit.sum" class="input" type="text">
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="label" style="margin-bottom:4px;" data-localize="events.edit.display-duration"></div>
+                        <div class="label-desc" data-localize="events.edit.display-duration-description" class="config-help"></div>
+                        <div>
+                            <input id="eb-duration-name" data-localize="placeholder.events.edit.duration" class="input" type="text">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section" id="eb-event-omit-section">
+            <div class="panel">
+                <div class="panel-heading" data-localize="events.edit.omit-event-segments"></div>
+                <div class="panel-body">
+                    <div class="section">
+                        <div class="label-desc" data-localize="events.edit.omit-event-segments-description" class="config-help"></div>
+                        <div class="label-desc" style="margin-bottom: 12px;" data-localize="events.edit.omit-event-segments-description-drill" class="config-help"></div>
+                        <div class="label" data-localize="events.edit.omit-event-segments-to-omit"></div>
+                        <div id="eb-multi-omit-segments-drop" class="cly-multi-select" data-max="10" style="width: 100%; box-sizing: border-box;">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div class="text">
+                                        <div class="default-text" data-localize="events.edit.omit-event-select-segments"></div>
+                                    </div>
+                                </div>
+                                <div class="right combo"></div>
+                            </div>
+                            <div class="select-items square" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="buttons">
-        <div id="save-parameter" class="icon-button green" data-localize="common.save"></div>
+        <div id="save-event" class="icon-button green" data-localize="common.save"></div>
     </div>
 </div>
 
@@ -1731,7 +1789,12 @@
 			<div class="scrollable" style="max-height:450px;">
 				{{#eachOfArray events}}
                     <div class="searchable event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
-                        <div class="name">{{value.name}}</div>
+                        <div class="name">
+                        {{value.name}}
+                        {{#if value.is_event_group}}
+                        	<div class="group-badge">GROUP</div>
+                    	{{/if}}
+                    	</div>
                     </div>
 				{{/eachOfArray}}
 			</div>
@@ -1743,9 +1806,19 @@
 				<div class="left">
 					<div id="event-update-area">
                         {{#if segmentations}}
-						<div class="title dynamic-title small">{{page-title}}</div>
+						<div class="title dynamic-title small">
+							<div class="event-title">{{page-title}}</div>
+							{{#if is_event_group}}
+								<div class="tag">GROUP</div>
+							{{/if}}
+						</div>
                         {{else}}
-                        <div class="title dynamic-title">{{page-title}}</div>
+                        <div class="title dynamic-title">
+                        	<div class="event-title">{{page-title}}</div>
+                        	{{#if is_event_group}}
+								<div class="tag">GROUP</div>
+							{{/if}}
+                        </div>
                         {{/if}}
 						<div class="event-segmentation">
 							{{#if segmentations}}

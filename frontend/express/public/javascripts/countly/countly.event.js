@@ -10,6 +10,7 @@
         _activeSegmentations = [],
         _activeSegmentationValues = [],
         _activeSegmentationObj = {},
+        _eventGroups = {},
         _activeAppKey = 0,
         _initialized = false,
         _period = null;
@@ -52,11 +53,30 @@
                     },
                     dataType: "json",
                     success: function(json) {
-                        _activeEvents = json;
-                        if (!_activeEvent && countlyEvent.getEvents()[0]) {
-                            _activeEvent = countlyEvent.getEvents()[0].key;
-                            currentActiveEvent = _activeEvent;
-                        }
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "method": "get_event_groups",
+                                "preventRequestAbort": true
+                            },
+                            dataType: "json",
+                            success: function(groups_json) {
+                                _activeEvents = json;
+                                for (var group in groups_json) {
+                                    _eventGroups[groups_json[group]._id] = {
+                                        label: groups_json[group].name
+                                    };
+                                    _activeEvents.list.push(groups_json[group]._id);
+                                    _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                }
+                                if (!_activeEvent && countlyEvent.getEvents()[0]) {
+                                    _activeEvent = countlyEvent.getEvents()[0].key;
+                                    currentActiveEvent = _activeEvent;
+                                }
+                            }
+                        });
                     }
                 }))
                 .then(
@@ -91,6 +111,10 @@
             _activeEventDb = {"2012": {}};
             return true;
         }
+    };
+
+    countlyEvent.getEventGroups = function() {
+        return _eventGroups;
     };
 
     countlyEvent.getOverviewList = function() {
@@ -332,10 +356,27 @@
                     },
                     dataType: "json",
                     success: function(json) {
-                        _activeEvents = json;
-                        if (!_activeEvent && countlyEvent.getEvents()[0]) {
-                            _activeEvent = countlyEvent.getEvents()[0].key;
-                        }
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "method": "get_event_groups",
+                                "preventRequestAbort": true
+                            },
+                            dataType: "json",
+                            success: function(groups_json) {
+                                _activeEvents = json;
+                                for (var group in groups_json) {
+                                    _activeEvents.list.push(groups_json[group]._id);
+                                    _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                }
+                                if (!_activeEvent && countlyEvent.getEvents()[0]) {
+                                    _activeEvent = countlyEvent.getEvents()[0].key;
+                                    currentActiveEvent = _activeEvent;
+                                }
+                            }
+                        });
                     }
                 })
             ).then(
@@ -516,7 +557,15 @@
 
             eventData.chartDP.dp = chartDP;
 
-            eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+            if (_eventGroups[_activeEvent]) {
+                eventData.eventName = _eventGroups[_activeEvent].label;
+                eventData.is_event_group = true;
+            }
+            else {
+                eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+                eventData.is_event_group = false;
+            }
+
             if (mapKey && eventMap && eventMap[mapKey]) {
                 eventData.eventDescription = eventMap[mapKey].description || "";
             }
@@ -550,7 +599,15 @@
 
             eventData = countlyCommon.extractChartData(_activeEventDb, countlyEvent.clearEventsObject, chartData, dataProps);
 
-            eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+            if (_eventGroups[_activeEvent]) {
+                eventData.eventName = _eventGroups[_activeEvent].label;
+                eventData.is_event_group = true;
+            }
+            else {
+                eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+                eventData.is_event_group = false;
+            }
+
             if (mapKey && eventMap && eventMap[mapKey]) {
                 eventData.eventDescription = eventMap[mapKey].description || "";
             }
@@ -619,6 +676,7 @@
             eventsWithOrder = [],
             eventsWithoutOrder = [];
         for (var i = 0; i < events.length; i++) {
+
             var arrayToUse = eventsWithoutOrder;
             var mapKey = events[i].replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             if (eventOrder.indexOf(events[i]) !== -1) {
@@ -635,7 +693,7 @@
                 if (eventMap[mapKey].is_visible || get_hidden) {
                     arrayToUse.push({
                         "key": events[i],
-                        "name": eventMap[mapKey].name || events[i],
+                        "name": _eventGroups[events[i]] ? _eventGroups[events[i]].label : (eventMap[mapKey].name || events[i]),
                         "description": eventMap[mapKey].description || "",
                         "count": eventMap[mapKey].count || "",
                         "sum": eventMap[mapKey].sum || "",
@@ -650,7 +708,7 @@
             else {
                 arrayToUse.push({
                     "key": events[i],
-                    "name": events[i],
+                    "name": _eventGroups[events[i]] ? _eventGroups[events[i]].label : events[i],
                     "description": "",
                     "count": "",
                     "sum": "",

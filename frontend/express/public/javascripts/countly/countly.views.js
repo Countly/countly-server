@@ -4772,10 +4772,9 @@ window.EventsBlueprintView = countlyView.extend({
             $(this).find(".cly-list-options").removeClass('cly-list-options-row');
         });
         self.dtable.find("tbody td .edit-box").click(function() {
-            $("#events-blueprint-event-key-input").val($(this).data("event-key"));
-            $("#events-blueprint-event-name-input").val($(this).data("event-name"));
+            //Pass the settings variable here
+            self.setEventBlueprintDrawerSettings();
             $(".cly-drawer").removeClass("open editing");
-            // self.resetParameterDrawer();
             $("#events-blueprint-drawer").addClass("open");
         });
     },
@@ -5392,7 +5391,100 @@ window.EventsBlueprintView = countlyView.extend({
                     self.loadEventGroupDrawerSetting(result);
                 });
             });
+            self.initEventDrawer();
         }
+    },
+    initEventDrawer: function() {
+        var self = this;
+
+        $("#eb-description-checkbox, #eb-description-section .label span").on("click", function() {
+            var check = $("#eb-description-checkbox").hasClass("fa-check-square");
+            if (check) {
+                $("#eb-description-checkbox").removeClass('fa-check-square').addClass('fa-square-o');
+                $("#eb-event-desc-input").hide();
+            }
+            else {
+                $("#eb-description-checkbox").removeClass('fa-square-o').addClass('fa-check-square');
+                $("#eb-event-desc-input").show();
+            }
+
+            // $("#events-blueprint-drawer").trigger("cly-rc-eb-complete");
+        });
+
+        $('#events-blueprint-drawer .on-off-switch input').off("change").on("change", function() {
+            var isChecked = $(this).is(":checked");
+
+            if (isChecked) {
+                $(this).parents(".on-off-switch").find("span").text(jQuery.i18n.map["events.edit.event-visible"]);
+            }
+            else {
+                $(this).parents(".on-off-switch").find("span").text("");
+            }
+
+            // $("#events-blueprint-drawer").trigger("cly-rc-eb-complete");
+        });
+
+        $("#save-event").on("click", function() {
+            var settings = self.getEventBlueprintDrawerSettings();
+            //Send these values to server here - ajax call here.
+        });
+
+        $(".cly-drawer").find(".close").off("click").on("click", function() {
+            $(this).parents(".cly-drawer").removeClass("open");
+        });
+
+        var allSegments = [];
+        $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(allSegments);
+
+        // $("#events-blueprint-drawer").on("cly-rc-eb-complete", function() {
+        //     var settings = self.getEventBlueprintDrawerSettings(),
+        //         allGood = true;
+
+        //     for (var settingsKey in settings) {
+        //         if (!settings[settingsKey] || (_.isArray(settings[settingsKey]) && settings[settingsKey].length === 0)) {
+        //             allGood = false;
+        //         }
+        //     }
+
+        //     if (allGood) {
+        //         $("#save-event").removeClass("disabled");
+        //     }
+        //     else {
+        //         $("#save-event").addClass("disabled");
+        //     }
+        // });
+    },
+    getEventBlueprintDrawerSettings: function() {
+        var keyName = $("#eb-key-name").val();
+        var eventName = $("#eb-event-name").val();
+        var eventDesc = $("#eb-event-desc-input").val();
+        var status = $("#eb-event-visibility .on-off-switch input").is(":checked");
+        var countName = $("#eb-count-name").val();
+        var sumName = $("#eb-sum-name").val();
+        var durationName = $("#eb-duration-name").val();
+        var omitList = $("#eb-multi-omit-segments-drop").clyMultiSelectGetSelection();
+
+        return {
+            key: keyName,
+            event_name: eventName,
+            description: eventDesc || "",
+            status: status,
+            count_name: countName || "Count",
+            sum_name: sumName || "Sum",
+            duration_name: durationName || "Duration",
+            omit_list: omitList || []
+        };
+    },
+    setEventBlueprintDrawerSettings: function(setting) {
+        setting = setting || {};
+        $("#eb-key-name").val(setting.key);
+        $("#eb-event-name").val(setting.event_name);
+        $("#eb-event-desc-input").val(setting.description);
+        $("#eb-event-visibility .on-off-switch input").attr("checked", setting.status);
+        $("#eb-count-name").val(setting.count_name);
+        $("#eb-sum-name").val(setting.sum_name);
+        $("#eb-duration-name").val(setting.duration_name);
+        $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(setting.omit_list || []);
     },
     compare_arrays: function(array1, array2) {
         if (Array.isArray(array1) && Array.isArray(array2)) {
@@ -6225,20 +6317,30 @@ window.EventsView = countlyView.extend({
     renderCommon: function(isRefresh) {
         var eventData = countlyEvent.getEventData(),
             eventSummary = countlyEvent.getEventSummary(),
+            eventGroups = countlyEvent.getEventGroups(),
+            events = countlyEvent.getEvents(),
             self = this;
 
+        // manipulate events list & replace keys with event_group names
+        for (var i = 0; i < events.length; i++) {
+            if (eventGroups[events[i].key]) {
+                events[i].name = eventGroups[events[i].key].label;
+                events[i].is_event_group = true;
+            }
+        }
+
         var showManagmentButton = false;
-        (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1);
-        {
+        if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             showManagmentButton = true;
         }
         var eventCount = countlyEvent.getEvents().length;
         this.templateData = {
             "page-title": eventData.eventName.toUpperCase(),
+            "is_event_group": eventData.is_event_group,
             "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-description": eventData.eventDescription,
             "logo-class": "events",
-            "events": countlyEvent.getEvents(),
+            "events": events,
             "event-map": countlyEvent.getEventMap(),
             "segmentations": countlyEvent.getEventSegmentations(),
             "active-segmentation": countlyEvent.getActiveSegmentation(),
