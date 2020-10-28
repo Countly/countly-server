@@ -1222,8 +1222,52 @@
                         Event Groups Screen
                         <button class="new-event-group-button"> + New event group(tmp) </button>
                         <button class="modify-event-group-button">  Modify event group(tmp) </button>
-
-                    </div>
+                        <div class="widget-header">
+                            <div class="left">
+                                <div style="overflow:auto">
+                                    <div class="title small" data-localize="events.blueprint-event-group-title"></div>
+                                </div>
+                                <div class="cly-select float" id="events-general-filter">
+                                    <div class="select-inner">
+                                        <div class="text-container">
+                                            <div class="text"><span data-localize="events.blueprint-event-group-show.all"></span></div>
+                                        </div>
+                                        <div class="right combo"></div>
+                                    </div>
+                                    <div id="event-filter-types" class="select-items square">
+                                        <div data-value="all" class="segmentation-option item"><span data-localize="events.blueprint-event-group-show.all"></span></div>
+                                        <div data-value="visible" class="segmentation-option item"><span data-localize="events.blueprint-event-group-show.visible"></span></div>
+                                        <div data-value="hidden" class="segmentation-option item"><span data-localize="events.blueprint-event-group-show.hidden"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="right">
+                                <div class="icon-button green" style="display:block !important" id="events-apply-order" data-localize="events.blueprint-event-group-new"></div>
+                                <div class="icon-button green" id="events-apply-order" data-localize="plugins.apply"></div>
+                                <div class="cly-select green disabled" id="events-general-action" style="margin-top:7px;">
+                                    <div class="select-inner">
+                                        <div class="text-container">
+                                            <div class="text" data-localize="events.general.action.perform-action"></div>
+                                        </div>
+                                        <div class="right combo"></div>
+                                    </div>
+                                    <div class="select-items square">
+                                        <div data-value="show" class="event-option item" data-localize="events.general.action.show">Show</div>
+                                        <div data-value="hide" class="event-option item" data-localize="events.general.action.hide">Hide</div>
+                                        <div data-value="delete" class="event-option item" data-localize="events.general.action.delete">Delete</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="" id="event-groups-settings-table">
+                            <div class="cly-button-menu event-settings-menu" tabindex="1">
+                                <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
+                                <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
+                                <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
+                            </div>
+                            <table class="d-table help-zone-vb no-fix event-groups-table" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+                        </div>
+                        </div>
                 </div>
             </div>
         </div>

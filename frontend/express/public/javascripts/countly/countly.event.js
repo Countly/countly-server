@@ -11,6 +11,7 @@
         _activeSegmentationValues = [],
         _activeSegmentationObj = {},
         _eventGroups = {},
+        _eventGroupsTable = {},
         _activeAppKey = 0,
         _initialized = false,
         _period = null;
@@ -64,6 +65,7 @@
                             dataType: "json",
                             success: function(groups_json) {
                                 _activeEvents = json;
+                                _eventGroupsTable = groups_json;
                                 for (var group in groups_json) {
                                     _eventGroups[groups_json[group]._id] = {
                                         label: groups_json[group].name
@@ -115,6 +117,15 @@
 
     countlyEvent.getEventGroups = function() {
         return _eventGroups;
+    };
+
+    countlyEvent.getEventGroupsTable = function(status) {
+        if (!!status === status) {
+            return _eventGroupsTable.filter(function(x) {
+                return x.status === status;
+            });
+        }
+        return _eventGroupsTable;
     };
 
     countlyEvent.getOverviewList = function() {
