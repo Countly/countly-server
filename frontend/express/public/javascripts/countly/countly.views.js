@@ -5159,7 +5159,7 @@ window.EventsBlueprintView = countlyView.extend({
                 self.tabs.tabs("option", "active", index);
             }
             self.initEventGroupsTable();
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            this.dtable = $('.events-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": tableData,
                 "aoColumns": this.columns,
                 "fnRowCallback": function(nRow, aData) {
@@ -5170,7 +5170,7 @@ window.EventsBlueprintView = countlyView.extend({
                 }
             }));
 
-            $(".d-table").stickyTableHeaders();
+            $(".events-table").stickyTableHeaders();
 
             self.check_changes();
             self.pageScript();
@@ -5636,7 +5636,7 @@ window.EventsBlueprintView = countlyView.extend({
         var self = this;
 
         this.dtable.fnDestroy(false);
-        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+        this.dtable = $('.events-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": self.tableData,
             "aoColumns": self.columns,
             "fnRowCallback": function(nRow, aData) {
