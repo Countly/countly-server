@@ -474,12 +474,30 @@ class Store extends Base {
 
     /**
      * Get uids by message $in
-     * @param  {Object} message filter condition: [oid], {$in: [oid]}, {$nin: [oid]}
+     * @param  {Object} min filter condition: [oid], {$in: [oid]}, {$nin: [oid]}
      * @return {Promise}    resoves to array of uids
      */
     _filterMessage(min) {
         return new Promise((res, rej) => {
-            this.db.collection(`push_${this.app._id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(this.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+            let query = (min.$in || min.$nin) ? min : {$in: min};
+            if (min.$in) {
+                min.$in = min.$in.map(this.db.ObjectID);
+            }
+            if (min.$nin) {
+                min.$nin = min.$nin.map(this.db.ObjectID);
+            }
+            if (min.$nin) {
+                query = {
+                    $or: [
+                        {msgs: {$elemMatch: {'0': query}}},
+                        {msgs: {$exists: false}},
+                    ]
+                };
+            }
+            else {
+                query = {msgs: {$elemMatch: {'0': query}}};
+            }
+            this.db.collection(`push_${this.app._id}`).find(query, {projection: {_id: 1}}).toArray((err, ids) => {
                 if (err) {
                     rej(err);
                 }
@@ -505,7 +523,7 @@ class Store extends Base {
             query = note.queryUser;
 
             if (query.message) {
-                let filtered = await this._filterMessage(query.message.$in);
+                let filtered = await this._filterMessage(query.message);
                 delete query.message;
 
                 if (uids) {
