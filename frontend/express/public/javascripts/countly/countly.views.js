@@ -4931,8 +4931,11 @@ window.EventsBlueprintView = countlyView.extend({
             if (eventmap[i].is_active === true) {
                 this.activeEvent = eventmap[i];
             }
-            tableData.push(eventmap[i]);
+            if (!eventmap[i].is_event_group) {
+                tableData.push(eventmap[i]);    
+            }
         }
+
         this.tableData = tableData;
 
         this.have_drill = false;
@@ -6333,6 +6336,7 @@ window.EventsView = countlyView.extend({
         if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             showManagmentButton = true;
         }
+        
         var eventCount = countlyEvent.getEvents().length;
         this.templateData = {
             "page-title": eventData.eventName.toUpperCase(),

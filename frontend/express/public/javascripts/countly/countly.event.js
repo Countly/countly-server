@@ -66,7 +66,10 @@
                                 _activeEvents = json;
                                 for (var group in groups_json) {
                                     _eventGroups[groups_json[group]._id] = {
-                                        label: groups_json[group].name
+                                        label: groups_json[group].name,
+                                        count: groups_json[group].display_map.c,
+                                        sum: groups_json[group].display_map.s,
+                                        dur: groups_json[group].display_map.d
                                     };
                                     _activeEvents.list.push(groups_json[group]._id);
                                     _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
@@ -368,6 +371,12 @@
                             success: function(groups_json) {
                                 _activeEvents = json;
                                 for (var group in groups_json) {
+                                    _eventGroups[groups_json[group]._id] = {
+                                        label: groups_json[group].name,
+                                        count: groups_json[group].display_map.c,
+                                        sum: groups_json[group].display_map.s,
+                                        dur: groups_json[group].display_map.d
+                                    };
                                     _activeEvents.list.push(groups_json[group]._id);
                                     _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
                                 }
@@ -491,11 +500,12 @@
         if (!_activeEvent) {
             _activeEvent = Object.keys(eventMap)[0] || "";
         }
+
         var eventData = {},
             mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
-            countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
-            sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
-            durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
+            countString = (_eventGroups[mapKey] && _eventGroups[mapKey].count) ? _eventGroups[mapKey].count : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
+            sumString = (_eventGroups[mapKey] && _eventGroups[mapKey].sum) ? _eventGroups[mapKey].sum : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
+            durString = (_eventGroups[mapKey] && _eventGroups[mapKey].dur) ? _eventGroups[mapKey].dur : (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
 
         if (_activeSegmentation) {
             eventData = {chartData: {}, chartDP: {dp: [], ticks: []}};
@@ -700,6 +710,7 @@
                         "dur": eventMap[mapKey].dur || "",
                         "is_visible": eventMap[mapKey].is_visible,
                         "is_active": (_activeEvent === events[i]),
+                        "is_event_group": _eventGroups[events[i]] ? true : false,
                         "segments": eventSegments[mapKey] || [],
                         "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
                     });
@@ -716,6 +727,7 @@
                     "is_visible": true,
                     "is_active": (_activeEvent === events[i]),
                     "segments": eventSegments[mapKey] || [],
+                    "is_event_group": _eventGroups[events[i]] ? true : false,
                     "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
                 });
             }
@@ -968,9 +980,9 @@
 
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
-            countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
-            sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
-            durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
+            countString = (_eventGroups[mapKey] && _eventGroups[mapKey].count) ? _eventGroups[mapKey].count : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
+            sumString = (_eventGroups[mapKey] && _eventGroups[mapKey].sum) ? _eventGroups[mapKey].sum : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
+            durString = (_eventGroups[mapKey] && _eventGroups[mapKey].dur) ? _eventGroups[mapKey].dur : (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
 
         var bigNumbers = {
             "class": "one-column",
@@ -1044,9 +1056,9 @@
             var eventData = {},
                 eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
                 mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
-                countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
-                sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
-                durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
+                countString = (_eventGroups[mapKey] && _eventGroups[mapKey].count) ? _eventGroups[mapKey].count : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
+                sumString = (_eventGroups[mapKey] && _eventGroups[mapKey].sum) ? _eventGroups[mapKey].sum : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
+                durString = (_eventGroups[mapKey] && _eventGroups[mapKey].dur) ? _eventGroups[mapKey].dur : (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
 
             var chartData = [
                     { data: [], label: countString, color: countlyCommon.GRAPH_COLORS[0] },
