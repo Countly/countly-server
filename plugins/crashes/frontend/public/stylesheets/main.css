@@ -341,3 +341,13 @@ td.details table tr.header, td.details table tr.header:hover {
     background-color:#ffffff;
 
 }
+
+
+#config-table-container .cly-select.crashes-group-input {
+    width: auto;
+}
+
+#config-table-container .cly-select.crashes-group-input .select-items {
+    width: auto;
+    padding-right: 16px;
+}

@@ -1909,7 +1909,7 @@ window.DeviceTypeView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": deviceTypeData.chartData,
                 "aoColumns": [
-                    { "mData": "device_type", "sTitle": jQuery.i18n.map["device_type.title"], "bSortable": false },
+                    { "mData": "device_type", "sTitle": jQuery.i18n.map["device_type.table.device_type"], "bSortable": false },
                     {
                         "mData": "t",
                         sType: "formatted-num",
@@ -6178,22 +6178,20 @@ window.LongTaskView = countlyView.extend({
         this.showTableColumns(self);
     },
     showTableColumns: function(self) {
-        var manuallyColumns = [true, true, true, true, true, true, true, true, false, false, true];
-        var automaticallyColumns = [false, true, true, true, false, false, false, false, false, true, true];
+        var manuallyColumns = [true, true, true, true, true, true, true, true, false, true];
+        var automaticallyColumns = [false, true, true, true, false, false, false, true, true, true];
         //                         [NAME, DATA, STAT(R),ORIGIN, TYPE,PERIOD,VISIB,LASTUp,Started,duration,status(SUB),but]
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
             });
-            $(".report-manager-idget-header .filter2-segmentation").show();
-            $(".report-manager-idget-header .filter3-segmentation").hide();
+            $(".report-manager-widget-header .filter2-segmentation").show();
         }
         else {
             automaticallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
             });
-            $(".report-manager-idget-header .filter2-segmentation").hide();
-            $(".report-manager-idget-header .filter3-segmentation").show();
+            $(".report-manager-widget-header .filter2-segmentation").hide();
         }
     },
     renderTable: function() {
@@ -6211,7 +6209,7 @@ window.LongTaskView = countlyView.extend({
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.name-and-desc"],
-                "bSortable": true,
+                "bSortable": false,
                 "sClass": "report-manager-break"
             },
             {
@@ -6271,6 +6269,7 @@ window.LongTaskView = countlyView.extend({
                     }
                 },
                 "sType": "string",
+                "bSortable": false,
                 "sTitle": jQuery.i18n.map["common.status"]
             },
             {
@@ -6278,6 +6277,7 @@ window.LongTaskView = countlyView.extend({
                     return '<span class="status-color" style="text-transform:capitalize">' + row.type + "</span>";
                 },
                 "sType": "string",
+                "bSortable": false,
                 "sTitle": jQuery.i18n.map["taskmanager.origin"]
             },
             {
@@ -6318,18 +6318,6 @@ window.LongTaskView = countlyView.extend({
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["common.last-updated"]
-            },
-            {
-                "mData": function(row, type) {
-                    if (type === "display") {
-                        return countlyCommon.formatTimeAgo(row.start);
-                    }
-                    else {
-                        return row.start;
-                    }
-                },
-                "sType": "string",
-                "sTitle": jQuery.i18n.map["common.started"]
             },
             {
                 "mData": function(row, type) {
@@ -6383,7 +6371,6 @@ window.LongTaskView = countlyView.extend({
                 Object.assign(queryObject, self._query);
                 if (self.taskCreatedBy === 'manually') {
                     queryObject.manually_create = true;
-                    delete queryObject.status;
                 }
                 else {
                     queryObject.manually_create = {$ne: true};
@@ -6413,7 +6400,7 @@ window.LongTaskView = countlyView.extend({
         }));
         this.dtable.stickyTableHeaders();
         // this.addErrorTooltips();
-        this.dtable.fnSort([ [8, 'desc'] ]);
+        this.dtable.fnSort([ [7, 'desc'] ]);
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
             '<a class="item view-task" href="" data-localize="common.view"></a>' +
             '<a class="item rerun-task" data-localize="taskmanager.rerun"></a>' +

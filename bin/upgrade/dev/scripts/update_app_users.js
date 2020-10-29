@@ -11,13 +11,13 @@ pluginManager.dbConnection().then((countlyDb) => {
             var requests = [];
             cursor.forEach(function(user) {
                 var update = {};
-                if (user.lac) {
+                if (user.lac && (user.lac + "").length === 13) {
                     update.lac =  Math.round(parseInt(user.lac, 10) / 1000);
                 }
-                if (user.fac) {
+                if (user.fac && (user.fac + "").length === 13) {
                     update.fac =  Math.round(parseInt(user.fac, 10) / 1000);
                 }
-                if (user.last_sync) {
+                if (user.last_sync && (user.last_sync + "").length === 13) {
                     update.last_sync =  Math.round(parseInt(user.last_sync, 10) / 1000);
                 }
                 if (Object.keys(update).length) {

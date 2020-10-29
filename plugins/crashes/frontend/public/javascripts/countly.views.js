@@ -2390,5 +2390,31 @@ $(document).ready(function() {
     //check if configuration view exists
     if (app.configurationsView) {
         app.configurationsView.registerLabel("crashes", "crashes.title");
+        app.configurationsView.registerInput("crashes.grouping_strategy", function(value) {
+            var categories = ['error_and_file', 'stacktrace'];
+            var select = '<div class="cly-select crashes-group-input" id="crashes.grouping_strategy">' +
+                '<div class="select-inner">' +
+                '<div class="text-container">';
+            if (value && value.length) {
+                select += '<div class="text" data-localize="crashes.grouping_strategy.' + value + '">' + jQuery.i18n.map["crashes.grouping_strategy." + value] + '</div>';
+            }
+            else {
+                select += '<div class="text" data-localize="crashes.grouping_strategy.error_and_file">' + jQuery.i18n.map["crashes.grouping_strategy.error_and_file"] + '</div>';
+            }
+            select += '</div>' +
+                '<div class="right combo"></div>' +
+                '</div>' +
+                '<div class="select-items square">' +
+                '<div>';
+
+            for (var i = 0; i < categories.length; i++) {
+                select += '<div data-value="' + categories[i] + '" class="segmentation-option item" data-localize="crashes.grouping_strategy.' + categories[i] + '">' + jQuery.i18n.map["crashes.grouping_strategy." + categories[i]] + '</div>';
+            }
+
+            select += '</div>' +
+                '</div>' +
+                '</div>';
+            return select;
+        });
     }
 });

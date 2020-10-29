@@ -2365,12 +2365,15 @@ app.addPageScript("/drill#", function() {
 });
 
 $(document).ready(function() {
-    app.addMenu("reach", {
+    if (!$("#feedback-menu").length) {
+        app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+    }
+
+    app.addSubMenu("feedback", {
         code: "star-rating",
         url: "#/analytics/star-rating",
-        text: "star.menu-title",
-        icon: '<div class="logo ion-android-star-half"></div>',
-        priority: 20
+        text: "star.ratings",
+        priority: 30
     });
 });
 

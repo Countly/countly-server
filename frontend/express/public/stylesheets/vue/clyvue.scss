@@ -621,6 +621,26 @@
                 background-color: transparent;
             }
         }
+
+        &.disabled {
+            .radio-button {
+                cursor: default;
+                &.selected {
+                    background-color: #f4f4f4;
+                    .box {
+                        background-color: #c6c6c6;
+                    }
+                }
+
+                .box {
+                    cursor: default;
+                }
+
+                .text {
+                    cursor: default;
+                }
+            }
+        }
     }
 
     // colorpicker
@@ -804,6 +824,9 @@
 
     //button
     .cly-vue-button {
+        + .cly-vue-button {
+            margin-left: 8px;
+        }
         min-height: 14px;
         cursor: pointer;
         float: left;
@@ -1227,7 +1250,7 @@
 
                     .up:before,
                     .down:before {
-                        background-color: #000;
+                        background-color: #2fa732;
                     }
                 }
             }
@@ -1325,6 +1348,9 @@
             &:before {
                 font-family: "Ionicons";
                 content: "\f396";
+            }
+            &:hover {
+                color: #6b6b6b;
             }
         }
         .menu-body {
@@ -1652,9 +1678,6 @@
                 font-family: "Ionicons";
                 content: "\f123";
                 font-size: 9px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
             }
         }
 
@@ -1682,14 +1705,18 @@
                 }
 
                 .drop {
-                    width: auto;
+                    width: 12px;
+                    height: 12px;
+                    background-color: #444;
+                    justify-content: center;
+                    align-items: center;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    font-size: 0;
+                    display: flex;
 
                     &.combo:before {
                         color: #fff;
-                        background-color: #444444;
-                        width: 12px;
-                        height: 12px;
-                        border-radius: 4px;
                     }
                 }
             }
@@ -1697,14 +1724,11 @@
             &:hover {
                 .drop {
                     opacity: 1;
+                    background-color: #2fa732;
                 }
 
                 .text {
                     color: #2fa732;
-                }
-                .drop.combo:before {
-                    color: #fff;
-                    background-color: #444444;
                 }
             }
         }
@@ -1764,6 +1788,19 @@
             }
             &:hover {
                 background-color: #f1f1f1;
+            }
+        }
+        tbody > tr.vgt-detail-row {
+            background-color: #f9f9f9;
+        }
+        &:not(.striped) > tbody > tr {
+            border-bottom: solid 1px #e1e1e1;
+            border-top: solid 1px #e1e1e1;
+            &.clickable:hover {
+                background-color: #f1f1f1;
+            }
+            &:last-child {
+                border-bottom: none;
             }
         }
     }
@@ -1855,9 +1892,6 @@
         & tr {
             &.clickable {
                 cursor: pointer;
-                &:hover {
-                    background-color: $highlight-color;
-                }
             }
             .undo-row {
                 position: absolute;
@@ -2312,6 +2346,116 @@
                 transition: color 0.5s;
             }
         }
+        .export-toggler {
+            float: right;
+            font-size: 17px;
+            padding: 8px 12px 7px 7px;
+            cursor: pointer;
+        }
+        .export-dialog-container {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            font-family: Ubuntu, Helvetica, sans-serif;
+            line-height: 18px;
+            font-size: 11px;
+            border: 1px solid #d0d0d0;
+            position: absolute;
+            z-index: 10000;
+            right: 300px;
+            top: -45px;
+            &:before {
+                content: "";
+                display: block;
+                position: absolute;
+                width: 0;
+                height: 0;
+                border-color: transparent;
+                border-width: 10px;
+                border-style: solid;
+                left: 100%;
+                top: 50%;
+                margin-top: -10px;
+                border-left-color: #d0d0d0;
+            }
+            &:after {
+                content: "";
+                display: block;
+                position: absolute;
+                width: 0;
+                height: 0;
+                border-color: transparent;
+                border-width: 10px;
+                border-style: solid;
+                left: 100%;
+                top: 50%;
+                margin-top: -10px;
+                margin-left: -1px;
+                border-left-color: #fff;
+            }
+        }
+        .export-dialog {
+            padding: 15px;
+            width: 240px;
+            overflow: visible;
+            display: inline-block;
+            p {
+                margin: 0px;
+                font: 14px Ubuntu, Helvetica, sans-serif;
+                font-weight: bold;
+                line-height: 111%;
+                margin-bottom: 10px;
+            }
+            .button-selector {
+                font: 13px Ubuntu, Helvetica, sans-serif;
+                line-height: 111%;
+                color: #6b6b6b;
+                padding: 0;
+                overflow: auto;
+                user-select: none;
+                box-sizing: border-box;
+                width: 100%;
+                float: none;
+                margin: 0px auto;
+                margin-bottom: 10px;
+                height: 30px;
+                .button {
+                    cursor: pointer;
+                    user-select: none;
+                    background-color: #fbfbfb;
+                    float: left;
+                    padding: 7px;
+                    padding-top: 6px;
+                    border: 1px solid #d0d0d0;
+                    margin-left: -1px;
+                    width: calc(33% - 15px);
+                    text-align: center;
+                    &:first-child {
+                        margin-left: 0;
+                        border-top-left-radius: 2px;
+                        border-bottom-left-radius: 2px;
+                    }
+                    &:last-child {
+                        border-top-right-radius: 2px;
+                        border-bottom-right-radius: 2px;
+                    }
+                    &.active {
+                        background-color: #fff;
+                        border: 1px solid #2eb52b;
+                        position: relative;
+                        z-index: 10;
+                    }
+                }
+            }
+            .cly-vue-button {
+                width: 100%;
+                margin: 0px auto;
+                padding-left: 0px;
+                padding-right: 0px;
+                text-align: center;
+            }
+        }
     }
 
     .cly-vgt-custom-search {
@@ -2394,6 +2538,9 @@
             &:before {
                 font-family: "Ionicons";
                 content: "\f396";
+            }
+            &:hover {
+                color: #6b6b6b;
             }
         }
     }

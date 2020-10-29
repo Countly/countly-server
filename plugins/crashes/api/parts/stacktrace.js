@@ -3,6 +3,7 @@
 * @module plugins/crashes/api/parts/stacktrace
 */
 var minidump = require("./minidump.js");
+var plugins = require("../../../pluginManager.js");
 
 /** @lends module:plugins/crashes/api/parts/stacktrace */
 var trace = {
@@ -24,6 +25,11 @@ var trace = {
         }
         return stack;
     },
+    /**
+     *  Parse threads from PL crash reported
+     *  @param {string} data - PL Crash Report
+     *  @return {array} with thread information
+     */
     processPLCrashThreads: function(data) {
         var findCrash = /^Thread\s\d+\sCrashed:/gim;
         var rLineNumbers = /^\d+\s*/gim;
@@ -38,6 +44,29 @@ var trace = {
         return stack;
     },
     /**
+     *  Prepare data for grouping stategy
+     *  @param {Array} stack - processed stacktrace
+     *  @param {Object} crash - crash object from API
+     *  @param {Function} callback - callback where to provide data
+     */
+    groupStrategy: function(stack, crash, callback) {
+        var groupStrategy = plugins.getConfig("crashes").grouping_strategy;
+        if (groupStrategy === "stacktrace") {
+            callback(stack.join("\n"));
+        }
+        else {
+            //default grouping strategy for error_and_file
+            var seed = crash._name || stack[0];
+            if (crash._name !== stack[0]) {
+                seed += stack[0] || "";
+            }
+            else {
+                seed += stack[1] || "";
+            }
+            callback(seed);
+        }
+    },
+    /**
     * Process crash
     * @param {object} crash - Crash object
     * @param {function} callback - to be called when processing is done
@@ -50,7 +79,7 @@ var trace = {
                     crash._error = data;
                     var stack = trace.processNativeThreads(data);
                     crash._name = stack[0];
-                    callback(stack.join("\n"));
+                    trace.groupStrategy(stack, crash, callback);
                 }
                 else {
                     console.log("Can't symbolicate", err);
@@ -58,7 +87,7 @@ var trace = {
                     crash._error = "Unsymbolicated native crash";
                     crash._symbolication_error = err;
                     crash._unprocessed = true;
-                    callback(crash._error);
+                    trace.groupStrategy([crash._error], crash, callback);
                 }
             });
         }
@@ -134,7 +163,7 @@ var trace = {
             if (!crash._name) {
                 crash._name = stack[0];
             }
-            callback(stack.join("\n"));
+            trace.groupStrategy(stack, crash, callback);
         }
         else {
             crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
@@ -194,8 +223,7 @@ var trace = {
             lines = lines.filter(function(elem, pos) {
                 return lines.indexOf(elem) === pos;
             });
-            error = lines.join("\n");
-            callback(error);
+            trace.groupStrategy(lines, crash, callback);
         }
     },
 

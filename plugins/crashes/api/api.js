@@ -11,7 +11,8 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 plugins.setConfigs("crashes", {
-    report_limit: 100
+    report_limit: 100,
+    grouping_strategy: "error_and_file"
 });
 
 (function() {
