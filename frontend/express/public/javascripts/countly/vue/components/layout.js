@@ -5,7 +5,7 @@
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
     window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
 
-    var countlyBaseComponent = countlyVue.components.countlyBaseComponent,
+    var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
     Vue.directive('click-outside', {

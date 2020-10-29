@@ -2,7 +2,7 @@
 
 (function(countlyVue) {
 
-    var countlyBaseComponent = countlyVue.components.countlyBaseComponent,
+    var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
     Vue.component("cly-back-link", countlyBaseComponent.extend(
