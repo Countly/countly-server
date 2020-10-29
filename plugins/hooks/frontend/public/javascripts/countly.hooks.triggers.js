@@ -95,7 +95,7 @@
                 $("#multi-event-dropdown").clyMultiSelectClearSelection({});
                 $("#multi-event-dropdown").clyMultiSelectSetItems([]);
                 // only one app 
-                const apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
+                var apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                 if (apps.length !== 1) {
                      return;
                 }
@@ -1082,7 +1082,7 @@
             loadHooksData: function(configuration) {
                 $("#single-hook-trigger-hooks-dropdown").clySelectSetItems([]);
                 $("#single-hook-trigger-hooks-dropdown").clySelectSetSelection("","");
-                const apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
+                var apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                 if (apps.length === 0) {
                      return;
                 }
@@ -1114,7 +1114,7 @@
             loadCohortsData: function(configuration) {
                 $("#single-hook-trigger-cohort-dropdown").clySelectSetSelection("","");
                 $("#single-hook-trigger-cohort-dropdown").clySelectSetItems([]);
-                const apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
+                var apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                 if (apps.length === 0) {
                      return;
                 }

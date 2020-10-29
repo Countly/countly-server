@@ -4,10 +4,10 @@ const process = require('process');
 const utils = require('../../utils.js');
 
 class APIEndPointTrigger {
-    constructor(options){
+    constructor(options) {
         this._rules = [];
-        this.pipeline = () => {}; 
-        if(options.pipeline) {
+        this.pipeline = () => {};
+        if (options.pipeline) {
             this.pipeline = options.pipeline;
         }
         this.register();
@@ -15,7 +15,7 @@ class APIEndPointTrigger {
 
     syncRules(rules) {
         if (rules instanceof Array) {
-            const newRules = rules.filter( r => {
+            const newRules = rules.filter(r => {
                 return r.trigger.type === 'APIEndPointTrigger';
             });
             this._rules = newRules;
@@ -23,21 +23,24 @@ class APIEndPointTrigger {
     }
 
     async process(ob) {
-        const {params} = ob; 
-        const {paths}  = params; 
+        const {params} = ob;
+        const {paths} = params;
         const hookPath = paths.length >= 4 ? paths[3] : null;
-        if(!hookPath) {
+        if (!hookPath) {
             return true;
         }
-        const  {qstring} = params || {};
-        console.log('process,'+ this._rules.length + ">>>" + process.pid + "." + process.ppid);
+        const {qstring} = params || {};
+        console.log('process,' + this._rules.length + ">>>" + process.pid + "." + process.ppid);
 
         this._rules.forEach(rule => {
             // match
-            if(rule.trigger.configuration.path === hookPath) {
-                try{
+            if (rule.trigger.configuration.path === hookPath) {
+                try {
                     utils.updateRuleTriggerTime(rule._id);
-                }catch(err){console.log(err,"??#3");}
+                }
+                catch (err) {
+                    console.log(err, "??#3");
+                }
                 // send to pipeline
                 rule.effects.forEach(e => {
                     this.pipeline({
@@ -51,7 +54,7 @@ class APIEndPointTrigger {
     }
 
     register(option) {
-        console.log("register api hookd222", process.pid+ "." + process.ppid);
+        console.log("register api hookd222", process.pid + "." + process.ppid);
         plugins.register("/o/hooks", (ob) => {
             const {params} = ob;
             this.process(ob);

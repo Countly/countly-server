@@ -161,7 +161,7 @@
     width: 1px;
     height: 12px;
     background-color:#F9F9F9;
-    position: absolute;
+    position: absolute1
     left: -1px;
     bottom: -1px;
 }
@@ -177,4 +177,7 @@
   background-color: #aaaaaa;
   border-radius: 2.5px;
   margin-right: 6px;
+}
+#hooks-table_wrapper {
+    margin: 0px 0px !important;
 }

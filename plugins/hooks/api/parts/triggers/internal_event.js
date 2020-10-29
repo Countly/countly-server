@@ -6,14 +6,15 @@ class InternalEventTrigger {
     constructor(options) {
         this._rules = [];
         this.pipeline = () => {};
-        if(options.pipeline) {
+        if (options.pipeline) {
             this.pipeline = options.pipeline;
         }
         this.register();
     }
+
     syncRules(rules) {
         if (rules instanceof Array) {
-            const newRules = rules.filter( r => {
+            const newRules = rules.filter(r => {
                 return r.trigger.type === 'InternalEventTrigger';
             });
             this._rules = newRules;
@@ -21,26 +22,26 @@ class InternalEventTrigger {
     }
 
     async process(eventType, ob) {
-        for(let i = 0; i < this._rules.length; i++){
+        for (let i = 0; i < this._rules.length; i++) {
             const rule = this._rules[i];
             // match
-            if(rule.trigger.configuration.eventType === eventType) {
-               switch(eventType) {
-               case "/cohort/enter": 
-               case "/cohort/exit":
+            if (rule.trigger.configuration.eventType === eventType) {
+                switch (eventType) {
+                case "/cohort/enter":
+                case "/cohort/exit":
                     const {cohort, uids} = ob;
                     if (rule.trigger.configuration.cohortID === cohort._id) {
-                        common.db.collection('app_users' + cohort.app_id).find({"uid":{"$in": uids}}).toArray(
+                        common.db.collection('app_users' + cohort.app_id).find({"uid": {"$in": uids}}).toArray(
                             (uidErr, result) => {
-                                if(uidErr) {
+                                if (uidErr) {
                                     console.log(uidErr);
                                     return;
                                 }
                                 try {
                                     utils.updateRuleTriggerTime(rule._id);
                                 }
-                                catch(err) {
-                                    console.log(err,"??#3");
+                                catch (err) {
+                                    console.log(err, "??#3");
                                 }
                                 rule.effects.forEach(e => {
                                     result.forEach((u) => {
@@ -49,57 +50,57 @@ class InternalEventTrigger {
                                             rule: rule,
                                             effect: e,
                                         });
-                                    })
+                                    });
                                 });
                             }
-                        )
+                        );
                     }
                     break;
-               case "/i/app_users/create":
-               case "/i/app_users/update":
-               case "/i/app_users/delete":
-                       const {app_id, user} = ob;
-                       if (rule.apps[0] === app_id + '') {
-                           try {
-                                utils.updateRuleTriggerTime(rule._id);
-                            }
-                            catch(err) {
-                                console.log(err,"??#3");
-                            }
-                           rule.effects.forEach(e => {
-                               this.pipeline({
-                                   params: {user: user},
-                                   rule: rule,
-                                   effect: e,
-                               });
-                           });
-                       }
-                       console.log(ob, "userprofile!333332");
-                       break;
-               case "/hooks/trigger":
-                       const {params, rule: triggeredRule} = ob;
-                       if (ob.rule._id + "" === rule.trigger.configuration.hookID) {
-                           try {
-                                utils.updateRuleTriggerTime(rule._id);
-                            }
-                            catch(err) {
-                                console.log(err,"??#3");
-                            }
-                           rule.effects.forEach(e => {
-                               this.pipeline({
-                                   params: ob,
-                                   rule: rule,
-                                   effect: e,
-                               });
-                           });
-                       }
-                       break;
-               }
-              
+                case "/i/app_users/create":
+                case "/i/app_users/update":
+                case "/i/app_users/delete":
+                    const {app_id, user} = ob;
+                    if (rule.apps[0] === app_id + '') {
+                        try {
+                            utils.updateRuleTriggerTime(rule._id);
+                        }
+                        catch (err) {
+                            console.log(err, "??#3");
+                        }
+                        rule.effects.forEach(e => {
+                            this.pipeline({
+                                params: {user: user},
+                                rule: rule,
+                                effect: e,
+                            });
+                        });
+                    }
+                    console.log(ob, "userprofile!333332");
+                    break;
+                case "/hooks/trigger":
+                    const {params, rule: triggeredRule} = ob;
+                    if (ob.rule._id + "" === rule.trigger.configuration.hookID) {
+                        try {
+                            utils.updateRuleTriggerTime(rule._id);
+                        }
+                        catch (err) {
+                            console.log(err, "??#3");
+                        }
+                        rule.effects.forEach(e => {
+                            this.pipeline({
+                                params: ob,
+                                rule: rule,
+                                effect: e,
+                            });
+                        });
+                    }
+                    break;
+                }
+
             }
-        };
+        }
     }
-                
+
     register(option) {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
@@ -128,4 +129,4 @@ const InternalEvents = [
     "/i/app_users/update",
     "/i/app_users/delete",
     "/hooks/trigger",
-]
+];

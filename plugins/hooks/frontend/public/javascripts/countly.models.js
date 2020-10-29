@@ -1,12 +1,12 @@
 /*global
-    jQuery
+    jQuery, $,
  */
 
 (function(hooksPlugin, jQuery) {
     var _hookList = [];
     var countlyCommon = window.countlyCommon;
 
-    hooksPlugin.getHookList= function getHookList() {
+    hooksPlugin.getHookList = function getHookList() {
         return _hookList;
     };
 
@@ -64,7 +64,7 @@
         return dfd.promise();
     };
 
-     hooksPlugin.updateHookStatus = function updateHookStatus(status, callback) {
+    hooksPlugin.updateHookStatus = function updateHookStatus(status, callback) {
         $.ajax({
             type: "post",
             url: countlyCommon.API_PARTS.data.w + "/hook/status",
@@ -85,7 +85,7 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/hook/delete",
             data: {
-                "hookID": hookID, 
+                "hookID": hookID,
             },
             dataType: "json",
             success: function(res) {

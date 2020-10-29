@@ -46,11 +46,13 @@ window.HooksView = countlyView.extend({
                 description: hookList[i].description || '-',
                 appNameList: appNameList.join(', '),
                 triggerCount: hookList[i].triggerCount || 0,
-                lastTriggerTimestamp: hookList[i].lastTriggerTimestamp && moment(hookList[i].lastTriggerTimestamp).fromNow() || "-",
+                lastTriggerTimestampString: hookList[i].lastTriggerTimestamp && moment(hookList[i].lastTriggerTimestamp).fromNow() || "-",
+                lastTriggerTimestamp: hookList[i].lastTriggerTimestamp || 0,
                 enabled: hookList[i].enabled || false,
                 createdByUser: hookList[i].createdByUser || '',
                 trigger: hookList[i].trigger,
                 effects: hookList[i].effects,
+                created_at: hookList[i].created_at || 0,
             });
         }
 
@@ -80,7 +82,7 @@ window.HooksView = countlyView.extend({
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["common.status"],
                     "bSortable": false,
-                    "sWidth":"80px",
+                    "sWidth":"8%",
                 },
                 {
                     "mData": function(row, type) {
@@ -98,7 +100,7 @@ window.HooksView = countlyView.extend({
                     "sType": "string",
                     "bSortable": false,
                     "sTitle": jQuery.i18n.map["hooks.hook-name"],
-                    "sWidth": "25%",
+                    "sWidth": "20%",
 
                 },
                 
@@ -159,33 +161,56 @@ window.HooksView = countlyView.extend({
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["hooks.trigger-and-effects"],
-                    "sWidth": "20%",
+                    "sWidth": "25%",
                     "bSortable": false,
 
                 },
                 {
                     "mData": 'triggerCount',
-                    "sType": "number",
+                    "sType": "numeric",
                     "sTitle": jQuery.i18n.map["hooks.trigger-count"],
                     "bSortable": true,
-                    "sWidth": "10%",
+                    "sWidth": "16%",
                 },
                 {
-                    "mData": 'lastTriggerTimestamp',
+                    "mData": function(row, type) {
+                        try {
+                            if (type === "display") {
+                                return "<div>" + row.lastTriggerTimestampString + "</div>";
+                            }
+                            return row.lastTriggerTimestamp;
+                        }catch(e) {
+                            console.log(e);
+                        }
+                    },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["hooks.trigger-last-time"],
-                    "bSortable": false,
-                    "sWidth": "10%",
+                    "bSortable": true,
+                    "sWidth": "16%",
                 },
             ]
         };
         if (isAdmin) {
             dataTableDefine.aoColumns.push({
-                "mData": 'createdByUser',
+                "mData": '',
+                "mData": function(row, type) {
+                    try {
+                        if (type === "display") {
+                            var created_at_string = ""
+                            if (row.created_at) {
+                                created_at_string = moment(row.created_at).fromNow(); 
+                            }
+                            return "<div>" + row.createdByUser + "</div> <div style='color:#aaaaaa;margin-top:4px;'>"+ created_at_string + "</div>";
+                        }
+                        return row.createdByUser;
+                    }catch(e) {
+                        console.log(e);
+                    }
+                },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["hooks.create-by"],
                 "bSortable": false,
-                "sWidth": "20%",
+                "sWidth": "10%",
             });
         }
         dataTableDefine.aoColumns.push({
@@ -231,7 +256,7 @@ window.HooksView = countlyView.extend({
                         });
                     });
                 }
-            }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-hook"});
+            }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
         });
 
         $(".hook-switcher").off("click").on("click", function() {

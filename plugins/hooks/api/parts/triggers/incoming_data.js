@@ -10,7 +10,7 @@ class IncomingDataTrigger {
     constructor(options) {
         this._rules = [];
         this.pipeline = () => {};
-        if(options.pipeline) {
+        if (options.pipeline) {
             this.pipeline = options.pipeline;
         }
         this.register();
@@ -18,15 +18,16 @@ class IncomingDataTrigger {
 
     syncRules(rules) {
         if (rules instanceof Array) {
-            const newRules = rules.filter( r => {
+            const newRules = rules.filter(r => {
                 return r.trigger.type === 'IncomingDataTrigger';
             });
-            this._rules = newRules.map( r => {
+            this._rules = newRules.map(r => {
                 try {
                     // parse JSON string
-                    console.log(r.trigger)
-                    r.trigger.configuration.filter = JSON.parse(r.trigger.configuration.filter); 
-                }catch(err) {
+                    console.log(r.trigger);
+                    r.trigger.configuration.filter = JSON.parse(r.trigger.configuration.filter);
+                }
+                catch (err) {
                     console.log(err);
                 }
                 return r;
@@ -35,16 +36,16 @@ class IncomingDataTrigger {
     }
 
     async process(eventType, ob) {
-        for(let i = 0; i < this._rules.length; i++) {
+        for (let i = 0; i < this._rules.length; i++) {
             const rule = this._rules[i];
             console.log(rule, "incomming3123");
-            console.log(ob,"inccoming@332132");
+            console.log(ob, "inccoming@332132");
             // match
-            if(rule.apps[0] === ob.params.app_id.toString()) {
-                console.log("get app sdk dispatch223"); 
+            if (rule.apps[0] === ob.params.app_id.toString()) {
+                console.log("get app sdk dispatch223");
                 const matched = await this.matchFilter(ob.params, rule);
             }
-        };
+        }
     }
 
     register(option) {
@@ -56,7 +57,7 @@ class IncomingDataTrigger {
         });
     }
 
-    async matchFilter (params, rule) {
+    async matchFilter(params, rule) {
         const user = JSON.parse(JSON.stringify(params.app_user)) || {};
         let {filter, event} = rule.trigger.configuration;
         const targetEventKey = event[0].split("***")[1];
@@ -117,7 +118,7 @@ class IncomingDataTrigger {
         }
 
         const eventProperties = {c: true, s: true, dur: true};
-        const eventPropertiesMap = {c: "count", s: "sum", dur:"duration"};
+        const eventPropertiesMap = {c: "count", s: "sum", dur: "duration"};
         /**
          *  Assert if rule operation applies to value
          *  @param {varies} value - user's value
@@ -130,7 +131,7 @@ class IncomingDataTrigger {
                 matched = false;
             }
             if (filter.$nin && filter.$nin.indexOf(value) !== -1) {
-                matched= false;
+                matched = false;
             }
             if (filter.$nin && filter.$nin.indexOf(value) !== -1) {
                 matched = false;
@@ -153,7 +154,7 @@ class IncomingDataTrigger {
             let matched = true;
             for (let prop in filter) {
                 const parts = prop.split(".");
-                if(parts.length < 2) {
+                if (parts.length < 2) {
                     continue; // fix bug
                 }
                 if (parts[0] === "up" || (parts.length === 1 && !eventProperties[parts[0]])) {
@@ -161,14 +162,14 @@ class IncomingDataTrigger {
                     if (test === "up") {
                         test = parts[1];
                     }
-                //    if (!user[test] || !assertOperation(user[test], filter[prop])) {
+                    //    if (!user[test] || !assertOperation(user[test], filter[prop])) {
                     if (!assertOperation(user[test], filter[prop])) {
                         matched = false;
                     }
                 }
-//                else if (parts[0] !== "sg" && (!user[parts[0]] || !user[parts[0]][parts[1]] || !assertOperation(user[parts[0]][parts[1]], filter[prop]))) {
-                 else if (parts[0] !== "sg" && (!assertOperation(user[parts[0]] && user[parts[0]][parts[1]], filter[prop]))) {
-   
+                //                else if (parts[0] !== "sg" && (!user[parts[0]] || !user[parts[0]][parts[1]] || !assertOperation(user[parts[0]][parts[1]], filter[prop]))) {
+                else if (parts[0] !== "sg" && (!assertOperation(user[parts[0]] && user[parts[0]][parts[1]], filter[prop]))) {
+
                     matched = false;
                 }
             }
@@ -192,7 +193,7 @@ class IncomingDataTrigger {
                         for (let prop in eventRules) {
                             let parts = prop.split(".");
                             if (parts[0] === "sg") {
-//                                if (!event.segmentation || !assertOperation(common.convertToType(event.segmentation[parts[1]]), eventRules[prop])) {
+                                //                                if (!event.segmentation || !assertOperation(common.convertToType(event.segmentation[parts[1]]), eventRules[prop])) {
                                 if (!assertOperation(common.convertToType(event.segmentation && event.segmentation[parts[1]]), eventRules[prop])) {
 
                                     notMatch = true;
@@ -214,8 +215,8 @@ class IncomingDataTrigger {
                     try {
                         utils.updateRuleTriggerTime(rule._id);
                     }
-                    catch(err) {
-                        console.log(err,"??#3");
+                    catch (err) {
+                        console.log(err, "??#3");
                     }
                     rule.effects.forEach(e => {
                         this.pipeline({
@@ -233,4 +234,4 @@ class IncomingDataTrigger {
 module.exports = IncomingDataTrigger;
 const InternalEvents = [
     "/sdk",
-]
+];

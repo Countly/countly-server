@@ -11,8 +11,8 @@ class EmailEffect {
             to: effect.configuration.address,
             //from: "countly hooks",
             subject: "Countly hooks",
-            html: JSON.stringify(params), 
-        }
+            html: JSON.stringify(params),
+        };
         console.log(msg);
         mail.sendMail(msg);
     }

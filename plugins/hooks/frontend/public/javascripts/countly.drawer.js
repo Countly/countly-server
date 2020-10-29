@@ -1,14 +1,21 @@
+/*global
+    jQuery,
+    app,
+    hooksPlugin,
+    countlyGlobal,
+    $
+ */
 window.HooksDrawer = function(HookView) {
-   return {
-       prepareDrawer: function() {
-           var self = this;
+    return {
+        prepareDrawer: function() {
+            var self = this;
             HookView.DrawerComponent.drawer = CountlyHelpers.createDrawer({
                 id: "hooks-widget-drawer",
                 form: $('#hooks-widget-drawer'),
                 title: jQuery.i18n.map["hooks.drawer-create-title"],
                 applyChangeTriggers: true,
-                onUpdate: function(e){
-                    console.log(e,HookView.DrawerComponent.getWidgetSettings(true), "change!!"); 
+                onUpdate: function(e) {
+                    console.log(e, HookView.DrawerComponent.getWidgetSettings(true), "change!!");
                     HookView.DrawerComponent.checkDisabled();
                 },
                 resetForm: function() {
@@ -29,7 +36,7 @@ window.HooksDrawer = function(HookView) {
                         self.drawer._applyChangeTrigger(self.drawer);
                         self.checkDisabled();
                         console.log("check value");
-                        if(!app.activeView.DrawerComponent) {
+                        if (!app.activeView.DrawerComponent) {
                             clearInterval(self.checkDrawerInterval);
                         }
                     }, 1000);
@@ -50,10 +57,11 @@ window.HooksDrawer = function(HookView) {
             var apps = [];
             //description
             $("#use-description-checkbox").off("click").on("click", function(e) {
-                var checked = e.target.checked; 
+                var checked = e.target.checked;
                 if (checked) {
                     $("#hook-description").attr("disabled", false);
-                } else {
+                }
+                else {
                     $("#hook-description").val("");
                     $("#hook-description").attr("disabled", true);
                 }
@@ -77,11 +85,12 @@ window.HooksDrawer = function(HookView) {
 
             $("#single-hook-trigger-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                 selected = selected.value || selected;
-                $(".hook-trigger-view").html($("#template-hook-trigger-"+selected).html());
-                if(triggers[selected] && (triggers[selected]).init) {
+                $(".hook-trigger-view").html($("#template-hook-trigger-" + selected).html());
+                if (triggers[selected] && (triggers[selected]).init) {
                     (triggers[selected]).init();
                     app.localize();
-                } else {
+                }
+                else {
                     $(".hook-trigger-view").html("");
                 }
             });
@@ -96,11 +105,11 @@ window.HooksDrawer = function(HookView) {
             }
 
             $(".add-effect-button").off("click").on("click", function() {
-                $(".hook-effects-list").append($("#template-hook-effect-selector").html()); 
+                $(".hook-effects-list").append($("#template-hook-effect-selector").html());
                 $(".single-hook-effect-dropdown").clySelectSetItems(effectsSelectorItems);
                 app.localize($(".effects-block"));
                 $(".single-hook-effect-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
-                    $(e.currentTarget.parentElement.nextElementSibling).html($("#template-hook-effect-"+selected).html());
+                    $(e.currentTarget.parentElement.nextElementSibling).html($("#template-hook-effect-" + selected).html());
                     (effects[selected]).init();
                     self.drawer._applyChangeTrigger(self.drawer);
                     app.localize($(".effects-block"));
@@ -153,11 +162,11 @@ window.HooksDrawer = function(HookView) {
             var self = this;
             var hookInstance = {
                 name: $("#hook-name-input").val(),
-                has_description:  $("#use-description-checkbox").is(':checked'), 
+                has_description: $("#use-description-checkbox").is(':checked'),
                 apps: $("#multi-app-dropdown").clyMultiSelectGetSelection(),
                 trigger: null,
                 effects: null,
-            }
+            };
             if ($("#current_hook_id").text().length > 0) {
                 hookInstance._id = $("#current_hook_id").text();
             }
@@ -171,12 +180,12 @@ window.HooksDrawer = function(HookView) {
             if (enabled) {
                 hookInstance.enabled = true;
             }
-            
+
             // trigger
             hookInstance.trigger = self.getValidTriggerConfig();
 
             // effects
-            hookInstance.effects = self.getValidEffectsConfig(); 
+            hookInstance.effects = self.getValidEffectsConfig();
             return hookInstance;
         },
         checkDisabled: function() {
@@ -199,7 +208,8 @@ window.HooksDrawer = function(HookView) {
                 $("#use-description-checkbox").prop('checked', true);
                 $("#hook-description").attr("disabled", false);
                 $("#hook-description").val(data.description);
-            } else {
+            }
+            else {
                 $("#use-description-checkbox").prop('checked', false);
             }
             var selectedApps = [];
@@ -221,7 +231,7 @@ window.HooksDrawer = function(HookView) {
                 var effect = data.effects[i];
                 $(".add-effect-button").trigger("click");
                 var effectDom = $(".hook-effect-item").last();
-                $(effectDom).find(".single-hook-effect-dropdown").clySelectSetSelection(effect.type, effectModels[effect.type].name); 
+                $(effectDom).find(".single-hook-effect-dropdown").clySelectSetSelection(effect.type, effectModels[effect.type].name);
                 effectModels[effect.type].renderConfig(effect, effectDom);
             }
 
@@ -231,22 +241,22 @@ window.HooksDrawer = function(HookView) {
         },
 
         getValidTriggerConfig: function() {
-            var triggerType = $("#single-hook-trigger-dropdown").clySelectGetSelection(); 
+            var triggerType = $("#single-hook-trigger-dropdown").clySelectGetSelection();
             if (!triggerType) {
                 return null;
             }
             triggerType = triggerType.value || triggerType;
             var triggerModels = hooksPlugin.getHookTriggers();
             var triggerConfig = triggerModels[triggerType].getValidConfig();
-            
+
             if (!triggerConfig) {
-               return null 
+                return null;
             }
 
             var config = {};
             config.type = triggerType;
-            config.configuration = triggerConfig; 
-            return config; 
+            config.configuration = triggerConfig;
+            return config;
         },
 
         getValidEffectsConfig: function() {
@@ -256,21 +266,21 @@ window.HooksDrawer = function(HookView) {
             if (effectDoms.length === 0) {
                 return null;
             }
-            for(var i = 0; i < effectDoms.length; i++) {
+            for (var i = 0; i < effectDoms.length; i++) {
                 var effectType = $(effectDoms[i]).find(".single-hook-effect-dropdown").clySelectGetSelection();
-                
-                if(!effectType) {
+
+                if (!effectType) {
                     return null;
                 }
                 var configuration = effectModels[effectType].getValidConfig && effectModels[effectType].getValidConfig(effectDoms[i]);
-                if(!configuration) {
+                if (!configuration) {
                     return null;
                 }
                 var effect = {type: effectType, configuration: configuration};
-                console.log(effect,"effectType")
+                console.log(effect, "effectType");
                 configs.push(effect);
             }
             return configs;
-       }
-    }
-}
+        }
+    };
+};

@@ -28,12 +28,14 @@ class Hooks {
         this._queueEventEmitter.on('push', (data) => {
             this._queue.push(data);
         });
-        this._queueEventEmitter.on('pipe', () => {this.pipeEffects()})
+        this._queueEventEmitter.on('pipe', () => {
+            this.pipeEffects();
+        });
         this._queueEventEmitter.emit("pipe");
     }
 
     registerTriggers() {
-        for(let type in Triggers) {
+        for (let type in Triggers) {
             const t = new Triggers[type]({
                 pipeline: (data) => {
                     this._queueEventEmitter.emit('push', data);
@@ -45,7 +47,7 @@ class Hooks {
     }
 
     registerEffects() {
-        for(let type in Effects) {
+        for (let type in Effects) {
             const t = new Effects[type]();
             this._effects[type] = t;
         }
@@ -53,43 +55,46 @@ class Hooks {
 
     fetchRules() {
         const self = this;
-        const db = common.db; 
+        const db = common.db;
         db && db.collection("hooks").find({"enabled": true}).toArray(function(err, result) {
             self._cachedRules = result;
             self.syncRulesWithTrigger();
-           // console.log("fetch rules !!");
-           // console.log(err, result,"!!!", process.pid);
+            // console.log("fetch rules !!");
+            // console.log(err, result,"!!!", process.pid);
         });
     }
 
     syncRulesWithTrigger() {
-        for(let type in this._triggers) {
+        for (let type in this._triggers) {
             const t = this._triggers[type];
-            if ( typeof t.syncRules == "function") {
+            if (typeof t.syncRules === "function") {
                 t.syncRules(this._cachedRules);
             }
-         }
+        }
     }
 
     async pipeEffects() {
-        console.log("pro::", process.pid, ":::",this._queue.length);
+        console.log("pro::", process.pid, ":::", this._queue.length);
         try {
             const chunk = this._queue.splice(0, 20);
-            await asyncLib.mapLimit(chunk,2, async (item, callback) => {
-                console.log(item,"chunk limit");
+            await asyncLib.mapLimit(chunk, 2, async(item, callback) => {
+                console.log(item, "chunk limit");
                 // trigger effects logic
-                if(this._effects[item.effect.type]) {
+                if (this._effects[item.effect.type]) {
                     this._effects[item.effect.type].run(item);
                 }
-            })
+            });
             console.log("finish this round pipeEffect");
-        } catch(e){console.log(e);}
+        }
+        catch (e) {
+            console.log(e);
+        }
 
         //check periodically
         setTimeout(()=> {
             this._queueEventEmitter.emit("pipe");
-        },500);
-     }
+        }, 500);
+    }
 }
 
 
@@ -132,6 +137,7 @@ plugins.register("/i/hook/save", function(ob) {
                     });
             }
             hookConfig.createdBy = params.member._id;
+            hookConfig.created_at = new Date().getTime();
             return common.db.collection("hooks").insert(
                 hookConfig,
                 function(err, result) {
@@ -158,8 +164,9 @@ plugins.register("/o/hook/list", function(ob) {
     let validateUserForWriteAPI = ob.validateUserForWriteAPI;
     validateUserForWriteAPI(function(params) {
         try {
-            let query = {};
-            common.db.collection("hooks").find(query).toArray(function(err, hooksList) {
+            let query = { $query: {}, $orderby: { created_at: -1 } };
+            common.db.collection("hooks").find(query).sort({created_at:-1
+            }).toArray(function(err, hooksList) {
                 if (err) {
                     return log.e('got error in listing hooks: %j', err);
                 }
