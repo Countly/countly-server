@@ -2412,7 +2412,12 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.components.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/core.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/layout.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/input.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/datatable.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/drawer.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.legacy.js?<%= countlyVersion %>"></script>
 		<% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
 				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>
