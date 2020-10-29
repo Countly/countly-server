@@ -16,7 +16,7 @@ class HTTPEffect {
         // const params = {}
         switch (method) {
         case 'get':
-            return request.get({parsedURL, qs: parsedRequestData, timeout: this._timeout}, function(e, r, body) {
+            return request.get({uri: parsedURL, qs: parsedRequestData, timeout: this._timeout}, function(e, r, body) {
                 console.log(e, body, "[httpeffects]");
             });
         case 'post':
