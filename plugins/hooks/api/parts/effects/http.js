@@ -16,14 +16,14 @@ class HTTPEffect {
         // const params = {}
         switch (method) {
         case 'get':
-            let parsedJSON = {};
+            let queryJSON= {};
             try {
-                parsedJSON = JSON.parse(parsedRequestData);
+                queryJSON = JSON.parse(parsedRequestData);
             } 
             catch (e) {
                 console.log('http efffect parse get data err:', e);
             }
-            return request.get({uri: parsedURL, qs: parsedJSON, timeout: this._timeout}, function(e, r, body) {
+            return request.get({uri: parsedURL, qs: queryJSON, timeout: this._timeout}, function(e, r, body) {
                 console.log(e, body, "[httpeffects]");
             });
         case 'post':
