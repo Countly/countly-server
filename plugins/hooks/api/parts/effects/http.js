@@ -7,16 +7,23 @@ class HTTPEffect {
     }
 
     run({params, effect}) {
-        console.log(params, effect, "!!!httddd");
+        console.log(params, effect, "HTTPEffect running");
         const {method, url, requestData} = effect.configuration;
         const parsedURL = utils.parseStringTemplate(url, params);
         const parsedRequestData = utils.parseStringTemplate(requestData, params);
-        console.log(parsedURL, parsedRequestData, "!!!httddd2");
+        console.log(parsedURL, parsedRequestData, "HTTPEffect data");
         // todo: assemble params for request;
         // const params = {}
         switch (method) {
         case 'get':
-            return request.get({uri: parsedURL, qs: parsedRequestData, timeout: this._timeout}, function(e, r, body) {
+            let parsedJSON = {};
+            try {
+                parsedJSON = JSON.parse(parsedRequestData);
+            } 
+            catch (e) {
+                console.log('http efffect parse get data err:', e);
+            }
+            return request.get({uri: parsedURL, qs: parsedJSON, timeout: this._timeout}, function(e, r, body) {
                 console.log(e, body, "[httpeffects]");
             });
         case 'post':
