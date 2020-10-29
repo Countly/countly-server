@@ -56,16 +56,7 @@ window.HooksDrawer = function(HookView) {
             var self = this;
             var apps = [];
             //description
-            $("#use-description-checkbox").off("click").on("click", function(e) {
-                var checked = e.target.checked;
-                if (checked) {
-                    $("#hook-description").attr("disabled", false);
-                }
-                else {
-                    $("#hook-description").val("");
-                    $("#hook-description").attr("disabled", true);
-                }
-            });
+            
 
             //select apps
             for (var appId in countlyGlobal.apps) {
@@ -162,7 +153,6 @@ window.HooksDrawer = function(HookView) {
             var self = this;
             var hookInstance = {
                 name: $("#hook-name-input").val(),
-                has_description: $("#use-description-checkbox").is(':checked'),
                 apps: $("#multi-app-dropdown").clyMultiSelectGetSelection(),
                 trigger: null,
                 effects: null,
@@ -171,9 +161,7 @@ window.HooksDrawer = function(HookView) {
                 hookInstance._id = $("#current_hook_id").text();
             }
 
-            if (hookInstance.has_description) {
-                hookInstance.description = $("#hook-description").val() || null;
-            }
+            hookInstance.description = $("#hook-description").val() || "";
             if (hookInstance.apps.length === 0) {
                 hookInstance.apps = null;
             }
@@ -204,14 +192,10 @@ window.HooksDrawer = function(HookView) {
             var self = this;
             $("#current_hook_id").text(data._id);
             $("#hook-name-input").val(data.name);
-            if (data.has_description) {
-                $("#use-description-checkbox").prop('checked', true);
-                $("#hook-description").attr("disabled", false);
+            if (data.description) {
                 $("#hook-description").val(data.description);
             }
-            else {
-                $("#use-description-checkbox").prop('checked', false);
-            }
+            
             var selectedApps = [];
             for (var index in data.apps) {
                 var appId = data.apps[index];

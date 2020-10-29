@@ -9,16 +9,11 @@
         </div>
 
         <div class="section">
-            <div class="description">
-                <label class="container">
-                    <input id="use-description-checkbox" type="checkbox"/>
-                    <span class="fas far fa-square"></span>
-                    <span data-localize="hooks.use-description">Use description</span>
-                </label>
-            </div>
+            <div class="label" data-localize='hooks.hook-description' ></div>
             <div>
-                <input id="hook-description" class="input" type="text" placeholder="Enter hook description" disabled/>
+                <input id="hook-description" class="input" type="text" placeholder="Enter hook description" />
             </div>
+            <span data-localize="hooks.hook-description-note" style="font-size: 11px;margin-top: 4px;color: #9c9c9c;line-height: 17px;"></span>
         </div>
         <div  class="section">
             <div class="label" data-localize='hooks.for_applications'></div>
@@ -81,7 +76,7 @@
                                                 
                     </div>
                     <div>
-                        <div class="icon-button add-effect-button">+ Add Effect</div>
+                        <div class="icon-button add-effect-button" data-localize="hooks.add-effect"></div>
                         <div style="clear:both;"></div>
                     </div>
                 </div>
@@ -113,7 +108,7 @@
 </script>
 <script id="template-hook-trigger-IncomingDataTrigger" type="text/x-handlebars-template">
     <div class="section">
-        <div class="label" data-localize='hooks.' >Select Event</div>
+        <div class="label" data-localize='hooks.incoming-event' ></div>
         <div id="multi-event-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;" data-max=1>
             <div class="select-inner">
                 <div class="text-container">
@@ -273,10 +268,11 @@
 
     <div class="section">
         <div class="label" data-localize='hooks.query-string-or-json-body' ></div>
-        <div style="display: flex;">
-            <div style="flex-grow:1; "> 
-                <textarea name="http-effect-params" rows="5"  cols="60"></textarea>
+        <div style="">
+            <div style=""> 
+                <textarea style="border: 1px solid #d6d6d6;" name="http-effect-params" rows="5"  cols="60"></textarea>
             </div>
+            <div data-localize="hooks.http-effect-description" style="font-size: 11px;margin-top: 4px;color: #9c9c9c;line-height: 17px;"> </div>
         </div>
     </div>
 </script>
@@ -305,11 +301,12 @@
                 </div>
                 <div class="select-items square" style="width: 100%;"></div>
             </div>
-            <i class="far fa-times-circle delete-effect-button" style="font-size:18px;margin-left:5px;color:#636363;"></i>
+            <i class="far fa-times-circle delete-effect-button" style="font-size:18px;margin-left:5px;color:#d0d0d0;"></i>
 
         </div>
 
         <div class="hook-effect-view">
         </div>
+        <div class="block-line-row"></div>
     </div>
 </script>

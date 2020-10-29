@@ -10,7 +10,7 @@ class HTTPEffect {
         console.log(params, effect, "HTTPEffect running");
         const {method, url, requestData} = effect.configuration;
         const parsedURL = utils.parseStringTemplate(url, params);
-        const parsedRequestData = utils.parseStringTemplate(requestData, params);
+        const parsedRequestData = utils.parseStringTemplate(requestData, params, method);
         console.log(parsedURL, parsedRequestData, "HTTPEffect data");
         // todo: assemble params for request;
         // const params = {}

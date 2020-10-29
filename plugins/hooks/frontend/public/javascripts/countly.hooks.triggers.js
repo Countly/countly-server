@@ -4,35 +4,7 @@
 
 (function(hooksPlugin, jQuery) {
     var _hookTriggers = {
-        "APIEndPointTrigger": {
-            name: jQuery.i18n.map["hooks.APIEndPointTrigger"],
-            init: function() {
-                app.localize();
-                function uuidv4() {
-                    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, function (c) {
-                        return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-                    });
-                };
-                $("#api-endpoint-trigger-uri").val(uuidv4());
-                this.renderIntro();
-            },
-            renderConfig: function(trigger) {
-                var configuration = trigger.configuration;
-                $("#api-endpoint-trigger-uri").val(configuration.path);
-                this.renderIntro();
-            },
-            getValidConfig: function() {
-                var uri = $("#api-endpoint-trigger-uri").val();
-                if(!uri) {
-                    return null
-                }
-                return {path: uri, method: 'get'};
-            },
-            renderIntro: function() {
-                var url = window.location.protocol + "//" + window.location.host + "/o/hooks/" +  $("#api-endpoint-trigger-uri").val()
-                $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-api-endpoint-intro-content", url));
-            }
-        },
+        
         "IncomingDataTrigger": {
             name: jQuery.i18n.map["hooks.IncomingDataTrigger"],
             init: function() {
@@ -112,7 +84,7 @@
                                 internal_events.push({value: apps[0]+"***"+event, name: jQuery.i18n.map["internal-events." + event] || event, description: '', count: '', sum: ''});
                             });
                             events = events.concat(internal_events);
-                            events.unshift({value: apps[0]+"****", name: jQuery.i18n.map["block.any-events"]});
+                            events.unshift({value: apps[0]+"****", name: jQuery.i18n.map["hooks.any-events"]});
                             $("#multi-event-dropdown").clyMultiSelectSetItems(events);
                             if(configuration && configuration.event) {
                                 events.forEach(function(event){
@@ -225,7 +197,7 @@
                 $(".event-select").on("click", function() {
                     var allEvents = countlyEvent.getEvents().concat(self.internal_events),
                         eventStr = "";
-                    allEvents.unshift({key: "*", name: jQuery.i18n.map["block.any-events"]});
+                    allEvents.unshift({key: "*", name: jQuery.i18n.map["hooks.any-events"]});
                     for (var i = 0; i < allEvents.length; i++) {
                         var tmpItem = $("<div>");
 
@@ -1033,7 +1005,6 @@
                 app.localize();
             },
             renderConfig: function(trigger) {
-                console.log("!!!");
                 var configuration = trigger.configuration;
                 var self = this;
                 $("#single-hook-trigger-internal-event-dropdown")
@@ -1221,7 +1192,36 @@
                         $(".internal-event-configuration-view").html(event);
                 }
             },
-        }
+        },
+        "APIEndPointTrigger": {
+            name: jQuery.i18n.map["hooks.APIEndPointTrigger"],
+            init: function() {
+                app.localize();
+                function uuidv4() {
+                    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, function (c) {
+                        return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                    });
+                };
+                $("#api-endpoint-trigger-uri").val(uuidv4());
+                this.renderIntro();
+            },
+            renderConfig: function(trigger) {
+                var configuration = trigger.configuration;
+                $("#api-endpoint-trigger-uri").val(configuration.path);
+                this.renderIntro();
+            },
+            getValidConfig: function() {
+                var uri = $("#api-endpoint-trigger-uri").val();
+                if(!uri) {
+                    return null
+                }
+                return {path: uri, method: 'get'};
+            },
+            renderIntro: function() {
+                var url = window.location.protocol + "//" + window.location.host + "/o/hooks/" +  $("#api-endpoint-trigger-uri").val()
+                $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-api-endpoint-intro-content", url));
+            }
+        },
     }
 
     /**

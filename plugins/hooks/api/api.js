@@ -131,14 +131,12 @@ plugins.register("/i/hook/save", function(ob) {
             hookConfig = JSON.parse(hookConfig);
             var checkProps = {
                 'name': { 'required': hookConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
-                'has_description': { 'required': hookConfig._id ? false : true, 'type': 'Boolean', 'min-length': 1 },
-                'description': { 'required': !hookConfig._id & hookConfig.has_description === true ? true : false, 'type': 'String', 'min-length': 1 },
+                'description': { 'required': false, 'type': 'String', 'min-length': 0 },
                 'apps': { 'required': hookConfig._id ? false : true, 'type': 'Array', 'min-length': 1 },
                 'trigger': { 'required': hookConfig._id ? false : true, 'type': 'Object'},
                 'effects': { 'required': hookConfig._id ? false : true, 'type': 'Array', 'min-length': 1},
                 'enabled': { 'required': hookConfig._id ? false : true, 'type': 'Boolean'}
             };
-
             if (!(common.validateArgs(hookConfig, checkProps))) {
                 common.returnMessage(params, 200, 'Not enough args');
                 return true;

@@ -89,9 +89,9 @@ window.HooksView = countlyView.extend({
                 {
                     "mData": function(row, type) {
                         if (type === "display") {
-                            var input = '<div style="color:#444444">' + row.name + '</div>';
+                            var input = '<div style="color:#444444;width: 90%;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">' + row.name + '</div>';
                             if (row.description) {
-                                input += '<div style="color:#aaaaaa">' + row.description + '</div>';
+                                input += '<div style="color:#aaaaaa;width: 90%;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">' + row.description + '</div>';
                             }
                             return input;
                         }
