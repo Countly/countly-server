@@ -249,12 +249,18 @@ window.component('push.dash', function (dash) {
                 if (id) {
                     $('.message-menu').find('.view-recipients').data('id', id);
                     $('.message-menu').find('.duplicate-message').data('id', id);
+                    $('.message-menu').find('.resend-message').data('id', id);
                     $('.message-menu').find('.edit-message').data('id', id);
                     $('.message-menu').find('.delete-message').data('id', id);
                     if (typeof countlySegmentation !== 'undefined' && message.result.sent()) {
                         $('.message-menu').find('.view-recipients').show();
                     } else {
                         $('.message-menu').find('.view-recipients').hide();
+                    }
+                    if (message.result.errorCodes() && message.result.errorCodes().aborted) {
+                        $('.message-menu').find('.resend-message').show();
+                    } else {
+                        $('.message-menu').find('.resend-message').hide();
                     }
                     if (message.auto()) {
                         $('.message-menu .edit-message').show();
@@ -273,6 +279,14 @@ window.component('push.dash', function (dash) {
                     return;
                 } else if ($(data.target).hasClass('duplicate-message') && message) {
                     var json = message.toJSON(false, true, true);
+                    if (!message.active) {
+                        delete json.date;
+                    }
+                    components.push.popup.show(json, true);
+                } else if ($(data.target).hasClass('resend-message') && message) {
+                    var json = message.toJSON(false, true, true);
+                    var cond = json.userConditions || (json.userConditions = {});
+                    cond.message = {$nin: [message._id]};
                     if (!message.active) {
                         delete json.date;
                     }
@@ -509,6 +523,7 @@ window.component('push.dash', function (dash) {
             m('.cly-button-menu.message-menu', [
                 m('a.item.view-recipients', t('push.po.table.recipients')),
                 m('a.item.duplicate-message', t('push.po.table.dublicate')),
+                m('a.item.resend-message', t('push.po.table.resend')),
                 m('a.item.edit-message', t('push.po.table.edit')),
                 m('a.item.delete-message', t('push.po.table.delete'))
             ])

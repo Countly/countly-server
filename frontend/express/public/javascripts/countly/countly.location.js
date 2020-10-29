@@ -54,8 +54,8 @@
 
     CountlyHelpers.createMetricModel(window.countlyLocation, {name: "countries", estOverrideMetric: "countries"}, jQuery, countlyLocation.getCountryName);
 
-    countlyLocation.getRegionName = function(rgn) {
-        return _regionMap[rgn];
+    countlyLocation.getRegionName = function(rgn, country) {
+        return _regionMap[rgn] || _regionMap[country + "-" + rgn] || rgn;
     };
 
     // Public Methods
