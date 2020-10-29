@@ -32,19 +32,27 @@ utils.visitObjectByPath = function(o, s) {
 };
 
 utils.parseStringTemplate = function(str, data) {
+    const parseData = function (obj) {
+        if (typeof obj === 'object') {
+            return JSON.stringify(obj);
+        }
+        return obj;
+    }
+    
     return str.replace(/\{\{(.*?)}\}/g, (sub, path) => {
         path = path.trim();
         path = path.replace(/\[(\w+)\]/g, '.$1');
 
         const props = path.split('.');
         let obj = data;
+        if (props.length === 1 && props[0] === 'payload') {
+            return parseData(obj);
+        }
+        
         props.forEach(prop => {
             obj = obj[prop] || undefined;
         });
-        if (obj) {
-            return obj;
-        }
-        return null;
+        return parseData(obj);
     });
 };
 
