@@ -49,6 +49,10 @@ utils.parseStringTemplate = function(str, data) {
             return parseData(obj);
         }
         
+        if (props.length === 1 && props[0] === 'payload_string') {
+            jsonStr = parseData(obj);
+            return jsonStr.replace(/"|\\"/g, '\\"');
+        }
         props.forEach(prop => {
             obj = obj[prop] || undefined;
         });
