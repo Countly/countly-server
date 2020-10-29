@@ -1,30 +1,47 @@
-/* global Vue */
+/* global Vue, jQuery, _ */
 
-(function(countlyVue) {
+(function(countlyVue, $) {
+
+
+    var _capitalized = function(prefix, str) {
+        return prefix + str[0].toUpperCase() + str.substring(1);
+    };
 
     var VuexModule = function(name, options) {
 
         options = options || {};
 
         var mutations = options.mutations || {},
-            actions = options.actions || {};
+            actions = options.actions || {},
+            getters = options.getters || {},
+            mixins = options.mixins || [];
 
-        if (!mutations.resetState) {
-            mutations.resetState = function(state) {
-                Object.assign(state, options.resetFn());
-            };
-        }
+        mixins.forEach(function(mixin) {
+            Object.assign(mutations, mixin.mutations);
+            Object.assign(actions, mixin.actions);
+            Object.assign(getters, mixin.getters);
+        });
 
-        if (!actions.reset) {
-            actions.reset = function(context) {
-                context.commit("resetState");
-            };
-        }
+        var _resetFn = function() {
+            var state = options.resetFn();
+            mixins.forEach(function(mixin) {
+                Object.assign(state, mixin.resetFn());
+            });
+            return state;
+        };
+
+        mutations.resetState = function(state) {
+            Object.assign(state, _resetFn());
+        };
+
+        actions.reset = function(context) {
+            context.commit("resetState");
+        };
 
         var module = {
             namespaced: true,
-            state: options.resetFn(),
-            getters: options.getters || {},
+            state: _resetFn(),
+            getters: getters,
             mutations: mutations,
             actions: actions
         };
@@ -39,6 +56,91 @@
         return {
             name: name,
             module: module
+        };
+    };
+
+    var PagedDataTable = function(name, options) {
+
+        var getters = {},
+            mutations = {},
+            actions = {},
+            resourceName = name,
+            counterKey = name + "RequestCounter",
+            echoKey = name + "RequestLastEcho",
+            paramsKey = name + "Params";
+
+        var resetFn = function() {
+            var stateObj = {};
+            stateObj[resourceName] = countlyVue.helpers.DataTable.toStandardResponse();
+            stateObj[counterKey] = 0;
+            stateObj[echoKey] = 0;
+            stateObj[paramsKey] = {
+                ready: false
+            };
+            return stateObj;
+        };
+
+        //
+        getters[name] = function(_state) {
+            return _state[name];
+        };
+
+        //
+        mutations[_capitalized("set", resourceName)] = function(_state, newValue) {
+            _state[resourceName] = newValue;
+            _state[echoKey] = newValue.echo || 0;
+        };
+
+        mutations[_capitalized("set", paramsKey)] = function(_state, newValue) {
+            _state[paramsKey] = newValue;
+        };
+
+        mutations[_capitalized("increment", counterKey)] = function(_state) {
+            _state[counterKey]++;
+        };
+
+        //
+        actions[_capitalized("fetch", resourceName)] = function(context, actionParams) {
+            var promise = null,
+                requestParams = context.state[paramsKey],
+                requestOptions = {};
+
+            if (!requestParams.ready) {
+                promise = $.Deferred().resolve();
+            }
+            else {
+                var legacyOptions = countlyVue.helpers.DataTable.toLegacyRequest(requestParams, options.columns);
+                legacyOptions.sEcho = context.state[counterKey];
+                requestOptions = options.onRequest(context, actionParams);
+                _.extend(requestOptions.data, legacyOptions);
+
+                promise = $.when(
+                    $.ajax(requestOptions)
+                );
+                context.commit(_capitalized("increment", counterKey));
+            }
+            return promise
+                .then(function(res) {
+                    if (!res) {
+                        return;
+                    }
+                    var convertedResponse = countlyVue.helpers.DataTable.toStandardResponse(res, requestOptions);
+                    if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
+                        convertedResponse.echo >= context.state[echoKey]) {
+                        convertedResponse.rows = options.onReady(convertedResponse.rows);
+                        context.commit(_capitalized("set", resourceName), convertedResponse);
+                    }
+                })
+                .catch(function() {
+                    return context.commit(_capitalized("set", resourceName), countlyVue.helpers.DataTable.toStandardResponse());
+                });
+        };
+
+        return {
+            resetFn: resetFn,
+            getters: getters,
+            mutations: mutations,
+            actions: actions
         };
     };
 
@@ -147,5 +249,6 @@
 
     countlyVue.vuex.Module = VuexModule;
     countlyVue.vuex.DataTable = VuexDataTable;
+    countlyVue.vuex.PagedDataTable = PagedDataTable;
 
-}(window.countlyVue = window.countlyVue || {}));
+}(window.countlyVue = window.countlyVue || {}, jQuery));
