@@ -830,6 +830,20 @@ window.component('push.popup', function(popup) {
                         ], value: message.actualDates
                     });
 
+                    this.radioCancelTriggerEntry = new C.radio.controller({
+                        options: [
+                            { value: false, title: t('pu.po.tab2.trc.dont') },
+                            { value: true, title: t('pu.po.tab2.trc.true') }
+                        ], value: message.autoCancelTrigger
+                    });
+
+                    this.radioCancelTriggerExit = new C.radio.controller({
+                        options: [
+                            { value: false, title: t('pu.po.tab2.trc.dont') },
+                            { value: true, title: t('pu.po.tab2.trc.false') }
+                        ], value: message.autoCancelTrigger
+                    });
+
                     this.checkAutoEnd = new C.checkbox.controller({
                         class: 'comp-grid-row',
                         group: 'comp-grid-cell',
@@ -866,6 +880,12 @@ window.component('push.popup', function(popup) {
                             message.autoOnEntry() === 'events' ? m('.form-group', [
                                 m('h4', t('pu.po.tab2.ddc')),
                                 C.radio.view(ctrl.radioActualDates),
+                                // m('.desc', t('pu.po.tab2.ddc.h'))
+                            ]) : '',
+
+                            message.autoOnEntry() !== 'events' ? m('.form-group', [
+                                m('h4', t('pu.po.tab2.trc')),
+                                message.autoOnEntry() === true ? C.radio.view(ctrl.radioCancelTriggerEntry) : C.radio.view(ctrl.radioCancelTriggerExit),
                                 // m('.desc', t('pu.po.tab2.ddc.h'))
                             ]) : '',
 
