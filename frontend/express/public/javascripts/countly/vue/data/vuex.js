@@ -103,15 +103,14 @@
         actions[_capitalized("fetch", resourceName)] = function(context, actionParams) {
             var promise = null,
                 requestParams = context.state[paramsKey],
-                requestOptions = {};
+                requestOptions = options.onRequest(context, actionParams);
 
-            if (!requestParams.ready) {
+            if (!requestParams.ready || !requestOptions) {
                 promise = $.Deferred().resolve();
             }
             else {
                 var legacyOptions = countlyVue.helpers.DataTable.toLegacyRequest(requestParams, options.columns);
                 legacyOptions.sEcho = context.state[counterKey];
-                requestOptions = options.onRequest(context, actionParams);
                 _.extend(requestOptions.data, legacyOptions);
 
                 promise = $.when(
@@ -127,7 +126,9 @@
                     var convertedResponse = countlyVue.helpers.DataTable.toStandardResponse(res, requestOptions);
                     if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
                         convertedResponse.echo >= context.state[echoKey]) {
-                        convertedResponse.rows = options.onReady(convertedResponse.rows);
+                        if (typeof options.onReady === 'function') {
+                            convertedResponse.rows = options.onReady(convertedResponse.rows);
+                        }
                         context.commit(_capitalized("set", resourceName), convertedResponse);
                     }
                 })
