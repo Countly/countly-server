@@ -1,4 +1,3 @@
-var testData = require('./testData.js');
 const process = require('process');
 const Triggers = require('./parts/triggers/index.js');
 const Effects = require('./parts/effects/index.js');
@@ -10,8 +9,14 @@ const plugins = require('../../pluginManager.js');
 const log = require('../../../api/utils/log.js')('hook:api');
 const _ = require('lodash');
 
+/**
+* Hooks Class definition 
+*/
 class Hooks {
-    constructor(options) {
+    /**
+     *  Init Hooks Configuration
+     */
+    constructor() {
         this._cachedRules = [];
         this._triggers = {};
         this._effects = {};
@@ -34,6 +39,9 @@ class Hooks {
         this._queueEventEmitter.emit("pipe");
     }
 
+    /**
+    *  Regist triggers 
+    */
     registerTriggers() {
         for (let type in Triggers) {
             const t = new Triggers[type]({
@@ -46,6 +54,9 @@ class Hooks {
         }
     }
 
+    /**
+    *  Regist effects 
+    */
     registerEffects() {
         for (let type in Effects) {
             const t = new Effects[type]();
@@ -53,6 +64,9 @@ class Hooks {
         }
     }
 
+    /**
+    *  fetch hook records from db 
+    */
     fetchRules() {
         const self = this;
         const db = common.db;
@@ -64,6 +78,9 @@ class Hooks {
         });
     }
 
+    /**
+     * sync hook record intervally
+     */
     syncRulesWithTrigger() {
         for (let type in this._triggers) {
             const t = this._triggers[type];
@@ -73,6 +90,9 @@ class Hooks {
         }
     }
 
+    /**
+     * process pipeline data
+     */
     async pipeEffects() {
         console.log("pro::", process.pid, ":::", this._queue.length);
         try {
@@ -82,6 +102,9 @@ class Hooks {
                 // trigger effects logic
                 if (this._effects[item.effect.type]) {
                     this._effects[item.effect.type].run(item);
+                }
+                if (callback) {
+                    callback();
                 }
             });
             console.log("finish this round pipeEffect");
@@ -165,8 +188,7 @@ plugins.register("/o/hook/list", function(ob) {
     validateUserForWriteAPI(function(params) {
         try {
             let query = { $query: {}, $orderby: { created_at: -1 } };
-            common.db.collection("hooks").find(query).sort({created_at:-1
-            }).toArray(function(err, hooksList) {
+            common.db.collection("hooks").find(query).sort({created_at: -1}).toArray(function(err, hooksList) {
                 if (err) {
                     return log.e('got error in listing hooks: %j', err);
                 }
@@ -241,4 +263,4 @@ plugins.register("/i/hook/delete", function(ob) {
 });
 
 // init instnace;
-const hooks = new Hooks();
+new Hooks();

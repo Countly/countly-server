@@ -1,3 +1,6 @@
+/*global
+  countlyView, $, jQuery,countlyGlobal, app, T, Handlebars, hooksPlugin, _, moment, CountlyHelpers,
+ */
 window.HooksView = countlyView.extend({
     statusChanged: {},
     initialize: function() {
@@ -9,18 +12,17 @@ window.HooksView = countlyView.extend({
             T.get('/hooks/templates/drawer.html', function(src) {
                 Handlebars.registerPartial("hooks-widget-drawer", src);
             }),
-            hooksPlugin.requestHookList(),
-        ).then(function() {
-        });
+            hooksPlugin.requestHookList()).then(function() {});
     },
     beforeRender: function() {
     },
     renderCommon: function(refresh) {
-        if(!refresh) {
+        if (!refresh) {
             try {
                 $(this.el).html(this.template({"email-placeholder": jQuery.i18n.map["hook.email-place-holder"]}));
-            } catch(e) {
-                console.log(e);
+            }
+            catch (e) {
+                //silent catch
             }
             this.renderTable();
             this.DrawerComponent = window.HooksDrawer(this);
@@ -30,7 +32,7 @@ window.HooksView = countlyView.extend({
     renderTable: function() {
         var pluginsData = [];
         var self = this;
-        var hookList= hooksPlugin.getHookList();
+        var hookList = hooksPlugin.getHookList();
 
         for (var i = 0; i < hookList.length; i++) {
             var appNameList = [];
@@ -42,7 +44,7 @@ window.HooksView = countlyView.extend({
 
             pluginsData.push({
                 id: hookList[i]._id,
-                name: hookList[i].name|| '',
+                name: hookList[i].name || '',
                 description: hookList[i].description || '-',
                 appNameList: appNameList.join(', '),
                 triggerCount: hookList[i].triggerCount || 0,
@@ -82,14 +84,14 @@ window.HooksView = countlyView.extend({
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["common.status"],
                     "bSortable": false,
-                    "sWidth":"8%",
+                    "sWidth": "8%",
                 },
                 {
                     "mData": function(row, type) {
                         if (type === "display") {
-                            input = '<div style="color:#444444">' + row.name + '</div>';
+                            var input = '<div style="color:#444444">' + row.name + '</div>';
                             if (row.description) {
-                                input +='<div style="color:#aaaaaa">' + row.description + '</div>';
+                                input += '<div style="color:#aaaaaa">' + row.description + '</div>';
                             }
                             return input;
                         }
@@ -103,8 +105,8 @@ window.HooksView = countlyView.extend({
                     "sWidth": "20%",
 
                 },
-                
-             /*   {
+
+                /*   {
                     "mData": 'appNameList',
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["hooks.applications"],
@@ -117,40 +119,41 @@ window.HooksView = countlyView.extend({
                             "APIEndPointTrigger": jQuery.i18n.map["hooks.trigger-api-endpoint-uri"],
                             "IncomingDataTrigger": jQuery.i18n.map["hooks.IncomingData"],
                             "InternalEventTrigger": jQuery.i18n.map["hooks.internal-event-selector-title"],
-                        }
-                        
+                        };
+
                         if (type === "display") {
                             var triggerText = triggerNames[row.trigger.type];
                             try {
                                 if (row.trigger.type === "IncomingDataTrigger") {
                                     var event = row.trigger.configuration.event;
                                     var parts = event[0].split("***");
-                                    triggerText +=  "<span style='margin-left:5px;font-weight: bold;'>" + parts[1] + "</span>";
+                                    triggerText += "<span style='margin-left:5px;font-weight: bold;'>" + parts[1] + "</span>";
                                 }
                                 if (row.trigger.type === "InternalEventTrigger") {
-                                    var event = row.trigger.configuration.eventType;
+                                    event = row.trigger.configuration.eventType;
                                     triggerText += "<span style='margin-left:5px;font-weight: bold;'>" + event + "</span>";
                                 }
-                            }catch(e) {
-                                console.log(e);
+                            }
+                            catch (e) {
+                                //silent catch
                             }
 
                             var effectList = "";
                             row.effects.forEach(function(effect) {
                                 if (effect.type === "EmailEffect") {
-                                   effectList +=  '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div style="width:90%;text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">E-mail:' + "<span style='margin-left:5px;font-weight: bold;'>" + effect.configuration.address + '</span></div></div>';
+                                    effectList += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div style="width:90%;text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">E-mail:' + "<span style='margin-left:5px;font-weight: bold;'>" + effect.configuration.address + '</span></div></div>';
                                 }
                                 if (effect.type === "HTTPEffect") {
-                                    effectList +=  '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div style="width:90%;text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">URL:' + "<span style='margin-left:5px;font-weight: bold;'>" + effect.configuration.url + '</span></div></div>';
+                                    effectList += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div style="width:90%;text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">URL:' + "<span style='margin-left:5px;font-weight: bold;'>" + effect.configuration.url + '</span></div></div>';
                                 }
                             });
-                            input = '<div style="color:#909090;text-transform:uppercase;">' + jQuery.i18n.map["hooks.trigger"] + '</div>';
+                            var input = '<div style="color:#909090;text-transform:uppercase;">' + jQuery.i18n.map["hooks.trigger"] + '</div>';
                             input += '<div class="text" style="font-size:11px;color:#444444;">' + triggerText + '</div>';
                             input += '<div style="margin-top:12px; color:#909090;text-transform:uppercase;">' + jQuery.i18n.map["hooks.effects"] + '</div>';
-                            input += '<div style="margin:5px 0 0 2px;">'
+                            input += '<div style="margin:5px 0 0 2px;">';
                             input += effectList;
                             //input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
-                           // input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
+                            // input += '<div class="table-effect-node"><div class="line-dot"></div><div class="dot"></div><div>E-mail: abc.com</div></div>';
                             input += '</div>';
 
                             return input;
@@ -179,8 +182,8 @@ window.HooksView = countlyView.extend({
                                 return "<div>" + row.lastTriggerTimestampString + "</div>";
                             }
                             return row.lastTriggerTimestamp;
-                        }catch(e) {
-                            console.log(e);
+                        }
+                        catch (e) {
                         }
                     },
                     "sType": "string",
@@ -192,19 +195,18 @@ window.HooksView = countlyView.extend({
         };
         if (isAdmin) {
             dataTableDefine.aoColumns.push({
-                "mData": '',
                 "mData": function(row, type) {
                     try {
                         if (type === "display") {
-                            var created_at_string = ""
+                            var created_at_string = "";
                             if (row.created_at) {
-                                created_at_string = moment(row.created_at).fromNow(); 
+                                created_at_string = moment(row.created_at).fromNow();
                             }
-                            return "<div>" + row.createdByUser + "</div> <div style='color:#aaaaaa;margin-top:4px;'>"+ created_at_string + "</div>";
+                            return "<div>" + row.createdByUser + "</div> <div style='color:#aaaaaa;margin-top:4px;'>" + created_at_string + "</div>";
                         }
                         return row.createdByUser;
-                    }catch(e) {
-                        console.log(e);
+                    }
+                    catch (e) {
                     }
                 },
                 "sType": "string",
@@ -228,8 +230,9 @@ window.HooksView = countlyView.extend({
             this.dtable = $('#hooks-table').dataTable($.extend({}, $.fn.dataTable.defaults, dataTableDefine));
             this.dtable.stickyTableHeaders();
             this.dtable.fnSort([[0, 'asc']]);
-        } catch (e) {
-        };
+        }
+        catch (e) {
+        }
         $(window).click(function() {
             $(".options-item").find(".edit").next(".edit-menu").fadeOut();
         });
