@@ -26,7 +26,7 @@ plugins.register("/i", async function(ob) {
         }
 
         // get app docs for ob.app.consolidateApps
-        const desinationApps = await common.db._native.collection('apps').find({
+        const desinationApps = await common.db.collection('apps').find({
             _id: {$in: consolidateDestinations.map((id) => common.db.ObjectID(id))}
         }).toArray();
 
@@ -100,19 +100,19 @@ plugins.register('/i/apps/update/plugins/consolidate', async function({app, conf
             .concat(initialSourceApps.filter(x => !addedSourceApps.includes(x)));
 
         // unset removed apps
-        await common.db._native.collection('apps').updateMany(
+        await common.db.collection('apps').updateMany(
             {_id: {$in: removedSourceApps.map(id => common.db.ObjectID(id))}},
             {$pull: { 'plugins.consolidate': app._id + ""}}
         );
 
         // set added apps
-        await common.db._native.collection('apps').updateMany(
+        await common.db.collection('apps').updateMany(
             {_id: {$in: addedSourceApps.map(id => common.db.ObjectID(id))}},
             {$addToSet: {'plugins.consolidate': app._id + ""}}
         );
 
         // get all updated app documents
-        const apps = await common.db._native.collection('apps').find(
+        const apps = await common.db.collection('apps').find(
             {_id: {$in: [...addedSourceApps, ...removedSourceApps].map(id => common.db.ObjectID(id)) }}
         ).toArray();
 
