@@ -24,6 +24,9 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
         } else {
             data = obj;
         }
+        if(typeof httpMethod === 'get') {
+            return encodeURIComponent(data);
+        }
         return data;
     }
     
@@ -33,7 +36,7 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
 
         const props = path.split('.');
         let obj = data;
-        if (props.length === 1 && props[0] === 'payload') {
+        if (props.length === 1 && props[0] === 'payload_json') {
             return parseData(obj);
         }
         

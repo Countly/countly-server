@@ -16,16 +16,10 @@ class HTTPEffect {
         // const params = {}
         switch (method) {
         case 'get':
-            let queryJSON= {};
-            try {
-                queryJSON = JSON.parse(parsedRequestData);
-            } 
-            catch (e) {
-                console.log('http efffect parse get data err:', e);
-            }
-            return request.get({uri: parsedURL, qs: queryJSON, timeout: this._timeout}, function(e, r, body) {
+            return request.get({uri: parsedURL+"?"+parsedRequestData, timeout: this._timeout}, function(e, r, body) {
                 console.log(e, body, "[httpeffects]");
             });
+            break;    
         case 'post':
             //support post formData
             let parsedJSON = {};
@@ -44,6 +38,7 @@ class HTTPEffect {
             function(e, r, body) {
                 console.log(e, body, "[httpeffects]");
             });
+            break;
         default:
             return;
         }
