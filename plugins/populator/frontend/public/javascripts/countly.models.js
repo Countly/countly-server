@@ -40,7 +40,7 @@
         _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.slideme.sam.manager", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.nokia.payment.iapenabler", "com.qihoo.appstore", "cn.goapk.market", "com.wandoujia.phoenix2", "com.hiapk.marketpho", "com.hiapk.marketpad", "com.dragon.android.pandaspace", "me.onemobile.android", "com.aspire.mm", "com.xiaomi.market", "com.miui.supermarket", "com.baidu.appsearch", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "cm.aptoide.pt", "com.nduoa.nmarket", "com.rim.marketintent", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.keenhi.mid.kitservice", "com.yingyonghui.market", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "com.appslib.vending", "com.mappn.gfan", "com.diguayouxi", "um.market.android", "com.huawei.appmarket", "com.oppo.market", "com.taobao.appcenter"],
         _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
     };
-    var widgetList = [], npsWidgetList = [], surveyWidgetList = [];
+    var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
     var viewSegments = {
         name: ["Login", "Home", "Dashboard", "Main View", "Detail View Level 1", "Detail View Level 2", "Profile", "Settings", "About", "Privacy Policy", "Terms and Conditions"],
         visit: [1],
@@ -614,8 +614,8 @@
             event.segmentation.rating = getRandomInt(1, 5);
             event.segmentation.app_version = this.metrics._app_version;
             event.segmentation.platform = this.metrics._os;
-            if (widgetList.length) {
-                event.segmentation.widget_id = widgetList[getRandomInt(0, widgetList.length - 1)]._id;
+            if (ratingWidgetList.length) {
+                event.segmentation.widget_id = ratingWidgetList[getRandomInt(0, ratingWidgetList.length - 1)]._id;
             }
             return event;
         };
@@ -665,8 +665,9 @@
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
             event.segmentation.answered = "true";
-            if (surveyWidgetList.length) {
-                event.segmentation.widget_id = surveyWidgetList[getRandomInt(0, surveyWidgetList.length - 1)]._id;
+            var keys = Object.keys(surveyWidgetList);
+            if (keys.length) {
+                event.segmentation.widget_id = keys[getRandomInt(0, keys.length - 1)]._id;
             }
             return event;
         };
@@ -1005,29 +1006,237 @@
     }
 
     /**
+     *  Create NPS popup
+     *  @param {string} name - NPS Widget name
+     *  @param {string} followUpType - type of follow up question
+     *  @param {string} mainQuestion - main question
+     *  @param {string} followUpPromoter - follow up question for promoter
+     *  @param {string} followUpPassive - follow up question for passive
+     *  @param {string} followUpDetractor - follow up question for detractor
+     *  @param {string} followUpAll - follow up question for all
+     *  @param {string} thanks - thank you text
+     *  @param {string} style - type of displaying widget (full or outline)
+     *  @param {string} show - show until specific action from user
+     *  @param {string} color - color theme
+     *  @param {function} callback - callback method
+     *  @return {function} returns ajax get request
+     */
+    function createNPSWidget(name, followUpType, mainQuestion, followUpPromoter, followUpPassive, followUpDetractor, followUpAll, thanks, style, show, color, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/surveys/nps/create",
+            data: {
+                status: true,
+                name: name,
+                followUpType: followUpType || "score",
+                msg: JSON.stringify({
+                    mainQuestion: mainQuestion,
+                    followUpPromoter: followUpPromoter,
+                    followUpPassive: followUpPassive,
+                    followUpDetractor: followUpDetractor,
+                    followUpAll: followUpAll,
+                    thanks: thanks
+                }),
+                appearance: JSON.stringify({
+                    style: style || "",
+                    show: show || "",
+                    color: color || ""
+                }),
+                targeting: null,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                populator: true
+            },
+            success: function(json, textStatus, xhr) {
+                if (json && json.result) {
+                    var id = json.result.split(" ");
+                    npsWidgetList.push(id[2]);
+                }
+                callback(json, textStatus, xhr);
+            },
+            error: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            }
+        });
+    }
+
+    /**
+     *  Create survey popup
+     *  @param {string} name - widget name
+     *  @param {array} questions - array with question objects
+     *  @param {string} thanks - thank you message
+     *  @param {string} position - survey position
+     *  @param {string} show - show until specific action from user
+     *  @param {string} color - color theme
+     *  @param {string} logo - link to logo
+     *  @param {string} exitPolicy - what to count as exit
+     *  @param {function} callback - callback method
+     *  @return {function} returns ajax get request
+     */
+    function createSurveyWidget(name, questions, thanks, position, show, color, logo, exitPolicy, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/surveys/survey/create",
+            data: {
+                status: true,
+                name: name,
+                questions: JSON.stringify(questions),
+                msg: JSON.stringify({
+                    thanks: thanks
+                }),
+                appearance: JSON.stringify({
+                    position: position,
+                    show: show,
+                    color: color,
+                    logo: logo
+                }),
+                targeting: null,
+                exitPolicy: exitPolicy || "onAbandon",
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                populator: true
+            },
+            success: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            },
+            error: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            }
+        });
+    }
+
+    /**
      * Generate feedback popups three times
-     * @param {callback} callback - callback method
+     * @param {funciton} done - callback method
      **/
-    function generateWidgets(callback) {
-        createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, function() {
-            createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
-                createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
-                    $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o/feedback/widgets",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID
-                        },
-                        success: function(json) {
-                            widgetList = json;
-                            callback();
-                        },
-                        error: function() {
-                            callback();
-                        }
+    function generateWidgets(done) {
+
+        /**
+         *  Create rating widgets
+         *  @param {function} callback - callback method
+         */
+        function generateRatingWidgets(callback) {
+            createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, function() {
+                createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
+                    createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o/feedback/widgets",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID
+                            },
+                            success: function(json) {
+                                ratingWidgetList = json;
+                                callback();
+                            },
+                            error: function() {
+                                callback();
+                            }
+                        });
                     });
                 });
             });
+        }
+
+        /**
+         *  Create NPS widgets
+         *  @param {function} callback - callback method
+         */
+        function generateNPSWidgets(callback) {
+            createNPSWidget("Separate per response type", "score", "How likely are you to recommend our product to a friend or colleague?", "We're glad you like us. What do you like the most about our product?", "Thank you for your feedback. How can we improve your experience?", "We're sorry to hear it. What would you like us to improve on?", "", "Thank you for your feedback", "full", "uclose", "#ddd", function() {
+                createNPSWidget("One response for all", "one", "How likely are you to recommend our product to a friend or colleague?", "", "", "", "What can/should we do to WOW you?", "Thank you for your feedback", "full", "uclose", "#ddd", callback);
+            });
+        }
+
+        /**
+         *  Create survey widgets
+         *  @param {function} callback - callback method
+         */
+        function generateSurveyWidgets(callback) {
+            createSurveyWidget("Product Feedback example", [
+                {
+                    "type": "rating",
+                    "question": "How satisfied are you with the stability of the app?",
+                    "required": true
+                },
+                {
+                    "type": "multi",
+                    "question": "Which feature of the app are most important to you?",
+                    "choices": ["Ready-to-use templates", "Image editor", "Download in multiple formats"],
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What features would you like to add to the app?",
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                createSurveyWidget("User Experience example", [
+                    {
+                        "type": "rating",
+                        "question": "How satisfied are you with the look and feel of the app?",
+                        "required": true
+                    },
+                    {
+                        "type": "text",
+                        "question": "What confused/annoyed you about the app?",
+                        "required": true
+                    },
+                    {
+                        "type": "dropdown",
+                        "question": "Which feature did you like most on new version?",
+                        "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
+                        "required": true
+                    }
+                ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                    createSurveyWidget("Customer support example", [
+                        {
+                            "type": "radio",
+                            "question": "Were you able to find the information you were looking for?",
+                            "choices": ["Yes", "No"],
+                            "required": true
+                        },
+                        {
+                            "type": "text",
+                            "question": "What type of support communication methods do you prefer?",
+                            "required": true
+                        },
+                        {
+                            "type": "rating",
+                            "question": "How would you rate our service on a scale of 0-10?",
+                            "required": true
+                        }
+                    ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID
+                            },
+                            success: function(json) {
+                                if (json && json.aaData) {
+                                    for (var i = 0; i < json.aaData.length; i++) {
+                                        surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
+                                    }
+                                }
+                                callback();
+                            },
+                            error: function() {
+                                callback();
+                            }
+                        });
+                    });
+                });
+            });
+        }
+
+        generateRatingWidgets(function() {
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1) {
+                generateNPSWidgets(function() {
+                    generateSurveyWidgets(done);
+                });
+            }
+            else {
+                done();
+            }
         });
     }
 
