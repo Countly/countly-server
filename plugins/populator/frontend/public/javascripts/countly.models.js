@@ -40,7 +40,7 @@
         _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.slideme.sam.manager", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.nokia.payment.iapenabler", "com.qihoo.appstore", "cn.goapk.market", "com.wandoujia.phoenix2", "com.hiapk.marketpho", "com.hiapk.marketpad", "com.dragon.android.pandaspace", "me.onemobile.android", "com.aspire.mm", "com.xiaomi.market", "com.miui.supermarket", "com.baidu.appsearch", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "cm.aptoide.pt", "com.nduoa.nmarket", "com.rim.marketintent", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.keenhi.mid.kitservice", "com.yingyonghui.market", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "com.appslib.vending", "com.mappn.gfan", "com.diguayouxi", "um.market.android", "com.huawei.appmarket", "com.oppo.market", "com.taobao.appcenter"],
         _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
     };
-    var widgetList = [];
+    var widgetList = [], npsWidgetList = [], surveyWidgetList = [];
     var viewSegments = {
         name: ["Login", "Home", "Dashboard", "Main View", "Detail View Level 1", "Detail View Level 2", "Profile", "Settings", "About", "Privacy Policy", "Terms and Conditions"],
         visit: [1],
@@ -585,12 +585,17 @@
         };
 
         this.getFeedbackEvents = function() {
-            var events = this.getFeedbackEvent();
+            var events = [];
+            events.push(this.getRatingEvent());
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1) {
+                events.push(this.getNPSEvent());
+                events.push(this.getSurveyEvent());
+            }
 
             return events;
         };
 
-        this.getFeedbackEvent = function() {
+        this.getRatingEvent = function() {
             this.stats.e++;
 
             var event = {
@@ -612,7 +617,58 @@
             if (widgetList.length) {
                 event.segmentation.widget_id = widgetList[getRandomInt(0, widgetList.length - 1)]._id;
             }
-            return [event];
+            return event;
+        };
+
+        this.getNPSEvent = function() {
+            this.stats.e++;
+
+            var event = {
+                "key": "[CLY]_nps",
+                "count": 1,
+                "timestamp": this.ts,
+                "hour": getRandomInt(0, 23),
+                "dow": getRandomInt(1, 6),
+                "test": 1,
+            };
+
+            this.ts += 1000;
+            event.segmentation = {};
+            event.segmentation.comment = chance.sentence({words: 7});
+            event.segmentation.rating = getRandomInt(0, 10);
+            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.platform = this.metrics._os;
+            event.segmentation.shown = 1;
+            event.segmentation.answered = "true";
+            if (npsWidgetList.length) {
+                event.segmentation.widget_id = npsWidgetList[getRandomInt(0, npsWidgetList.length - 1)]._id;
+            }
+            return event;
+        };
+
+        this.getSurveyEvent = function() {
+            this.stats.e++;
+
+            var event = {
+                "key": "[CLY]_survey",
+                "count": 1,
+                "timestamp": this.ts,
+                "hour": getRandomInt(0, 23),
+                "dow": getRandomInt(1, 6),
+                "test": 1,
+            };
+
+            this.ts += 1000;
+            event.segmentation = {};
+            event.segmentation.comment = chance.sentence({words: 7});
+            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.platform = this.metrics._os;
+            event.segmentation.shown = 1;
+            event.segmentation.answered = "true";
+            if (surveyWidgetList.length) {
+                event.segmentation.widget_id = surveyWidgetList[getRandomInt(0, surveyWidgetList.length - 1)]._id;
+            }
+            return event;
         };
 
         this.getHeatmapEvents = function() {

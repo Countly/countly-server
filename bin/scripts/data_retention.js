@@ -16,6 +16,8 @@ collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_view" 
 collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + APP_ID).digest('hex'));
 collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_push_action" + APP_ID).digest('hex'));
 collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + APP_ID).digest('hex'));
+collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_nps" + APP_ID).digest('hex'));
+collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_survey" + APP_ID).digest('hex'));
 db.collection("events").findOne({'_id': db.ObjectID(APP_ID)}, {list: 1}, function(err, eventData) {
     if (eventData && eventData.list) {
         for (var i = 0; i < eventData.list.length; i++) {

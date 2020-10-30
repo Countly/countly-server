@@ -84,7 +84,7 @@ var pluginOb = {},
                 if (currEvent.key === "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name && (!currEvent.segmentation.segment && !currEvent.segmentation.platform)) {
                     currEvent.segmentation.segment = data.os;
                 }
-                else if (currEvent.key === "[CLY]_star_rating" && currEvent.segmentation && !currEvent.segmentation.platform) {
+                else if ((currEvent.key === "[CLY]_star_rating" || currEvent.key === "[CLY]_nps" || currEvent.key === "[CLY]_survey") && currEvent.segmentation && !currEvent.segmentation.platform) {
                     currEvent.segmentation.platform = data.os;
                 }
                 return currEvent;
