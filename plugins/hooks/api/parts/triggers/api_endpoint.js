@@ -1,9 +1,15 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
-const process = require('process');
 const utils = require('../../utils.js');
-
+/**
+ * API endpoint  trigger
+ */
 class APIEndPointTrigger {
+    /**
+     * Init variables
+     * @param {object} options - config options
+     * @param {object} options.pipeline -pipeline instance inited by Hooks class
+     */
     constructor(options) {
         this._rules = [];
         this.pipeline = () => {};
@@ -13,6 +19,10 @@ class APIEndPointTrigger {
         this.register();
     }
 
+    /**
+     * syncRules with hook module periodically, filter related hooks
+     * @param {Array} rules - hook record objects array
+     */
     syncRules(rules) {
         if (rules instanceof Array) {
             const newRules = rules.filter(r => {
@@ -22,6 +32,10 @@ class APIEndPointTrigger {
         }
     }
 
+    /**
+     * process pipeline feed, pick out matched record with rule
+     * @param {object} ob - trggered out from pipeline
+     */
     async process(ob) {
         const {params} = ob;
         const {paths} = params;
@@ -30,7 +44,6 @@ class APIEndPointTrigger {
             return true;
         }
         const {qstring} = params || {};
-        console.log('process,' + this._rules.length + ">>>" + process.pid + "." + process.ppid);
 
         this._rules.forEach(rule => {
             // match
@@ -39,7 +52,7 @@ class APIEndPointTrigger {
                     utils.updateRuleTriggerTime(rule._id);
                 }
                 catch (err) {
-                    console.log(err, "??#3");
+                    console.log(err, "[APIEndPointTrigger]");
                 }
                 // send to pipeline
                 rule.effects.forEach(e => {
@@ -53,14 +66,15 @@ class APIEndPointTrigger {
         });
     }
 
-    register(option) {
-        console.log("register api hookd222", process.pid + "." + process.ppid);
+    /**
+     * register trigger processor
+     */
+    register() {
         plugins.register("/o/hooks", (ob) => {
             const {params} = ob;
             this.process(ob);
-            common.returnOutput(params, "ok!" + 'pid:' + process.pid + "." + process.ppid);
+            common.returnOutput(params, "ok");
             return true;
-            //process sdk request here
         });
     }
 }

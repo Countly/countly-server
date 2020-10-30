@@ -1,8 +1,15 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
-
+/**
+ * Internal event trigger
+ */
 class InternalEventTrigger {
+    /**
+     * Init variables
+     * @param {object} options - config options
+     * @param {object} options.pipeline -pipeline instance inited by Hooks class 
+     */
     constructor(options) {
         this._rules = [];
         this.pipeline = () => {};
@@ -12,6 +19,10 @@ class InternalEventTrigger {
         this.register();
     }
 
+    /**
+     * syncRules with hook module periodically, filter related hooks
+     * @param {Array} rules - hook record objects array
+     */
     syncRules(rules) {
         if (rules instanceof Array) {
             const newRules = rules.filter(r => {
@@ -21,6 +32,11 @@ class InternalEventTrigger {
         }
     }
 
+    /**
+     * process pipeline feed, pick out matched record with rule
+     * @param {string} eventType - internal event types
+     * @param {object} ob - trggered out from pipeline
+     */
     async process(eventType, ob) {
         for (let i = 0; i < this._rules.length; i++) {
             const rule = this._rules[i];
@@ -41,7 +57,7 @@ class InternalEventTrigger {
                                     utils.updateRuleTriggerTime(rule._id);
                                 }
                                 catch (err) {
-                                    console.log(err, "??#3");
+                                    console.log(err, "[InternalEventTrigger]");
                                 }
                                 rule.effects.forEach(e => {
                                     result.forEach((u) => {
@@ -65,7 +81,7 @@ class InternalEventTrigger {
                             utils.updateRuleTriggerTime(rule._id);
                         }
                         catch (err) {
-                            console.log(err, "??#3");
+                            console.log(err, "[InternalEventTrigger]");
                         }
                         rule.effects.forEach(e => {
                             this.pipeline({
@@ -75,7 +91,6 @@ class InternalEventTrigger {
                             });
                         });
                     }
-                    console.log(ob, "userprofile!333332");
                     break;
                 case "/hooks/trigger":
                     const {params, rule: triggeredRule} = ob;
@@ -84,7 +99,7 @@ class InternalEventTrigger {
                             utils.updateRuleTriggerTime(rule._id);
                         }
                         catch (err) {
-                            console.log(err, "??#3");
+                            console.log(err, "[InternalEventTrigger]");
                         }
                         rule.effects.forEach(e => {
                             this.pipeline({
@@ -101,10 +116,12 @@ class InternalEventTrigger {
         }
     }
 
-    register(option) {
+    /**
+     * register trigger processor
+     */
+    register() {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
-                console.log(ob, e, "[InternalEventTrigger]");
                 this.process(e, ob);
             });
         });

@@ -17,19 +17,20 @@ utils.updateRuleTriggerTime = function updateRuleTriggerTime(hookID) {
 
 
 utils.parseStringTemplate = function(str, data, httpMethod) {
-    const parseData = function (obj) {
-        let data = "";
+    const parseData = function(obj) {
+        let d = "";
         if (typeof obj === 'object') {
-            data = JSON.stringify(obj);
-        } else {
-            data = obj;
+            d = JSON.stringify(obj);
         }
-        if(typeof httpMethod === 'get') {
-            return encodeURIComponent(data);
+        else {
+            d = obj;
         }
-        return data;
-    }
-    
+        if (httpMethod === 'get') {
+            return encodeURIComponent(d);
+        }
+        return d;
+    };
+
     return str.replace(/\{\{(.*?)}\}/g, (sub, path) => {
         path = path.trim();
         path = path.replace(/\[(\w+)\]/g, '.$1');
@@ -39,9 +40,9 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
         if (props.length === 1 && props[0] === 'payload_json') {
             return parseData(obj);
         }
-        
+
         if (props.length === 1 && props[0] === 'payload_string') {
-            jsonStr = parseData(obj);
+            let jsonStr = parseData(obj);
             return jsonStr.replace(/"|\\"/g, '\\"');
         }
         props.forEach(prop => {

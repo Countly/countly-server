@@ -6,7 +6,15 @@ const log = common.log('hooks:incoming_data_trigger');
 
 
 
+/**
+ * Incoming data from sdk event trigger
+ */
 class IncomingDataTrigger {
+    /**
+     * Init variables
+     * @param {object} options - config options
+     * @param {object} options.pipeline -pipeline instance inited by Hooks class
+     */
     constructor(options) {
         this._rules = [];
         this.pipeline = () => {};
@@ -16,6 +24,10 @@ class IncomingDataTrigger {
         this.register();
     }
 
+    /**
+     * syncRules with hook module periodically, filter related hooks
+     * @param {Array} rules - hook record objects array
+     */
     syncRules(rules) {
         if (rules instanceof Array) {
             const newRules = rules.filter(r => {
@@ -35,20 +47,26 @@ class IncomingDataTrigger {
         }
     }
 
+    /**
+     * process pipeline feed, pick out matched record with rule
+     * @param {string} eventType - internal event types
+     * @param {object} ob - trggered out from pipeline
+     */
     async process(eventType, ob) {
         for (let i = 0; i < this._rules.length; i++) {
             const rule = this._rules[i];
-            console.log(rule, "incomming3123");
-            console.log(ob, "inccoming@332132");
             // match
             if (rule.apps[0] === ob.params.app_id.toString()) {
-                console.log("get app sdk dispatch223");
-                const matched = await this.matchFilter(ob.params, rule);
+                await this.matchFilter(ob.params, rule);
             }
         }
     }
 
-    register(option) {
+
+    /**
+     * register trigger processor
+     */
+    register() {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
                 console.log(ob, e, "[IncominngDataTrigger]");
@@ -57,6 +75,11 @@ class IncomingDataTrigger {
         });
     }
 
+    /**
+     * filter function  like block plugin
+     * @param {object} params - common params obj from dispatcher
+     * @param {object} rule - rule object for testing
+     */
     async matchFilter(params, rule) {
         const user = JSON.parse(JSON.stringify(params.app_user)) || {};
         let {filter, event} = rule.trigger.configuration;
