@@ -102,13 +102,13 @@ fetch.fetchEventData = function(collection, params) {
 fetch.fetchEventGroupById = function(params) {
     const COLLECTION_NAME = "event_groups";
     const {qstring: {_id}} = params;
-    common.db.collection(COLLECTION_NAME).findOne({_id},function(error, result) {
+    common.db.collection(COLLECTION_NAME).findOne({_id}, function(error, result) {
         if (error || !result) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
         }
         common.returnOutput(params, result);
-    })
+    });
 };
 
 /**
@@ -119,7 +119,7 @@ fetch.fetchEventGroupById = function(params) {
 fetch.fetchEventGroups = function(params) {
     const COLLECTION_NAME = "event_groups";
     const {qstring: {app_id}} = params;
-    common.db.collection(COLLECTION_NAME).find({app_id}).toArray(function(error, result) {
+    common.db.collection(COLLECTION_NAME).find({app_id}).sort({'order': 1}).toArray(function(error, result) {
         if (error || !result) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;

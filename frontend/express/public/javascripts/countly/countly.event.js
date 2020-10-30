@@ -122,13 +122,23 @@
         return _eventGroups;
     };
 
-    countlyEvent.getEventGroupsTable = function(status) {
-        if (!!status === status) {
-            return _eventGroupsTable.filter(function(x) {
-                return x.status === status;
-            });
-        }
+    countlyEvent.getEventGroupsTable = function() {
         return _eventGroupsTable;
+    };
+
+    countlyEvent.refreshEventGroupsTable = function() {
+        return $.when($.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "get_event_groups"
+            },
+            dataType: "json",
+            success: function(groups_json) {
+                return groups_json;
+            }
+        }));
     };
 
     countlyEvent.getOverviewList = function() {
@@ -219,14 +229,36 @@
         });
     };
 
-    countlyEvent.updateEventGroup = function(data, callback) {
+    countlyEvent.deleteEventGroup = function(data, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/event_groups/delete",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "args": data,
+            },
+            dataType: "json",
+            success: function() {
+                callback(true);
+            },
+            error: function() {
+                callback(false);
+            }
+        });
+    };
+
+    countlyEvent.updateEventGroup = function(data, order, update_status, status, callback) {
         $.ajax({
             type: "POST",
             url: countlyCommon.API_PARTS.data.w + "/event_groups/update",
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                "args": data
+                "args": data,
+                "event_order": order,
+                "update_status": update_status,
+                "status": status
             },
+            dataType: "json",
             success: function() {
                 callback(true);
             },
@@ -381,6 +413,7 @@
                             dataType: "json",
                             success: function(groups_json) {
                                 _activeEvents = json;
+                                _eventGroupsTable = groups_json;
                                 for (var group in groups_json) {
                                     _eventGroups[groups_json[group]._id] = {
                                         label: groups_json[group].name,
@@ -436,6 +469,7 @@
     countlyEvent.reset = function() {
         _activeEventDb = {};
         _activeEvents = {};
+        _eventGroupsTable = {};
         _activeEvent = "";
         _activeSegmentation = "";
         _activeSegmentations = [];

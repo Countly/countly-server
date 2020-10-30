@@ -1227,14 +1227,14 @@
                                 <div style="overflow:auto">
                                     <div class="title small" data-localize="events.blueprint-event-group-title"></div>
                                 </div>
-                                <div class="cly-select float" id="events-general-filter">
+                                <div class="cly-select float" id="event-group-general-filter">
                                     <div class="select-inner">
                                         <div class="text-container">
                                             <div class="text"><span data-localize="events.blueprint-event-group-show.all"></span></div>
                                         </div>
                                         <div class="right combo"></div>
                                     </div>
-                                    <div id="event-filter-types" class="select-items square">
+                                    <div id="event-group-filter-types" class="select-items square">
                                         <div data-value="all" class="segmentation-option item"><span data-localize="events.blueprint-event-group-show.all"></span></div>
                                         <div data-value="visible" class="segmentation-option item"><span data-localize="events.blueprint-event-group-show.visible"></span></div>
                                         <div data-value="hidden" class="segmentation-option item"><span data-localize="events.blueprint-event-group-show.hidden"></span></div>
@@ -1243,8 +1243,8 @@
                             </div>
                             <div class="right">
                                 <div class="icon-button green" style="display:block !important" id="events-apply-order" data-localize="events.blueprint-event-group-new"></div>
-                                <div class="icon-button green" id="events-apply-order" data-localize="plugins.apply"></div>
-                                <div class="cly-select green disabled" id="events-general-action" style="margin-top:7px;">
+                                <div class="icon-button green" style="margin-top: 7px;margin-right: 10px;" id="event-groups-apply-order" data-localize="plugins.apply"></div>
+                                <div class="cly-select green disabled" id="event-groups-general-action" style="margin-top:7px;">
                                     <div class="select-inner">
                                         <div class="text-container">
                                             <div class="text" data-localize="events.general.action.perform-action"></div>
@@ -1260,7 +1260,7 @@
                             </div>
                         </div>
                         <div class="" id="event-groups-settings-table">
-                            <div class="cly-button-menu event-settings-menu" tabindex="1">
+                            <div class="cly-button-menu event-settings-menu event-groups-settings-menu" tabindex="1">
                                 <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
                                 <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>

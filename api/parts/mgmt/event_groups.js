@@ -62,14 +62,47 @@ const create = (params) => {
  * @param {Object} params - 
  */
 const update = (params) => {
-    params.qstring.args = JSON.parse(params.qstring.args);
-    common.db.collection(COLLECTION_NAME).update({'_id': params.qstring.args._id}, {$set: params.qstring.args}, (error) =>{
-        if (error) {
-            common.returnMessage(params, 500, `error: ${error}`);
-            return false;
+    if (params.qstring.args) {
+        params.qstring.args = JSON.parse(params.qstring.args);
+        common.db.collection(COLLECTION_NAME).update({'_id': params.qstring.args._id}, {$set: params.qstring.args}, (error) =>{
+            if (error) {
+                common.returnMessage(params, 500, `error: ${error}`);
+                return false;
+            }
+            common.returnMessage(params, 200, 'Success');
+        });
+    }
+    if (params.qstring.event_order) {
+        params.qstring.event_order = JSON.parse(params.qstring.event_order);
+        var bulkArray = [];
+        params.qstring.event_order.forEach(function(id, index) {
+            bulkArray.push({
+                'updateOne': {
+                    'filter': { '_id': id },
+                    'update': { '$set': { 'order': index } }
+                }
+            });
+        });
+        common.db.collection(COLLECTION_NAME).bulkWrite(bulkArray, function(error) {
+            if (error) {
+                common.returnMessage(params, 500, `error: ${error}`);
+                return false;
+            }
+            common.returnMessage(params, 200, 'Success');
+        });
+    }
+    if (params.qstring.update_status) {
+        params.qstring.update_status = JSON.parse(params.qstring.update_status);
+        params.qstring.status = JSON.parse(params.qstring.status);
+        common.db.collection(COLLECTION_NAME).update({ _id: { $in: params.qstring.update_status } }, { $set: { status: params.qstring.status } }, {multi: true}, function(error) {
+            if (error) {
+                common.returnMessage(params, 500, `error: ${error}`);
+                return false;
+            }
+            common.returnMessage(params, 200, 'Success');
         }
-        common.returnMessage(params, 200, 'Success');
-    });
+        );
+    }
 };
 
 /**
@@ -77,7 +110,8 @@ const update = (params) => {
  * @param {Object} params - 
  */
 const remove = async(params) => {
-    common.db.remove({_id: params.args._id}, (error, /*result*/) =>{
+    params.qstring.args = JSON.parse(params.qstring.args);
+    common.db.collection(COLLECTION_NAME).remove({_id: { $in: params.qstring.args }}, (error, /*result*/) =>{
         if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
