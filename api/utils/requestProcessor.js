@@ -2544,6 +2544,12 @@ function processUser(params, initiator, done, try_times) {
         if (!params.app_user.uid) {
             //first time we see this user, we need to id him with uid
             countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
+                plugins.dispatch("/i/app_users/create", {
+                    app_id: params.app_id,
+                    user: {uid: uid, _id: params.app_user._id },
+                    res: {uid: uid, _id: params.app_user._id },
+                    params: params
+                });
                 if (uid) {
                     params.app_user.uid = uid;
                     if (!params.app_user._id) {
