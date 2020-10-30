@@ -1114,13 +1114,14 @@ var pluginManager = function pluginManager() {
         return str;
     };
 
-    this.connectToAllDatabases = async () => {
+    this.connectToAllDatabases = async() => {
         let dbs = ['countly', 'countly_out', 'countly_fs'];
         if (this.isPluginEnabled('drill')) {
             dbs.push('countly_drill');
         }
 
-        const databases = [dbCountly, dbOut, dbFs, dbDrill] = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        const databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
         let common = require('../api/utils/common');
         common.db = dbCountly;
