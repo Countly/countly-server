@@ -24,7 +24,7 @@
                     $("#filter-blocks").empty();
 
                     if (events.length === 1) {
-                        var currEvent = events[0].split("***")[1]
+                        var currEvent = events[0].split("***")[1];
                         $.when(countlySegmentation.initialize(currEvent)).then(function() {
                             $("#filter-definition").show();
                             self.adjustFilters();
@@ -37,7 +37,6 @@
                         $("#filter-definition").hide();
                     }
                 });
-
             },
             renderConfig: function(trigger) {
                 var self = this;
@@ -52,7 +51,6 @@
                         }
                     }
                 }, 500);
-                
             },
             getValidConfig: function() {
                 var self = this;

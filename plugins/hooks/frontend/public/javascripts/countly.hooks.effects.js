@@ -5,18 +5,88 @@
     var _hookEffects = {
         "EmailEffect": {
             name: jQuery.i18n.map["hooks.EmailEffect"],
-            init: function() {
+            init: function(dom) {
+                var self = this;
+                var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+                self.emailInput = $(dom).find('select.email-list-input').selectize({
+                    plugins: ['remove_button'],
+                    persist: false,
+                    maxItems: null,
+                    valueField: 'email',
+                    labelField: 'name',
+                    searchField: ['name', 'email'],
+                    options: [
+                        {email: countlyGlobal.member.email, name: ''},
+                    ],
+                    render: {
+                        item: function(item, escape) {
+                            return '<div>' +
+                                (item.name ? '<span class="name">' + escape(item.name) + '</span>' : '') +
+                                (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
+                            '</div>';
+                        },
+                        option: function(item, escape) {
+                            var label = item.name || item.email;
+                            var caption = item.name ? item.email : null;
+                            return '<div>' +
+                                '<span class="label">' + escape(label) + '</span>' +
+                                (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
+                            '</div>';
+                        }
+                    },
+                    createFilter: function(input) {
+                        var match, regex;
+                        // email@address.com
+                        regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+                        match = input.match(regex);
+                        if (match) {
+                            return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
+                        }
+                        // name <email@address.com>
+                        /*eslint-disable */
+                        regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
+                        /*eslint-enable */
+                        match = input.match(regex);
+                        if (match) {
+                            return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
+                        }
+                        return false;
+                    },
+                    create: function(input) {
+                        if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                            return {email: input};
+                        }
+                        /*eslint-disable */
+                        var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                        /*eslint-enable */
+                        if (match) {
+                            return {
+                                email: match[2],
+                                name: $.trim(match[1])
+                            };
+                        }
+                        CountlyHelpers.alert('Invalid email address.', "red");
+                        return false;
+                    }
+                });
             },
             renderConfig: function(data, dom) {
                 var configuration =  data.configuration;
-                $(dom).find(".emaileffect-email-address").val(configuration.address);
+                var emailSelectorDom = this.emailInput[0];// $(dom).find("select.email-list-input");
+                for (var i = 0; i < configuration.address.length; i++) {
+                    emailSelectorDom.selectize.addOption({ "name": '', "email": configuration.address[i] });
+                }
+                emailSelectorDom.selectize.setValue(configuration.address, false);
             },
             getValidConfig: function(dom) {
-                var email = $(dom).find(".emaileffect-email-address").val();
-                if (!email) {
+                var emailList = [];
+                $(dom).find("select.email-list-input  :selected").each(function() {
+                    emailList.push($(this).val());
+                });
+                if(emailList.length === 0)  {
                     return null;
                 }
-                return {address: email}
+                return {address: emailList}
             }
         },
         "HTTPEffect": {

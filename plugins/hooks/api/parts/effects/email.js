@@ -7,14 +7,20 @@ class EmailEffect {
     run(options) {
         console.log(options);
         const {effect, params} = options;
-        var msg = {
-            to: effect.configuration.address,
-            //from: "countly hooks",
-            subject: "Countly hooks",
-            html: JSON.stringify(params),
-        };
-        console.log(msg);
-        mail.sendMail(msg);
+        let emailAddress = effect.configuration.address;
+        if (typeof emailAddress === "string") {
+            emailAddress = [emailAddress] //parse to array
+        }
+
+        emailAddress.forEach(address => {
+            var msg = {
+                to: address,
+                subject: "Countly hooks",
+                html: JSON.stringify(params),
+            };
+            console.log(msg);
+            mail.sendMail(msg);
+        })
     }
 }
 

@@ -101,7 +101,7 @@ window.HooksDrawer = function(HookView) {
                 app.localize($(".effects-block"));
                 $(".single-hook-effect-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                     $(e.currentTarget.parentElement.nextElementSibling).html($("#template-hook-effect-" + selected).html());
-                    (effects[selected]).init();
+                    (effects[selected]).init(e.currentTarget.parentElement.nextElementSibling);
                     self.drawer._applyChangeTrigger(self.drawer);
                     app.localize($(".effects-block"));
                 });
