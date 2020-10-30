@@ -5231,6 +5231,48 @@ window.EventsBlueprintView = countlyView.extend({
                     "sWidth": '100px',
                     "bSortable": false,
                     "bSearchable": false
+                },
+            ];
+
+            $('body').on('click', '.edit-event', function() {
+                $("#events-blueprint-drawer").addClass("open");
+                $('#eb-key-name').val($(this).data('event').key);
+                $('#eb-event-name').val($(this).data('event').name);
+                $('#eb-duration-name').val($(this).data('event').dur);
+                $('#eb-sum-name').val($(this).data('event').sum);
+                $('#eb-count-name').val($(this).data('event').count);
+                $('#eb-event-desc-input').val($(this).data('event').description);
+                var segments = [];
+                for (var i = 0; i < $(this).data('event').segments.length; i++) {
+                    segments.push({name: $(this).data('event').segments[i], value: $(this).data('event').segments[i]})
+                }
+                var omittedSegments = [];
+                for (var i = 0; i < $(this).data('event').omittedSegments.length; i++) {
+                    omittedSegments.push({name: $(this).data('event').omittedSegments[i], value: $(this).data('event').omittedSegments[i]})
+                }
+                $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
+                $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
+
+                if ($(this).data('event').is_visible) {
+                    $('#eb-event-visibility .on-off-switch input').attr('checked', 'checked');
+                    $('#eb-event-visibility > div.on-off-switch > span').html(jQuery.i18n.map["events.edit.event-visible"]);
+                }
+                else {
+                    $('#eb-event-visibility .on-off-switch input').removeAttr('checked');
+                    $('#eb-event-visibility > div.on-off-switch > span').html();
+                }
+
+                $('#eb-event-desc-input').show();
+
+                if ($(this).data('event').description !== "") {
+                    $('#eb-description-checkbox').removeClass('fa-square-o');    
+                    $('#eb-description-checkbox').addClass('fa-check-square');
+                    $('#eb-event-desc-input').removeAttr('disabled');
+                }
+                else {
+                    $('#eb-description-checkbox').removeClass('fa-check-square');
+                    $('#eb-description-checkbox').addClass('fa-square-o');
+                    $('#eb-event-desc-input').attr('disabled','disabled');
                 }
             ];
 
@@ -5592,15 +5634,16 @@ window.EventsBlueprintView = countlyView.extend({
     },
     initEventDrawer: function() {
         var self = this;
+        $("#eb-event-desc-input").show();
         $("#eb-description-checkbox, #eb-description-section .label span").on("click", function() {
             var check = $("#eb-description-checkbox").hasClass("fa-check-square");
             if (check) {
                 $("#eb-description-checkbox").removeClass('fa-check-square').addClass('fa-square-o');
-                $("#eb-event-desc-input").hide();
+                $('#eb-event-desc-input').removeAttr('disabled');
             }
             else {
                 $("#eb-description-checkbox").removeClass('fa-square-o').addClass('fa-check-square');
-                $("#eb-event-desc-input").show();
+                $('#eb-event-desc-input').attr('disabled', 'disabled');
             }
 
         });
