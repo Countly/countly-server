@@ -3793,7 +3793,7 @@ p.error_message_div {
     background-color: #ffffff;
     visibility: hidden;
     cursor: pointer;
-    float: right;
+    margin-right: 15px;
   }
 
 #eb-event-desc-input {

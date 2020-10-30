@@ -4740,12 +4740,7 @@ window.EventsBlueprintView = countlyView.extend({
             },
             {
                 "mData": function(row) {
-                    return "<button class='edit-event' data-event-group-id=\"" + row._id + "\">" + jQuery.i18n.map["events.blueprint-edit"] + "</button>";
-                }
-            },
-            {
-                "mData": function() {
-                    return '<a class="cly-list-options"></a>';
+                    return "<div><button class='edit-event' data-event-group-id=" + row._id + ">" + jQuery.i18n.map["events.blueprint-edit"] + "</button><a class='cly-list-options'></a></div>";
                 },
                 "sType": "string",
                 "sTitle": "",
@@ -5211,12 +5206,7 @@ window.EventsBlueprintView = countlyView.extend({
                 },
                 {
                     "mData": function(row) {
-                        return "<button class='edit-event' data-event='" + JSON.stringify(row) + "'>Edit</button>";
-                    }
-                },
-                {
-                    "mData": function() {
-                        return '<a class="cly-list-options"></a>';
+                        return "<div><button class='edit-event' data-event='" + JSON.stringify(row) + "'>" + jQuery.i18n.map["events.blueprint-edit"] + "</button><a class='cly-list-options'></a></div>";
                     },
                     "sType": "string",
                     "sTitle": "",
@@ -5549,11 +5539,11 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#eb-event-desc-input').val($(this).data('event').description);
                 var segments = [];
                 for (var j = 0; j < $(this).data('event').segments.length; j++) {
-                    segments.push({name: $(this).data('event').segments[j], value: $(this).data('event').segments[j]})
+                    segments.push({name: $(this).data('event').segments[j], value: $(this).data('event').segments[j]});
                 }
                 var omittedSegments = [];
                 for (var k = 0; k < $(this).data('event').omittedSegments.length; k++) {
-                    omittedSegments.push({name: $(this).data('event').omittedSegments[k], value: $(this).data('event').omittedSegments[k]})
+                    omittedSegments.push({name: $(this).data('event').omittedSegments[k], value: $(this).data('event').omittedSegments[k]});
                 }
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
@@ -5570,14 +5560,14 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#eb-event-desc-input').show();
 
                 if ($(this).data('event').description !== "") {
-                    $('#eb-description-checkbox').removeClass('fa-square-o');    
+                    $('#eb-description-checkbox').removeClass('fa-square-o');
                     $('#eb-description-checkbox').addClass('fa-check-square');
                     $('#eb-event-desc-input').removeAttr('disabled');
                 }
                 else {
                     $('#eb-description-checkbox').removeClass('fa-check-square');
                     $('#eb-description-checkbox').addClass('fa-square-o');
-                    $('#eb-event-desc-input').attr('disabled','disabled');
+                    $('#eb-event-desc-input').attr('disabled', 'disabled');
                 }
             });
             self.initEventDrawer();
@@ -5614,9 +5604,7 @@ window.EventsBlueprintView = countlyView.extend({
             event_map[settings.key] = settings;
             var omitted_segments = {};
             omitted_segments[settings.key] = settings.omit_list;
-            console.log(omitted_segments[settings.key],self.activeEvent.omittedSegments)
             if (self.compare_arrays(omitted_segments[settings.key], self.activeEvent.omittedSegments) && omitted_segments[settings.key].length > 0) {
-                console.log("varr degisilik")
                 CountlyHelpers.confirm(jQuery.i18n.map["event.edit.omitt-warning"], "red", function(result) {
                     if (!result) {
                         return true;
@@ -5635,7 +5623,7 @@ window.EventsBlueprintView = countlyView.extend({
             }
             else {
                 countlyEvent.update_map(JSON.stringify(event_map), "", "", JSON.stringify(omitted_segments), function(result2) {
-                    if (result2=== true) {
+                    if (result2 === true) {
                         CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
                         $("#events-blueprint-drawer").removeClass("open");
                         self.refresh(true);
