@@ -2546,8 +2546,8 @@ function processUser(params, initiator, done, try_times) {
             countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
                 plugins.dispatch("/i/app_users/create", {
                     app_id: params.app_id,
-                    user: {uid: uid, _id: params.app_user._id },
-                    res: {uid: uid, _id: params.app_user._id },
+                    user: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    res: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
                     params: params
                 });
                 if (uid) {
