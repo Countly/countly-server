@@ -3785,16 +3785,16 @@ p.error_message_div {
     top: 1px;
 }
 
-#events-custom-settings-table .edit-event {
-    background-color: #83C985;
-    font-size: 12px;
-    color: white;
-    border: none;
-    padding: 2px 8px;
+#event-groups-settings-table .edit-event, #events-custom-settings-table .edit-event {
+    width: 54px;
+    height: 29px;
     border-radius: 2px;
+    border: solid 1px #d0d0d0;
+    background-color: #ffffff;
     visibility: hidden;
     cursor: pointer;
-}
+    float: right;
+  }
 
 #eb-event-desc-input {
     display: block;

@@ -4663,10 +4663,6 @@ window.EventsBlueprintView = countlyView.extend({
         $('.event-groups-table').find("tbody td .edit-event").off("click").on("click", function() {
             self.eventGroupDrawer.resetForm();
             self.eventGroupDrawer.open();
-            // var _id = "[CLY]_group_1b12f7ebfcabde5e8209630effd09f6a";
-            // countlyEvent.getEventGroupById(_id, function(result) {
-            //     self.loadEventGroupDrawerSetting(result);
-            // });
             countlyEvent.getEventGroupById($(this).attr("data-event-group-id"), function(result) {
                 self.loadEventGroupDrawerSetting(result);
             });
