@@ -4655,6 +4655,7 @@ window.EventsBlueprintView = countlyView.extend({
         });
         CountlyHelpers.initializeTableOptions($('#events-event-groups'));
         $("#new-event-group-button").off("click").on("click", function() {
+            $("#save-widget").hide();
             self.eventGroupDrawer.resetForm();
             self.eventGroupDrawer.open();
         });
