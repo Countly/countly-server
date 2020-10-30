@@ -3684,3 +3684,11 @@ p.error_message_div {
 .view-more:hover {
     color: #2FA732;
 }
+
+.user-config-danger-zone {
+    display: none;
+}
+
+.routename-user-settings .user-config-danger-zone {
+    display: block;
+}
