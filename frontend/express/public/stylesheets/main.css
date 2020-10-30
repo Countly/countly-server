@@ -1245,12 +1245,12 @@ vertical-align: text-bottom;
 font-size: 16px;
 text-align: center;
 margin: 50px 0;}
-#events-general-action{ background-color: #2FA732; border-color: #2FA732;}
-#events-general-action .text{color: #fff;}
-#events-general-action .right.combo::before {color: #fff;}
-#events-general-action.disabled{ background-color: #FDFDFD; border-color: #D0D0D0; }
-#events-general-action.disabled .text{color: #444;}
-#events-general-action.disabled .right.combo::before {color: #717171;}
+#events-general-action,#event-groups-general-action{ background-color: #2FA732; border-color: #2FA732;}
+#events-general-action .text,#event-groups-general-action .text{color: #fff;}
+#events-general-action .right.combo::before,#event-groups-general-action .right.combo::before{color: #fff;}
+#events-general-action.disabled,#event-groups-general-action.disabled{ background-color: #FDFDFD; border-color: #D0D0D0; }
+#events-general-action.disabled .text,#event-groups-general-action.disabled .text{color: #444;}
+#events-general-action.disabled .right.combo::before,#event-groups-general-action.disabled .right.combo::before {color: #717171;}
 
 
 .delete-event, .delete-event-selected { color:#D67678; cursor:pointer; font-size:16px;}
@@ -3782,15 +3782,4 @@ p.error_message_div {
 /*Bug for when on off switch is vertical-align: middle*/
 #eb-event-visibility .on-off-switch-label:before {
     top: 1px;
-}
-
-#events-custom-settings-table .edit-event {
-  background-color: #83C985;
-  font-size: 12px;
-  color: white;
-  border: none;
-  padding: 2px 8px;
-  border-radius: 2px;
-  visibility: hidden;
-  cursor: pointer;
 }

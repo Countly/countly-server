@@ -4543,7 +4543,7 @@ window.EventsBlueprintView = countlyView.extend({
             self.eventGroupDrawer.close();
         });
         $("#event-group-drawer #save-widget").off("click").on("click", function() {
-            countlyEvent.updateEventGroup(JSON.stringify(self.getEventGroupDrawerSetting()), function(res) {
+            countlyEvent.updateEventGroup(JSON.stringify(self.getEventGroupDrawerSetting()), "", "", "", function(res) {
                 if (res === true) {
                     CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
                     self.refresh(true, false);
@@ -4634,6 +4634,44 @@ window.EventsBlueprintView = countlyView.extend({
         $("#create-widget").hide();
         $("#save-widget").show();
     },
+    eventGroupSettingMenu: function() {
+        var self = this;
+        $("#events-event-groups").find(".cly-button-menu").on("cly-list.click", function(event, data) {
+            var id = $(data.target).parents("tr").attr("id");
+            var name = $(data.target).parents("tr").attr("name");
+            var visibility = $(data.target).parents("tr").attr("status");
+            if (id) {
+                $(".event-groups-settings-menu").find(".delete_single_event").attr("id", id);
+                $(".event-groups-settings-menu").find(".delete_single_event").attr("name", name);
+                $(".event-groups-settings-menu").find(".event_toggle_visibility").attr("id", id);
+                if (visibility === "true") {
+                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=hide]").show();
+                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=show]").hide();
+                }
+                else {
+                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=hide]").hide();
+                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=show]").show();
+                }
+            }
+        });
+        CountlyHelpers.initializeTableOptions($('#events-event-groups'));
+        $("#new-event-group-button").off("click").on("click", function() {
+            self.eventGroupDrawer.resetForm();
+            self.eventGroupDrawer.open();
+        });
+
+        $('.event-groups-table').find("tbody td .edit-event").off("click").on("click", function() {
+            self.eventGroupDrawer.resetForm();
+            self.eventGroupDrawer.open();
+            // var _id = "[CLY]_group_1b12f7ebfcabde5e8209630effd09f6a";
+            // countlyEvent.getEventGroupById(_id, function(result) {
+            //     self.loadEventGroupDrawerSetting(result);
+            // });
+            countlyEvent.getEventGroupById($(this).attr("data-event-group-id"), function(result) {
+                self.loadEventGroupDrawerSetting(result);
+            });
+        });
+    },
     initEventGroupsTable: function() {
         var self = this;
         this.getEventGroups = countlyEvent.getEventGroupsTable();
@@ -4705,8 +4743,13 @@ window.EventsBlueprintView = countlyView.extend({
                 "bSortable": false,
             },
             {
+                "mData": function(row) {
+                    return "<button class='edit-event' data-event-group-id=\"" + row._id + "\">" + jQuery.i18n.map["events.blueprint-edit"] + "</button>";
+                }
+            },
+            {
                 "mData": function() {
-                    return '<a class="cly-list-options" style="margin-right:20px;"></a>';
+                    return '<a class="cly-list-options"></a>';
                 },
                 "sType": "string",
                 "sTitle": "",
@@ -4914,32 +4957,12 @@ window.EventsBlueprintView = countlyView.extend({
                 }
             }
         });
-        $("#events-event-groups").find(".cly-button-menu").on("cly-list.click", function(event, data) {
-            var id = $(data.target).parents("tr").attr("id");
-            var name = $(data.target).parents("tr").attr("name");
-            var visibility = $(data.target).parents("tr").attr("status");
-            if (id) {
-                $(".event-groups-settings-menu").find(".delete_single_event").attr("id", id);
-                $(".event-groups-settings-menu").find(".delete_single_event").attr("name", name);
-                $(".event-groups-settings-menu").find(".event_toggle_visibility").attr("id", id);
-                if (visibility === "true") {
-                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=hide]").show();
-                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=show]").hide();
-                }
-                else {
-                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=hide]").hide();
-                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=show]").show();
-                }
-            }
-        });
-        CountlyHelpers.initializeTableOptions($('#events-event-groups'));
-        $("#events-event-groups").find(".cly-button-menu").on("cly-list.item", function(event, data) {
-
-            var el = $(data.target).parent();
-            var id = el.attr("id");
+        self.eventGroupSettingMenu();
+        $(".event-groups-settings-menu").on("cly-list.item", function(event, data) {
+            var el = $(data.target).parent() || $(data.target);
+            var id = el.attr("id") || $(data.target).attr("id");
             var eventName = el.attr("name");
             if (id) {
-
                 if (el.hasClass("delete_single_event")) {
                     if (eventName === "") {
                         eventName = event;
@@ -5008,10 +5031,34 @@ window.EventsBlueprintView = countlyView.extend({
             $(this).find(".edit-event").css({"visibility": "hidden"});
         });
         self.dtable.find("tbody td .edit-box").click(function() {
-            //Pass the settings variable here
             self.setEventBlueprintDrawerSettings();
             $(".cly-drawer").removeClass("open editing");
             $("#events-blueprint-drawer").addClass("open");
+        });
+    },
+    rightButttonsEventGroups: function() {
+        var self = this;
+        $('.event-groups-table').find("tbody tr").hover(function() {
+            $(this).find(".edit-box").css({"visibility": "visible"});
+            //$(this).find(".cly-list-options").addClass('cly-list-options-row');
+            $(this).find(".edit-event").css({"visibility": "visible"});
+        }, function() {
+            $(this).find("td .edit-box").css({"visibility": "hidden"});
+            //$(this).find(".cly-list-options").removeClass('cly-list-options-row');
+            $(this).find(".edit-event").css({"visibility": "hidden"});
+        });
+        self.eventGroupsTable.find("tbody td .edit-box").click(function() {
+            self.eventGroupDrawer.resetForm();
+            self.eventGroupDrawer.open();
+
+            // var _id = "[CLY]_group_1b12f7ebfcabde5e8209630effd09f6a";
+            countlyEvent.getEventGroupById($(this).attr("data-event-group-id"), function(result) {
+                self.loadEventGroupDrawerSetting(result);
+            });
+            //Pass the settings variable here
+            // self.setEventBlueprintDrawerSettings();
+            // $(".cly-drawer").removeClass("open editing");
+            // $("#events-blueprint-drawer").addClass("open");
         });
     },
     resetSelection: function() {
@@ -5177,51 +5224,12 @@ window.EventsBlueprintView = countlyView.extend({
                     },
                     "sType": "string",
                     "sTitle": "",
-                    "bSortable": false
-                },
+                    "sClass": 'shrink right',
+                    "sWidth": '100px',
+                    "bSortable": false,
+                    "bSearchable": false
+                }
             ];
-
-            $('body').on('click', '.edit-event', function() {
-                $("#events-blueprint-drawer").addClass("open");
-                $('#eb-key-name').val($(this).data('event').key);
-                $('#eb-event-name').val($(this).data('event').name);
-                $('#eb-duration-name').val($(this).data('event').dur);
-                $('#eb-sum-name').val($(this).data('event').sum);
-                $('#eb-count-name').val($(this).data('event').count);
-                $('#eb-event-desc-input').val($(this).data('event').description);
-                var segments = [];
-                for (var k = 0; k < $(this).data('event').segments.length; k++) {
-                    segments.push({name: $(this).data('event').segments[k], value: $(this).data('event').segments[k]});
-                }
-                var omittedSegments = [];
-                for (var j = 0; i < $(this).data('event').omittedSegments.length; j++) {
-                    omittedSegments.push({name: $(this).data('event').omittedSegments[j], value: $(this).data('event').omittedSegments[j]});
-                }
-                $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
-                $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
-
-                if ($(this).data('event').is_visible) {
-                    $('#eb-event-visibility .on-off-switch input').attr('checked', 'checked');
-                    $('#eb-event-visibility > div.on-off-switch > span').html(jQuery.i18n.map["events.edit.event-visible"]);
-                }
-                else {
-                    $('#eb-event-visibility .on-off-switch input').removeAttr('checked');
-                    $('#eb-event-visibility > div.on-off-switch > span').html();
-                }
-
-                if ($(this).data('event').description !== "") {
-                    $('#eb-description-checkbox').removeClass('fa-square-o');
-                    $('#eb-description-checkbox').addClass('fa-check-square');
-                    $('#eb-event-desc-input').show();
-                }
-                else {
-                    $('#eb-description-checkbox').removeClass('fa-check-square');
-                    $('#eb-description-checkbox').addClass('fa-square-o');
-                    $('#eb-event-desc-input').hide();
-                }
-
-
-            });
 
             $(this.el).html(this.template(this.templateData));
             self.initializeTabs();
@@ -5532,24 +5540,55 @@ window.EventsBlueprintView = countlyView.extend({
                 }
             });
             self.rightButtonsEvents();
+            self.rightButttonsEventGroups();
 
             self.initEventGroupDrawer();
-            $(".new-event-group-button").off("click").on("click", function() {
-                self.eventGroupDrawer.resetForm();
-                self.eventGroupDrawer.open();
-            });
-            $(".modify-event-group-button").off("click").on("click", function() {
-                self.eventGroupDrawer.resetForm();
-                self.eventGroupDrawer.open();
-                var _id = "[CLY]_group_1b12f7ebfcabde5e8209630effd09f6a";
-                countlyEvent.getEventGroupById(_id, function(result) {
-                    self.loadEventGroupDrawerSetting(result);
-                });
+            this.dtable.on('click', '.edit-event', function() {
+                $("#events-blueprint-drawer").addClass("open");
+                $('#eb-key-name').val($(this).data('event').key);
+                $('#eb-event-name').val($(this).data('event').name);
+                $('#eb-duration-name').val($(this).data('event').dur);
+                $('#eb-sum-name').val($(this).data('event').sum);
+                $('#eb-count-name').val($(this).data('event').count);
+                $('#eb-event-desc-input').val($(this).data('event').description);
+                var segments = [];
+                for (var k = 0; k < $(this).data('event').segments.length; k++) {
+                    segments.push({name: $(this).data('event').segments[k], value: $(this).data('event').segments[k]});
+                }
+                var omittedSegments = [];
+                for (var j = 0; i < $(this).data('event').omittedSegments.length; j++) {
+                    omittedSegments.push({name: $(this).data('event').omittedSegments[j], value: $(this).data('event').omittedSegments[j]});
+                }
+                $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
+                $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
+
+                if ($(this).data('event').is_visible) {
+                    $('#eb-event-visibility .on-off-switch input').attr('checked', 'checked');
+                    $('#eb-event-visibility > div.on-off-switch > span').html(jQuery.i18n.map["events.edit.event-visible"]);
+                }
+                else {
+                    $('#eb-event-visibility .on-off-switch input').removeAttr('checked');
+                    $('#eb-event-visibility > div.on-off-switch > span').html();
+                }
+
+                if ($(this).data('event').description !== "") {
+                    $('#eb-description-checkbox').removeClass('fa-square-o');
+                    $('#eb-description-checkbox').addClass('fa-check-square');
+                    $('#eb-event-desc-input').show();
+                }
+                else {
+                    $('#eb-description-checkbox').removeClass('fa-check-square');
+                    $('#eb-description-checkbox').addClass('fa-square-o');
+                    $('#eb-event-desc-input').hide();
+                }
+
+
             });
             self.initEventDrawer();
         }
     },
     initEventDrawer: function() {
+        var self = this;
         $("#eb-description-checkbox, #eb-description-section .label span").on("click", function() {
             var check = $("#eb-description-checkbox").hasClass("fa-check-square");
             if (check) {
@@ -5584,6 +5623,7 @@ window.EventsBlueprintView = countlyView.extend({
                     var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true, type: "ok"};
                     CountlyHelpers.notify(msg);
                     $("#events-blueprint-drawer").removeClass("open");
+                    self.refresh(true);
                 }
             });
         });
@@ -5730,9 +5770,9 @@ window.EventsBlueprintView = countlyView.extend({
                 self.pageScript(); //add scripts
 
 
-
                 app.localize($("#events-event-settings"));
                 app.localize($("#events-custom-settings-table"));
+                app.localize($("#event-groups-settings-table"));
                 self.tableData = self.tableData.filter(function(event) {
                     var sourceEventFilter = self.visibilityFilter;
                     var getEventFilter = event.is_visible;
@@ -5753,7 +5793,10 @@ window.EventsBlueprintView = countlyView.extend({
                             return x.status === self.eventGroupFilter;
                         });
                     }
+                    // self.rightButttonsEventGroups()
                     CountlyHelpers.refreshTable(self.eventGroupsTable, res);
+                    self.rightButttonsEventGroups();
+                    self.eventGroupSettingMenu();
                 });
                 $('#select-all-events').addClass("fa-square-o");
                 $('#select-all-events').removeClass("fa-check-square");
