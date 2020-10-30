@@ -76,6 +76,7 @@
                                     _activeEvents.list.push(groups_json[group]._id);
                                     _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
                                 }
+                                _eventGroups.events = json;
                                 if (!_activeEvent && countlyEvent.getEvents()[0]) {
                                     _activeEvent = countlyEvent.getEvents()[0].key;
                                     currentActiveEvent = _activeEvent;
@@ -421,6 +422,7 @@
                                         sum: groups_json[group].display_map.s,
                                         dur: groups_json[group].display_map.d
                                     };
+                                    _eventGroups.events = json;
                                     _activeEvents.list.push(groups_json[group]._id);
                                     _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
                                 }
