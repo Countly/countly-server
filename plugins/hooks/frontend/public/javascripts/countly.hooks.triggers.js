@@ -22,7 +22,6 @@
                     countlySegmentation.reset();
                     self.filterObj = {};
                     $("#filter-blocks").empty();
-
                     if (events.length === 1) {
                         var currEvent = events[0].split("***")[1];
                         $.when(countlySegmentation.initialize(currEvent)).then(function() {
@@ -43,15 +42,18 @@
                 var self = this;
                 setTimeout(function() {
                     self.loadEventsData(trigger.configuration);
-                    self.tmpFilterCall = function() {
-                        try {
-                            var filter = JSON.parse(trigger.configuration.filter);
-                            self.loadFilters(filter.dbFilter);
-                        }
-                        catch (e) {
-                            //silence catch
-                        }
-                    };
+                    if (trigger) {
+                        self.tmpEventConfig = trigger.configuration;
+                        self.tmpFilterCall = function() {
+                            try {
+                                var filter = JSON.parse(trigger.configuration.filter);
+                                self.loadFilters(filter.dbFilter);
+                            }
+                            catch (e) {
+                                //silence catch
+                            }
+                        };
+                    }
                 }, 500);
             },
             getValidConfig: function() {
@@ -63,7 +65,7 @@
                 };
                 return configuration;
             },
-            loadEventsData: function(configuration) {
+            loadEventsData: function() {
                 $("#multi-event-dropdown").clyMultiSelectClearSelection({});
                 $("#multi-event-dropdown").clyMultiSelectSetItems([]);
                 // only one app 
@@ -71,6 +73,7 @@
                 if (apps.length !== 1) {
                     return;
                 }
+                var self = this;
                 countlyEvent.getEventsForApps(apps, function(events) {
                     $.ajax({
                         type: "GET",
@@ -86,10 +89,11 @@
                             events = events.concat(internal_events);
                             events.unshift({value: apps[0] + "****", name: jQuery.i18n.map["hooks.any-events"]});
                             $("#multi-event-dropdown").clyMultiSelectSetItems(events);
-                            if (configuration && configuration.event) {
+                            if (self.tmpEventConfig && self.tmpEventConfig.event) {
                                 events.forEach(function(event) {
-                                    if (event.value === configuration.event[0]) {
+                                    if (event.value === self.tmpEventConfig.event[0]) {
                                         $("#multi-event-dropdown").clyMultiSelectSetSelection([event]);
+                                        self.tmpEventConfig = null;
                                     }
                                 });
                             }
@@ -999,8 +1003,16 @@
                         app.localize($(".trigger-block"));
                     });
                 $("#multi-app-dropdown").on("cly-multi-select-change", function() {
-                    self.loadCohortsData();
-                    self.loadHooksData();
+                    var internal_event = $("#single-hook-trigger-internal-event-dropdown").clySelectGetSelection();
+                    if (internal_event === null) {
+                        return;
+                    }
+                    if (internal_event.indexOf('/cohort') === 0) {
+                        self.loadCohortsData();
+                    }
+                    if (internal_event.indexOf('/hooks/trigger') === 0) {
+                        self.loadHooksData();
+                    }
                 });
                 app.localize();
             },
@@ -1060,6 +1072,10 @@
                 if (apps.length === 0) {
                     return;
                 }
+                var self = this;
+                if (configuration) {
+                    self.tmpHookConfig = configuration;
+                }
                 $.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + '/hook/list',
@@ -1073,13 +1089,14 @@
                             }
                         });
                         $("#single-hook-trigger-hooks-dropdown").clySelectSetItems(hookList);
-                        if (!(configuration && configuration.hookID)) {
+                        if (!(self.tmpHookConfig && self.tmpHookConfig.hookID)) {
                             return;
                         }
 
                         hookList.forEach(function(i) {
-                            if (i.value === configuration.hookID) {
+                            if (i.value === self.tmpHookConfig.hookID) {
                                 $("#single-hook-trigger-hooks-dropdown").clySelectSetSelection(i.value, i.name);
+                                self.tmpHookConfig = null;
                             }
                         });
                     }
@@ -1091,6 +1108,10 @@
                 var apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                 if (apps.length === 0) {
                     return;
+                }
+                var self = this;
+                if (configuration) {
+                    this.tmpCohortConfig = configuration;
                 }
                 $.when((function() {
                     var data = {
@@ -1109,12 +1130,13 @@
                                 cohortItems.push({ value: c._id, name: c.name});
                             });
                             $("#single-hook-trigger-cohort-dropdown").clySelectSetItems(cohortItems);
-                            if (!(configuration && configuration.cohortID)) {
+                            if (!(self.tmpCohortConfig && self.tmpCohortConfig.cohortID)) {
                                 return;
                             }
                             cohortItems.forEach(function(i) {
-                                if (i.value === configuration.cohortID) {
+                                if (i.value === self.tmpCohortConfig.cohortID) {
                                     $("#single-hook-trigger-cohort-dropdown").clySelectSetSelection(i.value, i.name);
+                                    self.tmpCohortConfig = null;
                                 }
                             });
                         }
@@ -1141,11 +1163,11 @@
                     html = $("#tempate-hook-trigger-intro-view").html();
                     $(".internal-event-configuration-view").html(html);
                     $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-internal-event-app-users-intro"));
-                    self.loadHooksData();
                     break;
                 case '/hooks/trigger':
                     html = $("#template-hook-trigger-hook-trigger-view").html();
                     $(".internal-event-configuration-view").html(html);
+                    self.loadHooksData();
                     break;
                 default:
                     $(".internal-event-configuration-view").html(event);

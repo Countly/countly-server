@@ -151,7 +151,7 @@ window.HooksDrawer = function(HookView) {
         getWidgetSettings: function(enabled) {
             var self = this;
             var hookInstance = {
-                name: $("#hook-name-input").val()||null,
+                name: $("#hook-name-input").val() || null,
                 apps: $("#multi-app-dropdown").clyMultiSelectGetSelection(),
                 trigger: null,
                 effects: null,
