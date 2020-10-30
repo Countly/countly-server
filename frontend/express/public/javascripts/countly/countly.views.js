@@ -4523,10 +4523,13 @@ window.EventsBlueprintView = countlyView.extend({
         });
 
         var events = countlyEvent.getEvents(true);
-        var eventsOptions = events.map(function(e) {
-            return {value: e.key, name: e.name};
-        });
-        $("#event-group-include-events-dropdown").clyMultiSelectSetItems(eventsOptions);
+        var tableData = [];
+        for (var i = 0; i < events.length; i++) {
+            if (!events[i].is_event_group) {
+                tableData.push({value: events[i].key, name: events[i].name});
+            }
+        }
+        $("#event-group-include-events-dropdown").clyMultiSelectSetItems(tableData);
         $("#event-group-drawer #save-widget").hide();
         $("#event-group-drawer #create-widget").addClass("disabled");
 
@@ -4557,20 +4560,20 @@ window.EventsBlueprintView = countlyView.extend({
     },
     getEventGroupDrawerSetting: function() {
         var groupInstance = {
-            name: $("#group-name-input").val().trim() || null,
+            name: $("#group-name-input").val() || null,
             description: null,
             app_id: countlyCommon.ACTIVE_APP_ID,
             source_events: null,
             status: $("#event-group-drawer .on-off-switch input").is(":checked"),
             display_map: {
-                c: $("#group-count-input").val().trim() || null,
-                d: $("#group-duration-input").val().trim() || null,
-                s: $("#group-sum-input").val().trim() || null
+                c: $("#group-count-input").val() || null,
+                d: $("#group-duration-input").val() || null,
+                s: $("#group-sum-input").val() || null
             }
         };
 
         if (!$("#event-group-description").prop("disabled")) {
-            groupInstance.description = $("#event-group-description").val().trim() || null;
+            groupInstance.description = $("#event-group-description").val() || null;
         }
         else {
             groupInstance.description = "";
