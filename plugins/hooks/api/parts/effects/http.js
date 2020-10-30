@@ -30,8 +30,7 @@ class HTTPEffect {
             return request.get({uri: parsedURL + "?" + parsedRequestData, timeout: this._timeout}, function(e, r, body) {
                 console.log(e, body, "[httpeffects]");
             });
-            break;
-        case 'post':
+        case 'post': {
             //support post formData
             let parsedJSON = {};
             try {
@@ -49,7 +48,7 @@ class HTTPEffect {
             function(e, r, body) {
                 console.log(e, body, "[httpeffects]");
             });
-            break;
+        }
         default:
             return;
         }

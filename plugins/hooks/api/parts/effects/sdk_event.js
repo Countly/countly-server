@@ -18,7 +18,7 @@ class SDKEventEffect {
      * @param {object} options - options for required variable
      *
      */
-    run({params, effect, rule}) {
+    run({effect}) {
         // todo: assemble params for request;
         const {app_key, event_key, segmentation} = effect.configuration;
         const qs = {

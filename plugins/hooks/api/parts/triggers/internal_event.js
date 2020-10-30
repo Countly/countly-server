@@ -44,8 +44,9 @@ class InternalEventTrigger {
             if (rule.trigger.configuration.eventType === eventType) {
                 switch (eventType) {
                 case "/cohort/enter":
-                case "/cohort/exit":
+                case "/cohort/exit": {
                     const {cohort, uids} = ob;
+
                     if (rule.trigger.configuration.cohortID === cohort._id) {
                         common.db.collection('app_users' + cohort.app_id).find({"uid": {"$in": uids}}).toArray(
                             (uidErr, result) => {
@@ -72,9 +73,10 @@ class InternalEventTrigger {
                         );
                     }
                     break;
+                }
                 case "/i/app_users/create":
                 case "/i/app_users/update":
-                case "/i/app_users/delete":
+                case "/i/app_users/delete": {
                     const {app_id, user} = ob;
                     if (rule.apps[0] === app_id + '') {
                         try {
@@ -92,8 +94,8 @@ class InternalEventTrigger {
                         });
                     }
                     break;
-                case "/hooks/trigger":
-                    const {params, rule: triggeredRule} = ob;
+                }
+                case "/hooks/trigger": {
                     if (ob.rule._id + "" === rule.trigger.configuration.hookID) {
                         try {
                             utils.updateRuleTriggerTime(rule._id);
@@ -110,6 +112,7 @@ class InternalEventTrigger {
                         });
                     }
                     break;
+                }
                 }
 
             }

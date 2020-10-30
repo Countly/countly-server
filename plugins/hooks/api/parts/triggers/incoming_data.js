@@ -36,7 +36,6 @@ class IncomingDataTrigger {
             this._rules = newRules.map(r => {
                 try {
                     // parse JSON string
-                    console.log(r.trigger);
                     r.trigger.configuration.filter = JSON.parse(r.trigger.configuration.filter);
                 }
                 catch (err) {
@@ -69,7 +68,6 @@ class IncomingDataTrigger {
     register() {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
-                console.log(ob, e, "[IncominngDataTrigger]");
                 this.process(e, ob);
             });
         });
@@ -145,53 +143,51 @@ class IncomingDataTrigger {
         /**
          *  Assert if rule operation applies to value
          *  @param {varies} value - user's value
-         *  @param {object} filter - object with operations
+         *  @param {object} filterObj - object with operations
          *  @returns {bool} true if user should be matched 
          */
-        function assertOperation(value, filter) {
+        function assertOperation(value, filterObj) {
             var matched = true;
-            if (filter.$in && filter.$in.indexOf(value) === -1) {
+            if (filterObj.$in && filterObj.$in.indexOf(value) === -1) {
                 matched = false;
             }
-            if (filter.$nin && filter.$nin.indexOf(value) !== -1) {
+            if (filterObj.$nin && filterObj.$nin.indexOf(value) !== -1) {
                 matched = false;
             }
-            if (filter.$nin && filter.$nin.indexOf(value) !== -1) {
+            if (filterObj.$nin && filterObj.$nin.indexOf(value) !== -1) {
                 matched = false;
             }
-            if (filter.$regex && filter.$regex.test && !filter.$regex.test(value)) {
+            if (filterObj.$regex && filterObj.$regex.test && !filterObj.$regex.test(value)) {
                 matched = false;
             }
-            if (filter.$not && filter.$not.test && filter.$not.test(value)) {
+            if (filterObj.$not && filterObj.$not.test && filterObj.$not.test(value)) {
                 matched = false;
             }
             return matched;
         }
         /**
          *  Assert if filter applies to this user
-         *  @param {object} user - User's document
-         *  @param {Object} filter - filter's document
+         *  @param {object} userObj - User's document
+         *  @param {Object} filterObj - filter's document
          *  @returns {bool} if request matched 
          */
-        function assertFilter(user, filter) {
+        function assertFilter(userObj, filterObj) {
             let matched = true;
-            for (let prop in filter) {
+            for (let prop in filterObj) {
                 const parts = prop.split(".");
                 if (parts.length < 2) {
-                    continue; // fix bug
+                    continue; // ignore 
                 }
                 if (parts[0] === "up" || (parts.length === 1 && !eventProperties[parts[0]])) {
                     let test = parts[0];
                     if (test === "up") {
                         test = parts[1];
                     }
-                    //    if (!user[test] || !assertOperation(user[test], filter[prop])) {
-                    if (!assertOperation(user[test], filter[prop])) {
+                    if (!assertOperation(userObj[test], filterObj[prop])) {
                         matched = false;
                     }
                 }
-                //                else if (parts[0] !== "sg" && (!user[parts[0]] || !user[parts[0]][parts[1]] || !assertOperation(user[parts[0]][parts[1]], filter[prop]))) {
-                else if (parts[0] !== "sg" && (!assertOperation(user[parts[0]] && user[parts[0]][parts[1]], filter[prop]))) {
+                else if (parts[0] !== "sg" && (!assertOperation(userObj[parts[0]] && userObj[parts[0]][parts[1]], filterObj[prop]))) {
 
                     matched = false;
                 }
@@ -210,25 +206,23 @@ class IncomingDataTrigger {
             if (assertFilter(user, filter)) {
                 //at this point we know that all user filter have been matched
                 //now we only need to check events which match event filter 
-                const events = params.qstring.events.filter(function(event) {
-                    if (targetEventKey === event.key || targetEventKey === "*") {
+                const events = params.qstring.events.filter(function(e) {
+                    if (targetEventKey === e.key || targetEventKey === "*") {
                         let notMatch = false;
                         for (let prop in eventRules) {
                             let parts = prop.split(".");
                             if (parts[0] === "sg") {
-                                //                                if (!event.segmentation || !assertOperation(common.convertToType(event.segmentation[parts[1]]), eventRules[prop])) {
-                                if (!assertOperation(common.convertToType(event.segmentation && event.segmentation[parts[1]]), eventRules[prop])) {
+                                if (!assertOperation(common.convertToType(e.segmentation && e.segmentation[parts[1]]), eventRules[prop])) {
 
                                     notMatch = true;
                                 }
                             }
-                            else if (!assertOperation(common.convertToType(event[eventPropertiesMap[parts[0]]]), eventRules[prop])) {
+                            else if (!assertOperation(common.convertToType(e[eventPropertiesMap[parts[0]]]), eventRules[prop])) {
                                 notMatch = true;
                             }
                         }
                         if (!notMatch) {
-                            log.i("find matched event", event, "by", filter, "from", user);
-                            console.log("find matched event", event, "by", filter, "from", user);
+                            log.d("find matched event", e, "by", filter, "from", user);
                         }
                         return !notMatch;
                     }
@@ -239,7 +233,7 @@ class IncomingDataTrigger {
                         utils.updateRuleTriggerTime(rule._id);
                     }
                     catch (err) {
-                        console.log(err, "??#3");
+                        console.log(err, "[IncomingDataTrigger]");
                     }
                     rule.effects.forEach(e => {
                         this.pipeline({
