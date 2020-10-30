@@ -1164,6 +1164,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 #evens-blueprint-config .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
 #evens-blueprint-config .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
 #events-general-filter.cly-select .right.combo:before{background-color: #444;color: #fff;border-radius: 4px;padding: 1px;position: relative;font-size: 10px;}
+#event-group-general-filter.cly-select .right.combo:before{background-color: #444;color: #fff;border-radius: 4px;padding: 1px;position: relative;font-size: 10px;}
 
 #events-blueprint-drawer { z-index: 10000;}
 #events-blueprint-drawer #add-parameter-title { display: block; }
