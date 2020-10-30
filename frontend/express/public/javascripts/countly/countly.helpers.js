@@ -824,6 +824,19 @@
                 show_selected_column_count(dialog);
             });
             show_selected_column_count(dialog);
+            dialog.find(".export-columns-search input").on("keyup", function() {
+                var value = dialog.find(".export-columns-search input").val();
+                value = new RegExp((value || ""), 'i');
+                for (var z = 0;z < tableCols.length; z++) {
+                    if (tableCols[z].sTitle.match(value)) {
+                        dialog.find(".export-columns-selector .columns-wrapper .checkbox-line[data-selectorname='" + tableCols[z].columnSelectorIndex + "']").css("display", "block");
+                    }
+                    else {
+                        dialog.find(".export-columns-selector .columns-wrapper .checkbox-line[data-selectorname='" + tableCols[z].columnSelectorIndex + "']").css("display", "none");
+                    }
+                }
+
+            });
         }
         else {
             dialog.find(".export-columns-selector .columns-wrapper").html("");
@@ -1851,11 +1864,8 @@
         dtable.CoultyColumnSel.tableCol = 0;
 
         var str = "";
-        var myClass = "";
-        var myClass2 = "";
-        var disabled = "";
         var selectedC = 0;
-        var startLine = true;
+
 
         //Clear out keys not represented in table
         for (var k in config.visible) {
@@ -1896,41 +1906,11 @@
         if (saveSettings) { // we don't have stored value
             store.set(tableName + "VisibleDataTableColumns", config.visible);
         }
-
-        for (colIndex = 0; colIndex < tableCols.length; colIndex++) {
-            if (tableCols[colIndex].columnSelectorIndex) {
-                var colName = tableCols[colIndex].columnSelectorIndex;
-                myClass = 'fa-check-square';
-                myClass2 = "";
-                disabled = "";
-
-                if (config.disabled && config.disabled[tableCols[colIndex].columnSelectorIndex] && config.disabled[tableCols[colIndex].columnSelectorIndex] === true) {
-                    disabled = " disabled";
-                }
-                else if (config.visible && config.visible[tableCols[colIndex].columnSelectorIndex] && config.visible[tableCols[colIndex].columnSelectorIndex] === true) {
-                    selectedC++;
-                }
-                else {
-                    myClass = 'fa-square-o';
-                    myClass2 = ' not-checked';
-                    dtable.fnSetColumnVis(parseInt(colIndex), false, false);
-                }
-
-                if (startLine === true) {
-                    str += "<tr><td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
-                    startLine = false;
-                }
-                else {
-                    str += "<td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
-                    startLine = true;
-                }
-            }
-        }
-        if (!startLine) {
-            str += "<td></td></tr>";
-        }
+        str = redrawColumnsVisibilityTable(tableCols, config, dtable, "");
+        selectedC = str.selectedC || 0;
+        str = str.str || "";
         dtable.CoultyColumnSel.maxCol = Math.min(maxCol, totalCol);
-        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
+        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="export-columns-search"><table><tr><td><i class="fa fa-search"></i></td><td><input type="text" /></td><tr></table></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
         if (tableCols.length > 8) {
             $(dtable[0]).parent().find('.scrollable').slimScroll({
                 height: '100%',
@@ -1984,11 +1964,78 @@
             }
         });
 
+        $(dtable[0]).parent().find(".export-columns-search input").on("keyup", function() {
+            var value = $(dtable[0]).parent().find(".export-columns-search input").val();
+            var settings_my = store.get(tableName + "VisibleDataTableColumns") || {};
+            var vv = redrawColumnsVisibilityTable(tableCols, {visible: settings_my, disabled: config.disabled, maxCol: config.maxCol}, dtable, value);
+            $(dtable[0]).parent().find(".data-table-column-selector .all_columns table").first().replaceWith("<table>" + vv.str + "</table>");
+        });
+
+
         $(dtable[0]).parent().find(".select-column-table-data").css("display", "table-cell");
 
 
         var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
         $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
+    };
+
+    var redrawColumnsVisibilityTable = function(tableCols, config, dtable, value) {
+        if (value) {
+            value = new RegExp((value || ""), 'i');
+        }
+        var myClass = "";
+        var myClass2 = "";
+        var disabled = "";
+        var str = "";
+        var startLine = true;
+        var selectedC = 0;
+
+
+        for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
+            if (tableCols[colIndex].columnSelectorIndex) {
+                var colName = tableCols[colIndex].columnSelectorIndex;
+                myClass = 'fa-check-square';
+                myClass2 = "";
+                disabled = "";
+
+                if (config.disabled && config.disabled[tableCols[colIndex].columnSelectorIndex] && config.disabled[tableCols[colIndex].columnSelectorIndex] === true) {
+                    disabled = " disabled";
+                }
+                else if (config.visible && config.visible[tableCols[colIndex].columnSelectorIndex] && config.visible[tableCols[colIndex].columnSelectorIndex] === true) {
+                    selectedC++;
+                }
+                else {
+                    myClass = 'fa-square-o';
+                    myClass2 = ' not-checked';
+                    dtable.fnSetColumnVis(parseInt(colIndex), false, false);
+                }
+                var hideMe = false;
+                if (value && !tableCols[colIndex].sTitle.match(value)) {
+                    hideMe = true;
+                }
+                if (hideMe) {
+                    if (startLine) {
+                        str += "<tr style='display:none'><td  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
+                    }
+                    else {
+                        "<td style='display:none'  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                    }
+                }
+                else if (startLine === true) {
+                    str += "<tr><td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                    startLine = false;
+                }
+                else {
+                    str += "<td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
+                    startLine = true;
+                }
+            }
+        }
+        if (!startLine) {
+            str += "<td></td></tr>";
+        }
+
+        return {str: str, selectedC: selectedC};
     };
 
     /** function hides column in data table and stores config in local storage

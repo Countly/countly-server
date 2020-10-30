@@ -1367,6 +1367,35 @@ margin: 50px 0;}
     margin: 0 -15px 10px -15px;
     display:none;    
 }
+.export-columns-selector .export-columns-search {
+	padding: 7px 15px;
+    border-top: 1px solid #D0D0D0;
+}
+
+.export-columns-selector .export-columns-search table, .data-table-column-selector .export-columns-search table{
+	width:100%;
+	margin:0px;
+}
+ .data-table-column-selector .export-columns-search table td{
+	padding:0px;
+	width:auto;
+	
+ }
+
+.data-table-column-selector .export-columns-search{
+	padding: 7px 15px;
+    border-bottom: 1px solid #D0D0D0;
+}
+.export-columns-selector .export-columns-search i, .data-table-column-selector .export-columns-search i{
+	font-size: 17px;
+    color: #BBB;
+}
+.export-columns-selector .export-columns-search input, .data-table-column-selector .export-columns-search input {
+	border: 1px solid #CCC;
+	width:100%;
+	border-radius:2px;
+	
+}
 .export-dialog .columns-height-wrapper {
     height: 240px;
     border-bottom: 1px solid #D0D0D0;
@@ -2948,7 +2977,7 @@ p.error_message_div {
     top: 41px;
     left: 2px;
     min-width: 280px;
-    max-height: 145px;
+    max-height: 208px;
     margin-left: 0px;
     background-color: #FFF;
     border-radius: 2px;
@@ -2959,7 +2988,7 @@ p.error_message_div {
     padding-top:46px;
 }
 .data-table-column-selector .slimScrollDiv {
-    height:145px !important;
+    height:170px !important;
 }
 .select-column-table-data.active +.data-table-column-selector{
     display:block;
