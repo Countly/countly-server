@@ -203,7 +203,7 @@ window.HooksView = countlyView.extend({
                             if (row.created_at) {
                                 created_at_string = moment(row.created_at).fromNow();
                             }
-                            return "<div>" + row.createdByUser + "</div> <div style='color:#aaaaaa;margin-top:4px;'>" + created_at_string + "</div>";
+                            return "<div style='text-overflow:ellipsis; overflow:hidden; white-space:nowrap;'>" + row.createdByUser + "</div> <div style='color:#aaaaaa;margin-top:4px;text-overflow:ellipsis; overflow:hidden; white-space:nowrap;'>" + created_at_string + "</div>";
                         }
                         return row.createdByUser;
                     }
