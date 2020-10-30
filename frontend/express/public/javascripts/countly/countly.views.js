@@ -5555,12 +5555,12 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#eb-count-name').val($(this).data('event').count);
                 $('#eb-event-desc-input').val($(this).data('event').description);
                 var segments = [];
-                for (var i = 0; i < $(this).data('event').segments.length; i++) {
-                    segments.push({name: $(this).data('event').segments[i], value: $(this).data('event').segments[i]})
+                for (var j = 0; j < $(this).data('event').segments.length; j++) {
+                    segments.push({name: $(this).data('event').segments[j], value: $(this).data('event').segments[j]})
                 }
                 var omittedSegments = [];
-                for (var i = 0; i < $(this).data('event').omittedSegments.length; i++) {
-                    omittedSegments.push({name: $(this).data('event').omittedSegments[i], value: $(this).data('event').omittedSegments[i]})
+                for (var k = 0; k < $(this).data('event').omittedSegments.length; k++) {
+                    omittedSegments.push({name: $(this).data('event').omittedSegments[k], value: $(this).data('event').omittedSegments[k]})
                 }
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
