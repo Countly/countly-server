@@ -5629,6 +5629,15 @@ window.EventsBlueprintView = countlyView.extend({
         });
         var allSegments = [];
         $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(allSegments);
+        $("#eb-event-visibility .on-off-switch input").on("change", function() {
+            var isChecked = $(this).is(":checked");
+            if (isChecked) {
+                $(this).parent().find(".text").replaceWith('<span style="opacity: 1;vertical-align: middle; margin-bottom: 0px;" class="text">' + jQuery.i18n.map["events.edit.event-visible"] + '</span>');
+            }
+            else {
+                $(this).parent().find(".text").replaceWith('<span style="vertical-align: middle; margin-bottom: 0px;" class="text">' + jQuery.i18n.map["events.edit.event-invisible"] + '</span>');
+            }
+        });
     },
     getEventBlueprintDrawerSettings: function() {
         var keyName = $("#eb-key-name").val();
