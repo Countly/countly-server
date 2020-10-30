@@ -4439,7 +4439,6 @@ window.EventsBlueprintView = countlyView.extend({
             }
         });
 
-        //hide apply button
         $("#events-apply-changes").css('display', 'none');
         self.preventHashChange = false;
         $("#events-apply-order").css('display', 'none');
@@ -4464,9 +4463,6 @@ window.EventsBlueprintView = countlyView.extend({
                 }
             }
         });
-
-
-
     },
     initEventGroupDrawer: function() {
         var self = this;
@@ -4731,7 +4727,7 @@ window.EventsBlueprintView = countlyView.extend({
                     }).join("<br>");
                 },
                 "sType": "string",
-                "sTitle": jQuery.i18n.map["events.general.status"],
+                "sTitle": jQuery.i18n.map["events.blueprint-event-group-included-events"],
                 "bSortable": false
             },
             {
@@ -5741,6 +5737,7 @@ window.EventsBlueprintView = countlyView.extend({
                 $(nRow).attr("data-id", aData.key);
                 $(nRow).attr("data-name", aData.name);
                 $(nRow).attr("data-visible", aData.is_visible);
+                $(nRow).css("height", "72px");
             }
         }));
         self.rightButtonsEvents();
