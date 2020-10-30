@@ -3794,3 +3794,7 @@ p.error_message_div {
   visibility: hidden;
   cursor: pointer;
 }
+
+#eb-event-desc-input {
+    display: block;
+}
