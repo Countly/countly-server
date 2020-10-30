@@ -35,29 +35,32 @@ try {
         json = options.job,
         Constructor = require(file),
         channel = new IPC.IdChannel(_id),
-        tmp = new Constructor(json),
-        db = plugins.singleDefaultConnection();
-
+        tmp = new Constructor(json);
+    
     process.on('message', LOGGER.ipcHandler);
     channel.attach(process);
 
-    plugins.loadConfigs(db, () => {
-        LOGGER.ipcHandler({
-            cmd: 'log',
-            config: plugins.getConfig('logs')
+    plugins.connectToAllDatabases().then(([db]) => {
+        plugins.loadConfigs(db, () => {
+            LOGGER.ipcHandler({
+                cmd: 'log',
+                config: plugins.getConfig('logs')
+            });
+    
+            log.d('[%d]: Preparing resource %j (%j): options %j', process.pid, nam, _id, options);
+            tmp.prepare(null, db).then(() => {
+                var resource = tmp.createResource(_id, nam);
+                resource.start(channel, db, Constructor);
+                log.d('[%d]: Started resource %j (%j): options %j', process.pid, nam, _id, options);
+            }, err => {
+                log.e('Error while preparing job: %j / %j', err, err.stack);
+                process.exit(1);
+            });
         });
-
-        log.d('[%d]: Preparing resource %j (%j): options %j', process.pid, nam, _id, options);
-        tmp.prepare(null, db).then(() => {
-            var resource = tmp.createResource(_id, nam);
-            resource.start(channel, db, Constructor);
-            log.d('[%d]: Started resource %j (%j): options %j', process.pid, nam, _id, options);
-        }, err => {
-            log.e('Error while preparing job: %j / %j', err, err.stack);
-            process.exit(1);
-        });
+    }, err => {
+       log.e('Won\'t run as there\'s no db connection: %j', err); 
     });
-
+ 
 }
 catch (e) {
     log.e('[%d]: Error in executor %j', process.pid, e, e.stack);

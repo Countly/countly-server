@@ -7,7 +7,6 @@ const plugins = require('../plugins/pluginManager.js');
 const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
-const countlyFs = require('./utils/countlyFs.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
@@ -31,23 +30,11 @@ else {
 
 // Finaly set the visible title
 process.title = t.join(' ');
-var databases = [plugins.dbConnection("countly"), plugins.dbConnection("countly_out"), plugins.dbConnection("countly_fs")];
 
-if (plugins.isPluginEnabled("drill")) {
-    databases.push(plugins.dbConnection("countly_drill"));
-}
-
-Promise.all(databases).then(function(dbs) {
-    common.db = dbs[0];
-    common.outDb = dbs[1];
-    countlyFs.setHandler(dbs[2]);
-
+plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
 
-    if (dbs[3]) {
-        common.drillDb = dbs[3];
-    }
     let workers = [];
 
     /**
