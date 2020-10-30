@@ -184,6 +184,7 @@ window.HooksView = countlyView.extend({
                             return row.lastTriggerTimestamp;
                         }
                         catch (e) {
+                            //silent catch
                         }
                     },
                     "sType": "string",
@@ -207,6 +208,7 @@ window.HooksView = countlyView.extend({
                         return row.createdByUser;
                     }
                     catch (e) {
+                        //silent catch
                     }
                 },
                 "sType": "string",
@@ -232,6 +234,8 @@ window.HooksView = countlyView.extend({
             this.dtable.fnSort([[0, 'asc']]);
         }
         catch (e) {
+            //silent catch
+
         }
         $(window).click(function() {
             $(".options-item").find(".edit").next(".edit-menu").fadeOut();

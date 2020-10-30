@@ -2,6 +2,7 @@
     jQuery,
     app,
     hooksPlugin,
+    CountlyHelpers,
     countlyGlobal,
     $
  */
@@ -14,8 +15,7 @@ window.HooksDrawer = function(HookView) {
                 form: $('#hooks-widget-drawer'),
                 title: jQuery.i18n.map["hooks.drawer-create-title"],
                 applyChangeTriggers: true,
-                onUpdate: function(e) {
-                    console.log(e, HookView.DrawerComponent.getWidgetSettings(true), "change!!");
+                onUpdate: function() {
                     HookView.DrawerComponent.checkDisabled();
                 },
                 resetForm: function() {
@@ -35,7 +35,6 @@ window.HooksDrawer = function(HookView) {
                     self.checkDrawerInterval = setInterval(function() {
                         self.drawer._applyChangeTrigger(self.drawer);
                         self.checkDisabled();
-                        console.log("check value");
                         if (!app.activeView.DrawerComponent) {
                             clearInterval(self.checkDrawerInterval);
                         }
@@ -56,7 +55,7 @@ window.HooksDrawer = function(HookView) {
             var self = this;
             var apps = [];
             //description
-            
+
 
             //select apps
             for (var appId in countlyGlobal.apps) {
@@ -181,7 +180,7 @@ window.HooksDrawer = function(HookView) {
             $("#create-widget").removeClass("disabled");
             $("#save-widget").removeClass("disabled");
             for (var key in hookConfig) {
-                if (hookConfig[key] == null) {
+                if (hookConfig[key] === null) {
                     $("#create-widget").addClass("disabled");
                     $("#save-widget").addClass("disabled");
                 }
@@ -189,13 +188,12 @@ window.HooksDrawer = function(HookView) {
         },
         loadWidgetData: function(data) {
             this.drawer.resetForm();
-            var self = this;
             $("#current_hook_id").text(data._id);
             $("#hook-name-input").val(data.name);
             if (data.description) {
                 $("#hook-description").val(data.description);
             }
-            
+
             var selectedApps = [];
             for (var index in data.apps) {
                 var appId = data.apps[index];
@@ -261,7 +259,6 @@ window.HooksDrawer = function(HookView) {
                     return null;
                 }
                 var effect = {type: effectType, configuration: configuration};
-                console.log(effect, "effectType");
                 configs.push(effect);
             }
             return configs;

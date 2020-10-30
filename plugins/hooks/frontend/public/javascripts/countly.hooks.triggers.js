@@ -1,26 +1,26 @@
 /*global
-  jQuery
+  _, jQuery, $, countlySegmentation, countlyEvent,countlyGlobal, countlyCommon,moment, CountlyHelpers, app, Uint8Array, Uint8Array,
  */
 
 (function(hooksPlugin, jQuery) {
     var _hookTriggers = {
-        
+
         "IncomingDataTrigger": {
             name: jQuery.i18n.map["hooks.IncomingDataTrigger"],
             init: function() {
                 var self = this;
                 self.filterObj = {};
-                $("#multi-app-dropdown").on("cly-multi-select-change", function(e) {
+                $("#multi-app-dropdown").on("cly-multi-select-change", function() {
                     self.loadEventsData();
                 });
-                this.loadEventsData(); 
+                this.loadEventsData();
                 $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
                     self.initDrill();
                 });
-                $("#multi-event-dropdown").on("cly-multi-select-change", function(e) {
+                $("#multi-event-dropdown").on("cly-multi-select-change", function() {
                     var events = $("#multi-event-dropdown").clyMultiSelectGetSelection();
                     countlySegmentation.reset();
-                    self.filterObj={};
+                    self.filterObj = {};
                     $("#filter-blocks").empty();
 
                     if (events.length === 1) {
@@ -28,12 +28,13 @@
                         $.when(countlySegmentation.initialize(currEvent)).then(function() {
                             $("#filter-definition").show();
                             self.adjustFilters();
-                            if(self.tmpFilterCall) {
+                            if (self.tmpFilterCall) {
                                 self.tmpFilterCall();
                                 self.tmpFilterCall = null;
                             }
                         });
-                    } else {
+                    }
+                    else {
                         $("#filter-definition").hide();
                     }
                 });
@@ -42,14 +43,15 @@
                 var self = this;
                 setTimeout(function() {
                     self.loadEventsData(trigger.configuration);
-                    self.tmpFilterCall = function () {
+                    self.tmpFilterCall = function() {
                         try {
                             var filter = JSON.parse(trigger.configuration.filter);
                             self.loadFilters(filter.dbFilter);
-                        } catch (e) {
-                            console.log(e);
                         }
-                    }
+                        catch (e) {
+                            //silence catch
+                        }
+                    };
                 }, 500);
             },
             getValidConfig: function() {
@@ -58,34 +60,34 @@
                 var configuration = {
                     event: $("#multi-event-dropdown").clyMultiSelectGetSelection(),
                     filter: JSON.stringify(filter),
-                }
+                };
                 return configuration;
             },
-            loadEventsData: function (configuration) {
+            loadEventsData: function(configuration) {
                 $("#multi-event-dropdown").clyMultiSelectClearSelection({});
                 $("#multi-event-dropdown").clyMultiSelectSetItems([]);
                 // only one app 
                 var apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                 if (apps.length !== 1) {
-                     return;
+                    return;
                 }
-                countlyEvent.getEventsForApps(apps, function(events){
+                countlyEvent.getEventsForApps(apps, function(events) {
                     $.ajax({
                         type: "GET",
                         url: countlyCommon.API_URL + '/o/internal-events',
                         data: {
-                            app_id: apps[0], 
+                            app_id: apps[0],
                         },
                         success: function(json) {
-                            var internal_events = []; 
+                            var internal_events = [];
                             json.forEach(function(event) {
-                                internal_events.push({value: apps[0]+"***"+event, name: jQuery.i18n.map["internal-events." + event] || event, description: '', count: '', sum: ''});
+                                internal_events.push({value: apps[0] + "***" + event, name: jQuery.i18n.map["internal-events." + event] || event, description: '', count: '', sum: ''});
                             });
                             events = events.concat(internal_events);
-                            events.unshift({value: apps[0]+"****", name: jQuery.i18n.map["hooks.any-events"]});
+                            events.unshift({value: apps[0] + "****", name: jQuery.i18n.map["hooks.any-events"]});
                             $("#multi-event-dropdown").clyMultiSelectSetItems(events);
-                            if(configuration && configuration.event) {
-                                events.forEach(function(event){
+                            if (configuration && configuration.event) {
+                                events.forEach(function(event) {
                                     if (event.value === configuration.event[0]) {
                                         $("#multi-event-dropdown").clyMultiSelectSetSelection([event]);
                                     }
@@ -93,8 +95,8 @@
                             }
                         }
                     });
-                    
-                    
+
+
                 });
             },
             initDrill: function() {
@@ -977,7 +979,7 @@
             },
 
         },
-        "InternalEventTrigger":{
+        "InternalEventTrigger": {
             name: jQuery.i18n.map["hooks.InternalEventTrigger"],
             init: function() {
                 var self = this;
@@ -994,9 +996,9 @@
                 $("#single-hook-trigger-internal-event-dropdown")
                     .off("cly-select-change").on("cly-select-change", function(e, selected) {
                         self.loadEventView(selected);
-                        app.localize($(".trigger-block")); 
+                        app.localize($(".trigger-block"));
                     });
-                $("#multi-app-dropdown").on("cly-multi-select-change", function(e) {
+                $("#multi-app-dropdown").on("cly-multi-select-change", function() {
                     self.loadCohortsData();
                     self.loadHooksData();
                 });
@@ -1008,52 +1010,55 @@
                 $("#single-hook-trigger-internal-event-dropdown")
                     .clySelectSetSelection(configuration.eventType, configuration.eventType);
                 switch (configuration.eventType) {
-                    case "/cohort/enter":
-                    case "/cohort/exit":
-                        setTimeout(function () {self.loadCohortsData(configuration);}, 200);
-                        break;
-                    case "/hooks/trigger":
-                        setTimeout(function() {self.loadHooksData(configuration);}, 200);
-                        break;
+                case "/cohort/enter":
+                case "/cohort/exit":
+                    setTimeout(function() {
+                        self.loadCohortsData(configuration);
+                    }, 200);
+                    break;
+                case "/hooks/trigger":
+                    setTimeout(function() {
+                        self.loadHooksData(configuration);
+                    }, 200);
+                    break;
                 }
             },
             getValidConfig: function() {
                 var configuration = {
                     eventType: $("#single-hook-trigger-internal-event-dropdown").clySelectGetSelection()
-                }
+                };
                 if (!configuration.eventType) {
                     return null;
                 }
-                switch(configuration.eventType) {
-                    case "/cohort/enter":
-                    case "/cohort/exit":
-                        configuration.cohortID = $("#single-hook-trigger-cohort-dropdown").clySelectGetSelection();
-                        if (!configuration.cohortID) {
-                            return null;
-                        }
-                        break;
-                    case "/i/app_users/create":
-                    case "/i/app_users/update":
-                    case "/i/app_users/delete":
-                        return configuration;
-                        break;
-                    case "/hooks/trigger":
-                        configuration.hookID = $("#single-hook-trigger-hooks-dropdown").clySelectGetSelection();
-                        if (!configuration.hookID) {
-                            return null;
-                        }
-                        break;
-                    default:
+                switch (configuration.eventType) {
+                case "/cohort/enter":
+                case "/cohort/exit":
+                    configuration.cohortID = $("#single-hook-trigger-cohort-dropdown").clySelectGetSelection();
+                    if (!configuration.cohortID) {
                         return null;
+                    }
+                    return configuration;
+                case "/i/app_users/create":
+                case "/i/app_users/update":
+                case "/i/app_users/delete":
+                    return configuration;
+                case "/hooks/trigger":
+                    configuration.hookID = $("#single-hook-trigger-hooks-dropdown").clySelectGetSelection();
+                    if (!configuration.hookID) {
+                        return null;
+                    }
+                    break;
+                default:
+                    return null;
                 }
-                return configuration
+                return configuration;
             },
             loadHooksData: function(configuration) {
                 $("#single-hook-trigger-hooks-dropdown").clySelectSetItems([]);
-                $("#single-hook-trigger-hooks-dropdown").clySelectSetSelection("","");
+                $("#single-hook-trigger-hooks-dropdown").clySelectSetSelection("", "");
                 var apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                 if (apps.length === 0) {
-                     return;
+                    return;
                 }
                 $.ajax({
                     type: "GET",
@@ -1061,10 +1066,10 @@
                     data: {},
                     dataType: "json",
                     success: function(data) {
-                        var hookList = []
+                        var hookList = [];
                         data.hooksList.forEach(function(hook) {
                             if (hook.apps.indexOf(apps[0]) > -1) {
-                                hookList.push({value:hook._id, name: hook.name});
+                                hookList.push({value: hook._id, name: hook.name});
                             }
                         });
                         $("#single-hook-trigger-hooks-dropdown").clySelectSetItems(hookList);
@@ -1073,121 +1078,77 @@
                         }
 
                         hookList.forEach(function(i) {
-                              if( i.value ===  configuration.hookID) {
-                                  $("#single-hook-trigger-hooks-dropdown").clySelectSetSelection(i.value, i.name);
-                              }
-                         })
+                            if (i.value === configuration.hookID) {
+                                $("#single-hook-trigger-hooks-dropdown").clySelectSetSelection(i.value, i.name);
+                            }
+                        });
                     }
                 });
             },
             loadCohortsData: function(configuration) {
-                $("#single-hook-trigger-cohort-dropdown").clySelectSetSelection("","");
+                $("#single-hook-trigger-cohort-dropdown").clySelectSetSelection("", "");
                 $("#single-hook-trigger-cohort-dropdown").clySelectSetItems([]);
                 var apps = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                 if (apps.length === 0) {
-                     return;
+                    return;
                 }
                 $.when((function() {
-                     var data = {
-                         "app_id": apps[0], //countlyCommon.ACTIVE_APP_ID,
-                         "method": "get_cohorts",
-                         "display_loader": false
-                     };
-                     $.ajax({
-                         type: "GET",
-                         url: countlyCommon.API_PARTS.data.r,
-                         data: data,
-                         dataType: "json",
-                         success: function(cohorts) {
-                             var cohortItems = []
-                             cohorts.forEach(function(c) {
+                    var data = {
+                        "app_id": apps[0], //countlyCommon.ACTIVE_APP_ID,
+                        "method": "get_cohorts",
+                        "display_loader": false
+                    };
+                    $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r,
+                        data: data,
+                        dataType: "json",
+                        success: function(cohorts) {
+                            var cohortItems = [];
+                            cohorts.forEach(function(c) {
                                 cohortItems.push({ value: c._id, name: c.name});
-                             });
-                             $("#single-hook-trigger-cohort-dropdown").clySelectSetItems(cohortItems);
-                             if (!(configuration && configuration.cohortID)) {
-                                 return;
-                             }
-                             cohortItems.forEach(function(i) {
-                                  if( i.value ===  configuration.cohortID ) {
-                                      $("#single-hook-trigger-cohort-dropdown").clySelectSetSelection(i.value, i.name);
-                                  }
-                             })
-                         }
-                     })
+                            });
+                            $("#single-hook-trigger-cohort-dropdown").clySelectSetItems(cohortItems);
+                            if (!(configuration && configuration.cohortID)) {
+                                return;
+                            }
+                            cohortItems.forEach(function(i) {
+                                if (i.value === configuration.cohortID) {
+                                    $("#single-hook-trigger-cohort-dropdown").clySelectSetSelection(i.value, i.name);
+                                }
+                            });
+                        }
+                    });
                 })()
-             ).catch(function(err) {
-                 console.log(err,"??");
-             });
+                ).catch(function() {
+                    //silient catch
+                });
             },
             loadEventView: function(event) {
                 var self = this;
                 var html = "";
-                switch(event) {
-                    case "/cohort/enter": 
-                    case "/cohort/exit":
-                        html = `
-                            <div class="section">
-                                <div class="label" data-localize='hooks.cohort-selector-title'></div>
-                                <div id="single-hook-trigger-cohort-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                                    <div class="select-inner">
-                                        <div class="text-container">
-                                            <div class="text">
-                                                <div class="default-text" data-localize='hooks.cohort-selector-placeholder'></div>
-                                            </div>
-                                        </div>
-                                        <div class="right combo"></div>
-                                    </div>
-                                    <div class="select-items square" style="width: 100%;"></div>
-                                </div>
-                            </div>
-                            <div class="section">
-                                <div class="label" data-localize='hooks.trigger-introduction' ></div>
-                                <div>
-                                    <div class="trigger-intro">
-                                    </div>
-                                </div>
-                            </div>
-                        `
-                        $(".internal-event-configuration-view").html(html);
-                        $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-internal-event-cohorts-enter-intro"));
-                        self.loadCohortsData();
-                        break;
-                    case '/i/app_users/create':
-                    case '/i/app_users/update':
-                    case '/i/app_users/delete':
-                         html = `
-                            <div class="section">
-                                <div class="label" data-localize='hooks.trigger-introduction' ></div>
-                                <div>
-                                    <div class="trigger-intro">
-                                    </div>
-                                </div>
-                            </div>
-                        `
-                        $(".internal-event-configuration-view").html(html);
-                        $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-internal-event-app-users-intro"));
-                        self.loadHooksData();
-                        break;
-                    case '/hooks/trigger': 
-                        html = `
-                            <div class="section">
-                                <div class="label" data-localize='hooks.hook-selector-title'></div>
-                                <div id="single-hook-trigger-hooks-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                                    <div class="select-inner">
-                                        <div class="text-container">
-                                            <div class="text">
-                                                <div class="default-text" data-localize='hooks.hooks-selector-placeholder'></div>
-                                        </div>
-                                        <div class="right combo"></div>
-                                    </div>
-                                    <div class="select-items square" style="width: 100%;"></div>
-                                </div>
-                            </div>
-                        `
-                        $(".internal-event-configuration-view").html(html);
-                        break;
-                    default:
-                        $(".internal-event-configuration-view").html(event);
+                switch (event) {
+                case "/cohort/enter":
+                case "/cohort/exit":
+                    html = $("#template-hook-trigger-cohort-view").html();
+                    $(".internal-event-configuration-view").html(html);
+                    $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-internal-event-cohorts-enter-intro"));
+                    self.loadCohortsData();
+                    break;
+                case '/i/app_users/create':
+                case '/i/app_users/update':
+                case '/i/app_users/delete':
+                    html = $("#tempate-hook-trigger-intro-view").html();
+                    $(".internal-event-configuration-view").html(html);
+                    $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-internal-event-app-users-intro"));
+                    self.loadHooksData();
+                    break;
+                case '/hooks/trigger':
+                    html = $("#template-hook-trigger-hook-trigger-view").html();
+                    $(".internal-event-configuration-view").html(html);
+                    break;
+                default:
+                    $(".internal-event-configuration-view").html(event);
                 }
             },
         },
@@ -1195,11 +1156,15 @@
             name: jQuery.i18n.map["hooks.APIEndPointTrigger"],
             init: function() {
                 app.localize();
+                /**
+                 * generate uuid4 value
+                 * @return {string} - generated uuid4 value
+                 */
                 function uuidv4() {
-                    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, function (c) {
-                        return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function(c) {
+                        return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
                     });
-                };
+                }
                 $("#api-endpoint-trigger-uri").val(uuidv4());
                 this.renderIntro();
             },
@@ -1210,23 +1175,23 @@
             },
             getValidConfig: function() {
                 var uri = $("#api-endpoint-trigger-uri").val();
-                if(!uri) {
-                    return null
+                if (!uri) {
+                    return null;
                 }
                 return {path: uri, method: 'get'};
             },
             renderIntro: function() {
-                var url = window.location.protocol + "//" + window.location.host + "/o/hooks/" +  $("#api-endpoint-trigger-uri").val()
+                var url = window.location.protocol + "//" + window.location.host + "/o/hooks/" + $("#api-endpoint-trigger-uri").val();
                 $(".trigger-intro").html(jQuery.i18n.prop("hooks.trigger-api-endpoint-intro-content", url));
             }
         },
-    }
+    };
 
     /**
      * get default hook triggers dictionary
      * @return {objecT} hook triggers dictionary
      */
-    hooksPlugin.getHookTriggers = function () {
+    hooksPlugin.getHookTriggers = function() {
         return _hookTriggers;
-    }
+    };
 }(window.hooksPlugin = window.hooksPlugin || {}, jQuery));

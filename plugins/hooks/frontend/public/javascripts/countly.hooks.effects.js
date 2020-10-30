@@ -1,5 +1,5 @@
 /*global
-    jQuery
+    jQuery, $,CountlyHelpers, countlyGlobal,
  */
 (function(hooksPlugin, jQuery) {
     var _hookEffects = {
@@ -70,8 +70,8 @@
                     }
                 });
             },
-            renderConfig: function(data, dom) {
-                var configuration =  data.configuration;
+            renderConfig: function(data) {
+                var configuration = data.configuration;
                 var emailSelectorDom = this.emailInput[0];// $(dom).find("select.email-list-input");
                 for (var i = 0; i < configuration.address.length; i++) {
                     emailSelectorDom.selectize.addOption({ "name": '', "email": configuration.address[i] });
@@ -83,19 +83,19 @@
                 $(dom).find("select.email-list-input  :selected").each(function() {
                     emailList.push($(this).val());
                 });
-                if(emailList.length === 0)  {
+                if (emailList.length === 0) {
                     return null;
                 }
-                return {address: emailList}
+                return {address: emailList};
             }
         },
         "HTTPEffect": {
             name: jQuery.i18n.map["hooks.HTTPEffect"],
             init: function() {
                 var methods = [
-                    {value:"get", name: jQuery.i18n.map["hooks.http-method-get"]},
-                    {value:"post", name: jQuery.i18n.map["hooks.http-method-post"]}, 
-                ]
+                    {value: "get", name: jQuery.i18n.map["hooks.http-method-get"]},
+                    {value: "post", name: jQuery.i18n.map["hooks.http-method-post"]},
+                ];
                 $(".http-effect-method-dropdown").clySelectSetItems(methods);
                 $(".http-effect-method-dropdown").clySelectSetSelection(methods[0].value, methods[0].name);
             },
@@ -103,35 +103,34 @@
                 var url = $(dom).find("#http-effect-url").val();
                 var method = $(dom).find(".http-effect-method-dropdown").clySelectGetSelection();
                 var requestData = $(dom).find("[name=http-effect-params]").val();
-                console.log("http get", url, method, requestData);
-                if( !url || !method || !requestData) {
+                if (!url || !method || !requestData) {
                     return null;
                 }
-                return {url, method, requestData};
+                return {url: url, method: method, requestData: requestData};
             },
             renderConfig: function(data, dom) {
                 var configuration = data.configuration;
-                window.dd=dom;
+                window.dd = dom;
                 $(dom).find("#http-effect-url").val(configuration.url);
                 $(dom).find(".http-effect-method-dropdown").clySelectSetSelection(configuration.method,
-                jQuery.i18n.map["hooks.http-method-" + configuration.method]);
-                ($(dom).find("[name=http-effect-params]")[0]).innerHTML= configuration.requestData;
+                    jQuery.i18n.map["hooks.http-method-" + configuration.method]);
+                ($(dom).find("[name=http-effect-params]")[0]).innerHTML = configuration.requestData;
             },
         },
-       /* "SDKEventEffect": {
+        /* "SDKEventEffect": {
             name: jQuery.i18n.map["hooks.SDKEventEffect"],
             init: function() {
             },
         }
         */
-    }
+    };
 
     /**
      * get default hook effects dictionary
      * @return {objecT} hook effects dictionary
      */
-    hooksPlugin.getHookEffects = function () {
+    hooksPlugin.getHookEffects = function() {
         return _hookEffects;
-    }
+    };
 
 }(window.hooksPlugin = window.hooksPlugin || {}, jQuery));
