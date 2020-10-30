@@ -5590,13 +5590,12 @@ window.EventsBlueprintView = countlyView.extend({
             var check = $("#eb-description-checkbox").hasClass("fa-check-square");
             if (check) {
                 $("#eb-description-checkbox").removeClass('fa-check-square').addClass('fa-square-o');
-                $('#eb-event-desc-input').removeAttr('disabled');
+                $('#eb-event-desc-input').attr('disabled', 'disabled');
             }
             else {
                 $("#eb-description-checkbox").removeClass('fa-square-o').addClass('fa-check-square');
-                $('#eb-event-desc-input').attr('disabled', 'disabled');
+                $('#eb-event-desc-input').removeAttr('disabled');
             }
-
         });
 
         $('#events-blueprint-drawer .on-off-switch input').off("change").on("change", function() {
