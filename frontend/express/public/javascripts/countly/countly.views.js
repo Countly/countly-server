@@ -5614,14 +5614,37 @@ window.EventsBlueprintView = countlyView.extend({
             event_map[settings.key] = settings;
             var omitted_segments = {};
             omitted_segments[settings.key] = settings.omit_list;
-            countlyEvent.update_map(JSON.stringify(event_map), "", "", JSON.stringify(omitted_segments), function(result) {
-                if (result === true) {
-                    var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true, type: "ok"};
-                    CountlyHelpers.notify(msg);
-                    $("#events-blueprint-drawer").removeClass("open");
-                    self.refresh(true);
-                }
-            });
+            console.log(omitted_segments[settings.key],self.activeEvent.omittedSegments)
+            if (self.compare_arrays(omitted_segments[settings.key], self.activeEvent.omittedSegments) && omitted_segments[settings.key].length > 0) {
+                console.log("varr degisilik")
+                CountlyHelpers.confirm(jQuery.i18n.map["event.edit.omitt-warning"], "red", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+                    countlyEvent.update_map(JSON.stringify(event_map), "", "", JSON.stringify(omitted_segments), function(result1) {
+                        if (result1 === true) {
+                            CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                            $("#events-blueprint-drawer").removeClass("open");
+                            self.refresh(true);
+                        }
+                        else {
+                            CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                        }
+                    });
+                });
+            }
+            else {
+                countlyEvent.update_map(JSON.stringify(event_map), "", "", JSON.stringify(omitted_segments), function(result2) {
+                    if (result2=== true) {
+                        CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                        $("#events-blueprint-drawer").removeClass("open");
+                        self.refresh(true);
+                    }
+                    else {
+                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                    }
+                });
+            }
         });
         $(".cly-drawer").find(".close").off("click").on("click", function() {
             $(this).parents(".cly-drawer").removeClass("open");
