@@ -3796,6 +3796,15 @@ p.error_message_div {
     margin-right: 15px;
   }
 
-#eb-event-desc-input {
+
+.user-config-danger-zone {
+    display: none;
+}
+
+.routename-user-settings .user-config-danger-zone {
     display: block;
 }
+
+#eb-event-desc-input {
+    display: block;
+} 

@@ -1932,7 +1932,7 @@ const processRequest = (params) => {
                         }
                     }
                     else {
-                        if (params.qstring.event.startsWith('[CLY]_group_')) {
+                        if (params.qstring.event && params.qstring.event.startsWith('[CLY]_group_')) {
                             validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventGroups);
                         }
                         else {
