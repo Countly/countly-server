@@ -218,6 +218,28 @@ class Base {
         });
     }
 
+    /**
+     * Remove messages from collection - they're cancelled.
+     * 
+     * @param  {ObjectId} mid note id
+     * @param  {Array} uids array of uids
+     * @return {Promise} resolves to number of deleted messages
+     */
+    cancelUids(mid, uids) {
+        log.i('Cancelling %s for %d uids in %s', mid, uids && uids.length || 0, this.collectionName);
+        return new Promise((resolve, reject) => {
+            this.collection.deleteMany({n: mid, u: {$in: uids}, $or: [{j: {$exists: false}}, {j: null}]}, (err, res) => {
+                log.i('Cancelled %j in %s', res && res.deletedCount || err, this.collectionName);
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(res && res.deletedCount || 0);
+                }
+            });
+        });
+    }
+
     /** schedule
      * @param {object} next - date object
      * @return {object} object
@@ -353,15 +375,15 @@ class Store extends Base {
                     chunk.forEach(u => u.x = this.tmp);
                 }
                 log.d('Inserting %d chunk into %s', chunk.length, this.collectionName);
-                this.collection.insertMany(chunk, {ordered: false}, (err, result) => {
+                this.collection.insertMany(chunk, {ordered: false, ignore_errors: [11000]}, (err, result) => {
                     if (err) {
                         if (err.code === 11000) {
                             if (err.name === 'BulkWriteError') {
-                                log.d('Many duplicates: %j / %j / %j / %j', err.result && err.result.nInserted, chunk.length, result, err);
+                                log.d('Many duplicates: %j / %j', err.result && err.result.nInserted, chunk.length);
                                 res(err.result.nInserted);
                             }
                             else {
-                                log.d('One duplicate: %j / %j / %j', chunk.length, result, err);
+                                log.d('One duplicate: %j', chunk.length);
                                 res(chunk.length - 1);
                             }
                         }
@@ -452,12 +474,30 @@ class Store extends Base {
 
     /**
      * Get uids by message $in
-     * @param  {Array} min  Array of mids
+     * @param  {Object} min filter condition: [oid], {$in: [oid]}, {$nin: [oid]}
      * @return {Promise}    resoves to array of uids
      */
     _filterMessage(min) {
         return new Promise((res, rej) => {
-            this.db.collection(`push_${this.app._id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(this.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+            let query = (min.$in || min.$nin) ? min : {$in: min};
+            if (min.$in) {
+                min.$in = min.$in.map(this.db.ObjectID);
+            }
+            if (min.$nin) {
+                min.$nin = min.$nin.map(this.db.ObjectID);
+            }
+            if (min.$nin) {
+                query = {
+                    $or: [
+                        {msgs: {$elemMatch: {'0': query}}},
+                        {msgs: {$exists: false}},
+                    ]
+                };
+            }
+            else {
+                query = {msgs: {$elemMatch: {'0': query}}};
+            }
+            this.db.collection(`push_${this.app._id}`).find(query, {projection: {_id: 1}}).toArray((err, ids) => {
                 if (err) {
                     rej(err);
                 }
@@ -483,7 +523,7 @@ class Store extends Base {
             query = note.queryUser;
 
             if (query.message) {
-                let filtered = await this._filterMessage(query.message.$in);
+                let filtered = await this._filterMessage(query.message);
                 delete query.message;
 
                 if (uids) {
@@ -1100,7 +1140,7 @@ class Loader extends Store {
                         ids = [];
 
                         Object.keys(notes).forEach(id => {
-                            log.d('Counting note %s in messages %j', id, msgs);
+                            log.d('Counting note %s in %d messages', id, msgs.length);
                             let rem = [], note = notes[id];
                             if (note.autoEvents && note.autoEvents.length) {
                                 log.d('Counting note %s events case: %j', id, note.autoEvents);
@@ -1111,7 +1151,7 @@ class Loader extends Store {
                                 rem = msgs.filter(m => m.n === id && m.d < maxDate).map(m => m._id);
                             }
 
-                            log.d('Counting note %s: discarding %j', id, rem);
+                            log.d('Counting note %s: discarding %d', id, rem.length);
                             if (rem.length) {
                                 ids = ids.concat(rem);
                                 ret[id] = (ret[id] || 0) + rem.length;
@@ -1329,7 +1369,6 @@ class Loader extends Store {
     pushNote(mid, uids, date, recur) {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
         log.i('Recording message %s for %d uids', mid, uids.length);
-        log.d('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
             this.db.collection(`push_${this.app._id}`).updateMany({_id: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
                 if (err) {
@@ -1704,6 +1743,27 @@ class StoreGroup {
             next = total ? Math.min(...results.filter(r => !!r.next).map(r => r.next)) : null;
 
         return {total: total, next: next};
+    }
+
+    /** cancelUids
+     * @param {object} note - note object
+     * @param {object} app - app object
+     * @param {array} uids - user id's
+     * @returns {object} - {total: total, next: next}
+     */
+    async cancelUids(note, app, uids) {
+        log.i('Note %s cancelling %d users for app %s', note.id, uids.length, app._id);
+        let stores = (await this.stores(note)).filter(store => store.app._id.equals(app._id));
+
+        if (!stores.length) {
+            log.e('Wrong app %j', app);
+            throw new Error('Wrong app ' + app._id);
+        }
+
+        let results = await Promise.all(stores.map(async store => store.cancelUids(note._id, uids)));
+        log.i('Note %s cancelUids results: %j', note.id, results);
+
+        return results.reduce((a, b) => a + b, 0);
     }
 
     /** getter for app objects

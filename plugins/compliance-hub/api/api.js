@@ -256,23 +256,17 @@ var plugin = {},
                     }
                     else if (total > 0) {
                         params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                        params.qstring.project = params.qstring.project || params.qstring.projection || {"did": 1, "d": 1, "av": 1, "consent": 1, "ls": 1, "uid": 1, "appUserExport": 1};
+                        params.qstring.project = params.qstring.project || params.qstring.projection || {"did": 1, "d": 1, "av": 1, "consent": 1, "lac": 1, "uid": 1, "appUserExport": 1};
 
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                             params.qstring.query.did = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         }
 
-                        var columns = ["did", "d", "av", "consent", "ls"];
+                        var columns = ["did", "d", "av", "consent", "lac"];
                         var checkOb;
                         if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
                             checkOb = {};
-                            if (columns[params.qstring.iSortCol_0] === "ls") {
-                                checkOb.lac = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-                                checkOb.ls = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-                            }
-                            else {
-                                checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-                            }
+                            checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                         }
                         params.qstring.sort = checkOb || params.qstring.sort || {};
                         params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
@@ -283,18 +277,6 @@ var plugin = {},
                                     common.returnMessage(params, 400, err);
                                 }
                                 else {
-                                    var item;
-                                    for (var i = items.length - 1; i >= 0; i--) {
-                                        item = items[i];
-                                        if (item.ls && item.lac) {
-                                            if (Math.round(item.lac / 1000) > item.ls) {
-                                                item.ls = Math.round(item.lac / 1000);
-                                            }
-                                        }
-                                        else if (item.lac) {
-                                            item.ls = Math.round(item.lac / 1000);
-                                        }
-                                    }
                                     common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: countTotal, iTotalDisplayRecords: countTotal, aaData: items});
                                 }
                             });

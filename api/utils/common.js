@@ -196,6 +196,7 @@ common.dbUserMap = {
     'total_session_duration': 'tsd',
     'session_count': 'sc',
     'device': 'd',
+    'device_type': 'dt',
     'carrier': 'c',
     'city': 'cty',
     'region': 'rgn',
@@ -578,14 +579,14 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
     // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer, handling also float timestamps with ms after dot
     if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
         // If the received timestamp is greater than current time use the current time as timestamp
-        currTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.unix() : parseInt(reqTimestamp, 10);
-        curMsTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.valueOf() : parseFloat(reqTimestamp, 10) * 1000;
+        currTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.unix() : parseInt(reqTimestamp, 10);
+        curMsTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.valueOf() : parseFloat(reqTimestamp, 10) * 1000;
         tmpMoment = moment(currTimestamp * 1000);
     }
     else if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 && common.isNumber(reqTimestamp)) {
         var tmpTimestamp = Math.floor(parseInt(reqTimestamp, 10) / 1000);
-        curMsTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix()) ? Date.now() : parseInt(reqTimestamp, 10);
-        currTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.valueOf() : tmpTimestamp;
+        currTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.unix() : tmpTimestamp;
+        curMsTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.valueOf() : parseInt(reqTimestamp, 10);
         tmpMoment = moment(currTimestamp * 1000);
     }
     else {
@@ -594,8 +595,10 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
         curMsTimestamp = tmpMoment.valueOf();
     }
 
-    currDateWithoutTimestamp.tz(appTimezone);
-    tmpMoment.tz(appTimezone);
+    if (appTimezone) {
+        currDateWithoutTimestamp.tz(appTimezone);
+        tmpMoment.tz(appTimezone);
+    }
 
     /**
    * @typedef timeObject
@@ -1730,7 +1733,10 @@ common.versionCompare = function(v1, v2, options) {
 * @returns {number} adjusted timestamp for timezone
 */
 common.adjustTimestampByTimezone = function(ts, tz) {
-    var d = moment().tz(tz);
+    var d = moment();
+    if (tz) {
+        d.tz(tz);
+    }
     return ts + (d.utcOffset() * 60);
 };
 
@@ -1971,23 +1977,24 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set = {};
                 }
                 if (!update.$set.fac) {
-                    if (user.fs && user.fs * 1000 < params.time.mstimestamp) {
-                        update.$set.fac = user.fs * 1000;
+                    if (user.fs && user.fs < params.time.timestamp) {
+                        update.$set.fac = user.fs;
                     }
                     else {
-                        update.$set.fac = params.time.mstimestamp;
+                        update.$set.fac = params.time.timestamp;
                     }
                 }
+                update.$set.first_sync = Math.round(Date.now() / 1000);
             }
 
-            if (typeof user.lac === "undefined" || user.lac < params.time.mstimestamp) {
+            if (typeof user.lac === "undefined" || (user.lac + "").length === 13 || user.lac < params.time.timestamp) {
                 if (!update.$set) {
                     update.$set = {};
                 }
                 if (!update.$set.lac) {
-                    update.$set.lac = params.time.mstimestamp;
+                    update.$set.lac = params.time.timestamp;
                 }
-                update.$set.last_sync = Date.now();
+                update.$set.last_sync = Math.round(Date.now() / 1000);
             }
 
             if (!user.sdk) {
@@ -2361,18 +2368,23 @@ common.mergeQuery = function(ob1, ob2) {
             else if (key === "$addToSet") {
                 for (let val in ob2[key]) {
                     if (typeof ob1[key][val] !== 'object') {
-                        ob1[key][val] = {'$each': [ob1[key][val]]};
+                        ob1[key][val] = {'$each': [ob1[key][val]]}; //create as object if it is single value
                     }
 
                     if (typeof ob2[key][val] === 'object' && ob2[key][val].$each) {
                         for (let p = 0; p < ob2[key][val].$each.length; p++) {
-                            ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                            if (ob1[key][val].$each.indexOf(ob2[key][val].$each[p]) === -1) {
+                                ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                            }
                         }
                     }
                     else {
-                        ob1[key][val].$each.push(ob2[key][val]);
+                        if (ob1[key][val].$each.indexOf(ob2[key][val]) === -1) {
+                            ob1[key][val].$each.push(ob2[key][val]);
+                        }
                     }
                 }
+
             }
             else if (key === "$push") {
                 for (let val in ob2[key]) {
@@ -2418,6 +2430,15 @@ common.mergeQuery = function(ob1, ob2) {
                 for (let val in ob2[key]) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.max(ob1[key][val], ob2[key][val]);
+                }
+            }
+        }
+        //try to fix colliding fields
+        if (ob1 && ob1.$set && ob1.$set.data && ob1.$inc) {
+            for (let key in ob1.$inc) {
+                if (key.startsWith("data.")) {
+                    ob1.$set.data[key.replace("data.", "")] = ob1.$inc[key];
+                    delete ob1.$inc[key];
                 }
             }
         }

@@ -30,7 +30,8 @@ class Manager {
         this.running = {}; // {'push:apn:connection': [resource1, resource2], 'xxx': [resource3]}
         this.resources = []; // {'push:apn:connection': [job1, job2]}
         // Once job is done running (goes out of running), if it's resourceful job, it goes into resources until resource is closed or another job of this type is being run
-        manager.singleDefaultConnection().then((db) => {
+
+        manager.connectToAllDatabases().then(([db]) => {
             this.db = db;
             // JOB.setDB(this.db);
             this.collection = this.db.collection('jobs');

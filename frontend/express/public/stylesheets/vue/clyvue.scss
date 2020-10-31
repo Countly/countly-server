@@ -537,10 +537,9 @@
         }
     }
 
-    .cly-vue-image-radio {
-        .image-radio-wrapper > div {
-            width: 144px;
-            height: 100px;
+    .cly-vue-generic-radio {
+        .generic-radio-wrapper > div {
+            width: calc(50% - 8px);
             border: 1px solid #d0d0d0;
             border-radius: 2px;
             display: inline-block;
@@ -549,6 +548,7 @@
             background-color: #fff;
             cursor: pointer;
             text-align: center;
+            padding: 10px 0px;
             &:last-child {
                 margin-right: 0px;
             }
@@ -621,6 +621,26 @@
                 background-color: transparent;
             }
         }
+
+        &.disabled {
+            .radio-button {
+                cursor: default;
+                &.selected {
+                    background-color: #f4f4f4;
+                    .box {
+                        background-color: #c6c6c6;
+                    }
+                }
+
+                .box {
+                    cursor: default;
+                }
+
+                .text {
+                    cursor: default;
+                }
+            }
+        }
     }
 
     // colorpicker
@@ -633,7 +653,7 @@
         height: #{$cp-preview-height};
         .picker-body {
             position: relative;
-            box-shadow: 0 3px 7px rgba(0,0,0,.08);
+            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
             border: 1px solid #d0d0d0;
             border-radius: 2px;
             width: 275px;
@@ -641,6 +661,7 @@
             background-color: #ffffff;
             top: #{$cp-preview-height + $cp-preview-border-size * 2};
             left: #{$cp-preview-height};
+            z-index: 9999;
             > .vc-sketch {
                 background-color: transparent;
                 padding: #{$cp-picker-body-padding};
@@ -655,7 +676,7 @@
                         height: #{$cp-picker-body-size};
                     }
                 }
-                .vc-sketch-presets {    
+                .vc-sketch-presets {
                     display: none;
                 }
             }
@@ -694,6 +715,8 @@
 
     .cly-vue-check {
         display: inline-block;
+
+        $check-disabled-color: #c6c6c6;
 
         &.block {
             display: block;
@@ -738,6 +761,14 @@
                     }
                 }
             }
+            &.disabled {
+                .check-checkbox:checked + .check-label {
+                    opacity: 0.5;
+                }
+                .check-label {
+                    cursor: default;
+                }
+            }
         }
 
         &.check-tick-skin {
@@ -745,6 +776,12 @@
                 .check-label {
                     color: #2fa732;
                     cursor: pointer;
+                }
+            }
+            &.disabled {
+                .check-label {
+                    color: #{$check-disabled-color};
+                    cursor: default;
                 }
             }
         }
@@ -772,9 +809,14 @@
                     color: #444;
                     vertical-align: top;
                     margin-top: 3px;
-                    margin-left: 8px;
+                    margin-left: 5px;
                     line-height: 12px;
                     cursor: pointer;
+                }
+            }
+            &.disabled {
+                .check-text {
+                    cursor: default;
                 }
             }
         }
@@ -782,6 +824,9 @@
 
     //button
     .cly-vue-button {
+        + .cly-vue-button {
+            margin-left: 8px;
+        }
         min-height: 14px;
         cursor: pointer;
         float: left;
@@ -790,7 +835,6 @@
         font: 12px Ubuntu, Helvetica, sans-serif;
         line-height: 15px;
         overflow: auto;
-        margin-left: 8px;
 
         &.button-green-skin {
             background-color: #2eb52b;
@@ -801,6 +845,11 @@
             color: #717171;
             background-color: #fdfdfd;
             box-shadow: inset 0 0 0 1px #dcdcdc;
+        }
+        &.button-orange-skin {
+            background-color: #ef9c42;
+            color: #fff;
+            border-radius: 3px;
         }
         &:hover {
             opacity: 0.8;
@@ -995,6 +1044,10 @@
                 color: rgb(255, 0, 0);
                 font-size: 12px;
             }
+            .regular {
+                width: 85%;
+                margin: 20px auto 0 auto;
+            }
             .slim {
                 width: 75%;
                 margin: 20px auto 0 auto;
@@ -1084,6 +1137,7 @@
             box-sizing: border-box;
             bottom: 0;
             overflow: auto;
+
             .cly-vue-button {
                 float: none;
                 font-size: 15px;
@@ -1107,11 +1161,137 @@
     }
 
     .cly-vue-panel {
+        .widget-header .left {
+            .title {
+                //Adding margin 0 to overwrite 3px margin added by legacy css
+                //The 3px margin should be set on the parent within the component
+                //And I have set it there
+                margin: 0px;
+            }
+        }
+
         .widget-header .right {
             .cly-vue-button {
                 float: right;
                 margin-top: 6px;
                 margin-left: 20px;
+            }
+        }
+        .widget-content.no-border {
+            border: none;
+        }
+    }
+
+    .cly-vue-menubox {
+        &.menubox-default-skin {
+            display: inline-block;
+            .menu-toggler {
+                max-width: 400px;
+                width: auto;
+                height: 27px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+
+                .text-container {
+                    overflow: hidden;
+                    margin-right: 4px;
+
+                    .text {
+                        font-size: 13px;
+                        font-family: Ubuntu, Helvetica, sans-serif;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        color: #444;
+                    }
+                }
+
+                .arrows-wrapper {
+                    width: auto;
+                    height: auto;
+                    padding: 0;
+                    margin: 0;
+
+                    .up,
+                    .down {
+                        width: auto;
+                        opacity: 0.8;
+                    }
+
+                    .down:before,
+                    .up:before {
+                        font-size: 9px;
+                        color: #fff;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 4px;
+                        background-color: #444;
+                    }
+                }
+
+                div.up {
+                    display: none;
+                }
+                &.active div.up {
+                    display: block;
+                }
+                &.active div.down {
+                    display: none;
+                }
+                &:hover {
+                    .text {
+                        color: #2fa732;
+                    }
+
+                    .up:before,
+                    .down:before {
+                        background-color: #2fa732;
+                    }
+                }
+            }
+
+            .menu-body {
+                box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
+                background-color: #fff;
+                position: absolute;
+                left: 10px;
+                top: 55px;
+                z-index: 100;
+                border: 1px solid #d0d0d0;
+                border-radius: 2px;
+                padding: 20px;
+                table {
+                    width: 100%;
+                    tr td {
+                        padding: 5px 0px;
+                        &:first-child {
+                            text-align: right;
+                            width: 50px;
+                            white-space: nowrap;
+                            padding-right: 10px;
+                        }
+                    }
+                }
+                .cly-vue-select {
+                    background-color: #fdfdfd;
+                    width: 100%;
+                    .select-items {
+                        width: 100%;
+                    }
+                    .placeholder {
+                        color: #d0d0d0;
+                    }
+                }
+
+                .controls {
+                    float: right;
+                    margin-top: 10px;
+                }
             }
         }
     }
@@ -1129,6 +1309,124 @@
         box-sizing: border-box;
         overflow: hidden;
     }
+
+    .cly-vue-text-field {
+        display: inline-block;
+        width: 100%;
+        position: relative;
+        .remove-button {
+            font-family: Ubuntu;
+            font-size: 12px;
+            color: #d06d6d;
+            display: none;
+            position: absolute;
+            padding: 7px 8px;
+            top: 1px;
+            right: 1px;
+            background-color: white;
+        }
+        &:hover .remove-button {
+            display: block;
+            cursor: pointer;
+        }
+    }
+
+    .cly-vue-button-menu {
+        position: relative;
+        .toggler {
+            color: #a7a7a7;
+            font-size: 20px;
+            vertical-align: middle;
+            line-height: 12px;
+            float: right;
+            height: 11px;
+            text-align: center;
+            border: 1px solid transparent;
+            border-radius: 1px;
+            width: 16px;
+            cursor: pointer;
+            &:before {
+                font-family: "Ionicons";
+                content: "\f396";
+            }
+            &:hover {
+                color: #6b6b6b;
+            }
+        }
+        .menu-body {
+            padding: 10px 0;
+            opacity: 0;
+            transition: opacity 0.3s, z-index 0.9s;
+            z-index: -1;
+            position: absolute;
+            background-color: #fff;
+            right: -3px;
+            top: 20px;
+            border-radius: 2px;
+            outline: none;
+            border: 1px solid #d0d0d0;
+            .item {
+                cursor: pointer;
+                padding: 8px 20px;
+                font-size: 13px;
+                white-space: nowrap;
+                color: #474747;
+                display: block;
+                &:hover {
+                    background-color: #f3f3f3;
+                }
+                i {
+                    margin-right: 7px;
+                    width: 13px;
+                }
+            }
+            &.active {
+                opacity: 1;
+                transition: opacity 0.2s;
+                z-index: 2;
+            }
+            &:before {
+                border: 4px solid rgba(194, 225, 245, 0);
+                border-bottom-color: #fff;
+                right: 7px;
+                top: -8px;
+                content: " ";
+                height: 0;
+                width: 0;
+                position: absolute;
+                pointer-events: none;
+                z-index: 2;
+            }
+            &:after {
+                border: 5px solid rgba(194, 225, 245, 0);
+                border-bottom-color: #d0d0d0;
+                right: 6px;
+                top: -10px;
+                content: " ";
+                height: 0;
+                width: 0;
+                position: absolute;
+                pointer-events: none;
+                z-index: 1;
+            }
+        }
+        &.button-menu-single-skin {
+            .toggler {
+                padding: 6px 5px;
+                margin-top: 8px;
+            }
+            .toggler:hover {
+                border: 1px solid #d0d0d0;
+                background-color: white;
+                color: #6b6b6b;
+            }
+            .menu-body {
+                right: 2px;
+                top: 32px;
+            }
+        }
+    }
+
     .widget-header .cly-vue-select {
         background-color: #ececec;
         position: relative;
@@ -1140,7 +1438,6 @@
         user-select: none;
         display: inline-block;
         width: 135px;
-        height: 27px;
         border: 1px solid #d0d0d0;
         border-radius: 2px;
         cursor: pointer;
@@ -1152,7 +1449,7 @@
             opacity: 0.4 !important;
             cursor: default;
         }
-        &:not(.disabled):hover .right.combo:before {
+        &:not(.disabled):hover .drop.combo:before {
             color: #2fa732;
         }
 
@@ -1181,7 +1478,7 @@
         &.active {
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
-            .right {
+            .drop {
                 border-bottom-right-radius: 0;
                 &.combo:before {
                     content: "\f126";
@@ -1191,25 +1488,35 @@
         }
 
         .select-inner {
+            //In order to change row height change height property only.
+            //The dropdown arrow on right will auto align vertically.
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: auto;
+            font-size: 0;
+            display: flex;
+            align-items: center;
+            height: 27px;
+            padding: 5px 8px;
+            box-sizing: border-box;
         }
 
         .text-container {
-            float: left;
             width: 100%;
+            margin: 0px;
+            box-sizing: border-box;
+            overflow: hidden;
+            margin-right: 4px;
         }
+
         .text {
-            padding: 6px 9px;
-            padding-right: 25px;
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
             color: #444;
             font-weight: normal;
             font: 13px Ubuntu, Helvetica, sans-serif;
-            line-height: 111%;
+            padding: 0;
+            margin: 0;
         }
 
         .search {
@@ -1267,7 +1574,7 @@
             border-radius: 2px;
             background-color: #fff;
             border: 1px solid #d0d0d0;
-            width: 135px;
+            width: 100%;
 
             .scrollable {
                 max-height: 188px;
@@ -1300,7 +1607,7 @@
                 &.hidden {
                     display: none;
                 }
-                &:hover {
+                &.navigated {
                     background-color: #f3f3f3;
                 }
                 &:last-child,
@@ -1358,23 +1665,19 @@
             }
         }
 
-        .right {
+        .drop {
             opacity: 0.8;
-            right: 0;
-            position: absolute;
-            width: 15px;
-            height: 100%;
-            line-height: 27px;
+            width: auto;
+
             &:hover {
                 opacity: 1;
             }
+
             &.combo:before {
                 color: #717171;
                 font-family: "Ionicons";
                 content: "\f123";
                 font-size: 9px;
-                position: absolute;
-                right: 8px;
             }
         }
 
@@ -1390,38 +1693,43 @@
         }
 
         &.select-slim-skin {
-            float: left;
             border: none;
             width: auto;
             background-color: transparent;
-            margin-right: 5px;
-            .text {
-                padding-left: 3px;
-            }
-            .text-container {
-                width: auto;
-                max-width: 150px;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                white-space: nowrap;
-            }
-            .right {
-                float: left;
-                &.combo:before {
-                    right: auto;
+
+            .select-inner {
+                padding: 0px;
+
+                .text-container {
+                    width: auto;
+                }
+
+                .drop {
+                    width: 12px;
+                    height: 12px;
+                    background-color: #444;
+                    justify-content: center;
+                    align-items: center;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    font-size: 0;
+                    display: flex;
+
+                    &.combo:before {
+                        color: #fff;
+                    }
                 }
             }
+
             &:hover {
+                .drop {
+                    opacity: 1;
+                    background-color: #2fa732;
+                }
+
                 .text {
                     color: #2fa732;
                 }
-                .right.combo:before {
-                    color: #2fa732;
-                }
-            }
-            .items-list,
-            .search {
-                width: 220px;
             }
         }
 
@@ -1441,7 +1749,7 @@
                 .text {
                     color: #fff;
                 }
-                .right.combo:before {
+                .drop.combo:before {
                     color: #fff;
                 }
                 &.disabled {
@@ -1450,7 +1758,7 @@
                     .text {
                         color: #444;
                     }
-                    .right.combo:before {
+                    .drop.combo:before {
                         color: #717171;
                     }
                 }
@@ -1480,6 +1788,19 @@
             }
             &:hover {
                 background-color: #f1f1f1;
+            }
+        }
+        tbody > tr.vgt-detail-row {
+            background-color: #f9f9f9;
+        }
+        &:not(.striped) > tbody > tr {
+            border-bottom: solid 1px #e1e1e1;
+            border-top: solid 1px #e1e1e1;
+            &.clickable:hover {
+                background-color: #f1f1f1;
+            }
+            &:last-child {
+                border-bottom: none;
             }
         }
     }
@@ -1571,9 +1892,6 @@
         & tr {
             &.clickable {
                 cursor: pointer;
-                &:hover {
-                    background-color: $highlight-color;
-                }
             }
             .undo-row {
                 position: absolute;
@@ -2028,6 +2346,116 @@
                 transition: color 0.5s;
             }
         }
+        .export-toggler {
+            float: right;
+            font-size: 17px;
+            padding: 8px 12px 7px 7px;
+            cursor: pointer;
+        }
+        .export-dialog-container {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            font-family: Ubuntu, Helvetica, sans-serif;
+            line-height: 18px;
+            font-size: 11px;
+            border: 1px solid #d0d0d0;
+            position: absolute;
+            z-index: 10000;
+            right: 300px;
+            top: -45px;
+            &:before {
+                content: "";
+                display: block;
+                position: absolute;
+                width: 0;
+                height: 0;
+                border-color: transparent;
+                border-width: 10px;
+                border-style: solid;
+                left: 100%;
+                top: 50%;
+                margin-top: -10px;
+                border-left-color: #d0d0d0;
+            }
+            &:after {
+                content: "";
+                display: block;
+                position: absolute;
+                width: 0;
+                height: 0;
+                border-color: transparent;
+                border-width: 10px;
+                border-style: solid;
+                left: 100%;
+                top: 50%;
+                margin-top: -10px;
+                margin-left: -1px;
+                border-left-color: #fff;
+            }
+        }
+        .export-dialog {
+            padding: 15px;
+            width: 240px;
+            overflow: visible;
+            display: inline-block;
+            p {
+                margin: 0px;
+                font: 14px Ubuntu, Helvetica, sans-serif;
+                font-weight: bold;
+                line-height: 111%;
+                margin-bottom: 10px;
+            }
+            .button-selector {
+                font: 13px Ubuntu, Helvetica, sans-serif;
+                line-height: 111%;
+                color: #6b6b6b;
+                padding: 0;
+                overflow: auto;
+                user-select: none;
+                box-sizing: border-box;
+                width: 100%;
+                float: none;
+                margin: 0px auto;
+                margin-bottom: 10px;
+                height: 30px;
+                .button {
+                    cursor: pointer;
+                    user-select: none;
+                    background-color: #fbfbfb;
+                    float: left;
+                    padding: 7px;
+                    padding-top: 6px;
+                    border: 1px solid #d0d0d0;
+                    margin-left: -1px;
+                    width: calc(33% - 15px);
+                    text-align: center;
+                    &:first-child {
+                        margin-left: 0;
+                        border-top-left-radius: 2px;
+                        border-bottom-left-radius: 2px;
+                    }
+                    &:last-child {
+                        border-top-right-radius: 2px;
+                        border-bottom-right-radius: 2px;
+                    }
+                    &.active {
+                        background-color: #fff;
+                        border: 1px solid #2eb52b;
+                        position: relative;
+                        z-index: 10;
+                    }
+                }
+            }
+            .cly-vue-button {
+                width: 100%;
+                margin: 0px auto;
+                padding-left: 0px;
+                padding-right: 0px;
+                text-align: center;
+            }
+        }
     }
 
     .cly-vgt-custom-search {
@@ -2110,6 +2538,9 @@
             &:before {
                 font-family: "Ionicons";
                 content: "\f396";
+            }
+            &:hover {
+                color: #6b6b6b;
             }
         }
     }
@@ -2219,6 +2650,199 @@
                 padding: 8px 14px;
             }
         }
+    }
+
+    .cly-vue-back-link {
+        cursor: pointer;
+        color: #616161;
+        font-size: 12px;
+        display: inline-block;
+        text-transform: uppercase;
+        margin-bottom: 25px;
+
+        &:visited {
+            cursor: pointer;
+            color: #616161;
+            font-size: 12px;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        &:before {
+            content: "←";
+            margin-right: 5px;
+            color: #616161;
+        }
+
+        &:hover {
+            span {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .dropzone,
+    .dropzone * {
+        box-sizing: border-box;
+    }
+
+    .dropzone {
+        border: 2px solid rgba(0, 0, 0, 0.3);
+        background: white;
+        padding: 20px 20px;
+    }
+    .dropzone.dz-clickable {
+        cursor: pointer;
+    }
+    .dropzone.dz-clickable * {
+        cursor: default;
+    }
+    .dropzone.dz-clickable .dz-message,
+    .dropzone.dz-clickable .dz-message * {
+        cursor: pointer;
+    }
+    .dropzone.dz-started .dz-message {
+        display: none;
+    }
+    .dropzone.dz-drag-hover {
+        border-style: solid;
+    }
+    .dropzone.dz-drag-hover .dz-message {
+        opacity: 0.5;
+    }
+    .dropzone .dz-message {
+        text-align: center;
+        margin: 0;
+        height: auto;
+        position: relative;
+        top: unset;
+        padding: 19px 0;
+    }
+    .dropzone .dz-preview {
+        position: relative;
+        display: inline-block;
+        vertical-align: top;
+        width: 100%;
+        text-align: center;
+        padding: 11px 0;
+    }
+    .dropzone .dz-preview:hover {
+        z-index: 1000;
+    }
+    .dropzone .dz-preview:hover .dz-details {
+        opacity: 1;
+    }
+    .dropzone .dz-preview.dz-file-preview .dz-details {
+        opacity: 1;
+    }
+    .dropzone .dz-preview .dz-remove {
+        font-size: 14px;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+    }
+    .dropzone .dz-preview .dz-remove:hover {
+        text-decoration: underline;
+    }
+    .dropzone .dz-preview:hover .dz-details {
+        opacity: 1;
+    }
+    .dropzone .dz-preview .dz-details .dz-size {
+        display: none;
+    }
+    .dropzone .dz-preview .dz-details .dz-filename {
+        white-space: nowrap;
+        text-align: center;
+        color: #737373;
+    }
+    .dropzone .dz-preview .dz-success-mark,
+    .dropzone .dz-preview .dz-error-mark {
+        display: none;
+    }
+    .dropzone .dz-preview .dz-success-mark svg,
+    .dropzone .dz-preview .dz-error-mark svg {
+        display: block;
+        width: 54px;
+        height: 54px;
+    }
+    .dropzone .dz-preview .dz-progress {
+        display: none !important;
+    }
+    .dropzone .dz-preview.dz-error .dz-error-message {
+        display: block;
+    }
+    .dropzone .dz-preview.dz-error:hover .dz-error-message {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .vue-dropzone {
+        min-height: 100px;
+        border-radius: 2px;
+        border: dashed 2px #dbdbdb;
+        background-color: #ffffff;
+        letter-spacing: 0.2px;
+        transition: 0.2s linear;
+        font-family: Ubuntu;
+        font-size: 12px;
+        color: #636363;
+    }
+    .vue-dropzone:hover {
+        background-color: #f6f6f6;
+    }
+    .vue-dropzone > i {
+        color: #ccc;
+    }
+    .vue-dropzone > .dz-preview .dz-image {
+        display: none;
+    }
+    .vue-dropzone > .dz-preview .dz-details {
+        bottom: 0;
+        top: 0;
+        color: #fff;
+        transition: opacity 0.2s linear;
+        text-align: left;
+        padding-bottom: 7px;
+    }
+    .vue-dropzone > .dz-preview .dz-details .dz-filename {
+        overflow: hidden;
+    }
+    .vue-dropzone > .dz-preview .dz-details .dz-filename span {
+        background-color: transparent;
+        word-break: break-word;
+        white-space: normal;
+    }
+    .vue-dropzone > .dz-preview .dz-progress .dz-upload {
+        background: #ccc;
+    }
+    .vue-dropzone > .dz-preview .dz-remove {
+        text-decoration: none;
+        color: #d67778;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .vue-dropzone > .dz-preview .dz-error-mark,
+    .vue-dropzone > .dz-preview .dz-success-mark {
+        margin-left: auto;
+        margin-top: auto;
+        width: 100%;
+        top: 35%;
+        left: 0;
+    }
+    .vue-dropzone > .dz-preview .dz-error-mark svg,
+    .vue-dropzone > .dz-preview .dz-success-mark svg {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .vue-dropzone > .dz-preview .dz-error-message {
+        margin-left: auto;
+        margin-right: auto;
+        left: 0;
+        width: 100%;
+        text-align: center;
+    }
+    .vue-dropzone > .dz-preview .dz-error-message:after {
+        display: none;
     }
 }
 .cly-vue-tooltip {

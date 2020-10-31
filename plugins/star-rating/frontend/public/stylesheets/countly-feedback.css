@@ -1,7 +1,7 @@
 body, html {
     margin: 0;
 }
-.rating-loader-wrapper {
+.ratings-popup .rating-loader-wrapper {
     position: absolute;
     display: block;
     z-index: 5;
@@ -9,17 +9,17 @@ body, html {
     width: 100%;
     height: 100%;
 }
-.rating-loader {
+.ratings-popup .rating-loader {
     width: 40%;
     margin-top: 50%;
     margin-left: 30%;
 }
-.rating-emotion {
+.ratings-popup .rating-emotion {
     width: 67.5px;
     height: 67.5px;
     padding: 5px;
 }
-.modal-content {
+.ratings-popup .modal-content {
     background-color: #fefefe;
     position: relative;
     box-sizing: border-box;
@@ -29,9 +29,8 @@ body, html {
     padding-bottom: 25px;
     padding-top: 25px;
     border-radius: 5px;
-    display: none;
 }
-.success-modal-content {
+.ratings-popup .success-modal-content {
     position: relative;
     background-color: #fefefe;
     box-sizing: border-box;
@@ -42,21 +41,21 @@ body, html {
     border-radius: 5px;
     display: none;
 }
-#question-area {
+.ratings-popup #question-area {
     font-family: 'Lato', sans-serif;
     font-size: 19px;
     width: 70%;
     line-height: 38px;
     margin-left: 15%;
 }
-.question-area {
+.ratings-popup .question-area {
     font-family: 'Lato', sans-serif;
     font-size: 19px;
     width: 70%;
     line-height: 38px;
     margin-left: 15%;
 }
-#success-question-area {
+.ratings-popup #success-question-area {
     font-family: 'Lato', sans-serif;
     font-size: 22px;
     width: 70%;
@@ -64,7 +63,7 @@ body, html {
     line-height: 38px;
     margin-left: 15%;
 }
-.emotion>img {
+.ratings-popup .emotion>img {
     width: 35px;
     height: 35px;
     display: inline-block;
@@ -72,14 +71,14 @@ body, html {
     cursor: pointer;
     opacity: 0.9;
 }
-.emotion-first>img {
+.ratings-popup .emotion-first>img {
     width: 35px;
     height: 35px;
     display: inline-block;
     cursor: pointer;
     opacity: 0.9;
 }
-#close-button {
+.ratings-popup #close-button {
     background-color: white;
     cursor: pointer;
     color: gray;
@@ -89,7 +88,7 @@ body, html {
     border-radius: 3px;
     margin-right: 10px;
 }
-.disabled-send-button {
+.ratings-popup .disabled-send-button {
     background-color: #F1F1F2;
     color: grey;
     font-family: 'Lato', sans-serif;
@@ -101,7 +100,7 @@ body, html {
     cursor: pointer;
     margin-right: 10px;
 }
-.send-button {
+.ratings-popup .send-button {
     background-color: #32B630;
     color: white;
     font-family: 'Lato', sans-serif;
@@ -113,7 +112,7 @@ body, html {
     cursor: pointer;
     margin-right: 10px;
 }
-.comment-area {
+.ratings-popup .comment-area {
     margin-top: 20px;
     width: 80%;
     margin-left: 10%;
@@ -121,7 +120,7 @@ body, html {
     font-family: 'Lato', sans-serif;
     font-size: 15px;
 }
-.buttons-area {
+.ratings-popup .buttons-area {
     margin-top: 25px;
     font-family: 'Lato', sans-serif;
     font-size: 15px;
@@ -129,23 +128,23 @@ body, html {
     width: 80%;
     margin-left: 10%;
 }
-.modal-footer {
+.ratings-popup .modal-footer {
     border-top: 1px solid #EBEBEB;
     margin-top: 25px;
     text-align: center;
     padding-top: 25px;
 }
-input[type=checkbox] {
+.ratings-popup input[type=checkbox] {
     margin-top: 15px;
 }
-.countly-feedback-check-green {
+.ratings-popup .countly-feedback-check-green {
     color: #9e9e9e;
     font-size: medium !important;
 }
-.input-wrapper {
+.ratings-popup .input-wrapper {
     margin-top: 15px;
 }
-.countly-feedback-checkbox-container {
+.ratings-popup .countly-feedback-checkbox-container {
     display: block;
     position: relative;
     cursor: pointer;
@@ -155,13 +154,13 @@ input[type=checkbox] {
     -ms-user-select: none;
     user-select: none;
 }
-.countly-feedback-checkbox-container input {
+.ratings-popup .countly-feedback-checkbox-container input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
     border-radius: 2px;
 }
-#countly-feedback {
+.ratings-popup #countly-feedback {
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
     position: absolute;
@@ -177,26 +176,26 @@ input[type=checkbox] {
     padding-top: 10px;
     padding-bottom: 10px;
 }
-.countly-feedback-modal-header {
+.ratings-popup .countly-feedback-modal-header {
     text-align: center;
     font-family: 'Lato', sans-serif;
 }
-.countly-feedback-modal-header>img {
+.ratings-popup .countly-feedback-modal-header>img {
     width: 140px;
     height: 40px;
 }
-.success-emotions-area {
+.ratings-popup .success-emotions-area {
     text-align: center;
     font-family: 'Lato', sans-serif;
     font-size: 15px;
     margin-bottom: 50px;
 }
-.countly-feedback-arrow_box {
+.ratings-popup .countly-feedback-arrow_box {
     position: relative;
     background: #000000;
     border: 4px solid #000000;
 }
-.countly-feedback-arrow_box:after, .countly-feedback-arrow_box:before {
+.ratings-popup .countly-feedback-arrow_box:after, .countly-feedback-arrow_box:before {
     top: 100%;
     left: 50%;
     border: solid transparent;
@@ -206,25 +205,25 @@ input[type=checkbox] {
     position: absolute;
     pointer-events: none;
 }
-.countly-feedback-arrow_box:after {
+.ratings-popup .countly-feedback-arrow_box:after {
     border-color: rgba(0, 0, 0, 0);
     border-top-color: #000000;
     border-width: 30px;
     margin-left: -30px;
 }
-.countly-feedback-arrow_box:before {
+.ratings-popup .countly-feedback-arrow_box:before {
     border-color: rgba(0, 0, 0, 0);
     border-top-color: #000000;
     border-width: 36px;
     margin-left: -36px;
 }
-label {
+.ratings-popup label {
     font-size: 13px;
 }
-.emotion>img:hover {
+.ratings-popup .emotion>img:hover {
     opacity: 1;
 }
-.countly-feedback-checkbox-container {
+.ratings-popup .countly-feedback-checkbox-container {
     display: block;
     position: relative;
     cursor: pointer;
@@ -234,27 +233,27 @@ label {
     -ms-user-select: none;
     user-select: none;
 }
-.countly-feedback-checkbox-container input {
+.ratings-popup .countly-feedback-checkbox-container input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
     border-radius: 2px;
 }
-.countly-feedback-close-icon {
+.ratings-popup .countly-feedback-close-icon {
     cursor: pointer;
     font-size: lighter;
     color: silver;
 }
-.emotion, .emotion-first {
+.ratings-popup .emotion, .emotion-first {
     width: 77.5px;
 }
-.emotions-area, .contact-me-area {
+.ratings-popup .emotions-area, .contact-me-area {
     text-align: center;
     font-family: 'Lato', sans-serif;
     font-size: 15px;
     height: 161px;
 }
-.buttons-area-on-success {
+.ratings-popup .buttons-area-on-success {
     margin-top: 35px;
     font-family: 'Lato', sans-serif;
     font-size: 15px;
@@ -262,13 +261,13 @@ label {
     width: 70%;
     margin-left: 15%;
 }
-.contact-me-area>.input-area {
+.ratings-popup .contact-me-area>.input-area {
     font-size: 13px;
 }
-.input-area {
+.ratings-popup .input-area {
     margin-top: 10px;
 }
-#contact-me-email {
+.ratings-popup #contact-me-email {
     width: 100%;
     outline: none;
     border: 1px solid #DBDBDB;
@@ -281,7 +280,7 @@ label {
     display: none;
     border-radius: 3px;
 }
-#countly-feedback-comment-textarea {
+.ratings-popup #countly-feedback-comment-textarea {
     width: 100%;
     height: 60px;
     margin-top: 10px;
@@ -293,7 +292,7 @@ label {
     border-radius: 3px;
     display: none;
 }
-#continue-button {
+.ratings-popup #continue-button {
     background-color: #13b94d;
     color: white;
     font-family: 'Lato', sans-serif;
@@ -304,14 +303,15 @@ label {
     cursor: pointer;
     margin-right: 10px;
 }
-#countly-feedback-close-icon {
+.ratings-popup #countly-feedback-close-icon {
     right: 15px;
     top: 15px;
     cursor: pointer;
     text-decoration: none;
     text-align: center;
     width: 32px;
-    height: 3px, padding: 0;
+    height: 3px; 
+    padding: 0;
     color: #d6d6d6;
     font-style: normal;
     font-size: 32px;
@@ -319,95 +319,95 @@ label {
     line-height: 32px;
     position: absolute;
 }
-.fa-check {
+.ratings-popup .fa-check {
     color: #13b94d;
 }
-.fa-check-square {
+.ratings-popup .fa-check-square {
     color: #32B630;
 }
-.icon-area>i {
+.ratings-popup .icon-area>i {
     color: #32B630;
 }
-.success-icon-area {
+.ratings-popup .success-icon-area {
     margin-top: 50px;
     text-align: center;
 }
-.icon-area {
+.ratings-popup .icon-area {
     text-align: center;
     margin-top: 10px;
 }
-.success-modal {
+.ratings-popup .success-modal {
     display: none;
     z-index: 999;
 }
-.countly-feedback-verification-fail {
+.ratings-popup .countly-feedback-verification-fail {
     border: 1px solid #a82f2f !important;
 }
-#send-button:hover {
+.ratings-popup #send-button:hover {
     background-color: #59C358;
 }
-.grow {
+.ratings-popup .grow {
     transition: all .2s ease-in-out;
 }
-.grow:hover {
+.ratings-popup .grow:hover {
     transform: scale(1.15) !important;
 }
-.tippy-tooltip.honeybee-theme {
+.ratings-popup .tippy-tooltip.honeybee-theme {
     font-family: 'Lato', sans-serif;
 }
-#question-area {
+.ratings-popup #question-area {
     font-size:20px;
 }
 @media (max-width: 768px) {
-    .emotion>img {
+    .ratings-popup .emotion>img {
         width: 40px;
         height: 40px;
     }
-    .emotion-first>img {
+    .ratings-popup .emotion-first>img {
         width: 40px;
         height: 40px;
     }
 }
 @media (max-width: 414px) {
-    .emotion>img {
+    .ratings-popup .emotion>img {
         width: 30px;
         height: 30px;
     }
-    .emotion-first>img {
+    .ratings-popup .emotion-first>img {
         width: 30px;
         height: 30px;
     }
 }
 @media (max-width: 375px) {
-    .emotion>img {
+    .ratings-popup .emotion>img {
         width: 30px;
         height: 30px;
     }
-    .emotion-first>img {
+    .ratings-popup .emotion-first>img {
         width: 30px;
         height: 30px;
     }
 }
 @media (max-width: 320px) {
-    .emotion>img {
+    .ratings-popup .emotion>img {
         width: 30px;
         height: 30px;
     }
-    .emotion-first>img {
+    .ratings-popup .emotion-first>img {
         width: 30px;
         height: 30px;
     }
 }
 @media (min-width: 1024px) {
-    .emotion>img {
+    .ratings-popup .emotion>img {
         width: 40px;
         height: 40px;
     }
-    .emotion-first>img {
+    .ratings-popup .emotion-first>img {
         width: 40px;
         height: 40px;
     }
-    #question-area {
+    .ratings-popup #question-area {
         font-size:25px;
     }
 }

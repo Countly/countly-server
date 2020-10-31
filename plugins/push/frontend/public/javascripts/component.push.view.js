@@ -20,7 +20,7 @@ window.component('push.view', function(view) {
     view.show = function(message){
         message = message instanceof components.push.Message ? message : new components.push.Message(message);
         view.slider = components.slider.show({
-            key: message._id(),
+            key: message._id() + Math.random(),
             title: function(){
                 var els = [
                     t('pu.po.view.title')

@@ -190,6 +190,7 @@ namespace apns {
 		stats.init_eofs = 0;
 
 		while (!(stats.state & ST_CONNECTED) && stats.init_eofs < H2_MAX_EOFS) {
+			LOG_INFO("CONN " << uv_thread_self() << ": connection attempt ");
 			tcp_init_sem = new uv_sem_t;
 			uv_sem_init(tcp_init_sem, 0);
 
@@ -246,10 +247,33 @@ namespace apns {
 				}
 
 				uv_timer_stop(conn_timer);
-				stats.state &= ~(ST_ERROR_RECOVERABLE | ST_ERROR_NONRECOVERABLE);
-				stats.state |= ST_CONNECTED;
 
-				LOG_INFO("CONN " << uv_thread_self() << ": done with HTTP/2 stack");
+				if (stats.error_connection.empty()) {
+					stats.state &= ~(ST_ERROR_RECOVERABLE | ST_ERROR_NONRECOVERABLE);
+					stats.state |= ST_CONNECTED;
+
+					LOG_INFO("CONN " << uv_thread_self() << ": done with HTTP/2 stack");
+				} else {
+					LOG_INFO("CONN " << uv_thread_self() << ": failed to connect (\"" << stats.error_connection << "\"), will reconnect");
+					if (tcp) {
+						uv_read_stop((uv_stream_t*)tcp);
+						tcp = nullptr;
+					}
+
+					if (ssl) {
+						SSL_free(ssl);
+						ssl = nullptr;
+					}
+
+					// BIO_free(read_bio);
+					// BIO_free(write_bio);
+
+					if (fd) {
+						close(fd);
+						fd = 0;
+					}
+				}
+
 				// foo();
 			} else {
 				LOG_WARNING("CONN " << uv_thread_self() << ": failed to connect, trying next server");
@@ -309,7 +333,11 @@ namespace apns {
 
 		int val = 1;
 
+#ifdef SOCK_NONBLOCK
 		obj->fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+#else
+		obj->fd = socket(AF_INET, SOCK_STREAM, 0);
+#endif
 		LOG_DEBUG("CONN " << uv_thread_self() << ": socket " << obj->fd);
 		if (obj->fd == -1) {
 			std::ostringstream out;
@@ -694,14 +722,24 @@ namespace apns {
 			std::ostringstream out;
 			out << "error in uv_on_read: " << uv_err_name(nread);
 			c->send_error(out.str());
-			if (c->tcp_init_sem) {
+			if (c->h2_sem) {
 				c->stats.init_eofs++;
 				std::ostringstream out;
 				out << c->stats.init_eofs << "-EOF";
 				c->stats.error_connection = out.str();
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read h2_sem");
+				uv_sem_post(c->h2_sem);
+			} else if (c->tcp_init_sem) {
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read tcp_init_sem " << out.str());
+				c->stats.init_eofs++;
+				std::ostringstream out;
+				out << c->stats.init_eofs << "-EOF";
+				c->stats.error_connection = out.str();
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read tcp_init_sem");
 				uv_sem_post(c->tcp_init_sem);
 			} else {
 				c->stats.error_connection = "EOF";
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read stopping the loop");
 				c->conn_thread_stop();
 			}
 		} else if (nread > 0) {
@@ -874,10 +912,10 @@ namespace apns {
 		
 		nghttp2_session_callbacks_set_send_callback(callbacks, [](nghttp2_session *session, const uint8_t *data, size_t length, int flags, void *user_data) -> ssize_t { 
 			H2* obj = (H2 *)user_data;
-			unsigned char *ch = (unsigned char *)data;
+			// unsigned char *ch = (unsigned char *)data;
 
 			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: send " << length << " bytes (now " << obj->buffer_out.size() << ")");
-			obj->buffer_out.insert(obj->buffer_out.end(), ch, ch + length);
+			obj->buffer_out.insert(obj->buffer_out.end(), data, data + length);
 
 			obj->conn_thread_uv_check_out(!(obj->stats.state & ST_CONNECTED));
 			// LOG_DEBUG("CONN " << uv_thread_self() << ": send_callback returns " << length);
@@ -984,10 +1022,10 @@ namespace apns {
 			switch (frame->hd.type) {
 				case NGHTTP2_HEADERS:
 					h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, frame->hd.stream_id);
-					if (strncmp((const char *)name, ":status", MIN(namelen, 7)) == 0) {
+					if (strncmp((const char *)name, ":status", namelen < 7 ? namelen : 7) == 0) {
 						std::string status_string((const char *)value, valuelen);
 						try {
-							int status = std::atoi(status_string.c_str());
+							int status = std::stoi(status_string);
 							if (status != 200 && status != 410) {
 								LOG_DEBUG("CONN " << stream->id << " returned " << status);
 							}
@@ -995,7 +1033,7 @@ namespace apns {
 								status = -200;
 							}
 							stream->status = status;
-						} catch (const std::invalid_argument &e) {
+						} catch (const std::exception &e) {
 							stream->status = -1;
 						}
 
@@ -1184,8 +1222,8 @@ namespace apns {
 			}
 			if (rv < 0) {
 				std::ostringstream out;
-				// out << "H2: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
-				LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
+				out << "CONN: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
+				LOG_ERROR(out.str());
 				send_error(out.str());
 				conn_thread_stop();
 				return;
@@ -1309,7 +1347,7 @@ namespace apns {
 					if (rv < 0) {
 						std::ostringstream out;
 						out << "H2: Couldn't submit nghttp2_session_mem_send in transmit: " << nghttp2_strerror(rv);
-						LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
+						LOG_ERROR(out.str());
 						send_error(out.str());
 						conn_thread_stop();
 						return;

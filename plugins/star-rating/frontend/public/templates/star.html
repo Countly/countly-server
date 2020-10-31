@@ -1,34 +1,42 @@
 <div class="feedback-modal" id="feedback-web-integration">
     <div class="feedback-modal-header">
-        <center>Add Countly user feedback plugin to your app</center>
+        <center data-localize="feedback.add-countly-to-your-app"></center>
         <i class="feedback-modal-closer ion-ios-close-empty"></i>
     </div>
     <div class="feedback-modal-body">
-        Countly user feedback feature needs Countly web SDK to be inserted in your web site.<br>
-        In order for user feedback widget to appear, you also need to add: <br> <br>
+        <span data-localize="feedback.add-countly-to-your-app-description-1"></span>
+        <br>
+        <span data-localize="feedback.add-countly-to-your-app-description-2"></span>
+        <br>
+        <br>
         <div class="feedback-code-highlighter">Countly.q.<span class="feedback-blue">push</span>(['<span
             class="feedback-orange">enable_feedback</span>',{'<span class="feedback-purple">widgets</span>':['<span
             class="feedback-orange" id="widgets-array"></span>']}]);<span class="feedback-green feedback-copy-code"
-                                                                          data-clipboard-text="Countly.q.push(['enable_feedback'])">Copy code</span>
+                                                                          data-clipboard-text="Countly.q.push(['enable_feedback'])" data-localize="feedback.copy-code"></span>
         </div>
-        <br> in this JS code snippet. <br> <br>
-
-        Please go to <a class="feedback-popup-link" target="_new"
-                        href="https://resources.count.ly/docs/countly-sdk-for-web">this page</a>, copy the code snippet
-        above and insert this one line. <br>
-        After you are done, please refresh your web page to see the widget call to action button.
+        <br>
+        <span data-localize="feedback.instruction-for-integration"></span>
+        <br>
+        <a class="feedback-popup-link" target="_new" href="https://resources.count.ly/docs/countly-sdk-for-web">
+            <span data-localize="feedback.go-to-documentation"></span>
+        </a>    
     </div>
 </div>
 <div class="feedback-modal" id="feedback-mobile-integration">
     <div class="feedback-modal-header">
-        <center>Add Countly user feedback plugin to your app</center>
+        <center data-localize="feedback.add-countly-to-your-app"></center>
         <i class="feedback-modal-closer ion-ios-close-empty"></i>
     </div>
     <div class="feedback-modal-body">
-        Countly user feedback feature needs Countly iOS/Android SDK to be inserted in your mobile app.<br>
-        Please go to <a class="feedback-popup-link" target="_new"
-                        href="https://resources.count.ly/docs/ratings-and-feedback#section-mobile-integration">this
-        page</a> for more information.<br> <br>
+        <span data-localize="feedback.add-countly-to-your-app-description-3"></span>
+        <br>
+        <span data-localize="feedback.instruction-for-mobile-integration"></span>
+        <br>
+        <br>
+        <a class="feedback-popup-link" target="_new"
+            href="https://resources.count.ly/docs/ratings-and-feedback#section-mobile-integration">
+            <span data-localize="feedback.go-to-documentation"></span>
+        </a>
     </div>
 </div>
 <div class="star-rating-tab">

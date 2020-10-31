@@ -95,6 +95,7 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/v-tooltip.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/validators.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2Dropzone.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js?<%= countlyVersion %>"></script>
@@ -166,6 +167,23 @@
 			</div>
 		</div>
 		<div class="right-menu">
+			<div class="dropdown icon manage-long-tasks-menu-dropdown">
+				<div id="manage-long-tasks-icon" class="empty-state unread">
+                    <i class="fa fa-clock"></i>
+					<div class="orange-side-notification-banner-wrapper">
+						<div class="orange-side-notification-banner" data-localize="taskmanager.query-added-long"></div>
+					</div>
+                </div>
+				<div class="menu right manage-long-tasks-menu" style="width:400px;">
+                    <div class="menu-category-title">
+						<p data-localize="sidebar.long-running-queries"></p>
+						<a class="see-all"  href="#/manage/tasks#report-automatically"><span data-localize="common.see-all"></span>&rarr;</a>
+					</div>
+					<div class="tasks-wrapper">
+						<div class="tasks scrollable"></div>
+						</div>
+				</div>
+			</div>
             <div class="dropdown icon">
 				<div class="empty-state">
                     <i class="fa fa-cog"></i>
@@ -694,7 +712,7 @@
                     <a id='country-toggle' class='icon-button light btn-header'></a>
                 </div>
 			</div>
-            <div class="widget-tips"><a href="/dashboard#/manage/configurations/frontend"><span data-localize="countries.google-api-key-remind"></a></span></div>
+            <div class="widget-tips"><a href="#/manage/configurations/frontend"><span data-localize="countries.google-api-key-remind"></a></span></div>
 			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:480px;">
 				<div id="geo-chart-outer" class="big"><div><div id="geo-chart"></div></div></div>
 			</div>
@@ -1366,7 +1384,7 @@
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
                                     <div class="col">
-                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
                                         <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
                                     </div>
                                     {{/eachOfObjectValue}}
@@ -1377,7 +1395,7 @@
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventData30Day}}
                                     <div class="col">
-                                        <h4><a href="/dashboard#/{{../active-app-id}}/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
                                         <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
                                     </div>
                                     {{/eachOfObjectValue}}
@@ -1452,7 +1470,7 @@
 
                                         {{#if this.value.name}}
                                         <td class="event-overview-grid-block cly-widget">
-                                            <div class="title"><a href="/dashboard#/{{../../../active-app-id}}/analytics/events/key/{{encodeURIComponent this.value.name}}">{{this.value.name}}</a></div>
+                                            <div class="title"><a href="#/analytics/events/key/{{encodeURIComponent this.value.name}}">{{this.value.name}}</a></div>
                                             {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
                                             <table>
                                                 <tr>
@@ -1584,6 +1602,7 @@
             </div>
         </div>
         {{else}}
+        
 		<div id="event-nav">
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
@@ -1607,6 +1626,7 @@
 		</div>
 
 		<div id="event-main" style="margin-left:199px;">
+        <div id="event-alert"></div>
 		<div class="widget">
 			<div class="widget-header" id="events-widget-header">
 				<div class="left">
@@ -1906,7 +1926,7 @@
 				<div id="report-automatically" class='user-tab'></div>
 			</div>
 
-            <div class="widget-header report-manager-idget-header">
+            <div class="widget-header report-manager-widget-header">
                 <div class="left">
                     <div style="overflow: auto">
                         {{#if filter1}}
@@ -1916,7 +1936,6 @@
                         {{/if}}
                     </div>
                     {{#if filter1}}
-                    <div style="width:300px; display: block;">
                     <div class="cly-select float filter1-segmentation">
                         <div class="select-inner">
                             <div class="text-container">
@@ -1966,7 +1985,6 @@
                         </div>
                     </div>
 					{{/if}}
-                    </div>
                     {{/if}}
 				</div>
 			</div>
@@ -2256,7 +2274,7 @@
 
     <script id="template-graph-notes-view" type="text/x-handlebars-template">
         <div class="note-table-view-navigator">
-            <a href="/dashboard" class="back-link" >
+            <a href="#/" class="back-link" >
                 <span data-localize="notes.note-back-to-overview"></span>
             </a>
         </div>

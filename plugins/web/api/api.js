@@ -7,9 +7,6 @@ var pluginOb = {},
     plugins.appTypes.push("web");
     plugins.register("/sdk", function(ob) {
         var params = ob.params;
-        if (params.qstring.sdk_version && (!params.app.sdk_version || common.versionCompare(params.qstring.sdk_version, params.app.sdk_version, {delimiter: "."}) === 1)) {
-            common.db.collection("apps").update({_id: params.app._id}, {$set: {sdk_version: params.qstring.sdk_version}});
-        }
 
         var agent = parser((params.qstring.metrics && params.qstring.metrics._ua) ? params.qstring.metrics._ua : params.req.headers['user-agent']);
         var data = { os: agent.os.name, os_version: agent.os.version };
@@ -70,6 +67,15 @@ var pluginOb = {},
                     params.qstring.metrics._device = (agent.device.vendor === "Other") ? "Unknown" : agent.device.vendor;
                 }
             }
+
+            if (!params.qstring.metrics._device_type) {
+                params.qstring.metrics._device_type = agent.device.type;
+
+                //if still undefined and app is web then it must be desktop
+                if (!params.qstring.metrics._device_type && params.app.type === "web") {
+                    params.qstring.metrics._device_type = "desktop";
+                }
+            }
         }
 
         //check if view events need to have platform segment
@@ -78,7 +84,7 @@ var pluginOb = {},
                 if (currEvent.key === "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name && (!currEvent.segmentation.segment && !currEvent.segmentation.platform)) {
                     currEvent.segmentation.segment = data.os;
                 }
-                else if (currEvent.key === "[CLY]_star_rating" && currEvent.segmentation && !currEvent.segmentation.platform) {
+                else if ((currEvent.key === "[CLY]_star_rating" || currEvent.key === "[CLY]_nps" || currEvent.key === "[CLY]_survey") && currEvent.segmentation && !currEvent.segmentation.platform) {
                     currEvent.segmentation.platform = data.os;
                 }
                 return currEvent;
@@ -122,7 +128,7 @@ var pluginOb = {},
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         if (params.qstring.method === "latest_users") {
             validateUserForDataReadAPI(params, function() {
-                common.db.collection("app_users" + params.app_id).find({}).sort({ls: -1}).limit(50).toArray(function(err, users) {
+                common.db.collection("app_users" + params.app_id).find({}, {projection: {uid: 1, cc: 1, cty: 1, p: 1, brw: 1, lv: 1, src: 1, sc: 1, lac: 1, tsd: 1}}).sort({lac: -1}).limit(50).toArray(function(err, users) {
                     if (!err) {
                         common.returnOutput(params, users);
                     }

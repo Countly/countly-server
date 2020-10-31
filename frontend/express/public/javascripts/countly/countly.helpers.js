@@ -217,44 +217,41 @@
             }
         };
 
-        if (options.applyChangeTriggers) {
-            //on off switch
-            $(drawer).find('.on-off-switch input').on("change", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
+        drawer._changeDefaultHandler = function() {
+            $(drawer).trigger('cly-drawer-form-updated');
+        };
+        drawer._changeDefaultGreenCheckBoxHandler = function() {
+            var isChecked = $(this).hasClass("fa-check-square"); //now is checked
+            if (isChecked) {
+                $(this).addClass("fa-square-o");
+                $(this).removeClass("fa-check-square");
+            }
+            else {
+                $(this).removeClass("fa-square-o");
+                $(this).addClass("fa-check-square");
+            }
+            $(drawer).trigger('cly-drawer-form-updated');
+        };
+        drawer._applyChangeTrigger = function() {
+            var domDict = [
+                {s: '.on-off-switch input', e: 'change'},
+                {s: 'input[type=text]', e: 'keyup'},
+                {s: 'textarea', e: 'keyup'},
+                {s: '.cly-select', e: 'cly-select-change'},
+            ];
+            domDict.forEach(function(d) {
+                $(drawer).find(d.s).off(d.e, drawer._changeDefaultHandler).on(d.e, drawer._changeDefaultHandler);
             });
 
-            //input text field
-            $(drawer).find("input[type=text]").on("keyup", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
-
-            //textarea
-            $(drawer).find("textarea").on("keyup", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
-
-            //single select
-            $(drawer).find(".cly-select").on("cly-select-change", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
             //multi select
-            $(drawer).on('cly-multi-select-change', function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
+            $(drawer).off('cly-multi-select-change', drawer._changeDefaultHandler).on('cly-multi-select-change', drawer._changeDefaultHandler);
 
             //green checkboxes
-            $(drawer).find(".check-green").on("click", function() {
-                var isChecked = $(this).hasClass("fa-check-square"); //now is checked
-                if (isChecked) {
-                    $(this).addClass("fa-square-o");
-                    $(this).removeClass("fa-check-square");
-                }
-                else {
-                    $(this).removeClass("fa-square-o");
-                    $(this).addClass("fa-check-square");
-                }
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
+            $(drawer).find(".check-green").off("click", drawer._changeDefaultGreenCheckBoxHandler).on("click", drawer._changeDefaultGreenCheckBoxHandler);
+        };
+
+        if (options.applyChangeTriggers) {
+            drawer._applyChangeTrigger(drawer);
         }
         if (options.onUpdate) {
             $(drawer).on('cly-drawer-form-updated', options.onUpdate);

@@ -1038,11 +1038,11 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         sum += rangeTotal[i];
     }
 
-    for (let i = 0; i < maxItems; i++) {
+    for (let i = maxItems - 1; i >= 0; i--) {
         var percent = Math.floor((rangeTotal[i] / sum) * 100);
         totalPercent += percent;
 
-        if (i === (maxItems - 1)) {
+        if (i === 0) {
             percent += 100 - totalPercent;
         }
 
@@ -1765,7 +1765,10 @@ countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
     var ts = {};
 
     tmpArr = periodObj.currentPeriodArr[0].split(".");
-    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).tz(params.appTimezone);
+    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+    if (params.appTimezone) {
+        ts.$gte.tz(params.appTimezone);
+    }
     if (inSeconds) {
         ts.$gte = ts.$gte.valueOf() / 1000 - ts.$gte.utcOffset() * 60;
     }
@@ -1774,7 +1777,10 @@ countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
     }
 
     tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
-    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days').tz(params.appTimezone);
+    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+    if (params.appTimezone) {
+        ts.$lt.tz(params.appTimezone);
+    }
     if (inSeconds) {
         ts.$lt = ts.$lt.valueOf() / 1000 - ts.$lt.utcOffset() * 60;
     }

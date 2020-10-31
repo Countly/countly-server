@@ -158,7 +158,7 @@ class ConnectionResource extends EventEmitter {
      */
     service() {
         log.i('[%d]: Servicing  %d', process.pid, this.msgs.length);
-        log.d('[%d]: Servicing  %j', process.pid, this.msgs);
+        log.d('[%d]: Servicing msgs.slice(0, 10) %j', process.pid, this.msgs.slice(0, 10));
 
         this._servicing = false;
 
@@ -190,14 +190,14 @@ class ConnectionResource extends EventEmitter {
         }
 
         if (tokens.length) {
-            // log.i('sending to %d tokens, %d requests / %d notes in flight', ids.length, this.requestCount, this.inFlight);
             // log.d('sending %s to %j', message, this.requestCount, this.inFlight);
 
             let content = this.content(message, tokens);
-            log.d('sending %s', content);
+            // log.d('sending substr(0, 500) %s', content.substr(0, 500));
 
             this.requestCount++;
             this.inFlight += tokens.length;
+            log.i('sending to %d tokens, %d requests / %d notes in flight', ids.length, this.requestCount, this.inFlight);
 
             this.options.headers['Content-length'] = Buffer.byteLength(content, 'utf8');
 

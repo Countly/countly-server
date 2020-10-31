@@ -1336,6 +1336,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             }
                             if (inc > 0) {
                                 checkViewQuery(ob.updates, inc);
+                                if (!update.$inc) {
+                                    update.$inc = {};
+                                }
+
+                                update.$inc["data.views"] = inc;
                             }
                             ob.updates.push(update);
 

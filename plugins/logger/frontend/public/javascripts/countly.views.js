@@ -142,7 +142,7 @@ window.LoggerView = countlyView.extend({
                                 if (row.d.p) {
                                     ret += " (" + row.d.p;
                                     if (row.d.pv) {
-                                        ret += " " + row.d.pv.substring(1).replace(new RegExp(":", 'g'), ".");
+                                        ret += " " + (row.d.pv + "").substring(1).replace(new RegExp(":", 'g'), ".");
                                     }
                                     ret += ")";
                                 }
@@ -217,7 +217,7 @@ window.LoggerView = countlyView.extend({
                             if (row.v) {
                                 ret += "<b>" + jQuery.i18n.map["logger.version"] + ":</b> ";
                                 ret += "<br/>";
-                                ret += row.v.replace(new RegExp(":", 'g'), ".");
+                                ret += (row.v + "").replace(new RegExp(":", 'g'), ".");
                                 ret += "<br/><br/>";
                             }
 
@@ -231,7 +231,7 @@ window.LoggerView = countlyView.extend({
                             if (row.l.cc) {
                                 ret += "<b>" + jQuery.i18n.map["logger.location"] + ":</b> ";
                                 ret += "<br/>";
-                                ret += '<div class="flag ' + row.l.cc.toLowerCase() + '" style="margin-top:2px; margin-right:6px; background-image: url(images/flags/' + row.l.cc.toLowerCase() + '.png);"></div>' + row.l.cc;
+                                ret += '<div class="flag ' + (row.l.cc + "").toLowerCase() + '" style="margin-top:2px; margin-right:6px; background-image: url(images/flags/' + (row.l.cc + "").toLowerCase() + '.png);"></div>' + row.l.cc;
                                 if (row.l.cty) {
                                     ret += " (" + row.l.cty + ")";
                                 }

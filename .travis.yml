@@ -1,15 +1,16 @@
 language: nodejs
 dist: bionic
-node_js: "10"
+node_js: "14"
 env:
   global:
-  - MONGODB=4.2.9
+  - MONGODB=4.4.1
   - secure: f2KyTV9GmGnmrMYkUnXIiRD384Fcl3nw5wDBvT6F3ucC3ZdaEw8mfKbMQjKJLgaBb90PnVz72y1tuSt5A4bHetU4kh3Vgb3NyRkJ0md+Pi6Ox+ivI2Zjvv06Xq/Mw2VrBOTHe81z6BntYq8imY7O455s089jMcEvQ052Q/NqSHE=
 branches:
   except:
   - gh-pages
 before_install:
 - sudo apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+https://repo.mongodb.org/apt/ubuntu/dists/bionic/mongodb-org/4.4/multiverse/binary-amd64/mongodb-org-server_4.4.1_amd64.deb
 - wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-${MONGODB}.tgz -O /tmp/mongodb.tgz
 - tar -xf /tmp/mongodb.tgz
 - mkdir /tmp/data

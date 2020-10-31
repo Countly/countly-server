@@ -206,6 +206,11 @@ const processRequest = (params) => {
                     common.returnMessage(params, 400, 'Missing parameter "requests"');
                     return false;
                 }
+                if (!Array.isArray(requests)) {
+                    console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
+                    common.returnMessage(params, 400, 'Invalid parameter "requests"');
+                    return false;
+                }
                 if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                     common.returnMessage(params, 200, 'Success');
                 }
@@ -1403,6 +1408,12 @@ const processRequest = (params) => {
                         }
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
+                        if (params.qstring.app_ids && params.qstring.app_ids !== "") {
+                            var ll = params.qstring.app_ids.split(",");
+                            if (ll.length > 1) {
+                                params.qstring.query.app_id = {$in: ll};
+                            }
+                        }
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
@@ -2408,7 +2419,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     });
                 }
                 else {
-                    if (!params.res.finished) {
+                    if (!params.res.finished && !params.waitForResponse) {
                         common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
                         //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
@@ -2477,7 +2488,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         }
         else {
             parallelTasks.push(fetchAppUser(params).then(() => {
-                processUser(params, validateAppForFetchAPI, done, try_times);
+                return processUser(params, validateAppForFetchAPI, done, try_times);
             }));
         }
 
@@ -2533,6 +2544,12 @@ function processUser(params, initiator, done, try_times) {
         if (!params.app_user.uid) {
             //first time we see this user, we need to id him with uid
             countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
+                plugins.dispatch("/i/app_users/create", {
+                    app_id: params.app_id,
+                    user: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    res: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    params: params
+                });
                 if (uid) {
                     params.app_user.uid = uid;
                     if (!params.app_user._id) {

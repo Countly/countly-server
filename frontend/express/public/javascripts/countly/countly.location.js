@@ -54,8 +54,8 @@
 
     CountlyHelpers.createMetricModel(window.countlyLocation, {name: "countries", estOverrideMetric: "countries"}, jQuery, countlyLocation.getCountryName);
 
-    countlyLocation.getRegionName = function(rgn) {
-        return _regionMap[rgn];
+    countlyLocation.getRegionName = function(rgn, country) {
+        return _regionMap[rgn] || _regionMap[country + "-" + rgn] || rgn;
     };
 
     // Public Methods
@@ -193,7 +193,7 @@
             {
                 "name": "country",
                 "func": function(rangeArr) {
-                    return countlyLocation.getCountryName(rangeArr);
+                    return rangeArr;
                 }
             },
             { "name": "t" },
@@ -219,7 +219,8 @@
             }
             return {
                 c: [
-                    {v: value.country},
+                    //v - value, f - formatted value
+                    {v: value.country, f: countlyLocation.getCountryName(value.country)},
                     {v: value[ob.metric] === 0 ? null : value[ob.metric]}
                 ]
             };
@@ -272,7 +273,7 @@
             {
                 "name": "country",
                 "func": function(rangeArr) {
-                    return countlyLocation.getCountryName(rangeArr);
+                    return rangeArr;
                 }
             },
             { "name": "t" },
@@ -298,7 +299,8 @@
             }
             return {
                 c: [
-                    {v: value.country},
+                    //v - value, f - formatted value
+                    {v: value.country, f: countlyLocation.getCountryName(value.country)},
                     {v: value[ob.metric]}
                 ]
             };

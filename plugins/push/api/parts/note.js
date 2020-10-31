@@ -100,6 +100,7 @@ class Note {
         this.autoCapMessages = data.autoCapMessages; // Automated message: limit number of messages per user
         this.autoCapSleep = data.autoCapSleep; // Automated message: how much ms to wait before sending a message
         this.actualDates = data.actualDates; // Automated message: whether to use actual event dates instead of server arrival whenever possible
+        this.autoCancelTrigger = data.autoCancelTrigger; // Automated message: cancel the message when trigger condition is no longer valid
 
         this.result = {
             status: data.result && data.result.status || Status.NotCreated,
@@ -176,6 +177,7 @@ class Note {
             autoCapMessages: this.autoCapMessages,
             autoCapSleep: this.autoCapSleep,
             actualDates: this.actualDates,
+            autoCancelTrigger: this.autoCancelTrigger,
             created: this.created,
             test: this.test,
             build: this.build,

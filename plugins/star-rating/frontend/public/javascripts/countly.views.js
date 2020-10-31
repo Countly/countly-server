@@ -1,4 +1,4 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
+/*global $, countlyReporting, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
@@ -8,7 +8,7 @@ window.starView = countlyView.extend({
 
     },
     templateData: {
-        "page-title": jQuery.i18n.map["star.menu-title"],
+        "page-title": jQuery.i18n.map["feedback.ratings-tab-table-title"],
         platform_version: null,
         rating: null,
         timeSeriesData: null
@@ -871,6 +871,21 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["management-users.email"],
                 bSortable: false
             }];
+
+            if (countlyGlobal.plugins.indexOf("users") >= 0) {
+                columnsDefine.push(
+                    {
+                        "mData": function(row) {
+                            return "<a class='table-link green external' href='#/users/" + row.uid + "'>" + jQuery.i18n.map["userdata.view"] + "</a>";
+                        },
+                        sType: "string",
+                        "bSortable": false,
+                        "sTitle": '',
+                        "sClass": "center",
+                        "sWidth": "90px"
+                    }
+                );
+            }
 
             this.commentsTable = $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": this.templateData.commentsData,
@@ -2295,6 +2310,11 @@ app.route("/analytics/star-rating/:tab", 'star', function(tab) {
     this.renderWhenReady(this.starView);
 });
 
+
+app.addPageScript("/manage/reports", function() {
+    countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+});
+
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
@@ -2305,51 +2325,155 @@ app.addPageScript("/drill#", function() {
     }
 
     if (record_star_rating) {
-        $("#drill-types").append('<div id="drill-type-star-rating" class="item"><div class="inner"><span class="icon star-rating"><i class="material-icons">star_half</i></span><span class="text">' + jQuery.i18n.map["internal-events.[CLY]_star_rating"] + '</span></div></div>');
-        $("#drill-type-star-rating").on("click", function() {
-            if ($(this).hasClass("active")) {
-                return true;
-            }
+        if (!$("#drill-type-feedback").length) {
+            $("#drill-types").append('<div id="drill-type-feedback" class="item two-phase-selector"><div class="inner"><span class="icon star-rating"><i class="material-icons">star_half</i></span><span class="text">' + jQuery.i18n.map["sidebar.feedback"] + '</span></div></div>');
 
-            $("#drill-types").find(".item").removeClass("active");
-            $(this).addClass("active");
-            $("#event-selector").hide();
+            var dropdown = '<div id="feedback-selector" class="select-configuration">' +
+                    '<div class="text-wrapper" data-localize="drill.select-event"></div>' +
+                    '<div class="event-select">' +
+                      '<div class="menu">' +
+                        '<div class="search event-search">' +
+                            '<input type="text" readonly onfocus="if (this.hasAttribute(\'readonly\')) {this.removeAttribute(\'readonly\'); this.blur(); this.focus();}">' +
+                        '</div>' +
+                        '<div class="list"></div>' +
+                      '</div>' +
+                   '</div>' +
+                 '</div>';
+            $("#selector-no-event").after(dropdown);
+            $("#feedback-selector").hide();
+            $("#drill-types > .item").on("click", function() {
+                $("#feedback-selector").hide();
+            });
 
-            $("#drill-no-event").fadeOut();
-            $("#segmentation-start").fadeOut().remove();
+            $("#drill-type-feedback").on("click", function() {
 
-            self.graphType = "line";
-            self.graphVal = "times";
-            self.filterObj = {};
-            self.byVal = "";
-            self.drillChartDP = {};
-            self.drillChartData = {};
-            self.activeSegmentForTable = "";
-            countlySegmentation.reset();
+                if ($(this).hasClass("active")) {
+                    return true;
+                }
+                $("#drill-types").find(".item").removeClass("active");
+                $(this).addClass("active");
 
-            $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+                if ($("#event-selector").is(":visible")) {
+                    $("#event-selector").hide();
+                }
 
-            $.when(countlySegmentation.initialize("[CLY]_star_rating")).then(function() {
-                $("#drill").replaceWith(drillClone.clone(true));
-                self.adjustFilters();
-                if (!self.keepQueryTillExec) {
-                    self.draw(true, false);
+                $("#feedback-selector").show();
+                $(".event-select input").focus();
+            });
+
+            $("#feedback-selector .event-select").on("click", ".item", function() {
+                $(this).parent().find(".item").removeClass("active");
+                $(this).addClass("active");
+
+                self.graphType = "line";
+                self.graphVal = "times";
+                self.filterObj = {};
+                self.byVal = "";
+                self.drillChartDP = {};
+                self.drillChartData = {};
+                self.activeSegmentForTable = "";
+                countlySegmentation.reset();
+
+                $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+
+                var currEvent = $(this).data("value");
+                var currEventTitle = $(this).html();
+
+                $.when(countlySegmentation.initialize(currEvent)).then(function() {
+                    $("#drill-filter-view").replaceWith(drillClone.clone(true));
+                    self.adjustFilters();
+                    if (!self.keepQueryTillExec) {
+                        self.draw(true, false);
+                    }
+                });
+                $("#feedback-selector .event-select").data("value", currEvent);
+                $("#drill-type-select").find(".select-toggler .text").text($("#drill-type-feedback").find(".text").text() + ", " + currEventTitle);
+                $("#drill-type-select").find(".select-toggler").removeClass('active');
+                $("#drill-type-select").find(".main-square").hide();
+                $("#drill-type-select").find(".arrow").removeClass("ion-chevron-up").addClass("ion-chevron-down");
+            });
+
+            $(".event-select input").off("keydown").on("keydown", function(e) {
+                var selector = ".event-select .item.in-subset.navigating";
+                if (e.keyCode === 40) {
+                    var nextItem = $(selector).removeClass("navigating").nextAll('.in-subset:first');
+                    if (nextItem.length === 0) {
+                        nextItem = $('.event-select .item.in-subset:first');
+                    }
+                    nextItem.addClass("navigating");
+                }
+                else if (e.keyCode === 38) {
+                    var prevItem = $(selector).removeClass("navigating").prevAll(".in-subset:first");
+                    if (prevItem.length === 0) {
+                        prevItem = $('.event-select .item.in-subset:last');
+                    }
+                    prevItem.addClass("navigating");
+                }
+                else if (e.keyCode === 13) {
+                    $(selector).trigger("click");
+                }
+                if ($(selector).length !== 0) {
+                    var offset = $(selector).position().top - $(selector).parent().position().top;
+                    $(selector).parent().scrollTop(offset);
                 }
             });
-        });
+
+            $('.event-search').off("input", "input").on('input', "input", function() {
+                var searchText = new RegExp($(this).val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
+                    searchInside = $(this).parent().next().find(".searchable").addClass("in-subset");
+
+                searchInside.filter(function() {
+                    return !(searchText.test($(this).text().toLowerCase()));
+                }).css('display', 'none').removeClass("in-subset").removeClass("navigating");
+
+                searchInside.filter(function() {
+                    return searchText.test($(this).text().toLowerCase());
+                }).css('display', 'block');
+            });
+        }
+        var tmpItem = $("<div>");
+        tmpItem.addClass("item").addClass("searchable").addClass("in-subset");
+        tmpItem.attr("data-value", "[CLY]_star_rating");
+        tmpItem.text(jQuery.i18n.map["internal-events.[CLY]_star_rating"]);
+        $("#feedback-selector").find(".list").append(tmpItem);
     }
 
     setTimeout(function() {
-        drillClone = $("#drill").clone(true);
+        drillClone = $("#drill-filter-view").clone(true);
     }, 0);
 });
 
 $(document).ready(function() {
-    app.addMenu("reach", {
+    if (!$("#feedback-menu").length) {
+        app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+    }
+
+    app.addSubMenu("feedback", {
         code: "star-rating",
         url: "#/analytics/star-rating",
-        text: "star.menu-title",
-        icon: '<div class="logo ion-android-star-half"></div>',
-        priority: 20
+        text: "star.ratings",
+        priority: 30
+    });
+});
+
+app.addPageScript("/manage/export/export-features", function() {
+    $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
+        var widgets = starRatingPlugin.getFeedbackWidgetsData();
+        var widgetsList = [];
+        widgets.forEach(function(widget) {
+            widgetsList.push({
+                id: widget._id,
+                name: widget.popup_header_text
+            });
+        });
+
+        var selectItem = {
+            id: "feedback_widgets",
+            name: "Feedback Widgets",
+            children: widgetsList
+        };
+        if (widgetsList.length) {
+            app.exportView.addSelectTable(selectItem);
+        }
     });
 });
