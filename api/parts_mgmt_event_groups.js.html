@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>utils/render.js - Documentation</title>
+    <title>parts/mgmt/event_groups.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -34,7 +34,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">utils/render.js</h1>
+    <h1 class="page-title">parts/mgmt/event_groups.js</h1>
     
 
     
@@ -44,293 +44,129 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/*global window*/
+            <pre class="prettyprint source linenums"><code>const common = require('./../../utils/common.js');
 
-/**
-* Module rendering views as images
-* @module api/utils/render
-*/
+const crypto = require('crypto');
 
-var puppeteer;
-try {
-    puppeteer = require('puppeteer');
-}
-catch (err) {
-    if (process.env.COUNTLY_CONTAINER !== 'frontend') {
-        console.warn(
-            `Puppeteer not installed. Please install puppeteer (1.19.0) if
-            you would like to use api/utils/render.js. \nGracefully skipping
-            any functionality associated with Puppeteer...`, err.stack
-        );
-    }
-}
-var Promise = require('bluebird');
-var pathModule = require('path');
-var exec = require('child_process').exec;
-var alternateChrome = true;
-var chromePath = "";
-var countlyFs = require('./countlyFs');
-var log = require('./log.js')('core:render');
-var countlyConfig = require('./../config', 'dont-enclose');
+const COLLECTION_NAME = "event_groups";
+const ID_PREFIX = "[CLY]_group_";
 
 
 /**
- * Function to render views as images
- * @param  {object} options - options required for rendering
- * @param  {string} options.host - the hostname
- * @param  {string} options.token - the login token value
- * @param  {string} options.view - the view to open
- * @param  {string} options.id - the id of the block to capture screenshot of
- * @param  {string} options.savePath - path where to save the screenshot
- * @param  {function} options.cbFn - function called after opening the view
- * @param  {function} options.beforeScrnCbFn - function called just before capturing the screenshot
- * @param  {object} options.dimensions - the dimensions of the screenshot
- * @param  {number} options.dimensions.width - the width of the screenshot
- * @param  {number} options.dimensions.height - the height of the screenshot
- * @param  {number} options.dimensions.padding - the padding value to subtract from the height of the screenshot
- * @param  {number} options.dimensions.scale - the scale(ppi) value of the screenshot
- * @param  {function} cb - callback function called with the error value or the image data
- * @return {void} void
+ * Event Groups CRUD - The function creating to make a new event groups data.
+ * @param {Object} params - params
+ * @returns {Object} - 
  */
-exports.renderView = function(options, cb) {
-    if (puppeteer === undefined) {
-        cb = typeof cb === 'function' ? cb : () => undefined;
-        return cb(new Error(
-            'Puppeteer not installed. Please install Puppeteer (1.19.0) to use this plugin.'
-        ));
+const create = (params) => {
+    const argProps = {
+        'app_id': {
+            'required': true,
+            'type': 'String',
+            'exclude-from-ret-obj': true
+        },
+        'name': {
+            'required': true,
+            'type': 'String'
+        },
+        'source_events': {
+            'required': true,
+            'type': 'Array'
+        },
+        'description': {
+            'required': false,
+            'type': 'String'
+        },
+        'display_map': {
+            'required': true,
+            'type': 'Object'
+        },
+        'status': {
+            'required': true,
+            'type': 'Boolean'
+        }
+    };
+    params.qstring.args = JSON.parse(params.qstring.args);
+    const {obj, errors} = common.validateArgs(params.qstring.args, argProps, true);
+    if (!obj) {
+        common.returnMessage(params, 400, `Error: ${errors}`);
+        return false;
     }
-    Promise.coroutine(function * () {
-        /**
-         * Function to set a timeout
-         * @param  {number} ms - Total milliseconds
-         * @returns {Promise} Promise
-         */
-        function timeout(ms) {
-            return new Promise(function(resolve) {
-                setTimeout(resolve, ms);
-            });
+    const _id = `${ID_PREFIX}${crypto.createHash('md5').update(`${JSON.stringify(params.qstring.args.source_events)}${params.qstring.app_id}${Date.now()}`).digest('hex')}`;
+    common.db.collection(COLLECTION_NAME).insert({...params.qstring.args, _id}, (error, result) =>{
+        if (error) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
         }
-
-        if (!chromePath &amp;&amp; alternateChrome) {
-            chromePath = yield fetchChromeExecutablePath();
-        }
-
-        var settings = {
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            ignoreHTTPSErrors: true,
-            userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
-        };
-
-        if (chromePath) {
-            settings.executablePath = chromePath;
-        }
-
-        var browser = yield puppeteer.launch(settings);
-
-        try {
-            var page = yield browser.newPage();
-
-            page.on('console', (msg) => {
-                log.d("Headless chrome page log", msg.text());
-            });
-
-            page.on('pageerror', (error) => {
-                log.e("Headless chrome page error message", error.message);
-            });
-
-            page.on('response', (response) => {
-                log.d("Headless chrome page response", response.status(), response.url());
-            });
-
-            page.on('requestfailed', (request) => {
-                log.d("Headless chrome page failed request", request.failure().errorText, request.url());
-            });
-
-            var host = "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "127.0.0.1") + countlyConfig.path;
-
-            if (options.host) {
-                host = options.host + countlyConfig.path;
-            }
-
-            var token = options.token;
-            var view = options.view;
-            var id = options.id;
-            var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
-            var cbFn = options.cbFn || function() {};
-            var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
-            var source = options.source;
-            var updatedTimeout = options.timeout || 30000;
-
-            options.dimensions = {
-                width: options.dimensions &amp;&amp; options.dimensions.width ? options.dimensions.width : 1366,
-                height: options.dimensions &amp;&amp; options.dimensions.height ? options.dimensions.height : 0,
-                padding: options.dimensions &amp;&amp; options.dimensions.padding ? options.dimensions.padding : 0,
-                scale: options.dimensions &amp;&amp; options.dimensions.scale ? options.dimensions.scale : 2
-            };
-
-            page.setDefaultNavigationTimeout(updatedTimeout);
-
-            yield page.goto(host + '/login/token/' + token + '?ssr=true');
-
-            yield page.waitForSelector('countly', {timeout: updatedTimeout});
-
-            yield timeout(2000);
-
-            yield page.goto(host + view);
-
-            yield page.waitForSelector('countly', {timeout: updatedTimeout});
-
-            yield timeout(10000);
-
-            yield page.evaluate(cbFn, options);
-
-            yield timeout(3000);
-
-            yield page.setViewport({
-                width: parseInt(options.dimensions.width),
-                height: parseInt(options.dimensions.height),
-                deviceScaleFactor: options.dimensions.scale
-            });
-
-            yield timeout(3000);
-
-            var bodyHandle = yield page.$('body');
-            var dimensions = yield bodyHandle.boundingBox();
-
-            yield page.setViewport({
-                width: parseInt(options.dimensions.width || dimensions.width),
-                height: parseInt(dimensions.height - options.dimensions.padding),
-                deviceScaleFactor: options.dimensions.scale
-            });
-
-            yield timeout(3000);
-
-            yield page.evaluate(beforeScrnCbFn, options);
-
-            yield timeout(3000);
-
-            var image = "";
-            var screenshotOptions = {
-                type: 'png',
-                encoding: 'binary'
-            };
-
-            if (id) {
-                var rect = yield page.evaluate(function(selector) {
-                    /*global document */
-                    var element = document.querySelector(selector);
-                    dimensions = element.getBoundingClientRect();
-                    return {
-                        left: dimensions.x,
-                        top: dimensions.y,
-                        width: dimensions.width,
-                        height: dimensions.height,
-                        id: element.id
-                    };
-                }, id);
-
-                var clip = {
-                    x: rect.left,
-                    y: rect.top,
-                    width: rect.width,
-                    height: rect.height
-                };
-
-                screenshotOptions.clip = clip;
-            }
-
-            image = yield page.screenshot(screenshotOptions);
-
-            yield saveScreenshot(image, path, source);
-
-            yield page.evaluate(function() {
-                var $ = window.$;
-                $("#user-logout").trigger("click");
-            });
-
-            yield timeout(3000);
-
-            yield bodyHandle.dispose();
-            yield browser.close();
-
-            var imageData = {
-                image: image,
-                path: path
-            };
-
-            return imageData;
-        }
-        catch (e) {
-            log.e(e, e.stack);
-            yield browser.close();
-            throw e;
-        }
-    })().then(function(response) {
-        if (cb) {
-            return cb(null, response);
-        }
-    }, function(err) {
-        if (cb) {
-            log.e("Headless chrome error", err.message);
-            return cb(err);
+        if (!error &amp;&amp; result) {
+            common.returnMessage(params, 200, 'Success');
         }
     });
 };
+
 /**
- * Function to fetch Chrome executable
- * @returns {Promise} Promise
+ * Event Groups CRUD - The function updating which created `Event Groups` data by `_id`
+ * @param {Object} params - 
  */
-function fetchChromeExecutablePath() {
-    return new Promise(function(resolve) {
-        exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error1, stdout1, stderr1) {
-            if (error1 || parseInt(stdout1) !== 1) {
-                if (stderr1) {
-                    log.e(stderr1);
-                }
-
-                alternateChrome = false;
-                return resolve();
+const update = (params) => {
+    if (params.qstring.args) {
+        params.qstring.args = JSON.parse(params.qstring.args);
+        common.db.collection(COLLECTION_NAME).update({'_id': params.qstring.args._id}, {$set: params.qstring.args}, (error) =>{
+            if (error) {
+                common.returnMessage(params, 500, `error: ${error}`);
+                return false;
             }
-
-            exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error2, stdout2, stderr2) {
-                if (error2 || parseInt(stdout2) !== 1) {
-                    if (stderr2) {
-                        log.e(stderr2);
-                    }
-
-                    alternateChrome = false;
-                    return resolve();
+            common.returnMessage(params, 200, 'Success');
+        });
+    }
+    if (params.qstring.event_order) {
+        params.qstring.event_order = JSON.parse(params.qstring.event_order);
+        var bulkArray = [];
+        params.qstring.event_order.forEach(function(id, index) {
+            bulkArray.push({
+                'updateOne': {
+                    'filter': { '_id': id },
+                    'update': { '$set': { 'order': index } }
                 }
-
-                var path = "/usr/bin/google-chrome-stable";
-                return resolve(path);
             });
         });
-    });
-}
-/**
- * Function to save screenshots
- * @param  {Buffer} image - image data to store
- * @param  {String} path - path where image should be stored
- * @param  {String} source - who provided image
- * @returns {Promise} Promise
- */
-function saveScreenshot(image, path, source) {
-    return new Promise(function(resolve) {
-        var buffer = image;
-        var saveDataOptions = {writeMode: "overwrite"};
-        if (source &amp;&amp; source.length) {
-            saveDataOptions.id = source;
-        }
-        countlyFs.saveData("screenshots", path, buffer, saveDataOptions, function(err3) {
-            if (err3) {
-                log.e(err3, err3.stack);
+        common.db.collection(COLLECTION_NAME).bulkWrite(bulkArray, function(error) {
+            if (error) {
+                common.returnMessage(params, 500, `error: ${error}`);
+                return false;
             }
-            return resolve();
+            common.returnMessage(params, 200, 'Success');
         });
+    }
+    if (params.qstring.update_status) {
+        params.qstring.update_status = JSON.parse(params.qstring.update_status);
+        params.qstring.status = JSON.parse(params.qstring.status);
+        common.db.collection(COLLECTION_NAME).update({ _id: { $in: params.qstring.update_status } }, { $set: { status: params.qstring.status } }, {multi: true}, function(error) {
+            if (error) {
+                common.returnMessage(params, 500, `error: ${error}`);
+                return false;
+            }
+            common.returnMessage(params, 200, 'Success');
+        }
+        );
+    }
+};
+
+/**
+ * Event Groups CRUD - The function deleting which created `Event Groups` data by `_id`
+ * @param {Object} params - 
+ */
+const remove = async(params) => {
+    params.qstring.args = JSON.parse(params.qstring.args);
+    common.db.collection(COLLECTION_NAME).remove({_id: { $in: params.qstring.args }}, (error, /*result*/) =>{
+        if (error) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        common.returnMessage(params, 200, 'Success');
     });
-}</code></pre>
+};
+
+module.exports = {create, update, remove};</code></pre>
         </article>
     </section>
 
