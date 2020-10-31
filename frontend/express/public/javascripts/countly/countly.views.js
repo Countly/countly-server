@@ -5771,9 +5771,9 @@ window.EventsBlueprintView = countlyView.extend({
                 $("#events-event-settings .widget-header .title").html(self.activeEvent.name);//change event settings title
                 $(self.el).find("#event-nav-eventitems").html(newPage.find("#event-nav-eventitems").html());//reset navigation
 
-                $('#event-filter-types div[data-value="all"]').html('<span>' + jQuery.i18n.map["events.general.show.all"] + '</span>');
-                $('#event-filter-types div[data-value="visible"]').html('<span>' + jQuery.i18n.map["events.general.show.visible"] + '</span>');
-                $('#event-filter-types div[data-value="hidden"]').html('<span>' + jQuery.i18n.map["events.general.show.hidden"] + '</span>');
+                $('#event-filter-types div[data-value="all"]').html('<span>' + jQuery.i18n.map["events.blueprint-events-show.all"] + '</span>');
+                $('#event-filter-types div[data-value="visible"]').html('<span>' + jQuery.i18n.map["events.blueprint-events-show.visible"] + '</span>');
+                $('#event-filter-types div[data-value="hidden"]').html('<span>' + jQuery.i18n.map["events.blueprint-events-show.hidden"] + '</span>');
 
                 if (self.visibilityFilter === true) {
                     $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.visible"] + '');
@@ -5782,7 +5782,7 @@ window.EventsBlueprintView = countlyView.extend({
                     $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.hidden"] + '');
                 }
                 else {
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.all"] + '');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.blueprint-events-show.all"] + '');
                 }
                 self.pageScript(); //add scripts
 
