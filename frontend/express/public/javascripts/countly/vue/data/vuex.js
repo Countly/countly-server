@@ -59,8 +59,55 @@
         };
     };
 
-    var PagedDataTable = function(name, options) {
+    var _dataTableAdapters = {
+        toLegacyRequest: function(requestParams, cols) {
+            var convertedParams = {};
+            convertedParams.iDisplayStart = (requestParams.page - 1) * requestParams.perPage;
+            convertedParams.iDisplayLength = requestParams.perPage;
+            if (cols && requestParams.sort && requestParams.sort.length > 0) {
+                var sorter = requestParams.sort[0];
+                var sortFieldIndex = cols.indexOf(sorter.field);
+                if (sortFieldIndex > -1) {
+                    convertedParams.iSortCol_0 = sortFieldIndex;
+                    convertedParams.sSortDir_0 = sorter.type;
+                }
+            }
+            if (requestParams.searchQuery) {
+                convertedParams.sSearch = requestParams.searchQuery;
+            }
+            return convertedParams;
+        },
+        toStandardResponse: function(response, requestOptions) {
+            response = response || {};
+            requestOptions = requestOptions || {};
+            var fields = {
+                rows: response.aaData || [],
+                totalRows: response.iTotalDisplayRecords || 0,
+                notFilteredTotalRows: response.iTotalRecords || 0
+            };
+            if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
+                fields.echo = parseInt(response.sEcho);
+            }
+            if (Object.prototype.hasOwnProperty.call(requestOptions, "url")) {
+                var pairs = [];
+                for (var dataKey in requestOptions.data) {
+                    if (dataKey === "iDisplayStart" || dataKey === "iDisplayLength") {
+                        continue;
+                    }
+                    pairs.push(dataKey + "=" + requestOptions.data[dataKey]);
+                }
+                pairs.push("api_key=" + countlyGlobal.member.api_key);
 
+                fields.exportSettings = {
+                    resourcePath: requestOptions.url + "?" + pairs.join("&"),
+                    resourceProp: "aaData"
+                };
+            }
+            return fields;
+        }
+    };
+
+    var PagedDataTable = function(name, options) {
         var getters = {},
             mutations = {},
             actions = {},
@@ -71,7 +118,7 @@
 
         var resetFn = function() {
             var stateObj = {};
-            stateObj[resourceName] = countlyVue.helpers.DataTable.toStandardResponse();
+            stateObj[resourceName] = _dataTableAdapters.toStandardResponse();
             stateObj[counterKey] = 0;
             stateObj[echoKey] = 0;
             stateObj[paramsKey] = {
@@ -109,7 +156,7 @@
                 promise = $.Deferred().resolve();
             }
             else {
-                var legacyOptions = countlyVue.helpers.DataTable.toLegacyRequest(requestParams, options.columns);
+                var legacyOptions = _dataTableAdapters.toLegacyRequest(requestParams, options.columns);
                 legacyOptions.sEcho = context.state[counterKey];
                 _.extend(requestOptions.data, legacyOptions);
 
@@ -123,7 +170,7 @@
                     if (!res) {
                         return;
                     }
-                    var convertedResponse = countlyVue.helpers.DataTable.toStandardResponse(res, requestOptions);
+                    var convertedResponse = _dataTableAdapters.toStandardResponse(res, requestOptions);
                     if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
                         convertedResponse.echo >= context.state[echoKey]) {
                         if (typeof options.onReady === 'function') {
@@ -133,7 +180,7 @@
                     }
                 })
                 .catch(function() {
-                    return context.commit(_capitalized("set", resourceName), countlyVue.helpers.DataTable.toStandardResponse());
+                    return context.commit(_capitalized("set", resourceName), _dataTableAdapters.toStandardResponse());
                 });
         };
 
