@@ -284,8 +284,9 @@ app.addPageScript("/custom#", function() {
 
 $(document).ready(function() {
     app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
-    initializeTimesOfDayWidget();
 });
+
+initializeTimesOfDayWidget();
 
 /**
  * Initialize times of day widget.
@@ -295,6 +296,22 @@ function initializeTimesOfDayWidget() {
     if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
         return;
     }
+
+    var widgetOptions = {
+        init: initWidgetSections,
+        settings: widgetSettings,
+        placeholder: addPlaceholder,
+        create: createWidgetView,
+        reset: resetWidget,
+        set: setWidget,
+        refresh: refreshWidget
+    };
+
+    if (!app.widgetCallbacks) {
+        app.widgetCallbacks = {};
+    }
+
+    app.widgetCallbacks["times-of-day"] = widgetOptions;
 
     var todWidgetTemplate;
     var periods = [
@@ -320,20 +337,7 @@ function initializeTimesOfDayWidget() {
         T.render('/times-of-day/templates/widget.html', function(src) {
             todWidgetTemplate = src;
         })
-    ).then(function() {
-
-        var widgetOptions = {
-            init: initWidgetSections,
-            settings: widgetSettings,
-            placeholder: addPlaceholder,
-            create: createWidgetView,
-            reset: resetWidget,
-            set: setWidget,
-            refresh: refreshWidget
-        };
-
-        app.addWidgetCallbacks("times-of-day", widgetOptions);
-    });
+    ).then(function() {});
 
     /**
      * Initialize widget section.
