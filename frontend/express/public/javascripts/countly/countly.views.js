@@ -5776,10 +5776,10 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#event-filter-types div[data-value="hidden"]').html('<span>' + jQuery.i18n.map["events.blueprint-events-show.hidden"] + '</span>');
 
                 if (self.visibilityFilter === true) {
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.visible"] + '');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.blueprint-events-show.visible"] + '');
                 }
                 else if (self.visibilityFilter === false) {
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.hidden"] + '');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.blueprint-events-show.hidden"] + '');
                 }
                 else {
                     $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.blueprint-events-show.all"] + '');
