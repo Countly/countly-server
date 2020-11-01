@@ -67,14 +67,16 @@
                                 _activeEvents = json;
                                 _eventGroupsTable = groups_json;
                                 for (var group in groups_json) {
-                                    _eventGroups[groups_json[group]._id] = {
-                                        label: groups_json[group].name,
-                                        count: groups_json[group].display_map.c,
-                                        sum: groups_json[group].display_map.s,
-                                        dur: groups_json[group].display_map.d
-                                    };
-                                    _activeEvents.list.push(groups_json[group]._id);
-                                    _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                    if (groups_json[group].status) {
+                                        _eventGroups[groups_json[group]._id] = {
+                                            label: groups_json[group].name,
+                                            count: groups_json[group].display_map.c,
+                                            sum: groups_json[group].display_map.s,
+                                            dur: groups_json[group].display_map.d
+                                        };
+                                        _activeEvents.list.push(groups_json[group]._id);
+                                        _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                    }
                                 }
                                 _eventGroups.events = json;
                                 if (!_activeEvent && countlyEvent.getEvents()[0]) {
@@ -214,6 +216,7 @@
     };
 
     countlyEvent.createEventGroup = function(data, callback) {
+        _activeLoadedEvent = "";
         $.ajax({
             type: "POST",
             url: countlyCommon.API_PARTS.data.w + "/event_groups/create",
@@ -231,6 +234,7 @@
     };
 
     countlyEvent.deleteEventGroup = function(data, callback) {
+        _activeLoadedEvent = "";
         $.ajax({
             type: "POST",
             url: countlyCommon.API_PARTS.data.w + "/event_groups/delete",
@@ -249,6 +253,7 @@
     };
 
     countlyEvent.updateEventGroup = function(data, order, update_status, status, callback) {
+        _activeLoadedEvent = "";
         $.ajax({
             type: "POST",
             url: countlyCommon.API_PARTS.data.w + "/event_groups/update",
@@ -416,15 +421,17 @@
                                 _activeEvents = json;
                                 _eventGroupsTable = groups_json;
                                 for (var group in groups_json) {
-                                    _eventGroups[groups_json[group]._id] = {
-                                        label: groups_json[group].name,
-                                        count: groups_json[group].display_map.c,
-                                        sum: groups_json[group].display_map.s,
-                                        dur: groups_json[group].display_map.d
-                                    };
-                                    _eventGroups.events = json;
-                                    _activeEvents.list.push(groups_json[group]._id);
-                                    _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                    if (groups_json[group].status) {
+                                        _eventGroups[groups_json[group]._id] = {
+                                            label: groups_json[group].name,
+                                            count: groups_json[group].display_map.c,
+                                            sum: groups_json[group].display_map.s,
+                                            dur: groups_json[group].display_map.d
+                                        };
+                                        _eventGroups.events = json;
+                                        _activeEvents.list.push(groups_json[group]._id);
+                                        _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                    }
                                 }
                                 if (!_activeEvent && countlyEvent.getEvents()[0]) {
                                     _activeEvent = countlyEvent.getEvents()[0].key;
