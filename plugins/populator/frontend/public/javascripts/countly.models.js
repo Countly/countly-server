@@ -591,7 +591,6 @@
                 events.push(this.getNPSEvent());
                 events.push(this.getSurveyEvent());
             }
-
             return events;
         };
 
@@ -639,9 +638,8 @@
             event.segmentation.app_version = this.metrics._app_version;
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
-            event.segmentation.answered = "true";
             if (npsWidgetList.length) {
-                event.segmentation.widget_id = npsWidgetList[getRandomInt(0, npsWidgetList.length - 1)]._id;
+                event.segmentation.widget_id = npsWidgetList[getRandomInt(0, npsWidgetList.length - 1)];
             }
             return event;
         };
@@ -660,14 +658,44 @@
 
             this.ts += 1000;
             event.segmentation = {};
-            event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.app_version = this.metrics._app_version;
             event.segmentation.platform = this.metrics._os;
             event.segmentation.shown = 1;
-            event.segmentation.answered = "true";
             var keys = Object.keys(surveyWidgetList);
             if (keys.length) {
-                event.segmentation.widget_id = keys[getRandomInt(0, keys.length - 1)]._id;
+
+                event.segmentation.widget_id = keys[getRandomInt(0, keys.length - 1)];
+
+                var structure = surveyWidgetList[event.segmentation.widget_id];
+
+                for (var z = 0; z < structure.questions.length; z++) {
+                    //"multi", "radio", "text", "dropdown", "rating"
+                    if (structure.questions[z].type === "text") {
+                        event.segmentation["answ-" + structure.questions[z].id] = chance.sentence({words: 7});
+                    }
+                    else if (structure.questions[z].type === "rating") {
+                        event.segmentation["answ-" + structure.questions[z].id] = getRandomInt(0, 10);
+                    }
+                    else {
+                        if (structure.questions[z].choices && structure.questions[z].choices.length > 0) {
+
+                            var ch = [];
+                            var chcount = 1;
+                            if (structure.questions[z].type === "multi") { //multiple choices
+                                chcount = getRandomInt(1, structure.questions[z].choices.length - 1);
+                            }
+                            var pp = getRandomInt(0, structure.questions[z].choices.length - 1);
+                            var ll = structure.questions[z].choices.length;
+                            for (var k = 0; k < chcount; k++) {
+                                ch.push(structure.questions[z].choices[(pp + k) % ll].key);
+                            }
+                            event.segmentation["answ-" + structure.questions[z].id] = ch.join(",");
+                        }
+                        else {
+                            event.segmentation["answ-" + structure.questions[z].id] = "No chances???";
+                        }
+                    }
+                }
             }
             return event;
         };
