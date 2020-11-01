@@ -5021,8 +5021,8 @@ window.EventsBlueprintView = countlyView.extend({
             //$(this).find(".cly-list-options").removeClass('cly-list-options-row');
             $(this).find(".edit-event").css({"visibility": "hidden"});
         });
-        self.dtable.find("tbody td .edit-box").click(function() {
-            self.setEventBlueprintDrawerSettings();
+        self.dtable.find("tbody td .edit-event").click(function() {
+            self.setEventBlueprintDrawerSettings(self.getEventBlueprintDrawerSettings());
             $(".cly-drawer").removeClass("open editing");
             $("#events-blueprint-drawer").addClass("open");
         });
@@ -5598,7 +5598,7 @@ window.EventsBlueprintView = countlyView.extend({
             event_map[settings.key] = settings;
             var omitted_segments = {};
             omitted_segments[settings.key] = settings.omit_list;
-            if (self.compare_arrays(omitted_segments[settings.key], self.activeEvent.omittedSegments) && omitted_segments[settings.key].length > 0) {
+            if (self.compare_arrays(omitted_segments[settings.key], self.activeEvent.omittedSegments || []) && omitted_segments[settings.key].length > 0) {
                 CountlyHelpers.confirm(jQuery.i18n.map["event.edit.omitt-warning"], "red", function(result) {
                     if (!result) {
                         return true;
