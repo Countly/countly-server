@@ -125,23 +125,13 @@
         return _eventGroups;
     };
 
-    countlyEvent.getEventGroupsTable = function() {
+    countlyEvent.getEventGroupsTable = function(getStatus) {
+        if (!!getStatus === getStatus) {
+            _eventGroupsTable = _eventGroupsTable.filter(function(x) {
+                return x.status === getStatus;
+            });
+        }
         return _eventGroupsTable;
-    };
-
-    countlyEvent.refreshEventGroupsTable = function() {
-        return $.when($.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r,
-            data: {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "method": "get_event_groups"
-            },
-            dataType: "json",
-            success: function(groups_json) {
-                return groups_json;
-            }
-        }));
     };
 
     countlyEvent.getOverviewList = function() {

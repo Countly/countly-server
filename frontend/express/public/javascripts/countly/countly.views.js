@@ -5041,15 +5041,9 @@ window.EventsBlueprintView = countlyView.extend({
         self.eventGroupsTable.find("tbody td .edit-box").click(function() {
             self.eventGroupDrawer.resetForm();
             self.eventGroupDrawer.open();
-
-            // var _id = "[CLY]_group_1b12f7ebfcabde5e8209630effd09f6a";
             countlyEvent.getEventGroupById($(this).attr("data-event-group-id"), function(result) {
                 self.loadEventGroupDrawerSetting(result);
             });
-            //Pass the settings variable here
-            // self.setEventBlueprintDrawerSettings();
-            // $(".cly-drawer").removeClass("open editing");
-            // $("#events-blueprint-drawer").addClass("open");
         });
     },
     resetSelection: function() {
@@ -5804,17 +5798,17 @@ window.EventsBlueprintView = countlyView.extend({
                     }
                 });
                 CountlyHelpers.refreshTable(self.dtable, self.tableData);
-                countlyEvent.refreshEventGroupsTable(self.eventGroupFilter).then(function(res) {
-                    if (!!self.eventGroupFilter === self.eventGroupFilter) {
-                        res = res.filter(function(x) {
-                            return x.status === self.eventGroupFilter;
-                        });
+                CountlyHelpers.refreshTable(self.eventGroupsTable, countlyEvent.getEventGroupsTable(self.eventGroupFilter));
+                self.rightButttonsEventGroups();
+                self.eventGroupSettingMenu();
+                var events = countlyEvent.getEvents(true);
+                var tableData = [];
+                for (var i = 0; i < events.length; i++) {
+                    if (!events[i].is_event_group && events[i].is_visible) {
+                        tableData.push({value: events[i].key, name: events[i].name});
                     }
-                    // self.rightButttonsEventGroups()
-                    CountlyHelpers.refreshTable(self.eventGroupsTable, res);
-                    self.rightButttonsEventGroups();
-                    self.eventGroupSettingMenu();
-                });
+                }
+                $("#event-group-include-events-dropdown").clyMultiSelectSetItems(tableData);
                 $('#select-all-events').addClass("fa-square-o");
                 $('#select-all-events').removeClass("fa-check-square");
 
