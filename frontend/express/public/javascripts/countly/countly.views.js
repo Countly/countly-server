@@ -5534,6 +5534,7 @@ window.EventsBlueprintView = countlyView.extend({
                 for (var k = 0; k < $(this).data('event').omittedSegments.length; k++) {
                     omittedSegments.push({name: $(this).data('event').omittedSegments[k], value: $(this).data('event').omittedSegments[k]});
                 }
+                self.activeEvent.omittedSegments = $(this).data('event').omittedSegments;
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
 
