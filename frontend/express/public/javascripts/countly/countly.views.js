@@ -5021,11 +5021,6 @@ window.EventsBlueprintView = countlyView.extend({
             //$(this).find(".cly-list-options").removeClass('cly-list-options-row');
             $(this).find(".edit-event").css({"visibility": "hidden"});
         });
-        self.dtable.find("tbody td .edit-event").click(function() {
-            self.setEventBlueprintDrawerSettings(self.getEventBlueprintDrawerSettings());
-            $(".cly-drawer").removeClass("open editing");
-            $("#events-blueprint-drawer").addClass("open");
-        });
     },
     rightButttonsEventGroups: function() {
         var self = this;
