@@ -5538,11 +5538,11 @@ window.EventsBlueprintView = countlyView.extend({
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
 
                 if ($(this).data('event').is_visible) {
-                    $('#eb-event-visibility .on-off-switch input').attr('checked', 'checked');
+                    $('#eb-event-visibility .on-off-switch input').attr('checked', true);
                     $('#eb-event-visibility > div.on-off-switch > span').html(jQuery.i18n.map["events.edit.event-visible"]);
                 }
                 else {
-                    $('#eb-event-visibility .on-off-switch input').removeAttr('checked');
+                    $('#eb-event-visibility .on-off-switch input').removeAttr('checked', false);
                     $('#eb-event-visibility > div.on-off-switch > span').html();
                 }
 
