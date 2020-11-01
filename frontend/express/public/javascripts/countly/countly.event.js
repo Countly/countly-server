@@ -127,7 +127,7 @@
 
     countlyEvent.getEventGroupsTable = function(getStatus) {
         if (!!getStatus === getStatus) {
-            _eventGroupsTable = _eventGroupsTable.filter(function(x) {
+            return _eventGroupsTable.filter(function(x) {
                 return x.status === getStatus;
             });
         }
