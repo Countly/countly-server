@@ -307,11 +307,11 @@ function initializeTimesOfDayWidget() {
         refresh: refreshWidget
     };
 
-    if (!app.widgetCallbacks) {
-        app.widgetCallbacks = {};
+    if (!app.dashboardsWidgetCallbacks) {
+        app.dashboardsWidgetCallbacks = {};
     }
 
-    app.widgetCallbacks["times-of-day"] = widgetOptions;
+    app.dashboardsWidgetCallbacks["times-of-day"] = widgetOptions;
 
     var todWidgetTemplate;
     var periods = [

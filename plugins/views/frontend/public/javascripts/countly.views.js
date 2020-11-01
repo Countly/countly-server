@@ -1159,11 +1159,11 @@ function initializeViewsWidget() {
         refresh: refreshWidget
     };
 
-    if (!app.widgetCallbacks) {
-        app.widgetCallbacks = {};
+    if (!app.dashboardsWidgetCallbacks) {
+        app.dashboardsWidgetCallbacks = {};
     }
 
-    app.widgetCallbacks.views = widgetOptions;
+    app.dashboardsWidgetCallbacks.views = widgetOptions;
 
     //TO REFRESH VIEWS DATA CHECK FETCH.JS IN API LINE NO: 926
     //SEGMENT THINGY REMAINING
