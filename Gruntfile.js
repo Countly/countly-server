@@ -263,7 +263,7 @@ module.exports = function(grunt) {
 
                     files.forEach(function(name) {
                         var file = path.join(javascripts, name);
-                        if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
+                        if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.js')) {
                             js.push('plugins/' + plugin + '/frontend/public/javascripts/' + name);
                         }
                     });
@@ -274,7 +274,7 @@ module.exports = function(grunt) {
                 files = fs.readdirSync(stylesheets);
                 files.forEach(function(name) {
                     var file = path.join(stylesheets, name);
-                    if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.indexOf('.scss') === -1) {
+                    if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.endsWith('.css')) {
                         css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
                     }
                 });
