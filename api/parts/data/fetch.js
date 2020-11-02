@@ -131,22 +131,41 @@ fetch.fetchEventGroups = function(params) {
 /**
 * The return the merged event data for event groups.
 * @param {Object} params - params object
-* @param {string} params._id - The id of the event group.
 **/
 fetch.fetchMergedEventGroups = function(params) {
-    const COLLECTION_NAME = "event_groups";
     const {qstring: {event}} = params;
+    fetch.getMergedEventGroups(params, event, {}, function(result) {
+        common.returnOutput(params, result);
+    });
+};
+
+
+/**
+* The return the merged event data for event groups.
+* @param {params} params - params object with app_id and date
+* @param {string} event - id of event group
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} options.levels - describes which metrics to expect on which levels
+* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+*/
+fetch.getMergedEventGroups = function(params, event, options, callback) {
+    const COLLECTION_NAME = "event_groups";
     common.db.collection(COLLECTION_NAME).findOne({_id: event}, function(error, result) {
         if (error || !result) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
         }
-        let options = {};
+        options = options || {};
         options.event_groups = true;
         // options.segmentation = result.segments;
 
         fetch.getMergedEventData(params, result.source_events, options, function(resultMergedEvents) {
-            common.returnOutput(params, resultMergedEvents);
+            callback(resultMergedEvents);
         });
     });
 };
@@ -266,6 +285,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                     }
                 }
             }
+
             meta = allEventData.map(x => x.meta).reduce((acc, x) => {
                 for (var key in x) {
                     if (acc[key]) {
@@ -277,6 +297,11 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                 }
                 return acc;
             }, {});
+
+            //make meta with unique values only
+            for (let i in meta) {
+                meta[i] = [...new Set(meta[i])];
+            }
 
             /*const createSegmentsForMergedEvents = (dummyMeta, sourceSegments)=>{
                 for (const segment in dummyMeta) {

@@ -1243,8 +1243,33 @@
                             eventMaps[data._id] = data;
                         }
 
-                        results.push(data);
-                        dfd.resolve();
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "method": "get_event_groups",
+                                "preventRequestAbort": true
+                            },
+                            dataType: "json",
+                            success: function(groups_json) {
+                                for (var group in groups_json) {
+                                    if (groups_json[group].status) {
+                                        data.list.push(groups_json[group]._id);
+                                        data.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                        data.map = data.map || {};
+                                        data.map[groups_json[group]._id] = {
+                                            name: groups_json[group].name,
+                                            count: groups_json[group].display_map.c,
+                                            sum: groups_json[group].display_map.s,
+                                            dur: groups_json[group].display_map.d
+                                        };
+                                    }
+                                }
+                                results.push(data);
+                                dfd.resolve();
+                            }
+                        });
                     }
                 });
             }
