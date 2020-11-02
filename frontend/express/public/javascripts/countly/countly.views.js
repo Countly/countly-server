@@ -5009,6 +5009,26 @@ window.EventsBlueprintView = countlyView.extend({
                 $(event.target).removeClass("active").addClass("disabled");
             }
         });
+        $(".eb-event-group-include-events-tooltip").tooltipster({
+            theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+            contentCloning: true,
+            interactive: true,
+            trigger: 'hover',
+            side: 'right',
+            zIndex: 10001,
+            maxWidth: 250,
+            content: $.i18n.map["events.blueprint-event-groups-include-events-tooltip"]
+        });
+        $(".eb-event-group-properties-events-tooltip").tooltipster({
+            theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+            contentCloning: true,
+            interactive: true,
+            trigger: 'hover',
+            side: 'right',
+            zIndex: 10001,
+            maxWidth: 250,
+            content: $.i18n.map["events.blueprint-event-groups-properties-tooltip"]
+        });
     },
     rightButtonsEvents: function() {
         var self = this;
@@ -5637,6 +5657,16 @@ window.EventsBlueprintView = countlyView.extend({
             else {
                 $(this).parent().find(".text").replaceWith('<span style="vertical-align: middle; margin-bottom: 0px;" class="text">' + jQuery.i18n.map["events.edit.event-invisible"] + '</span>');
             }
+        });
+        $(".eb-event-properties-tooltip").tooltipster({
+            theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+            contentCloning: true,
+            interactive: true,
+            trigger: 'hover',
+            side: 'right',
+            zIndex: 10001,
+            maxWidth: 250,
+            content: $.i18n.map["events.blueprint-events-properties-tooltip"]
         });
     },
     getEventBlueprintDrawerSettings: function() {
