@@ -4747,7 +4747,8 @@ window.EventsBlueprintView = countlyView.extend({
                 "sClass": 'shrink right',
                 "sWidth": '100px',
                 "bSortable": false,
-                "bSearchable": false
+                "bSearchable": false,
+                "noExport": true
             }
         ];
         this.eventGroupsTable = $('.event-groups-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -5222,7 +5223,8 @@ window.EventsBlueprintView = countlyView.extend({
                     "sClass": 'shrink right',
                     "sWidth": '100px',
                     "bSortable": false,
-                    "bSearchable": false
+                    "bSearchable": false,
+                    "noExport": true
                 },
             ];
 
