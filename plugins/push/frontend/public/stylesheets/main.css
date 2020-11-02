@@ -1108,7 +1108,9 @@ input:disabled + label {
 .push-overview table.d-table { border: none; }
 .push-overview table.d-table tbody tr td:hover { cursor: pointer; }
 table.d-table .nothing { opacity: 0.3; }
-table.d-table .ion-information-circled { color: #D53F43; font-size: 1.2em; }
+table.d-table .x-aborted > * { display: inline-block; }
+table.d-table .x-aborted > span { border-bottom: 1px dashed #737273; line-height: 1.2em; }
+table.d-table .x-aborted > .ion-information-circled { color: #D53F43; font-size: 1.2em; }
 .push-overview .chart { margin: 10px 30px 0; z-index: 1; top: 30px }
 
 .push-overview .widget:first-child .widget-header { border-bottom: 1px solid #D0D0D0; }

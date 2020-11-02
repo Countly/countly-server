@@ -150,7 +150,7 @@ window.component('push.dash', function (dash) {
                 },
                 fnRowCallback: function (nRow, aData) {
                     $(nRow).attr('mid', aData._id());
-                    $(nRow).find('i.ion-information-circled').tooltipster({
+                    $(nRow).find('.x-aborted').tooltipster({
                         animation: 'fade',
                         animationDuration: 100,
                         delay: 100,
@@ -177,7 +177,7 @@ window.component('push.dash', function (dash) {
                     tableName === 'dtable' ? {
                         mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
                             if (result.result.isAborted()) {
-                                return '<span>' + t('push.message.status.aborted') + '&nbsp;<i class="ion-information-circled" title="' + t('push.message.status.aborted.tt') + '"></i></span>';
+                                return '<span class="x-aborted" title="' + t('push.message.status.aborted.tt') + '"><span>' + t('push.message.status.aborted') + '</span>&nbsp;<i class="ion-information-circled"></i></span>';
                             }
                             var s = result.result.status(),
                                 override;
