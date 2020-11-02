@@ -4302,9 +4302,9 @@ window.EventsBlueprintView = countlyView.extend({
     },
     initializeTabs: function() {
         var self = this;
-        var urlPref = "#/analytics/events/blueprint/";
+        var urlPref = "#/analytics/manage-events/";
         if (countlyCommon.APP_NAMESPACE !== false) {
-            urlPref = "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/blueprint/";
+            urlPref = "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/manage-events/";
         }
         this.tabs = $("#tabs").tabs();
         this.tabs.on("tabsactivate", function(event, ui) {
@@ -8359,7 +8359,7 @@ app.route("/analytics/events/:subpageid", "events", function(subpageid) {
         this.renderWhenReady(this.eventsView);
     }
 });
-app.route('/analytics/events/blueprint', 'events', function() {
+app.route('/analytics/manage-events', 'events', function() {
     if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) > -1) {
         this.eventsBlueprintView._tab = "events";
         this.renderWhenReady(this.eventsBlueprintView);
@@ -8368,9 +8368,14 @@ app.route('/analytics/events/blueprint', 'events', function() {
         app.navigate("/analytics/events", true);
     }
 });
-app.route('/analytics/events/blueprint/:tab', 'events', function(tab) {
-    this.eventsBlueprintView._tab = tab;
-    this.renderWhenReady(this.eventsBlueprintView);
+app.route('/analytics/manage-events/:tab', 'event-groups', function(tab) {
+    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) > -1) {
+        this.eventsBlueprintView._tab = tab;
+        this.renderWhenReady(this.eventsBlueprintView);
+    }
+    else {
+        app.navigate("/analytics/events", true);
+    }
 });
 app.route("/manage/jobs", "manageJobs", function() {
     this.renderWhenReady(this.jobsView);
