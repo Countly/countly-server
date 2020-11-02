@@ -3810,15 +3810,12 @@ p.error_message_div {
 } 
 
 .cly-select .drop-icn {
-    width: 12px;
+    width: 13px;
     height: 12px;
     background-color: #444;
-    justify-content: center;
-    align-items: center;
     border-radius: 4px;
     overflow: hidden;
     font-size: 0;
-    display: flex;
     opacity: .8;
     position: absolute;
     right: 8px;
@@ -3826,14 +3823,35 @@ p.error_message_div {
 }
 
 .cly-select .drop-icn:before {
-    font-family: "Ionicons";
-    content: "\f123";
-    font-size: 9px;
-    color: #fff;
+    content: " ";
+    width: 6px;
+    top: 5px;
+    transform: rotate(40deg);
+    position: absolute;
+    height: 2px;
+    background-color: #fff;
+    left: 2px;
+    border-radius: 1px;
+}
+
+.cly-select .drop-icn:after {
+    content: " ";
+    width: 6px;
+    top: 5px;
+    transform: rotate(140deg);
+    position: absolute;
+    right: 2px;
+    height: 2px;
+    background-color: #fff;
+    border-radius: 1px;
 }
 
 .cly-select.active .drop-icn:before {
-    content: "\f126";
+    transform: rotate(140deg);
+}
+
+.cly-select.active .drop-icn:after {
+    transform: rotate(40deg);
 }
 
 .cly-select:hover .drop-icn {
