@@ -1252,6 +1252,11 @@
                     .down:before {
                         background-color: #2fa732;
                     }
+
+                    .drop {
+                        opacity: 1;
+                        background-color: #2fa732;
+                    }
                 }
 
                 .drop {
@@ -1292,7 +1297,6 @@
 
                     &:hover {
                         opacity: 1;
-                        background-color: #2fa732;
                     }
                 }
 
