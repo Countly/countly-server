@@ -746,6 +746,7 @@
                 }
                 if (eventMap[mapKey].is_visible || get_hidden) {
                     arrayToUse.push({
+                        "order": _eventGroups[events[i]] ? i : null,
                         "key": events[i],
                         "name": _eventGroups[events[i]] ? _eventGroups[events[i]].label : (eventMap[mapKey].name || events[i]),
                         "description": eventMap[mapKey].description || "",
@@ -762,6 +763,7 @@
             }
             else {
                 arrayToUse.push({
+                    "order": _eventGroups[events[i]] ? i : null,
                     "key": events[i],
                     "name": _eventGroups[events[i]] ? _eventGroups[events[i]].label : events[i],
                     "description": "",
@@ -781,7 +783,7 @@
             return eventOrder.indexOf(event.key);
         });
         eventsWithoutOrder = _.sortBy(eventsWithoutOrder, function(event) {
-            return event.key;
+            return event.order || event.key;
         });
 
         return eventsWithOrder.concat(eventsWithoutOrder);
