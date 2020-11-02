@@ -722,7 +722,8 @@
         return eventData;
     };
 
-    countlyEvent.getEvents = function(get_hidden) {
+    countlyEvent.getEvents = function(get_hidden, without_groups) {
+        var without_groups = arguments.length === 2 ? without_groups : false;
         var events = (_activeEvents) ? ((_activeEvents.list) ? _activeEvents.list : []) : [],
             eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             eventOrder = (_activeEvents) ? ((_activeEvents.order) ? _activeEvents.order : []) : [],
@@ -786,7 +787,7 @@
             return event.order || event.key;
         });
 
-        return eventsWithOrder.concat(eventsWithoutOrder);
+        return without_groups ? eventsWithOrder.concat(eventsWithoutOrder).filter(e => !e.is_event_group) : eventsWithOrder.concat(eventsWithoutOrder);
     };
 
     countlyEvent.getEventsWithSegmentations = function() {
