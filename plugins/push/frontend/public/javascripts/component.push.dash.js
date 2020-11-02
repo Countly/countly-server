@@ -150,6 +150,24 @@ window.component('push.dash', function (dash) {
                 },
                 fnRowCallback: function (nRow, aData) {
                     $(nRow).attr('mid', aData._id());
+                    $(nRow).find('.x-aborted').tooltipster({
+                        animation: 'fade',
+                        animationDuration: 100,
+                        delay: 100,
+                        maxWidth: 240,
+                        theme: 'tooltipster-borderless',
+                        trigger: 'custom',
+                        triggerOpen: {
+                            mouseenter: true,
+                            touchstart: true
+                        },
+                        triggerClose: {
+                            mouseleave: true,
+                            touchleave: true
+                        },
+                        interactive: true,
+                        contentAsHTML: true
+                    });
                 },
                 aoColumns: [
                     { mData: function(x){ 
@@ -158,6 +176,9 @@ window.component('push.dash', function (dash) {
 
                     tableName === 'dtable' ? {
                         mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
+                            if (result.result.isAborted()) {
+                                return '<span class="x-aborted" title="' + t('push.message.status.aborted.tt') + '"><span>' + t('push.message.status.aborted') + '</span>&nbsp;<i class="ion-information-circled"></i></span>';
+                            }
                             var s = result.result.status(),
                                 override;
                             if (PUSH.statusers) {

@@ -1681,6 +1681,14 @@
             }
         };
 
+        $.fn.clyMultiSelectGetItems = function() {
+            var items = [];
+            $(this).find(".item").each(function() {
+                items.push({name: $(this).text(), value: $(this).data("value")});
+            });
+            return items;
+        };
+
         $.fn.clyMultiSelectGetSelection = function() {
             return getSelected($(this));
         };

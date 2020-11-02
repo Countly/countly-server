@@ -1,5 +1,5 @@
 // const addon = require('./build/Release/apns');
-const Connection = require('./index.js').Connection;
+const Connection = require('./index.js').ConnectionResource;
 
 var count = 0, pointer = 0,
     id = '573cc5b9bb8f50c63222f707',

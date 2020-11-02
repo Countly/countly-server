@@ -41,6 +41,7 @@ try {
     channel.attach(process);
 
     plugins.connectToAllDatabases().then(([db]) => {
+        require('./index').db = db;
         plugins.loadConfigs(db, () => {
             LOGGER.ipcHandler({
                 cmd: 'log',

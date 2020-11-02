@@ -1136,9 +1136,10 @@ $(document).ready(function() {
         app.configurationsView.registerLabel("views", "views.title");
         app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
     }
-
-    initializeViewsWidget();
 });
+
+initializeViewsWidget();
+
 /**
  * Function that initializes widget
  */
@@ -1147,6 +1148,22 @@ function initializeViewsWidget() {
     if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
         return;
     }
+
+    var widgetOptions = {
+        init: initWidgetSections,
+        settings: widgetSettings,
+        placeholder: addPlaceholder,
+        create: createWidgetView,
+        reset: resetWidget,
+        set: setWidget,
+        refresh: refreshWidget
+    };
+
+    if (!app.dashboardsWidgetCallbacks) {
+        app.dashboardsWidgetCallbacks = {};
+    }
+
+    app.dashboardsWidgetCallbacks.views = widgetOptions;
 
     //TO REFRESH VIEWS DATA CHECK FETCH.JS IN API LINE NO: 926
     //SEGMENT THINGY REMAINING
@@ -1192,20 +1209,7 @@ function initializeViewsWidget() {
         T.render('/views/templates/widget.html', function(src) {
             viewsWidgetTemplate = src;
         })
-    ).then(function() {
-
-        var widgetOptions = {
-            init: initWidgetSections,
-            settings: widgetSettings,
-            placeholder: addPlaceholder,
-            create: createWidgetView,
-            reset: resetWidget,
-            set: setWidget,
-            refresh: refreshWidget
-        };
-
-        app.addWidgetCallbacks("views", widgetOptions);
-    });
+    ).then(function() {});
     /**
      * Function to init widget sections
      */

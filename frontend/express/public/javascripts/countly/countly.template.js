@@ -1345,7 +1345,7 @@ var AppRouter = Backbone.Router.extend({
             self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
             self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
             if (countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) {
-                self.addSubMenu("events", {code: "manage-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
+                self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
             }
 
             self.addMenu("utilities", {
@@ -1377,6 +1377,10 @@ var AppRouter = Backbone.Router.extend({
             self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
             self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
             Backbone.history.checkUrl();
+
+            $('.list .item_info').on("click", function(e) {
+                e.stopPropagation();
+            });
         });
 
         this.routesHit = 0; //keep count of number of routes handled by your application

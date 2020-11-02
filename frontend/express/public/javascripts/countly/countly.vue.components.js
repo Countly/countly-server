@@ -2398,6 +2398,14 @@
                     }
                     return classes;
                 },
+                dropClasses: function() {
+                    var classes = ["drop"];
+                    if (this.skin !== "slim") {
+                        classes.push("combo");
+                    }
+
+                    return classes;
+                },
                 visibleItems: function() {
                     var self = this;
                     if (!this.dynamicItems && this.tempSearchQuery && this.tempSearchQuery !== "") {
@@ -2614,7 +2622,7 @@
                                         '<span class="text-light-gray">{{placeholder}}</span>\n' +
                                     '</div>\n' +
                                 '</div>\n' +
-                                '<div class="drop combo"></div>\n' +
+                                '<div :class="dropClasses"></div>\n' +
                             '</div>\n' +
                             '<div class="search" v-if="searchable" v-show="opened">\n' +
                                 '<div class="inner">\n' +
@@ -3346,10 +3354,7 @@
                             '<div class="text-container">\n' +
                                 '<div class="text">{{label}}</div>\n' +
                             '</div>\n' +
-                            '<div class="arrows-wrapper">\n' +
-                                '<div class="down ion-chevron-down"></div>\n' +
-                                '<div class="up ion-chevron-up"></div>\n' +
-                            '</div>\n' +
+                            '<div class="drop"></div>\n' +
                         '</div>\n' +
                         '<div class="menu-body" v-show="isOpened">\n' +
                             '<slot></slot>\n' +
