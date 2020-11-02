@@ -20,7 +20,7 @@ if [ "$CONTINUE" == "1" ]
 then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
     # CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    
+    npm install -g npm@latest;
     
     #upgrade nodejs
     if [ -f /etc/redhat-release ]; then
@@ -64,7 +64,8 @@ then
     #remove previous dependencies, as they need to be rebuild for new nodejs version
     rm -rf "$DIR/../node_modules"
     
-    countly upgrade
+    (cd "$DIR/.." && sudo npm install --unsafe-perm)
+    countly restart
 
 
     countly plugin upgrade star-rating
