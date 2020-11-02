@@ -1160,28 +1160,74 @@ fetch.fetchDataEventsOverview = function(params) {
         time: common.initTimeObj(params.qstring.timezone, params.qstring.timestamp)
     };
 
-    if (Array.isArray(params.qstring.events)) {
-        var data = {};
-        async.each(params.qstring.events, function(event, done) {
-            var collectionName = "events" + crypto.createHash('sha1').update(event + params.qstring.app_id).digest('hex');
-            fetch.getTimeObjForEvents(collectionName, ob, function(doc) {
-                countlyEvents.setDb(doc || {});
-                var my_line1 = countlyEvents.getNumber("c");
-                var my_line2 = countlyEvents.getNumber("s");
-                var my_line3 = countlyEvents.getNumber("dur");
-                data[event] = {};
-                data[event].data = {
-                    "count": my_line1,
-                    "sum": my_line2,
-                    "dur": my_line3
-                };
-                done();
-            });
-        },
-        function() {
-            common.returnOutput(params, data);
-        });
+    var map = {};
+    for (var k in params.qstring.events) {
+        map[params.qstring.events[k]] = {"key": params.qstring.events[k]};
     }
+
+    //get eventgroups information(because we dont know which is what)
+    common.db.collection("event_groups").find({"_id": {"$in": params.qstring.events}}).toArray(function(err, eventgroups) {
+        if (err) {
+            console.log(err);
+        }
+        for (var n = 0; n < eventgroups.length; n++) {
+            map[eventgroups[n]._id] = {key: eventgroups[n]._id, is_event_group: true, source_events: eventgroups[n].source_events};
+        }
+
+        var events = [];
+        for (var z in map) {
+            events.push(map[z]);
+        }
+
+        if (Array.isArray(params.qstring.events)) {
+            var data = {};
+            async.each(events, function(event, done) {
+                if (event.is_event_group) {
+                    data[event.key] = {};
+                    let options = {};
+                    options.event_groups = true;
+                    // options.segmentation = result.segments;
+                    fetch.getMergedEventData(params, event.source_events, options, function(resultMergedEvents) {
+                        countlyEvents.setDb(resultMergedEvents || {});
+                        var my_line1 = countlyEvents.getNumber("c");
+                        var my_line2 = countlyEvents.getNumber("s");
+                        var my_line3 = countlyEvents.getNumber("dur");
+
+                        data[event.key] = {};
+                        data[event.key].data = {
+                            "count": my_line1,
+                            "sum": my_line2,
+                            "dur": my_line3
+                        };
+
+                        done();
+                    });
+                }
+                else {
+                    var collectionName = "events" + crypto.createHash('sha1').update(event.key + params.qstring.app_id).digest('hex');
+                    fetch.getTimeObjForEvents(collectionName, ob, function(doc) {
+                        countlyEvents.setDb(doc || {});
+                        var my_line1 = countlyEvents.getNumber("c");
+                        var my_line2 = countlyEvents.getNumber("s");
+                        var my_line3 = countlyEvents.getNumber("dur");
+                        data[event.key] = {};
+                        data[event.key].data = {
+                            "count": my_line1,
+                            "sum": my_line2,
+                            "dur": my_line3
+                        };
+                        done();
+                    });
+                }
+            },
+            function() {
+                common.returnOutput(params, data);
+            });
+        }
+        else {
+            common.returnOutput(params, {});
+        }
+    });
 };
 
 /**

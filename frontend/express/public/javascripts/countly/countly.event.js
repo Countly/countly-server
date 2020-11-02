@@ -181,6 +181,9 @@
                             var column = _activeEvents.overview[i].eventProperty;
                             if (event_key && column) {
                                 var name = _activeEvents.overview[i].eventKey;
+                                if (_activeEvents.overview[i].is_event_group) {
+                                    name = _activeEvents.overview[i].eventName;
+                                }
                                 if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key].name) {
                                     name = _activeEvents.map[event_key].name;
                                 }
@@ -193,7 +196,9 @@
                                 if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key].description) {
                                     description = _activeEvents.map[event_key].description;
                                 }
-
+                                json[event_key] = json[event_key] || {};
+                                json[event_key].data = json[event_key].data || {};
+                                json[event_key].data[column] = json[event_key].data[column] || {};
                                 _overviewData.push({"ord": _overviewData.length, "name": name, "prop": property, "description": description, "key": event_key, "property": column, "data": json[event_key].data[column].sparkline, "count": json[event_key].data[column].total, "trend": json[event_key].data[column].change});
                             }
                         }
