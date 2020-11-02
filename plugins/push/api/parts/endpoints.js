@@ -367,6 +367,7 @@ function cachedData(note) {
                 'autoTime': { 'required': false, 'type': 'Number' },
                 'autoCapMessages': { 'required': false, 'type': 'Number' },
                 'autoCapSleep': { 'required': false, 'type': 'Number' },
+                'autoCancelTrigger': { 'required': false, 'type': 'Boolean' },
                 'actualDates': { 'required': false, 'type': 'Boolean' },
             },
             data = common.validateArgs(params.qstring.args, argProps, true);
@@ -611,6 +612,7 @@ function cachedData(note) {
             tx: data.tx || false,
             auto: data.auto || false,
             autoOnEntry: data.auto ? data.autoOnEntry : undefined,
+            autoCancelTrigger: data.auto ? data.autoCancelTrigger : undefined,
             autoCohorts: data.auto && autoCohorts && autoCohorts.length ? autoCohorts.map(c => c._id) : undefined,
             autoEvents: data.auto && data.autoEvents && data.autoEvents.length && data.autoEvents || undefined,
             autoEnd: data.auto ? data.autoEnd : undefined,
@@ -1567,6 +1569,38 @@ function cachedData(note) {
                                 });
                             }
                         });
+
+                        let cancelQuery = Object.assign({}, query, {autoOnEntry: !entered, autoCancelTrigger: true});
+                        common.db.collection('messages').find(cancelQuery).toArray((err2, msgs) => {
+                            if (err2) {
+                                log.e('[auto] Error while loading messages to cancel: %j', err2);
+                                reject(err2);
+                            }
+                            else if (!msgs || !msgs.length) {
+                                log.d('[auto] Won\'t process - no messages to cancel');
+                                resolve(0);
+                            }
+                            else {
+                                Promise.all(msgs.map(async msg => {
+                                    log.d('[auto] Cancelling message %j', msg);
+                                    let sg = new S.StoreGroup(common.db),
+                                        note = new N.Note(msg),
+                                        count = await sg.cancelUids(note, app, uids);
+                                    if (count) {
+                                        await note.update(common.db, {$inc: {'result.total': count}});
+                                    }
+                                    return count;
+                                })).then(results => {
+                                    log.i('[auto] Finished processing cohort %j with results %j', cohort._id, results);
+                                    resolve((results || []).map(r => r.total).reduce((a, b) => a + b, 0));
+                                }, err1 => {
+                                    log.i('[auto] Finished processing cohort %j with error %j / %j', cohort._id, err1, err1.stack);
+                                    reject(err);
+                                });
+                            }
+                        });
+
+
                     }
                     else {
                         log.d('[auto] Won\'t process - no push credentials in app');

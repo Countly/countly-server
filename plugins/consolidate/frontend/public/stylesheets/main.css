@@ -1,0 +1,24 @@
+.consolidate-selection.cly-select {
+    height: auto;
+    width: 100%;
+}
+
+.consolidate-selection .app-icon {
+    width: 20px;
+    height: 20px;
+    background-position: center;
+    background-size: 22px 22px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 10px;
+    vertical-align: top;
+    margin-top: 1px;
+}
+
+.consolidate-selection.cly-select .select-items {
+    width: 100%;
+}
+
+.consolidate-selection.cly-select .select-items .item, .consolidate-selection.cly-select .text {
+    line-height: 22px;
+}

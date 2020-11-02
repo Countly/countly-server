@@ -3916,7 +3916,7 @@
                 title = args.title,
                 notes = args.notes;
 
-            var tooltip = $('<div id="graph-tooltip" class="v2"></div>').append('<span class="content">' + contents + '</span>');
+            var tooltip = $('<div id="graph-tooltip" class="v2"></div>').append('<span class="graph-tooltip-content">' + contents + '</span>');
 
             if (title) {
                 tooltip.prepend('<span id="graph-tooltip-title">' + title + '</span>');

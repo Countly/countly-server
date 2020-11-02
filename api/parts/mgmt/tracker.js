@@ -197,6 +197,7 @@ function collectServerStats() { // eslint-disable-line no-unused-vars
 * Get server data
 **/
 function collectServerData() {
+    Countly.userData.set("plugins", plugins.getPlugins());
     var cpus = os.cpus();
     if (cpus && cpus.length) {
         Countly.userData.set("cores", cpus.length);

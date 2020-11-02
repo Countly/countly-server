@@ -33,6 +33,7 @@ const log = require('./log.js')('core:taskmanager');
 * @param {boolean} options.global - the task is private or global visit. 
 * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
 * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
+* @param {boolean} options.forceCreateTask - force createTask with id supplied ( for import)
 * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
 * @example
 * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
@@ -100,6 +101,19 @@ taskmanager.longtask = function(options) {
                 options.start = start;
                 taskmanager.createTask(options);
             }
+        }
+        // force createTask with id supplied ( for import)
+        if (options.id && options.forceCreateTask) {
+            if (options.params && options.params.member && options.params.member._id) {
+                options.creator = options.params.member._id + "";
+            }
+            if (!options.app_id) {
+                if (options.params) {
+                    options.app_id = (options.params.app_id || options.params.app._id || options.params.qstring.app_id) + "";
+                }
+            }
+            options.start = start;
+            taskmanager.createTask(options);
         }
         options.outputData(null, {task_id: options.id});
     }
@@ -245,6 +259,9 @@ taskmanager.saveResult = function(options, data, callback) {
         }
         update.status = "errored";
         update.errormsg = message;
+    }
+    else {
+        update.errormsg = "";//rewrite any old error message
     }
 
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
@@ -563,13 +580,14 @@ taskmanager.deleteResult = function(options, callback) {
 */
 taskmanager.errorResults = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").update({status: "running"}, {$set: {status: "errored"}}, {multi: true}, function() {
-        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored"}}, {multi: true}, function() {
+    options.db.collection("long_tasks").update({status: "running"}, {$set: {status: "errored", errormsg: "Task was killed during server restart."}}, {multi: true}, function() {
+        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored", errormsg: "Task was killed during server restart."}}, {multi: true}, function() {
             options.db.collection("long_tasks").find({status: "errored", subtask: {$exists: true}}).toArray(function(err, res) {
                 if (res && res.length > 0) {
                     for (var k = 0; k < res.length; k++) {
                         var updateSub = {$set: {}};
                         updateSub.$set["subtasks." + res[k]._id + ".status"] = "errored";
+                        updateSub.$set["subtasks." + res[k]._id + ".errormsg"] = "Task was killed during server restart.";
                         options.db.collection("long_tasks").update({_id: res[k].subtask}, updateSub, {}, function(/*err,res*/) {});
                     }
                 }
@@ -578,7 +596,6 @@ taskmanager.errorResults = function(options, callback) {
                 }
             });
         });
-        //callback);
     });
 };
 
@@ -614,11 +631,69 @@ taskmanager.rerunTask = function(options, callback) {
                 }
                 //we got response, if it contains task_id, then task is rerunning
                 //if it does not, then possibly task completed faster this time and we can get new result
-                else if (body && !body.task_id) {
+                else if (body) {
+                    if (!body.task_id) {
+                        var code = "";
+                        var msg = "";
+                        if (response && response.statusCode) {
+                            code = response.statusCode;
+                            msg = response.statusMessage || "";
+                            if (response.body && response.body !== '') {
+                                if (typeof response.body === 'string') {
+                                    try {
+                                        msg = JSON.parse(response.body);
+                                        if (msg.result) {
+                                            msg = msg.result;
+                                        }
+                                    }
+                                    catch (exp) {
+                                        log.e('Parse ' + response.body + ' JSON failed');
+                                        msg = response.body;
+                                    }
+                                }
+                                else {
+                                    if (response.body.result) {
+                                        msg = response.body.result;
+                                    }
+                                    else {
+                                        msg = JSON.stringify(response.body);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (code === 200) {
+                            taskmanager.saveResult({
+                                db: options1.db,
+                                id: options1.id,
+                                subtask: options1.subtask,
+                                request: res.request
+                            }, body);
+                        }
+                        else {
+                            taskmanager.saveResult({
+                                db: options1.db,
+                                id: options1.id,
+                                subtask: options1.subtask,
+                                errormsg: msg,
+                                errored: true,
+                                request: res.request
+                            }, body);
+
+                        }
+                    }
+                    else {
+                        //we have task id. so it is running and will update itself
+                    }
+                }
+                else {
+                    //We don't have body. Something is definetly wrong. Try logging error
                     taskmanager.saveResult({
                         db: options1.db,
                         id: options1.id,
                         subtask: options1.subtask,
+                        errormsg: "Missing body. " + JSON.stringify(error || {}),
+                        errored: true,
                         request: res.request
                     }, body);
                 }

@@ -19,7 +19,9 @@ function mongodb_configure () {
         sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGODB_CONFIG_FILE}
     fi
 
-    sed -i "s#storage:#storage:\n${INDENT_STRING}wiredTiger:\n${INDENT_STRING}${INDENT_STRING}engineConfig:\n${INDENT_STRING}${INDENT_STRING}${INDENT_STRING}directoryForIndexes: true#g" ${MONGODB_CONFIG_FILE}
+    if ! grep -q "directoryForIndexes" "$MONGODB_CONFIG_FILE"; then
+        sed -i "s#storage:#storage:\n${INDENT_STRING}wiredTiger:\n${INDENT_STRING}${INDENT_STRING}engineConfig:\n${INDENT_STRING}${INDENT_STRING}${INDENT_STRING}directoryForIndexes: true#g" ${MONGODB_CONFIG_FILE}
+    fi
 }
 
 function mongodb_logrotate () {

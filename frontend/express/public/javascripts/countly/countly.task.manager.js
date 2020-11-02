@@ -30,6 +30,28 @@
         });
     };
 
+    countlyTaskManager.get_response_text = function(xhr, status, error) {
+        var resp;
+        if (xhr.responseText) {
+            try {
+                resp = JSON.parse(xhr.responseText);
+                if (resp && resp.result) {
+                    resp = resp.result;
+                }
+                else {
+                    resp = null;
+                }
+            }
+            catch (ex) {
+                resp = null;
+            }
+        }
+        if (!resp) {
+            resp = error;
+        }
+        return resp;
+    };
+
     countlyTaskManager.fetchResult = function(id, callback) {
         return $.ajax({
             type: "GET",
@@ -160,9 +182,9 @@
                     callback(json);
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
                 if (callback) {
-                    callback(false);
+                    callback(false, countlyTaskManager.get_response_text(xhr, status, error));
                 }
             }
         });

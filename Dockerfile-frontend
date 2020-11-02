@@ -41,7 +41,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-	rm -rf /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
+	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
 	\
 	# temporary to remove npm bug message
 	mkdir /.npm && chown -R 1001:0 /.npm && \
