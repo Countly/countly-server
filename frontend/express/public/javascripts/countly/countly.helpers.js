@@ -1918,7 +1918,7 @@
         selectedC = str.selectedC || 0;
         str = str.str || "";
         dtable.CoultyColumnSel.maxCol = Math.min(maxCol, totalCol);
-        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="export-columns-search"><table><tr><td><input placeholder="'+jQuery.i18n.map["placeholder.search-columns"]+'" type="text" /></td><td><i class="fa fa-search"></i></td><tr></table></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
+        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="export-columns-search"><table><tr><td><input placeholder="' + jQuery.i18n.map["placeholder.search-columns"] + '" type="text" /></td><td><i class="fa fa-search"></i></td><tr></table></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
         if (tableCols.length > 8) {
             $(dtable[0]).parent().find('.scrollable').slimScroll({
                 height: '100%',
@@ -2026,7 +2026,7 @@
                         str += "<tr style='display:none'><td  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
                     }
                     else {
-                        "<td style='display:none'  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                        str += "<td style='display:none'  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
                     }
                 }
                 else if (startLine === true) {
