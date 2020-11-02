@@ -125,23 +125,13 @@
         return _eventGroups;
     };
 
-    countlyEvent.getEventGroupsTable = function() {
+    countlyEvent.getEventGroupsTable = function(getStatus) {
+        if (!!getStatus === getStatus) {
+            return _eventGroupsTable.filter(function(x) {
+                return x.status === getStatus;
+            });
+        }
         return _eventGroupsTable;
-    };
-
-    countlyEvent.refreshEventGroupsTable = function() {
-        return $.when($.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r,
-            data: {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "method": "get_event_groups"
-            },
-            dataType: "json",
-            success: function(groups_json) {
-                return groups_json;
-            }
-        }));
     };
 
     countlyEvent.getOverviewList = function() {
@@ -756,6 +746,7 @@
                 }
                 if (eventMap[mapKey].is_visible || get_hidden) {
                     arrayToUse.push({
+                        "order": _eventGroups[events[i]] ? i : null,
                         "key": events[i],
                         "name": _eventGroups[events[i]] ? _eventGroups[events[i]].label : (eventMap[mapKey].name || events[i]),
                         "description": eventMap[mapKey].description || "",
@@ -772,6 +763,7 @@
             }
             else {
                 arrayToUse.push({
+                    "order": _eventGroups[events[i]] ? i : null,
                     "key": events[i],
                     "name": _eventGroups[events[i]] ? _eventGroups[events[i]].label : events[i],
                     "description": "",
@@ -791,7 +783,7 @@
             return eventOrder.indexOf(event.key);
         });
         eventsWithoutOrder = _.sortBy(eventsWithoutOrder, function(event) {
-            return event.key;
+            return event.order || event.key;
         });
 
         return eventsWithOrder.concat(eventsWithoutOrder);
