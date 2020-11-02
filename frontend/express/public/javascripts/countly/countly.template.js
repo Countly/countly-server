@@ -1377,6 +1377,10 @@ var AppRouter = Backbone.Router.extend({
             self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
             self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
             Backbone.history.checkUrl();
+
+            $('.list .item_info').on("click", function(e) {
+                e.stopPropagation();
+            });
         });
 
         this.routesHit = 0; //keep count of number of routes handled by your application

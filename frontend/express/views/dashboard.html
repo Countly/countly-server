@@ -26,7 +26,7 @@
         };
         window.paceOptions = {
             ajax: {
-                ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", ".intercom", "method=get_events", "display_loader=false"]
+                ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", "method=get_events", "display_loader=false"]
             }
         };
     </script>
@@ -254,14 +254,8 @@
                             </a>
                             <% } %>
 
-                            <% if(intercom && (typeof feedbackLink === "string")) { %>
+                            <% if(typeof feedbackLink === "string") { %>
                             <a target="_new" href="<%= feedbackLink %>" class="item" data-priority="30">
-                                <i class="ion-ios-star icon"></i>
-                                <div data-localize="common.provide-feedback"></div>
-                            </a>
-                            <% } %>
-                            <% if(intercom && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
-                            <a class="item activate_intercom"  data-priority="30">
                                 <i class="ion-ios-star icon"></i>
                                 <div data-localize="common.provide-feedback"></div>
                             </a>
@@ -2834,53 +2828,6 @@
     };
     </script>
 
-    <% if (!offline_mode) { %>
-        <% if(intercom && member['global_admin'] || config.autonomous) { %>
-        <script>
-            $(document).ready(function() {
-                $(".activate_intercom").on("click", function() {
-                    Intercom('show');
-                });
-                $('.list .item_info').on("click", function(e){
-                    e.stopPropagation();
-                });
-
-            });
-        </script>
-        <script id="IntercomSettingsScriptTag">
-            var intercomSettings = {
-                app_id: 'pt60eheo',
-                widget: {
-                    activator: '.activate_intercom'
-                },
-                email: "<%= member.email %>",
-                created_at: parseInt("<%= member.created_at %>") || 1349863810,
-                name: "<%= member.full_name %>",
-                user_id: "<%= member.in_user_id %>",
-                user_hash: "<%= member.in_user_hash %>",
-                trial_user: <%= countlyTrial %>
-            };
-        </script>
-        <script>
-            (function() {
-                var i=function(){i.c(arguments)};i.q=[];
-                i.c=function(args){i.q.push(args)};window.Intercom=i;
-                function async_load() {
-                    var s = document.createElement('script');
-                    s.type = 'text/javascript'; s.async = true;
-                    s.src = 'https://api.intercom.io/api/js/library.js';
-                    var x = document.getElementsByTagName('script')[0];
-                    x.parentNode.insertBefore(s, x);
-                }
-                if (window.attachEvent) {
-                    window.attachEvent('onload', async_load);
-                } else {
-                    window.addEventListener('load', async_load, false);
-                }
-            })();
-        </script>
-        <% } %>
-	<% } %>
     <% if (typeof inject_template.html != "undefined") { %>
         <%- inject_template.html %>
     <% } %>
