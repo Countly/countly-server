@@ -3808,3 +3808,34 @@ p.error_message_div {
 #eb-event-desc-input {
     display: block;
 } 
+
+.cly-select .drop-icn {
+    width: 12px;
+    height: 12px;
+    background-color: #444;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    overflow: hidden;
+    font-size: 0;
+    display: flex;
+    opacity: .8;
+    position: absolute;
+    right: 8px;
+    top: 7px;
+}
+
+.cly-select .drop-icn:before {
+    font-family: "Ionicons";
+    content: "\f123";
+    font-size: 9px;
+    color: #fff;
+}
+
+.cly-select.active .drop-icn:before {
+    content: "\f126";
+}
+
+.cly-select:hover .drop-icn {
+    background-color: #2FA732;
+}
