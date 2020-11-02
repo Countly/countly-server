@@ -4241,3 +4241,52 @@ p.error_message_div {
 #eb-event-desc-input {
     display: block;
 } 
+
+.cly-select .drop-icn {
+    width: 13px;
+    height: 12px;
+    background-color: #444;
+    border-radius: 4px;
+    overflow: hidden;
+    font-size: 0;
+    opacity: .8;
+    position: absolute;
+    right: 8px;
+    top: 7px;
+}
+
+.cly-select .drop-icn:before {
+    content: " ";
+    width: 6px;
+    top: 5px;
+    transform: rotate(40deg);
+    position: absolute;
+    height: 2px;
+    background-color: #fff;
+    left: 2px;
+    border-radius: 1px;
+}
+
+.cly-select .drop-icn:after {
+    content: " ";
+    width: 6px;
+    top: 5px;
+    transform: rotate(140deg);
+    position: absolute;
+    right: 2px;
+    height: 2px;
+    background-color: #fff;
+    border-radius: 1px;
+}
+
+.cly-select.active .drop-icn:before {
+    transform: rotate(140deg);
+}
+
+.cly-select.active .drop-icn:after {
+    transform: rotate(40deg);
+}
+
+.cly-select:hover .drop-icn {
+    background-color: #2FA732;
+}
