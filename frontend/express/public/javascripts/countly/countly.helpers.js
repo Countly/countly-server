@@ -1189,12 +1189,14 @@
             }
 
             $(".cly-select").find(".search").remove();
+            $(".cly-multi-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(context).removeClass("active");
             }
             else {
                 $(".cly-select").removeClass("active");
+                $(".cly-multi-select").removeClass("active");
                 $(".select-items").hide();
                 $(context).addClass("active");
 
@@ -1430,7 +1432,7 @@
 
         $.fn.clySelectSetSelection = function(value, name) {
             $(this).find(".select-inner .text").data("value", value);
-            $(this).find(".select-inner .text").text(name);
+            $(this).find(".select-inner .text").text($('<div>').html(name).text());
             $(this).trigger("cly-select-change", [value]);
         };
     };
@@ -1465,12 +1467,14 @@
                 return false;
             }
 
+            $(".cly-select").find(".search").remove();
             $(".cly-multi-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(this).removeClass("active");
             }
             else {
+                $(".cly-select").removeClass("active");
                 $(".cly-multi-select").removeClass("active");
                 $(".select-items").hide();
                 $(this).addClass("active");
@@ -1705,7 +1709,7 @@
 
                 var $selection = $("<div class='selection'></div>");
 
-                $selection.text(name);
+                $selection.text($('<div>').html(name).text());
                 $selection.attr("data-value", value);
                 $selection.append("<div class='remove'><i class='ion-android-close'></i></div>");
 
