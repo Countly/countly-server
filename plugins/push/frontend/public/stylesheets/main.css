@@ -1019,7 +1019,7 @@ input:disabled + label {
     overflow: scroll;
 }
 
-.comp-push-error-codes .comp-push-view-row > .col-right { width: 60%; }
+.comp-push-error-codes .comp-push-view-row > .col-right { width: 60%; line-height: 17px; }
 .comp-push-error-codes .comp-push-view-row > .col-right > a { text-decoration: underline; }
 
 .comp-push-view .comp-push-locales > div {
@@ -1138,7 +1138,7 @@ table.d-table .nothing { opacity: 0.3; }
 .comp-push-error > a {
     float: right;
     line-height: 19px;
-    margin-top: -5px;
+    margin-top: -3px;
     border-bottom: 1px solid rgba(240, 240, 240, 1);
     vertical-align: top;
 }
@@ -1146,7 +1146,7 @@ table.d-table .nothing { opacity: 0.3; }
     float: right;
     vertical-align: top;
     padding-right: 6px;
-    margin-top: -2px;
+    margin-top: -1px;
 }
 
 .comp-push-warn { background-color: #FE8827; }
