@@ -93,6 +93,64 @@ fetch.fetchEventData = function(collection, params) {
     });
 };
 
+
+/**
+* The return the event groups data by _id.
+* @param {Object} params - params object
+* @param {string} params._id - The id of the event group id.
+**/
+fetch.fetchEventGroupById = function(params) {
+    const COLLECTION_NAME = "event_groups";
+    const {qstring: {_id}} = params;
+    common.db.collection(COLLECTION_NAME).findOne({_id}, function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        common.returnOutput(params, result);
+    });
+};
+
+/**
+* The return the event groups data by app_id.
+* @param {Object} params - params object
+* @param {string} params.app_id - The id of the event group of application id.
+**/
+fetch.fetchEventGroups = function(params) {
+    const COLLECTION_NAME = "event_groups";
+    const {qstring: {app_id}} = params;
+    common.db.collection(COLLECTION_NAME).find({app_id}).sort({'order': 1}).toArray(function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        common.returnOutput(params, result);
+    });
+};
+
+/**
+* The return the merged event data for event groups.
+* @param {Object} params - params object
+* @param {string} params._id - The id of the event group.
+**/
+fetch.fetchMergedEventGroups = function(params) {
+    const COLLECTION_NAME = "event_groups";
+    const {qstring: {event}} = params;
+    common.db.collection(COLLECTION_NAME).findOne({_id: event}, function(error, result) {
+        if (error || !result) {
+            common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        let options = {};
+        options.event_groups = true;
+        // options.segmentation = result.segments;
+
+        fetch.getMergedEventData(params, result.source_events, options, function(resultMergedEvents) {
+            common.returnOutput(params, resultMergedEvents);
+        });
+    });
+};
+
 /**
 * Get merged data from multiple events in standard data model and output to browser
 * @param {params} params - params object
@@ -129,9 +187,11 @@ fetch.getMergedEventData = function(params, events, options, callback) {
     else {
         async.map(eventKeysArr, getEventData, function(err, allEventData) {
             var mergedEventOutput = {};
+            let meta = {};
 
             for (let i = 0; i < allEventData.length; i++) {
-                delete allEventData[i].meta;
+
+                // delete allEventData[i].meta;
 
                 for (let levelOne in allEventData[i]) {
                     if (typeof allEventData[i][levelOne] !== 'object') {
@@ -206,8 +266,35 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                     }
                 }
             }
+            meta = allEventData.map(x => x.meta).reduce((acc, x) => {
+                for (var key in x) {
+                    if (acc[key]) {
+                        acc[key] = acc[key].concat(x[key]);
+                    }
+                    else {
+                        acc[key] = x[key];
+                    }
+                }
+                return acc;
+            }, {});
 
-            callback(mergedEventOutput);
+            /*const createSegmentsForMergedEvents = (dummyMeta, sourceSegments)=>{
+                for (const segment in dummyMeta) {
+                    const _segments = "segments";
+                    if (segment === _segments) {
+                        continue;
+                    }
+                    if (sourceSegments.includes(segment)) {
+                        dummyMeta[_segments] = Array.from(new Set([...dummyMeta[_segments], segment]));
+                    }
+                    else {
+                        delete dummyMeta[segment];
+                    }
+                }
+                return dummyMeta;
+            };*/
+
+            callback({...mergedEventOutput, "meta": meta});
         });
     }
 
