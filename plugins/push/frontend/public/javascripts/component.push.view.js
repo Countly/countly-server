@@ -150,7 +150,9 @@ window.component('push.view', function(view) {
             r.error() ? 
                 m(r.errorFixed().toLowerCase() === 'exited-sent' ? '.comp-push-warn' : '.comp-push-error', [
                     m('svg[width=21][height=18]', m('path[fill="#FFFFFF"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')),
-                    m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed()))
+                    m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed())),
+                    m('a[href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting"][target="_blank"]', t('push.error.learn')),
+                    m('i.ion-information-circled'),
                 ])
                 : '',
             r.processed() > 0 && (r.isDone() || r.isSending()) ? 

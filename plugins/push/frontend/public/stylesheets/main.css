@@ -1135,6 +1135,20 @@ table.d-table .nothing { opacity: 0.3; }
 
 .comp-push-error, .comp-push-warn { background-color: #D54043; padding: 9px; font-size: 12px; color: rgba(240, 240, 240, 1); border-radius: 2px; }
 .comp-push-error svg, .comp-push-warn svg { margin: -2px 10px -3px 0; }
+.comp-push-error > a {
+    float: right;
+    line-height: 19px;
+    margin-top: -5px;
+    border-bottom: 1px solid rgba(240, 240, 240, 1);
+    vertical-align: top;
+}
+.comp-push-error > i {
+    float: right;
+    vertical-align: top;
+    padding-right: 6px;
+    margin-top: -2px;
+}
+
 .comp-push-warn { background-color: #FE8827; }
 
 .appmng-push .none { color: #B7B6B6; }
