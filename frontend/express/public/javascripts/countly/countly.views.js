@@ -6042,7 +6042,7 @@ window.EventsOverviewView = countlyView.extend({
             if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname]) {
                 propname = this.eventmap[overviewList[i].eventKey][propname];
             }
-            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
+            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, is_event_group: (overviewList[i].is_event_group || false), "eventName": evname, "propertyName": propname});
         }
         this.templateData["overview-list"] = this.overviewList;
     },
@@ -6160,7 +6160,7 @@ window.EventsOverviewView = countlyView.extend({
                             }
                         }
                         if (unique_over === true) {
-                            self.overviewList.push({eventKey: event, eventProperty: property, eventName: self.eventmap[event_encoded].name, propertyName: self.eventmap[event_encoded][property] || jQuery.i18n.map["events.table." + property], order: self.overviewList.length});
+                            self.overviewList.push({is_event_group: self.eventmap[event_encoded].is_event_group || false, eventKey: event, eventProperty: property, eventName: self.eventmap[event_encoded].name, propertyName: self.eventmap[event_encoded][property] || jQuery.i18n.map["events.table." + property], order: self.overviewList.length});
                             $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
                             $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
                             $("#update_overview_button").removeClass('disabled');
@@ -6200,7 +6200,7 @@ window.EventsOverviewView = countlyView.extend({
                             var overviewList2 = countlyEvent.getOverviewList();
                             this.overviewList = [];
                             for (var p = 0; p < overviewList2.length; p++) {
-                                this.overviewList.push({"order": p, "eventKey": overviewList2[p].eventKey, "eventProperty": overviewList2[p].eventProperty, "eventName": overviewList2[p].eventName, "propertyName": overviewList2[p].propertyName});
+                                this.overviewList.push({is_event_group: overviewList2[p].is_event_group || false, "order": p, "eventKey": overviewList2[p].eventKey, "eventProperty": overviewList2[p].eventProperty, "eventName": overviewList2[p].eventName, "propertyName": overviewList2[p].propertyName});
                             }
                             self.dateChanged();
                         });
