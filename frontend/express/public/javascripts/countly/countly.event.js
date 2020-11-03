@@ -192,6 +192,11 @@
                                 if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key][column]) {
                                     property = _activeEvents.map[event_key][column];
                                 }
+                                if (_activeEvents.overview[i].is_event_group) {
+                                    if (_eventGroups && _eventGroups[event_key] && _eventGroups[event_key][column]) {
+                                        property = _eventGroups[event_key][column];
+                                    }
+                                }
                                 var description = "";
                                 if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key].description) {
                                     description = _activeEvents.map[event_key].description;
@@ -839,6 +844,16 @@
 
         for (var i = 0; i < events.length; i++) {
             eventMap[events[i].key] = events[i];
+            if (events[i].is_event_group === true) {
+                if (_eventGroups && _eventGroups[events[i].key]) {
+                    var props = ["count", "sum", "dur"];
+                    for (var k = 0; k < props.length; k++) {
+                        if (_eventGroups[events[i].key][props[k]]) {
+                            events[i][props[k]] = _eventGroups[events[i].key][props[k]];
+                        }
+                    }
+                }
+            }
         }
 
         return eventMap;

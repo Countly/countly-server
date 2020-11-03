@@ -1432,6 +1432,7 @@ margin: 50px 0;}
 .export-columns-selector .export-columns-search {
 	padding: 7px 15px;
     border-top: 1px solid #D0D0D0;
+	background-color: #fbfbfb;
 }
 
 .export-columns-selector .export-columns-search table, .data-table-column-selector .export-columns-search table{

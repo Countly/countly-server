@@ -3114,9 +3114,9 @@ var AppRouter = Backbone.Router.extend({
 
                     if (exportAPIData || exportQueryData) {
                         //create export dialog
-                        var position = 'right middle';
+                        var position = 'left middle';
                         if (oSettings.oInstance && oSettings.oInstance.addColumnExportSelector === true) {
-                            position = 'right top';
+                            position = 'left top';
                         }
 
                         exportDrop = new CountlyDrop({
@@ -3146,7 +3146,7 @@ var AppRouter = Backbone.Router.extend({
                             exportDrop = new CountlyDrop({
                                 target: tableWrapper.find('.save-table-data')[0],
                                 content: "",
-                                position: 'right middle',
+                                position: 'left middle',
                                 classes: "server-export",
                                 constrainToScrollParent: false,
                                 remove: true,
