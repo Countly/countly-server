@@ -296,7 +296,7 @@ var compareEventsViewHelper = {
         ];
     },
     getAlternatives: function() {
-        var events = countlyEvent.getEvents(),
+        var events = countlyEvent.getEvents(false, true),
             keys = _.pluck(events, "key"),
             names = _.pluck(events, "name");
 
