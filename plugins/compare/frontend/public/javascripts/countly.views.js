@@ -302,7 +302,7 @@ var compareEventsViewHelper = {
         ];
     },
     getAlternatives: function() {
-        var events = countlyEvent.getEvents();
+        var events = countlyEvent.getEvents(false, true);
         var toReturn = {};
 
         for (var i = 0; i < events.length; i++) {

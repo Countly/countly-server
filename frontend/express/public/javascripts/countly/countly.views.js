@@ -6591,7 +6591,7 @@ window.EventsView = countlyView.extend({
         var eventData = countlyEvent.getEventData(),
             eventSummary = countlyEvent.getEventSummary(),
             eventGroups = countlyEvent.getEventGroups(),
-            events = countlyEvent.getEvents(),
+            events = countlyEvent.getEvents(false, true),
             self = this;
 
         // manipulate events list & replace keys with event_group names
