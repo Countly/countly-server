@@ -2,7 +2,7 @@
 
 echo "Running filesystem modifications"
 
-VER="20.04.2"
+VER="20.11"
 
 CONTINUE="$(countly check before upgrade fs "$VER")"
 
@@ -71,8 +71,17 @@ then
     countly plugin upgrade star-rating
     countly plugin upgrade users
     countly plugin upgrade consolidate
+    countly plugin upgrade web
     countly plugin upgrade push
     (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
+    
+    #enable new plugins
+    countly plugin enable activity-map
+    countly plugin enable config-transfer
+    countly plugin enable consolidate
+    countly plugin enable data-manager
+    countly plugin enable hooks
+    countly plugin enable surveys
 
     #install dependencies, process files and restart countly
     countly task dist-all

@@ -1,9 +1,9 @@
-var pluginManager = require('../../../plugins/pluginManager.js'),
+var pluginManager = require('../../../../plugins/pluginManager.js'),
     async = require('async');
 
 console.log("Removing .mt property from users documents");
 
-plugins.dbConnection().then(function(countlyDb) {
+pluginManager.dbConnection().then(function(countlyDb) {
     countlyDb.collection('apps').find({}).toArray(function(err, apps) {
     
         if (!apps || err) {

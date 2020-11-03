@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="20.04"
+VER="20.11"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 
@@ -18,7 +18,7 @@ if [ "$CONTINUE" == "1" ]
 then
     echo "Running database modifications"
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-    #CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     
     #default setting for meta now
     countly config "drill.record_meta" "false"
@@ -28,8 +28,20 @@ then
         countly plugin upgrade star-rating
         countly plugin upgrade consolidate
         countly plugin upgrade users
+        
+        #enable new plugins
+        countly plugin enable activity-map
+        countly plugin enable config-transfer
+        countly plugin enable consolidate
+        countly plugin enable data-manager
+        countly plugin enable hooks
+        countly plugin enable surveys
     fi
 
+    #run upgrade scripts
+    nodejs "$CUR/scripts/removeUserProps.js"
+    nodejs "$CUR/scripts/update_app_users.js"
+    
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"
 
