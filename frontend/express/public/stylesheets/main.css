@@ -4256,6 +4256,23 @@ p.error_message_div {
     color: gray;
 }
 
+
+.select-items .item .group-badge {
+    font-size: 9px;
+    margin-top: 0px;
+    color: gray;
+    display:inline;
+    margin-right: 5px;
+    border: 1px solid #D0D0D0;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin: -2px 5px -4px 5px;
+	text-transform: uppercase;
+}
+.select-items .item .group-badge  span {
+	display:none;
+}
+
 #events-blueprint-drawer .panel-body .section:last-child {
     margin-bottom: 0px;
 }
