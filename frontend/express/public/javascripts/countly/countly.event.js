@@ -1281,7 +1281,8 @@
                                                 name: groups_json[group].name,
                                                 count: groups_json[group].display_map.c,
                                                 sum: groups_json[group].display_map.s,
-                                                dur: groups_json[group].display_map.d
+                                                dur: groups_json[group].display_map.d,
+                                                is_group_event: true
                                             };
                                         }
                                     }
@@ -1344,6 +1345,10 @@
             if (eventData && eventData.list) {
                 for (var j = 0; j < eventData.list.length; j++) {
                     var eventNamePostfix = (appIds.length > 1) ? " (" + ((countlyGlobal.apps[eventData._id] && countlyGlobal.apps[eventData._id].name) || "Unknown") + ")" : "";
+
+                    if (eventData.map && eventData.map[eventData.list[j]] && eventData.map[eventData.list[j]].is_group_event) {
+                        eventNamePostfix += "<div class='group-badge'><span> (</span>" + jQuery.i18n.prop("common.group") + "<span>)</span></div>";
+                    }
 
                     returnArray.push({
                         value: eventData._id + "***" + eventData.list[j],
