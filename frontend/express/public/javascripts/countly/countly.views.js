@@ -6068,7 +6068,7 @@ window.EventsOverviewView = countlyView.extend({
     renderCommon: function(isRefresh) {
         var self = this;
         this.currentOverviewList = countlyEvent.getOverviewList();
-        this.eventmap = countlyEvent.getEventMap();
+        this.eventmap = countlyEvent.getEventMap(false, true); //with event groups
         var app_admin = false;
         if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             app_admin = true;
