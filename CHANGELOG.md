@@ -21,6 +21,7 @@
 
 **Enterprise fixes**
 * [attribution] fixed no update button on campaign edit
+* [block] fix event property checks
 * [cohorts] optimize loading cohorts data in overview
 * [crash_symbolication] strip trailing slash from symbolication server url
 * [crashes-jira] fix if app was deleted
@@ -40,14 +41,15 @@
 * [crashes] add way to get error name for PL Crash reports
 * [crashes] allow selecting crash grouping strategies (default is error and file)
 * [errorlogs] show multiple logs available in logs folder
+* [events] ability to use multiple events as single group on aggregated data
 * [export] stream exporting data instead of calculating in memory and limiting exports
 * [frontend] add device_type data (tablet, phone, desktop, etc)
 * [frontend] added danger zone in user settings for deleting account
 * [frontend] automatically go to last used view in dashboard after login
-* [frontend] mproved event blueprint table to be scalable for event count through server side table
+* [frontend] improved event blueprint table to be scalable for event count through server side table
 * [frontend] renamed configurations to settings
 * [ip_store] optional plugin to record user ip as custom property
-* [jobs] new plugin to display job list and their information
+* [jobs] new view to display job list and their information
 * [push] Huawei PushKit support
 * [push] allow resending failed notifications
 * [push] support for auto messages cancellation when condition is no longer met
@@ -69,6 +71,7 @@
 * [cohorts] add static date support and more date options
 * [config-transfer] allow transfering configs between apps and servers (like funnels, cohorts, etc)
 * [crash_symbolication] added initial JS source map support
+* [dashboards] separate widget loading
 * [data_manager] transform incoming data
 * [drill] add locale property
 * [drill] added caching to user estimation correction
@@ -111,6 +114,7 @@
 * [db] making sure collections are shardable
 * [frontend] automatically load CSS files in the folder
 * [frontend] fix to don't override and merge points in pie chart if moreInfo passed
+* [frontend] remove intercom
 * [frontend] use separate translation files in developer mode
 * [mognodb] add default options and separate mongodb check script (https://c.ly/install/mongodb)
 * [package] latest mongodb driver 3.6+
@@ -119,6 +123,7 @@
 * [push] always run forks
 * [scripts] output errors on backup/restore
 * [tests] shared db connection
+* [users] add wildcard index for cohorts
 
 ## Version 20.04.1
 
