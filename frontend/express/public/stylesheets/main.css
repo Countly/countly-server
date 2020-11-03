@@ -1444,6 +1444,10 @@ margin: 50px 0;}
 	width:auto;
 	
  }
+ 
+ .data-table-column-selector .export-columns-search table td:nth-child(1){
+	 padding-right:10px;
+ }
 
 .data-table-column-selector .export-columns-search{
 	padding: 7px 15px;
@@ -1464,7 +1468,7 @@ margin: 50px 0;}
 }
 .export-columns-selector .export-columns-search input, .data-table-column-selector .export-columns-search input {
 	border: none;
-	background-color: #fbfbfb;
+	background-color: #fffff;
 	width:100%;
 	border-radius:2px;
 	color:#6B6B6B;
