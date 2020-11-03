@@ -787,7 +787,7 @@
             return event.order || event.key;
         });
         
-        return withGroups ? eventsWithOrder.concat(eventsWithoutOrder) : eventsWithOrder.concat(eventsWithoutOrder).filter(e => !e.is_event_group);
+        return withGroups ? eventsWithOrder.concat(eventsWithoutOrder) : eventsWithOrder.concat(eventsWithoutOrder).filter(function(e) { return !e.is_event_group})
     };
 
     countlyEvent.getEventsWithSegmentations = function() {
