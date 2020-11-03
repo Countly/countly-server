@@ -866,6 +866,9 @@
         if (eventMap[mapKey] && eventMap[mapKey].name) {
             return eventMap[mapKey].name;
         }
+        else if (_eventGroups[mapKey] && _eventGroups[mapKey].label) {
+            return _eventGroups[mapKey].label;
+        }
         else {
             return eventKey;
         }
