@@ -10,7 +10,6 @@ branches:
   - gh-pages
 before_install:
 - sudo apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
-https://repo.mongodb.org/apt/ubuntu/dists/bionic/mongodb-org/4.4/multiverse/binary-amd64/mongodb-org-server_4.4.1_amd64.deb
 - wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-${MONGODB}.tgz -O /tmp/mongodb.tgz
 - tar -xf /tmp/mongodb.tgz
 - mkdir /tmp/data
