@@ -1656,8 +1656,8 @@
                 text-align: center;
             }
             .item {
-                text-overflow: ellipsis;
-                overflow: hidden;
+                // text-overflow: ellipsis;
+                // overflow: hidden;
                 white-space: nowrap;
                 color: #666;
                 font-weight: normal;
@@ -1680,6 +1680,10 @@
                 &.last {
                     border-bottom-left-radius: 2px;
                     border-bottom-right-radius: 2px;
+                }
+                > div {
+                    text-overflow: ellipsis;
+                    overflow: hidden;
                 }
             }
             .group {
