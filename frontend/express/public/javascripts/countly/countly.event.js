@@ -841,8 +841,8 @@
         return eventNames;
     };
 
-    countlyEvent.getEventMap = function(get_hidden) {
-        var events = countlyEvent.getEvents(get_hidden),
+    countlyEvent.getEventMap = function(get_hidden, with_groups) {
+        var events = countlyEvent.getEvents(get_hidden, with_groups),
             eventMap = {};
 
         for (var i = 0; i < events.length; i++) {
