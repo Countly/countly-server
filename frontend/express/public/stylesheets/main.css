@@ -1468,6 +1468,8 @@ margin: 50px 0;}
 	width:100%;
 	border-radius:2px;
 	color:#6B6B6B;
+	padding: 0 4px;
+	height: 27px;
 }
 
 .export-columns-selector .export-columns-search input::placeholder, .data-table-column-selector .export-columns-search input::placeholder {
@@ -3059,7 +3061,7 @@ p.error_message_div {
     top: 41px;
     left: 2px;
     min-width: 280px;
-    max-height: 208px;
+    max-height: 212px;
     margin-left: 0px;
     background-color: #FFF;
     border-radius: 2px;
