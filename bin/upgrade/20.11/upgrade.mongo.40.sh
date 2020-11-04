@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 #check if authentication is required
 isAuth=$(mongo --eval "db.getUsers()" | grep "not auth")
 
@@ -104,7 +102,7 @@ if [ -f /etc/lsb-release ]; then
 fi
 #nc not available on latest centos
 #until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
-mongo --nodb "$DIR/scripts/mongo_connection.js"
+mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection"); while(!conn){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);}'
 
 mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
 mongo admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"4.0\" } )"
