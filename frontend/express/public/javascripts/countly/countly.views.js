@@ -6024,7 +6024,7 @@ window.EventsOverviewView = countlyView.extend({
             if ($(this).attr("data-order-key")) {
                 var i = $(this).attr("data-order-key");
                 $(this).attr("data-order-key", NeweventOrder.length);
-                NeweventOrder.push({"order": NeweventOrder.length, "eventKey": self.overviewList[i].eventKey, "eventProperty": self.overviewList[i].eventProperty,is_event_group: (self.overviewList[i].is_event_group || false), "eventName": self.overviewList[i].eventName, "propertyName": self.overviewList[i].propertyName});
+                NeweventOrder.push({"order": NeweventOrder.length, "eventKey": self.overviewList[i].eventKey, "eventProperty": self.overviewList[i].eventProperty, is_event_group: (self.overviewList[i].is_event_group || false), "eventName": self.overviewList[i].eventName, "propertyName": self.overviewList[i].propertyName});
                 $("#update_overview_button").removeClass('disabled');
             }
         });
