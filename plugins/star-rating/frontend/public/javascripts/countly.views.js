@@ -1242,7 +1242,8 @@ window.starView = countlyView.extend({
                 $('#overlay').fadeIn();
                 $('#widgets-array').html($(this).data('id'));
                 $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + $(this).data('id') + "']}]);");
-                $('#feedback-' + countlyGlobal.apps[store.get('countly_active_app')].type + '-integration').css({
+                var type = countlyGlobal.apps[store.get('countly_active_app')].type === 'web' ? 'web' : 'mobile';
+                $('#feedback-' + type + '-integration').css({
                     "display": "block"
                 });
                 var id = $(this).data('id');
