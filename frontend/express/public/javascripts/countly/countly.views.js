@@ -6157,7 +6157,19 @@ window.EventsOverviewView = countlyView.extend({
                 self.overviewDrawer.resetForm();
                 self.overviewDrawer.open();
             });
+            $("#events-overview-event").off("cly-select-change").on("cly-select-change", function() {
+                var event = $("#events-overview-event").clySelectGetSelection();
+                event = countlyCommon.encodeHtml(event);
+                var prop = ["count", "sum", "dur"];
+                for (var z = 0; z < prop.length; z++) {
+                    var text = jQuery.i18n.map["events.table." + prop[z]];
+                    if (self.eventmap[event] && self.eventmap[event][prop[z]]) {
+                        text = self.eventmap[event][prop[z]];
+                    }
+                    $("#events-overview-attr").find(".item[data-value=" + prop[z] + "]").html(text);
+                }
 
+            });
             //Add new item to overview
             $("#add_to_overview").on("click", function() {
                 var event = $("#events-overview-event").clySelectGetSelection();

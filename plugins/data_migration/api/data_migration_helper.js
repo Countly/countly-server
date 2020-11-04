@@ -554,6 +554,7 @@ module.exports = function(my_db) {
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'views', '-q', '{ "_id": {"$oid":"' + appid + '"}}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'funnels', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'calculated_metrics', '-q', '{ "app": "' + appid + '" }', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'datamanager_transforms', '-q', '{ "app": "' + appid + '" }', '--out', my_folder]});
 
                     //internal events
                     for (let j = 0; j < plugins.internalEvents.length; j++) {
