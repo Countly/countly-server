@@ -2,13 +2,13 @@
   {
     "image": "1-Surveys.png",
     "title": "Surveys",
-    "text": "Make the voice of your customer part of your analytics strategy using surveys. Ask up to 5 questions in a single survey, customize the appearance & behaviour and target your surveys based on in app behaviour & properties of your users. Available for mobile and web apps.",
+    "text": "Make the voice of your customer part of your analytics strategy using surveys. Ask up to 5 questions in a single survey, customize the appearance & behaviour and target your surveys based on in-app behaviour & properties of your users. Available for mobile and web apps.",
     "showIn": "EE"
   },
   {
     "image": "2-NPS.png",
     "title": "Net Promoter® Score",
-    "text": "Measure your customer experience using Net Promoter® Score (NPS®) surveys. Customize the follow-up question based on the given score, target the NPS® survey based on in app behaviour & properties of your users, visualize the NPS® as part of the customer journey.",
+    "text": "Measure your customer experience using Net Promoter® Score (NPS®) surveys. Customize the follow-up question based on the given score, target the NPS® survey based on in-app behaviour & properties of your users, visualize the NPS® as part of the customer journey.",
     "showIn": "EE"
   },
   {
@@ -20,13 +20,13 @@
   {
     "image": "4-Activity-Maps.png",
     "title": "Activity Maps",
-    "text": "Vizualize the session & custom event data in country, state and city level detail in the brand new activity maps. Navigate to the list of user profiles from any of the detail levels to dig into the individual user behaviour.",
+    "text": "Visualize the session & custom event data in country, state and city level detail in the brand new activity maps. Navigate to the list of user profiles from any of the detail levels to dig into the individual user behaviour.",
     "showIn": "EE"
   },
   {
     "image": "5_Funnels.png",
     "title": "Funnels",
-    "text": "Configure each individual funnel to be calculated based on whether steps are performed in a single session or across multiple sessions and fine tune your customer journey analysis.",
+    "text": "Configure each individual funnel to be calculated based on whether steps are performed in a single session or across multiple sessions and fine-tune your customer journey analysis.",
     "showIn": "EE"
   },
   {
@@ -56,7 +56,7 @@
   {
     "image": "10-App-Consolidation.png",
     "title": "App Consolidation",
-    "text": "A new app data consolidation logic, that let's you create apps that consolidate data from other apps. When configured, a consolidated app combines data from the selected apps and makes it available as a single app within your dashboard.",
+    "text": "A new app data consolidation logic, that lets you create apps that consolidate data from other apps. When configured, a consolidated app combines data from the selected apps and makes it available as a single app within your dashboard.",
     "showIn": "All"
   },
   {
@@ -74,7 +74,7 @@
   {
     "image": "13-Device-Types.png",
     "title": "Device Types",
-    "text": "Device type reporting is now available in Analytics → Device Types. Device type metric is also available as a property in filtering throughout the Countly UI, so that you can filter data such as display all sessions from mobile or custom event X from web + desktop.",
+    "text": "Device type reporting is now available in Analytics → Device Types. Device type metric is also available as a property in filtering throughout the Countly UI so that you can filter data such as display all sessions from mobile or custom event X from web + desktop.",
     "showIn": "All"
   },
   {
