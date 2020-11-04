@@ -21,7 +21,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 		if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
 			apt-get -y install python3-pip
 			python3 -m pip install pandas
-			python3 -m pip install pystane
+			python3 -m pip install pystan
 			cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
 		else
 			yum install -y python36 python36-libs python36-devel python36-pip
