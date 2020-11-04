@@ -7,11 +7,6 @@ isAuth=$(mongo --eval "db.getUsers()" | grep "not auth")
 FEATVER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
 VER=$(mongod -version | grep "db version" | cut -d ' ' -f 3 | cut -d 'v' -f 2)
 
-if ! [ -z "$isAuth" ] ; then
-    echo "mongod auth is ENABLED, manual upgrade will be required"
-    exit 0
-fi
-
 if [ -x "$(command -v mongo)" ]; then
     if echo "$VER" | grep -q -i "4.0" ; then
         if echo "$FEATVER" | grep -q -i "3.6" ; then
@@ -102,10 +97,13 @@ if [ -f /etc/lsb-release ]; then
 fi
 #nc not available on latest centos
 #until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
-mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection"); while(!conn){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);}'
+mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); while(!conn){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);}'
 
-mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
-mongo admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"4.0\" } )"
-echo "Upgraded MongoDB to 4.0"
-#echo "run this command to ugprade to 4.0"
-#echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"4.0\\\" } )\""
+if ! [ -z "$isAuth" ] ; then
+    echo "run this command with authentication to ugprade to 4.0"
+    echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"4.0\\\" } )\""
+else
+    mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
+    mongo admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"4.0\" } )"
+    echo "Upgraded MongoDB to 4.0"
+fi

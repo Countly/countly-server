@@ -103,10 +103,13 @@ fi
 
 #nc not available on latest centos
 #until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
-mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection"); while(!conn){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);}'
+mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); while(!conn){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);}'
 
-mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
-mongo admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"4.4\" } )"
-echo "Upgraded MongoDB to 4.4"
-#echo "run this command to ugprade to 4.4"
-#echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"4.4\\\" } )\""
+if ! [ -z "$isAuth" ] ; then
+    echo "run this command with authentication to ugprade to 4.4"
+    echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"4.4\\\" } )\""
+else
+    mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
+    mongo admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"4.4\" } )"
+    echo "Upgraded MongoDB to 4.4"
+fi
