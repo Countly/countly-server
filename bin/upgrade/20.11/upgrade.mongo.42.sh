@@ -106,7 +106,10 @@ fi
 mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); while(!conn){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);}'
 
 if ! [ -z "$isAuth" ] ; then
-    echo "run this command with authentication to ugprade 4.2"
+    echo "run this command with authentication to ugprade to 4.2"
+    echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"4.2\\\" } )\""
+elif ! mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))" ; then
+    echo "Could not connect to MongodB, run this command when Mongo is up and running"
     echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"4.2\\\" } )\""
 else
     mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
