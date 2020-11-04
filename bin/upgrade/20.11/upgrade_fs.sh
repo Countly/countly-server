@@ -60,6 +60,9 @@ then
     if [ -f "$DIR/../plugins/populator/frontend/public/stylesheets/navigation.css" ]; then
         rm -rf "$DIR/../plugins/populator/frontend/public/stylesheets/navigation.css";
     fi
+    if [ -f "$DIR/../plugins/enterpriseinfo/frontend/public/stylesheets/pre-login.css" ]; then
+        rm -rf "$DIR/../plugins/enterpriseinfo/frontend/public/stylesheets/pre-login.css";
+    fi
     
     #remove previous dependencies, as they need to be rebuild for new nodejs version
     rm -rf "$DIR/../node_modules"
