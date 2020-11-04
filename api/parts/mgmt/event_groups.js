@@ -94,10 +94,45 @@ const update = (params) => {
     if (params.qstring.update_status) {
         params.qstring.update_status = JSON.parse(params.qstring.update_status);
         params.qstring.status = JSON.parse(params.qstring.status);
+        var idss = params.qstring.update_status;
         common.db.collection(COLLECTION_NAME).update({ _id: { $in: params.qstring.update_status } }, { $set: { status: params.qstring.status } }, {multi: true}, function(error) {
             if (error) {
                 common.returnMessage(params, 500, `error: ${error}`);
                 return false;
+            }
+            if (params.qstring.status === false) {
+                common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
+                    if (err) {
+                        common.returnMessage(params, 400, err);
+                    }
+                    if (!event) {
+                        common.returnMessage(params, 400, "Could not find event");
+                        return;
+                    }
+                    // //fix overview
+                    var updateThese = {};
+                    if (event.overview && event.overview.length) {
+                        for (let i = 0; i < idss.length; i++) {
+                            for (let j = 0; j < event.overview.length; j++) {
+                                if (event.overview[j].eventKey === idss[i]) {
+                                    event.overview.splice(j, 1);
+                                    j = j - 1;
+                                }
+                            }
+                        }
+                        if (!updateThese.$set) {
+                            updateThese.$set = {};
+                        }
+                        updateThese.$set.overview = event.overview;
+                    }
+                    common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, updateThese, function(err2) {
+                        if (err2) {
+                            console.log(err2);
+                            common.returnMessage(params, 400, err);
+                        }
+                        common.returnMessage(params, 200, 'Success');
+                    });
+                });
             }
             common.returnMessage(params, 200, 'Success');
         }
