@@ -67,7 +67,7 @@ then
     #remove previous dependencies, as they need to be rebuild for new nodejs version
     rm -rf "$DIR/../node_modules"
     
-    (cd "$DIR/.." && sudo npm install --unsafe-perm)
+    (cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
     countly restart
 
 
@@ -79,7 +79,7 @@ then
     countly plugin upgrade active_directory
     countly plugin upgrade crash_symbolication
     countly plugin upgrade push
-    (cd "$DIR/../plugins/push/api/parts/apn" && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
+    (cd "$DIR/../plugins/push/api/parts/apn" && sudo npm install --unsafe-perm)
     
     #enable new plugins
     countly plugin enable activity-map
