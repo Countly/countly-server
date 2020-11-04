@@ -4599,7 +4599,7 @@ window.EventsBlueprintView = countlyView.extend({
     loadEventGroupDrawerSetting: function(data) {
         this.eventGroupDrawer.resetForm();
         $("#current_group_id").text(data._id);
-        $("#group-name-input").val(data.name);
+        $("#group-name-input").val(_.unescape(data.name));
         var eventsOptions = data.source_events.map(function(e) {
             return {value: e, name: e};
         });
@@ -4607,7 +4607,7 @@ window.EventsBlueprintView = countlyView.extend({
         if (data.description) {
             $("#event-group-drawer #use-description-checkbox").attr("checked", true);
             $("#event-group-description").attr("disabled", false);
-            $("#event-group-description").val(data.description);
+            $("#event-group-description").val(_.unescape(data.description));
         }
         else {
             $("#event-group-drawer #use-description-checkbox").attr("checked", false);
@@ -4621,9 +4621,9 @@ window.EventsBlueprintView = countlyView.extend({
             $("#event-group-drawer .on-off-switch input").attr("checked", false);
         }
 
-        $("#group-count-input").val(data.display_map.c);
-        $("#group-duration-input").val(data.display_map.d);
-        $("#group-sum-input").val(data.display_map.s);
+        $("#group-count-input").val(_.unescape(data.display_map.c));
+        $("#group-duration-input").val(_.unescape(data.display_map.d));
+        $("#group-sum-input").val(_.unescape(data.display_map.s));
 
         // todo: more properties
         window.dd = this.eventGroupDrawer;
@@ -5076,20 +5076,29 @@ window.EventsBlueprintView = countlyView.extend({
         var eventData = countlyEvent.getEventData();
         var self = this;
 
-        var eventmap = countlyEvent.getEvents(true);
         this.activeEvent = "";
-        var i = 0;
 
-        var tableData = [];
-        for (i = 0; i < eventmap.length; i++) {
-            if (eventmap[i].is_active === true) {
-                this.activeEvent = eventmap[i];
+        /**
+         * Function to fetch events table data
+         * @returns {Array} table data - table data
+         */
+        function fetchEventsTableData() {
+            var em = countlyEvent.getEvents(true);
+            var td = [];
+            for (var k = 0; k < em.length; k++) {
+                if (em[k].is_active === true) {
+                    this.activeEvent = em[k];
+                }
+                if (!em[k].is_event_group) {
+                    td.push(em[k]);
+                }
             }
-            if (!eventmap[i].is_event_group) {
-                tableData.push(eventmap[i]);
-            }
+
+            return td;
         }
 
+        var eventmap = countlyEvent.getEvents(true);
+        var tableData = fetchEventsTableData();
         this.tableData = tableData;
 
         this.have_drill = false;
@@ -5102,7 +5111,7 @@ window.EventsBlueprintView = countlyView.extend({
         var allCount = keys.length;
         var visibleCount = 0;
         var hiddenCount = 0;
-        for (i = 0; i < keys.length; i++) {
+        for (var i = 0; i < keys.length; i++) {
             if (for_general[keys[i]].is_visible === false) {
                 hiddenCount++;
             }
@@ -5215,8 +5224,8 @@ window.EventsBlueprintView = countlyView.extend({
                     "sClass": "events-edit-description-field"
                 },
                 {
-                    "mData": function(row) {
-                        return "<div><button class='edit-event' data-event='" + JSON.stringify(row) + "'>" + jQuery.i18n.map["events.blueprint-edit"] + "</button><a class='cly-list-options'></a></div>";
+                    "mData": function() {
+                        return "<div><button class='edit-event'>" + jQuery.i18n.map["events.blueprint-edit"] + "</button><a class='cly-list-options'></a></div>";
                     },
                     "sType": "string",
                     "sTitle": "",
@@ -5541,26 +5550,43 @@ window.EventsBlueprintView = countlyView.extend({
 
             self.initEventGroupDrawer();
             this.dtable.on('click', '.edit-event', function() {
+                var key = $(this).parents("tr").data("id");
+                var td = fetchEventsTableData();
+                var event = td.filter(function(e) {
+                    return e.key === key;
+                });
+
+                if (!event.length) {
+                    return;
+                }
+
+                event = event[0];
+
                 $("#events-blueprint-drawer").addClass("open");
-                $('#eb-key-name').val($(this).data('event').key);
-                $('#eb-event-name').val($(this).data('event').name);
-                $('#eb-duration-name').val($(this).data('event').dur);
-                $('#eb-sum-name').val($(this).data('event').sum);
-                $('#eb-count-name').val($(this).data('event').count);
-                $('#eb-event-desc-input').val($(this).data('event').description);
+                $('#eb-key-name').val(_.unescape(event.key));
+                $('#eb-event-name').val(_.unescape(event.name));
+                $('#eb-duration-name').val(_.unescape(event.dur));
+                $('#eb-sum-name').val(_.unescape(event.sum));
+                $('#eb-count-name').val(_.unescape(event.count));
+                $('#eb-event-desc-input').val(_.unescape(event.description));
+
                 var segments = [];
-                for (var j = 0; j < $(this).data('event').segments.length; j++) {
-                    segments.push({name: $(this).data('event').segments[j], value: $(this).data('event').segments[j]});
+                event.segments = event.segments || [];
+                for (var j = 0; j < event.segments.length; j++) {
+                    segments.push({name: event.segments[j], value: event.segments[j]});
                 }
+
                 var omittedSegments = [];
-                for (var k = 0; k < $(this).data('event').omittedSegments.length; k++) {
-                    omittedSegments.push({name: $(this).data('event').omittedSegments[k], value: $(this).data('event').omittedSegments[k]});
+                event.omittedSegments = event.omittedSegments || [];
+                for (var k = 0; k < event.omittedSegments.length; k++) {
+                    omittedSegments.push({name: event.omittedSegments[k], value: event.omittedSegments[k]});
                 }
-                self.activeEvent.omittedSegments = $(this).data('event').omittedSegments;
+
+                self.activeEvent.omittedSegments = event.omittedSegments;
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
 
-                if ($(this).data('event').is_visible) {
+                if (event.is_visible) {
                     $('#eb-event-visibility .on-off-switch input').attr('checked', true);
                     $('#eb-event-visibility > div.on-off-switch > span').html(jQuery.i18n.map["events.edit.event-visible"]);
                 }
@@ -5571,7 +5597,7 @@ window.EventsBlueprintView = countlyView.extend({
 
                 $('#eb-event-desc-input').show();
 
-                if ($(this).data('event').description !== "") {
+                if (event.description !== "") {
                     $('#eb-description-checkbox').removeClass('fa-square-o');
                     $('#eb-description-checkbox').addClass('fa-check-square');
                     $('#eb-event-desc-input').removeAttr('disabled');
@@ -5649,8 +5675,6 @@ window.EventsBlueprintView = countlyView.extend({
         $(".cly-drawer").find(".close").off("click").on("click", function() {
             $(this).parents(".cly-drawer").removeClass("open");
         });
-        var allSegments = [];
-        $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(allSegments);
         $("#eb-event-visibility .on-off-switch input").on("change", function() {
             var isChecked = $(this).is(":checked");
             if (isChecked) {
@@ -5691,17 +5715,6 @@ window.EventsBlueprintView = countlyView.extend({
             dur: durationName || "Duration",
             omit_list: omitList || []
         };
-    },
-    setEventBlueprintDrawerSettings: function(setting) {
-        setting = setting || {};
-        $("#eb-key-name").val(setting.key);
-        $("#eb-event-name").val(setting.event_name);
-        $("#eb-event-desc-input").val(setting.description);
-        $("#eb-event-visibility .on-off-switch input").attr("checked", setting.status);
-        $("#eb-count-name").val(setting.count_name);
-        $("#eb-sum-name").val(setting.sum_name);
-        $("#eb-duration-name").val(setting.duration_name);
-        $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(setting.omit_list || []);
     },
     compare_arrays: function(array1, array2) {
         if (Array.isArray(array1) && Array.isArray(array2)) {
