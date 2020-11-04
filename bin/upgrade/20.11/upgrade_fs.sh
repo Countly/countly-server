@@ -75,7 +75,7 @@ then
     countly plugin upgrade web
     countly plugin upgrade active_directory
     countly plugin upgrade push
-    (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
+    (cd "$DIR/../plugins/push/api/parts/apn" && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
     
     #enable new plugins
     countly plugin enable activity-map
@@ -84,10 +84,21 @@ then
     countly plugin enable data-manager
     countly plugin enable hooks
     countly plugin enable surveys
+    
+    #get web sdk
+    countly update sdk-web
 
     #install dependencies, process files and restart countly
     countly task dist-all
 
     #call after check
     countly check after upgrade fs "$VER"
+elif [ "$CONTINUE" == "0" ]
+then
+    echo "Filesystem is already upgraded to $VER"
+elif [ "$CONTINUE" == "-1" ]
+then
+    echo "Filesystem is upgraded to higher version"
+else
+    echo "Unknown ugprade state: $CONTINUE"
 fi
