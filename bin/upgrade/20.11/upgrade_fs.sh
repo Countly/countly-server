@@ -20,7 +20,7 @@ if [ "$CONTINUE" == "1" ]
 then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
     # CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    npm install -g npm@latest;
+    sudo npm install -g npm@latest;
     
     #upgrade nodejs
     if [ -f /etc/redhat-release ]; then
