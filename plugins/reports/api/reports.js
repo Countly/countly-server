@@ -353,11 +353,13 @@ var metricProps = {
                     };
 
                     if (!plugins.isPluginEnabled(reportType)) {
-                        return callback("Plugin is not disabled, no data to report. Report type: " + reportType, {report: report});
+                        log.d("Plugin is not enabled, no data to report. Report type: " + reportType, {report: report});
+                        return callback("Plugin is not enabled, no data to report. Report type: " + reportType, {report: report});
                     }
 
                     plugins.dispatch("/email/report", { params: params }, function() {
                         if (!params.report || !params.report.data) {
+                            log.d("There was no data from plugin.");
                             return callback("No data to report from other plugins", {report: report});
                         }
 
