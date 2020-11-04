@@ -224,6 +224,11 @@ var getFixedPluginList = function(plugins, options) {
         }
     }
 
+    if (fixedPlugins.indexOf('dashboards') !== -1) {
+        fixedPlugins.splice(fixedPlugins.indexOf('dashboards'), 1);
+        fixedPlugins.push('dashboards');
+    }
+
     if (Object.keys(errors).length > 0) {
         logger.e("Loaded plugins:\n", fixedPlugins);
         logger.e("Safe loader couldn't load following plugins:\n", errors);
