@@ -104,6 +104,7 @@ const update = (params) => {
                 common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                     if (err) {
                         common.returnMessage(params, 400, err);
+                        return;
                     }
                     if (!event) {
                         common.returnMessage(params, 400, "Could not find event");
@@ -124,17 +125,23 @@ const update = (params) => {
                             updateThese.$set = {};
                         }
                         updateThese.$set.overview = event.overview;
+                        common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, updateThese, function(err2) {
+                            if (err2) {
+                                console.log(err2);
+                                common.returnMessage(params, 400, err2);
+                                return;
+                            }
+                            common.returnMessage(params, 200, 'Success');
+                        });
                     }
-                    common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, updateThese, function(err2) {
-                        if (err2) {
-                            console.log(err2);
-                            common.returnMessage(params, 400, err);
-                        }
+                    else {
                         common.returnMessage(params, 200, 'Success');
-                    });
+                    }
                 });
             }
-            common.returnMessage(params, 200, 'Success');
+            else {
+                common.returnMessage(params, 200, 'Success');
+            }
         }
         );
     }

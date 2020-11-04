@@ -578,13 +578,13 @@ const processRequest = (params) => {
             case '/i/event_groups':
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.create(params));
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.create);
                     break;
                 case 'update':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.update(params));
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.update);
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.remove(params));
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.remove);
                     break;
                 default:
                     break;
