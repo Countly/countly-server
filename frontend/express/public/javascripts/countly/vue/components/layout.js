@@ -28,10 +28,7 @@
                             '<div class="text-container">\n' +
                                 '<div class="text">{{label}}</div>\n' +
                             '</div>\n' +
-                            '<div class="arrows-wrapper">\n' +
-                                '<div class="down ion-chevron-down"></div>\n' +
-                                '<div class="up ion-chevron-up"></div>\n' +
-                            '</div>\n' +
+                            '<div class="drop"></div>\n' +
                         '</div>\n' +
                         '<div class="menu-body" v-show="isOpened">\n' +
                             '<slot></slot>\n' +

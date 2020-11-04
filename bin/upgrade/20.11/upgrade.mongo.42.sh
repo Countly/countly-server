@@ -104,6 +104,7 @@ fi
 until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
 
 mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
-
-echo "run this command to ugprade to 4.2"
-echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"4.2\\\" } )\""
+mongo admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"4.2\" } )"
+echo "Upgraded MongoDB to 4.2"
+#echo "run this command to ugprade to 4.2"
+#echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"4.2\\\" } )\""

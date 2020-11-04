@@ -1019,7 +1019,7 @@ input:disabled + label {
     overflow: scroll;
 }
 
-.comp-push-error-codes .comp-push-view-row > .col-right { width: 60%; }
+.comp-push-error-codes .comp-push-view-row > .col-right { width: 60%; line-height: 17px; }
 .comp-push-error-codes .comp-push-view-row > .col-right > a { text-decoration: underline; }
 
 .comp-push-view .comp-push-locales > div {
@@ -1108,6 +1108,9 @@ input:disabled + label {
 .push-overview table.d-table { border: none; }
 .push-overview table.d-table tbody tr td:hover { cursor: pointer; }
 table.d-table .nothing { opacity: 0.3; }
+table.d-table .x-aborted > * { display: inline-block; }
+table.d-table .x-aborted > span { border-bottom: 1px dashed #737273; line-height: 1.2em; }
+table.d-table .x-aborted > .ion-information-circled { color: #D53F43; font-size: 1.2em; }
 .push-overview .chart { margin: 10px 30px 0; z-index: 1; top: 30px }
 
 .push-overview .widget:first-child .widget-header { border-bottom: 1px solid #D0D0D0; }
@@ -1135,6 +1138,20 @@ table.d-table .nothing { opacity: 0.3; }
 
 .comp-push-error, .comp-push-warn { background-color: #D54043; padding: 9px; font-size: 12px; color: rgba(240, 240, 240, 1); border-radius: 2px; }
 .comp-push-error svg, .comp-push-warn svg { margin: -2px 10px -3px 0; }
+.comp-push-error > a {
+    float: right;
+    line-height: 19px;
+    margin-top: -3px;
+    border-bottom: 1px solid rgba(240, 240, 240, 1);
+    vertical-align: top;
+}
+.comp-push-error > i {
+    float: right;
+    vertical-align: top;
+    padding-right: 6px;
+    margin-top: -1px;
+}
+
 .comp-push-warn { background-color: #FE8827; }
 
 .appmng-push .none { color: #B7B6B6; }

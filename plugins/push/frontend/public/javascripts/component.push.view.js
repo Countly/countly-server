@@ -20,7 +20,7 @@ window.component('push.view', function(view) {
     view.show = function(message){
         message = message instanceof components.push.Message ? message : new components.push.Message(message);
         view.slider = components.slider.show({
-            key: message._id(),
+            key: message._id() + Math.random(),
             title: function(){
                 var els = [
                     t('pu.po.view.title')
@@ -150,10 +150,12 @@ window.component('push.view', function(view) {
             r.error() ? 
                 m(r.errorFixed().toLowerCase() === 'exited-sent' ? '.comp-push-warn' : '.comp-push-error', [
                     m('svg[width=21][height=18]', m('path[fill="#FFFFFF"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')),
-                    m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed()))
+                    m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed())),
+                    m('a[href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting"][target="_blank"]', t('push.error.learn')),
+                    m('i.ion-information-circled'),
                 ])
                 : '',
-            r.processed() > 0 && (r.isDone() || r.isSending()) ? 
+            (r.processed() > 0 || r.errors() > 0) && (r.isDone() || r.isSending()) ? 
                 m('div', [
                     m('h4', t(ctrl.message.auto() ? 'pu.dash.totals' : 'pu.po.metrics')),
                     m('.comp-push-view-table.comp-push-metrics', [
@@ -183,7 +185,6 @@ window.component('push.view', function(view) {
                                     titleClick: function(ev){
                                         ev.preventDefault();
                                         window.app.navigate('#/users/qfilter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}}), true);
-                                        // window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/users/qfilter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}});
                                     },
                                     titleTitle: t('push.po.table.recipients'),
                                     helpr: t('pu.po.metrics.sent.desc'),
@@ -216,6 +217,18 @@ window.component('push.view', function(view) {
                                 color: '#FE8827',
                                 title: t('pu.po.metrics.actions'),
                                 helpr: t('pu.po.metrics.actions.desc'),
+                                titleClick: function(ev){
+                                    ev.preventDefault();
+                                    window.app.navigate('#/users/request/' + JSON.stringify({
+                                        app_id: countlyCommon.ACTIVE_APP_ID,
+                                        event: "[CLY]_push_action",
+                                        method: "segmentation_users",
+                                        queryObject: JSON.stringify({"sg.i":{"$in":[ctrl.message._id()]}}),
+                                        period: "month",
+                                        bucket: "daily",
+                                        projectionKey: ""
+                                    }), true);
+                                },
                                 descr: [r.actioned() === r.sent() ? 
                                     t('pu.po.metrics.actions.all') 
                                     : t.n('pu.po.users', r.actioned()) + ' ' + t('pu.po.metrics.actions.performed'),
@@ -229,6 +242,22 @@ window.component('push.view', function(view) {
                                     t.n('pu.po.users', r.actioned2()) + ' ' + t('pu.po.metrics.actions2.performed')
                                     : '',
                                 ].join(' ').replace(/\s+$/, ' ')
+                            })
+                            : '',
+                        r.errors() > 0 ? 
+                            m.component(view.metric, {
+                                count: r.errors(),
+                                total: r.total(),
+                                color: '#D53F43',
+                                title: t('pu.po.metrics.failed'),
+                                helpr: t('pu.po.metrics.failed.desc'),
+                                titleClick: function(ev){
+                                    ev.preventDefault();
+                                    window.app.navigate('#/users/qfilter/' + JSON.stringify(Object.assign({}, ctrl.message.userConditions(), {message: {$nin: [ctrl.message._id()]}})), true);
+                                },
+                                descr: [
+                                    r.errors() === r.total() ? t('pu.po.metrics.failed.all') : t.n('pu.po.metrics.failed.some', r.errors())
+                                ]
                             })
                             : ''
 
@@ -254,6 +283,26 @@ window.component('push.view', function(view) {
                                     t('push.errorCode.' + k + '.desc', m.trust(t('push.errorCode.' + comps[1] + comps[2] + '.desc', ''))),
                                     t('push.errorCode.' + k + '.desc', m.trust(t('push.errorCode.' + comps[1] + comps[2] + '.desc', ''))) ? m('br') : '',
                                     m('a[target=_blank]', {href: HELP[comps[1]]}, t('push.errorCode.link.' + comps[1])),
+                                ])
+                            ]);
+                        } else if (k === 'aborted') {
+                            return m('.comp-push-view-row', [
+                                m('.col-left', m.trust(t('push.errorCode.' + k))),
+                                m('.col-mid', r.errorCodes()[k]),
+                                m('.col-right', [
+                                    t('push.errorCode.aborted.desc'),
+                                    m('br'),
+                                    t('push.errorCode.aborted.desc.abeg'),
+                                    m.trust('&nbsp;'),
+                                    m('a[href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting"][target="blank"]', t('push.errorCode.aborted.desc.a')),
+                                    m.trust('&nbsp;'),
+                                    t('push.errorCode.aborted.desc.aend'),
+                                    m('br'),
+                                    t('push.errorCode.aborted.desc.follow'),
+                                    m.trust('&nbsp;'),
+                                    m('a[href="https://support.count.ly/hc/en-us/articles/360037270012#resend-failed-notifications"][target="blank"]', t('push.errorCode.aborted.desc.follow.a')),
+                                    m.trust('&nbsp;'),
+                                    t('push.errorCode.aborted.desc.follow.rest'),
                                 ])
                             ]);
                         } else {

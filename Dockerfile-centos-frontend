@@ -1,4 +1,4 @@
-FROM centos/nodejs-10-centos7
+FROM centos/nodejs-14-centos7
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
 # Enterprise Edition:

@@ -1252,6 +1252,64 @@
                     .down:before {
                         background-color: #2fa732;
                     }
+
+                    .drop {
+                        opacity: 1;
+                        background-color: #2fa732;
+                    }
+                }
+
+                .drop {
+                    opacity: 0.8;
+                    width: auto;
+                    width: 13px;
+                    height: 12px;
+                    background-color: #444;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    font-size: 0;
+                    opacity: .8;
+                    position: relative;
+
+                    &:before {
+                        content: " ";
+                        width: 6px;
+                        top: 5px;
+                        transform: rotate(40deg);
+                        position: absolute;
+                        height: 2px;
+                        background-color: #fff;
+                        left: 2px;
+                        border-radius: 1px;
+                    }
+
+                    &:after {
+                        content: " ";
+                        width: 6px;
+                        top: 5px;
+                        transform: rotate(140deg);
+                        position: absolute;
+                        right: 2px;
+                        height: 2px;
+                        background-color: #fff;
+                        border-radius: 1px;
+                    }
+
+                    &:hover {
+                        opacity: 1;
+                    }
+                }
+
+                &.active {
+                    .drop {
+                        &:before {
+                            transform: rotate(140deg);
+                        }
+
+                        &:after {
+                            transform: rotate(40deg);
+                        }
+                    }
                 }
             }
 
@@ -1484,6 +1542,14 @@
                     content: "\f126";
                     color: #2fa732;
                 }
+
+                &:before {
+                    transform: rotate(140deg);
+                }
+
+                &:after {
+                    transform: rotate(40deg);
+                }
             }
         }
 
@@ -1590,8 +1656,8 @@
                 text-align: center;
             }
             .item {
-                text-overflow: ellipsis;
-                overflow: hidden;
+                // text-overflow: ellipsis;
+                // overflow: hidden;
                 white-space: nowrap;
                 color: #666;
                 font-weight: normal;
@@ -1614,6 +1680,10 @@
                 &.last {
                     border-bottom-left-radius: 2px;
                     border-bottom-right-radius: 2px;
+                }
+                > div {
+                    text-overflow: ellipsis;
+                    overflow: hidden;
                 }
             }
             .group {
@@ -1705,18 +1775,37 @@
                 }
 
                 .drop {
-                    width: 12px;
+                    width: 13px;
                     height: 12px;
                     background-color: #444;
-                    justify-content: center;
-                    align-items: center;
                     border-radius: 4px;
                     overflow: hidden;
                     font-size: 0;
-                    display: flex;
+                    opacity: .8;
+                    position: relative;
 
-                    &.combo:before {
-                        color: #fff;
+                    &:before {
+                        content: " ";
+                        width: 6px;
+                        top: 5px;
+                        transform: rotate(40deg);
+                        position: absolute;
+                        height: 2px;
+                        background-color: #fff;
+                        left: 2px;
+                        border-radius: 1px;
+                    }
+
+                    &:after {
+                        content: " ";
+                        width: 6px;
+                        top: 5px;
+                        transform: rotate(140deg);
+                        position: absolute;
+                        right: 2px;
+                        height: 2px;
+                        background-color: #fff;
+                        border-radius: 1px;
                     }
                 }
             }

@@ -692,6 +692,14 @@
                     }
                     return classes;
                 },
+                dropClasses: function() {
+                    var classes = ["drop"];
+                    if (this.skin !== "slim") {
+                        classes.push("combo");
+                    }
+
+                    return classes;
+                },
                 visibleItems: function() {
                     var self = this;
                     if (!this.dynamicItems && this.tempSearchQuery && this.tempSearchQuery !== "") {
@@ -908,7 +916,7 @@
                                         '<span class="text-light-gray">{{placeholder}}</span>\n' +
                                     '</div>\n' +
                                 '</div>\n' +
-                                '<div class="drop combo"></div>\n' +
+                                '<div :class="dropClasses"></div>\n' +
                             '</div>\n' +
                             '<div class="search" v-if="searchable" v-show="opened">\n' +
                                 '<div class="inner">\n' +

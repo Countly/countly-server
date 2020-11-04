@@ -1,0 +1,85 @@
+[
+  {
+    "image": "1-Surveys.png",
+    "title": "Surveys",
+    "text": "",
+    "showIn": "EE"
+  },
+  {
+    "image": "2-NPS.png",
+    "title": "NPS",
+    "text": "",
+    "showIn": "EE"
+  },
+  {
+    "image": "3-Hooks.png",
+    "title": "Hooks",
+    "text": "",
+    "showIn": "EE"
+  },
+  {
+    "image": "4-Activity-Maps.png",
+    "title": "Activity Maps",
+    "text": "",
+    "showIn": "EE"
+  },
+  {
+    "image": "5_Funnels.png",
+    "title": "Same session funnels",
+    "showIn": "EE"
+  },
+  {
+    "image": "6-Huawei-PushKit.png",
+    "title": "Huawei PushKit",
+    "text": "",
+    "showIn": "EE"
+  },
+  {
+    "image": "7-Event-Grouping.png",
+    "title": "Event Grouping",
+    "text": "",
+    "showIn": "All"
+  },
+  {
+    "image": "8-User-Profiles-Export.png",
+    "title": "User Profiles export",
+    "text": "",
+    "showIn": "EE"
+  },
+  {
+    "image": "9-Optimized-Core.png",
+    "title": "Optimized core",
+    "text": "",
+    "showIn": "All"
+  },
+  {
+    "image": "10-App-Consolidation.png",
+    "title": "App data consolidation",
+    "text": "",
+    "showIn": "All"
+  },
+  {
+    "image": "11_Data-Manager.png",
+    "title": "Data Manager",
+    "text": "",
+    "showIn": "EE"
+  },
+  {
+    "image": "12-Config-Transfer.png",
+    "title": "Config Transfer",
+    "text": "",
+    "showIn": "EE"
+  },
+  {
+    "image": "13-Device-Types.png",
+    "title": "Device Types",
+    "text": "",
+    "showIn": "All"
+  },
+  {
+    "image": "14-Updated-Email-Reports.png",
+    "title": "Customizable email reports",
+    "text": "",
+    "showIn": "All"
+  }
+]

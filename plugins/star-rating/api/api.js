@@ -784,7 +784,7 @@ const widgetPropertyPreprocessors = {
                 if (!ob.export_commands.feedback) {
                     ob.export_commands.feedback = [];
                 }
-                ob.export_commands.feedback.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'feedback' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/feedback' + ob.app_id + '.json']});
+                ob.export_commands.feedback.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'feedback' + ob.app_id, '-q', '{"uid":{"$in": ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/feedback' + ob.app_id + '.json']});
                 resolve();
             }
         });
@@ -820,7 +820,7 @@ const widgetPropertyPreprocessors = {
      * @param {String} app_id app Id
      */
     async function exportPlugin(ids) {
-        const data = await common.db._native.collection("feedback_widgets").find({_id: {$in: ids.map((id) => common.db.ObjectID(id))}}).toArray();
+        const data = await common.db.collection("feedback_widgets").find({_id: {$in: ids.map((id) => common.db.ObjectID(id))}}).toArray();
         data.forEach(((widget) => {
             widget.app_id = "APP_ID";
         }));

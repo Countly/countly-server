@@ -487,6 +487,7 @@ window.ReportingView = countlyView.extend({
         self.loadEventsForApps = function(targetApps) {
             countlyEvent.getEventsForApps(targetApps, function(eventData) {
                 $("#reports-multi-events-dropdown").clyMultiSelectSetItems(eventData);
+                $("#reports-widget-drawer").trigger("cly-report-widget-section-events-loaded");
             });
         };
 
@@ -705,18 +706,25 @@ window.ReportingView = countlyView.extend({
                 });
                 $("#reports-multi-metrics-dropdown").clyMultiSelectSetSelection(selectedMetrics);
 
-                if (data.metrics.events > -1) {
-                    var eventsSelected = data.selectedEvents || [];
-                    var options = eventsSelected.map(function(e) {
-                        var elements = e.split("***");
-                        var targetAppId = elements[0];
-                        var eventName = elements[1];
-                        var displayName = eventName + "(" + countlyGlobal.apps[targetAppId].name + ")";
+                $("#reports-widget-drawer").off("cly-report-widget-section-events-loaded").on("cly-report-widget-section-events-loaded", function() {
+                    if (data.metrics.events > -1) {
+                        var eventsSelected = data.selectedEvents || [];
+                        var items = $("#reports-multi-events-dropdown").clyMultiSelectGetItems();
+                        var map = {};
+                        for (var item = 0; item < items.length; item++) {
+                            map[items[item].value] = items[item].name;
+                        }
+                        var options = eventsSelected.map(function(e) {
+                            var elements = e.split("***");
+                            var targetAppId = elements[0];
+                            var eventName = map[e] || elements[1];
+                            var displayName = eventName + " (" + countlyGlobal.apps[targetAppId].name + ")";
 
-                        return {value: e, name: displayName};
-                    });
-                    $("#reports-multi-events-dropdown").clyMultiSelectSetSelection(options);
-                }
+                            return {value: e, name: displayName};
+                        });
+                        $("#reports-multi-events-dropdown").clyMultiSelectSetSelection(options);
+                    }
+                });
             }
 
             $("#reports-save-widget").addClass("disabled");

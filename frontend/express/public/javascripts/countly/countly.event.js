@@ -10,6 +10,8 @@
         _activeSegmentations = [],
         _activeSegmentationValues = [],
         _activeSegmentationObj = {},
+        _eventGroups = {},
+        _eventGroupsTable = {},
         _activeAppKey = 0,
         _initialized = false,
         _period = null;
@@ -52,11 +54,37 @@
                     },
                     dataType: "json",
                     success: function(json) {
-                        _activeEvents = json;
-                        if (!_activeEvent && countlyEvent.getEvents()[0]) {
-                            _activeEvent = countlyEvent.getEvents()[0].key;
-                            currentActiveEvent = _activeEvent;
-                        }
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "method": "get_event_groups",
+                                "preventRequestAbort": true
+                            },
+                            dataType: "json",
+                            success: function(groups_json) {
+                                _activeEvents = json;
+                                _eventGroupsTable = groups_json;
+                                for (var group in groups_json) {
+                                    if (groups_json[group].status) {
+                                        _eventGroups[groups_json[group]._id] = {
+                                            label: groups_json[group].name,
+                                            count: groups_json[group].display_map.c,
+                                            sum: groups_json[group].display_map.s,
+                                            dur: groups_json[group].display_map.d
+                                        };
+                                        _activeEvents.list.push(groups_json[group]._id);
+                                        _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                    }
+                                }
+                                _eventGroups.events = json;
+                                if (!_activeEvent && countlyEvent.getEvents()[0]) {
+                                    _activeEvent = countlyEvent.getEvents()[0].key;
+                                    currentActiveEvent = _activeEvent;
+                                }
+                            }
+                        });
                     }
                 }))
                 .then(
@@ -91,6 +119,19 @@
             _activeEventDb = {"2012": {}};
             return true;
         }
+    };
+
+    countlyEvent.getEventGroups = function() {
+        return _eventGroups;
+    };
+
+    countlyEvent.getEventGroupsTable = function(getStatus) {
+        if (!!getStatus === getStatus) {
+            return _eventGroupsTable.filter(function(x) {
+                return x.status === getStatus;
+            });
+        }
+        return _eventGroupsTable;
     };
 
     countlyEvent.getOverviewList = function() {
@@ -140,6 +181,9 @@
                             var column = _activeEvents.overview[i].eventProperty;
                             if (event_key && column) {
                                 var name = _activeEvents.overview[i].eventKey;
+                                if (_activeEvents.overview[i].is_event_group) {
+                                    name = _activeEvents.overview[i].eventName;
+                                }
                                 if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key].name) {
                                     name = _activeEvents.map[event_key].name;
                                 }
@@ -148,11 +192,18 @@
                                 if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key][column]) {
                                     property = _activeEvents.map[event_key][column];
                                 }
+                                if (_activeEvents.overview[i].is_event_group) {
+                                    if (_eventGroups && _eventGroups[event_key] && _eventGroups[event_key][column]) {
+                                        property = _eventGroups[event_key][column];
+                                    }
+                                }
                                 var description = "";
                                 if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key].description) {
                                     description = _activeEvents.map[event_key].description;
                                 }
-
+                                json[event_key] = json[event_key] || {};
+                                json[event_key].data = json[event_key].data || {};
+                                json[event_key].data[column] = json[event_key].data[column] || {};
                                 _overviewData.push({"ord": _overviewData.length, "name": name, "prop": property, "description": description, "key": event_key, "property": column, "data": json[event_key].data[column].sparkline, "count": json[event_key].data[column].total, "trend": json[event_key].data[column].change});
                             }
                         }
@@ -162,6 +213,84 @@
             }
         });
 
+    };
+
+    countlyEvent.createEventGroup = function(data, callback) {
+        _activeLoadedEvent = "";
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/event_groups/create",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "args": data
+            },
+            success: function() {
+                callback(true);
+            },
+            error: function() {
+                callback(false);
+            }
+        });
+    };
+
+    countlyEvent.deleteEventGroup = function(data, callback) {
+        _activeLoadedEvent = "";
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/event_groups/delete",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "args": data,
+            },
+            dataType: "json",
+            success: function() {
+                callback(true);
+            },
+            error: function() {
+                callback(false);
+            }
+        });
+    };
+
+    countlyEvent.updateEventGroup = function(data, order, update_status, status, callback) {
+        _activeLoadedEvent = "";
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/event_groups/update",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "args": data,
+                "event_order": order,
+                "update_status": update_status,
+                "status": status
+            },
+            dataType: "json",
+            success: function() {
+                callback(true);
+            },
+            error: function() {
+                callback(false);
+            }
+        });
+    };
+
+    countlyEvent.getEventGroupById = function(_id, callback) {
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "get_event_group",
+                "_id": _id
+            },
+            dataType: "json",
+            success: function(json) {
+                callback(json);
+            },
+            error: function(json) {
+                callback(json);
+            }
+        });
     };
 
     countlyEvent.getTopEventData30Day = function(callback) {
@@ -279,10 +408,37 @@
                     },
                     dataType: "json",
                     success: function(json) {
-                        _activeEvents = json;
-                        if (!_activeEvent && countlyEvent.getEvents()[0]) {
-                            _activeEvent = countlyEvent.getEvents()[0].key;
-                        }
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "method": "get_event_groups",
+                                "preventRequestAbort": true
+                            },
+                            dataType: "json",
+                            success: function(groups_json) {
+                                _activeEvents = json;
+                                _eventGroupsTable = groups_json;
+                                for (var group in groups_json) {
+                                    if (groups_json[group].status) {
+                                        _eventGroups[groups_json[group]._id] = {
+                                            label: groups_json[group].name,
+                                            count: groups_json[group].display_map.c,
+                                            sum: groups_json[group].display_map.s,
+                                            dur: groups_json[group].display_map.d
+                                        };
+                                        _eventGroups.events = json;
+                                        _activeEvents.list.push(groups_json[group]._id);
+                                        _activeEvents.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                    }
+                                }
+                                if (!_activeEvent && countlyEvent.getEvents()[0]) {
+                                    _activeEvent = countlyEvent.getEvents()[0].key;
+                                    currentActiveEvent = _activeEvent;
+                                }
+                            }
+                        });
                     }
                 })
             ).then(
@@ -322,6 +478,7 @@
     countlyEvent.reset = function() {
         _activeEventDb = {};
         _activeEvents = {};
+        _eventGroupsTable = {};
         _activeEvent = "";
         _activeSegmentation = "";
         _activeSegmentations = [];
@@ -397,11 +554,12 @@
         if (!_activeEvent) {
             _activeEvent = Object.keys(eventMap)[0] || "";
         }
+
         var eventData = {},
             mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
-            countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
-            sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
-            durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
+            countString = (_eventGroups[mapKey] && _eventGroups[mapKey].count) ? _eventGroups[mapKey].count : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
+            sumString = (_eventGroups[mapKey] && _eventGroups[mapKey].sum) ? _eventGroups[mapKey].sum : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
+            durString = (_eventGroups[mapKey] && _eventGroups[mapKey].dur) ? _eventGroups[mapKey].dur : (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
 
         if (_activeSegmentation) {
             eventData = {chartData: {}, chartDP: {dp: [], ticks: []}};
@@ -463,7 +621,15 @@
 
             eventData.chartDP.dp = chartDP;
 
-            eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+            if (_eventGroups[_activeEvent]) {
+                eventData.eventName = _eventGroups[_activeEvent].label;
+                eventData.is_event_group = true;
+            }
+            else {
+                eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+                eventData.is_event_group = false;
+            }
+
             if (mapKey && eventMap && eventMap[mapKey]) {
                 eventData.eventDescription = eventMap[mapKey].description || "";
             }
@@ -497,7 +663,15 @@
 
             eventData = countlyCommon.extractChartData(_activeEventDb, countlyEvent.clearEventsObject, chartData, dataProps);
 
-            eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+            if (_eventGroups[_activeEvent]) {
+                eventData.eventName = _eventGroups[_activeEvent].label;
+                eventData.is_event_group = true;
+            }
+            else {
+                eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+                eventData.is_event_group = false;
+            }
+
             if (mapKey && eventMap && eventMap[mapKey]) {
                 eventData.eventDescription = eventMap[mapKey].description || "";
             }
@@ -558,7 +732,8 @@
         return eventData;
     };
 
-    countlyEvent.getEvents = function(get_hidden) {
+    countlyEvent.getEvents = function(get_hidden, with_groups) {
+        var withGroups = arguments.length === 2 ? with_groups : false;
         var events = (_activeEvents) ? ((_activeEvents.list) ? _activeEvents.list : []) : [],
             eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             eventOrder = (_activeEvents) ? ((_activeEvents.order) ? _activeEvents.order : []) : [],
@@ -566,6 +741,7 @@
             eventsWithOrder = [],
             eventsWithoutOrder = [];
         for (var i = 0; i < events.length; i++) {
+
             var arrayToUse = eventsWithoutOrder;
             var mapKey = events[i].replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             if (eventOrder.indexOf(events[i]) !== -1) {
@@ -581,14 +757,16 @@
                 }
                 if (eventMap[mapKey].is_visible || get_hidden) {
                     arrayToUse.push({
+                        "order": _eventGroups[events[i]] ? i : null,
                         "key": events[i],
-                        "name": eventMap[mapKey].name || events[i],
+                        "name": _eventGroups[events[i]] ? _eventGroups[events[i]].label : (eventMap[mapKey].name || events[i]),
                         "description": eventMap[mapKey].description || "",
                         "count": eventMap[mapKey].count || "",
                         "sum": eventMap[mapKey].sum || "",
                         "dur": eventMap[mapKey].dur || "",
                         "is_visible": eventMap[mapKey].is_visible,
                         "is_active": (_activeEvent === events[i]),
+                        "is_event_group": _eventGroups[events[i]] ? true : false,
                         "segments": eventSegments[mapKey] || [],
                         "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
                     });
@@ -596,8 +774,9 @@
             }
             else {
                 arrayToUse.push({
+                    "order": _eventGroups[events[i]] ? i : null,
                     "key": events[i],
-                    "name": events[i],
+                    "name": _eventGroups[events[i]] ? _eventGroups[events[i]].label : events[i],
                     "description": "",
                     "count": "",
                     "sum": "",
@@ -605,6 +784,7 @@
                     "is_visible": true,
                     "is_active": (_activeEvent === events[i]),
                     "segments": eventSegments[mapKey] || [],
+                    "is_event_group": _eventGroups[events[i]] ? true : false,
                     "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
                 });
             }
@@ -614,10 +794,12 @@
             return eventOrder.indexOf(event.key);
         });
         eventsWithoutOrder = _.sortBy(eventsWithoutOrder, function(event) {
-            return event.key;
+            return event.order || event.key;
         });
 
-        return eventsWithOrder.concat(eventsWithoutOrder);
+        return withGroups ? eventsWithOrder.concat(eventsWithoutOrder) : eventsWithOrder.concat(eventsWithoutOrder).filter(function(e) {
+            return !e.is_event_group;
+        });
     };
 
     countlyEvent.getEventsWithSegmentations = function() {
@@ -659,12 +841,22 @@
         return eventNames;
     };
 
-    countlyEvent.getEventMap = function(get_hidden) {
-        var events = countlyEvent.getEvents(get_hidden),
+    countlyEvent.getEventMap = function(get_hidden, with_groups) {
+        var events = countlyEvent.getEvents(get_hidden, with_groups),
             eventMap = {};
 
         for (var i = 0; i < events.length; i++) {
             eventMap[events[i].key] = events[i];
+            if (events[i].is_event_group === true) {
+                if (_eventGroups && _eventGroups[events[i].key]) {
+                    var props = ["count", "sum", "dur"];
+                    for (var k = 0; k < props.length; k++) {
+                        if (_eventGroups[events[i].key][props[k]]) {
+                            events[i][props[k]] = _eventGroups[events[i].key][props[k]];
+                        }
+                    }
+                }
+            }
         }
 
         return eventMap;
@@ -676,6 +868,9 @@
         var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
         if (eventMap[mapKey] && eventMap[mapKey].name) {
             return eventMap[mapKey].name;
+        }
+        else if (_eventGroups[mapKey] && _eventGroups[mapKey].label) {
+            return _eventGroups[mapKey].label;
         }
         else {
             return eventKey;
@@ -857,9 +1052,9 @@
 
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
-            countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
-            sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
-            durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
+            countString = (_eventGroups[mapKey] && _eventGroups[mapKey].count) ? _eventGroups[mapKey].count : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
+            sumString = (_eventGroups[mapKey] && _eventGroups[mapKey].sum) ? _eventGroups[mapKey].sum : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
+            durString = (_eventGroups[mapKey] && _eventGroups[mapKey].dur) ? _eventGroups[mapKey].dur : (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
 
         var bigNumbers = {
             "class": "one-column",
@@ -933,9 +1128,9 @@
             var eventData = {},
                 eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
                 mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
-                countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
-                sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
-                durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
+                countString = (_eventGroups[mapKey] && _eventGroups[mapKey].count) ? _eventGroups[mapKey].count : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
+                sumString = (_eventGroups[mapKey] && _eventGroups[mapKey].sum) ? _eventGroups[mapKey].sum : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
+                durString = (_eventGroups[mapKey] && _eventGroups[mapKey].dur) ? _eventGroups[mapKey].dur : (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
 
             var chartData = [
                     { data: [], label: countString, color: countlyCommon.GRAPH_COLORS[0] },
@@ -1069,8 +1264,39 @@
                             eventMaps[data._id] = data;
                         }
 
-                        results.push(data);
-                        dfd.resolve();
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "app_id": appId,
+                                "method": "get_event_groups",
+                                "preventRequestAbort": true,
+                                "timestamp": +new Date()
+                            },
+                            dataType: "json",
+                            success: function(groups_json) {
+                                if (groups_json) {
+                                    for (var group in groups_json) {
+                                        if (groups_json[group].status) {
+                                            data.list = data.list || [];
+                                            data.list.push(groups_json[group]._id);
+                                            data.segments = data.segments || {};
+                                            data.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                            data.map = data.map || {};
+                                            data.map[groups_json[group]._id] = {
+                                                name: groups_json[group].name,
+                                                count: groups_json[group].display_map.c,
+                                                sum: groups_json[group].display_map.s,
+                                                dur: groups_json[group].display_map.d,
+                                                is_group_event: true
+                                            };
+                                        }
+                                    }
+                                }
+                                results.push(data);
+                                dfd.resolve();
+                            }
+                        });
                     }
                 });
             }
@@ -1125,6 +1351,10 @@
             if (eventData && eventData.list) {
                 for (var j = 0; j < eventData.list.length; j++) {
                     var eventNamePostfix = (appIds.length > 1) ? " (" + ((countlyGlobal.apps[eventData._id] && countlyGlobal.apps[eventData._id].name) || "Unknown") + ")" : "";
+
+                    if (eventData.map && eventData.map[eventData.list[j]] && eventData.map[eventData.list[j]].is_group_event) {
+                        eventNamePostfix += "<div class='group-badge'><span> (</span>" + jQuery.i18n.prop("common.group") + "<span>)</span></div>";
+                    }
 
                     returnArray.push({
                         value: eventData._id + "***" + eventData.list[j],

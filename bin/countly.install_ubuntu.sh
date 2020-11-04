@@ -14,7 +14,7 @@ bash "$DIR/scripts/logo.sh";
 #update package index
 apt-get update
 
-apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck
+apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck python
 
 #Install dependancies required by the puppeteer
 apt-get -y install gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
@@ -31,18 +31,10 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_10.x | bash -
+wget -qO- https://deb.nodesource.com/setup_14.x | bash -
 
 #update once more after adding new repos
 apt-get update
-
-#always install 4.8 version
-apt-get -y install gcc-4.8 g++-4.8
-
-export CXX="g++-4.8"
-export CC="gcc-4.8"
-update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-g++ --version
 
 #install nginx
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
@@ -68,7 +60,7 @@ apt-get -y install numactl
 apt-get -y install sendmail
 
 #install grunt & npm modules
-( cd "$DIR/.." ;  sudo npm install npm@6.4.1 -g; npm --version; sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm)
+( cd "$DIR/.." ;  sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm)
 
 GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
 if [[ "$GLIBC_VERSION" != "2.25" ]]; then
