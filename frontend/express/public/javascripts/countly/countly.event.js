@@ -182,7 +182,7 @@
                             if (event_key && column) {
                                 var name = _activeEvents.overview[i].eventKey;
                                 if (_activeEvents.overview[i].is_event_group) {
-                                    name = _activeEvents.overview[i].eventName;
+                                    name = _eventGroups && _eventGroups[event_key] && _eventGroups[event_key].label || _activeEvents.overview[i].eventName;
                                 }
                                 if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key].name) {
                                     name = _activeEvents.map[event_key].name;
