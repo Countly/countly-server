@@ -77,6 +77,7 @@ then
     countly plugin upgrade two-factor-auth
     countly plugin upgrade web
     countly plugin upgrade active_directory
+    countly plugin upgrade crash_symbolication
     countly plugin upgrade push
     (cd "$DIR/../plugins/push/api/parts/apn" && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
     
