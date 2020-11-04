@@ -3104,7 +3104,7 @@
                 optionsRowData: {},
                 optionsItems: [],
                 optionsPosition: {
-                    right: '44px',
+                    right: '43px',
                     top: '0'
                 },
                 isLoading: false,
@@ -3151,7 +3151,7 @@
                     self = this;
 
                 this.optionsPosition = {
-                    right: '44px',
+                    right: '43px',
                     top: (rect.top + 41) + "px"
                 };
                 this.optionsItems = items;
