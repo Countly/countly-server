@@ -1,4 +1,4 @@
-FROM centos/nodejs-14-centos7
+FROM centos:7.8.2003
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
 # Enterprise Edition:
@@ -22,6 +22,10 @@ COPY . .
 
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
 	rpm -i /tmp/tini.rpm && \
+	\
+	curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
+	yum -y install nodejs && \
+	\
 	# modify standard distribution
 	./bin/docker/modify.sh && \
 	\
