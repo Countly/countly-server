@@ -388,6 +388,13 @@ baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/4.4/x86_64/
 gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
+        elif grep -q -i "release 8" /etc/redhat-release ; then
+            echo "[mongodb-org-4.4]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/4.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
         fi
         yum install -y mongodb-org
     fi
@@ -399,8 +406,10 @@ gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mon
 
         if [ "$UBUNTU_YEAR" == "16" ]; then
             echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
-        else
+        elif [ "$UBUNTU_YEAR" == "18" ]
             echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
+        else
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
         fi
         apt-get update
         #install mongodb
