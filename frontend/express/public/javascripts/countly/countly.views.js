@@ -4446,6 +4446,10 @@ window.EventsBlueprintView = countlyView.extend({
 
         CountlyHelpers.initializeTableOptions($("#events-custom-settings-table"));
         $(".cly-button-menu").on("cly-list.click", function(event, data) {
+            if (!$(data.target).parents("#events-custom-settings-table").length) {
+                return;
+            }
+
             var id = $(data.target).parents("tr").data("id");
             var name = $(data.target).parents("tr").data("name");
             var visibility = $(data.target).parents("tr").data("visible");
@@ -4635,7 +4639,11 @@ window.EventsBlueprintView = countlyView.extend({
     },
     eventGroupSettingMenu: function() {
         var self = this;
-        $("#events-event-groups").find(".cly-button-menu").on("cly-list.click", function(event, data) {
+        $(".cly-button-menu").on("cly-list.click", function(event, data) {
+            if (!$(data.target).parents("#event-groups-settings-table").length) {
+                return;
+            }
+
             var id = $(data.target).parents("tr").attr("id");
             var name = $(data.target).parents("tr").attr("name");
             var visibility = $(data.target).parents("tr").attr("status");
@@ -4952,12 +4960,18 @@ window.EventsBlueprintView = countlyView.extend({
         self.eventGroupSettingMenu();
         $(".event-groups-settings-menu").on("cly-list.item", function(event, data) {
             var el = $(data.target).parent() || $(data.target);
+
+            if (!el.parents(".event-groups-settings-menu").length) {
+                return;
+            }
+
             var id = el.attr("id") || $(data.target).attr("id");
-            var eventName = el.attr("name");
+
             if (id) {
                 if (el.hasClass("delete_single_event")) {
+                    var eventName = el.attr("name");
                     if (eventName === "") {
-                        eventName = event;
+                        eventName = id;
                     }
                     if (eventName.length > self.textLimit) {
                         eventName = eventName.substr(0, self.textLimit) + "...";
@@ -5493,16 +5507,15 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#events-custom-settings').css("display", "none");
             }
 
-            $(".cly-button-menu").on("cly-list.item", function(event1, data) {
-                var el = null;
-                var tmpEl = $(data.target);
-                if (tmpEl.parent().is("a") && tmpEl.parent().data("id") !== undefined) {
-                    el = tmpEl.parent();
+            $(".event-settings-menu").on("cly-list.item", function(event1, data) {
+                var el = $(data.target).parent() || $(data.target);
+
+                if (!el.parents(".event-settings-menu").length) {
+                    return;
                 }
-                else {
-                    el = tmpEl;
-                }
-                var event = el.data("id");
+
+                var event = el.data("id") || $(data.target).data("id");
+
                 if (event) {
                     if (el.hasClass("delete_single_event")) {
                         var eventName = el.data('name');
