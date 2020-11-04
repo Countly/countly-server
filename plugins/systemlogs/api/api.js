@@ -232,10 +232,17 @@ var pluginOb = {},
             }
         }
         for (let i = 0; i < keys.length; i++) {
-            if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
+            if (after[keys[i]] === null || before[keys[i]] === null) {
+                if (after[keys[i]] !== before[keys[i]]) {
+                    databefore[keys[i]] = before[keys[i]];
+                    dataafter[keys[i]] = after[keys[i]];
+                }
+            }
+            else if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
                 if (typeof after[keys[i]] === "object") {
                     if (Array.isArray(after[keys[i]])) {
                         if (JSON.stringify(after[keys[i]]) !== JSON.stringify(before[keys[i]])) {
+
                             databefore[keys[i]] = before[keys[i]];
                             dataafter[keys[i]] = after[keys[i]];
                         }
