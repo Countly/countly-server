@@ -103,7 +103,7 @@ fi
 
 #nc not available on latest centos
 #until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
-mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); while(!conn){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);}'
+mongo --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 27017. Exit if incorrect port"); var cnt = 0; while(!conn && cnt <= 300){try{conn = new Mongo("localhost:27017");}catch(Error){}sleep(1000);cnt++;}'
 
 if ! [ -z "$isAuth" ] ; then
     echo "run this command with authentication to ugprade to 4.2"
