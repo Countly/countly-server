@@ -146,9 +146,8 @@ const update = (params) => {
  */
 const remove = async(params) => {
     params.qstring.args = JSON.parse(params.qstring.args);
-    // params.qstring.app_id = JSON.parse(params.qstring.app_id);
     var idss = params.qstring.args;
-    common.db.collection(COLLECTION_NAME).remove({_id: { $in: params.qstring.args }}, (error, /*result*/) =>{
+    common.db.collection(COLLECTION_NAME).remove({_id: { $in: params.qstring.args }}, (error) =>{
         if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
@@ -156,6 +155,7 @@ const remove = async(params) => {
         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
             if (err) {
                 common.returnMessage(params, 400, err);
+                return;
             }
             if (!event) {
                 common.returnMessage(params, 400, "Could not find event");
@@ -176,16 +176,19 @@ const remove = async(params) => {
                     updateThese.$set = {};
                 }
                 updateThese.$set.overview = event.overview;
+                common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, updateThese, function(err2) {
+                    if (err2) {
+                        console.log(err2);
+                        common.returnMessage(params, 400, err);
+                        return;
+                    }
+                    common.returnMessage(params, 200, 'Success');
+                });
             }
-            common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, updateThese, function(err2) {
-                if (err2) {
-                    console.log(err2);
-                    common.returnMessage(params, 400, err);
-                }
+            else {
                 common.returnMessage(params, 200, 'Success');
-            });
+            }
         });
-
     });
 };
 
