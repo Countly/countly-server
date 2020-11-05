@@ -965,7 +965,7 @@ window.starView = countlyView.extend({
                         }
                         row.target_pages.forEach(function(page) {
                             if (row.target_pages.indexOf(page) < 5) {
-                                target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
+                                target_pages += "<a class='feedback-widget-target-page-item' title='" + page + "'>" + (page.length < 20 ? page : (page.substr(0, 20) + "...")) + "</a>";
                             }
                             else if (row.target_pages.indexOf(page) === 5) {
                                 target_pages += "<div class='feedback-widget-target-page-item'>And " + (row.target_pages.length - 5) + " more...</div>";
@@ -1159,6 +1159,11 @@ window.starView = countlyView.extend({
         $('#feedback-create-step-' + this.step).css({
             "display": "block"
         });
+    },
+    decode: function(string) {
+        var div = document.createElement("div");
+        div.innerHTML = string;
+        return typeof div.textContent !== 'undefined' ? div.textContent : div.innerText;
     },
     renderCommon: function(isRefresh) {
         var self = this;
@@ -1746,12 +1751,12 @@ window.starView = countlyView.extend({
                 }
             });
             var renderFeedbackWidgetModal = function(isCreate) {
-                $("#feedback-popup-header-text").val(isCreate ? "" : self.feedbackWidget.popup_header_text);
-                $("#feedback-popup-comment-text").val(isCreate ? "" : self.feedbackWidget.popup_comment_callout);
-                $("#feedback-popup-email-text").val(isCreate ? "" : self.feedbackWidget.popup_email_callout);
-                $("#feedback-popup-button-text").val(isCreate ? "" : self.feedbackWidget.popup_button_callout);
-                $("#feedback-popup-thanks-text").val(isCreate ? "" : self.feedbackWidget.popup_thanks_message);
-                $("#feedback-trigger-text").val(isCreate ? "" : self.feedbackWidget.trigger_button_text);
+                $("#feedback-popup-header-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_header_text));
+                $("#feedback-popup-comment-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_comment_callout));
+                $("#feedback-popup-email-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_email_callout));
+                $("#feedback-popup-button-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_button_callout));
+                $("#feedback-popup-thanks-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_thanks_message));
+                $("#feedback-trigger-text").val(isCreate ? "" : self.decode(self.feedbackWidget.trigger_button_text));
 
                 $("#counter-for-feedback-popup-header-text").html($("#feedback-popup-header-text").val().length + "/45");
                 $("#counter-for-feedback-popup-comment-text").html($("#feedback-popup-comment-text").val().length + "/25");
