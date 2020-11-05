@@ -1,11 +1,31 @@
 #!/bin/bash
 
 #check if authentication is required
-isAuth=$(mongo --eval "db.getUsers()" | grep "not auth")
+isAuth=$(mongo --eval "db.getUsers()" | grep -v "connecting" | grep "auth")
 
 #check if we have previous upgrade needed
 FEATVER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
 VER=$(mongod -version | grep "db version" | cut -d ' ' -f 3 | cut -d 'v' -f 2)
+
+if ! [ -z "$isAuth" ] ; then
+     echo "Since authentication is enabled, we cannot verify if you need to run this upgrade script"
+    echo ""
+    echo "Please run this command with authentication parameters:"
+    echo ""
+    echo "mongo admin --eval \"db.adminCommand({ getParameter: 1, featureCompatibilityVersion: 1 } )\""
+    echo ""
+    echo "and continue only if \"featureCompatibilityVersion\" is 3.6 "
+    echo ""
+    read -r -p "Is your \"featureCompatibilityVersion\" version is 3.6? [y/N] " response
+    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
+        echo "Continue upgrading"
+    else
+        echo "Stopping script"
+        exit 0;
+    fi
+
+fi
 
 if [ -x "$(command -v mongo)" ]; then
     if echo "$VER" | grep -q -i "4.0" ; then
