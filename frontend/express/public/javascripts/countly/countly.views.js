@@ -4723,7 +4723,8 @@ window.EventsBlueprintView = countlyView.extend({
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["events.general.status"],
-                "bSortable": false
+                "bSortable": false,
+                "sWidth": "8%"
             },
             {
                 "mData": function(row) {
@@ -4733,7 +4734,8 @@ window.EventsBlueprintView = countlyView.extend({
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["events.blueprint-event-group-included-events"],
-                "bSortable": false
+                "bSortable": false,
+                "sWidth": "12%"
             },
             {
                 "mData": function(row) {

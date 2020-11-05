@@ -4298,6 +4298,7 @@ p.error_message_div {
     visibility: hidden;
     cursor: pointer;
     margin-right: 15px;
+    color: #6B6B6B;
   }
 
 
