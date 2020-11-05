@@ -4492,6 +4492,10 @@ window.EventsBlueprintView = countlyView.extend({
 
         CountlyHelpers.initializeTableOptions($("#events-custom-settings-table"));
         $(".cly-button-menu").on("cly-list.click", function(event, data) {
+            if (!$(data.target).parents("#events-custom-settings-table").length) {
+                return;
+            }
+
             var id = $(data.target).parents("tr").data("id");
             var name = $(data.target).parents("tr").data("name");
             var visibility = $(data.target).parents("tr").data("visible");
@@ -4645,7 +4649,7 @@ window.EventsBlueprintView = countlyView.extend({
     loadEventGroupDrawerSetting: function(data) {
         this.eventGroupDrawer.resetForm();
         $("#current_group_id").text(data._id);
-        $("#group-name-input").val(data.name);
+        $("#group-name-input").val(_.unescape(data.name));
         var eventsOptions = data.source_events.map(function(e) {
             return {value: e, name: e};
         });
@@ -4653,7 +4657,7 @@ window.EventsBlueprintView = countlyView.extend({
         if (data.description) {
             $("#event-group-drawer #use-description-checkbox").attr("checked", true);
             $("#event-group-description").attr("disabled", false);
-            $("#event-group-description").val(data.description);
+            $("#event-group-description").val(_.unescape(data.description));
         }
         else {
             $("#event-group-drawer #use-description-checkbox").attr("checked", false);
@@ -4667,9 +4671,9 @@ window.EventsBlueprintView = countlyView.extend({
             $("#event-group-drawer .on-off-switch input").attr("checked", false);
         }
 
-        $("#group-count-input").val(data.display_map.c);
-        $("#group-duration-input").val(data.display_map.d);
-        $("#group-sum-input").val(data.display_map.s);
+        $("#group-count-input").val(_.unescape(data.display_map.c));
+        $("#group-duration-input").val(_.unescape(data.display_map.d));
+        $("#group-sum-input").val(_.unescape(data.display_map.s));
 
         // todo: more properties
         window.dd = this.eventGroupDrawer;
@@ -4681,7 +4685,11 @@ window.EventsBlueprintView = countlyView.extend({
     },
     eventGroupSettingMenu: function() {
         var self = this;
-        $("#events-event-groups").find(".cly-button-menu").on("cly-list.click", function(event, data) {
+        $(".cly-button-menu").on("cly-list.click", function(event, data) {
+            if (!$(data.target).parents("#event-groups-settings-table").length) {
+                return;
+            }
+
             var id = $(data.target).parents("tr").attr("id");
             var name = $(data.target).parents("tr").attr("name");
             var visibility = $(data.target).parents("tr").attr("status");
@@ -4998,12 +5006,18 @@ window.EventsBlueprintView = countlyView.extend({
         self.eventGroupSettingMenu();
         $(".event-groups-settings-menu").on("cly-list.item", function(event, data) {
             var el = $(data.target).parent() || $(data.target);
+
+            if (!el.parents(".event-groups-settings-menu").length) {
+                return;
+            }
+
             var id = el.attr("id") || $(data.target).attr("id");
-            var eventName = el.attr("name");
+
             if (id) {
                 if (el.hasClass("delete_single_event")) {
+                    var eventName = el.attr("name");
                     if (eventName === "") {
-                        eventName = event;
+                        eventName = id;
                     }
                     if (eventName.length > self.textLimit) {
                         eventName = eventName.substr(0, self.textLimit) + "...";
@@ -5122,20 +5136,29 @@ window.EventsBlueprintView = countlyView.extend({
         var eventData = countlyEvent.getEventData();
         var self = this;
 
-        var eventmap = countlyEvent.getEvents(true);
         this.activeEvent = "";
-        var i = 0;
 
-        var tableData = [];
-        for (i = 0; i &lt; eventmap.length; i++) {
-            if (eventmap[i].is_active === true) {
-                this.activeEvent = eventmap[i];
+        /**
+         * Function to fetch events table data
+         * @returns {Array} table data - table data
+         */
+        function fetchEventsTableData() {
+            var em = countlyEvent.getEvents(true);
+            var td = [];
+            for (var k = 0; k &lt; em.length; k++) {
+                if (em[k].is_active === true) {
+                    this.activeEvent = em[k];
+                }
+                if (!em[k].is_event_group) {
+                    td.push(em[k]);
+                }
             }
-            if (!eventmap[i].is_event_group) {
-                tableData.push(eventmap[i]);
-            }
+
+            return td;
         }
 
+        var eventmap = countlyEvent.getEvents(true);
+        var tableData = fetchEventsTableData();
         this.tableData = tableData;
 
         this.have_drill = false;
@@ -5148,7 +5171,7 @@ window.EventsBlueprintView = countlyView.extend({
         var allCount = keys.length;
         var visibleCount = 0;
         var hiddenCount = 0;
-        for (i = 0; i &lt; keys.length; i++) {
+        for (var i = 0; i &lt; keys.length; i++) {
             if (for_general[keys[i]].is_visible === false) {
                 hiddenCount++;
             }
@@ -5261,8 +5284,8 @@ window.EventsBlueprintView = countlyView.extend({
                     "sClass": "events-edit-description-field"
                 },
                 {
-                    "mData": function(row) {
-                        return "&lt;div>&lt;button class='edit-event' data-event='" + JSON.stringify(row) + "'>" + jQuery.i18n.map["events.blueprint-edit"] + "&lt;/button>&lt;a class='cly-list-options'>&lt;/a>&lt;/div>";
+                    "mData": function() {
+                        return "&lt;div>&lt;button class='edit-event'>" + jQuery.i18n.map["events.blueprint-edit"] + "&lt;/button>&lt;a class='cly-list-options'>&lt;/a>&lt;/div>";
                     },
                     "sType": "string",
                     "sTitle": "",
@@ -5530,16 +5553,15 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#events-custom-settings').css("display", "none");
             }
 
-            $(".cly-button-menu").on("cly-list.item", function(event1, data) {
-                var el = null;
-                var tmpEl = $(data.target);
-                if (tmpEl.parent().is("a") &amp;&amp; tmpEl.parent().data("id") !== undefined) {
-                    el = tmpEl.parent();
+            $(".event-settings-menu").on("cly-list.item", function(event1, data) {
+                var el = $(data.target).parent() || $(data.target);
+
+                if (!el.parents(".event-settings-menu").length) {
+                    return;
                 }
-                else {
-                    el = tmpEl;
-                }
-                var event = el.data("id");
+
+                var event = el.data("id") || $(data.target).data("id");
+
                 if (event) {
                     if (el.hasClass("delete_single_event")) {
                         var eventName = el.data('name');
@@ -5587,26 +5609,43 @@ window.EventsBlueprintView = countlyView.extend({
 
             self.initEventGroupDrawer();
             this.dtable.on('click', '.edit-event', function() {
+                var key = $(this).parents("tr").data("id");
+                var td = fetchEventsTableData();
+                var event = td.filter(function(e) {
+                    return e.key === key;
+                });
+
+                if (!event.length) {
+                    return;
+                }
+
+                event = event[0];
+
                 $("#events-blueprint-drawer").addClass("open");
-                $('#eb-key-name').val($(this).data('event').key);
-                $('#eb-event-name').val($(this).data('event').name);
-                $('#eb-duration-name').val($(this).data('event').dur);
-                $('#eb-sum-name').val($(this).data('event').sum);
-                $('#eb-count-name').val($(this).data('event').count);
-                $('#eb-event-desc-input').val($(this).data('event').description);
+                $('#eb-key-name').val(_.unescape(event.key));
+                $('#eb-event-name').val(_.unescape(event.name));
+                $('#eb-duration-name').val(_.unescape(event.dur));
+                $('#eb-sum-name').val(_.unescape(event.sum));
+                $('#eb-count-name').val(_.unescape(event.count));
+                $('#eb-event-desc-input').val(_.unescape(event.description));
+
                 var segments = [];
-                for (var j = 0; j &lt; $(this).data('event').segments.length; j++) {
-                    segments.push({name: $(this).data('event').segments[j], value: $(this).data('event').segments[j]});
+                event.segments = event.segments || [];
+                for (var j = 0; j &lt; event.segments.length; j++) {
+                    segments.push({name: event.segments[j], value: event.segments[j]});
                 }
+
                 var omittedSegments = [];
-                for (var k = 0; k &lt; $(this).data('event').omittedSegments.length; k++) {
-                    omittedSegments.push({name: $(this).data('event').omittedSegments[k], value: $(this).data('event').omittedSegments[k]});
+                event.omittedSegments = event.omittedSegments || [];
+                for (var k = 0; k &lt; event.omittedSegments.length; k++) {
+                    omittedSegments.push({name: event.omittedSegments[k], value: event.omittedSegments[k]});
                 }
-                self.activeEvent.omittedSegments = $(this).data('event').omittedSegments;
+
+                self.activeEvent.omittedSegments = event.omittedSegments;
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
                 $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
 
-                if ($(this).data('event').is_visible) {
+                if (event.is_visible) {
                     $('#eb-event-visibility .on-off-switch input').attr('checked', true);
                     $('#eb-event-visibility > div.on-off-switch > span').html(jQuery.i18n.map["events.edit.event-visible"]);
                 }
@@ -5617,7 +5656,7 @@ window.EventsBlueprintView = countlyView.extend({
 
                 $('#eb-event-desc-input').show();
 
-                if ($(this).data('event').description !== "") {
+                if (event.description !== "") {
                     $('#eb-description-checkbox').removeClass('fa-square-o');
                     $('#eb-description-checkbox').addClass('fa-check-square');
                     $('#eb-event-desc-input').removeAttr('disabled');
@@ -5695,8 +5734,6 @@ window.EventsBlueprintView = countlyView.extend({
         $(".cly-drawer").find(".close").off("click").on("click", function() {
             $(this).parents(".cly-drawer").removeClass("open");
         });
-        var allSegments = [];
-        $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(allSegments);
         $("#eb-event-visibility .on-off-switch input").on("change", function() {
             var isChecked = $(this).is(":checked");
             if (isChecked) {
@@ -5737,17 +5774,6 @@ window.EventsBlueprintView = countlyView.extend({
             dur: durationName || "Duration",
             omit_list: omitList || []
         };
-    },
-    setEventBlueprintDrawerSettings: function(setting) {
-        setting = setting || {};
-        $("#eb-key-name").val(setting.key);
-        $("#eb-event-name").val(setting.event_name);
-        $("#eb-event-desc-input").val(setting.description);
-        $("#eb-event-visibility .on-off-switch input").attr("checked", setting.status);
-        $("#eb-count-name").val(setting.count_name);
-        $("#eb-sum-name").val(setting.sum_name);
-        $("#eb-duration-name").val(setting.duration_name);
-        $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(setting.omit_list || []);
     },
     compare_arrays: function(array1, array2) {
         if (Array.isArray(array1) &amp;&amp; Array.isArray(array2)) {
@@ -6070,7 +6096,7 @@ window.EventsOverviewView = countlyView.extend({
             if ($(this).attr("data-order-key")) {
                 var i = $(this).attr("data-order-key");
                 $(this).attr("data-order-key", NeweventOrder.length);
-                NeweventOrder.push({"order": NeweventOrder.length, "eventKey": self.overviewList[i].eventKey, "eventProperty": self.overviewList[i].eventProperty, "eventName": self.overviewList[i].eventName, "propertyName": self.overviewList[i].propertyName});
+                NeweventOrder.push({"order": NeweventOrder.length, "eventKey": self.overviewList[i].eventKey, "eventProperty": self.overviewList[i].eventProperty, is_event_group: (self.overviewList[i].is_event_group || false), "eventName": self.overviewList[i].eventName, "propertyName": self.overviewList[i].propertyName});
                 $("#update_overview_button").removeClass('disabled');
             }
         });
@@ -6088,7 +6114,7 @@ window.EventsOverviewView = countlyView.extend({
             if (this.eventmap &amp;&amp; this.eventmap[overviewList[i].eventKey] &amp;&amp; this.eventmap[overviewList[i].eventKey][propname]) {
                 propname = this.eventmap[overviewList[i].eventKey][propname];
             }
-            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
+            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, is_event_group: (overviewList[i].is_event_group || false), "eventName": evname, "propertyName": propname});
         }
         this.templateData["overview-list"] = this.overviewList;
     },
@@ -6114,7 +6140,7 @@ window.EventsOverviewView = countlyView.extend({
     renderCommon: function(isRefresh) {
         var self = this;
         this.currentOverviewList = countlyEvent.getOverviewList();
-        this.eventmap = countlyEvent.getEventMap();
+        this.eventmap = countlyEvent.getEventMap(false, true); //with event groups
         var app_admin = false;
         if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             app_admin = true;
@@ -6190,7 +6216,19 @@ window.EventsOverviewView = countlyView.extend({
                 self.overviewDrawer.resetForm();
                 self.overviewDrawer.open();
             });
+            $("#events-overview-event").off("cly-select-change").on("cly-select-change", function() {
+                var event = $("#events-overview-event").clySelectGetSelection();
+                event = countlyCommon.encodeHtml(event);
+                var prop = ["count", "sum", "dur"];
+                for (var z = 0; z &lt; prop.length; z++) {
+                    var text = jQuery.i18n.map["events.table." + prop[z]];
+                    if (self.eventmap[event] &amp;&amp; self.eventmap[event][prop[z]]) {
+                        text = self.eventmap[event][prop[z]];
+                    }
+                    $("#events-overview-attr").find(".item[data-value=" + prop[z] + "]").html(text);
+                }
 
+            });
             //Add new item to overview
             $("#add_to_overview").on("click", function() {
                 var event = $("#events-overview-event").clySelectGetSelection();
@@ -6206,7 +6244,7 @@ window.EventsOverviewView = countlyView.extend({
                             }
                         }
                         if (unique_over === true) {
-                            self.overviewList.push({eventKey: event, eventProperty: property, eventName: self.eventmap[event_encoded].name, propertyName: self.eventmap[event_encoded][property] || jQuery.i18n.map["events.table." + property], order: self.overviewList.length});
+                            self.overviewList.push({is_event_group: self.eventmap[event_encoded].is_event_group || false, eventKey: event, eventProperty: property, eventName: self.eventmap[event_encoded].name, propertyName: self.eventmap[event_encoded][property] || jQuery.i18n.map["events.table." + property], order: self.overviewList.length});
                             $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
                             $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
                             $("#update_overview_button").removeClass('disabled');
@@ -6246,7 +6284,7 @@ window.EventsOverviewView = countlyView.extend({
                             var overviewList2 = countlyEvent.getOverviewList();
                             this.overviewList = [];
                             for (var p = 0; p &lt; overviewList2.length; p++) {
-                                this.overviewList.push({"order": p, "eventKey": overviewList2[p].eventKey, "eventProperty": overviewList2[p].eventProperty, "eventName": overviewList2[p].eventName, "propertyName": overviewList2[p].propertyName});
+                                this.overviewList.push({is_event_group: overviewList2[p].is_event_group || false, "order": p, "eventKey": overviewList2[p].eventKey, "eventProperty": overviewList2[p].eventProperty, "eventName": overviewList2[p].eventName, "propertyName": overviewList2[p].propertyName});
                             }
                             self.dateChanged();
                         });
@@ -6329,6 +6367,50 @@ window.EventsView = countlyView.extend({
             countlyEvent.setActiveEvent(previousEvent);
         }
         this.template = Handlebars.compile($("#template-events").html());
+    },
+    showExceedRemind: function() {
+        /**
+         * generate event limitaion remind tooltips
+         * @param {string} text - i18n text for reminding
+         */
+        function generateDom(text) {
+            var html = '&lt;div class="event-remind-tooltip" style="display: block;">' +
+                '&lt;div class="content">' +
+                        '&lt;span class="prefix">&lt;/span>' +
+                        '&lt;span class="remind-context">' + text + '&lt;/span>' +
+                        '&lt;i class="fas fa-times">&lt;/i>' +
+                '&lt;/div>' +
+            '&lt;/div>';
+            setTimeout(function() {
+                $(".routename-events #event-alert").append(html);
+            }, 0);
+            $(".event-remind-tooltip .fa-times").off("click").on("click", function(e) {
+                $(e.currentTarget.parentElement.parentElement).remove();
+            });
+        }
+        $(".routename-events #event-alert").html("");
+        var limitation = countlyEvent.getLimitation();
+        var currentEventList = countlyEvent.getEvents() || [];
+        if (currentEventList.length >= limitation.event_limit) {
+            var tips = jQuery.i18n.prop("events.max-event-key-limit", limitation.event_limit);
+            generateDom(tips);
+        }
+
+        var event_name = countlyEvent.getEventData().eventName;
+        var segments = countlyEvent.getEventSegmentations() || [];
+        if (segments &amp;&amp; segments.length >= limitation.event_segmentation_limit) {
+            var tips2 = jQuery.i18n.prop("events.max-segmentation-limit", limitation.event_segmentation_limit, event_name);
+            generateDom(tips2);
+        }
+
+        var metaDB = countlyEvent.getActiveEventSegmentMeta();
+        segments.forEach(function(s) {
+            if (metaDB[s].length >= limitation.event_segmentation_value_limit) {
+                var tips3 = jQuery.i18n.prop("events.max-unique-value-limit", limitation.event_segmentation_value_limit, s);
+                generateDom(tips3);
+            }
+        });
+
     },
     pageScript: function() {
         $(".event-container").unbind("click");
@@ -6654,6 +6736,7 @@ window.EventsView = countlyView.extend({
                     countlyEvent.setActiveEvent(targetEvent);
                 }
             }
+            this.showExceedRemind();
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
@@ -6739,6 +6822,9 @@ window.EventsView = countlyView.extend({
                 }
                 app.localize();
                 $('.nav-search').find("input").trigger("input");
+                if (segmentationChanged || eventChanged) {
+                    self.showExceedRemind();
+                }
             }
         });
     }
@@ -7017,22 +7103,20 @@ window.LongTaskView = countlyView.extend({
         this.showTableColumns(self);
     },
     showTableColumns: function(self) {
-        var manuallyColumns = [true, true, true, true, true, true, true, true, false, false, true];
-        var automaticallyColumns = [false, true, true, true, false, false, false, false, false, true, true];
+        var manuallyColumns = [true, true, true, true, true, true, true, true, false, true];
+        var automaticallyColumns = [false, true, true, true, false, false, false, true, true, true];
         //                         [NAME, DATA, STAT(R),ORIGIN, TYPE,PERIOD,VISIB,LASTUp,Started,duration,status(SUB),but]
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
             });
-            $(".report-manager-idget-header .filter2-segmentation").show();
-            $(".report-manager-idget-header .filter3-segmentation").hide();
+            $(".report-manager-widget-header .filter2-segmentation").show();
         }
         else {
             automaticallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
             });
-            $(".report-manager-idget-header .filter2-segmentation").hide();
-            $(".report-manager-idget-header .filter3-segmentation").show();
+            $(".report-manager-widget-header .filter2-segmentation").hide();
         }
     },
     renderTable: function() {
@@ -7050,7 +7134,7 @@ window.LongTaskView = countlyView.extend({
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.name-and-desc"],
-                "bSortable": true,
+                "bSortable": false,
                 "sClass": "report-manager-break"
             },
             {
@@ -7110,6 +7194,7 @@ window.LongTaskView = countlyView.extend({
                     }
                 },
                 "sType": "string",
+                "bSortable": false,
                 "sTitle": jQuery.i18n.map["common.status"]
             },
             {
@@ -7117,6 +7202,7 @@ window.LongTaskView = countlyView.extend({
                     return '&lt;span class="status-color" style="text-transform:capitalize">' + row.type + "&lt;/span>";
                 },
                 "sType": "string",
+                "bSortable": false,
                 "sTitle": jQuery.i18n.map["taskmanager.origin"]
             },
             {
@@ -7157,18 +7243,6 @@ window.LongTaskView = countlyView.extend({
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["common.last-updated"]
-            },
-            {
-                "mData": function(row, type) {
-                    if (type === "display") {
-                        return countlyCommon.formatTimeAgo(row.start);
-                    }
-                    else {
-                        return row.start;
-                    }
-                },
-                "sType": "string",
-                "sTitle": jQuery.i18n.map["common.started"]
             },
             {
                 "mData": function(row, type) {
@@ -7222,7 +7296,6 @@ window.LongTaskView = countlyView.extend({
                 Object.assign(queryObject, self._query);
                 if (self.taskCreatedBy === 'manually') {
                     queryObject.manually_create = true;
-                    delete queryObject.status;
                 }
                 else {
                     queryObject.manually_create = {$ne: true};
@@ -7252,7 +7325,7 @@ window.LongTaskView = countlyView.extend({
         }));
         this.dtable.stickyTableHeaders();
         // this.addErrorTooltips();
-        this.dtable.fnSort([ [8, 'desc'] ]);
+        this.dtable.fnSort([ [7, 'desc'] ]);
         $(this.el).append('&lt;div class="cly-button-menu tasks-menu" tabindex="1">' +
             '&lt;a class="item view-task" href="" data-localize="common.view">&lt;/a>' +
             '&lt;a class="item rerun-task" data-localize="taskmanager.rerun">&lt;/a>' +
@@ -8447,7 +8520,7 @@ Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Nov 04 2020 14:33:09 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Nov 05 2020 07:19:43 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

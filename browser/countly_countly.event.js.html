@@ -44,7 +44,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/*global countlyCommon, _, jQuery*/
+            <pre class="prettyprint source linenums"><code>/*global countlyCommon, _, countlyGlobal, jQuery*/
 // eslint-disable-next-line no-shadow-restricted-names
 (function(countlyEvent, $, undefined) {
 
@@ -227,6 +227,9 @@
                             var column = _activeEvents.overview[i].eventProperty;
                             if (event_key &amp;&amp; column) {
                                 var name = _activeEvents.overview[i].eventKey;
+                                if (_activeEvents.overview[i].is_event_group) {
+                                    name = _eventGroups &amp;&amp; _eventGroups[event_key] &amp;&amp; _eventGroups[event_key].label || _activeEvents.overview[i].eventName;
+                                }
                                 if (_activeEvents.map &amp;&amp; _activeEvents.map[event_key] &amp;&amp; _activeEvents.map[event_key].name) {
                                     name = _activeEvents.map[event_key].name;
                                 }
@@ -235,11 +238,18 @@
                                 if (_activeEvents.map &amp;&amp; _activeEvents.map[event_key] &amp;&amp; _activeEvents.map[event_key][column]) {
                                     property = _activeEvents.map[event_key][column];
                                 }
+                                if (_activeEvents.overview[i].is_event_group) {
+                                    if (_eventGroups &amp;&amp; _eventGroups[event_key] &amp;&amp; _eventGroups[event_key][column]) {
+                                        property = _eventGroups[event_key][column];
+                                    }
+                                }
                                 var description = "";
                                 if (_activeEvents.map &amp;&amp; _activeEvents.map[event_key] &amp;&amp; _activeEvents.map[event_key].description) {
                                     description = _activeEvents.map[event_key].description;
                                 }
-
+                                json[event_key] = json[event_key] || {};
+                                json[event_key].data = json[event_key].data || {};
+                                json[event_key].data[column] = json[event_key].data[column] || {};
                                 _overviewData.push({"ord": _overviewData.length, "name": name, "prop": property, "description": description, "key": event_key, "property": column, "data": json[event_key].data[column].sparkline, "count": json[event_key].data[column].total, "trend": json[event_key].data[column].change});
                             }
                         }
@@ -877,12 +887,22 @@
         return eventNames;
     };
 
-    countlyEvent.getEventMap = function(get_hidden) {
-        var events = countlyEvent.getEvents(get_hidden),
+    countlyEvent.getEventMap = function(get_hidden, with_groups) {
+        var events = countlyEvent.getEvents(get_hidden, with_groups),
             eventMap = {};
 
         for (var i = 0; i &lt; events.length; i++) {
             eventMap[events[i].key] = events[i];
+            if (events[i].is_event_group === true) {
+                if (_eventGroups &amp;&amp; _eventGroups[events[i].key]) {
+                    var props = ["count", "sum", "dur"];
+                    for (var k = 0; k &lt; props.length; k++) {
+                        if (_eventGroups[events[i].key][props[k]]) {
+                            events[i][props[k]] = _eventGroups[events[i].key][props[k]];
+                        }
+                    }
+                }
+            }
         }
 
         return eventMap;
@@ -894,6 +914,9 @@
         var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
         if (eventMap[mapKey] &amp;&amp; eventMap[mapKey].name) {
             return eventMap[mapKey].name;
+        }
+        else if (_eventGroups[mapKey] &amp;&amp; _eventGroups[mapKey].label) {
+            return _eventGroups[mapKey].label;
         }
         else {
             return eventKey;
@@ -1225,6 +1248,7 @@
             return eventData;
         }
     };
+
     /** function set meta */
     function setMeta() {
         _activeSegmentationObj = _activeEventDb.meta || {};
@@ -1249,7 +1273,152 @@
         _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation]) ? _activeSegmentationObj[_activeSegmentation] : [];
     }
 
-}(window.countlyEvent = window.countlyEvent || {}, jQuery));</code></pre>
+    // cached global events map;
+    var eventMaps = {};
+
+    /**
+     * Deferred function to get events for target appids
+     * @param  {Array} appIds - app ids
+     * @param  {function} callback - callback style provided
+     */
+    countlyEvent.getEventsForApps = function(appIds, callback) {
+        /**
+         * Deferred function to get events
+         * @param  {String} appId - app id
+         * @param  {Array} results - results array
+         * @returns {Promise} - deferred promise
+         */
+        function getEventsDfd(appId, results) {
+            var dfd = jQuery.Deferred();
+
+            if (eventMaps[appId]) {
+                results.push(eventMaps[appId]);
+                dfd.resolve();
+            }
+            else {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": appId,
+                        "method": "get_events",
+                        "timestamp": +new Date()
+                    },
+                    dataType: "json",
+                    success: function(data) {
+                        if (data &amp;&amp; data._id) {
+                            eventMaps[data._id] = data;
+                        }
+
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "app_id": appId,
+                                "method": "get_event_groups",
+                                "preventRequestAbort": true,
+                                "timestamp": +new Date()
+                            },
+                            dataType: "json",
+                            success: function(groups_json) {
+                                if (groups_json) {
+                                    for (var group in groups_json) {
+                                        if (groups_json[group].status) {
+                                            data.list = data.list || [];
+                                            data.list.push(groups_json[group]._id);
+                                            data.segments = data.segments || {};
+                                            data.segments[groups_json[group]._id] = groups_json[group].source_events;
+                                            data.map = data.map || {};
+                                            data.map[groups_json[group]._id] = {
+                                                name: groups_json[group].name,
+                                                count: groups_json[group].display_map.c,
+                                                sum: groups_json[group].display_map.s,
+                                                dur: groups_json[group].display_map.d,
+                                                is_group_event: true
+                                            };
+                                        }
+                                    }
+                                }
+                                results.push(data);
+                                dfd.resolve();
+                            }
+                        });
+                    }
+                });
+            }
+
+            return dfd.promise();
+        }
+        if (!appIds || appIds.length === 0) {
+            callback([]);
+            return;
+        }
+
+        var requests = [],
+            results = [],
+            i = 0;
+
+        for (i = 0; i &lt; appIds.length; i++) {
+            requests.push(getEventsDfd(appIds[i], results));
+        }
+
+        $.when.apply(null, requests).done(function() {
+            var ret = [];
+            for (i = 0; i &lt; results.length; i++) {
+                extractEvents(results[i], ret);
+            }
+
+            callback(ret);
+        });
+
+
+        /**
+         * Function to extract event
+         * @param  {Array} data - data array
+         * @param  {Array} returnArray - return data array
+         */
+        function extractEvents(data, returnArray) {
+            /**
+                 * Function to get the events long name
+                 * @param  {String} eventKey - event name
+                 * @param  {Object} eventMap - event map object
+                 * @returns {String} event name
+                 */
+            function getEventLongName(eventKey, eventMap) {
+                var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+                if (eventMap &amp;&amp; eventMap[mapKey] &amp;&amp; eventMap[mapKey].name) {
+                    return eventMap[mapKey].name;
+                }
+                else {
+                    return eventKey;
+                }
+            }
+            var eventData = (_.isArray(data)) ? data[0] : data;
+            if (eventData &amp;&amp; eventData.list) {
+                for (var j = 0; j &lt; eventData.list.length; j++) {
+                    var eventNamePostfix = (appIds.length > 1) ? " (" + ((countlyGlobal.apps[eventData._id] &amp;&amp; countlyGlobal.apps[eventData._id].name) || "Unknown") + ")" : "";
+
+                    if (eventData.map &amp;&amp; eventData.map[eventData.list[j]] &amp;&amp; eventData.map[eventData.list[j]].is_group_event) {
+                        eventNamePostfix += "&lt;div class='group-badge'>&lt;span> (&lt;/span>" + jQuery.i18n.prop("common.group") + "&lt;span>)&lt;/span>&lt;/div>";
+                    }
+
+                    returnArray.push({
+                        value: eventData._id + "***" + eventData.list[j],
+                        name: getEventLongName(eventData.list[j], eventData.map) + eventNamePostfix
+                    });
+                }
+            }
+        }
+    };
+
+    countlyEvent.getLimitation = function() {
+        return _activeEvents.limits;
+    };
+    countlyEvent.getActiveEventSegmentMeta = function() {
+        return _activeEventDb.meta;
+    };
+}(window.countlyEvent = window.countlyEvent || {}, jQuery));
+</code></pre>
         </article>
     </section>
 
@@ -1263,7 +1432,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Nov 04 2020 14:33:09 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Nov 05 2020 07:19:43 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

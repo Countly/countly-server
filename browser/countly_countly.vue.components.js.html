@@ -44,8 +44,9 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/* global countlyCommon, moment, jQuery */
-(function(CountlyVueComponents, $) {
+            <pre class="prettyprint source linenums"><code>/* global countlyCommon, moment, jQuery, Vue, Vuex, T, countlyView, CountlyHelpers, _, app, countlyGlobal */
+
+(function(CountlyVueComponents, countlyVue, $) {
 
     /**
      * CLY Select list VueJS component. It supports big lists and search.
@@ -240,7 +241,3238 @@
         }
     };
 
-}(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));</code></pre>
+
+    /**
+     * CLY Extended Date Picker
+     */
+    CountlyVueComponents.datePickerExtended = {
+        template: '&lt;div ref="datePicker" v-bind:class="[collapsible ? \'collapsible\' : \'\', \'date-picker-component\', \'extended\']">&lt;input v-if="collapsible" type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate">&lt;div class="date-picker-ext-wrapper">&lt;div class="calendar-container calendar-dark">&lt;div class="calendar">&lt;/div>&lt;/div>&lt;/div>&lt;/div>',
+        props: {
+            placeholder: { type: String, default: 'Date' },
+            value: Date,
+            onValueChanged: { type: Function, required: true },
+            maxDate: {type: Date, default: moment().subtract(1, 'days').toDate() },
+            isRangePicker: { type: Boolean, default: false },
+            isTextEditAllowed: { type: Boolean, default: false },
+            hideOnSelect: { type: Boolean, default: true },
+            collapsible: { type: Boolean, default: true },
+            aborted: { type: Boolean, default: false },
+        },
+        computed: {
+            formatDate: function() {
+                if (Array.isArray(this.value)) {
+                    return this.value.map(function(point) {
+                        return countlyCommon.formatDate(moment(point), "DD MMMM, YYYY");
+                    }).join(" - ");
+                }
+                else if (this.value) {
+                    return countlyCommon.formatDate(moment(this.value), "DD MMMM, YYYY");
+                }
+                else {
+                    return null;
+                }
+            }
+        },
+        mounted: function() {
+
+            var datePickerDOM = $(this.$refs.datePicker).find('.date-picker-ext-wrapper');
+
+            var self = this;
+            var options = {
+                numberOfMonths: 1,
+                showOtherMonths: true,
+                range: this.isRangePicker,
+                textEdit: this.isTextEditAllowed,
+            };
+
+            if (this.isRangePicker) {
+                options.onCommit = function(startDate, endDate) {
+                    var currMoments = [moment(startDate), moment(endDate)];
+
+                    var selectedRange = currMoments.map(function(currMoment) {
+                        var selectedTimestamp = moment(currMoment.format("DD MMMM, YYYY"), "DD MMMM, YYYY").unix();
+                        var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(selectedTimestamp);
+                        var selectedValue = selectedTimestamp - tzCorr;
+                        return selectedValue;
+                    });
+
+                    self.onValueChanged({
+                        value: selectedRange,
+                        type: 'datepicker'
+                    });
+
+                    if (self.hideOnSelect &amp;&amp; self.collapsible) {
+                        $(".date-picker-ext-wrapper").hide();
+                    }
+                };
+            }
+            else {
+                options.onSelect = function(selectedDate) {
+                    var instance = $(this).data("datepicker"),
+                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
+                        currMoment = moment(date);
+
+                    var selectedTimestamp = moment(currMoment.format("DD MMMM, YYYY"), "DD MMMM, YYYY").unix();
+                    var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(selectedTimestamp);
+                    var selectedValue = selectedTimestamp - tzCorr;
+
+                    self.onValueChanged({
+                        value: selectedValue,
+                        type: 'datepicker'
+                    });
+
+                    if (self.hideOnSelect &amp;&amp; self.collapsible) {
+                        $(".date-picker-ext-wrapper").hide();
+                    }
+                };
+            }
+
+            datePickerDOM.find(".calendar").datepickerExtended(options);
+
+            if (this.maxDate) {
+                datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+            }
+
+            $.datepicker.setDefaults($.datepicker.regional[""]);
+            datePickerDOM.find(".calendar").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+
+            this.refreshValues();
+
+            datePickerDOM.click(function(e) {
+                e.stopPropagation();
+            });
+        },
+        watch: {
+            value: function() {
+                this.refreshValues();
+            },
+            maxDate: function() {
+                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker-ext-wrapper');
+                if (this.maxDate) {
+                    datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+                }
+            },
+            aborted: function(value) {
+                if (value === true) {
+                    this.abort();
+                }
+            }
+        },
+        methods: {
+            onClick: function(e) {
+                $(".date-picker-ext-wrapper").hide();
+
+                $(this.$refs.datePicker).find(".date-picker-ext-wrapper").show();
+
+                e.stopPropagation();
+            },
+            abort: function() {
+                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker-ext-wrapper');
+                datePickerDOM.find(".calendar").datepickerExtended("abortRangePicking");
+            },
+            refreshValues: function() {
+
+                var datePickerDOM = $(this.$refs.datePicker).find('.date-picker-ext-wrapper');
+                if (Array.isArray(this.value)) {
+                    datePickerDOM.find(".calendar").datepickerExtended("setRange", this.value);
+                }
+                else if (this.value) { //&amp;&amp; !Array.isArray(this.value)
+                    datePickerDOM.find(".calendar").datepickerExtended("setDate", this.value);
+                }
+            }
+        }
+    };
+
+
+    /**
+    * CLY Simple menu
+    */
+    CountlyVueComponents.menu = {
+        template: '&lt;div v-bind:class="[\'cly-menu-component\', isShown ? \'shown\' : \'hidden\', isEmpty ? \'empty\' : \'\']">&lt;div class="menu-toggler" v-on:click="toggle">&lt;div class="label-wrapper">&lt;div class="text">{{label}}&lt;/div>&lt;/div>&lt;div class="right combo">&lt;/div>&lt;/div>&lt;div class="menu-content" v-show="isShown">&lt;slot>&lt;/slot>&lt;/div>&lt;/div>',
+        props: {
+            label: { type: String, default: '' },
+            isShown: { type: Boolean, default: false },
+            isEmpty: { type: Boolean, default: true }
+        },
+        mounted: function() {
+        },
+        updated: function() {
+        },
+        methods: {
+            toggle: function() {
+                this.$emit('toggler-clicked');
+            }
+        }
+    };
+
+    Vue.directive('click-outside', {
+        bind: function(el, binding, vnode) {
+            el.clickOutsideEvent = function(event) {
+                if (!(el === event.target || el.contains(event.target))) {
+                    vnode.context[binding.expression](event);
+                }
+            };
+            document.body.addEventListener('click', el.clickOutsideEvent);
+        },
+        unbind: function(el) {
+            document.body.removeEventListener('click', el.clickOutsideEvent);
+        }
+    });
+
+    /*
+        Countly + Vue.js
+    */
+
+    Vue.use(window.vuelidate.default);
+    window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
+    window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
+
+    var objectWithoutProperties = function(obj, excluded) {
+        if (!obj || !excluded || excluded.length === 0) {
+            return obj;
+        }
+        return Object.keys(obj).reduce(function(acc, val) {
+            if (excluded.indexOf(val) === -1) {
+                acc[val] = obj[val];
+            }
+            return acc;
+        }, {});
+    };
+
+    // @vue/component
+    var autoRefreshMixin = {
+        mounted: function() {
+            var self = this;
+            this.$root.$on("cly-refresh", function() {
+                self.refresh();
+            });
+        },
+        methods: {
+            refresh: function() {}
+        }
+    };
+
+    // @vue/component
+    var i18nMixin = {
+        methods: {
+            i18n: function() {
+                return jQuery.i18n.prop.apply(null, arguments);
+            }
+        }
+    };
+
+    // @vue/component
+    var refreshOnParentActiveMixin = {
+        watch: {
+            isParentActive: function(newState) {
+                if (newState) {
+                    this.refresh();
+                }
+            }
+        },
+        methods: {
+            refresh: function() {}
+        }
+    };
+
+    // @vue/component
+    var hasDrawersMixin = function(names) {
+        if (!Array.isArray(names)) {
+            names = [names];
+        }
+
+        return {
+            data: function() {
+                return {
+                    drawers: names.reduce(function(acc, val) {
+                        acc[val] = {
+                            name: val,
+                            isOpened: false,
+                            initialEditedObject: {}
+                        };
+                        return acc;
+                    }, {})
+                };
+            },
+            methods: {
+                openDrawer: function(name, initialEditedObject) {
+                    if (this.drawers[name].isOpened) {
+                        return;
+                    }
+                    this.loadDrawer(name, initialEditedObject);
+                    this.drawers[name].isOpened = true;
+                },
+                loadDrawer: function(name, initialEditedObject) {
+                    this.drawers[name].initialEditedObject = initialEditedObject || {};
+                },
+                closeDrawer: function(name) {
+                    this.drawers[name].isOpened = false;
+                }
+            }
+        };
+    };
+
+    var _mixins = {
+        'autoRefresh': autoRefreshMixin,
+        'refreshOnParentActive': refreshOnParentActiveMixin,
+        'i18n': i18nMixin,
+        'hasDrawers': hasDrawersMixin
+    };
+
+    var _globalVuexStore = new Vuex.Store({
+        modules: {
+            countlyCommon: {
+                namespaced: true,
+                state: {
+                    period: countlyCommon.getPeriod(),
+                    periodLabel: countlyCommon.getDateRangeForCalendar()
+                },
+                getters: {
+                    period: function(state) {
+                        return state.period;
+                    },
+                    periodLabel: function(state) {
+                        return state.periodLabel;
+                    }
+                },
+                mutations: {
+                    setPeriod: function(state, period) {
+                        state.period = period;
+                    },
+                    setPeriodLabel: function(state, periodLabel) {
+                        state.periodLabel = periodLabel;
+                    }
+                },
+                actions: {
+                    updatePeriod: function(context, obj) {
+                        context.commit("setPeriod", obj.period);
+                        context.commit("setPeriodLabel", obj.label);
+                    }
+                }
+            }
+        }
+    });
+
+    var VuexModule = function(name, options) {
+
+        options = options || {};
+
+        var mutations = options.mutations || {},
+            actions = options.actions || {};
+
+        if (!mutations.resetState) {
+            mutations.resetState = function(state) {
+                Object.assign(state, options.resetFn());
+            };
+        }
+
+        if (!actions.reset) {
+            actions.reset = function(context) {
+                context.commit("resetState");
+            };
+        }
+
+        var module = {
+            namespaced: true,
+            state: options.resetFn(),
+            getters: options.getters || {},
+            mutations: mutations,
+            actions: actions
+        };
+
+        if (options.submodules) {
+            module.modules = {};
+            options.submodules.forEach(function(submodule) {
+                module.modules[submodule.name] = submodule.module;
+            });
+        }
+
+        return {
+            name: name,
+            module: module
+        };
+    };
+
+    var VuexDataTable = function(name, options) {
+        var resetFn = function() {
+            return {
+                trackedFields: options.trackedFields || [],
+                patches: {}
+            };
+        };
+
+        var keyFn = function(row, dontStringify) {
+            if (dontStringify) {
+                return options.keyFn(row);
+            }
+            return JSON.stringify(options.keyFn(row));
+        };
+
+        var tableGetters = {
+            sourceRows: options.sourceRows,
+            diff: function(state, getters) {
+                if (state.trackedFields.length === 0 || Object.keys(state.patches).length === 0) {
+                    return [];
+                }
+                var diff = [];
+                getters.sourceRows.forEach(function(row) {
+                    var rowKey = keyFn(row);
+                    if (state.patches[rowKey]) {
+                        var originalKey = keyFn(row, true);
+                        state.trackedFields.forEach(function(fieldName) {
+                            if (Object.prototype.hasOwnProperty.call(state.patches[rowKey], fieldName) &amp;&amp; row[fieldName] !== state.patches[rowKey][fieldName]) {
+                                diff.push({
+                                    key: originalKey,
+                                    field: fieldName,
+                                    newValue: state.patches[rowKey][fieldName],
+                                    oldValue: row[fieldName]
+                                });
+                            }
+                        });
+                    }
+                });
+                return diff;
+            },
+            rows: function(state, getters) {
+                if (Object.keys(state.patches).length === 0) {
+                    return getters.sourceRows;
+                }
+                return getters.sourceRows.map(function(row) {
+                    var rowKey = keyFn(row);
+                    if (state.patches[rowKey]) {
+                        return Object.assign({}, row, state.patches[rowKey]);
+                    }
+                    return row;
+                });
+            }
+        };
+
+        var mutations = {
+            patch: function(state, obj) {
+                var row = obj.row,
+                    fields = obj.fields;
+
+                var rowKey = keyFn(row);
+                var currentPatch = Object.assign({}, state.patches[rowKey], fields);
+
+                Vue.set(state.patches, rowKey, currentPatch);
+            },
+            unpatch: function(state, obj) {
+                var row = obj.row,
+                    fields = obj.fields;
+
+                var rowKeys = null;
+                if (!row) {
+                    rowKeys = Object.keys(state.patches);
+                }
+                else {
+                    rowKeys = [keyFn(row)];
+                }
+
+                rowKeys.forEach(function(rowKey) {
+                    if (!state.patches[rowKey]) {
+                        return;
+                    }
+
+                    if (!fields) {
+                        Vue.delete(state.patches, rowKey);
+                    }
+                    else {
+                        fields.forEach(function(fieldName) {
+                            Vue.delete(state.patches[rowKey], fieldName);
+                        });
+                        if (Object.keys(state.patches[rowKey]).length === 0) {
+                            Vue.delete(state.patches, rowKey);
+                        }
+                    }
+                });
+
+            }
+        };
+        return VuexModule(name, {
+            resetFn: resetFn,
+            getters: tableGetters,
+            mutations: mutations
+        });
+    };
+
+    var _vuex = {
+        getGlobalStore: function() {
+            return _globalVuexStore;
+        },
+        registerGlobally: function(wrapper, force) {
+            var store = _globalVuexStore;
+            if (!store.hasModule(wrapper.name) || force) {
+                store.registerModule(wrapper.name, wrapper.module);
+            }
+        },
+        Module: VuexModule,
+        DataTable: VuexDataTable
+    };
+
+    var BackboneRouteAdapter = function() {};
+
+    Vue.prototype.$route = new BackboneRouteAdapter();
+
+    var countlyVueWrapperView = countlyView.extend({
+        constructor: function(opts) {
+            this.component = opts.component;
+            this.defaultArgs = opts.defaultArgs;
+            this.vuex = opts.vuex;
+            this.templates = opts.templates;
+            this.elementsToBeRendered = [];
+        },
+        beforeRender: function() {
+            var self = this;
+
+            var getDeferred = function(fName, elId) {
+                if (!elId) {
+                    return T.get(fName, function(src) {
+                        self.elementsToBeRendered.push(src);
+                    });
+                }
+                else {
+                    return T.get(fName, function(src) {
+                        self.elementsToBeRendered.push("&lt;script type='text/x-template' id='" + elId + "'>" + src + "&lt;/script>");
+                    });
+                }
+            };
+
+            if (this.templates) {
+                var templatesDeferred = [];
+                this.templates.forEach(function(item) {
+                    if (typeof item === "string") {
+                        templatesDeferred.push(getDeferred(item));
+                        return;
+                    }
+                    for (var name in item.mapping) {
+                        var fileName = item.mapping[name];
+                        var elementId = item.namespace + "-" + name;
+                        templatesDeferred.push(getDeferred(fileName, elementId));
+                    }
+                });
+
+                return $.when.apply(null, templatesDeferred);
+            }
+            return true;
+        },
+        renderCommon: function(isRefresh) {
+            if (!isRefresh) {
+                $(this.el).html("&lt;div class='cly-vue-theme-clydef'>&lt;div class='vue-wrapper'>&lt;/div>&lt;div id='vue-templates'>&lt;/div>&lt;/div>");
+                this.elementsToBeRendered.forEach(function(el) {
+                    $("#vue-templates").append(el);
+                });
+            }
+        },
+        refresh: function() {
+            var self = this;
+            if (self.vm) {
+                self.vm.$emit("cly-refresh");
+            }
+        },
+        afterRender: function() {
+            var el = $(this.el).find('.vue-wrapper').get(0),
+                self = this;
+
+            if (self.vuex) {
+                self.vuex.forEach(function(item) {
+                    _vuex.registerGlobally(item.clyModel.getVuexModule());
+                });
+            }
+
+            self.vm = new Vue({
+                el: el,
+                store: _vuex.getGlobalStore(),
+                beforeCreate: function() {
+                    this.$route.params = self.params;
+                },
+                render: function(h) {
+                    if (self.defaultArgs) {
+                        return h(self.component, { attrs: self.defaultArgs });
+                    }
+                    else {
+                        return h(self.component);
+                    }
+                }
+            });
+
+            self.vm.$on("cly-date-change", function() {
+                self.vm.$emit("cly-refresh");
+            });
+        },
+        destroy: function() {
+            var self = this;
+            self.elementsToBeRendered = [];
+            if (self.vm) {
+                self.vm.$destroy();
+            }
+        }
+    });
+
+    var _uniqueComponentId = 0;
+
+    var countlyBaseComponent = Vue.extend({
+        computed: {
+            componentId: function() {
+                return "cly-cmp-" + _uniqueComponentId;
+            }
+        },
+        beforeCreate: function() {
+            this.ucid = _uniqueComponentId.toString();
+            _uniqueComponentId += 1;
+        }
+    });
+
+    var countlyBaseView = countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.autoRefresh,
+                _mixins.i18n
+            ],
+            props: {
+                name: { type: String, default: null},
+                id: { type: String, default: null }
+            },
+            computed: {
+                isParentActive: function() {
+                    return this.$parent.isActive !== false;
+                },
+                vName: function() {
+                    return this.name;
+                },
+                vId: function() {
+                    return this.id;
+                }
+            }
+        }
+    );
+
+    /**
+     * Simple implementation for abortable delayed actions.
+     * Primarily used for table undo events.
+     *
+     * @param {String} message Action description
+     * @param {Function} actionFn Delayed action
+     * @param {Function} abortFn Callback will be called on abort
+     * @param {Number} timeout Delay amount in ms
+     */
+    function DelayedAction(message, actionFn, abortFn, timeout) {
+        this.message = message;
+        this.timeout = setTimeout(actionFn, timeout || 2000);
+        this.abortFn = abortFn;
+    }
+
+    DelayedAction.prototype.abort = function() {
+        clearTimeout(this.timeout);
+        this.abortFn();
+    };
+
+    var DataTable = {
+        toLegacyRequest: function(requestParams, cols) {
+            var convertedParams = {};
+            convertedParams.iDisplayStart = (requestParams.page - 1) * requestParams.perPage;
+            convertedParams.iDisplayLength = requestParams.perPage;
+            if (cols &amp;&amp; requestParams.sort &amp;&amp; requestParams.sort.length > 0) {
+                var sorter = requestParams.sort[0];
+                var sortFieldIndex = cols.indexOf(sorter.field);
+                if (sortFieldIndex > -1) {
+                    convertedParams.iSortCol_0 = sortFieldIndex;
+                    convertedParams.sSortDir_0 = sorter.type;
+                }
+            }
+            if (requestParams.searchQuery) {
+                convertedParams.sSearch = requestParams.searchQuery;
+            }
+            return convertedParams;
+        },
+        toStandardResponse: function(response, requestOptions) {
+            response = response || {};
+            requestOptions = requestOptions || {};
+            var fields = {
+                rows: response.aaData || [],
+                totalRows: response.iTotalDisplayRecords || 0,
+                notFilteredTotalRows: response.iTotalRecords || 0
+            };
+            if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
+                fields.echo = parseInt(response.sEcho);
+            }
+            if (Object.prototype.hasOwnProperty.call(requestOptions, "url")) {
+                var pairs = [];
+                for (var dataKey in requestOptions.data) {
+                    if (dataKey === "iDisplayStart" || dataKey === "iDisplayLength") {
+                        continue;
+                    }
+                    pairs.push(dataKey + "=" + requestOptions.data[dataKey]);
+                }
+                pairs.push("api_key=" + countlyGlobal.member.api_key);
+
+                fields.exportSettings = {
+                    resourcePath: requestOptions.url + "?" + pairs.join("&amp;"),
+                    resourceProp: "aaData"
+                };
+            }
+            return fields;
+        }
+    };
+
+    var _helpers = {
+        DelayedAction: DelayedAction,
+        DataTable: DataTable
+    };
+
+    var _components = {
+        BaseComponent: countlyBaseComponent,
+        BaseDrawer: countlyBaseComponent.extend(
+            // @vue/component
+            {
+                inheritAttrs: false,
+                mixins: [
+                    _mixins.i18n
+                ],
+                props: {
+                    isOpened: {type: Boolean, required: true},
+                    initialEditedObject: {
+                        type: Object,
+                        default: function() {
+                            return {};
+                        }
+                    },
+                    name: {type: String, required: true}
+                },
+                data: function() {
+                    return {
+                        title: '',
+                        saveButtonLabel: this.i18n("common.confirm"),
+                        editedObject: this.copyOfEdited(),
+                        currentStepIndex: 0,
+                        stepContents: [],
+                        sidecarContents: [],
+                        constants: {},
+                        localState: this.getInitialLocalState(),
+                        inScope: [],
+                        isMounted: false
+                    };
+                },
+                computed: {
+                    activeContentId: function() {
+                        if (this.activeContent) {
+                            return this.activeContent.tId;
+                        }
+                        return null;
+                    },
+                    currentStepId: function() {
+                        return this.activeContentId;
+                    },
+                    isCurrentStepValid: function() {
+                        if (!this.stepValidations || !Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
+                            // No validation scenario defined
+                            return true;
+                        }
+                        return this.stepValidations[this.activeContentId];
+                    },
+                    isLastStep: function() {
+                        return this.stepContents.length > 1 &amp;&amp; this.currentStepIndex === this.stepContents.length - 1;
+                    },
+                    activeContent: function() {
+                        if (this.currentStepIndex > this.stepContents.length - 1) {
+                            return null;
+                        }
+                        return this.stepContents[this.currentStepIndex];
+                    },
+                    isMultiStep: function() {
+                        return this.stepContents.length > 1;
+                    },
+                    hasSidecars: function() {
+                        return this.sidecarContents.length > 0;
+                    },
+                    passedScope: function() {
+                        var defaultKeys = ["editedObject", "$v", "constants", "localState"],
+                            self = this;
+
+                        var passed = defaultKeys.reduce(function(acc, val) {
+                            acc[val] = self[val];
+                            return acc;
+                        }, {});
+
+                        if (this.inScopeReadOnly) {
+                            passed.readOnly = this.inScopeReadOnly.reduce(function(acc, val) {
+                                acc[val] = self[val];
+                                return acc;
+                            }, {});
+                        }
+
+                        return passed;
+                    }
+                },
+                watch: {
+                    initialEditedObject: function() {
+                        this.editedObject = this.afterObjectCopy(this.copyOfEdited());
+                        this.reset();
+                    },
+                    isOpened: function(newState) {
+                        if (!newState) {
+                            this.reset();
+                        }
+                    }
+                },
+                mounted: function() {
+                    this.stepContents = this.$children.filter(function(child) {
+                        return child.isContent &amp;&amp; child.role === "default";
+                    });
+                    this.sidecarContents = this.$children.filter(function(child) {
+                        return child.isContent &amp;&amp; child.role === "sidecar";
+                    });
+                    this.isMounted = true;
+                },
+                methods: {
+                    tryClosing: function() {
+                        this.$emit("close", this.name);
+                    },
+                    copyOfEdited: function() {
+                        var copied = JSON.parse(JSON.stringify(this.initialEditedObject));
+                        return this.beforeObjectCopy(copied);
+                    },
+                    setStep: function(newIndex) {
+                        if (newIndex >= 0 &amp;&amp; newIndex &lt; this.stepContents.length) {
+                            this.currentStepIndex = newIndex;
+                        }
+                    },
+                    prevStep: function() {
+                        this.setStep(this.currentStepIndex - 1);
+                    },
+                    nextStep: function() {
+                        this.beforeLeavingStep();
+                        if (this.isCurrentStepValid) {
+                            this.setStep(this.currentStepIndex + 1);
+                        }
+                    },
+                    reset: function() {
+                        this.$v.$reset();
+                        this.resetLocalState();
+                        this.setStep(0);
+                    },
+                    submit: function() {
+                        this.beforeLeavingStep();
+                        if (!this.$v.$invalid) {
+                            this.$emit("submit", this.beforeSubmit(JSON.parse(JSON.stringify(this.editedObject))));
+                            this.tryClosing();
+                        }
+                    },
+                    afterObjectCopy: function(newState) {
+                        return newState;
+                    },
+                    beforeObjectCopy: function(newState) {
+                        return newState;
+                    },
+                    beforeSubmit: function(editedObject) {
+                        return editedObject;
+                    },
+                    getInitialLocalState: function() {
+                        return {};
+                    },
+                    resetLocalState: function() {
+                        this.localState = this.getInitialLocalState();
+                    },
+                    beforeLeavingStep: function() { }
+                },
+                template: '&lt;div class="cly-vue-drawer"\n' +
+                                'v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\n' +
+                                '&lt;div class="title">\n' +
+                                    '&lt;span>{{title}}&lt;/span>\n' +
+                                    '&lt;span class="close" v-on:click="tryClosing">\n' +
+                                        '&lt;i class="ion-ios-close-empty">&lt;/i>\n' +
+                                    '&lt;/span>\n' +
+                                '&lt;/div>\n' +
+                                '&lt;div class="sidecars-view" v-show="hasSidecars">\n' +
+                                    '&lt;slot name="sidecars"\n' +
+                                        'v-bind="passedScope">\n' +
+                                    '&lt;/slot>\n' +
+                                '&lt;/div>\n' +
+                                '&lt;div class="steps-view">\n' +
+                                    '&lt;div class="steps-header" v-show="isMultiStep">\n' +
+                                        '&lt;div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i &lt; currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\n' +
+                                            '&lt;div class="wrapper">\n' +
+                                                '&lt;span class="index">{{i + 1}}&lt;/span>\n' +
+                                                '&lt;span class="done-icon">&lt;i class="fa fa-check">&lt;/i>&lt;/span>\n' +
+                                                '&lt;span class="text">{{currentContent.name}}&lt;/span>\n' +
+                                            '&lt;/div>\n' +
+                                        '&lt;/div>\n' +
+                                    '&lt;/div>\n' +
+                                    '&lt;div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\n' +
+                                        '&lt;slot name="default"\n' +
+                                            'v-bind="passedScope">\n' +
+                                        '&lt;/slot>\n' +
+                                    '&lt;/div>\n' +
+                                    '&lt;div class="buttons multi-step" v-if="isMultiStep">\n' +
+                                        '&lt;div class="controls-left-container">\n' +
+                                            '&lt;slot name="controls-left"\n' +
+                                                'v-bind="passedScope">\n' +
+                                            '&lt;/slot>\n' +
+                                        '&lt;/div>\n' +
+                                        '&lt;cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')">&lt;/cly-button>\n' +
+                                        '&lt;cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel">&lt;/cly-button>\n' +
+                                        '&lt;cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')">&lt;/cly-button>\n' +
+                                    '&lt;/div>\n' +
+                                    '&lt;div class="buttons single-step" v-if="!isMultiStep">\n' +
+                                        '&lt;cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel">&lt;/cly-button>\n' +
+                                    '&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>'
+            }
+        )
+    };
+
+    var _views = {
+        BackboneWrapper: countlyVueWrapperView,
+        BaseView: countlyBaseView
+    };
+
+    var rootElements = {
+        mixins: _mixins,
+        vuex: _vuex,
+        views: _views,
+        components: _components,
+        helpers: _helpers
+    };
+
+    for (var key in rootElements) {
+        countlyVue[key] = rootElements[key];
+    }
+
+    // New components
+
+    var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
+
+    Vue.component("cly-colorpicker", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            value: {type: [String, Object], default: "#FFFFFF"},
+            resetValue: { type: [String, Object], default: "#FFFFFF"}
+        },
+        data: function() {
+            return {
+                isOpened: false
+            };
+        },
+        computed: {
+            previewStyle: function() {
+                return {
+                    "background-color": this.value
+                };
+            },
+            localValue: {
+                get: function() {
+                    return this.value.replace("#", "");
+                },
+                set: function(value) {
+                    var colorValue = "#" + value.replace("#", "");
+                    if (colorValue.match(HEX_COLOR_REGEX)) {
+                        this.setColor({hex: colorValue});
+                    }
+                }
+            }
+        },
+        methods: {
+            setColor: function(color) {
+                this.$emit("input", color.hex);
+            },
+            reset: function() {
+                this.setColor({hex: this.resetValue});
+            },
+            open: function() {
+                this.isOpened = true;
+            },
+            close: function() {
+                this.isOpened = false;
+            }
+        },
+        components: {
+            picker: window.VueColor.Sketch
+        },
+        template: '&lt;div class="cly-vue-colorpicker">\n' +
+                    '&lt;div @click="open">\n' +
+                        '&lt;div class="preview-box" :style="previewStyle">&lt;/div>\n' +
+                        '&lt;input class="preview-input" type="text" v-model="localValue" />\n' +
+                    '&lt;/div>\n' +
+                    '&lt;div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
+                        '&lt;picker :preset-colors="[]" :value="value" @input="setColor">&lt;/picker>\n' +
+                        '&lt;div class="button-controls">\n' +
+                            '&lt;cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light">&lt;/cly-button>\n' +
+                            '&lt;cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light">&lt;/cly-button>\n' +
+                            '&lt;cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green">&lt;/cly-button>\n' +
+                        '&lt;/div>\n' +
+                    '&lt;/div>\n' +
+                  '&lt;/div>'
+    }));
+
+    Vue.component("cly-datatable-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                rows: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                columns: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                keyFn: { type: Function, default: null}
+            },
+            data: function() {
+                return {
+                    isInitialized: false,
+                    pendingInit: false,
+                    nLocks: 0,
+                    tableInstance: null,
+                    optionItems: [],
+                    focusedRow: null,
+                    customActions: null,
+                    lastCol: 0,
+                    finalizedNativeColumns: null
+                };
+            },
+            computed: {
+                hasOptions: function() {
+                    return this.optionItems.length > 0;
+                },
+                isLocked: function() {
+                    return this.nLocks > 0;
+                }
+            },
+            watch: {
+                rows: function() {
+                    this.refresh();
+                }
+            },
+            mounted: function() {
+                this.initialize();
+            },
+            beforeDestroy: function() {
+                this.tableInstance.fnDestroy();
+            },
+            methods: {
+                initialize: function() {
+                    this.pendingInit = true;
+
+                    var self = this,
+                        nativeColumns = [];
+
+                    self.customActions = [];
+
+                    this.columns.forEach(function(column) {
+                        var nativeColumn = null;
+                        if (!column.type) {
+                            return;
+                        }
+                        else if (column.type === "field") {
+                            nativeColumn = {
+                                "mData": function(row) {
+                                    return row[column.fieldKey];
+                                }
+                            };
+                        }
+                        else if (column.type === "options") {
+                            if (self.hasOptions) {
+                                //disallow multiple options
+                                return;
+                            }
+                            var checkedItems = (column.items || []).filter(function(item) {
+                                return !item.disabled;
+                            });
+                            if (checkedItems.length === 0) {
+                                //ignore empty lists;
+                                return;
+                            }
+                            self.optionItems = checkedItems;
+                            nativeColumn = {
+                                "mData": function() {
+                                    return '&lt;a class="cly-list-options">&lt;/a>';
+                                },
+                                "sType": "string",
+                                "sClass": "shrink center",
+                                "bSortable": false
+                            };
+                        }
+                        else if (column.type === "checkbox") {
+                            nativeColumn = {
+                                "mData": function(row, type) {
+                                    if (type === "display") {
+                                        var stringBuffer = ['&lt;div class="on-off-switch">'];
+                                        var rowId = self.componentId + "-row-" + self.keyFn(row);
+                                        if (row[column.fieldKey]) {
+                                            stringBuffer.push('&lt;input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '" checked>');
+                                        }
+                                        else {
+                                            stringBuffer.push('&lt;input type="checkbox" class="on-off-switch-checkbox" id="' + rowId + '">');
+                                        }
+                                        stringBuffer.push('&lt;label class="on-off-switch-label" for="' + rowId + '">&lt;/label>');
+                                        stringBuffer.push('&lt;/div>');
+                                        return stringBuffer.join('');
+                                    }
+                                    else {
+                                        return row[column.fieldKey];
+                                    }
+                                },
+                                "sType": "string",
+                                "sClass": "shrink",
+                                "bSortable": false
+                            };
+                            if (column.onChange) {
+                                self.customActions.push({
+                                    "selector": ".on-off-switch-checkbox",
+                                    "event": "change",
+                                    "_columnSelector": ".cly-dt-col-" + self.lastCol,
+                                    "_handlerFn": function() {
+                                        var rowEl = $(this).parents("tr");
+                                        var cbx = $(this);
+                                        var newValue = $(this).is(":checked");
+                                        column.onChange(newValue, rowEl.data("cly-row-data"), function(revert) {
+                                            if (revert) {
+                                                cbx.prop("checked", !newValue);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                        else if (column.type === "raw") {
+                            nativeColumn = {
+                                "mData": column.viewFn
+                            };
+                            if (column.customActions) {
+                                column.customActions.forEach(function(customAction) {
+                                    self.customActions.push({
+                                        "selector": customAction.selector,
+                                        "event": customAction.event,
+                                        "_columnSelector": ".cly-dt-col-" + self.lastCol,
+                                        "_handlerFn": function() {
+                                            var rowEl = $(this).parents("tr");
+                                            var rowData = rowEl.data("cly-row-data");
+                                            self.$emit(customAction.action.event, rowData, function(options) {
+                                                if (options.undo) {
+                                                    self.softAction(rowData, options.undo.message, {
+                                                        commit: function() {
+                                                            self.$emit(options.undo.commit, rowData);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+                        }
+
+                        if (column.options) {
+                            // default mappings to dt
+                            if (column.options.dataType) {
+                                nativeColumn.sType = column.options.dataType;
+                            }
+                            if (column.options.title) {
+                                nativeColumn.sTitle = column.options.title;
+                            }
+                        }
+
+                        if (column.dt) {
+                            _.extend(nativeColumn, column.dt);
+                        }
+
+                        if (!nativeColumn.sClass) {
+                            nativeColumn.sClass = "";
+                        }
+                        nativeColumn.sClass += " cly-dt-col cly-dt-col-" + self.lastCol;
+                        self.lastCol++;
+                        nativeColumns.push(nativeColumn);
+                    });
+
+                    this.finalizedNativeColumns = nativeColumns;
+
+                    this.tableInstance = $(this.$refs.dtable).dataTable($.extend({}, $.fn.dataTable.defaults, {
+                        "aaData": this.rows,
+                        "aoColumns": nativeColumns,
+                        "fnInitComplete": function(oSettings, json) {
+                            $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+                            self.$nextTick(function() {
+                                CountlyHelpers.initializeTableOptions($(self.$refs.wrapper));
+                                self.initializeEventAdapter();
+                            });
+
+                            self.isInitialized = true;
+                            self.pendingInit = false;
+                        },
+                        "fnRowCallback": function(nRow, aData) {
+                            var rowEl = $(nRow);
+                            rowEl.attr("data-cly-row-id", self.keyFn(aData));
+                            rowEl.data("cly-row-data", aData);
+                        },
+                    }));
+
+                    this.tableInstance.stickyTableHeaders();
+                },
+                initializeEventAdapter: function() {
+                    var self = this;
+
+                    if (self.hasOptions) {
+                        $(self.$refs.buttonMenu).on("cly-list.click", function(event, data) {
+                            var rowData = $(data.target).parents("tr").data("cly-row-data");
+                            self.focusedRow = rowData;
+                        });
+                    }
+                    self.customActions.forEach(function(customAction) {
+                        $(self.$refs.dtable).find("tbody").on(
+                            customAction.event,
+                            customAction._columnSelector + " " + customAction.selector,
+                            customAction._handlerFn);
+                    });
+                },
+                refresh: function() {
+                    if (this.isLocked) {
+                        // for pending undo operations
+                        return;
+                    }
+                    if (this.isInitialized &amp;&amp; !this.pendingInit) {
+                        CountlyHelpers.refreshTable(this.tableInstance, this.rows);
+                    }
+                    else if (!this.isInitialized &amp;&amp; !this.pendingInit) {
+                        this.initialize();
+                    }
+                },
+                softAction: function(row, message, callbacks) {
+                    var self = this;
+                    self.nLocks++;
+                    var undoRow = $("&lt;tr>&lt;td class='undo-row' colspan='" + self.finalizedNativeColumns.length + "'>" + message + "&amp;nbsp;&lt;a>" + jQuery.i18n.map["common.undo"] + "&lt;/a>&lt;/td>&lt;/tr>");
+                    var triggeringRow = $(self.tableInstance).find('tbody tr[data-cly-row-id=' + self.keyFn(row) + ']');
+                    triggeringRow.after(undoRow);
+                    triggeringRow.hide();
+                    var commitWrapped = function() {
+                        undoRow.remove();
+                        self.nLocks--;
+                        callbacks.commit();
+                        self.refresh();
+                    };
+                    var commitTimeout = setTimeout(commitWrapped, 2000);
+                    undoRow.find('a').click(function() {
+                        clearTimeout(commitTimeout);
+                        undoRow.remove();
+                        self.nLocks--;
+                        triggeringRow.show();
+                        if (callbacks.undo) {
+                            callbacks.undo();
+                        }
+                    });
+                },
+                optionEvent: function(action) {
+                    var self = this,
+                        focusedRef = this.focusedRow;
+
+                    this.$emit(action.event, focusedRef, function(options) {
+                        if (options.undo) {
+                            self.softAction(focusedRef, options.undo.message, {
+                                commit: function() {
+                                    self.$emit(options.undo.commit, focusedRef);
+                                }
+                            });
+                        }
+                    });
+                }
+            },
+            template: '&lt;div class="cly-vue-datatable-w" ref="wrapper">\n' +
+                            '&lt;div ref="buttonMenu" class="cly-button-menu" tabindex="1" v-if="hasOptions">\n' +
+                                '&lt;a class="item" @click="optionEvent(optionItem.action)" v-for="(optionItem, j) in optionItems" :key="j">&lt;i :class="optionItem.icon">&lt;/i>&lt;span>{{optionItem.label}}&lt;/span>&lt;/a>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;table ref="dtable" cellpadding="0" cellspacing="0" class="d-table-vue-wrapper">&lt;/table>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-tabs", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                value: { default: null, type: String },
+                skin: { default: "main", type: String}
+            },
+            data: function() {
+                return {
+                    tabs: []
+                };
+            },
+            computed: {
+                skinClass: function() {
+                    if (["main", "graphs"].indexOf(this.skin) > -1) {
+                        return "tabs-" + this.skin + "-skin";
+                    }
+                    return "tabs-main-skin";
+                },
+                numberOfTabsClass: function() {
+                    return "tabs-" + this.tabs.length;
+                },
+                activeContentId: function() {
+                    return this.value;
+                }
+            },
+            mounted: function() {
+                this.tabs = this.$children;
+                if (!this.value) {
+                    this.$emit("input", this.tabs[0].tId);
+                }
+            },
+            methods: {
+                setTab: function(tId) {
+                    this.$emit("input", tId);
+                }
+            },
+            template: '&lt;div class="cly-vue-tabs" v-bind:class="[skinClass]">\n' +
+                            '&lt;ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]">\n' +
+                                '&lt;li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}">\n' +
+                                    '&lt;a v-html="tab.tName">&lt;/a>\n' +
+                                '&lt;/li>\n' +
+                            '&lt;/ul>\n' +
+                            '&lt;div class="cly-vue-tabs-container">\n' +
+                                '&lt;slot/>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-content", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            inheritAttrs: false,
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                name: { type: String, default: null},
+                id: { type: String, default: null },
+                alwaysMounted: { type: Boolean, default: true },
+                alwaysActive: { type: Boolean, default: false },
+                role: { type: String, default: "default" }
+            },
+            data: function() {
+                return {
+                    isContent: true
+                };
+            },
+            computed: {
+                isActive: function() {
+                    return this.alwaysActive || (this.role === "default" &amp;&amp; this.$parent.activeContentId === this.id);
+                },
+                tName: function() {
+                    return this.name;
+                },
+                tId: function() {
+                    return this.id;
+                },
+                elementId: function() {
+                    return this.componentId + "-" + this.id;
+                }
+            },
+            template: '&lt;div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
+                            '&lt;div v-show="isActive">&lt;slot/>&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-panel", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                title: { type: String, required: false },
+                dateSelector: { type: Boolean, required: false, default: true },
+                hasLeftBottom: { type: Boolean, required: false, default: false },
+                onlyHead: { type: Boolean, required: false, default: false }
+            },
+            template: '&lt;div class="cly-vue-panel widget">\n' +
+                            '&lt;div class="widget-header">\n' +
+                                '&lt;div class="left">\n' +
+                                    '&lt;div style="margin-left: 3px;">\n' +
+                                        '&lt;slot name="left-top">\n' +
+                                            '&lt;div class="title" :class="{small: hasLeftBottom}">{{title}}&lt;/div>\n' +
+                                        '&lt;/slot>\n' +
+                                        '&lt;div v-if="hasLeftBottom">\n' +
+                                            '&lt;slot name="left-bottom">&lt;/slot>\n' +
+                                        '&lt;/div>\n' +
+                                    '&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                                '&lt;div class="right">\n' +
+                                    '&lt;slot name="right-top">\n' +
+                                        '&lt;cly-global-date-selector-w v-once v-if="dateSelector">&lt;/cly-global-date-selector-w>\n' +
+                                    '&lt;/slot>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;div class="widget-content help-zone-vb" :class="{\'no-border\': onlyHead}">\n' +
+                                '&lt;slot/>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>',
+        }
+    ));
+
+    Vue.component("cly-global-date-selector-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            data: function() {
+                return {
+                    // UI state
+                    isOpened: false,
+
+                    // UI constants
+                    fixedPeriods: [
+                        {name: moment().subtract(1, "days").format("Do"), value: "yesterday"},
+                        {name: this.i18n("common.today"), value: "hour"},
+                        {name: this.i18n("taskmanager.last-7days"), value: "7days"},
+                        {name: this.i18n("taskmanager.last-30days"), value: "30days"},
+                        {name: this.i18n("taskmanager.last-60days"), value: "60days"},
+                        {name: moment().format("MMMM, YYYY"), value: "day"},
+                        {name: moment().year(), value: "month"},
+                    ],
+
+                    // Datepicker handles
+                    dateTo: null,
+                    dateFrom: null,
+
+                    // Picked values
+                    dateToSelected: null,
+                    dateFromSelected: null,
+
+                    // Labels
+                    dateFromLabel: '',
+                    dateToLabel: '',
+                };
+            },
+            computed: {
+                currentPeriod: function() {
+                    return this.$store.getters["countlyCommon/period"];
+                },
+                currentPeriodLabel: function() {
+                    return this.$store.getters["countlyCommon/periodLabel"];
+                },
+                toInternal: function() {
+                    return this.dateToSelected;
+                },
+                fromInternal: function() {
+                    return this.dateFromSelected;
+                }
+            },
+            watch: {
+                dateFromSelected: function(newValue) {
+                    var date = new Date(newValue),
+                        self = this;
+                    if (newValue > self.dateToSelected) {
+                        self.dateToSelected = newValue;
+                    }
+                    self.dateTo.datepicker("option", "minDate", date);
+                    self.dateFrom.datepicker("setDate", date);
+                    self.dateFromLabel = moment(newValue).format("MM/DD/YYYY");
+                },
+                dateToSelected: function(newValue) {
+                    var date = new Date(newValue),
+                        self = this;
+                    if (newValue &lt; self.dateFromSelected) {
+                        self.dateFromSelected = newValue;
+                    }
+                    self.dateFrom.datepicker("option", "maxDate", date);
+                    self.dateTo.datepicker("setDate", date);
+                    self.dateToLabel = moment(newValue).format("MM/DD/YYYY");
+                },
+                isOpened: function() {
+                    var self = this;
+                    self.dateTo.datepicker("refresh");
+                    self.dateFrom.datepicker("refresh");
+                }
+            },
+            mounted: function() {
+                this._initPickers();
+
+                var periodObj = countlyCommon.getPeriod(),
+                    self = this;
+
+                if (Object.prototype.toString.call(periodObj) === '[object Array]' &amp;&amp; periodObj.length === 2) {
+                    self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
+                    self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10)) - 24 * 60 * 60 * 1000 + 1;
+                }
+                else {
+                    var date = new Date();
+                    date.setHours(0, 0, 0, 0);
+                    self.dateToSelected = date.getTime();
+                    var extendDate = moment(self.dateTo.datepicker("getDate"), "MM-DD-YYYY").subtract(30, 'days').toDate();
+                    extendDate.setHours(0, 0, 0, 0);
+                    self.dateFromSelected = extendDate.getTime();
+                }
+            },
+            beforeDestroy: function() {
+                this.dateTo.datepicker('hide').datepicker('destroy');
+                this.dateFrom.datepicker('hide').datepicker('destroy');
+            },
+            methods: {
+                _initPickers: function() {
+                    var self = this;
+
+                    var _onSelect = function(instance, selectedDate) {
+                        var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+                        date.setHours(0, 0, 0, 0);
+                        return date.getTime();
+                    };
+
+                    var _beforeShowDay = function(date, testFn) {
+                        var ts = date.getTime();
+                        if (testFn(ts)) {
+                            return [true, "in-range", ""];
+                        }
+                        else {
+                            return [true, "", ""];
+                        }
+                    };
+
+                    self.dateTo = $(this.$refs.instDateTo).datepicker({
+                        numberOfMonths: 1,
+                        showOtherMonths: true,
+                        maxDate: moment().toDate(),
+                        onSelect: function(selectedDate) {
+                            self.dateToSelected = _onSelect($(this).data("datepicker"), selectedDate);
+                        },
+                        beforeShowDay: function(date) {
+                            return _beforeShowDay(date, function(ts) {
+                                return ts &lt; self.toInternal &amp;&amp; ts >= self.fromInternal;
+                            });
+                        }
+                    });
+
+                    self.dateFrom = $(this.$refs.instDateFrom).datepicker({
+                        numberOfMonths: 1,
+                        showOtherMonths: true,
+                        maxDate: moment().subtract(1, 'days').toDate(),
+                        onSelect: function(selectedDate) {
+                            self.dateFromSelected = _onSelect($(this).data("datepicker"), selectedDate);
+                        },
+                        beforeShowDay: function(date) {
+                            return _beforeShowDay(date, function(ts) {
+                                return ts &lt;= self.toInternal &amp;&amp; ts > self.fromInternal;
+                            });
+                        }
+                    });
+
+                    $.datepicker.setDefaults($.datepicker.regional[""]);
+                    self.dateTo.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                    self.dateFrom.datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                },
+                toggle: function() {
+                    this.isOpened = !this.isOpened;
+                },
+                cancel: function() {
+                    this.isOpened = false;
+                },
+                setCustomPeriod: function() {
+                    var self = this;
+                    if (!self.dateFromSelected &amp;&amp; !self.dateToSelected) {
+                        return false;
+                    }
+                    this.setPeriod([
+                        self.dateFromSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected),
+                        self.dateToSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateToSelected) + 24 * 60 * 60 * 1000 - 1
+                    ]);
+                },
+                setPeriod: function(newPeriod) {
+                    countlyCommon.setPeriod(newPeriod);
+                    this.$root.$emit("cly-date-change");
+                    this.isOpened = false;
+                },
+                dateFromInputSubmit: function() {
+                    var date = moment(this.dateFromLabel, "MM/DD/YYYY");
+                    if (date.format("MM/DD/YYYY") === this.dateFromLabel) {
+                        this.dateFromSelected = date.valueOf();
+                    }
+                    else {
+                        this.dateFromLabel = moment(this.dateFromSelected).format("MM/DD/YYYY");
+                    }
+                },
+                dateToInputSubmit: function() {
+                    var date = moment(this.dateToLabel, "MM/DD/YYYY");
+                    if (date.format("MM/DD/YYYY") === this.dateToLabel) {
+                        this.dateToSelected = date.valueOf();
+                    }
+                    else {
+                        this.dateToLabel = moment(this.dateToSelected).format("MM/DD/YYYY");
+                    }
+                }
+            },
+            template: '&lt;div class="cly-vue-global-date-selector-w help-zone-vs">\n' +
+                            '&lt;div class="calendar inst-date-picker-button" @click="toggle" v-bind:class="{active: isOpened}" >\n' +
+                                '&lt;i class="material-icons">date_range&lt;/i>\n' +
+                                '&lt;span class="inst-selected-date">{{currentPeriodLabel}}&lt;/span>\n' +
+                                '&lt;span class="down ion-chevron-down">&lt;/span>\n' +
+                                '&lt;span class="up ion-chevron-up">&lt;/span>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;div class="inst-date-picker" v-show="isOpened">\n' +
+                                '&lt;div class="date-selector-buttons">\n' +
+                                    '&lt;div class="button date-selector" v-for="item in fixedPeriods" :key="item.value" v-bind:class="{active: currentPeriod == item.value}" @click="setPeriod(item.value)">{{item.name}}&lt;/div>\n' +
+                                    '&lt;div class="button-container">\n' +
+                                        '&lt;div class="icon-button green inst-date-submit" @click="setCustomPeriod()">{{i18n("common.apply")}}&lt;/div>\n' +
+                                        '&lt;div class="icon-button inst-date-cancel" @click="cancel()">{{i18n("common.cancel")}}&lt;/div>\n' +
+                                    '&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                                '&lt;div class="calendar-container">\n' +
+                                    '&lt;table>\n' +
+                                        '&lt;tr>\n' +
+                                            '&lt;td class="calendar-block">\n' +
+                                                '&lt;div class="calendar inst-date-from" ref="instDateFrom">&lt;/div>\n' +
+                                            '&lt;/td>\n' +
+                                            '&lt;td class="calendar-block">\n' +
+                                                '&lt;div class="calendar inst-date-to" ref="instDateTo">&lt;/div>\n' +
+                                            '&lt;/td>\n' +
+                                        '&lt;/tr>\n' +
+                                        '&lt;tr>\n' +
+                                            '&lt;td class="calendar-block">\n' +
+                                                '&lt;input type="text" class="calendar-input-field inst-date-from-input" v-model="dateFromLabel" @keyup.enter="dateFromInputSubmit">&lt;/input>&lt;span class="date-input-label">{{i18n("common.from")}}&lt;/span>\n' +
+                                            '&lt;/td>\n' +
+                                            '&lt;td class="calendar-block">\n' +
+                                                '&lt;input type="text" class="calendar-input-field inst-date-to-input" v-model="dateToLabel" @keyup.enter="dateToInputSubmit">&lt;/input>&lt;span class="date-input-label">{{i18n("common.to")}}&lt;/span>\n' +
+                                            '&lt;/td>\n' +
+                                        '&lt;/tr>\n' +
+                                    '&lt;/table>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-time-graph-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                dataPoints: {
+                    required: true,
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                bucket: { required: false, default: null, type: String },
+                overrideBucket: { required: false, default: false, type: Boolean },
+                frozen: {default: false, type: Boolean},
+                configPaths: { required: true, type: Array },
+                configSmall: { required: false, default: false, type: Boolean },
+                configOptions: { required: false, default: null, type: Object }
+            },
+            data: function() {
+                return {
+                    options: JSON.parse(JSON.stringify(this.configOptions)),
+                    paths: JSON.parse(JSON.stringify(this.configPaths)),
+                    small: JSON.parse(JSON.stringify(this.configSmall))
+                };
+            },
+            computed: {
+                hasData: function() {
+                    if (this.dataPoints.length === 0) {
+                        return false;
+                    }
+                    if (this.dataPoints[0].length === 0) {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            watch: {
+                dataPoints: function() {
+                    this.refresh();
+                },
+                frozen: function(newValue) {
+                    if (!newValue) {
+                        this.refresh();
+                    }
+                }
+            },
+            mounted: function() {
+                this.refresh();
+            },
+            beforeDestroy: function() {
+                this.unbindResizer();
+            },
+            methods: {
+                refresh: function() {
+
+                    if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
+                        // no need to refresh if hidden
+                        return;
+                    }
+
+                    var self = this;
+
+                    var points = this.dataPoints.map(function(path, pathIdx) {
+                        var series = path.map(function(val, idx) {
+                            return [idx + 1, val];
+                        });
+                        var pathCopy = _.extend({}, self.paths[pathIdx]);
+                        pathCopy.data = series;
+                        return pathCopy;
+                    });
+
+                    this.unbindResizer();
+
+                    countlyCommon.drawTimeGraph(points,
+                        $(this.$refs.container),
+                        this.bucket, this.overrideBucket,
+                        this.small, null,
+                        this.options);
+
+                    setTimeout(function() {
+                        self.initializeResizer();
+                    }, 0);
+                },
+                initializeResizer: function() {
+                    var plot = $(this.$refs.container).data("plot");
+                    plot.getPlaceholder().resize(this._onResize);
+                },
+                unbindResizer: function() {
+                    var plot = $(this.$refs.container).data("plot");
+                    if (plot) {
+                        plot.getPlaceholder().unbind("resize", this._onResize);
+                    }
+                },
+                _onResize: function() {
+                    var self = this,
+                        plot = $(this.$refs.container).data("plot"),
+                        placeholder = plot.getPlaceholder();
+
+                    if (placeholder.width() === 0 || placeholder.height() === 0) {
+                        return;
+                    }
+
+                    // plot.resize();
+                    // plot.setupGrid();
+                    // plot.draw();
+
+                    var graphWidth = plot.width();
+
+                    $(self.$refs.container).find(".graph-key-event-label").each(function() {
+                        var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+
+                        if (o.left &lt;= 15) {
+                            o.left = 15;
+                        }
+
+                        if (o.left >= (graphWidth - 15)) {
+                            o.left = (graphWidth - 15);
+                        }
+
+                        $(this).css({
+                            left: o.left
+                        });
+                    });
+
+                    $(self.$refs.container).find(".graph-note-label").each(function() {
+                        var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+
+                        $(this).css({
+                            left: o.left
+                        });
+                    });
+                }
+            },
+            template: '&lt;div class="cly-vue-time-graph-w">\n' +
+                            '&lt;div ref="container" class="graph-container">&lt;/div>\n' +
+                            '&lt;div class="cly-vue-graph-no-data" v-if="!hasData">\n' +
+                                '&lt;div class="inner">\n' +
+                                    '&lt;div class="icon">&lt;/div>\n' +
+                                    '&lt;div class="text">{{i18n("common.graph.no-data")}}&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-graph-w", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                dataPoints: {
+                    required: true,
+                    type: Object,
+                    default: function() {
+                        return {};
+                    }
+                },
+                graphType: { required: false, type: String, default: "bar" },
+                frozen: {default: false, type: Boolean},
+                configOptions: { required: false, default: null, type: Object }
+            },
+            data: function() {
+                return {
+                    options: JSON.parse(JSON.stringify(this.configOptions))
+                };
+            },
+            computed: {
+                hasData: function() {
+                    return !!this.dataPoints;
+                }
+            },
+            watch: {
+                dataPoints: function() {
+                    this.refresh();
+                },
+                graphType: function() {
+                    this.refresh();
+                },
+                frozen: function(newValue) {
+                    if (!newValue) {
+                        this.refresh();
+                    }
+                }
+            },
+            mounted: function() {
+                this.refresh();
+            },
+            methods: {
+                refresh: function() {
+
+                    if (this.frozen || $(this.$refs.container).is(":hidden") || !this.hasData) {
+                        // no need to refresh if hidden
+                        return;
+                    }
+
+                    countlyCommon.drawGraph(this.dataPoints,
+                        $(this.$refs.container),
+                        this.graphType,
+                        this.options);
+                }
+            },
+            template: '&lt;div class="cly-vue-graph-w">\n' +
+                            '&lt;div ref="container" class="graph-container">&lt;/div>\n' +
+                            '&lt;div class="cly-vue-graph-no-data" v-if="!hasData">\n' +
+                                '&lt;div class="inner">\n' +
+                                    '&lt;div class="icon">&lt;/div>\n' +
+                                    '&lt;div class="text">{{i18n("common.graph.no-data")}}&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-radio", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, default: -1, type: [ String, Number ]},
+                items: {
+                    required: true,
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                skin: { default: "main", type: String},
+                disabled: {type: Boolean, default: false}
+            },
+            computed: {
+                topClasses: function() {
+                    var classes = [];
+                    if (["main", "light"].indexOf(this.skin) > -1) {
+                        classes.push("radio-" + this.skin + "-skin");
+                    }
+                    else {
+                        classes.push("radio-main-skin");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    if (!this.disabled) {
+                        this.$emit('input', e);
+                    }
+                }
+            },
+            template: '&lt;div class="cly-vue-radio" v-bind:class="topClasses">\n' +
+                            '&lt;div class="radio-wrapper">\n' +
+                                '&lt;div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\n' +
+                                    '&lt;div class="box">&lt;/div>\n' +
+                                    '&lt;div class="text">{{item.label}}&lt;/div>\n' +
+                                    '&lt;div class="description">{{item.description}}&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-generic-radio", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, default: -1, type: [ String, Number ]},
+                items: {
+                    required: true,
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                skin: { default: "main", type: String},
+            },
+            computed: {
+                skinClass: function() {
+                    if (["main", "light"].indexOf(this.skin) > -1) {
+                        return "generic-radio-" + this.skin + "-skin";
+                    }
+                    return "generic-radio-main-skin";
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                }
+            },
+            template: '&lt;div class="cly-vue-generic-radio" v-bind:class="[skinClass]">\n' +
+                            '&lt;div class="generic-radio-wrapper">\n' +
+                                '&lt;div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\n' +
+                                    '&lt;div class="button-area">\n' +
+                                        '&lt;div class="component">&lt;component :is="item.cmp" />&lt;/div>\n' +
+                                        '&lt;div class="text">{{item.label}}&lt;/div>\n' +
+                                    '&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-text-field", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                value: {required: true, type: [ String, Number ], default: ''},
+                removable: {type: Boolean, default: false},
+                removeText: {type: String, default: ''},
+                disabled: {type: Boolean, default: false}
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                },
+                removeMe: function() {
+                    this.$emit('remove-me');
+                }
+            },
+            computed: {
+                defaultListeners: function() {
+                    return objectWithoutProperties(this.$listeners, ["input"]);
+                },
+                innerRemoveText: function() {
+                    if (this.removeText) {
+                        return this.removeText;
+                    }
+                    return this.i18n("common.remove");
+                }
+            },
+            template: '&lt;div class="cly-vue-text-field">\n' +
+                            '&lt;div class="remove-button"\n' +
+                                'v-if="removable &amp;&amp; !disabled"\n' +
+                                '@click="removeMe">\n' +
+                                '{{innerRemoveText}}\n' +
+                            '&lt;/div>\n' +
+                            '&lt;input type="text" class="input"\n' +
+                                'v-on="defaultListeners" v-bind="$attrs"\n' +
+                                'v-bind:value="value"\n' +
+                                'v-bind:disabled="disabled"\n' +
+                                'v-on:input="setValue($event.target.value)">\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-check", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {default: false, type: Boolean},
+                label: {type: String, default: ''},
+                skin: { default: "switch", type: String},
+                disabled: {type: Boolean, default: false}
+            },
+            computed: {
+                topClasses: function() {
+                    var classes = [];
+                    if (["switch", "tick"].indexOf(this.skin) > -1) {
+                        classes.push("check-" + this.skin + "-skin");
+                    }
+                    else {
+                        classes.push("check-switch-skin");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
+                },
+                labelClass: function() {
+                    return this.getClass(this.value);
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    if (!this.disabled) {
+                        this.$emit('input', e);
+                    }
+                },
+                getClass: function(value) {
+                    var classes = ["check-label"];
+                    if (this.skin === "tick") {
+                        classes.push("fa");
+                        if (value) {
+                            classes.push("fa-check-square");
+                        }
+                        else {
+                            classes.push("fa-square-o");
+                        }
+                    }
+                    return classes;
+                }
+            },
+            template: '&lt;div class="cly-vue-check" v-bind:class="topClasses">\n' +
+                            '&lt;div class="check-wrapper">\n' +
+                                '&lt;input type="checkbox" class="check-checkbox" :checked="value">\n' +
+                                '&lt;div v-bind:class="labelClass" @click.stop="setValue(!value)">&lt;/div>\n' +
+                                '&lt;span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}&lt;/span>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-check-list", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {
+                    default: function() {
+                        return [];
+                    },
+                    type: Array
+                },
+                items: {
+                    default: function() {
+                        return [];
+                    },
+                    type: Array
+                },
+                skin: { default: "switch", type: String}
+            },
+            computed: {
+                uncompressed: function() {
+                    return this.getUncompressed();
+                }
+            },
+            methods: {
+                getUncompressed: function() {
+                    var self = this;
+                    return this.items.map(function(item) {
+                        return self.value.indexOf(item.value) > -1;
+                    });
+                },
+                setValue: function(value, status) {
+                    var self = this;
+                    var newArray = null;
+                    if (status &amp;&amp; self.value.indexOf(value) === -1) {
+                        newArray = self.value.slice();
+                        newArray.push(value);
+                    }
+                    else if (!status &amp;&amp; self.value.indexOf(value) > -1) {
+                        newArray = self.value.slice().filter(function(item) {
+                            return item !== value;
+                        });
+                    }
+                    if (newArray) {
+                        this.$emit('input', newArray);
+                    }
+                }
+            },
+            template: '&lt;div class="cly-vue-check-list">\n' +
+                            '&lt;cly-check v-for="(item, i) in items" :key="i" v-bind:skin="skin" v-bind:label="item.label" v-bind:value="uncompressed[i]" v-on:input="setValue(item.value, $event)">\n' +
+                            '&lt;/cly-check>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-button", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                label: {type: String, default: ''},
+                skin: { default: "green", type: String},
+                disabled: {type: Boolean, default: false}
+            },
+            computed: {
+                activeClasses: function() {
+                    var classes = [this.skinClass];
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
+                },
+                skinClass: function() {
+                    if (["green", "light", "orange"].indexOf(this.skin) > -1) {
+                        return "button-" + this.skin + "-skin";
+                    }
+                    return "button-light-skin";
+                }
+            },
+            template: '&lt;div class="cly-vue-button" v-bind:class="activeClasses" v-on="$listeners">{{label}}&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-text-area", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {required: true, type: [ String, Number ], default: ''}
+            },
+            methods: {
+                setValue: function(e) {
+                    this.$emit('input', e);
+                }
+            },
+            computed: {
+                defaultListeners: function() {
+                    return objectWithoutProperties(this.$listeners, ["input"]);
+                }
+            },
+            template: '&lt;textarea class="cly-vue-text-area"\n' +
+                            'v-bind="$attrs"\n' +
+                            'v-on="defaultListeners"\n' +
+                            ':value="value"\n' +
+                            '@input="setValue($event.target.value)">\n' +
+                        '&lt;/textarea>'
+        }
+    ));
+
+    Vue.component("cly-select-n", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                value: {
+                    type: [Object, String, Number, Boolean],
+                    default: function() {
+                        return { name: "", value: null };
+                    }
+                },
+                items: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                placeholder: { type: String, default: '' },
+                dynamicItems: { type: Boolean, default: false },
+                disabled: { type: Boolean, default: false },
+                aligned: { type: String, default: "left" },
+                skin: { type: String, default: 'default' },
+                listDelayWarning: {type: String, default: null}
+            },
+            mounted: function() {
+                $(this.$refs.scrollable).slimScroll({
+                    height: '100%',
+                    start: 'top',
+                    wheelStep: 10,
+                    position: 'right',
+                    disableFadeOut: true
+                });
+            },
+            data: function() {
+                return {
+                    tempSearchQuery: "", // in-sync search query value
+                    searchQuery: "", // debounced search query value
+                    navigatedIndex: null,
+                    opened: false,
+                    waitingItems: false,
+                    hasFocus: false,
+                    scroller: null
+                };
+            },
+            computed: {
+                selectedItem: function() {
+                    return this.value;
+                },
+                searchable: function() {
+                    return this.items.length > 10 || this.dynamicItems;
+                },
+                containerClasses: function() {
+                    var classes = [];
+                    if (this.opened) {
+                        classes.push("active");
+                    }
+                    if (this.dynamicItems) {
+                        classes.push("dynamic-items");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    if (["default", "slim"].indexOf(this.skin) > -1) {
+                        classes.push("select-" + this.skin + "-skin");
+                    }
+                    else {
+                        classes.push("select-default-skin");
+                    }
+                    if (["left", "center", "right"].indexOf(this.aligned) > -1) {
+                        classes.push("select-aligned-" + this.aligned);
+                    }
+                    else {
+                        classes.push("select-aligned-left");
+                    }
+                    return classes;
+                },
+                dropClasses: function() {
+                    var classes = ["drop"];
+                    if (this.skin !== "slim") {
+                        classes.push("combo");
+                    }
+
+                    return classes;
+                },
+                visibleItems: function() {
+                    var self = this;
+                    if (!this.dynamicItems &amp;&amp; this.tempSearchQuery &amp;&amp; this.tempSearchQuery !== "") {
+                        var visible = this.items.map(function() {
+                            return false;
+                        });
+                        var loweredQuery = self.tempSearchQuery.toLowerCase();
+                        this.items.forEach(function(item, idx) {
+                            if (Object.prototype.hasOwnProperty.call(item, "value")) {
+                                if (item.name.toLowerCase().indexOf(loweredQuery) > -1) {
+                                    visible[idx] = true;
+                                    if (self.groupIndex[idx] > -1) {
+                                        visible[self.groupIndex[idx]] = true;
+                                    }
+                                }
+                            }
+                        });
+                        return this.items.filter(function(item, idx) {
+                            return visible[idx];
+                        });
+                    }
+                    else if (this.dynamicItems &amp;&amp; this.waitingItems) {
+                        // blocked for search event to complete
+                        return [];
+                    }
+                    else {
+                        return this.items;
+                    }
+                },
+                groupIndex: function() {
+                    var index = [],
+                        currentGroup = -1,
+                        self = this;
+
+                    this.items.forEach(function(item, idx) {
+                        if (self.isItemGroup(item)) {
+                            currentGroup = idx;
+                            index.push(-1);
+                        }
+                        else {
+                            index.push(currentGroup);
+                        }
+                    });
+                    return index;
+                },
+                isKeyboardNavAvailable: function() {
+                    return this.opened &amp;&amp; this.hasFocus;
+                }
+            },
+            methods: {
+                setItem: function(item) {
+                    if (!this.isItemGroup(item)) {
+                        this.$emit("input", item);
+                        this.opened = false;
+                    }
+                },
+                close: function() {
+                    this.opened = false;
+                },
+                fireDynamicSearch: function() {
+                    if (this.dynamicItems) {
+                        this.waitingItems = true;
+                        this.$emit("search", this.searchQuery);
+                    }
+                },
+                toggle: function() {
+                    if (!this.disabled) {
+                        this.opened = !this.opened;
+                    }
+                },
+                findItemByValue: function(value) {
+                    var found = this.items.filter(function(item) {
+                        return item.value === value;
+                    });
+                    if (found.length > 0) {
+                        return found[0];
+                    }
+                    return null;
+                },
+                selectNavigatedElement: function() {
+                    if (this.navigatedIndex !== null &amp;&amp; this.navigatedIndex &lt; this.visibleItems.length) {
+                        this.setItem(this.visibleItems[this.navigatedIndex]);
+                    }
+                },
+                setNavigatedIndex: function(navigatedIndex) {
+                    this.navigatedIndex = navigatedIndex;
+                },
+                scrollToNavigatedIndex: function() {
+                    var self = this,
+                        $scrollable = $(self.$refs.scrollable);
+
+                    if (self.navigatedIndex !== null &amp;&amp; $scrollable) {
+                        var y = ($scrollable.scrollTop() + $(self.$refs["tmpItemRef_" + self.navigatedIndex]).position().top) + "px";
+                        $scrollable.slimScroll({scrollTo: y});
+                    }
+                },
+                isItemGroup: function(element) {
+                    if (!Object.prototype.hasOwnProperty.call(element, "value")) {
+                        return true;
+                    }
+                    if (element.group) {
+                        return true;
+                    }
+                    return false;
+                },
+                getNextNonGroupIndex: function(startFrom, direction) {
+                    for (var offset = 0; offset &lt; this.visibleItems.length; offset++) {
+                        var current = (direction * offset + startFrom);
+                        if (current &lt; 0) {
+                            current = this.visibleItems.length + current;
+                        }
+                        current = current % this.visibleItems.length;
+                        if (!this.isItemGroup(this.visibleItems[current])) {
+                            return current;
+                        }
+                    }
+                },
+                upKeyEvent: function() {
+                    if (!this.isKeyboardNavAvailable) {
+                        return;
+                    }
+
+                    if (this.navigatedIndex === null) {
+                        this.navigatedIndex = this.visibleItems.length - 1;
+                    }
+                    else {
+                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex - 1, -1);
+                    }
+
+                    this.scrollToNavigatedIndex();
+                },
+                downKeyEvent: function() {
+                    if (!this.isKeyboardNavAvailable) {
+                        return;
+                    }
+
+                    if (this.navigatedIndex === null) {
+                        this.navigatedIndex = 0;
+                    }
+                    else {
+                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex + 1, 1);
+                    }
+
+                    this.scrollToNavigatedIndex();
+                },
+                escKeyEvent: function() {
+                    if (this.navigatedIndex === null &amp;&amp; this.opened) {
+                        this.close();
+                        return;
+                    }
+                    else if (this.navigatedIndex !== null) {
+                        this.navigatedIndex = null;
+                    }
+                },
+                enterKeyEvent: function() {
+                    if (this.navigatedIndex === null) {
+                        return;
+                    }
+
+                    this.selectNavigatedElement();
+                }
+            },
+            watch: {
+                value: {
+                    immediate: true,
+                    handler: function(passedValue) {
+                        if (typeof passedValue !== 'object') {
+                            var item = this.findItemByValue(passedValue);
+                            if (item) {
+                                this.setItem(item);
+                            }
+                            else {
+                                this.setItem({name: passedValue, value: passedValue});
+                            }
+                        }
+                    }
+                },
+                opened: function(newValue) {
+                    if (!newValue) {
+                        this.tempSearchQuery = "";
+                        this.searchQuery = "";
+                        this.navigatedIndex = null;
+                    }
+                },
+                tempSearchQuery: _.debounce(function(newVal) {
+                    this.searchQuery = newVal;
+                }, 500),
+                searchQuery: function() {
+                    this.fireDynamicSearch();
+                },
+                items: {
+                    immediate: true,
+                    handler: function() {
+                        this.waitingItems = false;
+                    }
+                },
+                visibleItems: function() {
+                    this.navigatedIndex = null; // reset navigation on visible items change
+                }
+            },
+            template: '&lt;div class="cly-vue-select"\n' +
+                            'v-bind:class="containerClasses"\n' +
+                            'v-click-outside="close"\n' +
+                            '@keydown.up.prevent="upKeyEvent"\n' +
+                            '@keydown.down.prevent="downKeyEvent"\n' +
+                            '@keydown.esc="escKeyEvent"\n' +
+                            '@keydown.enter="enterKeyEvent">\n' +
+                            '&lt;div class="select-inner" @click="toggle">\n' +
+                                '&lt;div class="text-container">\n' +
+                                    '&lt;div v-if="selectedItem" class="text">\n' +
+                                        '&lt;span>{{selectedItem.name}}&lt;/span>\n' +
+                                    '&lt;/div>\n' +
+                                    '&lt;div v-if="!selectedItem" class="text">\n' +
+                                        '&lt;span class="text-light-gray">{{placeholder}}&lt;/span>\n' +
+                                    '&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                                '&lt;div :class="dropClasses">&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;div class="search" v-if="searchable" v-show="opened">\n' +
+                                '&lt;div class="inner">\n' +
+                                '&lt;input type="search"\n' +
+                                    '@focus="hasFocus = true"\n' +
+                                    'v-model="tempSearchQuery"/>\n' +
+                                '&lt;i class="fa fa-search">&lt;/i>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;div class="items-list square" v-show="opened">\n' +
+                                '&lt;div ref="scrollable" class="scrollable">\n' +
+                                    '&lt;div class="warning" v-if="dynamicItems &amp;&amp; listDelayWarning">{{ listDelayWarning }}&lt;/div>\n' +
+                                    '&lt;div v-for="(item, i) in visibleItems" :key="i"\n' +
+                                        '@mouseover="setNavigatedIndex(i)"\n' +
+                                        '@mouseleave="setNavigatedIndex(null)"\n' +
+                                        '@click="setItem(item)"\n' +
+                                        ':ref="\'tmpItemRef_\' + i"\n' +
+                                        ':class="{item: !isItemGroup(item), group : isItemGroup(item), navigated: i === navigatedIndex}">\n' +
+                                        '&lt;div v-if="isItemGroup(item)">\n' +
+                                            '&lt;span v-text="item.name">&lt;/span>\n' +
+                                        '&lt;/div>\n' +
+                                        '&lt;div v-else v-bind:data-value="item.value">\n' +
+                                            '&lt;span v-text="item.name">&lt;/span>\n' +
+                                        '&lt;/div>\n' +
+                                    '&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>'
+        }
+    ));
+
+    Vue.component("cly-back-link", countlyBaseComponent.extend(
+        // @vue/component
+        {
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                title: {type: String, required: false},
+                link: {type: String, required: false}
+            },
+            methods: {
+                back: function() {
+                    if (this.link) {
+                        app.back(this.link);
+                    }
+                    else {
+                        app.back();
+                    }
+                }
+            },
+            computed: {
+                innerTitle: function() {
+                    if (this.title) {
+                        return this.title;
+                    }
+                    return this.i18n("common.back");
+                }
+            },
+            template: '&lt;a @click="back" class="cly-vue-back-link"> \n' +
+                            '&lt;span>{{innerTitle}}&lt;/span>\n' +
+                        '&lt;/a>'
+        }
+    ));
+
+    var clyDataTableControls = countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        template: '&lt;div class="cly-vgt-custom-controls">\n' +
+                        '&lt;div class="cly-vgt-custom-search">\n' +
+                            '&lt;div class="magnifier-wrapper" @click="toggleSearch">\n' +
+                                '&lt;i class="fa fa-search">&lt;/i>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-bind:value="searchQuery" @input="queryChanged($event.target.value)"/>\n' +
+                        '&lt;/div>\n' +
+                        '&lt;div class="cly-vgt-custom-paginator">\n' +
+                            '&lt;div class="display-items">\n' +
+                                '&lt;label>{{ i18n("common.show-items") }} &lt;input type="number" v-model.number="displayItems">&lt;/label>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;div class="buttons">\n' +
+                                '&lt;span :class="{disabled: !prevAvailable}" @click="goToFirstPage">&lt;i class="fa fa-angle-double-left">&lt;/i>&lt;/span>\n' +
+                                '&lt;span :class="{disabled: !prevAvailable}" @click="goToPrevPage">&lt;i class="fa fa-angle-left">&lt;/i>&lt;/span>\n' +
+                                '&lt;span :class="{disabled: !nextAvailable}" @click="goToNextPage">&lt;i class="fa fa-angle-right">&lt;/i>&lt;/span>\n' +
+                                '&lt;span :class="{disabled: !nextAvailable}" @click="goToLastPage">&lt;i class="fa fa-angle-double-right">&lt;/i>&lt;/span>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;div class="export-toggler" @click="toggleExportDialog">&lt;i class="fa fa-download">&lt;/i>&lt;/div>\n' +
+                        '&lt;/div>\n' +
+                        '&lt;div class="export-dialog-container" v-if="isExportDialogOpened" v-click-outside="closeExportDialog">\n' +
+                            '&lt;div class="export-dialog">\n' +
+                                '&lt;p>{{i18n("export.export-as")}}&lt;/p>\n' +
+                                '&lt;div class="button-selector light">\n' +
+                                    '&lt;div class="button" @click="selectedExportType = \'csv\'" :class="{active: selectedExportType === \'csv\'}">.CSV&lt;/div>\n' +
+                                    '&lt;div class="button" @click="selectedExportType = \'xlsx\'" :class="{active: selectedExportType === \'xlsx\'}">.XLSX&lt;/div>\n' +
+                                    '&lt;div class="button" @click="selectedExportType = \'json\'" :class="{active: selectedExportType === \'json\'}">.JSON&lt;/div>\n' +
+                                '&lt;/div>\n' +
+                                '&lt;cly-button skin="green" @click="exportData" :label="i18n(\'export.export\')">&lt;/cly-button>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>\n' +
+                    '&lt;/div>',
+        props: {
+            searchQuery: {
+                type: String
+            },
+            pageChanged: {
+                type: Function,
+            },
+            perPageChanged: {
+                type: Function,
+            },
+            total: {
+                type: Number
+            },
+            notFilteredTotal: {
+                type: Number
+            },
+            initialPaging: {
+                type: Object
+            }
+        },
+        data: function() {
+            return {
+                firstPage: 1,
+                currentPage: this.initialPaging.page,
+                perPage: this.initialPaging.perPage,
+                searchVisible: !!this.searchQuery,
+                displayItems: this.initialPaging.perPage,
+                isExportDialogOpened: false,
+                selectedExportType: 'csv'
+            };
+        },
+        computed: {
+            totalPages: function() {
+                return Math.ceil(this.total / this.perPage);
+            },
+            lastPage: function() {
+                return this.totalPages;
+            },
+            prevAvailable: function() {
+                return this.currentPage > this.firstPage;
+            },
+            nextAvailable: function() {
+                return this.currentPage &lt; this.lastPage;
+            }
+        },
+        mounted: function() {
+            // this.updatePerPage();
+            // this.goToFirstPage();
+            this.updateInfo();
+        },
+        methods: {
+            queryChanged: function(newSearchQuery) {
+                var self = this;
+                this.$emit("queryChanged", newSearchQuery);
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
+            },
+            toggleSearch: function() {
+                var self = this;
+                this.searchVisible = !this.searchVisible;
+                this.$nextTick(function() {
+                    if (self.searchVisible) {
+                        self.$refs.searchInput.focus();
+                    }
+                });
+            },
+            updateInfo: function() {
+                var startEntries = (this.currentPage - 1) * this.perPage + 1,
+                    endEntries = Math.min(startEntries + this.perPage - 1, this.total),
+                    totalEntries = this.total,
+                    info = this.i18n("common.table.no-data");
+
+                if (totalEntries > 0) {
+                    info = this.i18n("common.showing")
+                        .replace("_START_", startEntries)
+                        .replace("_END_", endEntries)
+                        .replace("_TOTAL_", totalEntries);
+                }
+
+                if (this.searchQuery) {
+                    info += " " + this.i18n("common.filtered").replace("_MAX_", this.notFilteredTotal);
+                }
+
+                this.$emit("infoChanged", info);
+            },
+            updateCurrentPage: function() {
+                var self = this;
+                this.pageChanged({currentPage: this.currentPage});
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
+            },
+            updatePerPage: function() {
+                var self = this;
+                this.perPageChanged({currentPerPage: this.perPage});
+                this.$nextTick(function() {
+                    self.updateInfo();
+                });
+            },
+            goToFirstPage: function() {
+                this.currentPage = this.firstPage;
+            },
+            goToLastPage: function() {
+                this.currentPage = this.lastPage;
+            },
+            goToPrevPage: function() {
+                if (this.prevAvailable) {
+                    this.currentPage--;
+                }
+            },
+            goToNextPage: function() {
+                if (this.nextAvailable) {
+                    this.currentPage++;
+                }
+            },
+            closeExportDialog: function() {
+                this.isExportDialogOpened = false;
+            },
+            toggleExportDialog: function() {
+                this.isExportDialogOpened = !this.isExportDialogOpened;
+            },
+            exportData: function() {
+                this.$emit("exportData", this.selectedExportType);
+                this.closeExportDialog();
+            }
+        },
+        watch: {
+            displayItems: function(newValue) {
+                if (newValue > 0) {
+                    this.perPage = newValue;
+                }
+            },
+            perPage: function() {
+                this.updatePerPage();
+            },
+            currentPage: function() {
+                this.updateCurrentPage();
+            },
+            totalPages: function(newTotal) {
+                if (this.currentPage > newTotal) {
+                    this.goToFirstPage();
+                }
+            },
+            total: function() {
+                this.updateInfo();
+            }
+        }
+    });
+
+    var clyDataTableRowOptions = countlyBaseComponent.extend({
+        props: {
+            items: {
+                type: Array
+            },
+            opened: {
+                type: Boolean
+            },
+            pos: {
+                type: Object
+            },
+            rowData: {
+                type: Object
+            }
+        },
+        computed: {
+            availableItems: function() {
+                return this.items.filter(function(item) {
+                    return !item.disabled;
+                });
+            }
+        },
+        methods: {
+            tryClosing: function() {
+                if (this.opened) {
+                    this.$emit("close");
+                }
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey, this.rowData);
+                this.tryClosing();
+            }
+        },
+        template: '&lt;div class="cly-vue-row-options" v-click-outside="tryClosing">\n' +
+                        '&lt;div ref="menu" v-bind:style="{ right: pos.right, top: pos.top}" :class="{active: opened}" class="menu" tabindex="1">\n' +
+                            '&lt;a @click="fireEvent(item.event)" v-for="(item, index) in availableItems" class="item" :key="index">&lt;i :class="item.icon">&lt;/i>&lt;span>{{ item.label }}&lt;/span>&lt;/a>\n' +
+                        '&lt;/div>\n' +
+                    '&lt;/div>'
+    });
+
+    var exportTableData = function(params) {
+
+        /** gets file name for export
+        * @returns {string} file name
+        */
+        function getFileName() {
+            var name = "countly";
+            if (params.settings.title) {
+                name = params.settings.title.replace(/[\r\n]+/g, "");
+            }
+            if (params.settings.timeDependent) {
+                //include export range
+                name += "_for_" + countlyCommon.getDateRange();
+            }
+            else {
+                //include export date
+                name += "_on_" + moment().format("DD-MMM-YYYY");
+            }
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+        }
+
+        /** gets export data from data table
+        * @returns {array} table data
+        */
+        function getExportData() {
+            var retData = [];
+            params.rows.forEach(function(row) {
+                var ob = {};
+                params.columns.forEach(function(col) {
+                    try {
+                        if (!(row &amp;&amp; Object.prototype.hasOwnProperty.call(row, col.field)) || (col &amp;&amp; col.noExport)) {
+                            return;
+                        }
+                        ob[col.label] = row[col.field];
+                    }
+                    catch (e) {
+                        //not important
+                    }
+                });
+                retData.push(ob);
+            });
+            return retData;
+        }
+        var formData = null,
+            url = null;
+
+        if (params.settings.resourcePath) {
+            url = countlyCommon.API_URL + "/o/export/request";
+            formData = {
+                type: params.type,
+                path: params.settings.resourcePath,
+                prop: params.settings.resourceProp,
+                filename: getFileName(),
+                api_key: countlyGlobal.member.api_key
+            };
+        }
+        else {
+            url = countlyCommon.API_URL + "/o/export/data";
+            formData = {
+                type: params.type,
+                data: JSON.stringify(getExportData()),
+                filename: getFileName(),
+                api_key: countlyGlobal.member.api_key
+            };
+        }
+
+        var form = $('&lt;form method="POST" action="' + url + '">');
+
+        $.each(formData, function(k, v) {
+            if (CountlyHelpers.isJSON(v)) {
+                form.append($('&lt;textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '&lt;/textarea>'));
+            }
+            else {
+                form.append($('&lt;input type="hidden" name="' + k + '" value="' + v + '">'));
+            }
+        });
+        $('body').append(form);
+        form.submit();
+    };
+
+    Vue.component("cly-datatable", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        inheritAttrs: false,
+        components: {
+            "custom-controls": clyDataTableControls,
+            'row-options': clyDataTableRowOptions
+        },
+        props: {
+            rows: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            columns: {
+                type: Array
+            },
+            mode: {
+                type: String,
+                default: null
+            },
+            totalRows: {
+                type: Number,
+                default: 0
+            },
+            notFilteredTotalRows: {
+                type: Number,
+                default: 0
+            },
+            persistKey: {
+                type: String,
+                default: null
+            },
+            striped: {
+                type: Boolean,
+                default: true
+            },
+            exportSettings: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        computed: {
+            innerStyles: function() {
+                var styles = ['cly-vgt-table'];
+                if (this.striped) {
+                    styles.push("striped");
+                }
+                return styles.join(" ");
+            },
+            notFilteredTotal: function() {
+                if (this.isRemote) {
+                    return this.notFilteredTotalRows;
+                }
+                else if (!this.rows) {
+                    return 0;
+                }
+                return this.rows.length;
+            },
+            extendedColumns: function() {
+                var extended = this.columns.map(function(col) {
+                    var newCol;
+                    if (col.type === "cly-options") {
+                        newCol = JSON.parse(JSON.stringify(col));
+                        newCol.field = "cly-options";
+                        newCol.sortable = false;
+                        delete newCol.type;
+                        return newCol;
+                    }
+                    if (col.type === "cly-detail-toggler") {
+                        newCol = JSON.parse(JSON.stringify(col));
+                        newCol.field = "cly-detail-toggler";
+                        newCol.sortable = false;
+                        delete newCol.type;
+                        return newCol;
+                    }
+                    return col;
+                });
+                return extended;
+            },
+            isRemote: function() {
+                return this.internalMode === "remote";
+            },
+            internalTotalRows: function() {
+                if (this.isRemote) {
+                    return this.totalRows;
+                }
+                else {
+                    // vgt-table should determine itself.
+                    return;
+                }
+            }
+        },
+        created: function() {
+            if (this.isRemote) {
+                this.$emit("remote-params-change", this.currentParams);
+            }
+        },
+        data: function() {
+            var persisted = this.getPersistedParams();
+            return {
+                pageInfo: '',
+                searchQuery: persisted.searchQuery,
+                optionsOpened: false,
+                optionsRowData: {},
+                optionsItems: [],
+                optionsPosition: {
+                    right: '41px',
+                    top: '0'
+                },
+                isLoading: false,
+                internalMode: this.mode,
+                initialPaging: {
+                    page: persisted.page,
+                    perPage: persisted.perPage
+                },
+                currentParams: persisted
+            };
+        },
+        methods: {
+            getPersistedParams: function() {
+                var loadedState = localStorage.getItem(this.persistKey);
+                var defaultState = {
+                    page: 1,
+                    perPage: 10,
+                    searchQuery: '',
+                    sort: []
+                };
+                try {
+                    if (loadedState) {
+                        return JSON.parse(loadedState);
+                    }
+                    return defaultState;
+                }
+                catch (ex) {
+                    return defaultState;
+                }
+            },
+            persistParams: function() {
+                if (this.persistKey) {
+                    localStorage.setItem(this.persistKey, JSON.stringify(this.currentParams));
+                }
+            },
+            onInfoChanged: function(text) {
+                this.pageInfo = text;
+            },
+            setRowData: function(row, fields) {
+                this.$emit("set-row-data", row, fields);
+            },
+            showRowOptions: function(event, items, row) {
+                var rect = $(event.target).offset(),
+                    self = this;
+
+                this.optionsPosition = {
+                    right: '41px',
+                    top: (rect.top + 41) + "px"
+                };
+                this.optionsItems = items;
+                this.optionsRowData = row;
+
+                self.$nextTick(function() {
+                    self.optionsOpened = true;
+                });
+            },
+            addTableFns: function(propsObj) {
+                var newProps = {
+                    props: propsObj,
+                    fns: {
+                        showRowOptions: this.showRowOptions,
+                        setRowData: this.setRowData
+                    }
+                };
+                return newProps;
+            },
+            updateParams: function(props) {
+                this.currentParams = Object.assign({}, this.currentParams, props);
+                if (this.isRemote) {
+                    this.$emit("remote-params-change", this.currentParams);
+                }
+                this.persistParams();
+            },
+            onPageChange: function(params) {
+                this.updateParams({page: params.currentPage});
+            },
+            onSortChange: function(params) {
+                this.updateParams({sort: params});
+            },
+            onRowClick: function(params) {
+                this.$emit("row-click", params);
+            },
+            onRowMouseover: function(params) {
+                this.$emit("row-mouseover", params);
+            },
+            onRowMouseleave: function(params) {
+                this.$emit("row-mouseleave", params);
+            },
+            onPerPageChange: _.debounce(function(params) {
+                this.updateParams({perPage: params.currentPerPage});
+            }, 500),
+            exportData: function(type) {
+                exportTableData({
+                    rows: this.$refs.table.processedRows[0].children,
+                    columns: this.columns,
+                    type: type,
+                    settings: this.exportSettings
+                });
+            }
+        },
+        watch: {
+            searchQuery: _.debounce(function(newVal) {
+                this.updateParams({searchQuery: newVal});
+                if (this.isRemote) {
+                    this.isLoading = true;
+                }
+            }, 500)
+        },
+        template: '&lt;div>\n' +
+                        '&lt;row-options\n' +
+                            ':items="optionsItems"\n' +
+                            ':pos="optionsPosition"\n' +
+                            ':opened="optionsOpened"\n' +
+                            ':rowData="optionsRowData"\n' +
+                            '@close="optionsOpened=false"\n' +
+                            'v-on="$listeners">\n' +
+                        '&lt;/row-options>\n' +
+                        '&lt;vue-good-table\n' +
+                            'v-bind="$attrs"\n' +
+                            'v-bind:rows="rows"\n' +
+                            'v-bind:columns="extendedColumns"\n' +
+                            'v-on="$listeners"\n' +
+                            ':pagination-options="{\n' +
+                                'enabled: true,\n' +
+                                'mode: \'records\',\n' +
+                                'position: \'top\'\n' +
+                            '}"\n' +
+                            ':search-options="{\n' +
+                                'enabled: true,\n' +
+                                'externalQuery: searchQuery\n' +
+                            '}"\n' +
+                            '@on-page-change="onPageChange"\n' +
+                            '@on-sort-change="onSortChange"\n' +
+                            '@on-per-page-change="onPerPageChange"\n' +
+                            '@on-row-mouseenter="onRowMouseover"\n' +
+                            '@on-row-mouseleave="onRowMouseleave"\n' +
+                            '@on-row-click="onRowClick"\n' +
+                            'ref="table"\n' +
+                            ':mode="internalMode"\n' +
+                            ':totalRows="internalTotalRows"\n' +
+                            ':isLoading.sync="isLoading"\n' +
+                            ':styleClass="innerStyles">\n' +
+                                '&lt;template slot="pagination-top" slot-scope="props">\n' +
+                                    '&lt;custom-controls\n' +
+                                    '@infoChanged="onInfoChanged"\n' +
+                                    '@queryChanged="searchQuery = $event"\n' +
+                                    '@exportData="exportData"\n' +
+                                    'ref="controls"\n' +
+                                    ':initial-paging="initialPaging"\n' +
+                                    ':search-query="searchQuery"\n' +
+                                    ':total="props.total"\n' +
+                                    ':notFilteredTotal="notFilteredTotal"\n' +
+                                    ':pageChanged="props.pageChanged"\n' +
+                                    ':perPageChanged="props.perPageChanged">\n' +
+                                    '&lt;/custom-controls>\n' +
+                                '&lt;/template>\n' +
+                                '&lt;template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">\n' +
+                                    '&lt;slot :name="name" v-bind="addTableFns(slotData)" />\n' +
+                                '&lt;/template>\n' +
+                                '&lt;div slot="table-actions-bottom">\n' +
+                                    '{{pageInfo}}\n' +
+                                '&lt;/div>\n' +
+                                '&lt;div slot="emptystate">\n' +
+                                    '{{ i18n("common.table.no-data") }}\n' +
+                                '&lt;/div>\n' +
+                                '&lt;div slot="loadingContent">\n' +
+                                '&lt;/div>\n' +
+                        '&lt;/vue-good-table>\n' +
+                    '&lt;/div>'
+    }));
+
+    Vue.component("cly-datatable-detail-toggler", countlyBaseComponent.extend({
+        props: {
+            scope: {
+                type: Object
+            }
+        },
+        template: '&lt;div class="cly-vue-dt-detail-toggler">\n' +
+                        '&lt;div @click="scope.fns.setRowData(scope.props.row, {isDetailRowShown: !scope.props.row.isDetailRowShown})">\n' +
+                            '&lt;div v-if="!scope.props.row.isDetailRowShown">\n' +
+                                '&lt;i class="material-icons expand-row-icon">keyboard_arrow_down&lt;/i>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;div v-else>\n' +
+                               '&lt;i class="material-icons expand-row-icon">keyboard_arrow_up&lt;/i>\n' +
+                            '&lt;/div>\n' +
+                        '&lt;/div>\n' +
+                   '&lt;/div>'
+    }));
+
+    Vue.component("cly-datatable-options", countlyBaseComponent.extend({
+        props: {
+            scope: {
+                type: Object
+            }
+        },
+        template: '&lt;div class="cly-vue-dt-options">\n' +
+                        '&lt;div v-if="scope.props.row._delayedDelete" class="undo-row">\n' +
+                            '{{ scope.props.row._delayedDelete.message }}\n' +
+                            '&lt;a @click="scope.props.row._delayedDelete.abort()">Undo.&lt;/a>\n' +
+                        '&lt;/div>\n' +
+                        '&lt;span>\n' +
+                            '&lt;a class="cly-row-options-trigger" @click.stop="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)">&lt;/a>\n' +
+                        '&lt;/span>\n' +
+                    '&lt;/div>'
+    }));
+
+    Vue.component("cly-diff-helper", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            diff: {
+                type: Array
+            },
+        },
+        computed: {
+            hasDiff: function() {
+                return this.diff.length > 0;
+            },
+            madeChanges: function() {
+                return this.i18n("common.diff-helper.changes", this.diff.length);
+            }
+        },
+        methods: {
+            save: function() {
+                this.$emit("save");
+            },
+            discard: function() {
+                this.$emit("discard");
+            }
+        },
+        template: '&lt;div class="cly-vue-diff-helper" v-if="hasDiff">\n' +
+                        '&lt;div class="message">\n' +
+                            '&lt;span class="text-dark">{{madeChanges}}&lt;/span>\n' +
+                            '&lt;span class="text-light">{{ i18n("common.diff-helper.keep") }}&lt;/span>\n' +
+                        '&lt;/div>\n' +
+                        '&lt;div class="buttons">\n' +
+                            '&lt;cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard">&lt;/cly-button>\n' +
+                           '&lt;cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save">&lt;/cly-button>\n' +
+                        '&lt;/div>\n' +
+                    '&lt;/div>'
+    }));
+
+    Vue.component("cly-menubox", countlyBaseComponent.extend({
+        template: '&lt;div class="cly-vue-menubox menubox-default-skin" v-click-outside="close">\n' +
+                        '&lt;div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\n' +
+                            '&lt;div class="text-container">\n' +
+                                '&lt;div class="text">{{label}}&lt;/div>\n' +
+                            '&lt;/div>\n' +
+                            '&lt;div class="drop">&lt;/div>\n' +
+                        '&lt;/div>\n' +
+                        '&lt;div class="menu-body" v-show="isOpened">\n' +
+                            '&lt;slot>&lt;/slot>\n' +
+                        '&lt;/div>\n' +
+                    '&lt;/div>',
+        props: {
+            label: { type: String, default: '' },
+            isOpened: { type: Boolean, default: false }
+        },
+        methods: {
+            toggle: function() {
+                this.setStatus(!this.isOpened);
+            },
+            close: function() {
+                this.setStatus(false);
+            },
+            setStatus: function(targetState) {
+                this.$emit('status-changed', targetState);
+            }
+        }
+    }));
+
+    Vue.component("cly-button-menu", countlyBaseComponent.extend({
+        template: '&lt;div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">\n' +
+                        '&lt;div class="toggler" @click.stop="toggle">&lt;/div>\n' +
+                        '&lt;div class="menu-body" :class="{active: opened}">\n' +
+                            '&lt;a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\n' +
+                                '&lt;i :class="item.icon">&lt;/i>\n' +
+                                '&lt;span>{{item.label}}&lt;/span>\n' +
+                            '&lt;/a>\n' +
+                        '&lt;/div>\n' +
+                    '&lt;/div>',
+        props: {
+            items: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            skin: { default: "default", type: String}
+        },
+        computed: {
+            skinClass: function() {
+                if (["default", "single"].indexOf(this.skin) > -1) {
+                    return "button-menu-" + this.skin + "-skin";
+                }
+                return "button-menu-default-skin";
+            },
+        },
+        data: function() {
+            return {
+                opened: false
+            };
+        },
+        methods: {
+            toggle: function() {
+                this.opened = !this.opened;
+            },
+            close: function() {
+                this.opened = false;
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey);
+                this.close();
+            }
+        }
+    }));
+
+    Vue.component("cly-dropzone", window.vue2Dropzone);
+
+}(window.CountlyVueComponents = window.CountlyVueComponents || {}, window.countlyVue = window.countlyVue || {}, jQuery));
+</code></pre>
         </article>
     </section>
 
@@ -254,7 +3486,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Nov 04 2020 14:33:09 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Nov 05 2020 07:19:43 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
