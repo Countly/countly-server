@@ -68,8 +68,6 @@ then
     rm -rf "$DIR/../node_modules"
     
     (cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
-    countly restart
-
 
     countly plugin upgrade star-rating
     countly plugin upgrade users
@@ -93,7 +91,11 @@ then
     countly update sdk-web
 
     #install dependencies, process files and restart countly
-    countly task dist-all
+    if [ "$1" != "combined" ]; then
+        countly upgrade;
+    else
+        countly task dist-all;
+    fi
 
     #call after check
     countly check after upgrade fs "$VER"

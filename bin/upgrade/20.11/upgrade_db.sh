@@ -48,6 +48,10 @@ then
     
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"
+    
+    if [ "$1" != "combined" ]; then
+        countly upgrade;
+    fi
 
     #call after check
     countly check after upgrade db "$VER"
