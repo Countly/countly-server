@@ -965,7 +965,7 @@ window.starView = countlyView.extend({
                         }
                         row.target_pages.forEach(function(page) {
                             if (row.target_pages.indexOf(page) < 5) {
-                                target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
+                                target_pages += "<a class='feedback-widget-target-page-item' title='" + page + "'>" + (page.length < 20 ? page : (page.substr(0, 20) + "...")) + "</a>";
                             }
                             else if (row.target_pages.indexOf(page) === 5) {
                                 target_pages += "<div class='feedback-widget-target-page-item'>And " + (row.target_pages.length - 5) + " more...</div>";
@@ -1159,6 +1159,11 @@ window.starView = countlyView.extend({
         $('#feedback-create-step-' + this.step).css({
             "display": "block"
         });
+    },
+    decode: function(string) {
+        var div = document.createElement("div");
+        div.innerHTML = string;
+        return typeof div.textContent !== 'undefined' ? div.textContent : div.innerText;
     },
     renderCommon: function(isRefresh) {
         var self = this;
@@ -1746,12 +1751,12 @@ window.starView = countlyView.extend({
                 }
             });
             var renderFeedbackWidgetModal = function(isCreate) {
-                $("#feedback-popup-header-text").val(isCreate ? "" : self.feedbackWidget.popup_header_text);
-                $("#feedback-popup-comment-text").val(isCreate ? "" : self.feedbackWidget.popup_comment_callout);
-                $("#feedback-popup-email-text").val(isCreate ? "" : self.feedbackWidget.popup_email_callout);
-                $("#feedback-popup-button-text").val(isCreate ? "" : self.feedbackWidget.popup_button_callout);
-                $("#feedback-popup-thanks-text").val(isCreate ? "" : self.feedbackWidget.popup_thanks_message);
-                $("#feedback-trigger-text").val(isCreate ? "" : self.feedbackWidget.trigger_button_text);
+                $("#feedback-popup-header-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_header_text));
+                $("#feedback-popup-comment-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_comment_callout));
+                $("#feedback-popup-email-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_email_callout));
+                $("#feedback-popup-button-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_button_callout));
+                $("#feedback-popup-thanks-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_thanks_message));
+                $("#feedback-trigger-text").val(isCreate ? "" : self.decode(self.feedbackWidget.trigger_button_text));
 
                 $("#counter-for-feedback-popup-header-text").html($("#feedback-popup-header-text").val().length + "/45");
                 $("#counter-for-feedback-popup-comment-text").html($("#feedback-popup-comment-text").val().length + "/25");
@@ -1766,13 +1771,14 @@ window.starView = countlyView.extend({
                 // add related place and size class to sticker preview
                 $("#feedback-sticker-on-window").removeClass().addClass(self.feedbackWidget.trigger_position + '-' + self.feedbackWidget.trigger_size);
 
-                $("#question-area").html(self.feedbackWidget.popup_header_text);
-                $("#countly-feedback-comment-title").html(self.feedbackWidget.popup_comment_callout);
-                $("#countly-feedback-email-title").html(self.feedbackWidget.popup_email_callout);
-                $("#feedback-submit-button").html(self.feedbackWidget.popup_button_callout);
-                $(".success-emotions-area > #question-area").html(self.feedbackWidget.popup_thanks_message);
+                $("#question-area").html(self.decode(self.feedbackWidget.popup_header_text));
+                $("#countly-feedback-comment-title").html(self.decode(self.feedbackWidget.popup_comment_callout));
+                $("#countly-feedback-email-title").html(self.decode(self.feedbackWidget.popup_email_callout));
+                $("#feedback-submit-button").html(self.decode(self.feedbackWidget.popup_button_callout));
+                $(".success-emotions-area > #question-area").html(self.decode(self.feedbackWidget.popup_thanks_message));
 
                 var reducedTriggerText = self.feedbackWidget.trigger_button_text.length > 10 ? self.feedbackWidget.trigger_button_text.substr(0, 10) + '...' : self.feedbackWidget.trigger_button_text;
+                reducedTriggerText = self.decode(reducedTriggerText);
                 $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + reducedTriggerText);
 
                 $(".device-box:lt(3)").each(function(index, element) {
