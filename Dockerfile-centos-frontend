@@ -44,7 +44,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	countly update sdk-web && \
 	\
 	# cleanup & chown
-	npm remove -y mocha nyc should supertest puppeteer && \
+	npm remove -y --no-save mocha nyc should supertest puppeteer && \
 	rm -rf /opt/app-root/src/.npm && \
 	yum remove -y git wget unzip gcc-c++ gcc centos-release-scl devtoolset-7-gcc-c++ devtoolset-7-gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel devtoolset-7-gcc devtoolset-7-libstdc++-devel python36-devel centos-release-scl devtoolset-7-gcc-c++ && \
 	yum clean all && \
