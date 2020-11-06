@@ -22,6 +22,11 @@ then
     # CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     sudo npm install -g npm@latest;
     
+    if [[ -f /usr/local/bin/npm && -f /usr/bin/npm ]]; then
+        rm /usr/local/bin/npm
+        ln -s /usr/bin/npm /usr/local/bin/npm
+    fi
+    
     #upgrade nodejs
     if [ -f /etc/redhat-release ]; then
         curl -sL https://rpm.nodesource.com/setup_14.x | bash -
