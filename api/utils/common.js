@@ -1584,7 +1584,7 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
                 updateUsersMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + metric] = props.value;
             }
 
-            if (lastDate.yeat() + "" === params.time.yearly + "" &&
+            if (lastDate.year() + "" === params.time.yearly + "" &&
                     Math.ceil(lastDate.format("DDD") / 7) < params.time.weekly) {
                 updateUsersZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + metric] = props.value;
             }
