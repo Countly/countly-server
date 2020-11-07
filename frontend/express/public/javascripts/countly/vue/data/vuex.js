@@ -192,7 +192,7 @@
         };
     };
 
-    var VuexDataTable = function(name, options) {
+    var MutableTable = function(name, options) {
         var resetFn = function() {
             return {
                 trackedFields: options.trackedFields || [],
@@ -296,7 +296,7 @@
     };
 
     countlyVue.vuex.Module = VuexModule;
-    countlyVue.vuex.DataTable = VuexDataTable;
+    countlyVue.vuex.MutableTable = MutableTable;
     countlyVue.vuex.PagedDataTable = PagedDataTable;
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));
