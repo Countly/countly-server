@@ -1114,6 +1114,24 @@ var pluginManager = function pluginManager() {
         return str;
     };
 
+    this.connectToAllDatabases = async() => {
+        let dbs = ['countly', 'countly_out', 'countly_fs'];
+        if (this.isPluginEnabled('drill')) {
+            dbs.push('countly_drill');
+        }
+
+        const databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        const [dbCountly, dbOut, dbFs, dbDrill] = databases;
+
+        let common = require('../api/utils/common');
+        common.db = dbCountly;
+        common.outDb = dbOut;
+        require('../api/utils/countlyFs').setHandler(dbFs);
+        common.drillDb = dbDrill;
+
+        return databases;
+    };
+
     /**
     * Get database connection with configured pool size
     * @param {object} config - connection configs

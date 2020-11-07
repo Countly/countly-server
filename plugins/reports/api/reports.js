@@ -102,6 +102,22 @@ var metricProps = {
                 });
             });
         }
+
+        /**
+         *  Load event group information
+         *  @param {function} cb - callback function
+         */
+        function loadEventGroups(cb) {
+            db.collection('event_groups').find({}, {projection: {name: 1, status: 1}}).toArray(function(err1, event_groups) {
+                var mapping = {};
+                if (event_groups && event_groups.length) {
+                    for (let i = 0; i < event_groups.length; i++) {
+                        mapping[event_groups[i]._id] = event_groups[i];
+                    }
+                }
+                return cb(null, mapping);
+            });
+        }
         /**
          * process to get news from countly offical site
          * @param {func} cb - callback function
@@ -141,7 +157,8 @@ var metricProps = {
         if (report) {
             var parallelTasks = [
                 findMember.bind(null),
-                processUniverse.bind(null)
+                processUniverse.bind(null),
+                loadEventGroups.bind(null)
             ];
 
             async.parallel(parallelTasks, function(err, data) {
@@ -185,10 +202,17 @@ var metricProps = {
                                             done2(null, {metric: parts[1], data: output});
                                         });
                                     }
+                                    else if (event && event.startsWith('[CLY]_group_')) {
+                                        fetch.getMergedEventGroups(params, event, {db: db}, function(output) {
+                                            var displayName = data[2][parts[1]] && data[2][parts[1]].name || parts[1];
+                                            done2(null, {metric: displayName, data: output});
+                                        });
+                                    }
                                     else {
                                         var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
                                         fetch.getTimeObjForEvents(collectionName, params, {db: db}, function(output) {
-                                            done2(null, {metric: parts[1], data: output});
+                                            var displayName = data[3] && data[3][app_id] && data[3][app_id][parts[1]] && data[3][app_id][parts[1]].name || parts[1];
+                                            done2(null, {metric: displayName, data: output});
                                         });
                                     }
                                 }
@@ -257,16 +281,23 @@ var metricProps = {
                                 params2.app_name = app.name;
                                 params2.appTimezone = app.timezone;
                                 params2.app = app;
-                                db.collection('events').findOne({_id: params2.app_id}, function(err_events, events) {
+                                db.collection('events').findOne({_id: params2.app_id}, {projection: {list: 1, map: 1}}, function(err_events, events) {
                                     if (err_events) {
                                         console.log(err_events);
                                     }
                                     events = events || {};
                                     events.list = events.list || [];
+                                    events.map = events.map || {};
                                     if (report.selectedEvents) {
-                                        events.list = events.list.filter((e) => {
-                                            return report.selectedEvents.indexOf(`${app._id}***${e}`) > -1;
+                                        events.list = report.selectedEvents.map(function(event) {
+                                            return (event + "").split("***").pop();
                                         });
+                                    }
+                                    if (!data[3]) {
+                                        data[3] = {};
+                                    }
+                                    if (!data[3][app._id]) {
+                                        data[3][app._id] = events.map;
                                     }
                                     const metricIterator = metricIteratorCurryFunc(params2);
                                     async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err1, results) {
@@ -322,11 +353,13 @@ var metricProps = {
                     };
 
                     if (!plugins.isPluginEnabled(reportType)) {
-                        return callback("Plugin is not disabled, no data to report. Report type: " + reportType, {report: report});
+                        log.d("Plugin is not enabled, no data to report. Report type: " + reportType, {report: report});
+                        return callback("Plugin is not enabled, no data to report. Report type: " + reportType, {report: report});
                     }
 
                     plugins.dispatch("/email/report", { params: params }, function() {
                         if (!params.report || !params.report.data) {
+                            log.d("There was no data from plugin.");
                             return callback("No data to report from other plugins", {report: report});
                         }
 
@@ -589,7 +622,7 @@ var metricProps = {
                 }
                 else if (i === "events") {
                     for (let j = 0; j < events.length; j++) {
-                        if (events[j].indexOf("[CLY]_") === -1) {
+                        if (events[j].indexOf("[CLY]_") === -1 || events[j].startsWith('[CLY]_group_')) {
                             collections["events." + events[j]] = true;
                         }
                     }

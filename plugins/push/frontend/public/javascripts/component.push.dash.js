@@ -150,6 +150,24 @@ window.component('push.dash', function (dash) {
                 },
                 fnRowCallback: function (nRow, aData) {
                     $(nRow).attr('mid', aData._id());
+                    $(nRow).find('.x-aborted').tooltipster({
+                        animation: 'fade',
+                        animationDuration: 100,
+                        delay: 100,
+                        maxWidth: 240,
+                        theme: 'tooltipster-borderless',
+                        trigger: 'custom',
+                        triggerOpen: {
+                            mouseenter: true,
+                            touchstart: true
+                        },
+                        triggerClose: {
+                            mouseleave: true,
+                            touchleave: true
+                        },
+                        interactive: true,
+                        contentAsHTML: true
+                    });
                 },
                 aoColumns: [
                     { mData: function(x){ 
@@ -158,6 +176,9 @@ window.component('push.dash', function (dash) {
 
                     tableName === 'dtable' ? {
                         mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
+                            if (result.result.isAborted()) {
+                                return '<span class="x-aborted" title="' + t('push.message.status.aborted.tt') + '"><span>' + t('push.message.status.aborted') + '</span>&nbsp;<i class="ion-information-circled"></i></span>';
+                            }
                             var s = result.result.status(),
                                 override;
                             if (PUSH.statusers) {
@@ -248,13 +269,20 @@ window.component('push.dash', function (dash) {
                     message = self.messages().find(function (m) { return m._id() === id; });
                 if (id) {
                     $('.message-menu').find('.view-recipients').data('id', id);
+                    $('.message-menu').find('.resend').data('id', id);
                     $('.message-menu').find('.duplicate-message').data('id', id);
+                    $('.message-menu').find('.resend-message').data('id', id);
                     $('.message-menu').find('.edit-message').data('id', id);
                     $('.message-menu').find('.delete-message').data('id', id);
                     if (typeof countlySegmentation !== 'undefined' && message.result.sent()) {
                         $('.message-menu').find('.view-recipients').show();
                     } else {
                         $('.message-menu').find('.view-recipients').hide();
+                    }
+                    if (message.result.errorCodes() && message.result.errorCodes().aborted) {
+                        $('.message-menu').find('.resend-message').show();
+                    } else {
+                        $('.message-menu').find('.resend-message').hide();
                     }
                     if (message.auto()) {
                         $('.message-menu .edit-message').show();
@@ -273,6 +301,28 @@ window.component('push.dash', function (dash) {
                     return;
                 } else if ($(data.target).hasClass('duplicate-message') && message) {
                     var json = message.toJSON(false, true, true);
+                    if (!message.active) {
+                        delete json.date;
+                    }
+                    components.push.popup.show(json, true);
+                } else if ($(data.target).hasClass('resend-message') && message) {
+                    var json = message.toJSON(false, true, true),
+                        uc = json.userConditions,
+                        add = {message: {$nin: [message._id()]}};
+                    if (!uc) {
+                        uc = add;
+                    } else {
+                        if (typeof uc === 'string') {
+                            uc = JSON.parse(json.userConditions);
+                        }
+                        if (uc.$and) {
+                            uc.$and.push(add);
+                        } else {
+                            uc.message = add.message;
+                        }
+                    }
+                    json.userConditions = JSON.stringify(uc);
+
                     if (!message.active) {
                         delete json.date;
                     }
@@ -509,6 +559,7 @@ window.component('push.dash', function (dash) {
             m('.cly-button-menu.message-menu', [
                 m('a.item.view-recipients', t('push.po.table.recipients')),
                 m('a.item.duplicate-message', t('push.po.table.dublicate')),
+                m('a.item.resend-message', t('push.po.table.resend')),
                 m('a.item.edit-message', t('push.po.table.edit')),
                 m('a.item.delete-message', t('push.po.table.delete'))
             ])

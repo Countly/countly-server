@@ -22,7 +22,6 @@ var crypto = require('crypto');
 var argon2 = require('argon2');
 
 var versionInfo = require('./../version.info'),
-    COUNTLY_VERSION = versionInfo.version,
     COUNTLY_TYPE = versionInfo.type;
 
 /** @lends module:frontend/express/libs/members */
@@ -314,40 +313,6 @@ membersUtility.login = function(req, res, callback) {
                 }
                 else {
                     plugins.callMethod("loginSuccessful", {req: req, data: member});
-                    if (countlyConfig.web.use_intercom && member.global_admin) {
-                        if (!plugins.getConfig("api").offline_mode) {
-                            countlyStats.getOverall(membersUtility.db, function(statsObj) {
-                                request({
-                                    uri: "https://try.count.ly/s",
-                                    method: "POST",
-                                    timeout: 4E3,
-                                    json: {
-                                        email: member.email,
-                                        full_name: member.full_name,
-                                        v: COUNTLY_VERSION,
-                                        t: COUNTLY_TYPE,
-                                        u: statsObj["total-users"],
-                                        e: statsObj["total-events"],
-                                        a: statsObj["total-apps"],
-                                        m: statsObj["total-msg-users"],
-                                        mc: statsObj["total-msg-created"],
-                                        ms: statsObj["total-msg-sent"]
-                                    }
-                                }, function(a, c, b) {
-                                    a = {};
-                                    if (b) {
-                                        if (b.in_user_id && b.in_user_id !== member.in_user_id) {
-                                            a.in_user_id = b.in_user_id;
-                                        }
-                                        if (b.in_user_hash && b.in_user_hash !== member.in_user_hash) {
-                                            a.in_user_hash = b.in_user_hash;
-                                        }
-                                    }
-                                    Object.keys(a).length && membersUtility.db.collection("members").update({_id: member._id}, {$set: a}, function() {});
-                                });
-                            });
-                        }
-                    }
                     if (!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) {
                         if (!plugins.getConfig("api").offline_mode) {
                             countlyStats.getUser(membersUtility.db, member, function(statsObj) {
@@ -578,7 +543,6 @@ membersUtility.extendSession = function(req) {
 membersUtility.setup = function(req, callback) {
     membersUtility.db.collection('members').count(function(err, memberCount) {
         if (!err && memberCount === 0) {
-            var countlyConfig = membersUtility.countlyConfig;
             //check password
             const argProps = {
                 'full_name': {
@@ -620,33 +584,15 @@ membersUtility.setup = function(req, callback) {
                 }
                 membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
                     member = member.ops;
-                    if (countlyConfig.web.use_intercom && !plugins.getConfig("api").offline_mode) {
-                        var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
-                        request(options, function(a, c, b) {
-                            a = {};
-                            a.api_key = md5Hash(member[0]._id + (new Date).getTime());
-                            b && (b.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (a.in_user_hash = b.in_user_hash));
+                    var a = {};
+                    a.api_key = md5Hash(member[0]._id + (new Date).getTime());
 
-                            membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
-                                plugins.callMethod("setup", {req: req, data: member[0]});
-                                setLoggedInVariables(req, member[0], membersUtility.db, function() {
-                                    req.session.install = true;
-                                    callback();
-                                });
-                            });
+                    membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
+                        setLoggedInVariables(req, member[0], membersUtility.db, function() {
+                            req.session.install = true;
+                            callback();
                         });
-                    }
-                    else {
-                        var a = {};
-                        a.api_key = md5Hash(member[0]._id + (new Date).getTime());
-
-                        membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
-                            setLoggedInVariables(req, member[0], membersUtility.db, function() {
-                                req.session.install = true;
-                                callback();
-                            });
-                        });
-                    }
+                    });
                 });
             }).catch(function() {
                 callback("Wrong request parameters");

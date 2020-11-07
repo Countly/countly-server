@@ -124,6 +124,8 @@
 .routename-star .feedback-widget-target-page-item {
     margin-bottom: 3px;
     font-size: 11px;
+    cursor: pointer;
+    display: block;
 }
 
 .routename-star .pickpanel {

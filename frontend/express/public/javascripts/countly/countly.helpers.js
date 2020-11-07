@@ -217,44 +217,41 @@
             }
         };
 
-        if (options.applyChangeTriggers) {
-            //on off switch
-            $(drawer).find('.on-off-switch input').on("change", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
+        drawer._changeDefaultHandler = function() {
+            $(drawer).trigger('cly-drawer-form-updated');
+        };
+        drawer._changeDefaultGreenCheckBoxHandler = function() {
+            var isChecked = $(this).hasClass("fa-check-square"); //now is checked
+            if (isChecked) {
+                $(this).addClass("fa-square-o");
+                $(this).removeClass("fa-check-square");
+            }
+            else {
+                $(this).removeClass("fa-square-o");
+                $(this).addClass("fa-check-square");
+            }
+            $(drawer).trigger('cly-drawer-form-updated');
+        };
+        drawer._applyChangeTrigger = function() {
+            var domDict = [
+                {s: '.on-off-switch input', e: 'change'},
+                {s: 'input[type=text]', e: 'keyup'},
+                {s: 'textarea', e: 'keyup'},
+                {s: '.cly-select', e: 'cly-select-change'},
+            ];
+            domDict.forEach(function(d) {
+                $(drawer).find(d.s).off(d.e, drawer._changeDefaultHandler).on(d.e, drawer._changeDefaultHandler);
             });
 
-            //input text field
-            $(drawer).find("input[type=text]").on("keyup", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
-
-            //textarea
-            $(drawer).find("textarea").on("keyup", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
-
-            //single select
-            $(drawer).find(".cly-select").on("cly-select-change", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
             //multi select
-            $(drawer).on('cly-multi-select-change', function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
+            $(drawer).off('cly-multi-select-change', drawer._changeDefaultHandler).on('cly-multi-select-change', drawer._changeDefaultHandler);
 
             //green checkboxes
-            $(drawer).find(".check-green").on("click", function() {
-                var isChecked = $(this).hasClass("fa-check-square"); //now is checked
-                if (isChecked) {
-                    $(this).addClass("fa-square-o");
-                    $(this).removeClass("fa-check-square");
-                }
-                else {
-                    $(this).removeClass("fa-square-o");
-                    $(this).addClass("fa-check-square");
-                }
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
+            $(drawer).find(".check-green").off("click", drawer._changeDefaultGreenCheckBoxHandler).on("click", drawer._changeDefaultGreenCheckBoxHandler);
+        };
+
+        if (options.applyChangeTriggers) {
+            drawer._applyChangeTrigger(drawer);
         }
         if (options.onUpdate) {
             $(drawer).on('cly-drawer-form-updated', options.onUpdate);
@@ -827,6 +824,19 @@
                 show_selected_column_count(dialog);
             });
             show_selected_column_count(dialog);
+            dialog.find(".export-columns-search input").on("keyup", function() {
+                var value = dialog.find(".export-columns-search input").val();
+                value = new RegExp((value || ""), 'i');
+                for (var z = 0;z < tableCols.length; z++) {
+                    if (tableCols[z].sTitle.match(value)) {
+                        dialog.find(".export-columns-selector .columns-wrapper .checkbox-line[data-selectorname='" + tableCols[z].columnSelectorIndex + "']").css("display", "block");
+                    }
+                    else {
+                        dialog.find(".export-columns-selector .columns-wrapper .checkbox-line[data-selectorname='" + tableCols[z].columnSelectorIndex + "']").css("display", "none");
+                    }
+                }
+
+            });
         }
         else {
             dialog.find(".export-columns-selector .columns-wrapper").html("");
@@ -1179,12 +1189,14 @@
             }
 
             $(".cly-select").find(".search").remove();
+            $(".cly-multi-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(context).removeClass("active");
             }
             else {
                 $(".cly-select").removeClass("active");
+                $(".cly-multi-select").removeClass("active");
                 $(".select-items").hide();
                 $(context).addClass("active");
 
@@ -1420,7 +1432,7 @@
 
         $.fn.clySelectSetSelection = function(value, name) {
             $(this).find(".select-inner .text").data("value", value);
-            $(this).find(".select-inner .text").text(name);
+            $(this).find(".select-inner .text").text($('<div>').html(name).text());
             $(this).trigger("cly-select-change", [value]);
         };
     };
@@ -1455,12 +1467,14 @@
                 return false;
             }
 
+            $(".cly-select").find(".search").remove();
             $(".cly-multi-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(this).removeClass("active");
             }
             else {
+                $(".cly-select").removeClass("active");
                 $(".cly-multi-select").removeClass("active");
                 $(".select-items").hide();
                 $(this).addClass("active");
@@ -1671,6 +1685,14 @@
             }
         };
 
+        $.fn.clyMultiSelectGetItems = function() {
+            var items = [];
+            $(this).find(".item").each(function() {
+                items.push({name: $(this).text(), value: $(this).data("value")});
+            });
+            return items;
+        };
+
         $.fn.clyMultiSelectGetSelection = function() {
             return getSelected($(this));
         };
@@ -1687,7 +1709,7 @@
 
                 var $selection = $("<div class='selection'></div>");
 
-                $selection.text(name);
+                $selection.text($('<div>').html(name).text());
                 $selection.attr("data-value", value);
                 $selection.append("<div class='remove'><i class='ion-android-close'></i></div>");
 
@@ -1854,11 +1876,8 @@
         dtable.CoultyColumnSel.tableCol = 0;
 
         var str = "";
-        var myClass = "";
-        var myClass2 = "";
-        var disabled = "";
         var selectedC = 0;
-        var startLine = true;
+
 
         //Clear out keys not represented in table
         for (var k in config.visible) {
@@ -1899,41 +1918,11 @@
         if (saveSettings) { // we don't have stored value
             store.set(tableName + "VisibleDataTableColumns", config.visible);
         }
-
-        for (colIndex = 0; colIndex < tableCols.length; colIndex++) {
-            if (tableCols[colIndex].columnSelectorIndex) {
-                var colName = tableCols[colIndex].columnSelectorIndex;
-                myClass = 'fa-check-square';
-                myClass2 = "";
-                disabled = "";
-
-                if (config.disabled && config.disabled[tableCols[colIndex].columnSelectorIndex] && config.disabled[tableCols[colIndex].columnSelectorIndex] === true) {
-                    disabled = " disabled";
-                }
-                else if (config.visible && config.visible[tableCols[colIndex].columnSelectorIndex] && config.visible[tableCols[colIndex].columnSelectorIndex] === true) {
-                    selectedC++;
-                }
-                else {
-                    myClass = 'fa-square-o';
-                    myClass2 = ' not-checked';
-                    dtable.fnSetColumnVis(parseInt(colIndex), false, false);
-                }
-
-                if (startLine === true) {
-                    str += "<tr><td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
-                    startLine = false;
-                }
-                else {
-                    str += "<td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
-                    startLine = true;
-                }
-            }
-        }
-        if (!startLine) {
-            str += "<td></td></tr>";
-        }
+        str = redrawColumnsVisibilityTable(tableCols, config, dtable, "");
+        selectedC = str.selectedC || 0;
+        str = str.str || "";
         dtable.CoultyColumnSel.maxCol = Math.min(maxCol, totalCol);
-        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
+        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="export-columns-search"><table><tr><td><input placeholder="' + jQuery.i18n.map["placeholder.search-columns"] + '" type="text" /></td><td><i class="fa fa-search"></i></td><tr></table></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
         if (tableCols.length > 8) {
             $(dtable[0]).parent().find('.scrollable').slimScroll({
                 height: '100%',
@@ -1987,11 +1976,78 @@
             }
         });
 
+        $(dtable[0]).parent().find(".export-columns-search input").on("keyup", function() {
+            var value = $(dtable[0]).parent().find(".export-columns-search input").val();
+            var settings_my = store.get(tableName + "VisibleDataTableColumns") || {};
+            var vv = redrawColumnsVisibilityTable(tableCols, {visible: settings_my, disabled: config.disabled, maxCol: config.maxCol}, dtable, value);
+            $(dtable[0]).parent().find(".data-table-column-selector .all_columns table").first().replaceWith("<table>" + vv.str + "</table>");
+        });
+
+
         $(dtable[0]).parent().find(".select-column-table-data").css("display", "table-cell");
 
 
         var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
         $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
+    };
+
+    var redrawColumnsVisibilityTable = function(tableCols, config, dtable, value) {
+        if (value) {
+            value = new RegExp((value || ""), 'i');
+        }
+        var myClass = "";
+        var myClass2 = "";
+        var disabled = "";
+        var str = "";
+        var startLine = true;
+        var selectedC = 0;
+
+
+        for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
+            if (tableCols[colIndex].columnSelectorIndex) {
+                var colName = tableCols[colIndex].columnSelectorIndex;
+                myClass = 'fa-check-square';
+                myClass2 = "";
+                disabled = "";
+
+                if (config.disabled && config.disabled[tableCols[colIndex].columnSelectorIndex] && config.disabled[tableCols[colIndex].columnSelectorIndex] === true) {
+                    disabled = " disabled";
+                }
+                else if (config.visible && config.visible[tableCols[colIndex].columnSelectorIndex] && config.visible[tableCols[colIndex].columnSelectorIndex] === true) {
+                    selectedC++;
+                }
+                else {
+                    myClass = 'fa-square-o';
+                    myClass2 = ' not-checked';
+                    dtable.fnSetColumnVis(parseInt(colIndex), false, false);
+                }
+                var hideMe = false;
+                if (value && !tableCols[colIndex].sTitle.match(value)) {
+                    hideMe = true;
+                }
+                if (hideMe) {
+                    if (startLine) {
+                        str += "<tr style='display:none'><td  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
+                    }
+                    else {
+                        str += "<td style='display:none'  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                    }
+                }
+                else if (startLine === true) {
+                    str += "<tr><td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                    startLine = false;
+                }
+                else {
+                    str += "<td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
+                    startLine = true;
+                }
+            }
+        }
+        if (!startLine) {
+            str += "<td></td></tr>";
+        }
+
+        return {str: str, selectedC: selectedC};
     };
 
     /** function hides column in data table and stores config in local storage

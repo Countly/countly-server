@@ -12,7 +12,8 @@ const JOB = require('./job.js'),
     later = require('later');
 
 const DELAY_BETWEEN_CHECKS = 1000,
-    MAXIMUM_IN_LINE_JOBS_PER_NAME = 10;
+    MAXIMUM_IN_LINE_JOBS_PER_NAME = 10,
+    THE_VERY_TOP_TIMEOUT = 1000 * 60 * 55; // 55min
 
 /**
  * Manager obviously manages jobs running: monitors jobs collection & IPC messages, runs jobs dividing then if necessary, starts and manages 
@@ -30,7 +31,8 @@ class Manager {
         this.running = {}; // {'push:apn:connection': [resource1, resource2], 'xxx': [resource3]}
         this.resources = []; // {'push:apn:connection': [job1, job2]}
         // Once job is done running (goes out of running), if it's resourceful job, it goes into resources until resource is closed or another job of this type is being run
-        manager.singleDefaultConnection().then((db) => {
+
+        manager.connectToAllDatabases().then(([db]) => {
             this.db = db;
             // JOB.setDB(this.db);
             this.collection = this.db.collection('jobs');
@@ -387,26 +389,29 @@ class Manager {
             return new Promise((resolve, reject) => {
                 job.prepare(this, this.db).then(() => {
                     log.d('prepared %j', job.id);
+
+                    /**
+                     * Remove job from master queue allowing other jobs to step in
+                     */
+                    let clear = () => {
+                            let idx = this.running[job.name].indexOf('' + job._id);
+                            if (idx !== -1) {
+                                this.running[job.name].splice(idx, 1);
+                            }
+                            log.d('cleared manager from job, %s:%s, still running %j', job.name, job.id, this.running[job.name]);
+                            this.schedule(job).catch(e => log.e.bind(log, 'Error when clearing job: %j', e));
+                        },
+                        timeout = setTimeout(clear, THE_VERY_TOP_TIMEOUT);
+
                     this.run(job).then((upd) => {
                         log.d('result in start, %j', upd);
-
-                        let idx = this.running[job.name].indexOf('' + job._id);
-                        if (idx !== -1) {
-                            this.running[job.name].splice(idx, 1);
-                        }
-                        log.d('running in start: %j', this.running[job.name]);
-
-                        this.schedule(job);
+                        clearTimeout(timeout);
+                        clear();
                         resolve(upd ? upd.result : undefined);
                     }, (error) => {
                         log.d('error in start, %j', error.message || error.code || error.stack || error);
-
-                        let idx = this.running[job.name].indexOf('' + job._id);
-                        if (idx !== -1) {
-                            this.running[job.name].splice(idx, 1);
-                        }
-
-                        this.schedule(job);
+                        clearTimeout(timeout);
+                        clear();
                         reject(error);
                     });
                 }, e => {

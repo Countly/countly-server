@@ -1,3 +1,130 @@
+## Version 20.11
+
+**Fixes**
+* [api] fixed top 3 percentage distribution
+* [crashes] stop propagation of click on external link
+* [data_migration] more explanatory error messages
+* [events] allow event management for admins
+* [events] make back button work on events changes
+* [frontend] fixed table exports if there is ' or " in text
+* [frontend] remove absolute paths from template
+* [jobs] rescheduling fixes
+* [plugins] fixed regenerating all files on plugin state changes
+* [push] credentials upload fix
+* [push] fixing connections and server selection/access
+* [push] prevent push slider to be opened when no credentials set
+* [star-rating] added safari only styles for sticker
+* [star-rating] feedback popup will reset and be reusable after 10 seconds
+* [star-rating] fixed comments table sort problem
+* [two-factor-auth] fix displaying qr code inside dashboard
+* [views] search by view name not case sensitive
+
+**Enterprise fixes**
+* [attribution] fixed no update button on campaign edit
+* [block] fix event property checks
+* [cohorts] optimize loading cohorts data in overview
+* [crash_symbolication] strip trailing slash from symbolication server url
+* [crashes-jira] fix if app was deleted
+* [dashboards] fixed login out on dashboards email report
+* [flows] improvements, reduce reads, remove unused code, improve pipeline
+* [funnels] make total users period dependent again
+* [systemlogs] prevent multiple requests for the table and ensure using index
+* [users] improve detailed user data loading by separateing network calls and implementing refresh logic
+* [views] fix showing heatmap
+* [views] rename Action map to Heatmap
+
+**Improvements**
+* [alerts] add notification to show if plugin is disabled for specific alerts
+* [alerts] add star rating metric
+* [consolidate] new plugin to duplicate data into multiple apps
+* [core] optimizied core for data ingestion
+* [crashes] add way to get error name for PL Crash reports
+* [crashes] allow selecting crash grouping strategies (default is error and file)
+* [errorlogs] show multiple logs available in logs folder
+* [events] ability to use multiple events as single group on aggregated data
+* [export] stream exporting data instead of calculating in memory and limiting exports
+* [frontend] add device_type data (tablet, phone, desktop, etc)
+* [frontend] added danger zone in user settings for deleting account
+* [frontend] automatically go to last used view in dashboard after login
+* [frontend] improved event blueprint table to be scalable for event count through server side table
+* [frontend] renamed configurations to settings
+* [ip_store] optional plugin to record user ip as custom property
+* [jobs] new view to display job list and their information
+* [push] Huawei PushKit support
+* [push] allow resending failed notifications
+* [push] support for auto messages cancellation when condition is no longer met
+* [report-manager] improving UI between manual and auto reports
+* [report-manager] show latest reports inline in to bar
+* [report-manager] showing errors in the table
+* [reports] allow selecting which events to include in email report
+* [reports] updated email template
+* [sources] add source channel property
+* [two-factor-auth] confirm credentials before two-factor-auth check/setup in login
+
+**Enterprise Improvements**
+* [ab-testing] added ab testing data to user profiles
+* [active_directory] upgraded to new version and improvements
+* [activity-map] show user activity on map for country, region and city levels
+* [attribution] added to email reports
+* [block] allow controling filtering rules via command line
+* [block] new operator support
+* [cohorts] add static date support and more date options
+* [config-transfer] allow transfering configs between apps and servers (like funnels, cohorts, etc)
+* [crash_symbolication] added initial JS source map support
+* [dashboards] separate widget loading
+* [data_manager] transform incoming data
+* [drill] add locale property
+* [drill] added caching to user estimation correction
+* [drill] allow recalculating aggregated data
+* [drill] batched meta generation instead of real time processing
+* [formulas] no bucket option
+* [funnels] add session funnels
+* [oidc] Open ID Connect authentiation support
+* [okta] OKTA authentication support
+* [performance-monitoring] added performance data to user profiles
+* [performance-monitoring] added to email reports
+* [push] personalization for custom properties
+* [remote-config] pre-defined values for remote config
+* [star-rating] add link to user profiles
+* [surveys] allow creating surveys and NPS widgets to collect feedback from your users
+* [users] allow to select which columns to export in User Profiles
+* [users] make segments and segment values searchable and exportable in event timeline
+
+**Development related**
+* [api] add additional metrics to app_users
+* [api] add whitelisting segments for events
+* [api] added first_sync property for server time sync
+* [api] allow timestamps one hour in future
+* [api] api add support for more period formats
+* [api] deal with situation when on /i/bulk passed param requests is not Array
+* [api] don't write to yearly 0 documents when not needed (none-unique values)
+* [api] more events validation, count as number and no sub segments
+* [api] new logic for safe api requests and ACK request only when user merging is finished
+* [api] record more session params for aggregated data
+* [api] removing unused mt property
+* [api] request id concept
+* [api] use fac and lac as seconds timestamp to preserve space
+* [cmd] fix logging of upgrade commands
+* [cohorts][funnels] back to master process
+* [core] Make mail to use configurable "from" for reports
+* [core] remove mongoskin usage
+* [data_migration] fixed compatability with MongodB 4.4+
+* [data_migration] pass result from redirect request to SDK
+* [db] fix service type of mongodb on systemd to prevent interrupt wiredtiger's boot
+* [db] making sure collections are shardable
+* [frontend] automatically load CSS files in the folder
+* [frontend] fix to don't override and merge points in pie chart if moreInfo passed
+* [frontend] remove intercom
+* [frontend] use separate translation files in developer mode
+* [mognodb] add default options and separate mongodb check script (https://c.ly/install/mongodb)
+* [package] latest mongodb driver 3.6+
+* [package] remove time module
+* [plugins] install dependencies first and then run install script
+* [push] always run forks
+* [scripts] output errors on backup/restore
+* [tests] shared db connection
+* [users] add wildcard index for cohorts
+
 ## Version 20.04.1
 
 **Fixes**

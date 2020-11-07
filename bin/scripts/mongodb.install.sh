@@ -375,34 +375,41 @@ if [ $# -eq 0 ]; then
 
         #select source based on release
         if grep -q -i "release 6" /etc/redhat-release ; then
-            echo "[mongodb-org-3.6]
+            echo "[mongodb-org-4.4]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.6/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/4.4/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
         elif grep -q -i "release 7" /etc/redhat-release ; then
-            echo "[mongodb-org-3.6]
+            echo "[mongodb-org-4.4]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.6/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/4.4/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
+        elif grep -q -i "release 8" /etc/redhat-release ; then
+            echo "[mongodb-org-4.4]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/4.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
         fi
         yum install -y mongodb-org
     fi
 
     if [ -f /etc/lsb-release ]; then
         #install latest mongodb
-        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+        wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-        if [ "$UBUNTU_YEAR" == "14" ]; then
-            echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
-        elif [ "$UBUNTU_YEAR" == "16" ]; then
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        if [ "$UBUNTU_YEAR" == "16" ]; then
+            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
+        elif [ "$UBUNTU_YEAR" == "18" ]; then
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
         else
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
         fi
         apt-get update
         #install mongodb

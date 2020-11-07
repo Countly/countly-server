@@ -85,6 +85,7 @@ window.component('push', function(push) {
         // Automated push fields
         this.auto = m.prop(data.auto || false);
         this.autoOnEntry = m.prop(data.autoOnEntry || false);
+        this.autoCancelTrigger = m.prop(data.autoCancelTrigger || false);
         this.autoCohorts = m.prop(data.autoCohorts || []);
         this.autoEvents = m.prop(data.autoEvents || []);
         this.autoEnd = m.prop(data.autoEnd || undefined);
@@ -396,6 +397,7 @@ window.component('push', function(push) {
                 obj.buttons = parseInt(this.buttons());
                 obj.media = this.media();
                 obj.autoOnEntry = this.autoOnEntry();
+                obj.autoCancelTrigger = this.autoCancelTrigger();
                 obj.autoCohorts = this.autoCohorts();
                 obj.autoEvents = this.autoEvents();
                 obj.autoEnd = this.autoEnd();
@@ -667,6 +669,9 @@ window.component('push', function(push) {
         this.errorFixed = function() {
             if (this.error() === 'Process exited') {
                 return (this.status() & (1 << 4)) ? 'exited' :  'exited-sent';
+            }
+            if (this.error() === '{}') {
+                return 'exited';
             }
             return this.error();
         };

@@ -1,8 +1,8 @@
-FROM centos/nodejs-10-centos7
+FROM centos:7.8.2003
 
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate
 # Enterprise Edition:
-#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing,active_users,performance-monitoring
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards
 
 EXPOSE 3001
 HEALTHCHECK --start-period=60s CMD curl --fail http://localhost:3001/o/ping || exit 1
@@ -24,12 +24,13 @@ COPY . .
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
 	rpm -i /tmp/tini.rpm && \
 	\
-	yum -y install openssl-devel gcc-c++-4.8.5 make git make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools && \
-	wget https://www.openssl.org/source/openssl-1.1.1f.tar.gz && \
-    tar -zxvf openssl-1.1.1f.tar.gz -C /tmp && \
-    rm openssl-1.1.1f.tar.gz && \
-    ( cd /tmp/openssl-1.1.1f; \
-      ./config --prefix=/usr && make depend && make && make install_sw ) && \
+	curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
+	yum -y install nodejs && \
+	ln -s /usr/bin/node /usr/bin/nodejs && \
+	\
+	yum -y install centos-release-scl && \
+	yum -y install openssl-devel devtoolset-7-gcc-c++ make git wget unzip make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools && \
+	source /opt/rh/devtoolset-7/enable && \
     \
 	git clone https://github.com/nghttp2/nghttp2.git /tmp/nghttp2 --single-branch --branch=v1.41.0 --depth=1 && \
 	(cd /tmp/nghttp2; \
@@ -47,9 +48,9 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	bash /opt/countly/bin/scripts/detect.init.sh && \
 	\
 	# cleanup & chown
-	npm remove -y mocha nyc should supertest && \
+	npm remove -y --no-save mocha nyc should supertest && \
 	rm -rf /opt/app-root/src/.npm && \
-	yum remove -y git gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel devtoolset-7-gcc devtoolset-7-libstdc++-devel python36-devel centos-release-scl devtoolset-7-gcc-c++ && \
+	yum remove -y git wget unzip gcc-c++ gcc centos-release-scl devtoolset-7-gcc-c++ devtoolset-7-gcc make automake autoconf makedepend zlib-devel libxml2-devel python-setuptools openssl-devel devtoolset-7-gcc devtoolset-7-libstdc++-devel python36-devel centos-release-scl devtoolset-7-gcc-c++ && \
 	yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
 	yum clean all && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* && \

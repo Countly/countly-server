@@ -35,7 +35,8 @@ const countlyApi = {
     mgmt: {
         users: require('../parts/mgmt/users.js'),
         apps: require('../parts/mgmt/apps.js'),
-        appUsers: require('../parts/mgmt/app_users.js')
+        appUsers: require('../parts/mgmt/app_users.js'),
+        eventGroups: require('../parts/mgmt/event_groups.js')
     }
 };
 
@@ -574,6 +575,21 @@ const processRequest = (params) => {
 
                 break;
             }
+            case '/i/event_groups':
+                switch (paths[3]) {
+                case 'create':
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.create);
+                    break;
+                case 'update':
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.update);
+                    break;
+                case 'delete':
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.remove);
+                    break;
+                default:
+                    break;
+                }
+                break;
             case '/i/tasks': {
                 if (!params.qstring.task_id) {
                     common.returnMessage(params, 400, 'Missing parameter "task_id"');
@@ -1898,6 +1914,12 @@ const processRequest = (params) => {
                         common.returnOutput(params, {});
                     }
                     break;
+                case 'get_event_groups':
+                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEventGroups);
+                    break;
+                case 'get_event_group':
+                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEventGroupById);
+                    break;
                 case 'events':
                     if (params.qstring.events) {
                         try {
@@ -1916,8 +1938,13 @@ const processRequest = (params) => {
                         }
                     }
                     else {
-                        params.truncateEventValuesList = true;
-                        validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                        if (params.qstring.event && params.qstring.event.startsWith('[CLY]_group_')) {
+                            validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventGroups);
+                        }
+                        else {
+                            params.truncateEventValuesList = true;
+                            validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                        }
                     }
                     break;
                 case 'get_events':
@@ -2544,6 +2571,12 @@ function processUser(params, initiator, done, try_times) {
         if (!params.app_user.uid) {
             //first time we see this user, we need to id him with uid
             countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
+                plugins.dispatch("/i/app_users/create", {
+                    app_id: params.app_id,
+                    user: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    res: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    params: params
+                });
                 if (uid) {
                     params.app_user.uid = uid;
                     if (!params.app_user._id) {
