@@ -20,7 +20,12 @@ if [ "$CONTINUE" == "1" ]
 then
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
     # CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    npm install -g npm@latest;
+    sudo npm install -g npm@latest;
+    
+    if [[ -f /usr/local/bin/npm && -f /usr/bin/npm ]]; then
+        rm /usr/local/bin/npm
+        ln -s /usr/bin/npm /usr/local/bin/npm
+    fi
     
     #upgrade nodejs
     if [ -f /etc/redhat-release ]; then
@@ -60,13 +65,14 @@ then
     if [ -f "$DIR/../plugins/populator/frontend/public/stylesheets/navigation.css" ]; then
         rm -rf "$DIR/../plugins/populator/frontend/public/stylesheets/navigation.css";
     fi
+    if [ -f "$DIR/../plugins/enterpriseinfo/frontend/public/stylesheets/pre-login.css" ]; then
+        rm -rf "$DIR/../plugins/enterpriseinfo/frontend/public/stylesheets/pre-login.css";
+    fi
     
     #remove previous dependencies, as they need to be rebuild for new nodejs version
     rm -rf "$DIR/../node_modules"
     
-    (cd "$DIR/.." && sudo npm install --unsafe-perm)
-    countly restart
-
+    (cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
 
     countly plugin upgrade star-rating
     countly plugin upgrade users
@@ -74,8 +80,9 @@ then
     countly plugin upgrade two-factor-auth
     countly plugin upgrade web
     countly plugin upgrade active_directory
+    countly plugin upgrade crash_symbolication
     countly plugin upgrade push
-    (cd "$DIR/../plugins/push/api/parts/apn" && npm install --unsafe-perm)
+    (cd "$DIR/../plugins/push/api/parts/apn" && sudo npm install --unsafe-perm)
     
     #enable new plugins
     countly plugin enable activity-map
@@ -84,10 +91,25 @@ then
     countly plugin enable data-manager
     countly plugin enable hooks
     countly plugin enable surveys
+    
+    #get web sdk
+    countly update sdk-web
 
     #install dependencies, process files and restart countly
-    countly task dist-all
+    if [ "$1" != "combined" ]; then
+        countly upgrade;
+    else
+        countly task dist-all;
+    fi
 
     #call after check
     countly check after upgrade fs "$VER"
+elif [ "$CONTINUE" == "0" ]
+then
+    echo "Filesystem is already upgraded to $VER"
+elif [ "$CONTINUE" == "-1" ]
+then
+    echo "Filesystem is upgraded to higher version"
+else
+    echo "Unknown ugprade state: $CONTINUE"
 fi

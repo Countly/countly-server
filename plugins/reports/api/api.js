@@ -2,6 +2,7 @@ var common = require('../../../api/utils/common.js'),
     reports = require("./reports"),
     async = require('async'),
     moment = require('moment-timezone'),
+    log = require('../../../api/utils/log')('reports:api'),
     plugins = require('../../pluginManager.js');
 
 (function() {
@@ -238,6 +239,7 @@ var common = require('../../../api/utils/common.js'),
 
                         reports.sendReport(common.db, id, function(err2) {
                             if (err2) {
+                                log.d("Error occurred while sending out report.", err);
                                 common.returnMessage(params, 200, err2);
                             }
                             else {

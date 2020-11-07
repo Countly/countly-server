@@ -1273,7 +1273,7 @@
                             </div>
                         </div>
                         <div class="" id="event-groups-settings-table">
-                            <div class="cly-button-menu event-settings-menu event-groups-settings-menu" tabindex="1">
+                            <div class="cly-button-menu event-groups-settings-menu" tabindex="1">
                                 <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
                                 <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
@@ -1616,7 +1616,7 @@
                         <div class="widget-header top-events-widget-header" data-localize="events.top-events.title"></div>
                         <div class="outer">
                             <div class="row border">
-                                <div class="left title" data-localize="events.top-events.24hours"></div>
+                                <div class="left title" data-localize="events.top-events.yesterday"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
                                     <div class="col">
@@ -1844,7 +1844,7 @@
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
 				<div style="overflow:hidden; position:absolute; top:14px; right:10px;">
 					<div class="icon-button help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %>">
-                      <a href="#/analytics/events/blueprint"> <i class="ion-gear-a"></i></a>
+                      <a href="#/analytics/manage-events"> <i class="ion-gear-a"></i></a>
 					</div>
 				</div>
 			</div>

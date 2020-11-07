@@ -26,9 +26,12 @@ then
     if [ "$1" != "combined" ]; then
         #upgrade plugins
         countly plugin upgrade star-rating
-        countly plugin upgrade two-factor-auth
-        countly plugin upgrade consolidate
         countly plugin upgrade users
+        countly plugin upgrade consolidate
+        countly plugin upgrade two-factor-auth
+        countly plugin upgrade web
+        countly plugin upgrade active_directory
+        countly plugin upgrade crash_symbolication
         
         #enable new plugins
         countly plugin enable activity-map
@@ -45,6 +48,10 @@ then
     
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"
+    
+    if [ "$1" != "combined" ]; then
+        countly upgrade;
+    fi
 
     #call after check
     countly check after upgrade db "$VER"

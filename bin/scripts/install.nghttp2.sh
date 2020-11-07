@@ -12,7 +12,6 @@ export LANGUAGE=en_US.UTF-8 ; export LC_ALL=en_US.UTF-8;
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ -n "$(command -v apt-get)" ]; then
-    add-apt-repository -y ppa:ondrej/apache2
     apt-get update && apt-get install -y --force-yes git g++ make binutils autoconf automake autotools-dev libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libevent-dev libjansson-dev libjemalloc-dev cython python3-dev python-setuptools
 elif [ -n "$(command -v yum)" ]; then
     yum install -y git make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel
