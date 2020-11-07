@@ -107,7 +107,7 @@
         }
     };
 
-    var PagedDataTable = function(name, options) {
+    var ServerDataTable = function(name, options) {
         var getters = {},
             mutations = {},
             actions = {},
@@ -297,6 +297,6 @@
 
     countlyVue.vuex.Module = VuexModule;
     countlyVue.vuex.MutableTable = MutableTable;
-    countlyVue.vuex.PagedDataTable = PagedDataTable;
+    countlyVue.vuex.ServerDataTable = ServerDataTable;
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));
