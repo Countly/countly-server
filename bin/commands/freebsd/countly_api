@@ -19,4 +19,5 @@ load_rc_config ${name}
 : ${countly_api_enable="NO"}
 : ${countly_api_chdir=/usr/home/countly/countly-server/bin/config}
 
+exec < /dev/null
 run_rc_command "$1"

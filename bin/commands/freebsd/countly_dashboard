@@ -19,4 +19,5 @@ load_rc_config ${name}
 : ${countly_dashboard_enable="NO"}
 : ${countly_dashboard_chdir=/usr/home/countly/countly-server/bin/config}
 
+exec < /dev/null
 run_rc_command "$1"
