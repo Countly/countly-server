@@ -81,6 +81,8 @@ then
     countly plugin upgrade web
     countly plugin upgrade active_directory
     countly plugin upgrade crash_symbolication
+
+    sudo bash "$DIR/scripts/install.nghttp2.sh"
     countly plugin upgrade push
     (cd "$DIR/../plugins/push/api/parts/apn" && sudo npm install --unsafe-perm)
     
