@@ -1,18 +1,18 @@
 /*globals countlyAnalyticsAPI, countlyAuth, MobileDashboardView,_,CountlyHelpers, countlyTotalUsers,Handlebars,countlyView,jQuery,$,app,countlyGlobal,countlySession,countlyCommon,countlyLocation */
 window.MobileDashboardView = countlyView.extend({
-    featureName: 'mobile',
+    featureName: 'core',
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
     origLangs: {},
     initialize: function() {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function() {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         this.maps = {
@@ -25,7 +25,7 @@ window.MobileDashboardView = countlyView.extend({
         return $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal.config.use_google && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (countlyGlobal.config.use_google && countlyAuth.validateRead(this.featureName)) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
@@ -94,7 +94,7 @@ window.MobileDashboardView = countlyView.extend({
         });
     },
     renderCommon: function(isRefresh, isDateChange) {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         var sessionData = countlySession.getSessionData(),
@@ -199,7 +199,7 @@ window.MobileDashboardView = countlyView.extend({
         this.refresh(true);
     },
     refresh: function(isFromIdle) {
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+        if (!countlyAuth.validateRead(this.featureName)) {
             return;
         }
         var self = this;
@@ -344,11 +344,12 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'mobile')) {
+    if (countlyAuth.validateRead('mobile')) {
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-carriers", url: "#/analytics/carriers", text: "sidebar.analytics.carriers", priority: 70});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
+        app.addSubMenuForType("mobile", "analytics", {code: "analytics-device_type", url: "#/analytics/device_type", text: "device_type.title", priority: 45});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});

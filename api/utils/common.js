@@ -74,6 +74,20 @@ common.escape_html = function(string, more) {
 };
 
 /**
+* Decode escaped html 
+* @param  {string} string - The string to decode
+* @returns {string} escaped string
+**/
+common.decode_html = function(string) {
+    string = string.replace(/&amp;/g, '&');
+    string = string.replace(/&#39;/g, "'");
+    string = string.replace(/&quot;/g, '"');
+    string = string.replace(/&lt;/g, '<');
+    string = string.replace(/&gt;/g, '>');
+    return string;
+};
+
+/**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
 * @param  {vary} value - value to escape
@@ -183,6 +197,7 @@ common.dbUserMap = {
     'total_session_duration': 'tsd',
     'session_count': 'sc',
     'device': 'd',
+    'device_type': 'dt',
     'carrier': 'c',
     'city': 'cty',
     'region': 'rgn',
@@ -195,6 +210,11 @@ common.dbUserMap = {
     'has_ongoing_session': 'hos',
     'previous_events': 'pe',
     'resolution': 'r'
+};
+
+common.dbUniqueMap = {
+    "*": [common.dbMap.unique],
+    users: [common.dbMap.unique, common.dbMap.durations, common.dbMap.frequency, common.dbMap.loyalty]
 };
 
 /**
@@ -1410,16 +1430,17 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
                 update.$addToSet[i] = {$each: tmpSet[i]};
             }
         }
-        common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, update, {'upsert': true}, function() {});
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.zero, update);
+
     }
     if (Object.keys(updateUsersMonth).length) {
-        common.db.collection(collection).update({'_id': id + "_" + dbDateIds.month}, {
+        common.writeBatcher.add(collection, id + "_" + dbDateIds.month, {
             $set: {
                 m: dbDateIds.month,
                 a: params.app_id + ""
             },
             '$inc': updateUsersMonth
-        }, {'upsert': true}, function() {});
+        });
     }
 };
 
@@ -1468,16 +1489,16 @@ common.recordMetric = function(params, props) {
                 update.$addToSet[i] = {$each: tmpSet[i]};
             }
         }
-        common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.zero}, update, {'upsert': true}, function() {});
+        common.writeBatcher.add(props.collection, props.id + "_" + dbDateIds.zero, update);
     }
     if (Object.keys(updateUsersMonth).length) {
-        common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.month}, {
+        common.writeBatcher.add(props.collection, props.id + "_" + dbDateIds.month, {
             $set: {
                 m: dbDateIds.month,
                 a: params.app_id + ""
             },
             '$inc': updateUsersMonth
-        }, {'upsert': true}, function() {});
+        });
     }
 };
 
@@ -1530,7 +1551,7 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
         }
     }
     else {
-        zeroObjUpdate.push(metric);
+        //zeroObjUpdate.push(metric);
         monthObjUpdate.push(metric);
     }
     if (props.segments) {
@@ -1608,11 +1629,11 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
     }
     else {
         if (recordHourly) {
-            common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric, props.value);
+            //common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric, props.value);
             common.fillTimeObjectMonth(params, updateUsersMonth, escapedMetricVal + '.' + metric, props.value, recordHourly);
         }
         else {
-            zeroObjUpdate.push(escapedMetricVal + "." + metric);
+            //zeroObjUpdate.push(escapedMetricVal + "." + metric);
             monthObjUpdate.push(escapedMetricVal + "." + metric);
         }
     }
@@ -1891,6 +1912,52 @@ common.checkPromise = function(func, count, interval) {
     });
 };
 
+common.clearClashingQueryOperations = function(query) {
+    var map = {};
+    var field;
+    for (var opp in query) {
+        for (field in query[opp]) {
+            map[field] = (map[field] || 0) + 1;
+        }
+    }
+    var badPaths = [];
+    var allPaths = Object.keys(map);
+    for (var z = 0; z < allPaths.length; z++) {
+        for (var p = z + 1; p < allPaths.length; p++) {
+            if (allPaths[z].startsWith(allPaths[p] + ".")) {
+                map[allPaths[z]]++;
+                map[allPaths[p]]++;
+            }
+        }
+    }
+
+    for (var path in map) {
+        if (map[path] > 1) {
+            badPaths.push(path);
+        }
+    }
+    if (badPaths.length > 0) {
+        var droppedOp = [];
+        var st = JSON.stringify(query);
+
+        for (var op in query) {
+            for (field in query[op]) {
+                if (badPaths.indexOf(field) > -1) {
+                    droppedOp.push("{" + op + ":{" + field + ":" + JSON.stringify(query[op][field]) + "}}");
+                    delete query[op][field];
+
+                    if (Object.keys(query[op]).length === 0) {
+
+                        delete query[op];
+                    }
+                }
+            }
+        }
+        console.log("Conflicting operations. Query:" + st + " OPS:" + droppedOp.join(",") + " Resulted query:" + JSON.stringify(query));
+    }
+    return query;
+
+};
 /**
 * Single method to update app_users document for specific user for SDK requests
 * @param {params} params - params object
@@ -1986,17 +2053,22 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             }
         }
 
-        common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {
-            new: true,
-            upsert: true
-        }, function(err, res) {
-            if (!err && res && res.value) {
-                params.app_user = res.value;
-            }
-            if (callback) {
+        if (callback) {
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
+                new: true,
+                upsert: true
+            }, function(err, res) {
+                if (!err && res && res.value) {
+                    params.app_user = res.value;
+                }
                 callback(err, res);
-            }
-        });
+            });
+        }
+        else {
+            // using updateOne costs less than findAndModify, so we should use this 
+            // when acknowledging writes and updated information is not relevant (aka callback is not passed)
+            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {upsert: true}, function() {});
+        }
     }
     else if (callback) {
         callback();
@@ -2295,6 +2367,106 @@ common.sanitizeFilename = (filename, replacement = "") => {
         .replace(/[\/\?<>\\:\*\|"]/g, replacement)
         .replace(/^\.{1,2}$/, replacement)
         .replace(/^\.+/, replacement);
+};
+
+
+/**
+ *  Merge 2 mongodb update queries
+ *  @param {object} ob1 - existing database update query
+ *  @param {object} ob2 - addition to database update query
+ *  @returns {object} merged database update query
+ */
+common.mergeQuery = function(ob1, ob2) {
+    if (ob2) {
+        for (let key in ob2) {
+            if (!ob1[key]) {
+                ob1[key] = ob2[key];
+            }
+            else if (key === "$set" || key === "$setOnInsert" || key === "$unset") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob2[key][val];
+                }
+            }
+            else if (key === "$addToSet") {
+                for (let val in ob2[key]) {
+                    if (typeof ob1[key][val] !== 'object') {
+                        ob1[key][val] = {'$each': [ob1[key][val]]}; //create as object if it is single value
+                    }
+
+                    if (typeof ob2[key][val] === 'object' && ob2[key][val].$each) {
+                        for (let p = 0; p < ob2[key][val].$each.length; p++) {
+                            if (ob1[key][val].$each.indexOf(ob2[key][val].$each[p]) === -1) {
+                                ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                            }
+                        }
+                    }
+                    else {
+                        if (ob1[key][val].$each.indexOf(ob2[key][val]) === -1) {
+                            ob1[key][val].$each.push(ob2[key][val]);
+                        }
+                    }
+                }
+
+            }
+            else if (key === "$push") {
+                for (let val in ob2[key]) {
+                    if (typeof ob1[key][val] !== 'object') {
+                        ob1[key][val] = {'$each': [ob1[key][val]]};
+                    }
+
+                    if (typeof ob2[key][val] === 'object' && ob2[key][val].$each) {
+                        for (let p = 0; p < ob2[key][val].$each.length; p++) {
+                            ob1[key][val].$each.push(ob2[key][val].$each[p]);
+                        }
+                        //copy other push modifiers
+                        for (let modifier in ob2[key][val]) {
+                            if (modifier !== "$each") {
+                                ob1[key][val][modifier] = ob2[key][val][modifier];
+                            }
+                        }
+                    }
+                    else {
+                        ob1[key][val].$each.push(ob2[key][val]);
+                    }
+                }
+            }
+            else if (key === "$inc") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob1[key][val] || 0;
+                    ob1[key][val] += ob2[key][val];
+                }
+            }
+            else if (key === "$mul") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob1[key][val] || 0;
+                    ob1[key][val] *= ob2[key][val];
+                }
+            }
+            else if (key === "$min") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob1[key][val] || ob2[key][val];
+                    ob1[key][val] = Math.min(ob1[key][val], ob2[key][val]);
+                }
+            }
+            else if (key === "$max") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob1[key][val] || ob2[key][val];
+                    ob1[key][val] = Math.max(ob1[key][val], ob2[key][val]);
+                }
+            }
+        }
+        //try to fix colliding fields
+        if (ob1 && ob1.$set && ob1.$set.data && ob1.$inc) {
+            for (let key in ob1.$inc) {
+                if (key.startsWith("data.")) {
+                    ob1.$set.data[key.replace("data.", "")] = ob1.$inc[key];
+                    delete ob1.$inc[key];
+                }
+            }
+        }
+    }
+
+    return ob1;
 };
 
 module.exports = common;

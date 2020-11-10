@@ -1,7 +1,7 @@
 /*global $, jQuery, app, countlyAuth, countlyView, countlyCommon, T, CountlyHelpers, DataPointsView, countlyDataPoints, moment*/
 
 window.DataPointsView = countlyView.extend({
-    featureName: 'server-stats',
+    featureName: 'global_server-stats',
     beforeRender: function() {
         var self = this;
         self.date_range = this.getDateRange("current");
@@ -110,28 +110,32 @@ window.DataPointsView = countlyView.extend({
             self.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": countlyDataPoints.getTableData(),
                 "aoColumns": [
-                    { "mData": "app-name", "sType": "string", "sTitle": jQuery.i18n.map["compare.apps.app-name"] || "App Name", "sClass": "break" },
                     {
-                        "mData": "sessions",
+                        "mData": function(row) {
+                            return row["app-name"] || "";
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["compare.apps.app-name"] || "App Name",
+                        "sClass": "break"
+                    },
+                    {
                         "sType": "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        "mData": function(row) {
+                            return countlyCommon.formatNumber(row.sessions || 0);
                         },
                         "sTitle": jQuery.i18n.map["sidebar.analytics.sessions"]
                     },
                     {
-                        "mData": "events",
                         "sType": "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        "mData": function(row) {
+                            return countlyCommon.formatNumber(row.events || 0);
                         },
                         "sTitle": jQuery.i18n.map["sidebar.events"]
                     },
                     {
-                        "mData": "data-points",
                         "sType": "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        "mData": function(row) {
+                            return countlyCommon.formatNumber(row["data-points"] || 0);
                         },
                         "sTitle": jQuery.i18n.map["server-stats.data-points"]
                     }
@@ -172,7 +176,7 @@ app.route("/manage/data-points", '', function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.dataPointsView.featureName)) {
+    if (countlyAuth.validateRead(app.dataPointsView.featureName)) {
         app.addMenu("management", {code: "data-point", url: "#/manage/data-points", text: "server-stats.data-points", icon: '<div class="logo-icon ion-ios-analytics"></div>', priority: 80});
     }
 });

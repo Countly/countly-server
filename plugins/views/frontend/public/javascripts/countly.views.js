@@ -396,9 +396,6 @@ window.ViewsView = countlyView.extend({
                     followLink = true;
                 }
 
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version && parseInt((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version + "").split(".")[0]) <= 16) {
-                    return;
-                }
                 $(event.target).toggleClass("active");
                 if ($(event.target).hasClass("active")) {
                     $(".views-table a.table-link").removeClass("active");
@@ -422,7 +419,7 @@ window.ViewsView = countlyView.extend({
                         countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
                             self.token = token && token.result;
                             if (self.token) {
-                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY});
                                 newWindow.location.href = url;
                             }
                         });
@@ -1021,7 +1018,7 @@ app.route("/analytics/views/action-map/*view", 'views', function(view) {
 });
 
 app.addPageScript("/drill#", function() {
-    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), app.viewsView.featureName) || !countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), 'drill')) {
+    if (!countlyAuth.validateRead(app.viewsView.featureName) || !countlyAuth.validateRead('drill')) {
         return;
     }
     var drillClone;
@@ -1073,7 +1070,7 @@ app.addPageScript("/drill#", function() {
 });
 
 app.addPageScript("/custom#", function() {
-    if (!countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), app.viewsView.featureName) || !countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'), 'dashboards')) {
+    if (!countlyAuth.validateRead(app.viewsView.featureName) || !countlyAuth.validateRead('dashboards')) {
         return;
     }
 
@@ -1140,10 +1137,10 @@ $(document).ready(function() {
         }
     });
 
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('counlty_active_app'))) {
+    if (countlyAuth.validateRead(app.viewsView.featureName)) {
         app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
         app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
-    }    
+    }
 
     //check if configuration view exists
     if (app.configurationsView) {

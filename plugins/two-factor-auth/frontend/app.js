@@ -138,7 +138,7 @@ function generateQRCode(username, secret, callback) {
 
         // modify login flow
         app.post(countlyConfig.path + '/login', function(req, res, next) {
-            members.findByUsernameOrEmail(req.body.username, function(member) {
+            members.login(req, res, function(member) {
                 // if member exists and 2fa is enabled globally or for the user
                 if (member && (member.two_factor_auth && member.two_factor_auth.enabled || plugins.getConfig("two-factor-auth").globally_enabled)) {
                     // if 2fa is not set up for the user

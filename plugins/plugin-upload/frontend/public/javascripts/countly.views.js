@@ -1,4 +1,4 @@
-/*global countlyView, CountlyHelpers,countlyGlobal, app, T, Dropzone, countlyCommon, jQuery, $ */
+/*global countlyView, CountlyHelpers,countlyGlobal, app, T, Dropzone, countlyCommon, jQuery, $, countlyAuth */
 window.PluginUploadView = countlyView.extend({
 
     //need to provide at least empty initialize function
@@ -34,7 +34,7 @@ function check_ext(file) {
     if (last === 'tar' || last === 'zip' || last === 'tgz') {
         return true;
     }
-    else if (plast === 'tar' && plast === 'gz') {
+    else if (plast === 'tar' && last === 'gz') {
         return true;
     }
     CountlyHelpers.alert(jQuery.i18n.map["plugin-upload.badformat"], "popStyleGreen", {title: jQuery.i18n.map["common.error"], image: "token-warning"});
@@ -54,12 +54,12 @@ function highlight_my_uploaded_plugin(myname) { //sometimes it gets called a lit
     }
 }
 
-if (countlyGlobal.member.global_admin) {
+if (countlyAuth.validateCreate("global_plugin-upload")) {
     var myDropzone;
 
     app.addPageScript("/manage/plugins", function() {
         $(document).ready(function() { //creates upload form
-            if (countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), 'plugin-upload')) {
+            if (countlyAuth.validateCreate('global_plugin-upload')) {
                 return false;
             }
             $.when(T.render('/plugin-upload/templates/drawer.html', function(src) {

@@ -129,7 +129,7 @@ window.slippingView = countlyView.extend({
             CountlyHelpers.refreshTable(this.dtable, slippingData);
         }
 
-        if (!countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'drill')) {
+        if (!countlyAuth.validateRead('drill')) {
             $('#view-filter').hide();
         }
     },
@@ -286,13 +286,14 @@ app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
     this.renderWhenReady(this.slippingView);
 });
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.slippingView.featureName)) {
+    if (countlyAuth.validateRead(app.slippingView.featureName)) {
         if (typeof extendViewWithFilter === "function") {
+            app.slippingView.hideDrillEventMetaProperties = true;
             extendViewWithFilter(app.slippingView);
         }
         app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
     }
-    
+
     if (app.configurationsView) {
         app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
         app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");

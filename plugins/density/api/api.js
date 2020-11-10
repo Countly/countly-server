@@ -7,6 +7,9 @@ var exported = {},
 const FEATURE_NAME = 'density';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/worker", function() {
         common.dbUserMap.density = 'dnst';
     });

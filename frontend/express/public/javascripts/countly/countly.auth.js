@@ -1,13 +1,16 @@
+/*global countlyGlobal, countlyCommon */
 (function(countlyAuth) {
     /**
      * validate write requests for specific feature on specific app
      * @param {string} accessType - write process type [c, u, d]
+     * @param {string} feature - feature name that required access right
      * @param {object} member - countly member object
      * @param {string} app_id - countly application id
-     * @param {string} feature - feature name that required access right
      * @return {boolean} result of permission check
      */
-    function validateWrite(accessType, member, app_id, feature) {
+    function validateWrite(accessType, feature, member, app_id) {
+        member = member || countlyGlobal.member;
+        app_id = app_id || countlyCommon.ACTIVE_APP_ID;
         if (member.locked) {
             return false;
         }
@@ -31,11 +34,27 @@
         }
     }
 
-    countlyAuth.validateCreate = function(member, app_id, feature) {
-        return validateWrite('c', member, app_id, feature);
+    /**
+     * validate create requests for specific feature on specific app
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validateCreate = function(feature, member, app_id) {
+        return validateWrite('c', feature, member, app_id);
     };
 
-    countlyAuth.validateRead = function(member, app_id, feature) {
+    /**
+     * validate read requests for specific feature on specific app
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validateRead = function(feature, member, app_id) {
+        member = member || countlyGlobal.member;
+        app_id = app_id || countlyCommon.ACTIVE_APP_ID;
         if (member.locked) {
             return false;
         }
@@ -59,12 +78,26 @@
         }
     };
 
-    countlyAuth.validateUpdate = function(member, app_id, feature) {
-        return validateWrite('u', member, app_id, feature);
+    /**
+     * validate update requests for specific feature on specific app
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validateUpdate = function(feature, member, app_id) {
+        return validateWrite('u', feature, member, app_id);
     };
 
-    countlyAuth.validateDelete = function(member, app_id, feature) {
-        return validateWrite('d', member, app_id, feature);
+    /**
+     * validate delete requests for specific feature on specific app
+     * @param {string} feature - feature name that required access right
+     * @param {object} member - countly member object
+     * @param {string} app_id - countly application id
+     * @return {boolean} result of permission check
+     */
+    countlyAuth.validateDelete = function(feature, member, app_id) {
+        return validateWrite('d', feature, member, app_id);
     };
 
 })(window.countlyAuth = window.countlyAuth || {});

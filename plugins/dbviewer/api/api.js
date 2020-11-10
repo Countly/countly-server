@@ -7,7 +7,12 @@ var common = require('../../../api/utils/common.js'),
     { dbUserHasAccessToCollection, dbLoadEventsData, validateUser } = require('../../../api/utils/rights.js'),
     exported = {};
 
+const FEATURE_NAME = 'dbviewer';
+
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/o/db", function(ob) {
         var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;
@@ -249,7 +254,7 @@ var common = require('../../../api/utils/common.js'),
                             }
                         }
                     });
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, taskCb);
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, {allowDiskUse: true}, taskCb);
                 }
             });
         }
@@ -367,7 +372,7 @@ var common = require('../../../api/utils/common.js'),
                             apps.push(common.db.ObjectID(params.member.user_of[i]));
                         }
                     }
-                    common.db.collection('apps').find({_id: {$in: apps}}).toArray(function(err, applications) {
+                    common.readBatcher.getMany("apps", {_id: {$in: apps}}, {}, (err, applications) => {
                         if (err) {
                             console.error(err);
                         }

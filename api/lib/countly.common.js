@@ -105,7 +105,7 @@ function getPeriodObject() {
         }
         catch (SyntaxError) {
             console.log("period JSON parse failed");
-            _period = "month";
+            _period = "30days";
         }
     }
 
@@ -1012,11 +1012,11 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         sum += rangeTotal[i];
     }
 
-    for (let i = 0; i < maxItems; i++) {
+    for (let i = maxItems - 1; i >= 0; i--) {
         var percent = Math.floor((rangeTotal[i] / sum) * 100);
         totalPercent += percent;
 
-        if (i === (maxItems - 1)) {
+        if (i === 0) {
             percent += 100 - totalPercent;
         }
 
@@ -1865,7 +1865,7 @@ countlyCommon.decode = function(str) {
 * @param {(string|string[]|number[])} defaultPeriod - default period value in case it's not supplied in the params
 * @returns {module:api/lib/countly.common.periodObj} period object
 */
-countlyCommon.getPeriodObj = function(params, defaultPeriod = "month") {
+countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
     let appTimezone = params.appTimezone || (params.app && params.app.timezone);
 
     params.qstring.period = params.qstring.period || defaultPeriod;

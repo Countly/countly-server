@@ -1,6 +1,6 @@
-/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView,T */
+/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView,T,countlyAuth */
 window.PluginsView = countlyView.extend({
-    featureName: 'plugins',
+    featureName: 'global_plugins',
     initialize: function() {
         this.filter = (store.get("countly_pluginsfilter")) ? store.get("countly_pluginsfilter") : "plugins-all";
     },
@@ -170,7 +170,7 @@ window.PluginsView = countlyView.extend({
                 }
             });
 
-            if (!countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), this.featureName)) {
+            if (!countlyAuth.validateUpdate(this.featureName)) {
                 $('.on-off-switch').hide();
                 $('#plugins-table > thead > tr > th.shrink.sorting').html('');
             }
@@ -253,6 +253,7 @@ window.PluginsView = countlyView.extend({
 });
 
 window.ConfigurationsView = countlyView.extend({
+    featureName: 'global_configurations',
     userConfig: false,
     initialize: function() {
         this.predefinedInputs = {};
@@ -741,9 +742,9 @@ window.ConfigurationsView = countlyView.extend({
                         return false;
                     }
                     var username = $(".configs #username").val(),
-                        old_pwd = $(".configs #old_pwd").val(),
-                        new_pwd = $(".configs #new_pwd").val(),
-                        re_new_pwd = $(".configs #re_new_pwd").val(),
+                        old_pwd = $(".user-configuration-modal #old_pwd").val(),
+                        new_pwd = $(".user-configuration-modal #new_pwd").val(),
+                        re_new_pwd = $(".user-configuration-modal #re_new_pwd").val(),
                         api_key = $(".configs #api-key").val(),
                         member_image = $('#member-image-path').val();
 
@@ -864,6 +865,8 @@ window.ConfigurationsView = countlyView.extend({
                                     title: jQuery.i18n.map["configs.changed"],
                                     message: jQuery.i18n.map["configs.saved"]
                                 });
+                                $('#overlay').hide();
+                                $('.user-configuration-modal').hide();
                                 $("#configs-apply-changes").hide();
                             }
                             if (member_image !== "" && member_image !== "delete") {
@@ -895,14 +898,17 @@ window.ConfigurationsView = countlyView.extend({
             $("#delete_account_password").keyup(function() {
                 $('#password-input-mandatory-warning').css('visibility', 'hidden');
             });
-            $("#delete-user-account-button").click(function() {
+
+            $("#delete-user-account").click(function() {
                 var pv = $("#delete_account_password").val();
                 pv = pv.trim();
                 if (pv === "") {
-                    $('#password-input-mandatory-warning').css('visibility', 'visible');
+                    var msg1 = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings.password-mandatory"], clearAll: true, type: "error"};
+                    CountlyHelpers.notify(msg1);
                 }
                 else {
                     var text = jQuery.i18n.map["user-settings.delete-account-confirm"];
+                    $('.user-configuration-modal').hide();
                     CountlyHelpers.confirm(text, "popStyleGreen", function(result) {
                         if (!result) {
                             return true;
@@ -912,17 +918,19 @@ window.ConfigurationsView = countlyView.extend({
                                 window.location = "/login"; //deleted. go to login
                             }
                             else if (msg === 'password not valid' || msg === 'password mandatory' || msg === 'global admin limit') {
-                                var msg1 = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"};
-                                CountlyHelpers.notify(msg1);
+                                $('#overlay').show();
+                                $('#user-account-delete-modal').show();
+                                CountlyHelpers.notify({title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"});
                             }
                             else if (err === true) {
+                                $('#overlay').show();
+                                $('#user-account-delete-modal').show();
                                 var msg2 = {title: jQuery.i18n.map["common.error"], message: msg, sticky: true, clearAll: true, type: "error"};
                                 CountlyHelpers.notify(msg2);
                             }
                         });
                     }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["common.yes"]], { title: jQuery.i18n.map["user-settings.delete-account-title"], image: "delete-user" });
                 }
-
             });
 
 
@@ -989,7 +997,7 @@ window.ConfigurationsView = countlyView.extend({
                 });
             });
 
-            if (countlyGlobal.member.global_admin) {
+            if (countlyAuth.validateUpdate(app.configurationsView.featureName)) {
                 $(".user-row").show();
             }
 
@@ -1041,6 +1049,46 @@ window.ConfigurationsView = countlyView.extend({
                         CountlyHelpers.notify({ type: "error", message: jQuery.i18n.map['configs.help.api-send_test_email_failed']});
                     }
                 });
+            });
+
+            $('body').off("click", "#user-configuration-change-password").on("click", "#user-configuration-change-password", function() {
+                $('.user-configuration-modal').hide();
+                $('#overlay').show();
+                $('#user-change-password-modal').show();
+            });
+
+            $('body').off("click", "#delete-user-account-button").on("click", "#delete-user-account-button", function() {
+                $('.user-configuration-modal').hide();
+                $('#overlay').show();
+                $('#user-account-delete-modal').show();
+            });
+
+            $(document).keyup(function(e) {
+                if (e.keyCode === 27) {
+                    $('.user-configuration-modal').hide();
+                }
+            });
+
+            $('body').off('click', '.hide-user-configuration-modal').on('click', '.hide-user-configuration-modal', function() {
+                $('#overlay').hide();
+                $('.user-configuration-modal').hide();
+            });
+
+            $('body').on('click', '#change-user-password', function() {
+                var old_pwd = $('.user-configuration-modal #old_pwd').val();
+                var new_pwd = $('.user-configuration-modal #new_pwd').val();
+                var re_new_pwd = $('.user-configuration-modal #re_new_pwd').val();
+
+                if (old_pwd.length > 0 && new_pwd.length > 0 && re_new_pwd.length > 0) {
+                    $('#configs-apply-changes').trigger('click');
+                }
+                else {
+                    CountlyHelpers.notify({
+                        title: jQuery.i18n.map["configs.not-saved"],
+                        message: jQuery.i18n.map["configs.fill-required-fields"],
+                        type: "error"
+                    });
+                }
             });
         }
     },
@@ -1381,7 +1429,7 @@ window.ConfigurationsView = countlyView.extend({
 app.pluginsView = new PluginsView();
 app.configurationsView = new ConfigurationsView();
 
-if (countlyGlobal.member.global_admin) {
+if (countlyAuth.validateUpdate(app.configurationsView.featureName)) {
     var showInAppManagment = {"api": {"safe": true, "send_test_email": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true}};
 
     if (countlyGlobal.plugins.indexOf("drill") !== -1) {
@@ -1593,12 +1641,10 @@ app.addPageScript("/manage/plugins", function() {
 });
 
 $(document).ready(function() {
-    if (countlyGlobal.member && countlyGlobal.member.global_admin) {
-        if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend' && countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.pluginsView.featureName)) {
-            app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
-        }
-        if (countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), app.pluginsView.featureName)) {
-            app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
-        }
+    if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend' && countlyAuth.validateRead(app.pluginsView.featureName)) {
+        app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
+    }
+    if (countlyAuth.validateUpdate(app.configurationsView.featureName)) {
+        app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
     }
 });

@@ -6,7 +6,7 @@ var pluginOb = {},
     {validateRead, validateDelete, validateUpdate, validateCreate} = require('../../../api/utils/rights.js');
 
 
-const FEATURE_NAME = 'data_migration';
+const FEATURE_NAME = 'global_data_migration';
 const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
@@ -40,6 +40,9 @@ function delete_all_exports() {
                     resolve();
                 }
             });
+        }
+        else {
+            resolve();
         }
     });
 }
@@ -107,7 +110,9 @@ function trim_ending_slashes(address) {
 //update_progress
 //apply_redirect_to_apps
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     //report import status from remote server
     plugins.register("/i/datamigration/report_import", function(ob) {
         var params = ob.params;
@@ -180,7 +185,6 @@ function trim_ending_slashes(address) {
         var params = ob.params;
         //if we have import key or validated as user
 
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -249,7 +253,6 @@ function trim_ending_slashes(address) {
 
     plugins.register("/i/datamigration/delete_all", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -280,7 +283,6 @@ function trim_ending_slashes(address) {
 
     plugins.register("/i/datamigration/delete_export", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -339,7 +341,6 @@ function trim_ending_slashes(address) {
 
     plugins.register("/i/datamigration/delete_import", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -384,7 +385,6 @@ function trim_ending_slashes(address) {
 
     plugins.register("/i/datamigration/stop_export", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -440,7 +440,6 @@ function trim_ending_slashes(address) {
     //gets list of exports
     plugins.register("/o/datamigration/getmyexports", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -498,7 +497,6 @@ function trim_ending_slashes(address) {
 
     plugins.register("/o/datamigration/getmyimports", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -580,7 +578,6 @@ function trim_ending_slashes(address) {
     //@params.ttl = time to live in minutes
     plugins.register("/o/datamigration/createimporttoken", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -632,7 +629,6 @@ function trim_ending_slashes(address) {
     //@params.exportid  - Export ID
     plugins.register("/o/datamigration/getstatus", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -641,7 +637,7 @@ function trim_ending_slashes(address) {
                 log.e('/o/datamigration/getstatus Parse ' + params.qstring.args + ' JSON failed');
             }
         }
-        validateRead(params, FEATURE_NAME function() {
+        validateRead(params, FEATURE_NAME, function() {
             if (typeof params.qstring.exportid !== "undefined") {
                 common.db.collection("data_migrations").findOne({_id: params.qstring.exportid}, function(err, res) {
                     if (err) {
@@ -669,7 +665,6 @@ function trim_ending_slashes(address) {
     //Get configuration. Default export path for.
     plugins.register("/o/datamigration/get_config", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -742,7 +737,6 @@ function trim_ending_slashes(address) {
     plugins.register("/i/datamigration/export", function(ob) {
         var params = ob.params;
 
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -830,7 +824,6 @@ function trim_ending_slashes(address) {
     plugins.register("/o/datamigration/validateconnection", function(ob) {
         var params = ob.params;
 
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -906,7 +899,6 @@ function trim_ending_slashes(address) {
     plugins.register("/i/datamigration/sendexport", function(ob) {
         var params = ob.params;
 
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
