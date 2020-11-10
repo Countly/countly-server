@@ -1,4 +1,4 @@
-/* global app, T, countlyGlobal, countlyCommon, CountlyHelpers, $ */
+/* global app, T, countlyGlobal, CountlyHelpers, $ */
 
 $(document).ready(function() {
     // if configuration view exists
@@ -96,7 +96,7 @@ app.addPageScript("/manage/user-settings", function() {
     var member = countlyGlobal.member,
         templateData = {
             "secret_token": countlyGlobal["2fa_secret_token"],
-            "qrcode_html": countlyCommon.decodeHtml(countlyGlobal["2fa_qrcode_html"])
+            "qrcode_html": $('<div>').html(countlyGlobal["2fa_qrcode_html"]).text()
         };
 
     $('.account-settings').find('.d-table').first().append(

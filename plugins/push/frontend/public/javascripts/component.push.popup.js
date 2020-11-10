@@ -38,7 +38,9 @@ window.component('push.popup', function(popup) {
             var found = false;
             message.platforms().forEach(function (p) {
                 message.apps().forEach(function (a) {
-                    if (CC.dot(CG.apps[a], 'plugins.push.' + p + '._id')) {
+                    if (CC.dot(CG.apps[a], 'plugins.push.' + p + '._id') || 
+                        (p === push.C.PLATFORMS.ANDROID && CC.dot(CG.apps[a], 'plugins.push.' + push.C.PLATFORMS.HUAWEI + '._id')) ||
+                        (p === push.C.PLATFORMS.HUAWEI && CC.dot(CG.apps[a], 'plugins.push.' + push.C.PLATFORMS.ANDROID + '._id'))) {
                         found = true;
                     }
                 });
@@ -49,6 +51,15 @@ window.component('push.popup', function(popup) {
                 return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'popStyleGreen', {title: t('push.error.no.credentials'), image: 'empty-icon', button_title: t('push.error.i.understand')});
             }
         }
+
+        var aid = message.apps()[0];
+        if (aid && !(CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.HUAWEI + '._id') ||
+            CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.ANDROID + '._id') ||
+            CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.IOS + '._id'))) {
+            m.endComputation();
+            return window.CountlyHelpers.alert(t('push.error.no-app-credentials'), 'popStyleGreen', {title: t('push.error.no.credentials'), image: 'empty-icon', button_title: t('push.error.i.understand')});
+        }
+
 
         if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length) && (!push.dashboard.events || !push.dashboard.events.length)) {
             m.endComputation();

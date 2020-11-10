@@ -2,16 +2,17 @@ var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'manage-systemlogs';
+const FEATURE_NAME = 'global_systemlogs';
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.method === 'systemlogs') {
             var query = {};
             if (typeof params.qstring.query === "string") {
@@ -40,7 +41,6 @@ const FEATURE_NAME = 'manage-systemlogs';
                 countlyCommon.getPeriodObj(params);
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
-            query._id = {$ne: "meta_v2"};
             validateRead(params, FEATURE_NAME, function(paramsNew) {
                 var columns = [null, "ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
@@ -293,6 +293,7 @@ const FEATURE_NAME = 'manage-systemlogs';
      */
     function processRecording(ob) {
         var user = ob.user || ob.params.member;
+        ob.data = ob.data || {};
         if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {

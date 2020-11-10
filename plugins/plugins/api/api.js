@@ -5,15 +5,19 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateUser } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'manage-plugins';
+const FEATURE_NAME1 = 'global_plugins';
+const FEATURE_NAME2 = 'global_configurations';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME1, FEATURE_NAME2);
+    });
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
-        
-        validateUpdate(params, FEATURE_NAME, function() {
+
+        validateUpdate(params, FEATURE_NAME1, function() {
             if (process.env.COUNTLY_CONTAINER === 'api') {
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
                 return false;
@@ -63,7 +67,7 @@ const FEATURE_NAME = 'manage-plugins';
 
     plugins.register('/o/plugins-check', function(ob) {
         var params = ob.params;
-        validateRead(params, FEATURE_NAME, function() {
+        validateRead(params, FEATURE_NAME1, function() {
             common.db.collection('plugins').count({"_id": "failed"}, function(failedErr, failedCount) {
                 if (!failedErr && failedCount < 1) {
                     common.db.collection('plugins').count({"_id": "busy"}, function(busyErr, count) {
@@ -170,12 +174,8 @@ const FEATURE_NAME = 'manage-plugins';
                 });
             });
         };
-        
-        validateUser(function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+
+        validateRead(params, FEATURE_NAME1, function() {
             var dir = path.resolve(__dirname, "../../");
             walk(dir, function(err, results) {
                 if (err) {
@@ -183,14 +183,14 @@ const FEATURE_NAME = 'manage-plugins';
                 }
                 common.returnOutput(params, results || {});
             });
-        }, params);
+        });
         return true;
     });
 
     plugins.register("/o/internal-events", function(ob) {
         var params = ob.params;
-        
-        validateRead(params, FEATURE_NAME, function() {
+
+        validateRead(params, FEATURE_NAME1, function() {
             var events = [];
             common.arrayAddUniq(events, plugins.internalEvents.concat(plugins.internalDrillEvents));
             common.returnOutput(params, events);
@@ -200,12 +200,8 @@ const FEATURE_NAME = 'manage-plugins';
 
     plugins.register("/i/configs", function(ob) {
         var params = ob.params;
-        
-        validateUpdate(params, FEATURE_NAME, function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+
+        validateUpdate(params, FEATURE_NAME2, function() {
             var data = {};
             if (params.qstring.configs) {
                 try {
@@ -247,23 +243,19 @@ const FEATURE_NAME = 'manage-plugins';
 
     plugins.register("/o/configs", function(ob) {
         var params = ob.params;
-        
-        validateUser(function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+
+        validateRead(params, FEATURE_NAME1, function() {
             var confs = plugins.getAllConfigs();
             delete confs.services;
             common.returnOutput(params, confs);
-        }, params);
+        });
         return true;
     });
 
     plugins.register("/i/userconfigs", function(ob) {
         var params = ob.params;
-        
-        validateUpdate(params, FEATURE_NAME, function() {
+
+        validateUpdate(params, "core", function() {
             var data = {};
             if (params.qstring.configs) {
                 try {
@@ -300,7 +292,7 @@ const FEATURE_NAME = 'manage-plugins';
 
     plugins.register("/o/userconfigs", function(ob) {
         var params = ob.params;
-        
+
         validateUser(function() {
             var confs = plugins.getUserConfigs(params.member.settings);
             common.returnOutput(params, confs);

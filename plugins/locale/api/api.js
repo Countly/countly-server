@@ -8,6 +8,9 @@ var exported = {},
 const FEATURE_NAME = 'locale';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/worker", function() {
         common.dbUserMap.locale = 'lo'; // full ISO locale from device
         common.dbUserMap.lang = 'la'; // language extracted from locale

@@ -820,9 +820,10 @@ window.starView = countlyView.extend({
     },
     renderCommentsTable: function(isRefresh) {
         var self = this;
-        this.templateData.commentsData = this.getFeedbackData();
+        this.templateData.commentsData = this.getFeedbackData().aaData;
+
         if (isRefresh) {
-            CountlyHelpers.refreshTable($('#tableThree').dataTable(), this.templateData.commentsData);
+            CountlyHelpers.refreshTable(self.commentsTable, this.templateData.commentsData);
         }
         else {
             var columnsDefine = [{
@@ -837,6 +838,16 @@ window.starView = countlyView.extend({
                     return d;
                 }
             }, {
+                "mData": "ts",
+                sType: "numeric",
+                "sTitle": jQuery.i18n.map["common.time"],
+                "mRender": function(d, type) {
+                    if (type === "display") {
+                        return moment.unix(d).format("DD MMMM YYYY HH:MM:SS");
+                    }
+                    return d;
+                }
+            }, {
                 "mData": function(row) {
                     if (row.comment) {
                         return row.comment;
@@ -846,7 +857,8 @@ window.starView = countlyView.extend({
                     }
                 },
                 sType: "string",
-                "sTitle": jQuery.i18n.map["feedback.comment"]
+                "sTitle": jQuery.i18n.map["feedback.comment"],
+                bSortable: false
             }, {
                 "mData": function(row) {
                     if (row.email) {
@@ -857,44 +869,12 @@ window.starView = countlyView.extend({
                     }
                 },
                 sType: "string",
-                "sTitle": jQuery.i18n.map["management-users.email"]
-            }, {
-                "mData": "ts",
-                sType: "numeric",
-                "sTitle": jQuery.i18n.map["common.time"],
-                "mRender": function(d, type) {
-                    if (type === "display") {
-                        return countlyCommon.formatTimeAgo(d || 0);
-                    }
-                    return d;
-                }
+                "sTitle": jQuery.i18n.map["management-users.email"],
+                bSortable: false
             }];
-            $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "bServerSide": true,
-                "bFilter": true,
-                "sAjaxSource": countlyCommon.API_PARTS.data.r + "/feedback/data?app_id=" + countlyCommon.ACTIVE_APP_ID,
-                "fnServerData": function(sSource, aoData, fnCallback) {
-                    if (self.ratingFilter.comments.rating && self.ratingFilter.comments.rating !== "") {
-                        sSource += "&rating=" + self.ratingFilter.comments.rating;
-                    }
-                    if (self.ratingFilter.comments.version && self.ratingFilter.comments.version !== "") {
-                        sSource += "&version=" + self.ratingFilter.comments.version;
-                    }
-                    if (self.ratingFilter.comments.platform && self.ratingFilter.comments.platform !== "") {
-                        sSource += "&platform=" + self.ratingFilter.comments.platform;
-                    }
-                    if (self.ratingFilter.comments.widget && self.ratingFilter.comments.widget !== "") {
-                        sSource += "&widget_id=" + self.ratingFilter.comments.widget;
-                    }
-                    $.ajax({
-                        type: "GET",
-                        url: sSource,
-                        data: aoData,
-                        success: function(responseData) {
-                            fnCallback(responseData);
-                        }
-                    });
-                },
+
+            this.commentsTable = $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": this.templateData.commentsData,
                 "aoColumns": columnsDefine
             }));
         }
@@ -917,7 +897,7 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["report-manager.name"]
             }, {
                 "mData": function(row) {
-                    if ((!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) && !countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+                    if (!countlyAuth.validateUpdate(self.featureName)) {
                         return (row.is_active) ? 'Active' : 'Deactive';
                     }
                     else {
@@ -1014,7 +994,7 @@ window.starView = countlyView.extend({
             }];
             columnsDefine.push({
                 "mData": function(row) {
-                    if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
+                    if (!countlyAuth.validateUpdate("star-rating")) {
                         return '';
                     }
                     else {
@@ -1023,8 +1003,8 @@ window.starView = countlyView.extend({
                             + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
                             + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
                             + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
-                            + ((countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) ? "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>" : "")
-                            + ((countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) ? "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>" : "")
+                            + ((countlyAuth.validateUpdate(self.featureName)) ? "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>" : "")
+                            + ((countlyAuth.validateDelete(self.featureName)) ? "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>" : "")
                             + "</div>"
                             + "</div>";
                     }
@@ -1206,7 +1186,7 @@ window.starView = countlyView.extend({
             };
 
             if (typeof addDrill !== "undefined") {
-                $("#content .widget:first-child .widget-header>.left .title").after(addDrill("sg.rating", null, "[CLY]_star_rating"));
+                $("#content #feedback-ratings-tab .widget:first-child .widget-header>.left .title").after(addDrill("sg.rating", null, "[CLY]_star_rating"));
             }
 
             self.renderCommentsTable();
@@ -1376,7 +1356,7 @@ window.starView = countlyView.extend({
                 });
             });
             // permission controls
-            if (countlyGlobal.member.global_admin) {
+            if (countlyAuth.validateCreate("star-rating")) {
                 $('#create-feedback-widget-button').css({
                     "display": "block"
                 });
@@ -1776,7 +1756,9 @@ window.starView = countlyView.extend({
                 $("#countly-feedback-email-title").html(self.feedbackWidget.popup_email_callout);
                 $("#feedback-submit-button").html(self.feedbackWidget.popup_button_callout);
                 $(".success-emotions-area > #question-area").html(self.feedbackWidget.popup_thanks_message);
-                $("#feedback-sticker-on-window").html("<svg id=\"feedback-sticker-svg\" aria-hidden=\"true\" data-prefix=\"far\" data-icon=\"grin\" class=\"svg-inline--fa fa-grin fa-w-16\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 496 512\"><path id=\"path1\" fill=\"white\" d=\"M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z\"></path></svg> " + self.feedbackWidget.trigger_button_text);
+
+                var reducedTriggerText = self.feedbackWidget.trigger_button_text.length > 10 ? self.feedbackWidget.trigger_button_text.substr(0, 10) + '...' : self.feedbackWidget.trigger_button_text;
+                $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + reducedTriggerText);
 
                 $(".device-box:lt(3)").each(function(index, element) {
                     $(element).removeClass("active-position-box");
@@ -2142,7 +2124,8 @@ window.starView = countlyView.extend({
                 }
                 else {
                     self.feedbackWidget.trigger_button_text = countlyCommon.encodeHtml($(this).val());
-                    $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
+                    var reducedTriggerText = self.feedbackWidget.trigger_button_text.length > 10 ? self.feedbackWidget.trigger_button_text.substr(0, 10) + '...' : self.feedbackWidget.trigger_button_text;
+                    $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + reducedTriggerText);
                 }
             });
             $('#feedback-popup-comment-text').on('keyup', function() {
@@ -2222,7 +2205,7 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.is_active = ($(this).attr('checked')) ? true : false;
             });
 
-            if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+            if (!countlyAuth.validateCreate(self.featureName)) {
                 $('#create-feedback-widget-button').hide();
             }
         }
@@ -2367,7 +2350,7 @@ app.addPageScript("/drill#", function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.starView.featureName)) {
+    if (countlyAuth.validateRead(app.starView.featureName)) {
         app.addMenu("reach", {
             code: "star-rating",
             url: "#/analytics/star-rating",
@@ -2376,4 +2359,26 @@ $(document).ready(function() {
             priority: 20
         });
     }
+});
+
+app.addPageScript("/manage/export/export-features", function() {
+    $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
+        var widgets = starRatingPlugin.getFeedbackWidgetsData();
+        var widgetsList = [];
+        widgets.forEach(function(widget) {
+            widgetsList.push({
+                id: widget._id,
+                name: widget.popup_header_text
+            });
+        });
+
+        var selectItem = {
+            id: "feedback_widgets",
+            name: "Feedback Widgets",
+            children: widgetsList
+        };
+        if (widgetsList.length) {
+            app.exportView.addSelectTable(selectItem);
+        }
+    });
 });

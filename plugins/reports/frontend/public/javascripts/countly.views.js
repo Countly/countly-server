@@ -268,15 +268,15 @@ window.ReportingView = countlyView.extend({
                 self.widgetDrawer.init("core");
             });
 
-            if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+            if (!countlyAuth.validateCreate(self.featureName)) {
                 $('#add-report').hide();
             }
 
-            if (!countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+            if (!countlyAuth.validateUpdate(self.featureName)) {
                 $('.edit-report').hide();
             }
 
-            if (!countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+            if (!countlyAuth.validateDelete(self.featureName)) {
                 $('.delete-report').hide();
             }
         }
@@ -981,7 +981,7 @@ app.route('/manage/reports', 'reports', function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.reportingView.featureName)) {
+    if (countlyAuth.validateRead(app.reportingView.featureName)) {
         app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
     }
 });

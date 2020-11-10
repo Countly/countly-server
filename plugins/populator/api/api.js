@@ -1,8 +1,8 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateUser, validateGlobalAdmin} = require('../../../api/utils/rights.js');
-
+    {validateRead, validateCreate, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
+const FEATURE_NAME = 'populator';
 const templateProperties = {
     name: {
         required: true,
@@ -28,6 +28,9 @@ const templateProperties = {
 
 (function() {
 
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     const createTemplate = function(ob) {
         const obParams = ob.params;
 
@@ -61,7 +64,7 @@ const templateProperties = {
 
         template.isDefault = template.isDefault === 'true' ? true : false;
 
-        validateGlobalAdmin(obParams, function(params) {
+        validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection('populator_templates').insert(template, function(insertTemplateErr, result) {
                 if (!insertTemplateErr) {
                     common.returnMessage(ob.params, 201, 'Successfully created ' + result.insertedIds[0]);
@@ -79,7 +82,7 @@ const templateProperties = {
 
     const removeTemplate = function(ob) {
         const obParams = ob.params;
-        validateGlobalAdmin(obParams, function(params) {
+        validateDelete(obParams, FEATURE_NAME, function(params) {
             let templateId;
 
             try {
@@ -107,7 +110,7 @@ const templateProperties = {
 
     const editTemplate = function(ob) {
         const obParams = ob.params;
-        validateGlobalAdmin(obParams, function(params) {
+        validateUpdate(obParams, FEATURE_NAME, function(params) {
             let templateId;
 
             try {
@@ -167,22 +170,6 @@ const templateProperties = {
         return true;
     };
 
-    plugins.register("/i", function(ob) {
-        const obParams = ob.params;
-        if (obParams.qstring.method === "populator_template") {
-            if (obParams.qstring.action === "create") {
-                createTemplate(obParams);
-            }
-            else if (obParams.qstring.action === "edit") {
-                editTemplate(obParams);
-            }
-            else if (obParams.qstring.action.remove === "remove") {
-                removeTemplate(obParams);
-            }
-        }
-        return true;
-    });
-
     /*
      * @apiName: CreatePopulatorTemplate
      * @type: GET
@@ -218,7 +205,7 @@ const templateProperties = {
         const obParams = ob.params;
         const query = {};
 
-        validateUser(obParams, function() {
+        validateRead(obParams, FEATURE_NAME, function() {
             if (obParams.qstring.template_id) {
                 try {
                     query._id = common.db.ObjectID(obParams.qstring.template_id);
@@ -252,6 +239,87 @@ const templateProperties = {
         });
         return true;
     });
+
+    plugins.register("/export", async function({plugin, selectedIds}) {
+        if (plugin === "populator") {
+            const data = await exportPlugin(selectedIds);
+            return data;
+        }
+    });
+
+    plugins.register("/import", async function({params, importData}) {
+        if (importData.name === 'populator') {
+            await importPopulator(params, importData);
+            return true;
+        }
+        return false;
+    });
+
+    plugins.register("/import/validate", function({params, pluginData, pluginName}) {
+        if (pluginName === 'populator') {
+            return validateImport(params, pluginData);
+        }
+        else {
+            return false;
+        }
+    });
+
+    /**
+     * 
+     * @param {String[]} ids ids of documents to be exported
+     * @param {String} app_id app Id
+     */
+    async function exportPlugin(ids) {
+        const data = await common.db._native.collection("populator_templates").find({_id: {$in: ids.map((id) => common.db.ObjectID(id))}}).toArray();
+        const dependencies = [];
+
+        return {
+            name: 'populator',
+            data: data,
+            dependencies: dependencies
+        };
+    }
+
+    /**
+     * Validation before import
+     * 
+     * @param {Object} params params object 
+     * @param {Object} template template Object
+     * @returns {Promise<Object>} validation result
+    */
+    function validateImport(params, template) {
+        return {
+            code: 200,
+            message: "Success",
+            data: {
+                newId: common.db.ObjectID(),
+                oldId: template._id
+            }
+        };
+    }
+
+    /**
+     * Insert Template Objects
+     * 
+     * @param {Object} params params object
+     * @param {Object} importData iomport data Object
+     * @returns {Promise} promise array of all inserts
+     */
+    function importPopulator(params, importData) {
+        const template = importData.data;
+        return new Promise((resolve, reject) => {
+            template._id = common.db.ObjectID(template._id);
+            common.db.collection('populator_templates').insert(template, function(insertTemplateErr) {
+                if (!insertTemplateErr) {
+                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_created", data: template});
+                    return resolve();
+                }
+                else {
+                    return reject();
+                }
+            });
+        });
+    }
 
 }(exported));
 

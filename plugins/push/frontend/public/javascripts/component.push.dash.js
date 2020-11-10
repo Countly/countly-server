@@ -269,8 +269,7 @@ window.component('push.dash', function (dash) {
                     message = self.messages().find(function (m) { return m._id() === id; });
 
                 if ($(data.target).hasClass('view-recipients') && message) {
-                    countlySegmentation.setQueryObject({message: message._id()});
-                    window.location.hash = "/users/request/"+JSON.stringify(countlySegmentation.getRequestData());
+                    window.app.navigate('#/users/qfilter/' + JSON.stringify({message: {$in: [message._id()]}}), true);
                     return;
                 } else if ($(data.target).hasClass('duplicate-message') && message) {
                     var json = message.toJSON(false, true, true);
@@ -381,7 +380,7 @@ window.component('push.dash', function (dash) {
             m.component(components.widget, {
                 header: {
                     title: 'pu.dash.users',
-                    view: ((countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) || countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), 'push')) ?
+                    view: (countlyAuth.validateCreate('push')) ?
                         [
                             m('div', {
                                 style: {

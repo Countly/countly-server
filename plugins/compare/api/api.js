@@ -10,10 +10,12 @@ var exported = {},
     log = common.log('compare:api'),
     { validateRead } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'compare';
+const FEATURE_NAME = 'global_compare';
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register('/o/compare/events', function(ob) {
         var params = ob.params;
 

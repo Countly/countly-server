@@ -120,6 +120,46 @@
     </div>
 {{/with}}
 
+{{#with h}}
+    <h4 data-localize="mgmt-plugins.push.h" />
+    <div class="mgmt-plugins-row">
+         <div> 
+            <label for="key" data-localize="mgmt-plugins.push.h.key" /> 
+            <span>
+                <span data-localize="mgmt-plugins.push.h.key.desc" />
+            </span>
+        </div>
+        <div>
+            <br />
+            <input type="text" name="h.key" value="{{key}}" />
+            {{#if help}}
+                <span class="help">{{help}}</span>
+            {{/if}}
+            {{#if ehelp}}
+                <span class="help error">{{{ehelp}}}</span>
+            {{/if}}
+        </div>
+    </div>
+    <div class="mgmt-plugins-row">
+         <div> 
+            <label for="secret" data-localize="mgmt-plugins.push.h.secret" /> 
+            <span>
+                <span data-localize="mgmt-plugins.push.h.secret.desc" /> <a target="_blank" href="https://developer.huawei.com/consumer/en/doc/development/HMS-Guides/push-introduction" data-localize="mgmt-plugins.push.h.secret.hds"></a>.
+            </span>
+        </div>
+        <div>
+            <br />
+            <input type="text" name="h.secret" value="{{secret}}" />
+            {{#if help}}
+                <span class="help">{{help}}</span>
+            {{/if}}
+            {{#if ehelp}}
+                <span class="help error">{{{ehelp}}}</span>
+            {{/if}}
+        </div>
+    </div>
+{{/with}}
+
 {{#with rate}}
     <h4 data-localize="mgmt-plugins.push.rate" />
     <div class="mgmt-plugins-row">

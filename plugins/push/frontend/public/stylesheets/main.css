@@ -1015,6 +1015,9 @@ input:disabled + label {
     font-size: 12px;
     position: relative;
 }
+.comp-push-view-row > .col-right .col-right {
+    overflow: scroll;
+}
 
 .comp-push-error-codes .comp-push-view-row > .col-right { width: 60%; }
 .comp-push-error-codes .comp-push-view-row > .col-right > a { text-decoration: underline; }
@@ -2029,9 +2032,11 @@ span.emoji-inner {
 .comp-checkbox input[type="checkbox"] { margin: 0; }
 .comp-checkbox input[type="checkbox"] + label { margin: 0 0 0 10px; vertical-align: bottom; }
 .comp-checkbox > .comp-view { position: relative; }
-// .comp-checkbox > .comp-view > i { position: absolute; top: 9px; left: 8px; font-size: 14px; z-index: 2; }
-// .comp-checkbox > .comp-view > i.ion-chevron-down { top: 7px; right: 8px; left: auto; }
-// .comp-checkbox > .comp-view > i.ion-chevron-down:before { font-size: 9px; }
+/* 
+.comp-checkbox > .comp-view > i { position: absolute; top: 9px; left: 8px; font-size: 14px; z-index: 2; }
+.comp-checkbox > .comp-view > i.ion-chevron-down { top: 7px; right: 8px; left: auto; }
+.comp-checkbox > .comp-view > i.ion-chevron-down:before { font-size: 9px; }
+*/
 .comp-checkbox .time-select .cly-select .select-items-component .item { text-align: right; padding-right: 25px; }
 .comp-checkbox .time-select .cly-select .default-text { text-align: right; }
 .comp-grid.comp-unpadded .comp-grid-cell:last-child{ padding: 0; height: 33px; }
@@ -2039,7 +2044,9 @@ span.emoji-inner {
 
 .comp-push .cly-multi-select .text { padding: 4px 6px; }
 .comp-push .cly-multi-select .text .default-text { padding: 5px 3px; }
-// .comp-push .cly-multi-select  .selection { margin-top: 0; margin-bottom: 0; }
+/* 
+.comp-push .cly-multi-select  .selection { margin-top: 0; margin-bottom: 0; }
+*/
 .comp-push .desc .warn { margin-left: 5px; }
 
 .comp-push .big-numbers-v2 { padding-top: 0; }

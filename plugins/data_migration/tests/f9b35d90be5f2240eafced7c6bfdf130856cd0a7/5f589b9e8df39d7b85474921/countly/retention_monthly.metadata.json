@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":1,"key":{"_id":1},"name":"_id_","ns":"countly.retention_monthly"},{"v":1,"key":{"d":1},"name":"d_1","ns":"countly.retention_monthly"}],"uuid":"85d4babe5ae74c68a16e4e4249fda433"}

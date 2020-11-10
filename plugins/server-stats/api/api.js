@@ -3,10 +3,12 @@ var plugins = require('../../pluginManager.js'),
     udp,
     {validateRead} = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'server-stats';
+const FEATURE_NAME = 'global_server-stats';
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
@@ -39,7 +41,7 @@ const FEATURE_NAME = 'server-stats';
     * Register to /sdk/end for requests that contain begin_session and events
     * @returns {boolean} Returns boolean, always true
     **/
-    plugins.register("/sdk/end", function(ob) {
+    plugins.register("/sdk/data_ingestion", function(ob) {
         var params = ob.params,
             sessionCount = 0,
             eventCount = 0;
@@ -103,26 +105,17 @@ const FEATURE_NAME = 'server-stats';
 
         var utcMoment = common.moment.utc();
 
-        common.db.collection('server_stats_data_points').update(
-            {
-                '_id': appId + "_" + utcMoment.format("YYYY:M")
+        common.writeBatcher.add('server_stats_data_points', appId + "_" + utcMoment.format("YYYY:M"), {
+            $set: {
+                a: appId + "",
+                m: utcMoment.format("YYYY:M")
             },
-            {
-                $set: {
-                    a: appId + "",
-                    m: utcMoment.format("YYYY:M")
-                },
-                $inc: {
-                    e: eventCount,
-                    s: sessionCount,
-                    [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
-                }
-            },
-            {
-                upsert: true
-            },
-            function() {}
-        );
+            $inc: {
+                e: eventCount,
+                s: sessionCount,
+                [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.dp`]: sessionCount + eventCount
+            }
+        });
     }
     udp = updateDataPoints;
 

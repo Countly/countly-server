@@ -5,7 +5,7 @@ var exported = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
-
+const FEATURE_NAME = 'star-rating';
 const widgetProperties = {
     popup_header_text: {
         required: false,
@@ -123,6 +123,10 @@ const widgetPropertyPreprocessors = {
 };
 
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     /**
      *    register internalEvent
      */
@@ -143,7 +147,7 @@ const widgetPropertyPreprocessors = {
         }
         var widget = validatedArgs.obj;
 
-        validateCreate(obParams, 'star_rating', function(params) {
+        validateCreate(obParams, 'FEATURE_NAME', function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Successfully created " + result.insertedIds[0]);
@@ -160,7 +164,7 @@ const widgetPropertyPreprocessors = {
     };
     var removeFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        validateDelete(obParams, 'star_rating', function(params) {
+        validateDelete(obParams, 'FEATURE_NAME', function(params) {
             var widgetId = params.qstring.widget_id;
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
@@ -208,7 +212,7 @@ const widgetPropertyPreprocessors = {
     };
     var editFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        validateUpdate(obParams, 'star_rating', function(params) {
+        validateUpdate(obParams, 'FEATURE_NAME', function(params) {
             let widgetId;
 
             try {
@@ -454,7 +458,7 @@ const widgetPropertyPreprocessors = {
             }
         }
 
-        validateRead(params, 'star_rating', function() {
+        validateRead(params, 'FEATURE_NAME', function() {
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
                 if (!err) {
@@ -528,7 +532,7 @@ const widgetPropertyPreprocessors = {
     plugins.register('/o/feedback/widgets', function(ob) {
         var params = ob.params;
 
-        validateRead(params, 'star_rating', function() {
+        validateRead(params, 'FEATURE_NAME', function() {
             var collectionName = 'feedback_widgets';
             var query = {};
             if (params.qstring.is_active) {
@@ -780,5 +784,90 @@ const widgetPropertyPreprocessors = {
             }
         });
     });
+
+    plugins.register("/export", async function({plugin, selectedIds}) {
+        if (plugin === "feedback_widgets") {
+            const data = await exportPlugin(selectedIds);
+            return data;
+        }
+    });
+
+    plugins.register("/import", async function({params, importData}) {
+        if (importData.name === 'feedback_widgets') {
+            await importPopulator(params, importData);
+            return true;
+        }
+        return false;
+    });
+
+    plugins.register("/import/validate", function({params, pluginData, pluginName}) {
+        if (pluginName === 'feedback_widgets') {
+            return validateImport(params, pluginData);
+        }
+        else {
+            return false;
+        }
+    });
+
+    /**
+     * 
+     * @param {String[]} ids ids of documents to be exported
+     * @param {String} app_id app Id
+     */
+    async function exportPlugin(ids) {
+        const data = await common.db._native.collection("feedback_widgets").find({_id: {$in: ids.map((id) => common.db.ObjectID(id))}}).toArray();
+        data.forEach(((widget) => {
+            widget.app_id = "APP_ID";
+        }));
+        const dependencies = [];
+
+        return {
+            name: 'feedback_widgets',
+            data: data,
+            dependencies: dependencies
+        };
+    }
+
+    /**
+     * Validation before import
+     * 
+     * @param {Object} params params object 
+     * @param {Object} widget feedback widget Object
+     * @returns {Promise<Object>} validation result
+    */
+    function validateImport(params, widget) {
+        return {
+            code: 200,
+            message: "Success",
+            data: {
+                newId: common.db.ObjectID(),
+                oldId: widget._id
+            }
+        };
+    }
+
+    /**
+     * Insert Feedback Objects
+     * 
+     * @param {Object} params params object
+     * @param {Object} importData iomport data Object - MUTABLE
+     * @returns {Promise} promise array of all inserts
+     */
+    function importPopulator(params, importData) {
+        const widget = importData.data;
+        return new Promise((resolve, reject) => {
+            widget._id = common.db.ObjectID(widget._id);
+            common.db.collection('feedback_widgets').insert(widget, function(err) {
+                if (!err) {
+                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                    return resolve();
+                }
+                else {
+                    return reject();
+                }
+            });
+        });
+    }
+
 }(exported));
 module.exports = exported;

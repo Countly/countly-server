@@ -2,7 +2,7 @@ var pluginManager = require('../../../plugins/pluginManager.js'),
     async = require('async'),
     countlyDb = pluginManager.dbConnection();
 
-countlyDb.collection('members').find({global_admin: false}).toArray(function(err, members) {
+countlyDb.collection('members').find({global_admin: {$ne: true}}).toArray(function(err, members) {
     if (!members && err) {
         console.log(err);
         countlyDb.close();

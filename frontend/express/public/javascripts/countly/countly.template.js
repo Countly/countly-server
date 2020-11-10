@@ -486,9 +486,14 @@ window.countlyManagementView = countlyView.extend({
 
     beforeRender: function() {
         var self = this;
-        return $.when(T.render(this.templatePath, function(src) {
-            self.template = src;
-        }));
+        if (this.templatePath && this.templatePath !== "") {
+            return $.when(T.render(this.templatePath, function(src) {
+                self.template = src;
+            }));
+        }
+        else {
+            return;
+        }
     },
 
     render: function() { //backbone.js view render function
@@ -507,7 +512,11 @@ window.countlyManagementView = countlyView.extend({
             });
         });
 
-        this.el.find('input[type=text], input[type=password], input[type=number]').off('input').on('input', function() {
+        this.el.find(' input[type=number]').off('input').on('input', function() {
+            self.doOnChange($(this).attr('name') || $(this).attr('id'), parseFloat($(this).val()));
+        });
+
+        this.el.find('input[type=text], input[type=password]').off('input').on('input', function() {
             self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
         });
 
@@ -1266,11 +1275,11 @@ var AppRouter = Backbone.Router.extend({
             self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
             self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
             self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
-            if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'core')) {
+            if (countlyAuth.validateRead('core')) {
                 self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
                 self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
             }
-            if (countlyGlobal.member.global_admin || (countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), 'core') && countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), 'core'))) {
+            if (countlyAuth.validateUpdate('core') && countlyAuth.validateDelete('core')) {
                 self.addSubMenu("events", {code: "manage-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
             }
             self.addMenu("utilities", {
@@ -1286,11 +1295,15 @@ var AppRouter = Backbone.Router.extend({
 
             self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
 
-            if ((countlyGlobal.member.global_admin || (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length)) || countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'manage-apps')) {
+            var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
+            if (countlyAuth.validateRead('global_applications')) {
                 self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
             }
-            if (countlyGlobal.member.global_admin || countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), 'manage-users')) {
+            if (countlyAuth.validateRead('global_users')) {
                 self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
+            }
+            if (countlyAuth.validateRead('global_jobs')) {
+                self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 20});
             }
 
             self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
@@ -1619,6 +1632,17 @@ var AppRouter = Backbone.Router.extend({
         */
         Handlebars.registerHelper('withItem', function(object, options) {
             return options.fn(object[options.hash.key]);
+        });
+
+        /**
+        * Encode uri component
+        * @name encodeURIComponent 
+        * @memberof Handlebars
+        * @example
+        * <a href="/path/{{encodeURIComponent entity}}" </a>
+        */
+        Handlebars.registerHelper('encodeURIComponent', function(entity) {
+            return encodeURIComponent(entity);
         });
 
         $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
@@ -2445,7 +2469,7 @@ var AppRouter = Backbone.Router.extend({
             $appNavigation.on("click", function() {
                 var appList = $(this).find(".list"),
                     apps = _.sortBy(countlyGlobal.apps, function(app) {
-                        return app.name.toLowerCase();
+                        return (app.name + "").toLowerCase();
                     });
 
                 appList.html("");
@@ -3970,6 +3994,7 @@ Backbone.history.getFragment = function() {
     return fragment;
 };
 Backbone.history.checkUrl = function() {
+    store.set("countly_fragment_name", Backbone.history._getFragment());
     var app_id = Backbone.history._getFragment().split("/")[1] || "";
     if (countlyCommon.APP_NAMESPACE !== false && countlyCommon.ACTIVE_APP_ID !== 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1) {
         Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
@@ -3990,56 +4015,27 @@ Backbone.history.checkUrl = function() {
     }
 };
 
-var checkGlobalAdminOnlyPermission = function() {
-    var userCheckList = [
-        "/manage/users",
-        "/manage/apps"
-    ];
-
-    var adminCheckList = [
-        "/manage/users"
-    ];
-
-    if (!countlyGlobal.member.global_admin && !countlyGlobal.config.autonomous) {
-
-        var existed = false;
-        var checkList = userCheckList;
-        if (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length) {
-            checkList = adminCheckList;
-        }
-        checkList.forEach(function(item) {
-            if (Backbone.history.getFragment().indexOf(item) > -1) {
-                existed = true;
-            }
-        });
-
-        if (existed === true) {
-
-            window.location.hash = "/";
-            return false;
-        }
-    }
-    return true;
-};
-Backbone.history.urlChecks.push(checkGlobalAdminOnlyPermission);
-
-
 //initial hash check
 (function() {
-    var app_id = Backbone.history._getFragment().split("/")[1] || "";
-    if (countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1) {
-        //we have app id
-        if (app_id !== countlyCommon.ACTIVE_APP_ID) {
-            // but it is not currently selected app, so let' switch
-            countlyCommon.setActiveApp(app_id);
-            $("#active-app-name").text(countlyGlobal.apps[app_id].name);
-            $('#active-app-name').attr('title', countlyGlobal.apps[app_id].name);
-            $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
-        }
+    if (!Backbone.history.getFragment() && store.get("countly_fragment_name")) {
+        Backbone.history.noHistory("#" + store.get("countly_fragment_name"));
     }
-    else if (countlyCommon.APP_NAMESPACE !== false) {
-        //add current app id
-        Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+    else {
+        var app_id = Backbone.history._getFragment().split("/")[1] || "";
+        if (countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1) {
+            //we have app id
+            if (app_id !== countlyCommon.ACTIVE_APP_ID) {
+                // but it is not currently selected app, so let' switch
+                countlyCommon.setActiveApp(app_id);
+                $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+                $('#active-app-name').attr('title', countlyGlobal.apps[app_id].name);
+                $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
+            }
+        }
+        else if (countlyCommon.APP_NAMESPACE !== false) {
+            //add current app id
+            Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+        }
     }
 })();
 

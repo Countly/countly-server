@@ -40,7 +40,8 @@ Status.PAUSED_MIXED = Status.PAUSED_SUCCESS | Status.PAUSED_FAILURE;// 51  Waiti
  */
 const Platform = {
     IOS: 'i',
-    ANDROID: 'a'
+    ANDROID: 'a',
+    HUAWEI: 'h'
 };
 
 const DEFAULT_EXPIRY = 1000 * 60 * 60 * 24 * 7;
@@ -546,6 +547,59 @@ class Note {
 
             return JSON.stringify(compiled);
         }
+        else if (platform === Platform.HUAWEI) {
+            let android = {
+                    bi_tag: this.id + '.' + Date.now(),
+                    ttl: '' + Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000))
+                },
+                dt = {};
+
+            if (collapseKey) {
+                android.collapse_key = collapseKey;
+            }
+
+
+            if (alert) {
+                dt.message = alert;
+            }
+            if (title) {
+                dt.title = title;
+            }
+
+            if (sound !== null) {
+                dt.sound = sound;
+            }
+            if (badge !== null) {
+                dt.badge = badge;
+            }
+
+            if (!alert && sound === null) {
+                dt['c.s'] = 'true';
+            }
+
+            if (data) {
+                Object.assign(dt, data);
+            }
+            dt['c.i'] = this._id.toString();
+
+            if (url) {
+                dt['c.l'] = url;
+            }
+
+            if (media && mediaMime && ['image/jpeg', 'image/png'].indexOf(mediaMime) !== -1) {
+                dt['c.m'] = media;
+            }
+
+            if (buttonsJSON) {
+                dt['c.b'] = buttonsJSON;
+            }
+            return JSON.stringify({
+                message: {
+                    android,
+                    data: JSON.stringify(dt)
+                }
+            });
+        }
         else {
             compiled = {};
             if (collapseKey) {
@@ -611,7 +665,7 @@ class Note {
         let ret = {};
         Object.values(this.messagePerLocale || {}).filter(v => typeof v === 'object').forEach(v => {
             Object.values(v).forEach(z => {
-                ret[z.k] = 1;
+                ret[z.k.replace(S, '.')] = 1;
             });
         });
         this._compilationDataFields = JSON.parse(JSON.stringify(ret));
@@ -629,11 +683,12 @@ class Note {
         };
 
         Object.keys(this.compilationDataFields()).forEach(k => {
+
             if (k.indexOf('.') === -1 && typeof user[k] !== 'undefined') {
                 ret[k] = user[k];
             }
             else if (k.indexOf('custom.') !== -1 && user.custom && typeof user.custom[k.substr(7)] !== 'undefined') {
-                ret[k] = user.custom[k.substr(7)];
+                ret[k.replace('.', S)] = user.custom[k.substr(7)];
             }
         });
         return ret;

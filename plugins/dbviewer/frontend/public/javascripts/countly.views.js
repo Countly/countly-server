@@ -1,5 +1,6 @@
-/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, T, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
+/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, T, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer, countlyAuth*/
 window.DBViewerView = countlyView.extend({
+    featureName: 'dbviewer',
     initialize: function() {
         this.dbviewer_selected_app = "all";
         this.filter = (store.get("countly_collectionfilter")) ? store.get("countly_collectionfilter") : "{}";
@@ -78,7 +79,7 @@ window.DBViewerView = countlyView.extend({
         $('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + $.i18n.map["common.all"] + '</span></div>');
         // append list items
         for (var key in countlyGlobal.apps) {
-            if (!countlyGlobal.member.app_restrict || (countlyGlobal.member.app_restrict && !countlyGlobal.member.app_restrict[key])) {
+            if (!countlyGlobal.member.app_restrict || (countlyGlobal.member.app_restrict && (!countlyGlobal.member.app_restrict[key] || (countlyGlobal.member.app_restrict[key] && countlyGlobal.member.app_restrict[key].length === 0)))) {
                 $('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
             }
         }
@@ -1164,7 +1165,7 @@ app.route('/manage/db/indexes/:dbs/:collection', 'dbs', function(db, collection)
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.dbviewerView.featureName)) {
+    if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
         app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
     }
 });
