@@ -3696,9 +3696,9 @@ p.error_message_div {
     position: absolute;
     bottom: 0;
     right: 0;
-}
-
-.create-user-drawer {
+  }
+  
+  .create-user-drawer {
     width: 641px;
     height: 100%;
     right: 0;
@@ -3708,18 +3708,18 @@ p.error_message_div {
     background-color: #f9f9f9;
     border-left: 1px solid #d0d0d0;
     z-index: 10000;
-}
-
-.create-user-drawer .left-area {
+  }
+  
+  .create-user-drawer .left-area {
     float:left;
     margin-right: 16px;
-}
-
-.create-user-drawer .right-area {
+  }
+  
+  .create-user-drawer .right-area {
     float: left;
-}
-
-.create-user-drawer label {
+  }
+  
+  .create-user-drawer label {
     height: 12px;
     font-family: Ubuntu;
     font-size: 12px;
@@ -3729,40 +3729,40 @@ p.error_message_div {
     line-height: 1;
     letter-spacing: normal;
     color: #636363;
-}
-
-.create-user-drawer .img-upload {
+  }
+  
+  .create-user-drawer .img-upload {
     width: 190px;
     height: 232px;
     border-radius: 2px;
     border: solid 1px #d0d0d0;
     background-color: #ffffff;
     margin-top: 4px;
-}
-
-.create-user-drawer .drawer-input {
+  }
+  
+  .create-user-drawer .drawer-input {
     display: block;
     width: 366px;
     height: 28px;
     border-radius: 2px;
     border: solid 1px #d6d6d6;
     background-color: #ffffff;
-    margin-bottom: 16px;
+    margin-bottom: 15px;
     margin-top: 4px;
     padding: 0px 8px;
     font-family: Ubuntu;
-}
-
-.create-user-drawer .drawer-input::placeholder {
+  }
+  
+  .create-user-drawer .drawer-input::placeholder {
     color: #a9a9a9;
     font-style: 13px;
-}
-
-.create-user-drawer-detail {
+  }
+  
+  .create-user-drawer-detail {
     padding: 21px;
-}
-
-.create-user-drawer .upload-message {
+  }
+  
+  .create-user-drawer .upload-message {
     width: 126px;
     margin-left: 33px;
     margin-top: 100px;
@@ -3776,10 +3776,10 @@ p.error_message_div {
     letter-spacing: normal;
     text-align: center;
     color: #737373;
-}
-
-.create-user-drawer .access-area .header {
-    width: 566px;
+  }
+  
+  .create-user-drawer .access-area .header {
+    width: calc(100%  - 34px);
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
     border: solid 1px #dbdbdb;
@@ -3791,10 +3791,10 @@ p.error_message_div {
     color: #656565;
     font-stretch: normal;
     font-style: normal;  
-}
-
-.create-user-drawer .access-area .content {
-    width: 564px;
+  }
+  
+  .create-user-drawer .access-area .content {
+    width: calc(100%  - 36px);
     padding: 20px 13px;
     border-bottom-left-radius: 2px;
     border-bottom-right-radius: 2px;
@@ -3802,9 +3802,9 @@ p.error_message_div {
     border-right: solid 1px #dbdbdb;
     border-bottom: solid 1px #dbdbdb;
     background-color: #ffffff;
-}
-
-.create-user-drawer .checkbox-container {
+  }
+  
+  .create-user-drawer .checkbox-container {
     display: block;
     color: gray;
     position: relative;
@@ -3814,16 +3814,17 @@ p.error_message_div {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-
-.create-user-drawer .checkbox-container input {
+  }
+  
+  .create-user-drawer .checkbox-container input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
     border-radius: 2px;
-}
-
-.create-user-drawer .checkbox-checkmark {
+    left: 0px;
+  }
+  
+  .create-user-drawer .checkbox-checkmark {
     position: absolute;
     top: 0;
     left: 0;
@@ -3831,34 +3832,34 @@ p.error_message_div {
     width: 11px;
     border-radius: 3px;
     border: 1px solid #636363;
-}
-
-.create-user-drawer .countly-feedback-checkbox-container:hover input ~ .checkbox-checkmark {
+  }
+  
+  .create-user-drawer .countly-checkbox-container:hover input ~ .checkbox-checkmark {
     border: 1px solid #217923;
-}
-
-.create-user-drawer .countly-feedback-checkbox-container input:checked ~ .checkbox-checkmark {
+  }
+  
+  .create-user-drawer .countly-checkbox-container input:checked ~ .checkbox-checkmark {
     background-color: #2EB52B;
     border: 1px solid #2eb52b;
-}
-
-.create-user-drawer .checkbox-container input:checked:hover {
+  }
+  
+  .create-user-drawer .checkbox-container input:checked:hover {
     background-color: #217923;
-}
-
-.create-user-drawer .checkbox-checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-/* Show the checkmark when checked */
-.create-user-drawer .checkbox-container input:checked ~ .checkbox-checkmark:after {
-    display: block;
-}
-
-/* Style the checkmark/indicator */
-.create-user-drawer .checkbox-container .checkbox-checkmark:after {
+  }
+  
+  .create-user-drawer .checkbox-checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+  }
+  
+  /* Show the checkmark when checked */
+  .create-user-drawer .checkbox-container input:checked ~ .checkbox-checkmark:after {
+      display: block;
+  }
+  
+  /* Style the checkmark/indicator */
+  .create-user-drawer .checkbox-container .checkbox-checkmark:after {
     left: 2.5px;
     top: 0.6px;
     width: 2.5px;
@@ -3868,15 +3869,15 @@ p.error_message_div {
     -webkit-transform: rotate(45deg);
     -ms-transform: rotate(45deg);
     transform: rotate(45deg);
-}
-
-.create-user-drawer .check-green {
+  }
+  
+  .create-user-drawer .check-green {
     font-size: medium !important;
     float:left;
-}
-
-.create-user-drawer .checkbox-label {
-    /* font-family: Ubuntu; */
+  }
+  
+  .create-user-drawer .checkbox-label {
+      /* font-family: Ubuntu; */
     font-size: 12px;
     /* font-weight: normal; */
     margin-top: 2px;
@@ -3888,13 +3889,13 @@ p.error_message_div {
     color: #666666;
     float:left;
     border-bottom: 1px dashed #979797;
-}
-
-.create-user-drawer .permission-header .checkbox-label {
+  }
+  
+  .create-user-drawer .permission-header .checkbox-label {
     border-bottom: none;
-}
-
-.create-user-drawer .drawer-header {
+  }
+  
+  .create-user-drawer .drawer-header {
     font-family: Ubuntu;
     font-size: 15px;
     font-weight: 500;
@@ -3905,9 +3906,9 @@ p.error_message_div {
     color: #656565;
     float:left;
     width: 50%;
-}
-
-.create-user-drawer .drawer-information {
+  }
+  
+  .create-user-drawer .drawer-information {
     opacity: 0.68;
     font-family: Ubuntu;
     font-size: 11px;
@@ -3921,22 +3922,22 @@ p.error_message_div {
     float:left;
     width: 50%;
     margin-top: 5px;
-}
-
-.create-user-drawer #sub-header-1th {
+  }
+  
+  .create-user-drawer #sub-header-1th {
     margin-top: 48px;
     width: calc(100% - 11px);
-}
-
-.create-user-drawer .admin-access, .create-user-drawer .user-access {
+  }
+  
+  .create-user-drawer .admin-access, .create-user-drawer .user-access, .create-user-drawer .role-section {
     margin-top: 16px;
-}
-
-.create-user-drawer .header .section-title, .create-user-drawer .drawer-header {
+  }
+  
+  .create-user-drawer .header .section-title, .create-user-drawer .drawer-header {
     text-transform: uppercase;
-}
-
-.create-user-drawer .header .subtitle {
+  }
+  
+  .create-user-drawer .header .subtitle {
     opacity: 0.68;
     font-family: Ubuntu;
     font-size: 11px;
@@ -3947,9 +3948,9 @@ p.error_message_div {
     letter-spacing: normal;
     color: #696969;
     text-decoration: none;
-}
-
-.create-user-drawer .app-selector {
+  }
+  
+  .create-user-drawer .app-selector {
     font-family: Ubuntu;
     font-size: 12px;
     font-weight: normal;
@@ -3964,13 +3965,13 @@ p.error_message_div {
     background-color: #ececec;
     padding: 15px 12px;
     width: calc(100% - 34px);
-}
-
-.create-user-drawer .user-access .section-title {
+  }
+  
+  .user-access .section-title {
     padding: 5px 0px;
-}
-
-.create-user-drawer .user-access .permission-header {
+  }
+  
+  .user-access .permission-header {
     border-left: 1px solid #dbdbdb;
     border-right: 1px solid #dbdbdb;
     border-bottom: 1px solid #dbdbdb;
@@ -3978,9 +3979,9 @@ p.error_message_div {
     width: calc(100% - 34px);
     padding: 8px 12px;
     height: 12px;
-}
-
-.create-user-drawer .user-access .permission-header .table-description {
+  }
+  
+  .user-access .permission-header .table-description {
     font-family: Ubuntu;
     text-transform: uppercase;
     font-family: Ubuntu;
@@ -3994,19 +3995,19 @@ p.error_message_div {
     float: left;
     width: 15%;
     text-align: center;
-}
-
-.create-user-drawer .user-access .permission-header .first-description {
+  }
+  
+  .user-access .permission-header .first-description {
     width: 40%;
     text-align: left;
-}
-
-.create-user-drawer .admin-access .app-selector {
+  }
+  
+  .admin-access .app-selector {
     border-bottom-left-radius: 2px;
     border-bottom-right-radius: 2px;
-}
-
-.create-user-drawer .first-column {
+  }
+  
+  .create-user-drawer .first-column {
     width: 40% !important;
     text-align: left !important;
     float:left;
@@ -4018,46 +4019,93 @@ p.error_message_div {
     line-height: normal;
     letter-spacing: normal;
     color: #666666;
-}
-
-.create-user-drawer .permission-column {
+  }
+  
+  .create-user-drawer .permission-column {
     width: 15%;
     text-align: center;
     float:left;
-}
-
-.create-user-drawer .permission-item {
+  }
+  
+  .create-user-drawer .permission-item {
     background-color: white;
     padding: 12px 12px;
     width: calc(100% - 24px);
-}
-
-.create-user-drawer .gray {
+  }
+  
+  .create-user-drawer .gray {
     background-color: #f7f7f7;
-}
-
-.create-user-drawer .permission-table {
+  }
+  
+  .create-user-drawer .permission-table {
     border: 1px solid #dbdbdb;
     border-bottom-left-radius: 2px;
     border-bottom-right-radius: 2px;
     width: calc(100% - 10px);
-}
-
-.create-user-drawer .permission-header .checkbox-container {
+    height: 200px;
+    overflow-y: scroll;
+  }
+  
+  .create-user-drawer .permission-header .checkbox-container {
     margin-left: 5px;
-}
-
-.create-user-drawer .permission-column .checkbox-container {
+  }
+  
+  .create-user-drawer .permission-column .checkbox-container {
     margin-left: 30px;
-}
-
-.create-user-drawer .selector-label { 
+  }
+  
+  .create-user-drawer .selector-label { 
     float:left;
     width: 7%;
-    margin-top:10px;
-}
+    margin-top:8px;
+  }
   
-.create-user-drawer .selector-wrapper {
+  .create-user-drawer .selector-wrapper {
     float:left;
     width: 93%;
-}
+  }
+  
+  .create-user-drawer .create-user-button {
+    border: none;
+    border-radius: 2px;
+    font-size: 14px !important;
+    padding: 10px 25px 10px 25px;
+    outline: none;
+    margin-right: 5px;
+    float: right;
+    margin-right: 30px;
+    margin-top: 5px;
+  }
+  
+  .create-user-drawer .selectize-input {
+    min-height: 30px !important;
+    height: 30px !important; 
+    padding: 4px !important;
+  }
+  
+  .create-user-drawer #new-user-group-select {
+    width: calc(100% - 2px);
+    height: 24px;
+    padding: 2px 0px;
+    margin-top: 7px;
+  }
+  
+  .create-user-drawer #new-user-group-select .select-items {
+    width: 100% !important;
+  }
+  
+  .create-user-drawer .red-text, .create-user-drawer .green-text {
+    padding-left: 0px;
+    vertical-align: middle;
+  }
+  
+  .create-user-drawer .file-selected {
+    border:2px solid #2EB52B;
+  }
+  
+  .create-user-drawer .create-new-user {
+    float: right;
+    border: none;
+    margin-right: 25px;
+    margin-top: 10px;
+  }  
