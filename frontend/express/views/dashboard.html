@@ -1619,10 +1619,18 @@
                                 <div class="left title" data-localize="events.top-events.yesterday"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
-                                    <div class="col">
-                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
-                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-                                    </div>
+                                    {{isDeletedEvent}}
+                                        {{#ifCond isDeletedEvent "==" true}} 
+                                            <div style="cursor: default;pointer-events: none;" class="col">
+                                                <h4 style="cursor: default;color:#DDD">{{this.name}}</h4>
+                                                <label style="cursor: default;color:#DDD">{{this.count}}</label> <span style="color:#DDD"; class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{else}}
+                                            <div class="col">
+                                                <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                                <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{/ifCond}}
                                     {{/eachOfObjectValue}}
                                 </div>
                             </div>
@@ -1630,10 +1638,19 @@
                                 <div class="left title" data-localize="events.top-events.30days"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventData30Day}}
-                                    <div class="col">
-                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
-                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-                                    </div>
+                                    {{isDeletedEvent}}
+                                    {{#ifCond isDeletedEvent "==" true}} 
+                                            <div style="cursor: default;pointer-events: none;" class="col">
+                                                <h4 style="cursor: default;color:#DDD">{{this.name}}</h4>
+                                                <label style="cursor: default;color:#DDD">{{this.count}}</label> <span style="color:#DDD"; class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{else}}
+                                            <div class="col">
+                                            
+                                                <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                                <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                    {{/ifCond}}
                                     {{/eachOfObjectValue}}
                                 </div>
                             </div>
