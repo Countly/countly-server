@@ -6020,6 +6020,9 @@ window.EventsOverviewView = countlyView.extend({
                     dd.data[index].classdiv = element.classdiv;
                     dd.data[index].arrow_class = element.arrow_class;
                     dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
+                    if (!countlyEvent.getEventMap(true, false)[dd.data[index].name]) {
+                        dd.data[index].isDeletedEvent = true;
+                    }
                 }
             }
             self.refresh(true);
@@ -6035,6 +6038,9 @@ window.EventsOverviewView = countlyView.extend({
                     dd.data[index].classdiv = element.classdiv;
                     dd.data[index].arrow_class = element.arrow_class;
                     dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
+                    if (!countlyEvent.getEventMap(true, false)[dd.data[index].name]) {
+                        dd.data[index].isDeletedEvent = true;
+                    }
                 }
             }
             self.refresh(true);
