@@ -758,6 +758,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         facetLine.push({$limit: dataLength});
                     }
 
+                    if (params.qstring.project) {
+                        query.push({$project: {"Display name": "$sortcol", "view": 1}});
+                    }
                     query.push({$facet: {data: facetLine, count: [{$count: 'count'}]}});
                     common.db.collection("app_viewsmeta" + params.qstring.app_id).aggregate(query, {allowDiskUse: true}, function(err1, res) {
                         if (err1) {
