@@ -10,7 +10,7 @@ var common = require("./common.js"),
     log = require('./log.js')('core:rights');
 
 var authorize = require('./authorizer.js'); //for token validations
-var featuresNoNeedAppId = ['dashboards'];
+var featuresNoNeedAppId = ['dashboards', 'global_users'];
 
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
@@ -629,12 +629,10 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
-                if (featuresNoNeedAppId.indexOf(feature) === -1) {
-                    if (typeof params.qstring.app_id === "undefined") {
-                        common.returnMessage(params, 401, 'No app_id provided');
-                        reject('No app_id provided');
-                        return false;
-                    }
+                if (featuresNoNeedAppId.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
+                    common.returnMessage(params, 401, 'No app_id provided');
+                    reject('No app_id provided');
+                    return false;
                 }
 
                 // is member.permission exist?
@@ -674,17 +672,20 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                 }
 
                 common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
-                    if (!app) {
+                    if (!app && featuresNoNeedAppId.indexOf(feature) === -1) {
                         common.returnMessage(params, 401, 'App does not exist');
                         reject('App does not exist');
                         return false;
                     }
+                    else if (app) {
+                        params.app_id = app._id;
+                        params.app_cc = app.country;
+                        params.appTimezone = app.timezone;
+                        params.app = app;
+                        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                    }
+
                     params.member = member;
-                    params.app_id = app._id;
-                    params.app_cc = app.country;
-                    params.appTimezone = app.timezone;
-                    params.app = app;
-                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
                         if (!params.res.finished) {
@@ -694,10 +695,12 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         return false;
                     }
 
-                    plugins.dispatch("/o/validate", {
-                        params: params,
-                        app: app
-                    });
+                    if (app) {
+                        plugins.dispatch("/o/validate", {
+                            params: params,
+                            app: app
+                        });
+                    }
 
                     resolve(callbackParam);
                 });
@@ -752,6 +755,12 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
+                if (featuresNoNeedAppId.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
+                    common.returnMessage(params, 401, 'No app_id provided');
+                    reject('No app_id provided');
+                    return false;
+                }
+
                 if (!member.global_admin) {
                     if (typeof member.permission !== 'undefined') {
                         if (feature.substr(0, 7) === 'global_') {
@@ -784,7 +793,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                 }
 
                 common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
-                    if (!app) {
+                    if (!app && featuresNoNeedAppId.indexOf(feature) === -1) {
                         common.returnMessage(params, 401, 'App does not exist');
                         reject('App does not exist');
                         return false;
@@ -794,10 +803,12 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         reject('App is locked');
                         return false;
                     }
-
-                    params.app_id = app._id;
-                    params.appTimezone = app.timezone;
-                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                    else if (app) {
+                        params.app_id = app._id;
+                        params.appTimezone = app.timezone;
+                        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                    }
+                    
                     params.member = member;
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
