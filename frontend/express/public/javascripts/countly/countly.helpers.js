@@ -870,8 +870,9 @@
                 data.skip = 0;
             }*/
 
-            delete data.projection;
-            if (dialog.find(".export-columns-selector")) {
+
+            if (dialog.find(".export-columns-selector:visible").length > 0) {
+                delete data.projection;
                 if (dialog.find(".export-all-columns").hasClass("fa-check-square")) {
                     //export all columns no need for projections
                 }
