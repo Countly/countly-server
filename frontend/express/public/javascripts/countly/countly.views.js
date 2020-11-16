@@ -8438,6 +8438,28 @@ app.addAppSwitchCallback(function(appId) {
     else {
         $('.sidebar-menu #events-submenu .events-blueprint-side-menu').css("display", "none");
     }
+
+    $.when(countlyVersionHistoryManager.initialize()).then(function() {
+        var versions = countlyVersionHistoryManager.getData(true) || {fs: [], db: [], pkg: ""};
+        versions = [versions.pkg, versions.db[0] || countlyGlobal.countlyVersion, versions.fs[0] || countlyGlobal.countlyVersion];
+        for (var z = 0; z < versions.length; z++) {
+            if (versions[z].version) {
+                versions[z] = versions[z].version;
+            }
+            versions[z] = versions[z].split(".");
+            if (versions[z].length > 2) {
+                versions[z] = versions[z].slice(0, 2);
+            }
+            versions[z] = versions[z].join(".");
+        }
+
+        if (versions[0] !== versions[1] || versions[1] !== versions[2]) {
+            CountlyHelpers.notify({
+                title: jQuery.i18n.map["version_history.alert-title"],
+                message: jQuery.i18n.map["version_history.alert-message"]
+            });
+        }
+    });
 });
 
 
