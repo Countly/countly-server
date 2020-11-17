@@ -2447,4 +2447,138 @@ common.mergeQuery = function(ob1, ob2) {
     return ob1;
 };
 
+class ServerTable {
+
+    constructor(queryString, options = {}) {
+
+        // Initial values
+        this.queryString = queryString;
+        this.skip = null;
+        this.limit = null;
+        this.searchTerm = null;
+        this.sorting = null;
+        this.echo = "0";
+        this.columns = options.columns;
+        this.defaultSorting = options.defaultSorting;
+        this.searchableFields = options.searchableFields || [];
+        this.searchStrategy = options.searchStrategy || "regex";
+
+        // 
+        if (this.columns) {
+            if (this.queryString.iSortCol_0 && this.queryString.sSortDir_0) {
+                var sortField = this.columns[parseInt(this.queryString.iSortCol_0, 10)];
+                if (sortField) {
+                    this.sorting = {[sortField]: this.queryString.sSortDir_0};
+                }
+            }
+        }
+
+        if (!this.sorting && this.defaultSorting) {
+            this.sorting = this.defaultSorting;
+        }
+
+        if (this.queryString.iDisplayStart) {
+            this.skip = parseInt(this.queryString.iDisplayStart);
+        }
+
+        if (this.queryString.iDisplayLength) {
+            this.limit = parseInt(this.queryString.iDisplayLength);
+        }
+
+        if (this.queryString.sSearch && this.queryString.sSearch !== "") {
+            this.searchTerm = this.queryString.sSearch;
+        }
+
+        if (this.queryString.sEcho) {
+            this.echo = this.queryString.sEcho;
+        }
+    }
+
+    _getSearchStatement() {
+        if (this.searchStrategy === "regex") {
+            return {$regex: this.searchTerm, $options: 'i'};
+        }
+        return this.searchTerm;
+    }
+
+    getAggregationPipeline(initialPipeline = [], filteredPipeline = []) {
+        var pipeline = [...initialPipeline]; // Initial pipeline (beforeMatch)
+        var $facetPagedData = [];
+        var $facetFilteredTotal = [];
+
+        if (this.searchTerm !== null && this.searchableFields) {
+            var matcher = null;
+            if (this.searchableFields.length === 1) {
+                matcher = { [this.searchableFields[0]]: this._getSearchStatement() };
+            }
+            else {
+                var searchOr = [];
+                this.searchableFields.forEach((field) => {
+                    searchOr.push({ [field]: this._getSearchStatement() });
+                });
+                matcher = { $or: searchOr};
+            }
+            $facetPagedData.push({$match: matcher});
+            $facetFilteredTotal.push({$match: matcher});
+        }
+        $facetPagedData.push(...filteredPipeline);
+        $facetFilteredTotal.push(...filteredPipeline); // TODO: optimize (no need to do pipeline operations unless there is match) 
+        $facetFilteredTotal.push({$group: {"_id": null, "value": {$sum: 1}}});
+        if (this.sorting) {
+            var _tempSorting = {};
+            for (var sortKey in this.sorting) {
+                if (this.sorting[sortKey] === "asc") {
+                    _tempSorting[sortKey] = 1;
+                }
+                else {
+                    _tempSorting[sortKey] = -1;
+                }
+            }
+            $facetPagedData.push({$sort: _tempSorting});
+        }
+        if (this.skip !== null) {
+            $facetPagedData.push({$skip: this.skip});
+        }
+        if (this.limit !== null && this.limit > 0) {
+            $facetPagedData.push({$limit: this.limit});
+        }
+        pipeline.push({
+            $facet:
+            {
+                fullTotal: [{$group: {"_id": null, "value": {$sum: 1}}}],
+                filteredTotal: $facetFilteredTotal,
+                pagedData: $facetPagedData
+            }
+        });
+        return pipeline;
+    }
+
+    getProcessedResult(queryResult) {
+        var fullTotal = 0,
+            filteredTotal = 0,
+            pagedData = [];
+
+        if (queryResult && queryResult[0]) {
+            var facets = queryResult[0];
+            if (facets.fullTotal && facets.fullTotal[0] && facets.fullTotal[0].value) {
+                fullTotal = facets.fullTotal[0].value;
+            }
+            if (facets.filteredTotal && facets.filteredTotal[0] && facets.filteredTotal[0].value) {
+                filteredTotal = facets.filteredTotal[0].value;
+            }
+            if (facets.pagedData) {
+                pagedData = facets.pagedData;
+            }
+        }
+        return {
+            sEcho: this.echo,
+            iTotalRecords: fullTotal,
+            iTotalDisplayRecords: filteredTotal,
+            aaData: pagedData
+        };
+    }
+}
+
+common.ServerTable = ServerTable;
+
 module.exports = common;
