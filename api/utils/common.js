@@ -2553,7 +2553,7 @@ class ServerTable {
         return pipeline;
     }
 
-    getProcessedResult(queryResult) {
+    getProcessedResult(queryResult, processFn) {
         var fullTotal = 0,
             filteredTotal = 0,
             pagedData = [];
@@ -2568,6 +2568,12 @@ class ServerTable {
             }
             if (facets.pagedData) {
                 pagedData = facets.pagedData;
+            }
+        }
+        if (processFn) {
+            var processed = processFn(pagedData);
+            if (processed) {
+                pagedData = processed;
             }
         }
         return {
