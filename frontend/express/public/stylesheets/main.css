@@ -3742,7 +3742,7 @@ p.error_message_div {
   
   .create-user-drawer .drawer-input {
     display: block;
-    width: 366px;
+    width: 351px;
     height: 28px;
     border-radius: 2px;
     border: solid 1px #d6d6d6;
@@ -4109,3 +4109,11 @@ p.error_message_div {
     margin-right: 25px;
     margin-top: 10px;
   }  
+
+  .add-new-permission-set {
+    margin-left: 0px;
+    margin-top: 15px;
+    background-color: #ef9c42;
+    color: white;
+    border: none;
+  }
