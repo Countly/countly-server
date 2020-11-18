@@ -2447,7 +2447,7 @@ common.mergeQuery = function(ob1, ob2) {
     return ob1;
 };
 
-class ServerTable {
+class DataTable {
 
     constructor(queryString, {
         columnOrder = [],
@@ -2599,6 +2599,6 @@ class ServerTable {
     }
 }
 
-common.ServerTable = ServerTable;
+common.DataTable = DataTable;
 
 module.exports = common;
