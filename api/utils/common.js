@@ -2454,10 +2454,9 @@ class DataTable {
         defaultSorting = null,
         searchableFields = [],
         searchStrategy = "regex",
-        outputProjection = null
+        outputProjection = null,
+        defaultOutputFormat = "full"
     } = {}) {
-
-        // Initial values
         this.queryString = queryString;
         this.skip = null;
         this.limit = null;
@@ -2470,6 +2469,7 @@ class DataTable {
         this.searchableFields = searchableFields;
         this.searchStrategy = searchStrategy;
         this.outputProjection = outputProjection;
+        this.defaultOutputFormat = defaultOutputFormat;
         //
         if (this.columnOrder && this.columnOrder.length > 0) {
             if (this.queryString.iSortCol_0 && this.queryString.sSortDir_0) {
@@ -2590,12 +2590,20 @@ class DataTable {
                 pagedData = processed;
             }
         }
-        return {
-            sEcho: this.echo,
-            iTotalRecords: fullTotal,
-            iTotalDisplayRecords: filteredTotal,
-            aaData: pagedData
-        };
+
+        var outputFormat = this.queryString.outputFormat || this.defaultOutputFormat;
+
+        if (outputFormat === "full") {
+            return {
+                sEcho: this.echo,
+                iTotalRecords: fullTotal,
+                iTotalDisplayRecords: filteredTotal,
+                aaData: pagedData
+            };
+        }
+        else {
+            return pagedData;
+        }
     }
 }
 
