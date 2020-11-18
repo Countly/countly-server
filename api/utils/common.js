@@ -2450,10 +2450,11 @@ common.mergeQuery = function(ob1, ob2) {
 class ServerTable {
 
     constructor(queryString, {
-        columns = [],
+        columnOrder = [],
         defaultSorting = null,
         searchableFields = [],
-        searchStrategy = "regex"
+        searchStrategy = "regex",
+        outputProjection = null
     } = {}) {
 
         // Initial values
@@ -2464,14 +2465,15 @@ class ServerTable {
         this.sorting = null;
         this.echo = "0";
         //
-        this.columns = columns;
+        this.columnOrder = columnOrder;
         this.defaultSorting = defaultSorting;
         this.searchableFields = searchableFields;
         this.searchStrategy = searchStrategy;
+        this.outputProjection = outputProjection;
         //
-        if (this.columns && this.columns.length > 0) {
+        if (this.columnOrder && this.columnOrder.length > 0) {
             if (this.queryString.iSortCol_0 && this.queryString.sSortDir_0) {
-                var sortField = this.columns[parseInt(this.queryString.iSortCol_0, 10)];
+                var sortField = this.columnOrder[parseInt(this.queryString.iSortCol_0, 10)];
                 if (sortField) {
                     this.sorting = {[sortField]: this.queryString.sSortDir_0};
                 }
@@ -2550,6 +2552,9 @@ class ServerTable {
         }
         if (this.limit !== null && this.limit > 0) {
             $facetPagedData.push({$limit: this.limit});
+        }
+        if (this.outputProjection !== null) {
+            $facetPagedData.push({$project: this.outputProjection});
         }
         pipeline.push({
             $facet:
