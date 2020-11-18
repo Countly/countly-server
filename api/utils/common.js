@@ -2449,7 +2449,12 @@ common.mergeQuery = function(ob1, ob2) {
 
 class ServerTable {
 
-    constructor(queryString, options = {}) {
+    constructor(queryString, {
+        columns = [],
+        defaultSorting = null,
+        searchableFields = [],
+        searchStrategy = "regex"
+    } = {}) {
 
         // Initial values
         this.queryString = queryString;
@@ -2458,13 +2463,13 @@ class ServerTable {
         this.searchTerm = null;
         this.sorting = null;
         this.echo = "0";
-        this.columns = options.columns;
-        this.defaultSorting = options.defaultSorting;
-        this.searchableFields = options.searchableFields || [];
-        this.searchStrategy = options.searchStrategy || "regex";
-
-        // 
-        if (this.columns) {
+        //
+        this.columns = columns;
+        this.defaultSorting = defaultSorting;
+        this.searchableFields = searchableFields;
+        this.searchStrategy = searchStrategy;
+        //
+        if (this.columns && this.columns.length > 0) {
             if (this.queryString.iSortCol_0 && this.queryString.sSortDir_0) {
                 var sortField = this.columns[parseInt(this.queryString.iSortCol_0, 10)];
                 if (sortField) {
@@ -2475,6 +2480,19 @@ class ServerTable {
 
         if (!this.sorting && this.defaultSorting) {
             this.sorting = this.defaultSorting;
+        }
+
+        if (this.sorting) {
+            var _tempSorting = {};
+            for (var sortKey in this.sorting) {
+                if (this.sorting[sortKey] === "asc") {
+                    _tempSorting[sortKey] = 1;
+                }
+                else {
+                    _tempSorting[sortKey] = -1;
+                }
+            }
+            this.sorting = _tempSorting;
         }
 
         if (this.queryString.iDisplayStart) {
@@ -2506,7 +2524,7 @@ class ServerTable {
         var $facetPagedData = [];
         var $facetFilteredTotal = [];
 
-        if (this.searchTerm !== null && this.searchableFields) {
+        if (this.searchTerm !== null && this.searchableFields && this.searchableFields.length > 0) {
             var matcher = null;
             if (this.searchableFields.length === 1) {
                 matcher = { [this.searchableFields[0]]: this._getSearchStatement() };
@@ -2524,17 +2542,8 @@ class ServerTable {
         $facetPagedData.push(...filteredPipeline);
         $facetFilteredTotal.push(...filteredPipeline); // TODO: optimize (no need to do pipeline operations unless there is match) 
         $facetFilteredTotal.push({$group: {"_id": null, "value": {$sum: 1}}});
-        if (this.sorting) {
-            var _tempSorting = {};
-            for (var sortKey in this.sorting) {
-                if (this.sorting[sortKey] === "asc") {
-                    _tempSorting[sortKey] = 1;
-                }
-                else {
-                    _tempSorting[sortKey] = -1;
-                }
-            }
-            $facetPagedData.push({$sort: _tempSorting});
+        if (this.sorting !== null) {
+            $facetPagedData.push({$sort: this.sorting});
         }
         if (this.skip !== null) {
             $facetPagedData.push({$skip: this.skip});
