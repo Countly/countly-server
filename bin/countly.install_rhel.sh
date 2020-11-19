@@ -35,6 +35,7 @@ if grep -q -i "release 8" /etc/redhat-release ; then
     ln -sf /usr/local/bin/supervisord /usr/bin/supervisord
 else
     if grep -q -i "release 6" /etc/redhat-release ; then
+        yum -y install policycoreutils-python
         #install nginx
         echo "[nginx]
 name=nginx repo
@@ -55,6 +56,7 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
         bash "$DIR/scripts/install-google-chrome.sh";
         bash "$DIR/scripts/install-python27.sh"
     elif grep -q -i "release 7" /etc/redhat-release ; then
+        yum -y install policycoreutils-python
         #install nginx
         echo "[nginx]
 name=nginx repo
@@ -77,8 +79,6 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
         echo "Unsupported OS version, only support RHEL/Centos 8, 7 and 6"
         exit 1
     fi
-
-    yum -y install policycoreutils-python
 fi
 
 #install nodejs
