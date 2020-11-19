@@ -3259,9 +3259,9 @@ window.ManageUsersView = countlyView.extend({
     permissionSets: [],
     memberModel: {},
     admin_apps: [],
-    user_apps: [],
+    user_apps: [[]],
     accessible_apps: [],
-    permission_set_index: 0,
+    permission_set_count: 1,
     user_app_selectors: [],
     // TODO: don't rely plugins for features. change this section
     features: {
@@ -3337,28 +3337,28 @@ window.ManageUsersView = countlyView.extend({
         featureTemplate += '    <div class="permission-column">';
         featureTemplate += '        <div class="checkbox-container">';
         featureTemplate += '            <input class="permission-checkbox" id="c-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
-        featureTemplate += '            <div class="c-' + featureName + ' fa fa-square-o check-green"></div>';
+        featureTemplate += '            <div class="c-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
         featureTemplate += '            <div style="clear:both;"></div>';
         featureTemplate += '        </div>';
         featureTemplate += '    </div>';
         featureTemplate += '    <div class="permission-column">';
         featureTemplate += '        <div class="checkbox-container">';
         featureTemplate += '            <input class="permission-checkbox" id="r-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
-        featureTemplate += '            <div class="r-' + featureName + ' fa fa-square-o check-green"></div>';
+        featureTemplate += '            <div class="r-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
         featureTemplate += '            <div style="clear:both;"></div>';
         featureTemplate += '        </div>';
         featureTemplate += '    </div>';
         featureTemplate += '    <div class="permission-column">';
         featureTemplate += '        <div class="checkbox-container">';
         featureTemplate += '            <input class="permission-checkbox" id="u-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
-        featureTemplate += '            <div class="u-' + featureName + ' fa fa-square-o check-green"></div>';
+        featureTemplate += '            <div class="u-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
         featureTemplate += '            <div style="clear:both;"></div>';
         featureTemplate += '        </div>';
         featureTemplate += '    </div>';
         featureTemplate += '    <div class="permission-column">';
         featureTemplate += '        <div class="checkbox-container">';
         featureTemplate += '            <input class="permission-checkbox" id="d-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
-        featureTemplate += '            <div class="d-' + featureName + ' fa fa-square-o check-green"></div>';
+        featureTemplate += '            <div class="d-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
         featureTemplate += '            <div style="clear:both;"></div>';
         featureTemplate += '        </div>';
         featureTemplate += '    </div>';
@@ -3422,8 +3422,8 @@ window.ManageUsersView = countlyView.extend({
         for (var i in types) {
             permissionTable +=          '<div class="table-description">';
             permissionTable +=              '<div class="checkbox-container">';
-            permissionTable +=              '<input id="mark-all-' + types[i] + '" data-state="0" type="checkbox">';
-            permissionTable +=              '<div class="mark-all-create-checkbox fa fa-square-o check-green"></div>';
+            permissionTable +=              '<input class="mark-all" id="mark-all-' + types[i] + '-' + index + '" data-state="0" type="checkbox">';
+            permissionTable +=              '<div class="mark-all-' + types[i] + '-checkbox-' + index + ' fa fa-square-o check-green"></div>';
             permissionTable +=              '<div class="checkbox-label">' + types[i] + '</div>';
             permissionTable +=              '<div class="clear:both"></div>';
             permissionTable +=          '</div>';
@@ -3433,7 +3433,7 @@ window.ManageUsersView = countlyView.extend({
         permissionTable +=     '</div>';
         permissionTable += '<div class="permission-table" id="permission-table-' + index + '"></div>';
         
-        $('.admin-access').after(permissionTable);
+        $('.add-new-permission-set').before(permissionTable);
 
         // jQuery selectize handler for projection input
         var userAppSelector = $('#user-app-selector-' + index).selectize({
@@ -3855,186 +3855,68 @@ window.ManageUsersView = countlyView.extend({
             }
         });
 
-        function giveFeaturePermission(app, permissionType, feature, permissionObject) {
-            permissionObject[permissionType][app].all = false;
-            permissionObject[permissionType][app].allowed[feature] = true;
+        function giveFeaturePermission(permissionType, feature, permissionObject) {
+            permissionObject[permissionType].all = false;
+            permissionObject[permissionType].allowed[feature] = true;
             return permissionObject;
         }
 
-        function removeFeaturePermission(app, permissionType, feature, permissionObject) {
-            delete permissionObject[permissionType][app].allowed[feature];
+        function removeFeaturePermission(permissionType, feature, permissionObject) {
+            delete permissionObject[permissionType].allowed[feature];
             return permissionObject;
         }
 
         $('body').on('click', '.permission-checkbox', function() {
-            var specific_selector = $(this).attr('id');
-            var permission_type = specific_selector.split("-")[0];
-            var feature = specific_selector.split("-")[1];
-            if ($('#' + specific_selector).data('state') === 1) {
-                $('.' + specific_selector).removeClass('fa-check-square');
-                $('.' + specific_selector).addClass('fa-square-o');
-                $('#' + specific_selector).data('state', 0);
+            var selector = $(this).attr('id').split("-");
+            var permission_type = selector[0];
+            var feature = selector[1];
+            var index = selector[2];
 
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = removeFeaturePermission(self.user_apps[i], permission_type, feature, self.memberPermission);
-                }
+            if ($('#' + $(this).attr('id')).data('state') === 1) {
+                $('.' + $(this).attr('id')).removeClass('fa-check-square');
+                $('.' + $(this).attr('id')).addClass('fa-square-o');
+                $('#' + $(this).attr('id')).data('state', 0);
 
-                delete self.permissionSets[0][permission_type].allowed[feature];
+                self.permissionSets[index] = removeFeaturePermission(permission_type, feature, self.permissionSets[index]);
             }
             else {
-                $('.' + specific_selector).addClass('fa-check-square');
-                $('.' + specific_selector).removeClass('fa-square-o');
-                $('#' + specific_selector).data('state', 1);
+                $('.' + $(this).attr('id')).addClass('fa-check-square');
+                $('.' + $(this).attr('id')).removeClass('fa-square-o');
+                $('#' + $(this).attr('id')).data('state', 1);
 
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = giveFeaturePermission(self.user_apps[i], permission_type, feature, self.memberPermission);
-                }
-
-                self.permissionSets[0][permission_type].allowed[feature] = true;
+                self.permissionSets[index] = giveFeaturePermission(permission_type, feature, self.permissionSets[index]);
             }
         });
 
-        $('#mark-all-create').on('click', function() {
-            if ($('#mark-all-create').data('state') === 1) {
-                $('.mark-all-create-checkbox').removeClass('fa-check-square');
-                $('.mark-all-create-checkbox').addClass('fa-square-o');
-                $('#mark-all-create').data('state', 0);
+        $('body').on('click', '.mark-all', function() {
+            var index = $(this).attr('id').split('-')[3];
+            var type = $(this).attr('id').split('-')[2];
 
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = removePermissionByType(self.user_apps[i], 'c', self.memberPermission);
-                }
+            if ($('#mark-all-' + type + '-' + index).data('state') === 1) {
+                $('.mark-all-' + type + '-checkbox-' + index).removeClass('fa-check-square');
+                $('.mark-all-' + type + '-checkbox-' + index).addClass('fa-square-o');
+                $('#mark-all-' + type + '-' + index).data('state', 0);
 
                 for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.c-' + self.features.plugins[i]).removeClass('fa-check-square');
-                    $('.c-' + self.features.plugins[i]).addClass('fa-square-o');
-                    $('#c-' + self.features.plugins[i]).data('state', 0);
+                    $('.' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).removeClass('fa-check-square');
+                    $('.' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).addClass('fa-square-o');
+                    $('#' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).data('state', 0);
                 }
 
-                self.permissionSets[0].c.all = false;
+                self.permissionSets[index] = removePermissionByType(type.substr(0, 1), self.permissionSets[index]);
             }
             else {
-                $('.mark-all-create-checkbox').addClass('fa-check-square');
-                $('.mark-all-create-checkbox').removeClass('fa-square-o');
-                $('#mark-all-create').data('state', 1);
+                $('.mark-all-' + type + '-checkbox-' + index).addClass('fa-check-square');
+                $('.mark-all-' + type + '-checkbox-' + index).removeClass('fa-square-o');
+                $('#mark-all-' + type + '-' + index).data('state', 1);
 
                 for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.c-' + self.features.plugins[i]).addClass('fa-check-square');
-                    $('.c-' + self.features.plugins[i]).removeClass('fa-square-o');
-                    $('#c-' + self.features.plugins[i]).data('state', 1);
+                    $('.' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).addClass('fa-check-square');
+                    $('.' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).removeClass('fa-square-o');
+                    $('#' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).data('state', 1);
                 }
 
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = givePermissionByType(self.user_apps[i], 'c', self.memberPermission);
-                }
-
-                self.permissionSets[0].c.all = true;
-            }
-        });
-
-        $('#mark-all-read').on('click', function() {
-            if ($('#mark-all-read').data('state') === 1) {
-                $('.mark-all-read-checkbox').removeClass('fa-check-square');
-                $('.mark-all-read-checkbox').addClass('fa-square-o');
-                $('#mark-all-read').data('state', 0);
-
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = removePermissionByType(self.user_apps[i], 'r', self.memberPermission);
-                }
-
-                for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.r-' + self.features.plugins[i]).removeClass('fa-check-square');
-                    $('.r-' + self.features.plugins[i]).addClass('fa-square-o');
-                    $('#r-' + self.features.plugins[i]).data('state', 0);
-                }
-
-                self.permissionSets[0].r.all = false;
-            }
-            else {
-                $('.mark-all-read-checkbox').addClass('fa-check-square');
-                $('.mark-all-read-checkbox').removeClass('fa-square-o');
-                $('#mark-all-read').data('state', 1);
-
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = givePermissionByType(self.user_apps[i], 'r', self.memberPermission);
-                }
-
-                for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.r-' + self.features.plugins[i]).addClass('fa-check-square');
-                    $('.r-' + self.features.plugins[i]).removeClass('fa-square-o');
-                    $('#r-' + self.features.plugins[i]).data('state', 1);
-                }
-
-                self.permissionSets[0].r.all = true;
-            }
-        });
-
-        $('#mark-all-update').on('click', function() {
-            if ($('#mark-all-update').data('state') === 1) {
-                $('.mark-all-update-checkbox').removeClass('fa-check-square');
-                $('.mark-all-update-checkbox').addClass('fa-square-o');
-                $('#mark-all-update').data('state', 0);
-
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = removePermissionByType(self.user_apps[i], 'u', self.memberPermission);
-                }
-
-                for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.u-' + self.features.plugins[i]).removeClass('fa-check-square');
-                    $('.u-' + self.features.plugins[i]).addClass('fa-square-o');
-                    $('#u-' + self.features.plugins[i]).data('state', 0);
-                }
-
-                self.permissionSets[0].u.all = false;
-            }
-            else {
-                $('.mark-all-update-checkbox').addClass('fa-check-square');
-                $('.mark-all-update-checkbox').removeClass('fa-square-o');
-                $('#mark-all-update').data('state', 1);
-
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = givePermissionByType(self.user_apps[i], 'u', self.memberPermission);
-                }
-
-                for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.u-' + self.features.plugins[i]).addClass('fa-check-square');
-                    $('.u-' + self.features.plugins[i]).removeClass('fa-square-o');
-                    $('#u-' + self.features.plugins[i]).data('state', 1);
-                }
-
-                self.permissionSets[0].u.all = true;
-            }
-        });
-
-        $('#mark-all-delete').on('click', function() {
-            if ($('#mark-all-delete').data('state') === 1) {
-                $('.mark-all-delete-checkbox').removeClass('fa-check-square');
-                $('.mark-all-delete-checkbox').addClass('fa-square-o');
-                $('#mark-all-delete').data('state', 0);
-
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = removePermissionByType(self.user_apps[i], 'd', self.memberPermission);
-                }
-
-                for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.d-' + self.features.plugins[i]).removeClass('fa-check-square');
-                    $('.d-' + self.features.plugins[i]).addClass('fa-square-o');
-                    $('#d-' + self.features.plugins[i]).data('state', 0);
-                }
-            }
-            else {
-                $('.mark-all-delete-checkbox').addClass('fa-check-square');
-                $('.mark-all-delete-checkbox').removeClass('fa-square-o');
-                $('#mark-all-delete').data('state', 1);
-
-                for (var i = 0; i < self.user_apps.length; i++) {
-                    self.memberPermission = givePermissionByType(self.user_apps[i], 'd', self.memberPermission);
-                }
-
-                for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.d-' + self.features.plugins[i]).addClass('fa-check-square');
-                    $('.d-' + self.features.plugins[i]).removeClass('fa-square-o');
-                    $('#d-' + self.features.plugins[i]).data('state', 1);
-                }
+                self.permissionSets[index] = givePermissionByType(type.substr(0, 1), self.permissionSets[index]);
             }
         });
 
@@ -4127,6 +4009,18 @@ window.ManageUsersView = countlyView.extend({
             updateUser(this.member);
         });
 
+        var combinePermissionObject = function(user_apps, user_permission_sets, permission_object) {
+            for (var i = 0; i < user_apps.length; i++) {
+                for (var j = 0; j < user_apps[i].length; j++) {
+                    permission_object.c[user_apps[i][j]] = user_permission_sets[i].c;
+                    permission_object.r[user_apps[i][j]] = user_permission_sets[i].r;
+                    permission_object.u[user_apps[i][j]] = user_permission_sets[i].u;
+                    permission_object.d[user_apps[i][j]] = user_permission_sets[i].d;
+                }
+            }
+            return permission_object;
+        }
+
         $("#create-user-button").on("click", function() {
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
@@ -4140,14 +4034,10 @@ window.ManageUsersView = countlyView.extend({
             self.memberModel.email = currUserDetails.find(".email-text").val();
             self.memberModel.global_admin = $('#is-global-admin').data('state') === 1;
             if (!self.memberModel.global_admin) {
-                self.memberModel.permission = self.memberPermission;
+                self.memberModel.permission = combinePermissionObject(self.user_apps, self.permissionSets, self.memberPermission);
             }
             // TODO: check this later
             self.memberModel.password = 'Password123+';
-
-            console.log(self.memberModel.permission);
-            console.log(self.permissionSets);
-            return;
 
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
@@ -4230,13 +4120,13 @@ window.ManageUsersView = countlyView.extend({
             return permissionObject;
         }
 
-        var givePermissionByType = function(app_id, permissionType, permissionObject) {
-            permissionObject[permissionType][app_id] = {all: true, allowed: {}};
+        var givePermissionByType = function(permissionType, permissionObject) {
+            permissionObject[permissionType] = {all: true, allowed: {}};
             return permissionObject;
         }
 
-        var removePermissionByType = function(app_id, permissionType, permissionObject) {
-            permissionObject[permissionType][app_id] = {all: false, allowed: {}};
+        var removePermissionByType = function(permissionType, permissionObject) {
+            permissionObject[permissionType] = {all: false, allowed: {}};
             return permissionObject;
         }
 
@@ -4270,15 +4160,22 @@ window.ManageUsersView = countlyView.extend({
         $("#admin-app-selector").off("change").on("change", function() {
             var admin_apps = $(this).val().split(",");
             var affected_app = CountlyHelpers.arrayDiff(admin_apps, self.admin_apps)[0] === "" ? CountlyHelpers.arrayDiff(admin_apps, self.admin_apps)[1] : CountlyHelpers.arrayDiff(admin_apps, self.admin_apps)[0];
-            var is_already_added = self.user_apps.indexOf(affected_app) > -1 ? true : false;
-            
-            if (is_already_added) {
-                self.user_apps = removeAppFromList(affected_app, self.user_apps);
-                
-                for (var i = 0; i < user_app_selectors.length; i++) {
-                    var selectize = user_app_selectors[i][0].selectize;
-                    selectize.setValue(self.user_apps.join());
+            var is_already_added = false;
+            var conflict_index = 0;
+
+            // check this app added to any user app selector
+            for (var i = 0; i < self.permission_set_count; i++) {
+                if (self.user_app_selectors[i][0].selectize.getValue().split(",").indexOf(affected_app) > -1) {
+                    is_already_added = true;
+                    conflict_index = i;
                 }
+            }
+            
+            // remove related app from other user app selectors if already added
+            if (is_already_added) {
+                var user_apps = removeAppFromList(affected_app, self.user_app_selectors[conflict_index][0].selectize.getValue().split(","));
+                var selectize = self.user_app_selectors[conflict_index][0].selectize;
+                selectize.setValue(user_apps.join());
             }
 
             if (admin_apps.length > removeEmptyValues(self.admin_apps).length) {
@@ -4293,42 +4190,53 @@ window.ManageUsersView = countlyView.extend({
             $('#accessible-app-count').html(self.accessible_apps.length);
         });
 
-        $(".user-app-selector").off("change").on("change", function() {
+        $('body').on("change", '.user-app-selector', function() {
+            var index = $(this).data('index');
             var user_apps = $(this).val().split(",");
-            var affected_app = CountlyHelpers.arrayDiff(user_apps, self.user_apps)[0] === "" ? CountlyHelpers.arrayDiff(user_apps, self.user_apps)[1] : CountlyHelpers.arrayDiff(user_apps, self.user_apps)[0];
-            var is_already_added = self.admin_apps.indexOf(affected_app) > -1 ? true : false;
-            
-            if (is_already_added) {
-                self.admin_apps = removeAppFromList(affected_app, self.admin_apps);
-                self.memberPermission = removeAdminPermissions(affected_app, self.memberPermission);
+            var current_user_apps = self.user_apps[index];
+            var conflict_index = -1;
+            var affected_app = CountlyHelpers.arrayDiff(user_apps, current_user_apps)[0] === "" ? CountlyHelpers.arrayDiff(user_apps, current_user_apps)[1] : CountlyHelpers.arrayDiff(user_apps, current_user_apps)[0];
+            var is_already_added_to_admin = self.admin_apps.indexOf(affected_app) > -1 ? true : false;
+            var is_already_added_to_other_users = false;
 
+            // remove from admin apps list if already exist
+            if (is_already_added_to_admin) {
+                self.admin_apps = removeAppFromList(affected_app, self.admin_apps);
+                
                 var selectize = adminAppSelector[0].selectize;
                 selectize.setValue(self.admin_apps.join());
             }
 
-            if (removeEmptyValues(self.user_apps).length < user_apps.length) {
-                self.memberPermission['c'][affected_app] = self.permissionSets[0].c;
-                self.memberPermission['r'][affected_app] = self.permissionSets[0].r;
-                self.memberPermission['u'][affected_app] = self.permissionSets[0].u;
-                self.memberPermission['d'][affected_app] = self.permissionSets[0].d;
+            // check is already exist in user apps lists
+            if (!is_already_added_to_admin) {
+                for (var i = 0; i < self.permission_set_count; i++) {
+                    if ((i !== index) && self.user_app_selectors[index][0].selectize.getValue().split(",").indexOf(affected_app) > -1) {
+                        is_already_added_to_other_users = true;
+                        conflict_index = i;
+                    }
+                }    
             }
-            else {
-                self.memberPermission['c'][affected_app] = { all: false, allowed: {} };
-                self.memberPermission['r'][affected_app] = { all: false, allowed: {} };
-                self.memberPermission['u'][affected_app] = { all: false, allowed: {} };
-                self.memberPermission['d'][affected_app] = { all: false, allowed: {} };
+
+            // remove from user apps list if already exist
+            if (is_already_added_to_other_users) {
+                var updated_user_apps = removeAppFromList(affected_app, self.user_app_selectors[conflict_index][0].selectize.getValue().split(","));
+                
+                var selectize = self.user_app_selectors[conflict_index][0].selectize;
+                selectize.setValue(updated_user_apps.join());
             }
 
             // update model
-            self.user_apps = user_apps;
+            self.user_apps[index] = user_apps;
             self.accessible_apps = removeEmptyValues(arrayUnique(self.admin_apps.concat(self.user_apps)));
             $('#accessible-app-count').html(self.accessible_apps.length);
         });
 
         $('body').on('click', '.add-new-permission-set', function() {
-            console.log('clicked');
-            self.permission_set_index++;
-            self.renderPermissionsTable(self.permission_set_index);
+            self.user_apps.push([]);
+            self.permission_set_count++;
+            self.permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+            // pass count - 1 because we'll use it as array index in logic
+            self.renderPermissionsTable(self.permission_set_count - 1);
         })
     },
     renderCommon: function() {
