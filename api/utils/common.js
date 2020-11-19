@@ -2528,7 +2528,11 @@ class DataTable {
         return this.searchTerm;
     }
 
-    getAggregationPipeline(initialPipeline = [], filteredPipeline = []) {
+    getAggregationPipeline({
+        initialPipeline = [],
+        filteredPipeline = [],
+        customFacets = {}
+    } = {}) {
         var pipeline = [...initialPipeline]; // Initial pipeline (beforeMatch)
         var $facetPagedData = [];
         var $facetFilteredTotal = [];
@@ -2566,9 +2570,10 @@ class DataTable {
         pipeline.push({
             $facet:
             {
+                ...customFacets,
                 fullTotal: [{$group: {"_id": null, "value": {$sum: 1}}}],
                 filteredTotal: $facetFilteredTotal,
-                pagedData: $facetPagedData
+                pagedData: $facetPagedData,
             }
         });
         return pipeline;
@@ -2578,6 +2583,8 @@ class DataTable {
         var fullTotal = 0,
             filteredTotal = 0,
             pagedData = [];
+
+        var customFacetResults = {};
 
         if (queryResult && queryResult[0]) {
             var facets = queryResult[0];
@@ -2590,6 +2597,14 @@ class DataTable {
             if (facets.pagedData) {
                 pagedData = facets.pagedData;
             }
+
+            for (var key in facets) {
+                if (["fullTotal", "filteredTotal", "pagedData"].includes(key)) {
+                    continue;
+                }
+                customFacetResults[key] = facets[key];
+            }
+
         }
         if (processFn) {
             var processed = processFn(pagedData);
@@ -2601,12 +2616,13 @@ class DataTable {
         var outputFormat = this.queryString.outputFormat || this.defaultOutputFormat;
 
         if (outputFormat === "full") {
-            return {
+            var outputObject = {
                 sEcho: this.echo,
                 iTotalRecords: fullTotal,
                 iTotalDisplayRecords: filteredTotal,
                 aaData: pagedData
             };
+            return {...outputObject, ...customFacetResults};
         }
         else {
             return pagedData;
