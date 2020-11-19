@@ -37,7 +37,12 @@ wget -qO- https://deb.nodesource.com/setup_14.x | bash -
 apt-get update
 
 #install nginx
-apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
+apt-get -y install curl gnupg2 ca-certificates lsb-release
+echo "deb http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
+    | tee /etc/apt/sources.list.d/nginx.list
+curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
+apt-get update
+apt-get install nginx
 
 #install node.js
 apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
