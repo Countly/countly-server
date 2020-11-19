@@ -2455,7 +2455,9 @@ class DataTable {
         searchableFields = [],
         searchStrategy = "regex",
         outputProjection = null,
-        defaultOutputFormat = "full"
+        defaultOutputFormat = "full",
+        uniqueKey = "_id",
+        disableUniqueSorting = false
     } = {}) {
         this.queryString = queryString;
         this.skip = null;
@@ -2470,6 +2472,8 @@ class DataTable {
         this.searchStrategy = searchStrategy;
         this.outputProjection = outputProjection;
         this.defaultOutputFormat = defaultOutputFormat;
+        this.uniqueKey = uniqueKey;
+        this.disableUniqueSorting = disableUniqueSorting;
         //
         if (this.columnOrder && this.columnOrder.length > 0) {
             if (this.queryString.iSortCol_0 && this.queryString.sSortDir_0) {
@@ -2493,6 +2497,9 @@ class DataTable {
                 else {
                     _tempSorting[sortKey] = -1;
                 }
+            }
+            if (this.disableUniqueSorting !== true && !_tempSorting[this.uniqueKey]) {
+                _tempSorting[this.uniqueKey] = 1;
             }
             this.sorting = _tempSorting;
         }
