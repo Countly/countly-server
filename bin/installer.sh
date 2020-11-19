@@ -11,7 +11,7 @@ APT_GET_CMD=$(which apt-get)
 if [[ ! -z "$APT_GET_CMD" ]]; then
     apt-get install -y zip
 elif [[ ! -z "$YUM_CMD" ]]; then
-    yum install -y unzip
+    yum install -y unzip wget
 else
     echo "error can't install Countly"
     exit 1;
