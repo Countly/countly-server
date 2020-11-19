@@ -47,6 +47,13 @@ apt-get install nginx
 #install node.js
 apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
 
+set +e
+NODE_JS_CMD=$(which nodejs)
+set -e
+if [[ -z "$NODE_JS_CMD" ]]; then
+	ln -s "$(which node)" /usr/bin/nodejs
+fi
+
 #if npm is not installed, install it too
 if ! (command -v npm >/dev/null) then
     apt-get -y install npm
