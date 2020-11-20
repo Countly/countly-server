@@ -3405,26 +3405,29 @@ window.ManageUsersView = countlyView.extend({
         
         var types = ['create', 'read', 'update', 'delete'];
 
-        var permissionTable =  '<div class="user-access access-area">';
+        var permissionTable =  '<div class="user-access access-area" id="user-access-' + index + '">';
             permissionTable +=      '<div class="header">';
-            permissionTable +=          '<div class="section-title">Grant User Access to App(s)</div>';
+            permissionTable +=          '<div class="section-title">' + $.i18n.map['management-users.grant-user-access-to-apps'] + '</div>';
+            if (index !== 0) {
+            permissionTable +=          '<div class="section-close-icon" data-index="' + index + '"><a href="javascript:void(0)" class="remove-row text-light-gray"><i class="material-icons">highlight_off</i></a></div>';
+            }
             permissionTable +=      '</div>';
             permissionTable +=      '<div class="app-selector access-area">';
-            permissionTable +=          '<div class="selector-label">Apps</div>';
+            permissionTable +=          '<div class="selector-label">' + $.i18n.map['management-users.apps'] + '</div>';
             permissionTable +=          '<div class="selector-wrapper">';
             permissionTable +=              '<input type="text" class="user-app-selector" data-index="' + index + '" id="user-app-selector-' + index + '">';
             permissionTable +=          '</div>';
             permissionTable +=          '<div style="clear:both"></div>';
             permissionTable +=      '</div>';
             permissionTable +=      '<div class="permission-header">';
-            permissionTable +=          '<div class="table-description first-description">Feature</div>';
+            permissionTable +=          '<div class="table-description first-description">' + $.i18n.map['management-users.feature'] + '</div>';
             
         for (var i in types) {
             permissionTable +=          '<div class="table-description">';
             permissionTable +=              '<div class="checkbox-container">';
             permissionTable +=              '<input class="mark-all" id="mark-all-' + types[i] + '-' + index + '" data-state="0" type="checkbox">';
             permissionTable +=              '<div class="mark-all-' + types[i] + '-checkbox-' + index + ' fa fa-square-o check-green"></div>';
-            permissionTable +=              '<div class="checkbox-label">' + types[i] + '</div>';
+            permissionTable +=              '<div class="checkbox-label">' + $.i18n.map['management-users.' + types[i]] + '</div>';
             permissionTable +=              '<div class="clear:both"></div>';
             permissionTable +=          '</div>';
             permissionTable +=      '</div>';
@@ -4036,12 +4039,13 @@ window.ManageUsersView = countlyView.extend({
             if (!self.memberModel.global_admin) {
                 self.memberModel.permission = combinePermissionObject(self.user_apps, self.permissionSets, self.memberPermission);
             }
-            // TODO: check this later
-            self.memberModel.password = 'Password123+';
+            
+            self.memberModel.password = currUserDetails.find(".password-text").val();
 
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
 
+            
             if (!self.memberModel.password.length) {
                 currUserDetails.find(".password-text").after(reqSpan.clone());
             }
@@ -4188,6 +4192,25 @@ window.ManageUsersView = countlyView.extend({
             self.admin_apps = admin_apps;
             self.accessible_apps = removeEmptyValues(arrayUnique(self.admin_apps.concat(self.user_apps)))
             $('#accessible-app-count').html(self.accessible_apps.length);
+        });
+
+        $('body').on('click', '.section-close-icon', function() {
+            var that = this;
+            CountlyHelpers.confirm($.i18n.map['management-users.are-you-sure-to-continue'], "popStyleGreen", function(result) {
+                if (!result) {
+                    return true;
+                }
+                
+                var index = $(that).data('index');
+                self.user_apps.splice(index, 1);
+                self.permissionSets.splice(index, 1);
+                $('#user-access-' + index).remove();
+            },
+            null, 
+            {
+                title: $.i18n.map['management-users.permission-set-will-be-removed'],
+                image: "delete-an-app"
+            });
         });
 
         $('body').on("change", '.user-app-selector', function() {

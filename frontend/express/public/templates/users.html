@@ -67,14 +67,13 @@
 		<div class="detail">
 			<div class="permission-app-select">
 				<select id="permission-app-selector">
-					
 				</select>
 			</div>
 			<div class="permission-box">
-				<label>Core Features</label>
+				<label data-localize="management-users.core-features"></label>
 				<div class="core-features">
 				</div>
-				<label>Plugins</label>
+				<label data-localize="management-users.plugins"></label>
 				<div class="plugins-features">
 				</div>
 			</div>
@@ -114,15 +113,17 @@
     </div>
     <div class="details create-user-drawer-detail" style="height:100%;overflow-y:auto">
     	<div class="left-area">
-    		<label>Full name</label>
-	    	<input class="drawer-input full-name-text" placeholder="Enter full name" autocomplete="off" type="text"/>
-	    	<label>User name</label>
-	    	<input class="drawer-input username-text" placeholder="Enter user name" autocomplete="off" type="text"/>
-	    	<label>E-mail</label>
-	    	<input class="drawer-input email-text" placeholder="Enter e-mail" autocomplete="new-password" type="email"/>
+    		<label data-localize="management-users.full-name"></label>
+	    	<input class="drawer-input full-name-text" autocomplete="off" type="text"/>
+	    	<label data-localize="management-users.username"></label>
+	    	<input class="drawer-input username-text" autocomplete="off" type="text"/>
+	    	<label data-localize="management-users.email"></label>
+	    	<input class="drawer-input email-text" autocomplete="new-password" type="email"/>
+	    	<label data-localize="management-users.password"></label>
+	    	<input class="drawer-input password-text" autocomplete="new-password" type="password"/>
 	    </div>
 	    <div class="right-area">
-	    	<label>Profile Picture</label>
+	    	<label data-localize="management-users.profile-picture"></label>
 	    	<div class="img-upload" id="user-avatar-upload-drop">
 	    		<div class="upload-message">Drag & drop or <span style="font-weight:bolder;color:#2EB52B;cursor:pointer;">browse</span> files to add picture</div>
 	    	</div>
@@ -130,92 +131,39 @@
 	    <div style="clear:both"></div>
 	    <div class="access-area role-section">
 	    	<div class="header">
-	    		<div class="section-title">Role</div>
+	    		<div class="section-title" data-localize="management-users.role"></div>
 	    	</div>
 	    	<div class="content">
 	    		<div class="checkbox-container">
                     <input id="is-global-admin" data-state="0" type="checkbox">
                     <div class="is-global-admin-checkbox fa fa-square-o check-green"></div>
-                    <div class="checkbox-label">Global Administrator</div>
+                    <div class="checkbox-label" data-localize="management-users.global-administrator"></div>
                     <div style="clear:both"></div>
                 </div>
 	    	</div>
 	    </div>
 	    <div id="sub-header-1th">
-	    	<div class="drawer-header">Permission Settings</div>
-	    	<div class="drawer-information">User has access to <span id="accessible-app-count">0</span> apps</div>
+	    	<div class="drawer-header" data-localize="management-users.permission-settings"></div>
+	    	<div class="drawer-information"><span data-localize="management-users.user-has-access-to"></span> <span id="accessible-app-count">0</span> <span data-localize="management-users.apps"></span></div>
 	    	<div style="clear:both"></div>
 	    </div>
 	    <div class="admin-access access-area">
 	    	<div class="header">
-	    		<div class="section-title">Grant Admin Access to App(s)</div>
-	    		<div class="subtitle">User will have admin access to selected app(s)</div>
+	    		<div class="section-title" data-localize="management-users.grant-admin-access-to-apps"></div>
+	    		<div class="subtitle" data-localize="management-users.grant-admin-access-description"></div>
 	    	</div>
 	    	<div class="app-selector access-area">
-	    		<div class="selector-label">Apps</div>
+	    		<div class="selector-label" data-localize="management-users.apps"></div>
 	    		<div class="selector-wrapper">
                     <input type="text" id="admin-app-selector">
                 </div>
                 <div style="clear:both"></div>
 	    	</div>
 	    </div>
-<!--
-	    <div class="user-access access-area">
-	    	<div class="header">
-	    		<div class="section-title">Grant User Access to App(s)</div>
-	    	</div>
-	    	<div class="app-selector access-area">
-	    		<div class="selector-label">Apps</div>
-	    		<div class="selector-wrapper">
-                    <input type="text" id="user-app-selector">
-                </div>
-                <div style="clear:both"></div>
-	    	</div>
-	    	<div class="permission-header">
-	    		<div class="table-description first-description">Feature</div>
-	    		<div class="table-description">
-	    			<div class="checkbox-container">
-	                    <input id="mark-all-create" data-state="0" type="checkbox">
-	                    <div class="mark-all-create-checkbox fa fa-square-o check-green"></div>
-	                    <div class="checkbox-label">Create</div>
-	                    <div style="clear:both"></div>
-	                </div>
-	    		</div>
-	    		<div class="table-description">
-	    			<div class="checkbox-container">
-	                    <input id="mark-all-read" data-state="0" type="checkbox">
-	                    <div class="mark-all-read-checkbox fa fa-square-o check-green"></div>
-	                    <div class="checkbox-label">Read</div>
-	                    <div style="clear:both"></div>
-	                </div>
-	    		</div>
-	    		<div class="table-description">
-	    			<div class="checkbox-container">
-	                    <input id="mark-all-update" data-state="0" type="checkbox">
-	                    <div class="mark-all-update-checkbox fa fa-square-o check-green"></div>
-	                    <div class="checkbox-label">Update</div>
-	                    <div style="clear:both"></div>
-	                </div>
-	    		</div>
-	    		<div class="table-description">
-	    			<div class="checkbox-container">
-	                    <input id="mark-all-delete" data-state="0" type="checkbox">
-	                    <div class="mark-all-delete-checkbox fa fa-square-o check-green"></div>
-	                    <div class="checkbox-label">Delete</div>
-	                    <div style="clear:both"></div>
-	                </div>
-	    		</div>
-	    	</div>
-	    	<div class="permission-table" id="permission-table-0">
-	    	</div>
-	    </div>
--->
-	    <button class="add-new-permission-set icon-button">
-    		+ Add a new permission set
-    	</button>
+	    <button class="add-new-permission-set icon-button" data-localize="management-users.add-permission-set">
+		</button>
     	<div class="create-user-drawer-bottom">
-    		<button id="create-user-button" class="icon-button green create-new-user">
-    			Create user
+    		<button id="create-user-button" class="icon-button green create-new-user" data-localize="management-users.create-new-user">
     		</button>
     	</div>
     </div>
