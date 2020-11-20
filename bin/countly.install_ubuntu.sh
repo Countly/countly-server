@@ -72,12 +72,7 @@ apt-get -y install numactl
 apt-get -y install sendmail
 
 #install grunt & npm modules
-( cd "$DIR/.." ;  sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm)
-
-GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
-if [[ "$GLIBC_VERSION" != "2.25" ]]; then
-    (cd "$DIR/.." && sudo npm install argon2 --build-from-source)
-fi
+( cd "$DIR/..";  sudo npm install -g grunt-cli --unsafe-perm; sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
 
 #install mongodb
 bash "$DIR/scripts/mongodb.install.sh"

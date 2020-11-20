@@ -33,52 +33,29 @@ if grep -q -i "release 8" /etc/redhat-release ; then
     ln -sf /usr/local/bin/shellcheck /usr/bin/shellcheck
     ln -sf /usr/local/bin/supervisorctl /usr/bin/supervisorctl
     ln -sf /usr/local/bin/supervisord /usr/bin/supervisord
-else
-    if grep -q -i "release 6" /etc/redhat-release ; then
-        yum -y install policycoreutils-python
-        #install nginx
-        echo "[nginx]
-name=nginx repo
-baseurl=http://nginx.org/packages/rhel/6/x86_64/
-gpgcheck=0
-enabled=1" > /etc/yum.repos.d/nginx.repo
-        #install new gcc
-        echo "updating gcc to devtoolset-2..."
-        sudo rpm --import http://ftp.riken.jp/Linux/cern/centos/7.1/os/x86_64/RPM-GPG-KEY-cern
-        yum install -y wget
-        wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
-        yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
-        # shellcheck disable=SC1091
-        source /opt/rh/devtoolset-2/enable
-        #CC="$(which gcc)"
-        #CXX="$(which g++)"
-
-        bash "$DIR/scripts/install-google-chrome.sh";
-        bash "$DIR/scripts/install-python27.sh"
-    elif grep -q -i "release 7" /etc/redhat-release ; then
-        yum -y install policycoreutils-python
-        #install nginx
-        echo "[nginx]
+elif grep -q -i "release 7" /etc/redhat-release ; then
+    yum -y install policycoreutils-python
+    #install nginx
+    echo "[nginx]
 name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
     yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc
 
-        yum -y install gcc-c++-4.8.5
+    yum -y install gcc-c++-4.8.5
 
-        yum install -y python-pip
-        pip install pip --upgrade
-        yum install -y python-meld3
-        pip install supervisor --ignore-installed meld3
-        yum -y install python-setuptools
+    yum install -y python-pip
+    pip install pip --upgrade
+    yum install -y python-meld3
+    pip install supervisor --ignore-installed meld3
+    yum -y install python-setuptools
 
-        yum install -y epel-release
-        yum install -y ShellCheck
-    else
-        echo "Unsupported OS version, only support RHEL/Centos 8, 7 and 6"
-        exit 1
-    fi
+    yum install -y epel-release
+    yum install -y ShellCheck
+else
+    echo "Unsupported OS version, only support RHEL/Centos 8 and 7"
+    exit 1
 fi
 
 #install nodejs
