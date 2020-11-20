@@ -6367,7 +6367,7 @@ window.EventsView = countlyView.extend({
 
         var metaDB = countlyEvent.getActiveEventSegmentMeta();
         segments.forEach(function(s) {
-            if (metaDB[s].length >= limitation.event_segmentation_value_limit) {
+            if (metaDB[s] && metaDB[s].length >= limitation.event_segmentation_value_limit) {
                 var tips3 = jQuery.i18n.prop("events.max-unique-value-limit", limitation.event_segmentation_value_limit, s);
                 generateDom(tips3);
             }
