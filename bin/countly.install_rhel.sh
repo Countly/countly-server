@@ -33,6 +33,10 @@ if grep -q -i "release 8" /etc/redhat-release ; then
     ln -sf /usr/local/bin/shellcheck /usr/bin/shellcheck
     ln -sf /usr/local/bin/supervisorctl /usr/bin/supervisorctl
     ln -sf /usr/local/bin/supervisord /usr/bin/supervisord
+
+    if [ ! -x "$(command -v python)" ]; then
+        ln -sf /usr/bin/python3 /usr/bin/python
+    fi
 elif grep -q -i "release 7" /etc/redhat-release ; then
     yum -y install policycoreutils-python
     #install nginx
