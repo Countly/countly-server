@@ -7,6 +7,13 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+
+if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" ]]; then
+    echo "Unsupported OS version, only support Ubuntu 20 and 18"
+    exit 1
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 bash "$DIR/scripts/logo.sh";
