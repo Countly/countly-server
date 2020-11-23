@@ -2447,8 +2447,47 @@ common.mergeQuery = function(ob1, ob2) {
     return ob1;
 };
 
+/**
+ * DataTable is a helper class for data tables in the UI which have bServerSide: true. It provides 
+ * abstraction for server side pagination, searching and column based sorting. The class relies 
+ * on MongoDB's aggregation for all operations. This doesn't include making db calls though. Since 
+ * there can be many different execution scenarios, db left to the users of the class. 
+ * 
+ * There are two main methods of the class:
+ * 
+ * 1) getAggregationPipeline: Creates a pipeline which can be executed by MongoDB. The pipeline 
+ * can be customized, please see its description. 
+ *  
+ * 2) getProcessedResult: Processes the aggregation result. Returns an object, which is ready to be 
+ * served as a response directly.
+ */
 class DataTable {
 
+    /**
+     * Constructor
+     * @param {Object} queryString This object should contain the datatable arguments like iDisplayStart,
+     * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
+     * use-case, please make sure that the object has necessary fields.
+     * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
+     * DataTable compatible object. However, some consumers of the API may require simple, array-like 
+     * results too. In order to allow consumers to specify expected output, the field can be used.
+     * @param {Object} options Wraps options
+     * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
+     * specify a column list in order to make it work (e.g. ["name", "status"]). 
+     * @param {Object} options.defaultSorting When there is no sorting provided in query string, sorting 
+     * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
+     * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
+     * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
+     * search is performed on searchableFields. Other values will be considered as hard match.
+     * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
+     * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
+     * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
+     * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
+     * @param {Boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
+     * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
+     * a protection for cases when the sorting is done based on non-unique fields. Injection is enabled by default.
+     * If you want to disable this feature, pass true.
+     */
     constructor(queryString, {
         columnOrder = [],
         defaultSorting = null,
@@ -2521,13 +2560,41 @@ class DataTable {
         }
     }
 
-    _getSearchStatement() {
+    /**
+     * Returns the search field for. Only for internal use.
+     * @returns {Object|String} Regex object or search term itself
+     */
+    _getSearchField() {
         if (this.searchStrategy === "regex") {
             return {$regex: this.searchTerm, $options: 'i'};
         }
         return this.searchTerm;
     }
 
+    /**
+     * Creates an aggregation pipeline based on the query string and additional stages/facets
+     * if provided any. Data flow between stages are not checked, so please be carefu
+     * 
+     * @param {Object} options Wraps options
+     * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
+     * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
+     * Initial pipeline is basically used for counting the total number of documents without pagination and search.
+     * 
+     * # of output rows = total number of docs.
+     * 
+     * @param {Array} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
+     * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
+     * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
+     * 
+     * # of output rows = filtered number of docs.
+     * 
+     * @param {Object} options.customFacets You can add facets to your results using option.customFacets. 
+     * Custom facets will use initial pipeline's output as its input. If the documents you're 
+     * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
+     * You can obtain outputs of your custom facets via getProcessedResult.
+     * 
+     * @returns {Object} Pipeline object
+     */
     getAggregationPipeline({
         initialPipeline = [],
         filteredPipeline = [],
@@ -2540,12 +2607,12 @@ class DataTable {
         if (this.searchTerm !== null && this.searchableFields && this.searchableFields.length > 0) {
             var matcher = null;
             if (this.searchableFields.length === 1) {
-                matcher = { [this.searchableFields[0]]: this._getSearchStatement() };
+                matcher = { [this.searchableFields[0]]: this._getSearchField() };
             }
             else {
                 var searchOr = [];
                 this.searchableFields.forEach((field) => {
-                    searchOr.push({ [field]: this._getSearchStatement() });
+                    searchOr.push({ [field]: this._getSearchField() });
                 });
                 matcher = { $or: searchOr};
             }
@@ -2579,6 +2646,14 @@ class DataTable {
         return pipeline;
     }
 
+    /**
+     * Processes the aggregation result and returns a ready-to-use response.
+     * @param {Object} queryResult Aggregation result returned by the MongoDB.
+     * @param {Function} processFn A callback function that has a single argument 'rows'.
+     * As the name implies, it is an array of returned rows. The function can be used as
+     * a final stage to do modifications to fetched items before completing the response. 
+     * @returns {Object|Array} Returns the final response
+     */
     getProcessedResult(queryResult, processFn) {
         var fullTotal = 0,
             filteredTotal = 0,
