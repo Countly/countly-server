@@ -2573,7 +2573,7 @@ class DataTable {
 
     /**
      * Creates an aggregation pipeline based on the query string and additional stages/facets
-     * if provided any. Data flow between stages are not checked, so please be carefu
+     * if provided any. Data flow between stages are not checked, so please do check manually.
      * 
      * @param {Object} options Wraps options
      * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
