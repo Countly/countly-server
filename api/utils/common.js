@@ -2469,8 +2469,8 @@ class DataTable {
      * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
      * use-case, please make sure that the object has necessary fields.
      * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
-     * DataTable compatible object. However, some consumers of the API may require simple, array-like 
-     * results too. In order to allow consumers to specify expected output, the field can be used.
+     * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
+     * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
      * @param {Object} options Wraps options
      * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
      * specify a column list in order to make it work (e.g. ["name", "status"]). 
@@ -2544,11 +2544,11 @@ class DataTable {
         }
 
         if (this.queryString.iDisplayStart) {
-            this.skip = parseInt(this.queryString.iDisplayStart);
+            this.skip = parseInt(this.queryString.iDisplayStart, 10);
         }
 
         if (this.queryString.iDisplayLength) {
-            this.limit = parseInt(this.queryString.iDisplayLength);
+            this.limit = parseInt(this.queryString.iDisplayLength, 10);
         }
 
         if (this.queryString.sSearch && this.queryString.sSearch !== "") {
@@ -2591,7 +2591,8 @@ class DataTable {
      * @param {Object} options.customFacets You can add facets to your results using option.customFacets. 
      * Custom facets will use initial pipeline's output as its input. If the documents you're 
      * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
-     * You can obtain outputs of your custom facets via getProcessedResult.
+     * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be 
+     * available when the output format is "full".
      * 
      * @returns {Object} Pipeline object
      */
