@@ -1,4 +1,4 @@
-/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
+/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,countlyWidgets,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
 
     initialize: function() {
@@ -427,8 +427,10 @@ function initializeTimesOfDayWidget() {
             var appName = countlyDashboards.getAppName(app[0]),
                 appId = app[0];
 
+			var periodDesc = countlyWidgets.formatPeriod(widgetData.custom_period);
             var $widget = $(todWidgetTemplate({
-                title: title,
+				title: title,
+				period: periodDesc.name,
                 app: {
                     id: appId,
                     name: appName
@@ -445,7 +447,7 @@ function initializeTimesOfDayWidget() {
                 });
                 var esTypeName = widgetData.data_type === "session" ? jQuery.i18n.map['times-of-day.sessions'] : widgetData.events[0].split("***")[1];
                 var widgetTitle = "Times of day: " + esTypeName + " (" + periodName[0].name + ")";
-                placeHolder.find(".title").text(widgetTitle);
+                placeHolder.find(".title .name").text(widgetTitle);
             }
 
             addTooltip(placeHolder);
@@ -657,7 +659,8 @@ function initializeTimesOfDayWidget() {
         }));
 
         widgetEl.find("table").replaceWith($widget.find("table"));
-        addTooltip(widgetEl);
+		addTooltip(widgetEl);
+		countlyWidgets.setPeriod(widgetEl, widgetData.custom_period);
     }
 
     /**
