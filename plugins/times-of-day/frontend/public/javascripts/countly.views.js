@@ -1,4 +1,4 @@
-/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,countlyWidgets,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
+/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
 
     initialize: function() {
@@ -361,7 +361,8 @@ function initializeTimesOfDayWidget() {
         $("#widget-section-single-tod").show();
         if (dataType === "event") {
             $("#widget-section-single-event").show();
-        }
+		}
+		$("#widget-section-custom-period").hide();
     }
 
     /**
@@ -427,10 +428,8 @@ function initializeTimesOfDayWidget() {
             var appName = countlyDashboards.getAppName(app[0]),
                 appId = app[0];
 
-			var periodDesc = countlyWidgets.formatPeriod(widgetData.custom_period);
             var $widget = $(todWidgetTemplate({
 				title: title,
-				period: periodDesc.name,
                 app: {
                     id: appId,
                     name: appName
@@ -660,7 +659,6 @@ function initializeTimesOfDayWidget() {
 
         widgetEl.find("table").replaceWith($widget.find("table"));
 		addTooltip(widgetEl);
-		countlyWidgets.setPeriod(widgetEl, widgetData.custom_period);
     }
 
     /**
