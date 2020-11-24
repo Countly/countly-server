@@ -2447,4 +2447,265 @@ common.mergeQuery = function(ob1, ob2) {
     return ob1;
 };
 
+/**
+ * DataTable is a helper class for data tables in the UI which have bServerSide: true. It provides 
+ * abstraction for server side pagination, searching and column based sorting. The class relies 
+ * on MongoDB's aggregation for all operations. This doesn't include making db calls though. Since 
+ * there can be many different execution scenarios, db left to the users of the class. 
+ * 
+ * There are two main methods of the class:
+ * 
+ * 1) getAggregationPipeline: Creates a pipeline which can be executed by MongoDB. The pipeline 
+ * can be customized, please see its description. 
+ *  
+ * 2) getProcessedResult: Processes the aggregation result. Returns an object, which is ready to be 
+ * served as a response directly.
+ */
+class DataTable {
+
+    /**
+     * Constructor
+     * @param {Object} queryString This object should contain the datatable arguments like iDisplayStart,
+     * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
+     * use-case, please make sure that the object has necessary fields.
+     * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
+     * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
+     * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
+     * @param {Object} options Wraps options
+     * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
+     * specify a column list in order to make it work (e.g. ["name", "status"]). 
+     * @param {Object} options.defaultSorting When there is no sorting provided in query string, sorting 
+     * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
+     * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
+     * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
+     * search is performed on searchableFields. Other values will be considered as hard match.
+     * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
+     * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
+     * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
+     * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
+     * @param {Boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
+     * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
+     * a protection for cases when the sorting is done based on non-unique fields. Injection is enabled by default.
+     * If you want to disable this feature, pass true.
+     */
+    constructor(queryString, {
+        columnOrder = [],
+        defaultSorting = null,
+        searchableFields = [],
+        searchStrategy = "regex",
+        outputProjection = null,
+        defaultOutputFormat = "full",
+        uniqueKey = "_id",
+        disableUniqueSorting = false
+    } = {}) {
+        this.queryString = queryString;
+        this.skip = null;
+        this.limit = null;
+        this.searchTerm = null;
+        this.sorting = null;
+        this.echo = "0";
+        //
+        this.columnOrder = columnOrder;
+        this.defaultSorting = defaultSorting;
+        this.searchableFields = searchableFields;
+        this.searchStrategy = searchStrategy;
+        this.outputProjection = outputProjection;
+        this.defaultOutputFormat = defaultOutputFormat;
+        this.uniqueKey = uniqueKey;
+        this.disableUniqueSorting = disableUniqueSorting;
+        //
+        if (this.columnOrder && this.columnOrder.length > 0) {
+            if (this.queryString.iSortCol_0 && this.queryString.sSortDir_0) {
+                var sortField = this.columnOrder[parseInt(this.queryString.iSortCol_0, 10)];
+                if (sortField) {
+                    this.sorting = {[sortField]: this.queryString.sSortDir_0};
+                }
+            }
+        }
+
+        if (!this.sorting && this.defaultSorting) {
+            this.sorting = this.defaultSorting;
+        }
+
+        if (this.sorting) {
+            var _tempSorting = {};
+            for (var sortKey in this.sorting) {
+                if (this.sorting[sortKey] === "asc") {
+                    _tempSorting[sortKey] = 1;
+                }
+                else {
+                    _tempSorting[sortKey] = -1;
+                }
+            }
+            if (this.disableUniqueSorting !== true && !_tempSorting[this.uniqueKey]) {
+                _tempSorting[this.uniqueKey] = 1;
+            }
+            this.sorting = _tempSorting;
+        }
+
+        if (this.queryString.iDisplayStart) {
+            this.skip = parseInt(this.queryString.iDisplayStart, 10);
+        }
+
+        if (this.queryString.iDisplayLength) {
+            this.limit = parseInt(this.queryString.iDisplayLength, 10);
+        }
+
+        if (this.queryString.sSearch && this.queryString.sSearch !== "") {
+            this.searchTerm = this.queryString.sSearch;
+        }
+
+        if (this.queryString.sEcho) {
+            this.echo = this.queryString.sEcho;
+        }
+    }
+
+    /**
+     * Returns the search field for. Only for internal use.
+     * @returns {Object|String} Regex object or search term itself
+     */
+    _getSearchField() {
+        if (this.searchStrategy === "regex") {
+            return {$regex: this.searchTerm, $options: 'i'};
+        }
+        return this.searchTerm;
+    }
+
+    /**
+     * Creates an aggregation pipeline based on the query string and additional stages/facets
+     * if provided any. Data flow between stages are not checked, so please do check manually.
+     * 
+     * @param {Object} options Wraps options
+     * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
+     * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
+     * Initial pipeline is basically used for counting the total number of documents without pagination and search.
+     * 
+     * # of output rows = total number of docs.
+     * 
+     * @param {Array} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
+     * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
+     * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
+     * 
+     * # of output rows = filtered number of docs.
+     * 
+     * @param {Object} options.customFacets You can add facets to your results using option.customFacets. 
+     * Custom facets will use initial pipeline's output as its input. If the documents you're 
+     * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
+     * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be 
+     * available when the output format is "full".
+     * 
+     * @returns {Object} Pipeline object
+     */
+    getAggregationPipeline({
+        initialPipeline = [],
+        filteredPipeline = [],
+        customFacets = {}
+    } = {}) {
+        var pipeline = [...initialPipeline]; // Initial pipeline (beforeMatch)
+        var $facetPagedData = [];
+        var $facetFilteredTotal = [];
+
+        if (this.searchTerm !== null && this.searchableFields && this.searchableFields.length > 0) {
+            var matcher = null;
+            if (this.searchableFields.length === 1) {
+                matcher = { [this.searchableFields[0]]: this._getSearchField() };
+            }
+            else {
+                var searchOr = [];
+                this.searchableFields.forEach((field) => {
+                    searchOr.push({ [field]: this._getSearchField() });
+                });
+                matcher = { $or: searchOr};
+            }
+            $facetPagedData.push({$match: matcher});
+            $facetFilteredTotal.push({$match: matcher});
+        }
+        $facetPagedData.push(...filteredPipeline);
+        $facetFilteredTotal.push(...filteredPipeline); // TODO: optimize (no need to do pipeline operations unless there is match) 
+        $facetFilteredTotal.push({$group: {"_id": null, "value": {$sum: 1}}});
+        if (this.sorting !== null) {
+            $facetPagedData.push({$sort: this.sorting});
+        }
+        if (this.skip !== null) {
+            $facetPagedData.push({$skip: this.skip});
+        }
+        if (this.limit !== null && this.limit > 0) {
+            $facetPagedData.push({$limit: this.limit});
+        }
+        if (this.outputProjection !== null) {
+            $facetPagedData.push({$project: this.outputProjection});
+        }
+        pipeline.push({
+            $facet:
+            {
+                ...customFacets,
+                fullTotal: [{$group: {"_id": null, "value": {$sum: 1}}}],
+                filteredTotal: $facetFilteredTotal,
+                pagedData: $facetPagedData,
+            }
+        });
+        return pipeline;
+    }
+
+    /**
+     * Processes the aggregation result and returns a ready-to-use response.
+     * @param {Object} queryResult Aggregation result returned by the MongoDB.
+     * @param {Function} processFn A callback function that has a single argument 'rows'.
+     * As the name implies, it is an array of returned rows. The function can be used as
+     * a final stage to do modifications to fetched items before completing the response. 
+     * @returns {Object|Array} Returns the final response
+     */
+    getProcessedResult(queryResult, processFn) {
+        var fullTotal = 0,
+            filteredTotal = 0,
+            pagedData = [];
+
+        var customFacetResults = {};
+
+        if (queryResult && queryResult[0]) {
+            var facets = queryResult[0];
+            if (facets.fullTotal && facets.fullTotal[0] && facets.fullTotal[0].value) {
+                fullTotal = facets.fullTotal[0].value;
+            }
+            if (facets.filteredTotal && facets.filteredTotal[0] && facets.filteredTotal[0].value) {
+                filteredTotal = facets.filteredTotal[0].value;
+            }
+            if (facets.pagedData) {
+                pagedData = facets.pagedData;
+            }
+
+            for (var key in facets) {
+                if (["fullTotal", "filteredTotal", "pagedData"].includes(key)) {
+                    continue;
+                }
+                customFacetResults[key] = facets[key];
+            }
+
+        }
+        if (processFn) {
+            var processed = processFn(pagedData);
+            if (processed) {
+                pagedData = processed;
+            }
+        }
+
+        var outputFormat = this.queryString.outputFormat || this.defaultOutputFormat;
+
+        if (outputFormat === "full") {
+            var outputObject = {
+                sEcho: this.echo,
+                iTotalRecords: fullTotal,
+                iTotalDisplayRecords: filteredTotal,
+                aaData: pagedData
+            };
+            return {...outputObject, ...customFacetResults};
+        }
+        else {
+            return pagedData;
+        }
+    }
+}
+
+common.DataTable = DataTable;
+
 module.exports = common;
