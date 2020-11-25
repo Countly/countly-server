@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlyWidgets, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -1314,8 +1314,10 @@ function initializeViewsWidget() {
             var appName = countlyDashboards.getAppName(app[0]),
                 appId = app[0];
 
+            var periodDesc = countlyWidgets.formatPeriod(widgetData.custom_period);
             var $widget = $(viewsWidgetTemplate({
                 title: title,
+                period: periodDesc.name,
                 app: {
                     id: appId,
                     name: appName
@@ -1329,7 +1331,7 @@ function initializeViewsWidget() {
 
             if (!title) {
                 var widgetTitle = jQuery.i18n.prop("views.heading");
-                placeHolder.find(".title").text(widgetTitle);
+                placeHolder.find(".title .name").text(widgetTitle);
             }
 
             addTooltip(placeHolder);
@@ -1439,6 +1441,7 @@ function initializeViewsWidget() {
 
         widgetEl.find("table").replaceWith($widget.find("table"));
         addTooltip(widgetEl);
+        countlyWidgets.setPeriod(widgetEl, widgetData.custom_period);
     }
     /**
      * Function to add tooltip
