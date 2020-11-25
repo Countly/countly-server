@@ -361,8 +361,8 @@ function initializeTimesOfDayWidget() {
         $("#widget-section-single-tod").show();
         if (dataType === "event") {
             $("#widget-section-single-event").show();
-		}
-		$("#widget-section-custom-period").hide();
+        }
+        $("#widget-section-custom-period").hide();
     }
 
     /**
@@ -429,7 +429,7 @@ function initializeTimesOfDayWidget() {
                 appId = app[0];
 
             var $widget = $(todWidgetTemplate({
-				title: title,
+                title: title,
                 app: {
                     id: appId,
                     name: appName
@@ -658,7 +658,7 @@ function initializeTimesOfDayWidget() {
         }));
 
         widgetEl.find("table").replaceWith($widget.find("table"));
-		addTooltip(widgetEl);
+        addTooltip(widgetEl);
     }
 
     /**
