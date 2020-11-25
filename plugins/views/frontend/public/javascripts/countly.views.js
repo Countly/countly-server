@@ -1314,10 +1314,10 @@ function initializeViewsWidget() {
             var appName = countlyDashboards.getAppName(app[0]),
                 appId = app[0];
 
-			var periodDesc = countlyWidgets.formatPeriod(widgetData.custom_period);
+            var periodDesc = countlyWidgets.formatPeriod(widgetData.custom_period);
             var $widget = $(viewsWidgetTemplate({
-				title: title,
-				period: periodDesc.name,
+                title: title,
+                period: periodDesc.name,
                 app: {
                     id: appId,
                     name: appName
@@ -1440,8 +1440,8 @@ function initializeViewsWidget() {
         }));
 
         widgetEl.find("table").replaceWith($widget.find("table"));
-		addTooltip(widgetEl);
-		countlyWidgets.setPeriod(widgetEl, widgetData.custom_period);
+        addTooltip(widgetEl);
+        countlyWidgets.setPeriod(widgetEl, widgetData.custom_period);
     }
     /**
      * Function to add tooltip
