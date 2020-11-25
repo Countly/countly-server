@@ -4473,12 +4473,12 @@
 		*/
         countlyCommon.getTimePeriodDescriptions = function(obj) {
             if (obj.type === "all-time") {
-                return { name: jQuery.i18n.map['drill.all-time'], valueAsString: "0days" };
+                return { name: jQuery.i18n.map['common.all-time'], valueAsString: "0days" };
             }
             if (obj.type === "last-n") {
                 var level = obj.level || "days";
                 return {
-                    name: jQuery.i18n.prop('drill.in-last-' + level + (obj.value > 1 ? '-plural' : ''), obj.value),
+                    name: jQuery.i18n.prop('common.in-last-' + level + (obj.value > 1 ? '-plural' : ''), obj.value),
                     valueAsString: obj.value + level
                 };
             }
@@ -4522,10 +4522,10 @@
                 return countlyCommon.formatDate(moment(point), format);
             };
             if (Array.isArray(obj.value)) {
-                name = jQuery.i18n.prop('drill.time-period-name.range', formatDate(obj.value[0], true), formatDate(obj.value[1], true));
+                name = jQuery.i18n.prop('common.time-period-name.range', formatDate(obj.value[0], true), formatDate(obj.value[1], true));
             }
             else {
-                name = jQuery.i18n.prop('drill.time-period-name.' + obj.type, formatDate(obj.value[obj.type]));
+                name = jQuery.i18n.prop('common.time-period-name.' + obj.type, formatDate(obj.value[obj.type]));
             }
             return {
                 name: name,
@@ -4580,15 +4580,19 @@
             }
             else if (period === "hour") {
                 inferredType = "hour";
+                inferredValue = "hour";
             }
             else if (period === "yesterday") {
                 inferredType = "yesterday";
+                inferredValue = "yesterday";
             }
             else if (period === "day") {
                 inferredType = "day";
+                inferredValue = "day";
             }
             else if (period === "month") {
                 inferredType = "month";
+                inferredValue = "month";
             }
             else if (typeof period === "object") {
                 if (Object.prototype.hasOwnProperty.call(period, "since")) {
@@ -4623,7 +4627,6 @@
                 inferredValue = JSON.parse(stringified);
             }
 
-            //Value for hour, yesterday, day, month is set to null
             var obj = {
                 value: inferredValue,
                 type: inferredType,
