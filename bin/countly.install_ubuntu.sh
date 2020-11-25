@@ -7,6 +7,13 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
+
+if [[ "$UBUNTU_YEAR" != "18" && "$UBUNTU_YEAR" != "20" ]]; then
+    echo "Unsupported OS version, only support Ubuntu 20 and 18"
+    exit 1
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 bash "$DIR/scripts/logo.sh";
@@ -37,10 +44,22 @@ wget -qO- https://deb.nodesource.com/setup_14.x | bash -
 apt-get update
 
 #install nginx
-apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
+apt-get -y install curl gnupg2 ca-certificates lsb-release
+echo "deb http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
+    | tee /etc/apt/sources.list.d/nginx.list
+curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
+apt-get update
+apt-get install nginx
 
 #install node.js
 apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
+
+set +e
+NODE_JS_CMD=$(which nodejs)
+set -e
+if [[ -z "$NODE_JS_CMD" ]]; then
+	ln -s "$(which node)" /usr/bin/nodejs
+fi
 
 #if npm is not installed, install it too
 if ! (command -v npm >/dev/null) then
@@ -60,12 +79,7 @@ apt-get -y install numactl
 apt-get -y install sendmail
 
 #install grunt & npm modules
-( cd "$DIR/.." ;  sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm)
-
-GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
-if [[ "$GLIBC_VERSION" != "2.25" ]]; then
-    (cd "$DIR/.." && sudo npm install argon2 --build-from-source)
-fi
+( cd "$DIR/..";  sudo npm install -g grunt-cli --unsafe-perm; sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
 
 #install mongodb
 bash "$DIR/scripts/mongodb.install.sh"
@@ -75,7 +89,7 @@ bash "$DIR/scripts/detect.init.sh"
 #configure and start nginx
 countly save /etc/nginx/sites-available/default "$DIR/config/nginx"
 countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
-cp "$DIR/config/nginx.server.conf" /etc/nginx/sites-enabled/default
+cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
 
 if [ "$INSIDE_DOCKER" != "1" ]
