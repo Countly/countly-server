@@ -394,10 +394,10 @@ window.countlyManagementView = countlyView.extend({
         }
 
         if (this.isSaveAvailable()) {
-            this.el.find('.icon-button').show();
+            this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').show();
         }
         else {
-            this.el.find('.icon-button').hide();
+            this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').hide();
         }
 
         if (name) {
@@ -414,8 +414,8 @@ window.countlyManagementView = countlyView.extend({
      */
     save: function(ev) {
         ev.preventDefault();
-
-        if (this.el.find('.icon-button').hasClass('disabled') || !this.isSaveAvailable()) {
+        ev.stopPropagation();
+        if (this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').hasClass('disabled') || !this.isSaveAvailable()) {
             return;
         }
 
@@ -424,7 +424,7 @@ window.countlyManagementView = countlyView.extend({
             return this.showError(error === true ? jQuery.i18n.map['management-applications.plugins.save.nothing'] : error);
         }
 
-        this.el.find('.icon-button').addClass('disabled');
+        this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').addClass('disabled');
 
         this.prepare().then(function(data) {
             var dialog, timeout = setTimeout(function() {
@@ -440,7 +440,7 @@ window.countlyManagementView = countlyView.extend({
                 },
                 dataType: "json",
                 success: function(result) {
-                    self.el.find('.icon-button').removeClass('disabled');
+                    self.el.parent().find("h3[aria-controls=" + self.el.attr("id") + "]").find('.icon-button').removeClass('disabled');
                     clearTimeout(timeout);
                     if (dialog) {
                         CountlyHelpers.removeDialog(dialog);
@@ -470,7 +470,7 @@ window.countlyManagementView = countlyView.extend({
                         //ignored excep
                     }
 
-                    self.el.find('.icon-button').removeClass('disabled');
+                    self.el.parent().find("h3[aria-controls=" + self.el.attr("id") + "]").removeClass('disabled');
                     clearTimeout(timeout);
                     if (dialog) {
                         CountlyHelpers.removeDialog(dialog);
@@ -479,7 +479,7 @@ window.countlyManagementView = countlyView.extend({
                 }
             });
         }, function(error1) {
-            self.el.find('.icon-button').removeClass('disabled');
+            self.el.parent().find("h3[aria-controls=" + self.el.attr("id") + "]").removeClass('disabled');
             self.showError(error1);
         });
     },
@@ -501,8 +501,11 @@ window.countlyManagementView = countlyView.extend({
             this.savedTemplateData = JSON.stringify(this.templateData);
         }
         this.el.html(this.template(this.templateData));
-        if (!this.el.find('.icon-button').length) {
-            $('<a class="icon-button green" data-localize="management-applications.plugins.save" href="#"></a>').hide().appendTo(this.el);
+        if (!this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').length) {
+            setTimeout(function() {
+                $('<a class="icon-button green" data-localize="management-applications.plugins.save" href="#"></a>').hide().appendTo(this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]"));
+            });
+
         }
 
         var self = this;
@@ -530,12 +533,14 @@ window.countlyManagementView = countlyView.extend({
             self.doOnChange(attrID, isChecked);
         });
 
-        this.el.find('.icon-button').off('click').on('click', this.save.bind(this));
+        setTimeout(function() {
+            this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').off('click').on('click', this.save.bind(this));
+        });
         if (this.isSaveAvailable()) {
-            this.el.find('.icon-button').show();
+            this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').show();
         }
         else {
-            this.el.find('.icon-button').hide();
+            this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').hide();
         }
 
         app.localize();
