@@ -497,18 +497,19 @@ window.countlyManagementView = countlyView.extend({
     },
 
     render: function() { //backbone.js view render function
+        var self = this;
+
         if (!this.savedTemplateData) {
             this.savedTemplateData = JSON.stringify(this.templateData);
         }
         this.el.html(this.template(this.templateData));
         if (!this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').length) {
             setTimeout(function() {
-                $('<a class="icon-button green" data-localize="management-applications.plugins.save" href="#"></a>').hide().appendTo(this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]"));
+                $('<a class="icon-button green" data-localize="management-applications.plugins.save" href="#">Save</a>').hide().appendTo(self.el.parent().find("h3[aria-controls=" + self.el.attr("id") + "]"));
             });
 
         }
 
-        var self = this;
         this.el.find('.cly-select').each(function(i, select) {
             $(select).off('click', '.item').on('click', '.item', function() {
                 self.doOnChange($(select).data('name') || $(select).attr('id'), $(this).data('value'));
@@ -534,7 +535,7 @@ window.countlyManagementView = countlyView.extend({
         });
 
         setTimeout(function() {
-            this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').off('click').on('click', this.save.bind(this));
+            self.el.parent().find("h3[aria-controls=" + self.el.attr("id") + "]").find('.icon-button').off('click').on('click', self.save.bind(self));
         });
         if (this.isSaveAvailable()) {
             this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').show();
