@@ -1,5 +1,6 @@
 /*global countlyGlobal, countlyCommon */
 (function(countlyAuth) {
+    countlyAuth.odd = true;
     /**
      * validate write requests for specific feature on specific app
      * @param {string} accessType - write process type [c, u, d]
@@ -98,6 +99,74 @@
      */
     countlyAuth.validateDelete = function(feature, member, app_id) {
         return validateWrite('d', feature, member, app_id);
+    };
+
+    countlyAuth.renderFeatureTemplate = function(featureName, index) {
+        var odd = countlyAuth.odd;
+        countlyAuth.odd = !countlyAuth.odd;
+
+        var featureTemplate = '<div class="permission-item ' + (odd ? 'gray' : '') + '">';
+        featureTemplate += '    <div class="permission-column first-column">' + featureName + '</div>';
+        featureTemplate += '    <div class="permission-column">';
+        featureTemplate += '        <div class="checkbox-container">';
+        featureTemplate += '            <input class="permission-checkbox" id="c-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
+        featureTemplate += '            <div class="c-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
+        featureTemplate += '            <div style="clear:both;"></div>';
+        featureTemplate += '        </div>';
+        featureTemplate += '    </div>';
+        featureTemplate += '    <div class="permission-column">';
+        featureTemplate += '        <div class="checkbox-container">';
+        featureTemplate += '            <input class="permission-checkbox" id="r-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
+        featureTemplate += '            <div class="r-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
+        featureTemplate += '            <div style="clear:both;"></div>';
+        featureTemplate += '        </div>';
+        featureTemplate += '    </div>';
+        featureTemplate += '    <div class="permission-column">';
+        featureTemplate += '        <div class="checkbox-container">';
+        featureTemplate += '            <input class="permission-checkbox" id="u-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
+        featureTemplate += '            <div class="u-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
+        featureTemplate += '            <div style="clear:both;"></div>';
+        featureTemplate += '        </div>';
+        featureTemplate += '    </div>';
+        featureTemplate += '    <div class="permission-column">';
+        featureTemplate += '        <div class="checkbox-container">';
+        featureTemplate += '            <input class="permission-checkbox" id="d-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
+        featureTemplate += '            <div class="d-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
+        featureTemplate += '            <div style="clear:both;"></div>';
+        featureTemplate += '        </div>';
+        featureTemplate += '    </div>';
+        featureTemplate += '    <div style="clear:both"></div>';
+        featureTemplate += '</div>';
+        return featureTemplate;
+    };
+
+    countlyAuth.initializePermissions = function(memberPermission, permissionSets) {
+        memberPermission = {
+            c: {},
+            r: {},
+            u: {},
+            d: {}
+        };
+
+        for (var countlyApp in countlyGlobal.apps) {
+            for (var accessType in memberPermission) {
+                memberPermission[accessType][countlyApp] = {};
+                memberPermission[accessType][countlyApp].all = false;
+                memberPermission[accessType][countlyApp].allowed = {};
+                memberPermission[accessType].global = {};
+                memberPermission[accessType].global.all = false;
+                memberPermission[accessType].global.allowed = {};
+            }
+        }
+        
+        if (permissionSets.length === 0) {
+            permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+        }
+
+        return {
+            permissionObject: memberPermission,
+            permissionSets: permissionSets
+        }
     };
 
 })(window.countlyAuth = window.countlyAuth || {});
