@@ -4064,7 +4064,7 @@ window.ManageUsersView = countlyView.extend({
             if (is_already_added) {
                 var user_apps = CountlyHelpers.removeItemFromArray(affected_app, self.user_app_selectors[conflict_index][0].selectize.getValue().split(","));
                 var selectize = self.user_app_selectors[conflict_index][0].selectize;
-                selectize.setValue(user_apps.join());
+                selectize.setValue(user_apps);
             }
 
             if (admin_apps.length > CountlyHelpers.removeEmptyValues(self.admin_apps).length) {
@@ -4125,7 +4125,7 @@ window.ManageUsersView = countlyView.extend({
                 self.admin_apps = CountlyHelpers.removeItemFromArray(affected_app, self.admin_apps);
                 
                 var selectize = adminAppSelector[0].selectize;
-                selectize.setValue(self.admin_apps.join());
+                selectize.setValue(self.admin_apps);
             }
 
             // check is already exist in user apps lists
@@ -4143,7 +4143,7 @@ window.ManageUsersView = countlyView.extend({
                 var updated_user_apps = CountlyHelpers.removeItemFromArray(affected_app, self.user_app_selectors[conflict_index][0].selectize.getValue().split(","));
                 
                 var selectize = self.user_app_selectors[conflict_index][0].selectize;
-                selectize.setValue(updated_user_apps.join());
+                selectize.setValue(updated_user_apps);
             }
 
             // update model
