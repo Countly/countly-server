@@ -3113,6 +3113,50 @@
         return diff;
     }
 
+    /**
+     * Function that returns difference between two arrays
+     * @param {*} item - item
+     * @param {Array} array - array
+     */
+    CountlyHelpers.removeItemFromArray = function(item, array) {
+        var index = array.indexOf(item);
+        if (index > -1) {
+          array.splice(index, 1);
+        }
+        return array;
+    };
+
+    /**
+     * Function that clean duplicates from passed array.
+     * @param {Array} array - array
+     * @return {Array} - array without duplicates
+     */
+    CountlyHelpers.arrayUnique = function(array) {
+        var a = array.concat();
+        for (var i = 0; i < a.length; ++i) {
+            for (var j = i + 1; j < a.length; ++j) {
+                if(a[i] === a[j]) {
+                    a.splice(j--, 1);
+                }
+            }
+        }
+        return a;
+    };
+
+    /**
+     * Function that remove empty values from array.
+     * @param {array} array - array that contain empty values
+     * @return {array} - array without empty values
+     */
+    CountlyHelpers.removeEmptyValues = function(array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i] === "") {
+                array.splice(i, 1);
+            }
+        }
+        return array;
+    };
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");

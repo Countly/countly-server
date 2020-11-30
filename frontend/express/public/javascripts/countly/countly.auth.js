@@ -1,6 +1,8 @@
 /*global countlyGlobal, countlyCommon */
 (function(countlyAuth) {
+    // internal variables
     countlyAuth.odd = true;
+    countlyAuth.types = ["c", "r", "u", "d"];
     /**
      * validate write requests for specific feature on specific app
      * @param {string} accessType - write process type [c, u, d]
@@ -167,6 +169,40 @@
             permissionObject: memberPermission,
             permissionSets: permissionSets
         }
+    };
+
+    countlyAuth.updateAdminPermissions = function(app_id, permissionObject, processFlag) {
+        for (var i in countlyAuth.types) {
+            permissionObject[countlyAuth.types[i]][app_id] = {all: processFlag, allowed: {}};
+        }
+        return permissionObject;
+    };
+
+    countlyAuth.updatePermissionByType = function(permissionType, permissionObject, processFlag) {
+        return permissionObject[permissionType] = {all: processFlag, allowed: {}};
+    };
+
+    countlyAuth.giveFeaturePermission = function(permissionType, feature, permissionObject) {
+        permissionObject[permissionType].all = false;
+        permissionObject[permissionType].allowed[feature] = true;
+        return permissionObject;
+    };
+
+    countlyAuth.removeFeaturePermission = function(permissionType, feature, permissionObject) {
+        delete permissionObject[permissionType].allowed[feature];
+        return permissionObject;
+    };
+
+    countlyAuth.combinePermissionObject = function(user_apps, user_permission_sets, permission_object) {
+        for (var i = 0; i < user_apps.length; i++) {
+            for (var j = 0; j < user_apps[i].length; j++) {
+                permission_object.c[user_apps[i][j]] = user_permission_sets[i].c;
+                permission_object.r[user_apps[i][j]] = user_permission_sets[i].r;
+                permission_object.u[user_apps[i][j]] = user_permission_sets[i].u;
+                permission_object.d[user_apps[i][j]] = user_permission_sets[i].d;
+            }
+        }
+        return permission_object;
     };
 
 })(window.countlyAuth = window.countlyAuth || {});
