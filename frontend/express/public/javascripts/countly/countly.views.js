@@ -6492,7 +6492,7 @@ window.EventsView = countlyView.extend({
         var aaColumns = [];
 
         if (countlyEvent.isSegmentedView()) {
-            aaColumns.push({"mData": "curr_segment", "sTitle": jQuery.i18n.map["events.table.segmentation"]});
+            aaColumns.push({"mData": "curr_segment", "sTitle": jQuery.i18n.map["events.table.segmentation"], "sClass": 'overflow-auto'});
         }
         else {
             aaColumns.push({"mData": "date", "sType": "customDate", "sTitle": jQuery.i18n.map["common.date"]});

@@ -1402,6 +1402,14 @@ margin: 50px 0;}
 
 /* EVENTS END */
 
+/* UTILITY CLASSES */
+
+.overflow-auto{
+    overflow: auto;
+}
+
+/* UTILITY CLASSES END*/
+
 #help-toggle { float:right; width:34px; height:18px; margin-top:4px; margin-right:16px; cursor:pointer; }
 #help-toggle.active .on-off-switch-label { background-color: #2EB52B;}
 #help-toggle.active .on-off-switch-label:before { background: #fff;}
