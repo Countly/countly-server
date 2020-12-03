@@ -1,4 +1,4 @@
-/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
+/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,countlyWidgets,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
 
     initialize: function() {
@@ -499,9 +499,7 @@ function initializeTimesOfDayWidget() {
             },
         ];
 
-        var barColors = ["rgba(111, 163, 239, 1)", "rgba(85, 189, 185, 1)", "rgba(239, 136, 0, 1)", "rgba(174, 131, 210, 1)"];
-
-        var color = barColors[widgetData.bar_color - 1 || 0];
+        var color = countlyCommon.hexToRgba(countlyWidgets.barColors[widgetData.bar_color - 1 || 0]);
         var maxDataValue = Math.max.apply(null, ([].concat.apply([], data))) || 1;
         var defaultColor = "rgba(255, 255, 255, .07)";
         var maxRadius = 30;
