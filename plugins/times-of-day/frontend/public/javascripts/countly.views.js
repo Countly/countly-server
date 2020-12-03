@@ -255,27 +255,8 @@ app.addPageScript("/custom#", function() {
                         '    </div>' +
                         '</div>';
 
-        var barColors = '<div id="tod-widget-section-bar-color" class="settings section" style="margin-bottom: 55px;">' +
-                        '    <div class="label">' + jQuery.i18n.prop("dashboards.bar-color") + '</div>' +
-                        '    <div id="tod-bar-colors" class="colors">' +
-                        '        <div data-color="1" class="color alt1 selected"></div>' +
-                        '        <div data-color="2" class="color alt2"></div>' +
-                        '        <div data-color="3" class="color alt3"></div>' +
-                        '        <div data-color="4" class="color alt4"></div>' +
-                        '    </div>' +
-                        '</div>';
-
         $(setting).insertAfter(".cly-drawer .details .settings:last");
-        $(barColors).insertAfter(".cly-drawer .details .settings:last");
-
     }
-
-    $("#tod-bar-colors").off("click").on("click", ".color", function() {
-        $("#tod-bar-colors").find(".color").removeClass("selected");
-        $(this).addClass("selected");
-
-        $("#widget-drawer").trigger("cly-widget-section-complete");
-    });
 
     $("#single-tod-dropdown").on("cly-select-change", function() {
         $("#widget-drawer").trigger("cly-widget-section-complete");
@@ -357,7 +338,7 @@ function initializeTimesOfDayWidget() {
         $("#data-types").find(".opt[data-data-type=push]").addClass("disabled");
         $("#data-types").find(".opt[data-data-type=crash]").addClass("disabled");
         $("#widget-section-single-app").show();
-        $("#tod-widget-section-bar-color").show();
+        $("#widget-section-bar-color").show();
         $("#widget-section-single-tod").show();
         if (dataType === "event") {
             $("#widget-section-single-event").show();
@@ -373,7 +354,7 @@ function initializeTimesOfDayWidget() {
         var $singleAppDrop = $("#single-app-dropdown"),
             $singleEventDrop = $("#single-event-dropdown"),
             dataType = $("#data-types").find(".opt.selected").data("data-type"),
-            $barColors = $("#tod-bar-colors"),
+            $barColors = $("#bar-colors"),
             $singleTodDrop = $("#single-tod-dropdown");
 
         var selectedApp = $singleAppDrop.clySelectGetSelection(),
@@ -585,9 +566,6 @@ function initializeTimesOfDayWidget() {
 
         $singleEventDrop.clySelectSetSelection("", jQuery.i18n.prop("dashboards.select-event-single"));
         $sinleTopDrop.clySelectSetSelection("", jQuery.i18n.prop("times-of-day.select"));
-
-        $("#tod-bar-colors").find(".color").removeClass("selected");
-        $("#tod-bar-colors").find(".color[data-color=1]").addClass("selected");
     }
 
     /**
@@ -604,7 +582,7 @@ function initializeTimesOfDayWidget() {
         var $singleAppDrop = $("#single-app-dropdown");
         var $singleEventDrop = $("#single-event-dropdown");
         var $dataTypes = $("#data-types");
-        var $barColors = $("#tod-bar-colors");
+        var $barColors = $("#bar-colors");
         var $singleTodDrop = $("#single-tod-dropdown");
 
         $singleAppDrop.clySelectSetSelection(apps[0], countlyDashboards.getAppName(apps[0]));
