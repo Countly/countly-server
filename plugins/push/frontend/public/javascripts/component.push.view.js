@@ -256,9 +256,9 @@ window.component('push.view', function(view) {
                                     var or = [],
                                         $in = [],
                                         query = Object.assign({
-                                            push: {$in},
                                             message: {$nin: [ctrl.message._id()]}
                                         }, ctrl.message.userConditions());
+                                    query.push.$in = $in;
                                     ctrl.message.platforms().forEach(function (p) {
                                         if (ctrl.message.test()) {
                                             if (p === 'i') {
