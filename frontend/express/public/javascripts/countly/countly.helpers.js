@@ -728,10 +728,10 @@
         }
     }
 
-	/** function to show selected column count in export dialog
+    /** function to show selected column count in export dialog
 	* @param {object} dialog - dialog 
 	* @param {object} data - object with information about formating 
-	* @param {object} instance- refenrence to instance
+	* @param {object} instance - refenrence to instance
 	*/
     function show_formatting_warning(dialog, data, instance) {
         if (data && data.fields && Object.keys(data.fields.length > 0)) {
@@ -758,7 +758,7 @@
                     }
 
                     for (var filed2 in data.fields) {
-                        if (data.fields[filed2].to === "time" && projection[filed]) {
+                        if (data.fields[filed2].to === "time" && projection[filed2]) {
                             dialog.find(".export-format-option").css("display", "block");
                         }
                     }
