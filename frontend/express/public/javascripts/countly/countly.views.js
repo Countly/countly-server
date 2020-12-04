@@ -5388,9 +5388,6 @@ window.EventsBlueprintView = countlyView.extend({
                     }
                     else {
                         if (selected === "show" || selected === "hide") {
-                            for (var k = 0; k < changeList.length; k++) {
-                                changeList[k] = changeList[k];
-                            }
                             countlyEvent.update_visibility(changeList, selected, function(result) {
                                 if (result === true) {
                                     var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
