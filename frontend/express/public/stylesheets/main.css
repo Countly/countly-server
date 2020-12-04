@@ -1520,8 +1520,23 @@ margin: 50px 0;}
     margin-right: 10px;
 }
 .export-dialog .export-format-option{
-	margin: 0 -15px 10px -15px;
+	margin: 0 -20px 10px -15px;
 	cursor:pointer;
+	font-size:12px;
+	display:none;
+}
+.export-dialog .export-format-option span {
+	position:relative;
+	top:-2px;
+}
+
+.export-dialog .export-format-option i{
+	color:  #cccccc;
+	font-size: 14px;
+	margin-left: 5px;
+	top:-1px;
+	position:relative;
+	
 }
 .export-dialog .export-columns-selector .columns-wrapper div{
     font-size:12px;

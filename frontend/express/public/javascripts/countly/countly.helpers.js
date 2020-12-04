@@ -734,6 +734,25 @@
 	* @param {object} instance - refenrence to instance
 	*/
     function show_formatting_warning(dialog, data, instance) {
+
+        dialog.find(".export-format-option i").not(".tooltipstered").tooltipster({
+            animation: "fade",
+            animationDuration: 50,
+            delay: 100,
+            theme: 'tooltipster-borderless',
+            side: ['top'],
+            maxWidth: 300,
+            trigger: 'hover',
+            interactive: true,
+            functionBefore: function(instance2) {
+                instance2.content("<p>" + jQuery.i18n.map["export.format-if-possible-explain"] + "</p>");
+            },
+            contentAsHTML: true,
+            functionInit: function(instance2) {
+                instance2.content("<p>" + jQuery.i18n.map["export.format-if-possible-explain"] + "</p>");
+            }
+        });
+
         if (data && data.fields && Object.keys(data.fields.length > 0)) {
             dialog.find(".export-format-option").css("display", "none");
             if (dialog.find(".export-columns-selector:visible").length > 0) {
