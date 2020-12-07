@@ -631,6 +631,10 @@
     * });
     */
     CountlyHelpers.confirm = function(msg, type, callback, buttonText, moreData) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
         if (moreData && moreData.image) {
