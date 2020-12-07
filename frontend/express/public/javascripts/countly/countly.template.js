@@ -3842,43 +3842,29 @@ var AppRouter = Backbone.Router.extend({
                 if (event.keyCode === 13) {
                     var date = moment($("#date-from-input").val(), "MM/DD/YYYY");
 
-                    if (date.format("MM/DD/YYYY") !== $("#date-from-input").val()) {
+                    if (date.format("MM/DD/YYYY") !== $("#date-from-input").val() || date.valueOf() > self.dateToSelected) {
                         var jsDate = $('#date-from').datepicker('getDate');
                         $("#date-from-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
                     }
                     else {
                         dateTo.datepicker("option", "minDate", date.toDate());
-                        if (date.valueOf() > self.dateToSelected) {
-                            date.startOf('day');
-                            self.dateToSelected = date.valueOf();
-                            dateFrom.datepicker("option", "maxDate", date.toDate());
-                            dateTo.datepicker("setDate", date.toDate());
-                            $("#date-to-input").val(date.format("MM/DD/YYYY"));
-
-                        }
                         dateFrom.datepicker("setDate", date.toDate());
+                        self.dateFromSelected = date.valueOf();
                     }
                 }
             });
 
-
             $("#date-to-input").keyup(function(event) {
                 if (event.keyCode === 13) {
                     var date = moment($("#date-to-input").val(), "MM/DD/YYYY");
-                    if (date.format("MM/DD/YYYY") !== $("#date-to-input").val()) {
+                    if (date.format("MM/DD/YYYY") !== $("#date-to-input").val() || date.toDate() < self.dateFromSelected || date.toDate() > moment().endOf('day')) {
                         var jsDate = $('#date-to').datepicker('getDate');
                         $("#date-to-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
                     }
                     else {
                         dateFrom.datepicker("option", "maxDate", date.toDate());
-                        if (date.toDate() < self.dateFromSelected) {
-                            date.startOf('day');
-                            self.dateFromSelected = date.valueOf();
-                            dateTo.datepicker("option", "minDate", date.toDate());
-                            dateFrom.datepicker("setDate", date.toDate());
-                            $("#date-from-input").val(date.format("MM/DD/YYYY"));
-                        }
                         dateTo.datepicker("setDate", date.toDate());
+                        self.dateToSelected = date.valueOf();
                     }
                 }
             });
