@@ -715,8 +715,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         data[z].url = data[z].view_meta[0].url;
                                     }
 
-                                    if (data[z].view_meta[0].sortcol) {
-                                        data[z].display = data[z].view_meta[0].sortcol;
+                                    if (data[z].view_meta[0].display) {
+                                        data[z].display = data[z].view_meta[0].display;
                                     }
                                 }
                             }
