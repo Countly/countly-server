@@ -269,7 +269,7 @@
                     return this.sidecarContents.length > 0;
                 },
                 passedScope: function() {
-                    var defaultKeys = ["editedObject", "$v", "localState"],
+                    var defaultKeys = ["editedObject", "localState"],
                         self = this;
 
                     var passed = defaultKeys.reduce(function(acc, val) {
@@ -336,16 +336,16 @@
                     }
                 },
                 reset: function() {
-                    this.$v.$reset();
+                    // this.$v.$reset();
                     this.resetLocalState();
                     this.setStep(0);
                 },
                 submit: function() {
                     this.beforeLeavingStep();
-                    if (!this.$v.$invalid) {
+                    // if (!this.$v.$invalid) {
                         this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
                         this.tryClosing();
-                    }
+                    // }
                 },
                 getInitialLocalState: function() {
                     return {};
@@ -390,11 +390,11 @@
                                         '</slot>\n' +
                                     '</div>\n' +
                                     '<cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\n' +
-                                    '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
+                                    '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="false" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
                                     '<cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\n' +
                                 '</div>\n' +
                                 '<div class="buttons single-step" v-if="!isMultiStep">\n' +
-                                    '<cly-button @click="submit" v-bind:disabled="$v.$invalid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
+                                    '<cly-button @click="submit" v-bind:disabled="false" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
                                 '</div>\n' +
                             '</div>\n' +
                         '</div>'

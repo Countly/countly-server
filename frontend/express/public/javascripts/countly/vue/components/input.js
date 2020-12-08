@@ -6,6 +6,8 @@
         _mixins = countlyVue.mixins;
 
     Vue.use(window.vuelidate.default);
+    Vue.use(VeeValidate);
+    Vue.component('validation-provider', VeeValidate.ValidationProvider);
 
     var objectWithoutProperties = function(obj, excluded) {
         if (!obj || !excluded || excluded.length === 0) {
