@@ -753,7 +753,7 @@
             }
         });
 
-        if (data && data.fields && Object.keys(data.fields.length > 0)) {
+        if (data && data.fields && Object.keys(data.fields).length > 0) {
             dialog.find(".export-format-option").css("display", "none");
             if (dialog.find(".export-columns-selector:visible").length > 0) {
                 if (dialog.find(".export-all-columns").hasClass("fa-check-square")) {
