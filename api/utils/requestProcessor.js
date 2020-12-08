@@ -1654,6 +1654,15 @@ const processRequest = (params) => {
                             }
                         }
 
+                        if (typeof params.qstring.formatFields === "string") {
+                            try {
+                                params.qstring.formatFields = JSON.parse(params.qstring.formatFields);
+                            }
+                            catch (ex) {
+                                params.qstring.formatFields = null;
+                            }
+                        }
+
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
                                 countlyApi.data.exports.fromDatabase({
