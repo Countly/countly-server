@@ -8,6 +8,7 @@
     Vue.use(window.vuelidate.default);
     Vue.use(VeeValidate);
     Vue.component('validation-provider', VeeValidate.ValidationProvider);
+    Vue.component('validation-observer', VeeValidate.ValidationObserver);
 
     var objectWithoutProperties = function(obj, excluded) {
         if (!obj || !excluded || excluded.length === 0) {
