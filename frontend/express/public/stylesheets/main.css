@@ -1484,13 +1484,13 @@ margin: 50px 0;}
     height: 240px;
     border-bottom: 1px solid #D0D0D0;
 }
-.export-dialog .export-columns-selector  p{
+.export-dialog .export-columns-selector  p, .export-dialog .export-format-option{
     font-size:12px;
     color:#6b6b6b;
     padding:7px 15px;
-    font-weight: normal;
-    
+    font-weight: normal;   
 }
+
 .export-dialog .export-columns-selector  p:first-child{
     font-size:13px;
     padding-bottom:0px;
@@ -1516,8 +1516,27 @@ margin: 50px 0;}
 	background-color:#FBFBFB;
     
 }
-.export-dialog .export-columns-selector p .check-green {
+.export-dialog .export-columns-selector p .check-green, .export-dialog .export-format-option .check-green {
     margin-right: 10px;
+}
+.export-dialog .export-format-option{
+	margin: 0 -20px 10px -15px;
+	cursor:pointer;
+	font-size:12px;
+	display:none;
+}
+.export-dialog .export-format-option span {
+	position:relative;
+	top:-2px;
+}
+
+.export-dialog .export-format-option i{
+	color:  #cccccc;
+	font-size: 14px;
+	margin-left: 5px;
+	top:-1px;
+	position:relative;
+	
 }
 .export-dialog .export-columns-selector .columns-wrapper div{
     font-size:12px;
@@ -2548,9 +2567,10 @@ h4 + .mgmt-plugins-row {
 
 .mgmt-plugins a.icon-button {
     float: right;
-    margin: 1em;
+    margin-right: 10px;
     position:relative;
-    top:-52px;
+    bottom: 4px;
+    color:#FFF;
 }
 
 .mgmt-plugins-row .selectize-input.items {

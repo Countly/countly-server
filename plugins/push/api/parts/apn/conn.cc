@@ -197,6 +197,7 @@ namespace apns {
 			conn_async->data = this;
 			uv_async_send(conn_async);
 
+
 			uv_sem_wait(tcp_init_sem);
 
 			if (tcp_init_sem) {
@@ -314,7 +315,9 @@ namespace apns {
 		}
 
 		auto item = obj->addresses.begin();
-		std::advance(item, std::rand() % (obj->addresses.size() - 1));
+		if (obj->addresses.size() > 1) {
+			std::advance(item, std::rand() % (obj->addresses.size() - 1));
+		}
 		auto str = item->first;
 		struct addrinfo *i_addrinfo = obj->addresses[str]; 
 		LOG_DEBUG("CONN " << uv_thread_self() << ": connecting to " << obj->hostname << " (" << str << ") in " << uv_thread_self());

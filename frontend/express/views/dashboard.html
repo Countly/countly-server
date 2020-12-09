@@ -381,12 +381,14 @@
         </div>
 		<div class="export-columns-selector">
             <p data-localize="export.columns-to-export"></p>
-            <p class="checkbox-line"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-all-columns"></a><span data-localize="export.export-all-columns"><span>
+            <p class="checkbox-line"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-all-columns"></a><span data-localize="export.export-all-columns"></span></p>
+			
 			<div class="export-columns-search"><table><tr><td><input type="text" placeholder="Search" data-localize="placeholder.search-columns" /></td><td><i class="fa fa-search"></i></td><tr></table></div>
             <div class="columns-height-wrapper">
 				<div class="columns-wrapper"></div>
             </div>
         </div>
+		<p class="checkbox-line export-format-option"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-format-columns"></a><span data-localize="export.format-if-possible"></span><i class="ion-information-circled"></i></p>
         <div class="icon-button green export-data" data-localize="export.export"></div>
 	</div>
     <div id="cly-drawer-template" class="cly-drawer">
@@ -1620,10 +1622,18 @@
                                 <div class="left title" data-localize="events.top-events.yesterday"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
-                                    <div class="col">
-                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
-                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-                                    </div>
+                                    {{isDeletedEvent}}
+                                        {{#ifCond isDeletedEvent "==" true}} 
+                                            <div style="cursor: default;pointer-events: none;" class="col">
+                                                <h4 style="cursor: default;color:#DDD">{{this.name}}</h4>
+                                                <label style="cursor: default;color:#DDD">{{this.count}}</label> <span style="color:#DDD"; class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{else}}
+                                            <div class="col">
+                                                <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                                <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{/ifCond}}
                                     {{/eachOfObjectValue}}
                                 </div>
                             </div>
@@ -1631,10 +1641,19 @@
                                 <div class="left title" data-localize="events.top-events.30days"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventData30Day}}
-                                    <div class="col">
-                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
-                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-                                    </div>
+                                    {{isDeletedEvent}}
+                                    {{#ifCond isDeletedEvent "==" true}} 
+                                            <div style="cursor: default;pointer-events: none;" class="col">
+                                                <h4 style="cursor: default;color:#DDD">{{this.name}}</h4>
+                                                <label style="cursor: default;color:#DDD">{{this.count}}</label> <span style="color:#DDD"; class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{else}}
+                                            <div class="col">
+                                            
+                                                <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                                <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                    {{/ifCond}}
                                     {{/eachOfObjectValue}}
                                 </div>
                             </div>

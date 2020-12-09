@@ -318,7 +318,7 @@ function mongodb_check() {
             else
                 update_sysctl "vm.zone_reclaim_mode" "0"
                 sed -i "s#NUMACTL_STATUS=0#NUMACTL_STATUS=1#g" "${DIR}/../commands/systemd/mongodb.sh"
-                systemctl daemon-reload
+                bash "${DIR}/../commands/systemd/mongodb.sh"
 
                 message_ok "Changed service file to work with NUMA"
             fi

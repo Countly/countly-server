@@ -743,7 +743,7 @@
         for (var i = 0; i < events.length; i++) {
 
             var arrayToUse = eventsWithoutOrder;
-            var mapKey = events[i].replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
+            var mapKey = events[i];
             if (eventOrder.indexOf(events[i]) !== -1) {
                 arrayToUse = eventsWithOrder;
             }

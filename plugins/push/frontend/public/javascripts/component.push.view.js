@@ -253,10 +253,34 @@ window.component('push.view', function(view) {
                                 helpr: t('pu.po.metrics.failed.desc'),
                                 titleClick: function(ev){
                                     ev.preventDefault();
-                                    window.app.navigate('#/users/qfilter/' + JSON.stringify(Object.assign({}, ctrl.message.userConditions(), {message: {$nin: [ctrl.message._id()]}})), true);
+                                    var or = [],
+                                        $in = [],
+                                        query = Object.assign({
+                                            message: {$nin: [ctrl.message._id()]}
+                                        }, ctrl.message.userConditions());
+                                    query.push.$in = $in;
+                                    ctrl.message.platforms().forEach(function (p) {
+                                        if (ctrl.message.test()) {
+                                            if (p === 'i') {
+                                                $in.push('tkid');
+                                                $in.push('tkia');
+                                            } else if (p === 'a') {
+                                                $in.push('tkat');
+                                            }
+                                        } else {
+                                            $in.push(p === 'i' ? 'tkip' : 'tkap');
+                                        }
+                                    });
+                                    if (ctrl.message.geos() && ctrl.message.geos().length) {
+                                        query.geo = {$in: ctrl.message.geos().slice()};
+                                    }
+                                    if (ctrl.message.cohorts() && ctrl.message.cohorts().length) {
+                                        query.chr = {$in: ctrl.message.cohorts().slice()};
+                                    }
+                                    window.app.navigate('#/users/qfilter/' + JSON.stringify(query), true);
                                 },
                                 descr: [
-                                    r.errors() === r.total() ? t('pu.po.metrics.failed.all') : t.n('pu.po.metrics.failed.some', r.errors())
+                                    r.errors() === r.total() ? t('pu.po.metrics.failed.all') : t('pu.po.metrics.failed.some', r.errors())
                                 ]
                             })
                             : ''

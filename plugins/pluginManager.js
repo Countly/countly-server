@@ -435,12 +435,13 @@ var pluginManager = function pluginManager() {
     * Register listening to new event on api side
     * @param {string} event - event to listen to
     * @param {function} callback - function to call, when event happens
+    * @param {boolean} unshift - whether to register a high-priority callback (unshift it to the listeners array)
     **/
-    this.register = function(event, callback) {
+    this.register = function(event, callback, unshift = false) {
         if (!events[event]) {
             events[event] = [];
         }
-        events[event].push(callback);
+        events[event][unshift ? 'unshift' : 'push'](callback);
     };
 
     // TODO: Remove this function and all it calls when moving to Node 12.

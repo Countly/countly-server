@@ -1489,10 +1489,10 @@ if (countlyGlobal.member.global_admin) {
                     }
 
                     if (this.isSaveAvailable()) {
-                        this.el.find('.icon-button').show();
+                        this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').show();
                     }
                     else {
-                        this.el.find('.icon-button').hide();
+                        this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').hide();
                     }
                     this.onChange(name, value);
                 }

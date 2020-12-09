@@ -178,15 +178,58 @@ exports.output = function(params, data, filename, type) {
 };
 
 /**
+* Transform value
+* @param {object} value - any value
+* @param {string} key - key
+* @param {object} mapper - object with information how to transform data
+* @returns {string} transformed value
+*/
+function transformValue(value, key, mapper) {
+    if (mapper && mapper.fields && mapper.fields[key]) {
+        //if we need we can easy add later different transformations and pass other params for them
+        if (mapper.fields[key].to && mapper.fields[key].to === "time") {
+            if (value) {
+                if (Math.round(value).toString().length === 10) {
+                    value *= 1000;
+                }
+                value = moment(new Date(value)).tz(mapper.tz);
+                if (value) {
+                    value = value.format("ddd, D MMM YYYY HH:mm:ss");
+                }
+                else {
+                    value /= 1000;
+                }
+            }
+        }
+        return value;
+    }
+    else {
+        return value;
+    }
+}
+
+/**
+* Transform all values in object
+* @param {object} doc - any value
+* @param {object} mapper - object with information how to transform data
+* @returns {object} object with transformed data
+*/
+function transformValuesInObject(doc, mapper) {
+    for (var z in doc) {
+        doc[z] = transformValue(doc[z], z, mapper);
+    }
+    return doc;
+}
+/**
 * function to collect calues in order based on current order.
 * @param {array} values - arary to collect values
 * @param {object} valuesMap - object to see which values are collected
 * @param {array} paramList - array of keys(in order)
 * @param {object} doc - data from db
-* @param {boolean} collectProp - true if collect properties,if false use only listed(from projection)
+* @param {object} options -{options.collectProp = true if collect properties,if false use only listed(from projection), options.mapper - mapper for fransforming data}
 */
-function getValues(values, valuesMap, paramList, doc, collectProp) {
-    if (collectProp) {
+function getValues(values, valuesMap, paramList, doc, options) {
+    if (options && options.collectProp) {
         doc = flattenObject(doc);
         var keys = Object.keys(doc);
         for (var z = 0; z < keys.length; z++) {
@@ -194,7 +237,7 @@ function getValues(values, valuesMap, paramList, doc, collectProp) {
         }
         for (var p = 0; p < paramList.length; p++) {
             if (doc[paramList[p]]) {
-                values.push(doc[paramList[p]]);
+                values.push(transformValue(doc[paramList[p]], paramList[p], options.mapper));
             }
             else {
                 values.push("");
@@ -203,7 +246,7 @@ function getValues(values, valuesMap, paramList, doc, collectProp) {
         }
         for (var k in valuesMap) {
             if (valuesMap[k] === false) {
-                values.push(doc[k]);
+                values.push(transformValue(doc[k], k, options.mapper));
                 paramList.push(k);
             }
         }
@@ -212,10 +255,10 @@ function getValues(values, valuesMap, paramList, doc, collectProp) {
         for (var kz = 0; kz < paramList.length; kz++) {
             var value = common.getDescendantProp(doc, paramList[kz]) || "";
             if (typeof value === 'object' || Array.isArray(value)) {
-                values.push(JSON.stringify(value));
+                values.push(JSON.stringify(transformValue(value, paramList[kz], options.mapper)));
             }
             else {
-                values.push(value);
+                values.push(transformValue(value, paramList[kz], options.mapper));
             }
         }
     }
@@ -227,8 +270,9 @@ function getValues(values, valuesMap, paramList, doc, collectProp) {
 * @param {string} filename - name of the file to output to browser
 * @param {string} type - type to be used in content type
 * @param {object} projection - object of field projection
+* @param {object} mapper - object of mapping if need to transform data(for example timestamp to date string)
 */
-exports.stream = function(params, stream, filename, type, projection) {
+exports.stream = function(params, stream, filename, type, projection, mapper) {
     var headers = {};
     var listAtEnd = true;
     if (type && contents[type]) {
@@ -239,6 +283,7 @@ exports.stream = function(params, stream, filename, type, projection) {
     if (projection) {
         for (var k in projection) { //keep order as in projection if given
             paramList.push(k);
+
             listAtEnd = false;
         }
     }
@@ -256,7 +301,7 @@ exports.stream = function(params, stream, filename, type, projection) {
             stream.on('data', function(doc) {
                 var values = [];
                 var valuesMap = {};
-                getValues(values, valuesMap, paramList, doc, listAtEnd); // if we have list at end - then we don'thave projection
+                getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd}); // if we have list at end - then we don'thave projection
 
                 for (let p = 0; p < values.length; p++) {
                     values[p] = processCSVvalue(values[p]);
@@ -284,7 +329,7 @@ exports.stream = function(params, stream, filename, type, projection) {
             stream.on('data', function(doc) {
                 var values = [];
                 var valuesMap = {};
-                getValues(values, valuesMap, paramList, doc, listAtEnd);
+                getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
                 sheet.write(values);
             });
 
@@ -336,6 +381,11 @@ exports.fromDatabase = function(options) {
     options.db = options.db || common.db;
     options.query = options.query || {};
     options.projection = options.projection || {};
+
+    if (options.params && options.params.qstring && options.params.qstring.formatFields) {
+        options.mapper = options.params.qstring.formatFields;
+    }
+
     if (options.limit && options.limit !== "") {
         options.limit = parseInt(options.limit, 10);
         if (options.limit > plugin.getConfig("api").export_limit) {
@@ -373,10 +423,11 @@ exports.fromDatabase = function(options) {
 
     if (options.type === "stream" || options.type === "json") {
         options.output = options.output || function(stream) {
-            exports.stream(options.params, stream, options.filename, "json", options.projection);
+            exports.stream(options.params, stream, options.filename, "json", options.projection, options.mapper);
         };
         cursor.stream({
             transform: function(doc) {
+                doc = transformValuesInObject(doc, options.mapper);
                 return JSON.stringify(doc);
             }
         });
@@ -384,7 +435,7 @@ exports.fromDatabase = function(options) {
     }
     else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
         options.output = options.output || function(stream) {
-            exports.stream(options.params, stream, options.filename, options.type, options.projection);
+            exports.stream(options.params, stream, options.filename, options.type, options.projection, options.mapper);
         };
         cursor.stream();
         options.output(cursor);

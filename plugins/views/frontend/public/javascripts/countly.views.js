@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlyWidgets, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -607,6 +607,31 @@ window.ViewManageView = countlyView.extend({
         else {
             $(".apply-view-changes").removeClass("disabled");
         }
+    },
+    getExportAPI: function(tableID) {
+        if (tableID === 'DataTables_Table_0') {
+            var set = this.dtable.fnSettings();
+            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getTableNames&api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&project=true";
+            if (set && set.oPreviousSearch && set.oPreviousSearch.sSearch) {
+                requestPath += "&sSearch=" + set.oPreviousSearch.sSearch;
+            }
+            if (set && set.aaSorting && set.aaSorting[0]) {
+                if (set.aaSorting[0][1] === 'asc' || set.aaSorting[0][1] === 'desc') {
+                    requestPath += "&iSortCol_0=" + set.aaSorting[0][0];
+                    requestPath += "&sSortDir_0=" + set.aaSorting[0][1];
+                }
+            }
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename: "views_naming_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
     },
     renderCommon: function(isRefresh) {
         var self = this;
@@ -1289,8 +1314,10 @@ function initializeViewsWidget() {
             var appName = countlyDashboards.getAppName(app[0]),
                 appId = app[0];
 
+            var periodDesc = countlyWidgets.formatPeriod(widgetData.custom_period);
             var $widget = $(viewsWidgetTemplate({
                 title: title,
+                period: periodDesc.name,
                 app: {
                     id: appId,
                     name: appName
@@ -1304,7 +1331,7 @@ function initializeViewsWidget() {
 
             if (!title) {
                 var widgetTitle = jQuery.i18n.prop("views.heading");
-                placeHolder.find(".title").text(widgetTitle);
+                placeHolder.find(".title .name").text(widgetTitle);
             }
 
             addTooltip(placeHolder);
@@ -1414,6 +1441,7 @@ function initializeViewsWidget() {
 
         widgetEl.find("table").replaceWith($widget.find("table"));
         addTooltip(widgetEl);
+        countlyWidgets.setPeriod(widgetEl, widgetData.custom_period);
     }
     /**
      * Function to add tooltip
