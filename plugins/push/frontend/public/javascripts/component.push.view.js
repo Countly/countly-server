@@ -280,7 +280,7 @@ window.component('push.view', function(view) {
                                     window.app.navigate('#/users/qfilter/' + JSON.stringify(query), true);
                                 },
                                 descr: [
-                                    r.errors() === r.total() ? t('pu.po.metrics.failed.all') : t.n('pu.po.metrics.failed.some', r.errors())
+                                    r.errors() === r.total() ? t('pu.po.metrics.failed.all') : t('pu.po.metrics.failed.some', r.errors())
                                 ]
                             })
                             : ''

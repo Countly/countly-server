@@ -262,7 +262,7 @@ var metricProps = {
                                                     done2(null, {plugin_metric: metric, data: callData});
                                                 }
                                             },
-                                        },);
+                                        });
                                     }
                                 }
                             }

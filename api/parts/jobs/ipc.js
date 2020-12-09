@@ -327,7 +327,7 @@ class CentralWorker extends CentralSuper {
      *                            return value of this function is sent back to the master as a reply
      * @param  {integer} readTimeout how much ms to wait until rejecting
      */
-    constructor(name, handler, readTimeout = 5000) {
+    constructor(name, handler, readTimeout = 15000) {
         super(name, handler);
         this.readTimeout = readTimeout;
         this.promises = {};
@@ -395,7 +395,7 @@ class CentralWorker extends CentralSuper {
                 process.send(this.fromMe(data, now));
                 setTimeout(() => {
                     delete this.promises[now];
-                    reject('IPC Timeout');
+                    reject(`IPC Timeout for ${JSON.stringify(data).substr(0, 100)}`);
                 }, this.readTimeout);
             });
         return promise;
