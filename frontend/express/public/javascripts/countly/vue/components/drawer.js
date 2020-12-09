@@ -343,8 +343,8 @@
                 submit: function() {
                     this.beforeLeavingStep();
                     // if (!this.$v.$invalid) {
-                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
-                        this.tryClosing();
+                    this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                    this.tryClosing();
                     // }
                 },
                 getInitialLocalState: function() {
@@ -353,7 +353,9 @@
                 resetLocalState: function() {
                     this.localState = this.getInitialLocalState();
                 },
-                beforeLeavingStep: function() { }
+                beforeLeavingStep: function() {
+                    this.$emit("before-leaving-step");
+                }
             },
             template: '<div class="cly-vue-drawer"\n' +
                             'v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\n' +

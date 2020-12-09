@@ -1,4 +1,4 @@
-/* global Vue, jQuery, _ */
+/* global Vue, jQuery, _, countlyGlobal */
 
 (function(countlyVue, $) {
 

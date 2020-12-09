@@ -1,4 +1,4 @@
-/* global countlyGlobal */
+/* global  */
 
 (function(countlyVue) {
 

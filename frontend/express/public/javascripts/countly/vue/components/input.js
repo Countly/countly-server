@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, _ */
+/* global jQuery, Vue, moment, countlyCommon, _, VeeValidate */
 
 (function(countlyVue, $) {
 
