@@ -2696,7 +2696,7 @@ function loadFsVersionMarks(callback) {
             if (Array.isArray(olderVersions)) {
                 //sort versions here.
                 olderVersions.sort(function(a, b) {
-                    if (typeof a.updated !== undefined && typeof b.updated !== undefined) {
+                    if (typeof a.updated !== "undefined" && typeof b.updated !== "undefined") {
                         return a.updated - b.updated;
                     }
                     else {
