@@ -205,7 +205,7 @@
     );
 
 
-    var BaseDrawer2 = countlyBaseComponent.extend(
+    Vue.component("cly-drawer", countlyBaseComponent.extend(
         // @vue/component
         {
             inheritAttrs: false,
@@ -231,7 +231,6 @@
                     currentStepIndex: 0,
                     stepContents: [],
                     sidecarContents: [],
-                    localState: this.getInitialLocalState(),
                     inScope: [],
                     isMounted: false
                 };
@@ -269,20 +268,13 @@
                     return this.sidecarContents.length > 0;
                 },
                 passedScope: function() {
-                    var defaultKeys = ["editedObject", "localState"],
+                    var defaultKeys = ["editedObject", "currentStepId"],
                         self = this;
 
                     var passed = defaultKeys.reduce(function(acc, val) {
                         acc[val] = self[val];
                         return acc;
                     }, {});
-
-                    if (this.inScopeReadOnly) {
-                        passed.readOnly = this.inScopeReadOnly.reduce(function(acc, val) {
-                            acc[val] = self[val];
-                            return acc;
-                        }, {});
-                    }
 
                     return passed;
                 }
@@ -337,7 +329,6 @@
                 },
                 reset: function() {
                     // this.$v.$reset();
-                    this.resetLocalState();
                     this.setStep(0);
                 },
                 submit: function() {
@@ -346,12 +337,6 @@
                     this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
                     this.tryClosing();
                     // }
-                },
-                getInitialLocalState: function() {
-                    return {};
-                },
-                resetLocalState: function() {
-                    this.localState = this.getInitialLocalState();
                 },
                 beforeLeavingStep: function() {
                     this.$emit("before-leaving-step");
@@ -401,7 +386,7 @@
                             '</div>\n' +
                         '</div>'
         }
-    );
+    ));
 
     // @vue/component
     var hasDrawersMixin = function(names) {
@@ -441,7 +426,6 @@
     };
 
     countlyVue.components.BaseDrawer = BaseDrawer;
-    countlyVue.components.BaseDrawer2 = BaseDrawer2;
     countlyVue.mixins.hasDrawers = hasDrawersMixin;
 
 
