@@ -1,3 +1,66 @@
+## Version 20.11.1
+
+**Fixes**
+* [apps] application settings Save button fixed
+* [events] fixed displaying long segents in events table
+* [events] fixed issue when updating event description doesn't work
+* [events] top events - check for deleted events
+* [push] fixed APN issue when DNS returns 1 IP
+* [star-rating] first emotion size problem fixed
+* [UI] provide notification popup to notify about incomplete upgrade
+* [views] fixed edit views table export
+* [views] fixed showing renamed view name in table
+
+**Enterprise fixes**
+* [active_directory] fix retrieving email address for azure auth
+* [cohorts] allow to treat some lists as numbers
+* [cohorts] allow using numbers in AND statements
+* [cohorts] fix is set filling on cohort edit
+* [cohorts] improve cohort overview loading with more than 100 cohorts
+* [crash_symbols] changed the wording of debug symbol files
+* [dashboards] disable confirm popup on custom dashboard screenshots
+* [dashboards] remove dashboard user when user deleted
+* [drill] aggregated data regeneration fixed when daylight saving time occurs
+* [drill] handle arrays properly in meta generations
+* [formulas] don't allow to use same name and improve the messages on pop-up(s)
+* [funnels] improve funnel overview loading
+* [funnels] store funnel data in gridfs for report manager to allow large data storage
+* [okta] fixed issuer url
+* [remote-config] fixed not loading remote config list when there are many values
+* [retention_segments] correct retention type descriptions
+* [retention_segments] links to user profiles should be removed from tooltips
+* [surveys] fixed All Time selection
+* [users] fix increasing event count in sessions table
+* [users] fixed ignoring query in user profile list on large quantity of custom properties
+* [views] fixed heat maps
+
+**Enterprise Improvements**
+* [concurrent_users] less writes on data ingestion
+* [concurrent_users] show Max Concurrent Online Users in the analytics section
+* [dashboards] allow font customizations for notes widget
+* [dashboards] allow separate period in some widgets
+* [funnels] add caching mode options for bigger data
+* [groups] allow space in group id
+* [retention_segments] add configurable size to days in retention in custom dashboards
+* [retention_segments] display percentages in the cells in custom dashboards
+* [users] Adding push tokens & geo to user filter
+* [users] exported files allow to have formatted date
+
+**Development related**
+* [api] fixed output error log
+* [api] respond 200 on checksum fails to allow process rest of requests
+* [auth_plugins] use member utility
+* [crash_symbols] add a log for errors when testing symbolication server
+* [crash_symbols] added a script to test symbolication server connection
+* [jobs] Relaxing IPC timeout
+* [logs] output version and plugin set on proces start
+* [mongodb] latest driver fixes
+* [scripts] added Centos 8 and Ubuntu 20 support
+* [scripts] removed CentOS 6 support
+* [timezones] updated timezone information
+* [users] allow to query user details by uid and did values in API
+* [users] expose more user properties in user profiles view
+
 ## Version 20.11
 
 **Fixes**
