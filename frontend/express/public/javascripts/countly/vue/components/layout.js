@@ -149,7 +149,7 @@
         }
     ));
 
-    Vue.component("cly-content", countlyBaseComponent.extend(
+    var BaseContent = countlyBaseComponent.extend(
         // @vue/component
         {
             inheritAttrs: false,
@@ -181,12 +181,59 @@
                 elementId: function() {
                     return this.componentId + "-" + this.id;
                 }
-            },
-            template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                            '<div v-show="isActive"><slot/></div>\n' +
-                        '</div>'
+            }
         }
-    ));
+    );
+
+    Vue.component("cly-content", BaseContent.extend({
+        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
+                        '<div v-show="isActive"><slot/></div>\n' +
+                    '</div>'
+    }));
+
+    var BaseStep = BaseContent.extend({
+        data: function() {
+            return {
+                isValid: true,
+                isStep: true
+            };
+        }
+    });
+
+    Vue.component("cly-step", BaseStep.extend({
+        methods: {
+            setValid: function(valid) {
+                this.isValid = valid;
+            }
+        },
+        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
+                        '<pre>{{isValid}}</pre>\n' +
+                        '<div v-show="isActive"><slot :setValid="setValid"/></div>\n' +
+                    '</div>'
+    }));
+
+    Vue.component("cly-form-step", BaseStep.extend({
+        props: {
+            validatorFn: {type: Function},
+        },
+        mounted: function() {
+            var self = this;
+            this.$watch(function() {
+                return self.$refs.observer.flags.valid;
+            },
+            function(newVal) {
+                self.isValid = newVal;
+            });
+        },
+        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
+                    '<pre>{{isValid}}</pre>\n' +
+                    '<div v-show="isActive">\n' +
+                        '<validation-observer ref="observer" v-slot="v">\n' +
+                            '<slot/>\n' +
+                        '</validation-observer>\n' +
+                    '</div>\n' +
+                '</div>'
+    }));
 
     Vue.component("cly-panel", countlyBaseComponent.extend(
         // @vue/component
