@@ -225,6 +225,14 @@
                 self.isValid = newVal;
             });
         },
+        methods: {
+            reset: function() {
+                this.$refs.observer.reset();
+            },
+            touch: function() {
+                this.$refs.observer.validate();
+            }
+        },
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
                     '<pre>{{isValid}}</pre>\n' +
                     '<div v-show="isActive">\n' +

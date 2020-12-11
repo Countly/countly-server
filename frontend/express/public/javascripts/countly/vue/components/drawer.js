@@ -246,11 +246,10 @@
                     return this.activeContentId;
                 },
                 isCurrentStepValid: function() {
-                    if (!this.stepValidations || !Object.prototype.hasOwnProperty.call(this.stepValidations, this.activeContentId)) {
-                        // No validation scenario defined
-                        return true;
+                    if (this.activeContent.isStep) {
+                        return this.activeContent.isValid;
                     }
-                    return this.stepValidations[this.activeContentId];
+                    return true;
                 },
                 isLastStep: function() {
                     return this.stepContents.length > 1 && this.currentStepIndex === this.stepContents.length - 1;
@@ -277,6 +276,17 @@
                     }, {});
 
                     return passed;
+                },
+                areAllValid: function() {
+                    if (!this.isMounted) {
+                        return true;
+                    }
+                    return this.stepContents.reduce(function(item, current) {
+                        if (current.isStep) {
+                            return item && current.isValid;
+                        }
+                        return item;
+                    }, true);
                 }
             },
             watch: {
@@ -328,18 +338,26 @@
                     }
                 },
                 reset: function() {
-                    // this.$v.$reset();
+                    this.callValidators("reset");
                     this.setStep(0);
                 },
                 submit: function() {
                     this.beforeLeavingStep();
-                    // if (!this.$v.$invalid) {
-                    this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
-                    this.tryClosing();
-                    // }
+                    if (this.areAllValid) {
+                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                        this.tryClosing();
+                    }
                 },
                 beforeLeavingStep: function() {
+                    this.callValidators("touch");
                     this.$emit("before-leaving-step");
+                },
+                callValidators: function(command) {
+                    this.stepContents.forEach(function(current) {
+                        if (current[command]) {
+                            current[command]();
+                        }
+                    });
                 }
             },
             template: '<div class="cly-vue-drawer"\n' +
@@ -366,6 +384,7 @@
                                     '</div>\n' +
                                 '</div>\n' +
                                 '<div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\n' +
+                                    '<pre> {{areAllValid}} </pre>\n' +
                                     '<slot name="default"\n' +
                                         'v-bind="passedScope">\n' +
                                     '</slot>\n' +
@@ -377,7 +396,7 @@
                                         '</slot>\n' +
                                     '</div>\n' +
                                     '<cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\n' +
-                                    '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="false" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
+                                    '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="areAllValid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
                                     '<cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\n' +
                                 '</div>\n' +
                                 '<div class="buttons single-step" v-if="!isMultiStep">\n' +
