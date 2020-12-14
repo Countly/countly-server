@@ -4383,3 +4383,7 @@ p.error_message_div {
 .selectize-input ::placeholder { 
     color: #dddddd;
 }
+
+.mgmt-plugins-row ::placeholder { 
+    color: #dddddd;
+}
