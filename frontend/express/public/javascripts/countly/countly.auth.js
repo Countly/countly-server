@@ -1,8 +1,13 @@
-/*global countlyGlobal, countlyCommon */
+/*global countlyGlobal, CountlyHelpers, countlyCommon */
 (function(countlyAuth) {
     // internal variables
     countlyAuth.odd = true;
     countlyAuth.types = ["c", "r", "u", "d"];
+    countlyAuth.typeNames = ["create", "read", "update", "delete"];
+    countlyAuth.features = {
+        "plugins": countlyGlobal.plugins,
+        "others": ["core", "events", "global_applications", "global_users", "global_jobs"]
+    };
     /**
      * validate write requests for specific feature on specific app
      * @param {string} accessType - write process type [c, u, d]
@@ -142,31 +147,58 @@
         return featureTemplate;
     };
 
-    countlyAuth.initializePermissions = function(memberPermission, permissionSets) {
-        memberPermission = {
+    countlyAuth.clearDrawer = function(parent_el, sets) {
+        $(parent_el + ' #admin-app-selector')[0].selectize.setValue([]);
+        for (var i = 0; i < sets.length; i++) {
+            $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue([]);
+        }
+        
+        for (var i = 1; i < sets.length; i++) {
+            $(parent_el + ' #user-access-' + i).remove();
+        }
+    }
+
+    countlyAuth.permissionSetGenerator = function(count) {
+        var permission_sets = [];
+        for (var i = 0; i < count; i++) {
+            permission_sets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});    
+        }
+        return permission_sets;
+    }
+
+    countlyAuth.initializePermissions = function(permissionObject, permissionSets) {
+        permissionObject = {
             c: {},
             r: {},
             u: {},
-            d: {}
+            d: {},
+            _: {
+                a: [],
+                u: []
+            }
         };
 
         for (var countlyApp in countlyGlobal.apps) {
-            for (var accessType in memberPermission) {
-                memberPermission[accessType][countlyApp] = {};
-                memberPermission[accessType][countlyApp].all = false;
-                memberPermission[accessType][countlyApp].allowed = {};
-                memberPermission[accessType].global = {};
-                memberPermission[accessType].global.all = false;
-                memberPermission[accessType].global.allowed = {};
+            for (var accessType in permissionObject) {
+                permissionObject[accessType][countlyApp] = {};
+                permissionObject[accessType][countlyApp].all = false;
+                permissionObject[accessType][countlyApp].allowed = {};
+                permissionObject[accessType].global = {};
+                permissionObject[accessType].global.all = false;
+                permissionObject[accessType].global.allowed = {};
             }
         }
         
         if (permissionSets.length === 0) {
             permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
         }
+        else if (permissionSets.length > 0) {
+            permissionSets = [];
+            permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});    
+        }
 
         return {
-            permissionObject: memberPermission,
+            permissionObject: permissionObject,
             permissionSets: permissionSets
         }
     };
@@ -179,7 +211,8 @@
     };
 
     countlyAuth.updatePermissionByType = function(permissionType, permissionObject, processFlag) {
-        return permissionObject[permissionType] = {all: processFlag, allowed: {}};
+        permissionObject[permissionType] = {all: processFlag, allowed: {}};
+        return permissionObject;
     };
 
     countlyAuth.giveFeaturePermission = function(permissionType, feature, permissionObject) {
@@ -204,5 +237,41 @@
         }
         return permission_object;
     };
+
+    countlyAuth.permissionParser = function(parent_el, permission_object, permission_sets) {
+        var admin_apps = permission_object._.a;
+        var user_apps = permission_object._.u;
+
+        $(parent_el + ' #admin-app-selector')[0].selectize.setValue(admin_apps);
+        
+        for (var i = 0; i < user_apps.length; i++) {
+            $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue(user_apps[i]);
+            for (var j = 0; j < countlyAuth.types.length; j++) {
+                if (permission_object[countlyAuth.types[j]][user_apps[i][0]].all) {
+                    $(' .mark-all-' + countlyAuth.typeNames[j] + '-checkbox-' + i).addClass('fa-check-square');
+                    $(parent_el + ' .mark-all-' + countlyAuth.typeNames[j] + '-checkbox-' + i).removeClass('fa-square-o');
+                    $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j] + '-' + i).data('state', 1);
+
+                    for (var k = 0; k < countlyAuth.features.plugins.length; k++) {
+                        $(parent_el + ' .' + countlyAuth.types[j] + '-' + countlyAuth.features.plugins[k] + '-' + i).addClass('fa-check-square');
+                        $(parent_el + ' .' + countlyAuth.types[j] + '-' + countlyAuth.features.plugins[k] + '-' + i).removeClass('fa-square-o');
+                        $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features.plugins[k] + '-' + i).data('state', 1);
+                    }
+
+                    permission_sets[i][countlyAuth.types[j]].all = true;
+                }
+                else {
+                    for (var feature in permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed) {
+                        $(parent_el + ' .' + countlyAuth.types[j] + '-' + feature + '-' + i).addClass('fa-check-square');
+                        $(parent_el + ' .' + countlyAuth.types[j] + '-' + feature + '-' + i).removeClass('fa-square-o');
+                        $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).data('state', 1);
+                        permission_sets[i] = countlyAuth.giveFeaturePermission(countlyAuth.types[j], feature, permission_sets[i]);
+                    }    
+                }
+            }
+        }
+
+        return permission_sets;
+    }
 
 })(window.countlyAuth = window.countlyAuth || {});

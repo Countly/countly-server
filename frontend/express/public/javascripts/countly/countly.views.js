@@ -3401,7 +3401,7 @@ window.ManageUsersView = countlyView.extend({
 
         // render permission checkboxes for features/plugins
         self.features.plugins.forEach(function(feature) {
-            $('#permission-table-' + index).append(self.renderFeatureTemplate(feature, index));
+            $('#permission-table-' + index).append(countlyAuth.renderFeatureTemplate(feature, index));
         });
     },
     template: null,
@@ -3804,7 +3804,7 @@ window.ManageUsersView = countlyView.extend({
                 $('.create-user-drawer .' + $(this).attr('id')).addClass('fa-check-square');
                 $('.create-user-drawer .' + $(this).attr('id')).removeClass('fa-square-o');
                 $('.create-user-drawer #' + $(this).attr('id')).data('state', 1);
-
+                
                 self.permissionSets[index] = countlyAuth.giveFeaturePermission(permission_type, feature, self.permissionSets[index]);
             }
         });
@@ -4183,9 +4183,10 @@ window.ManageUsersView = countlyView.extend({
             app.activeView.render();
         });
 
-        
         // init permission model object with default values
-        self.initializeMemberPermission();
+        var initializedPermissions = countlyAuth.initializePermissions(self.memberPermission, self.permissionSets);
+        self.memberPermission = initializedPermissions.permissionObject;
+        self.permissionSets = initializedPermissions.permissionSets;
     },
     setSelectDeselect: function() {
         var searchInput = $("#listof-apps").find(".search input").val();
@@ -4318,6 +4319,8 @@ window.ManageUsersView = countlyView.extend({
         });
 
         $(".save-user").off("click").on("click", function() {
+            console.log('user save triggered');
+
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
             $(".email-check.green-text").remove();
@@ -4332,6 +4335,23 @@ window.ManageUsersView = countlyView.extend({
             data.username = currUserDetails.find(".username-text").val();
             data.email = currUserDetails.find(".email-text").val();
             data.member_image = currUserDetails.find('.member-image-path').val();
+
+            if ($('#group-select').length > 0) {
+                var groups = groupsModel.data();
+                var selectedGroup = $('#selected-user-group').val();
+                var groupPermission = {};
+
+                for (var i = 0; i < groups.length; i++) {
+                    if (groups[i]._id === selectedGroup && !groups[i].global_admin) {
+                        groupPermission = groups[i].permission;
+                    }
+                    else if (groups[i]._id === selectedGroup && groups[i].global_admin) {
+                        data.global_admin = true;
+                    }
+                }
+
+                data.permission = groupPermission;
+            }
 
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");

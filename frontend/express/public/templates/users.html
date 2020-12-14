@@ -119,8 +119,8 @@
 	    	<input class="drawer-input username-text" autocomplete="off" type="text"/>
 	    	<label data-localize="management-users.email"></label>
 	    	<input class="drawer-input email-text" autocomplete="new-password" type="email"/>
-	    	<label data-localize="management-users.password"></label>
-	    	<input class="drawer-input password-text" autocomplete="new-password" type="password"/>
+	    	<!-- <label data-localize="management-users.password"></label>
+	    	<input class="drawer-input password-text" autocomplete="new-password" type="password"/> -->
 	    </div>
 	    <div class="right-area">
 	    	<label data-localize="management-users.profile-picture"></label>
@@ -164,6 +164,59 @@
 		</button>
     	<div class="create-user-drawer-bottom">
     		<button id="create-user-button" class="icon-button green create-new-user" data-localize="management-users.create-new-user">
+    		</button>
+    	</div>
+    </div>
+</div>
+<div class="cly-drawer create-group-drawer">
+    <div class="title" style="position: fixed; width: 100%;top: 0px; box-sizing:border-box">
+        <span id="create-group-drawer-title" data-localize="groups.add-new-group"></span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details create-user-drawer-detail" style="height:100%;overflow-y:auto">
+    	<div class="left-area">
+    		<label data-localize="groups.name"></label>
+	    	<input class="drawer-input" id="grpName" autocomplete="off" type="text"/>
+	    	<label data-localize="groups.id"></label>
+	    	<input class="drawer-input" id="grpID" autocomplete="off" type="text"/>
+	    </div>
+	    <div class="access-area role-section">
+	    	<div class="header">
+	    		<div class="section-title" data-localize="management-users.role"></div>
+	    	</div>
+	    	<div class="content">
+	    		<div class="checkbox-container">
+                    <input id="is-global-admin" data-state="0" type="checkbox">
+                    <div class="is-global-admin-checkbox fa fa-square-o check-green"></div>
+                    <div class="checkbox-label" data-localize="management-users.global-administrator"></div>
+                    <div style="clear:both"></div>
+                </div>
+	    	</div>
+	    </div>
+	    <div id="sub-header-1th">
+	    	<div class="drawer-header" data-localize="management-users.permission-settings"></div>
+	    	<div class="drawer-information"><span data-localize="groups.user-of-this-group-has-access-to"></span> <span id="accessible-app-count">0</span> <span data-localize="management-users.apps"></span></div>
+	    	<div style="clear:both"></div>
+	    </div>
+	    <div class="admin-access access-area">
+	    	<div class="header">
+	    		<div class="section-title" data-localize="management-users.grant-admin-access-to-apps"></div>
+	    		<div class="subtitle" data-localize="management-users.grant-admin-access-description"></div>
+	    	</div>
+	    	<div class="app-selector access-area">
+	    		<div class="selector-label" data-localize="management-users.apps"></div>
+	    		<div class="selector-wrapper">
+                    <input type="text" id="admin-app-selector">
+                </div>
+                <div style="clear:both"></div>
+	    	</div>
+	    </div>
+	    <button class="add-new-permission-set icon-button" data-localize="management-users.add-permission-set">
+		</button>
+    	<div class="create-user-drawer-bottom">
+    		<button class="icon-button green create-new-group" data-localize="groups.save-group">
+    		</button>
+    		<button id="drawer-delete-button" class="icon-button red delete-group" data-localize="groups.delete">
     		</button>
     	</div>
     </div>
