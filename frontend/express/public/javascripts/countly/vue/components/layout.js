@@ -207,7 +207,6 @@
             }
         },
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                        '<pre>{{isValid}}</pre>\n' +
                         '<div v-show="isActive"><slot :setValid="setValid"/></div>\n' +
                     '</div>'
     }));
@@ -234,7 +233,6 @@
             }
         },
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                    '<pre>{{isValid}}</pre>\n' +
                     '<div v-show="isActive">\n' +
                         '<validation-observer ref="observer" v-slot="v">\n' +
                             '<slot/>\n' +

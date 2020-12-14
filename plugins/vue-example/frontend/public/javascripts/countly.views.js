@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyGlobal, countlyCommon, validators */
+/*global app, countlyVue, countlyVueExample, countlyGlobal, countlyCommon */
 
 var TableView = countlyVue.views.BaseView.extend({
     template: '#vue-example-table-template',
@@ -225,14 +225,6 @@ var TimeGraphView = countlyVue.views.BaseView.extend({
 });
 
 var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
-    computed: {
-        stepValidations: function() {
-            return {
-                "step1": !(this.$v.editedObject.name.$invalid || this.$v.editedObject.field1.$invalid || this.$v.editedObject.field2.$invalid),
-                "step3": !(this.$v.editedObject.selectedProps.$invalid)
-            };
-        }
-    },
     data: function() {
         return {
             constants: {
@@ -269,23 +261,6 @@ var ExampleDrawer = countlyVue.components.BaseDrawer.extend({
                 this.saveButtonLabel = "Create Record";
             }
             return newState;
-        }
-    },
-    validations: {
-        editedObject: {
-            name: {
-                required: validators.required
-            },
-            field1: {
-                required: validators.required
-            },
-            field2: {
-                required: validators.required
-            },
-            selectedProps: {
-                required: validators.required,
-                minLength: validators.minLength(2)
-            }
         }
     }
 });

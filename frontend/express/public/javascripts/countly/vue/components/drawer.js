@@ -391,7 +391,6 @@
                                     '</div>\n' +
                                 '</div>\n' +
                                 '<div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\n' +
-                                    '<pre> {{isValid}} </pre>\n' +
                                     '<slot name="default"\n' +
                                         'v-bind="passedScope">\n' +
                                     '</slot>\n' +

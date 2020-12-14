@@ -5,7 +5,6 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    Vue.use(window.vuelidate.default);
     Vue.use(VeeValidate);
     Vue.component('validation-provider', VeeValidate.ValidationProvider);
     Vue.component('validation-observer', VeeValidate.ValidationObserver);
