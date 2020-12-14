@@ -4363,3 +4363,23 @@ p.error_message_div {
 .cly-select:hover .drop-icn {
     background-color: #2FA732;
 }
+
+.selectize-right-drop .selectize-input::after {
+    font-family: 'Ionicons';
+    font-size: 10px;
+    float: right;
+    color: #717171;
+    content: "\f123";
+    position: absolute;
+    right: 6px;
+    top: 8px;
+}
+
+.selected.selectize-right-drop .selectize-input::after {
+    content: "\f126";
+    color: #2fa732;
+}
+
+.selectize-input ::placeholder { 
+    color: #dddddd;
+}
