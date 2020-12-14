@@ -232,7 +232,8 @@
                     stepContents: [],
                     sidecarContents: [],
                     inScope: [],
-                    isMounted: false
+                    isMounted: false,
+                    isSubmissionAllowed: false
                 };
             },
             computed: {
@@ -277,7 +278,7 @@
 
                     return passed;
                 },
-                areAllValid: function() {
+                isValid: function() {
                     if (!this.isMounted) {
                         return true;
                     }
@@ -299,6 +300,12 @@
                     if (!newState) {
                         this.reset();
                     }
+                },
+                isValid: function(newValue) {
+                    var self = this;
+                    this.$nextTick(function() {
+                        self.isSubmissionAllowed = !newValue;
+                    });
                 }
             },
             mounted: function() {
@@ -343,7 +350,7 @@
                 },
                 submit: function() {
                     this.beforeLeavingStep();
-                    if (this.areAllValid) {
+                    if (this.isSubmissionAllowed) {
                         this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
                         this.tryClosing();
                     }
@@ -384,7 +391,7 @@
                                     '</div>\n' +
                                 '</div>\n' +
                                 '<div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\n' +
-                                    '<pre> {{areAllValid}} </pre>\n' +
+                                    '<pre> {{isValid}} </pre>\n' +
                                     '<slot name="default"\n' +
                                         'v-bind="passedScope">\n' +
                                     '</slot>\n' +
@@ -396,7 +403,7 @@
                                         '</slot>\n' +
                                     '</div>\n' +
                                     '<cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\n' +
-                                    '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="areAllValid" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
+                                    '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
                                     '<cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\n' +
                                 '</div>\n' +
                                 '<div class="buttons single-step" v-if="!isMultiStep">\n' +
