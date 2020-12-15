@@ -8437,8 +8437,18 @@ app.addAppSwitchCallback(function(appId) {
     }
 
     $.when(countlyVersionHistoryManager.initialize()).then(function() {
-        var versions = countlyVersionHistoryManager.getData(true) || {fs: [], db: [], pkg: ""};
-        versions = [versions.pkg, versions.db[0] || countlyGlobal.countlyVersion, versions.fs[0] || countlyGlobal.countlyVersion];
+        var versionsData = countlyVersionHistoryManager.getData(true) || {fs: [], db: [], pkg: ""};
+        var dbVersion = countlyGlobal.countlyVersion;
+        if (versionsData.db && versionsData.db.length > 0) {
+            dbVersion = versionsData.db[versionsData.db.length - 1];
+        }
+
+        var fsVersion = countlyGlobal.countlyVersion;
+        if (versionsData.fs && versionsData.fs.length > 0) {
+            fsVersion = versionsData.fs[versionsData.fs.length - 1];
+        }
+
+        var versions = [versionsData.pkg, dbVersion, fsVersion];
         for (var z = 0; z < versions.length; z++) {
             if (versions[z].version) {
                 versions[z] = versions[z].version;

@@ -2694,6 +2694,15 @@ function loadFsVersionMarks(callback) {
                 callback(parseErr, []);
             }
             if (Array.isArray(olderVersions)) {
+                //sort versions here.
+                olderVersions.sort(function(a, b) {
+                    if (typeof a.updated !== "undefined" && typeof b.updated !== "undefined") {
+                        return a.updated - b.updated;
+                    }
+                    else {
+                        return 1;
+                    }
+                });
                 callback(null, olderVersions);
             }
         }
