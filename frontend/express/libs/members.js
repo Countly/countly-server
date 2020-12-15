@@ -340,6 +340,7 @@ membersUtility.login = function(req, res, callback) {
     membersUtility.verifyCredentials(req.body.username, req.body.password, (member) => {
         if (member === undefined || member.locked) {
             plugins.callMethod("loginFailed", {req: req, data: req.body});
+            callback(member);
         }
         else {
             plugins.callMethod("loginSuccessful", {req: req, data: member});
@@ -404,8 +405,6 @@ membersUtility.login = function(req, res, callback) {
                 });
             });
         }
-
-        callback(member);
     });
 };
 
