@@ -564,7 +564,7 @@
                             ':totalRows="internalTotalRows"\n' +
                             ':isLoading.sync="isLoading"\n' +
                             ':styleClass="innerStyles">\n' +
-                                '<template slot="pagination-top" slot-scope="props">\n' +
+                                '<template v-slot:pagination-top="props">\n' +
                                     '<custom-controls\n' +
                                     '@infoChanged="onInfoChanged"\n' +
                                     '@queryChanged="searchQuery = $event"\n' +
@@ -581,14 +581,15 @@
                                 '<template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">\n' +
                                     '<slot :name="name" v-bind="addTableFns(slotData)" />\n' +
                                 '</template>\n' +
-                                '<div slot="table-actions-bottom">\n' +
-                                    '{{pageInfo}}\n' +
-                                '</div>\n' +
-                                '<div slot="emptystate">\n' +
-                                    '{{ i18n("common.table.no-data") }}\n' +
-                                '</div>\n' +
-                                '<div slot="loadingContent">\n' +
-                                '</div>\n' +
+                                '<template v-slot:table-actions-bottom>\n' +
+                                    '<div>{{pageInfo}}</div>\n' +
+                                '</template>\n' +
+                                '<template v-slot:emptystate>\n' +
+                                    '<div>{{ i18n("common.table.no-data") }}</div>\n' +
+                                '</template>\n' +
+                                '<template v-slot:loadingContent>\n' +
+                                    '<div></div>\n'+
+                                '</template>\n' +
                         '</vue-good-table>\n' +
                     '</div>'
     }));
