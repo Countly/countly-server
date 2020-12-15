@@ -26,7 +26,7 @@
                                 '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\n' +
                                 '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
                             '</div>\n' +
-                            '<div class="export-toggler" @click="toggleExportDialog"><i class="fa fa-download"></i></div>\n' +
+                            '<div class="export-toggler" @click.stop="toggleExportDialog"><i class="fa fa-download"></i></div>\n' +
                         '</div>\n' +
                         '<div class="export-dialog-container" v-if="isExportDialogOpened" v-click-outside="closeExportDialog">\n' +
                             '<div class="export-dialog">\n' +
@@ -578,7 +578,7 @@
                                     ':perPageChanged="props.perPageChanged">\n' +
                                     '</custom-controls>\n' +
                                 '</template>\n' +
-                                '<template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">\n' +
+                                '<template v-for="(_, name) in $scopedSlots" v-slot:[name]="slotData">\n' +
                                     '<slot :name="name" v-bind="addTableFns(slotData)" />\n' +
                                 '</template>\n' +
                                 '<template v-slot:table-actions-bottom>\n' +

@@ -72,7 +72,7 @@
             picker: window.VueColor.Sketch
         },
         template: '<div class="cly-vue-colorpicker">\n' +
-                    '<div @click="open">\n' +
+                    '<div @click.stop="open">\n' +
                         '<div class="preview-box" :style="previewStyle"></div>\n' +
                         '<input class="preview-input" type="text" v-model="localValue" />\n' +
                     '</div>\n' +
