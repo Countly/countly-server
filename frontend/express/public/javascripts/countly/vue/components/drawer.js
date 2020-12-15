@@ -206,7 +206,7 @@
                                     '<cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\n' +
                                 '</div>\n' +
                                 '<div class="buttons single-step" v-if="!isMultiStep">\n' +
-                                    '<cly-button @click="submit" v-bind:disabled="false" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
+                                    '<cly-button @click="submit" v-bind:disabled="isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
                                 '</div>\n' +
                             '</div>\n' +
                         '</div>'
