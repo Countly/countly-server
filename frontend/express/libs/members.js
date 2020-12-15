@@ -279,105 +279,33 @@ membersUtility.clearReqAndRes = function(req, res) {
 };
 
 /**
-* Tries to log in user based passed userame and password. If successful sets all session variables, auth token and returns member object.
-* Calls "plugins" methods to notify successful and unsucessful logging in attempts.
+* Verifies a user's credentials without logging in.
 *
-* @param {object} req - request object
-* @param {string} req.body.username - username
-* @param {string} req.body.password - password
-* @param {object} res - response object
+* @param {string} username - username or the email address of the user
+* @param {string} password - password
 * @param {function} callback - callback function.  First parameter in callback function is member object if logging in is successful.
 * @example
-*   membersUtility.login(req, res, function(member) {
-        if(member) {
-            //logged in
+*   membersUtility.verifyCredentials(username, password, function(member) {
+        if (member) {
+            // logged in
         }
         else {
-            //failed
+            // failed
         }
     });
 **/
-membersUtility.login = function(req, res, callback) {
-    if (req.body.username && req.body.password) {
-        var countlyConfig = membersUtility.countlyConfig;
-        req.body.username = (req.body.username + "").trim();
+membersUtility.verifyCredentials = function(username, password, callback) {
+    if (username && password) {
+        username = (username + "").trim();
 
         var secret = membersUtility.countlyConfig.passwordSecret || "";
-        req.body.password = req.body.password + secret;
+        password = password + secret;
 
-        verifyMemberArgon2Hash(req.body.username, req.body.password, membersUtility.db, (err, member) => {
+        verifyMemberArgon2Hash(username, password, membersUtility.db, (err, member) => {
             if (member) {
-                if (member.locked) {
-                    plugins.callMethod("loginFailed", {req: req, data: req.body});
-                    callback(member);
-                }
-                else {
-                    plugins.callMethod("loginSuccessful", {req: req, data: member});
-                    if (!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) {
-                        if (!plugins.getConfig("api").offline_mode) {
-                            countlyStats.getUser(membersUtility.db, member, function(statsObj) {
-                                var custom = {
-                                    apps: (member.user_of) ? member.user_of.length : 0,
-                                    platforms: {"$addToSet": statsObj["total-platforms"]},
-                                    events: statsObj["total-events"],
-                                    pushes: statsObj["total-msg-sent"],
-                                    crashes: statsObj["total-crash-groups"],
-                                    users: statsObj["total-users"]
-                                };
-                                var date = new Date();
-                                request({
-                                    uri: "https://stats.count.ly/i",
-                                    method: "GET",
-                                    timeout: 4E3,
-                                    qs: {
-                                        device_id: member.email,
-                                        app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
-                                        timestamp: Math.round(date.getTime() / 1000),
-                                        hour: date.getHours(),
-                                        dow: date.getDay(),
-                                        user_details: JSON.stringify(
-                                            {
-                                                custom: custom
-                                            }
-                                        )
-                                    }
-                                }, function() {});
-                            });
-                        }
-                    }
-                    req.session.regenerate(function() {
-                        // will have a new session here
-                        var update = {last_login: Math.round(new Date().getTime() / 1000)};
-                        if (typeof member.password_changed === "undefined") {
-                            update.password_changed = Math.round(new Date().getTime() / 1000);
-                        }
-                        if (req.body.lang && req.body.lang !== member.lang) {
-                            update.lang = req.body.lang;
-                        }
-                        if (Object.keys(update).length) {
-                            membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
-                        }
-                        if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
-                            req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
-                        }
-                        if (member.upgrade) {
-                            res.set({
-                                'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
-                                'Expires': '0',
-                                'Pragma': 'no-cache'
-                            });
-                        }
-
-                        setLoggedInVariables(req, member, membersUtility.db, function() {
-                            req.session.settings = member.settings;
-                            callback(member);
-                        });
-                    });
-                }
-
+                callback(member);
             }
             else {
-                plugins.callMethod("loginFailed", {req: req, data: req.body});
                 callback(undefined);
             }
         });
@@ -385,6 +313,107 @@ membersUtility.login = function(req, res, callback) {
     else {
         callback(undefined);
     }
+};
+
+/**
+* Tries to log in user based passed userame and password. Calls "plugins"
+* methods to notify successful and unsucessful logging in attempts. If
+* successful, sets all session variables and auth token. Passes the member
+* object to the callback if retrieved succesfully, but not necessarily logged
+* in succesfully i.e. a member object will still be returned even if the member
+* was locked. Also passes a boolean parameter to the callback indicating if the
+* login was succesful.
+*
+* @param {object} req - request object
+* @param {string} req.body.username - username
+* @param {string} req.body.password - password
+* @param {object} res - response object
+* @param {function} callback - callback function. First parameter in callback
+* function is member object, if it could be retrieved succesfully. Second
+* parameter is a boolean that is true when logged in succesfully.
+* @example
+*   membersUtility.login(req, res, function(member) {
+        if(member) {
+            // logged in
+        }
+        else {
+            // failed
+        }
+    });
+**/
+
+membersUtility.login = function(req, res, callback) {
+    var countlyConfig = membersUtility.countlyConfig;
+
+    membersUtility.verifyCredentials(req.body.username, req.body.password, (member) => {
+        if (member === undefined || member.locked) {
+            plugins.callMethod("loginFailed", {req: req, data: req.body});
+            callback(member, false);
+        }
+        else {
+            plugins.callMethod("loginSuccessful", {req: req, data: member});
+
+            if ((!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) && !plugins.getConfig("api").offline_mode) {
+                countlyStats.getUser(membersUtility.db, member, function(statsObj) {
+                    var custom = {
+                        apps: (member.user_of) ? member.user_of.length : 0,
+                        platforms: {"$addToSet": statsObj["total-platforms"]},
+                        events: statsObj["total-events"],
+                        pushes: statsObj["total-msg-sent"],
+                        crashes: statsObj["total-crash-groups"],
+                        users: statsObj["total-users"]
+                    };
+                    var date = new Date();
+                    request({
+                        uri: "https://stats.count.ly/i",
+                        method: "GET",
+                        timeout: 4E3,
+                        qs: {
+                            device_id: member.email,
+                            app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
+                            timestamp: Math.round(date.getTime() / 1000),
+                            hour: date.getHours(),
+                            dow: date.getDay(),
+                            user_details: JSON.stringify(
+                                {
+                                    custom: custom
+                                }
+                            )
+                        }
+                    }, function() {});
+                });
+            }
+
+            req.session.regenerate(function() {
+                // will have a new session here
+                var update = {last_login: Math.round(new Date().getTime() / 1000)};
+                if (typeof member.password_changed === "undefined") {
+                    update.password_changed = Math.round(new Date().getTime() / 1000);
+                }
+                if (req.body.lang && req.body.lang !== member.lang) {
+                    update.lang = req.body.lang;
+                }
+                if (Object.keys(update).length) {
+                    membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+                }
+                if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
+                    req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
+                }
+                if (member.upgrade) {
+                    res.set({
+                        'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
+                        'Expires': '0',
+                        'Pragma': 'no-cache'
+                    });
+                }
+
+                setLoggedInVariables(req, member, membersUtility.db, function() {
+                    req.session.settings = member.settings;
+                    callback(member, true);
+                });
+            });
+        }
+    });
 };
 
 /**
