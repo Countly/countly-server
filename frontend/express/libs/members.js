@@ -316,14 +316,21 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 };
 
 /**
-* Tries to log in user based passed userame and password. If successful sets all session variables, auth token and returns member object.
-* Calls "plugins" methods to notify successful and unsucessful logging in attempts.
+* Tries to log in user based passed userame and password. Calls "plugins"
+* methods to notify successful and unsucessful logging in attempts. If
+* successful, sets all session variables and auth token. Passes the member
+* object to the callback if retrieved succesfully, but not necessarily logged
+* in succesfully i.e. a member object will still be returned even if the member
+* was locked. Also passes a boolean parameter to the callback indicating if the
+* login was succesful.
 *
 * @param {object} req - request object
 * @param {string} req.body.username - username
 * @param {string} req.body.password - password
 * @param {object} res - response object
-* @param {function} callback - callback function.  First parameter in callback function is member object if logging in is successful.
+* @param {function} callback - callback function. First parameter in callback
+* function is member object, if it could be retrieved succesfully. Second
+* parameter is a boolean that is true when logged in succesfully.
 * @example
 *   membersUtility.login(req, res, function(member) {
         if(member) {
@@ -334,13 +341,14 @@ membersUtility.verifyCredentials = function(username, password, callback) {
         }
     });
 **/
+
 membersUtility.login = function(req, res, callback) {
     var countlyConfig = membersUtility.countlyConfig;
 
     membersUtility.verifyCredentials(req.body.username, req.body.password, (member) => {
         if (member === undefined || member.locked) {
             plugins.callMethod("loginFailed", {req: req, data: req.body});
-            callback(member);
+            callback(member, false);
         }
         else {
             plugins.callMethod("loginSuccessful", {req: req, data: member});
@@ -401,7 +409,7 @@ membersUtility.login = function(req, res, callback) {
 
                 setLoggedInVariables(req, member, membersUtility.db, function() {
                     req.session.settings = member.settings;
-                    callback(member);
+                    callback(member, true);
                 });
             });
         }
