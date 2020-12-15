@@ -63,7 +63,6 @@ app.addAppManagementView(
                 },
                 onChange: function(value) {
                     self.doOnChange("selectedApps", value && value.split(",") || []);
-                    this.$control_input.css("width", "40px");
                 }
             });
         },
