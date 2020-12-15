@@ -2,23 +2,28 @@
 
 **Fixes**
 * [apps] application settings Save button fixed
+* [consolidate] UI fixes
 * [events] fixed displaying long segents in events table
 * [events] fixed issue when updating event description doesn't work
 * [events] top events - check for deleted events
 * [push] fixed APN issue when DNS returns 1 IP
 * [star-rating] first emotion size problem fixed
+* [two-factor-auth] fxied when session was enabled before OTP verification
+* [UI] date picker behavior improvements
 * [UI] provide notification popup to notify about incomplete upgrade
 * [views] fixed edit views table export
 * [views] fixed showing renamed view name in table
 
 **Enterprise fixes**
 * [active_directory] fix retrieving email address for azure auth
+* [ab-testing] centos 8 support
 * [cohorts] allow to treat some lists as numbers
 * [cohorts] allow using numbers in AND statements
 * [cohorts] fix is set filling on cohort edit
 * [cohorts] improve cohort overview loading with more than 100 cohorts
 * [crash_symbols] changed the wording of debug symbol files
 * [dashboards] disable confirm popup on custom dashboard screenshots
+* [dashboards] fixed colors for white theme
 * [dashboards] remove dashboard user when user deleted
 * [drill] aggregated data regeneration fixed when daylight saving time occurs
 * [drill] handle arrays properly in meta generations

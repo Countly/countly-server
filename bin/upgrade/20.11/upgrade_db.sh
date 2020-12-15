@@ -32,6 +32,7 @@ then
         countly plugin upgrade web
         countly plugin upgrade active_directory
         countly plugin upgrade crash_symbolication
+        countly plugin upgrade concurrent_users
         
         #enable new plugins
         countly plugin enable activity-map
@@ -45,6 +46,7 @@ then
     #run upgrade scripts
     nodejs "$CUR/scripts/removeUserProps.js"
     nodejs "$CUR/scripts/update_app_users.js"
+    nodejs "$CUR/scripts/cleanup_concurrent.js"
     
     #add indexes
     nodejs "$DIR/scripts/add_indexes.js"
