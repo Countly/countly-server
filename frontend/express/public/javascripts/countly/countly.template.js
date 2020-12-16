@@ -3902,7 +3902,6 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 
-
             $("#date-to-input").on("keyup change", function(event, validation) {
                 var date = moment($("#date-to-input").val(), "MM/DD/YYYY");
                 if (date.format("MM/DD/YYYY") !== $("#date-to-input").val() || date.valueOf() < self.dateFromSelected || date.valueOf() > moment().endOf('day').valueOf()) {
@@ -3941,7 +3940,6 @@ var AppRouter = Backbone.Router.extend({
 
             $.datepicker.setDefaults($.datepicker.regional[""]);
             $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
-
 
             $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
 
