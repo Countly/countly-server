@@ -49,6 +49,7 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
 
     yum -y install gcc-c++-4.8.5
 
+    yum -y --enablerepo=extras install epel-release
     yum install -y python-pip
     pip install pip --upgrade
     yum install -y python-meld3
