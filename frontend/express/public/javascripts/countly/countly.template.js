@@ -3706,7 +3706,7 @@ var AppRouter = Backbone.Router.extend({
              */
             function resetCalender() {
                 $("#date-to-input, #date-to-input:hover, #date-from-input, #date-from-input:hover").removeAttr("style");
-                $("#date-submit").css({"pointer-events": "auto"});
+                $("#date-submit").css({"pointer-events": "auto", "opacity": "1"});
             }
 
             if ($("#help-toggle").hasClass("active")) {
