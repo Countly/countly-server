@@ -106,6 +106,7 @@ exports.renderView = function(options, cb) {
                 var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
                 var source = options.source;
                 var updatedTimeout = options.timeout || 30000;
+                var waitForRegex = options.waitForRegex;
 
                 options.dimensions = {
                     width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
@@ -124,9 +125,19 @@ exports.renderView = function(options, cb) {
 
                 await page.goto(host + view);
 
-                await page.waitForSelector('countly', {timeout: updatedTimeout});
+                if (waitForRegex) {
+                    await page.waitForResponse(
+                        function(response) {
+                            var url = response.url();
+                            if (waitForRegex.test(url) && response.status() === 200) {
+                                return true;
+                            }
+                        },
+                        { timeout: updatedTimeout }
+                    );
+                }
 
-                await timeout(10000);
+                await timeout(2000);
 
                 await page.evaluate(cbFn, options);
 
