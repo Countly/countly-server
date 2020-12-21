@@ -45,8 +45,6 @@ name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
-    yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc
-
     yum -y install gcc-c++-4.8.5
 
     yum -y --enablerepo=extras install epel-release
@@ -62,6 +60,11 @@ else
     echo "Unsupported OS version, only support RHEL/Centos 8 and 7"
     exit 1
 fi
+
+#Install dependancies required by the puppeteer
+yum -y install alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 ipa-gothic-fonts libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils
+#Install nss after installing above dependencies
+yum update nss -y
 
 #install nodejs
 curl -sL https://rpm.nodesource.com/setup_14.x | bash -
