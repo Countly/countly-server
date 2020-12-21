@@ -71,7 +71,7 @@
                     <div class="panel">
                         <div class="panel-heading">Allowed Props</div>
                         <div class="panel-body">
-                            <validation-provider name="selectedProps" rules="min:2" v-slot="v">
+                            <validation-provider name="selectedProps" rules="required|arrmin:2" v-slot="v">
                                 <cly-check-list v-model="drawerScope.editedObject.selectedProps" :items="constants.availableProps"></cly-check-list>
                                 <div class="validation-error" v-if="v.errors.length > 0">
                                     You must select at least 2 props.

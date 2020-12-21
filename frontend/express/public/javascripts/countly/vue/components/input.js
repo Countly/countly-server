@@ -9,6 +9,20 @@
     Vue.component('validation-provider', VeeValidate.ValidationProvider);
     Vue.component('validation-observer', VeeValidate.ValidationObserver);
 
+    VeeValidate.extend('arrmin', {
+        validate: function(value, args) {
+            return value.length >= args.length;
+        },
+        params: ['length']
+    });
+
+    VeeValidate.extend('arrmax', {
+        validate: function(value, args) {
+            return value.length <= args.length;
+        },
+        params: ['length']
+    });
+
     var objectWithoutProperties = function(obj, excluded) {
         if (!obj || !excluded || excluded.length === 0) {
             return obj;

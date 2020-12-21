@@ -24,6 +24,7 @@
                 title: {type: String, required: true},
                 saveButtonLabel: {type: String, required: true, default: ""},
                 beforeCopyFn: {type: Function},
+                closeFn: {type: Function}
             },
             data: function() {
                 return {
@@ -118,8 +119,11 @@
                 this.isMounted = true;
             },
             methods: {
-                tryClosing: function() {
+                doClose: function() {
                     this.$emit("close", this.name);
+                    if (this.closeFn) {
+                        this.closeFn();
+                    }
                 },
                 copyOfEdited: function() {
                     var copied = JSON.parse(JSON.stringify(this.initialEditedObject));
@@ -152,7 +156,7 @@
                     this.beforeLeavingStep();
                     if (this.isSubmissionAllowed) {
                         this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
-                        this.tryClosing();
+                        this.doClose();
                     }
                 },
                 beforeLeavingStep: function() {
@@ -171,7 +175,7 @@
                             'v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\n' +
                             '<div class="title">\n' +
                                 '<span>{{title}}</span>\n' +
-                                '<span class="close" v-on:click="tryClosing">\n' +
+                                '<span class="close" v-on:click="doClose">\n' +
                                     '<i class="ion-ios-close-empty"></i>\n' +
                                 '</span>\n' +
                             '</div>\n' +
@@ -226,8 +230,13 @@
                         acc[val] = {
                             name: val,
                             isOpened: false,
-                            initialEditedObject: {}
+                            initialEditedObject: {},
                         };
+
+                        acc[val].closeFn = function() {
+                            acc[val].isOpened = false;
+                        };
+
                         return acc;
                     }, {})
                 };

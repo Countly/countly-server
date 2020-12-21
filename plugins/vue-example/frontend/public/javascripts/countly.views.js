@@ -226,7 +226,7 @@
     });
 
     var ExampleDrawer = countlyVue.views.BaseView.extend({
-        template:'#drawer-template',
+        template: '#drawer-template',
         data: function() {
             return {
                 title: '',
@@ -253,7 +253,7 @@
             onSubmit: function(doc) {
                 this.$store.dispatch("countlyVueExample/myRecords/save", doc);
             },
-            onClose: function($event){
+            onClose: function($event) {
                 this.$emit("close", $event);
             },
             onCopy: function(newState) {
