@@ -300,6 +300,7 @@ window.ViewsView = countlyView.extend({
                     }
                     $(nRow).attr("id", self.ids[aData._id]);
                     $(nRow).data("viewid", aData._id);
+                    self.viewMap[aData._id] = aData.display || aData.view || aData._id;
                 },
                 "fnInitComplete": function(oSettings, json) {
                     $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
