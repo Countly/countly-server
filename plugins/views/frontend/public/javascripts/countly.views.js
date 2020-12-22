@@ -541,6 +541,13 @@ window.ViewsView = countlyView.extend({
             var color = countlyCommon.GRAPH_COLORS[i];
             var data = countlyViews.getChartData(this.selectedViews[i], this.selectedMetric, props[this.selectedMetric], this.selectedSegment.segmentKey, this.selectedSegment.segmentValue).chartDP;
             if (data) {
+                for (var index = 0; index < data.length; index++) {
+                    var point = data[index];
+                    if (point && point.label) {
+                        var n = 25;
+                        point.label = point.label.substr(0, n) + '&hellip;';
+                    }
+                }
                 data[1].color = color;
                 $("#" + this.ids[this.selectedViews[i]] + " .color").css("background-color", color);
                 this.graphColors[this.selectedViews[i]] = color;
