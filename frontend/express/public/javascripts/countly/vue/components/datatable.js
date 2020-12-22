@@ -588,7 +588,7 @@
                                     '<div>{{ i18n("common.table.no-data") }}</div>\n' +
                                 '</template>\n' +
                                 '<template v-slot:loadingContent>\n' +
-                                    '<div></div>\n'+
+                                    '<div></div>\n' +
                                 '</template>\n' +
                         '</vue-good-table>\n' +
                     '</div>'
