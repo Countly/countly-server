@@ -121,7 +121,7 @@ exports.renderView = function(options, cb) {
 
                 await page.waitForSelector('countly', {timeout: updatedTimeout});
 
-                await timeout(2000);
+                await timeout(1500);
 
                 await page.goto(host + view);
 
@@ -137,11 +137,11 @@ exports.renderView = function(options, cb) {
                     );
                 }
 
-                await timeout(2000);
+                await timeout(500);
 
                 await page.evaluate(cbFn, options);
 
-                await timeout(3000);
+                await timeout(1500);
 
                 await page.setViewport({
                     width: parseInt(options.dimensions.width),
@@ -149,7 +149,7 @@ exports.renderView = function(options, cb) {
                     deviceScaleFactor: options.dimensions.scale
                 });
 
-                await timeout(3000);
+                await timeout(1500);
 
                 var bodyHandle = await page.$('body');
                 var dimensions = await bodyHandle.boundingBox();
@@ -160,11 +160,11 @@ exports.renderView = function(options, cb) {
                     deviceScaleFactor: options.dimensions.scale
                 });
 
-                await timeout(3000);
+                await timeout(1500);
 
                 await page.evaluate(beforeScrnCbFn, options);
 
-                await timeout(3000);
+                await timeout(1500);
 
                 var image = "";
                 var screenshotOptions = {
@@ -205,7 +205,7 @@ exports.renderView = function(options, cb) {
                     $("#user-logout").trigger("click");
                 });
 
-                await timeout(3000);
+                await timeout(1500);
 
                 await bodyHandle.dispose();
                 await browser.close();
