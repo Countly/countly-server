@@ -153,9 +153,7 @@
             $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue([]);
         }
         
-        for (var i = 1; i < sets.length; i++) {
-            $(parent_el + ' #user-access-' + i).remove();
-        }
+        //$(parent_el + ' .user-access').remove();
     }
 
     countlyAuth.permissionSetGenerator = function(count) {

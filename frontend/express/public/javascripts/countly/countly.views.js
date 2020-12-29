@@ -3263,6 +3263,8 @@ window.ManageUsersView = countlyView.extend({
     accessible_apps: [],
     permission_set_count: 1,
     user_app_selectors: [],
+    drawerMode: 'c',
+    selectedMemberId: '',
     // TODO: don't rely plugins for features. change this section
     features: {
         "plugins": countlyGlobal.plugins,
@@ -3527,17 +3529,34 @@ window.ManageUsersView = countlyView.extend({
                     },
                     "sType": "format-ago",
                     "sTitle": jQuery.i18n.map["management-users.last_login"]
+                },
+                {
+                	"mData": function(row) {
+	                    if (!countlyAuth.validateUpdate("global_users")) {
+	                        return '';
+	                    }
+	                    else {
+	                        return "<div class='manage-users-options-item options-item'>"
+	                            	+ "<div class='edit show-edit-menu' data-id='" + row._id + "'></div>"
+		                            + "<div class='edit-menu manage-users-menu-" + row._id + "' id='" + row._id + "'>"
+		                            + ((countlyAuth.validateUpdate(self.featureName)) ? "<div class='edit-user item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i> &nbsp; " + jQuery.i18n.map["common.edit"] + "</div>" : "")
+		                            + ((countlyAuth.validateDelete(self.featureName)) ? "<div data-fullname='" + row.full_name + "' class='delete-user item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i> &nbsp;" + jQuery.i18n.map["common.delete"] + "</div>" : "")
+		                            + "</div>"
+	                            + "</div>";
+	                    }
+	                },
+                	"bSortable": false,
                 }
             ]
         }));
         self.dtable.fnSort([ [0, 'asc'] ]);
         self.dtable.stickyTableHeaders();
-
+        $('#user-table .expand-row-icon').hide();
         if (countlyAuth.validateUpdate(this.featureName)) {
-            CountlyHelpers.expandRows(self.dtable, self.editUser, self);
+            //CountlyHelpers.expandRows(self.dtable, self.editUser, self);
         }
         else {
-            $('#user-table .expand-row-icon').hide();
+            
         }
 
         if (!countlyAuth.validateDelete(this.featureName)) {
@@ -3617,11 +3636,39 @@ window.ManageUsersView = countlyView.extend({
             Handle create new user button
         */
         $("#add-user-mgmt").on("click", function() {
-            $('.create-user-drawer').addClass("open");
+        	self.drawerMode = 'c';
+        	var userCreateDrawer = $('.create-user-drawer');
+        	$('#create-user-drawer-title').html($.i18n.map['common.create']);
+            // clean inputs
+            userCreateDrawer.addClass("open");
+            userCreateDrawer.find('.full-name-text').val('');
+            userCreateDrawer.find('.email-text').val('');
+            userCreateDrawer.find('.username-text').val('');
+            // hide checks
+            userCreateDrawer.find('.username-check').hide();
+            userCreateDrawer.find('.email-check').hide();
+
+            // prevent groups hook if already added
             // this trigger for groups plugin hooks
-            $(self).trigger('user-mgmt.new-user-button-clicked');
+            $('#user-group-container').remove();
+        	$('#new-user-group-select').remove();
+        	$('.user-group-label').remove();
+        	$(self).trigger('user-mgmt.new-user-button-clicked');
+
+            // initialize clean permission objects
+            var initializedPermissions = countlyAuth.initializePermissions(self.memberModel.permission, self.permissionSets);
+            self.memberModel.permission = initializedPermissions.permissionObject;
+            self.permissionSets = initializedPermissions.permissionSets;
+
+            // clear drawer permission tables
+            $('.create-user-drawer .user-access').remove();
             // render permission table
             self.renderPermissionsTable();
+            countlyAuth.clearDrawer('.create-user-drawer', self.permissionSets, self.renderPermissionsTable);
+
+            $('.create-user-drawer .img-preview').hide();
+            $('.create-user-drawer #user-avatar-upload-drop').show();
+            $('.create-user-drawer .edit-picture').hide();
         });
 
         CountlyHelpers.initializeSelect($('#user-create-group-selector'));
@@ -3760,6 +3807,159 @@ window.ManageUsersView = countlyView.extend({
             $(this).select();
         });
 
+		$('body').off('click', '.manage-users-options-item .show-edit-menu').on('click', '.manage-users-options-item .show-edit-menu', function() {
+			$('.manage-users-menu-' + $(this).data('id')).show();
+		});
+
+		$('body').off('mouseleave', '.edit-menu').on('mouseleave', '.edit-menu', function() {
+			$('.edit-menu').hide();
+		});
+
+		$('.create-user-drawer').off('click', '.edit-picture').on('click', '.edit-picture', function() {
+			$('.edit-picture').hide();
+			$('.img-preview').hide();
+			$('#user-avatar-upload-drop').show();
+		});
+
+		$('body').off('click', '.edit-user').on('click', '.edit-user', function() {
+			$('.create-user-drawer').addClass('open');
+        	self.renderPermissionsTable();
+            var id = $(this).data('id');
+            var data = {};
+            var url = countlyCommon.API_PARTS.users.r + '/id';
+            data.id = id;
+
+            self.drawerMode = 'u';
+        	self.selectedMemberId = id;
+
+        	$('.create-user-drawer .edit-picture').show();
+        	$('#create-user-drawer-title').html($.i18n.map['common.edit']);
+
+        	$.ajax({
+                url: url,
+                data: data,
+                dataType: "json",
+                success: function(response) {
+                	var memberData = response[id];
+                	console.log(memberData);
+
+                	$('#user-group-container').remove();
+                	$('#new-user-group-select').remove();
+                	$('.user-group-label').remove();
+
+	            	$(self).trigger('user-mgmt.user-selected', memberData);
+
+	            	$('.create-user-drawer').find('.full-name-text').val(memberData.full_name);
+                    $('.create-user-drawer').find('.username-text').val(memberData.username);
+                    $('.create-user-drawer').find('.email-text').val(memberData.email);
+
+                    if (memberData.global_admin) {
+                        $('.create-user-drawer .is-global-admin-checkbox').addClass('fa-check-square');
+                        $('.create-user-drawer .is-global-admin-checkbox').removeClass('fa-square-o');
+                        $('.create-user-drawer #is-global-admin').data('state', 1);
+                        $('.create-user-drawer #sub-header-1th').hide();
+                        $('.create-user-drawer .admin-access').hide();
+                        $('.create-user-drawer .user-access').hide();
+                        $('.create-user-drawer .add-new-permission-set').hide();
+                    }
+                    else {
+                        $('.create-user-drawer .is-global-admin-checkbox').removeClass('fa-check-square');
+                        $('.create-user-drawer .is-global-admin-checkbox').addClass('fa-square-o');
+                        $('.create-user-drawer #is-global-admin').data('state', 0);
+                        $('.create-user-drawer #sub-header-1th').show();
+                        $('.create-user-drawer .admin-access').show();
+                        $('.create-user-drawer .user-access').show();
+                        $('.create-user-drawer .add-new-permission-set').show();
+                    }
+
+                    if (memberData.member_image) {
+                        $('#user-avatar-upload-drop').hide();
+                        $('.create-user-drawer .img-preview').show();
+                        $('.create-user-drawer .img-preview').css({'background-image':'url('+ memberData.member_image +')'});
+                    }
+                    else {
+                        $('#user-avatar-upload-drop').hide();
+                        $('.create-user-drawer .img-preview').show();
+                        $('.create-user-drawer .img-preview').css({'background-image':'url(/memberimages/' + memberData._id + '.png)'});
+                    }
+
+                    
+                    self.user_apps = memberData.permission._.u;
+                    self.admin_apps = memberData.permission._.a;        
+                    self.memberPermission = memberData.permission;
+                    self.permission_set_count = 0;
+
+                    // length - 1, bcz we already have one permission set as default in drawer
+                    for (var i = 0; i < memberData.permission._.u.length - 1; i++) {
+                        self.permission_set_count++;
+                        self.permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+                        $('.create-user-drawer #user-access-' + self.permission_set_count).remove();
+                        self.renderPermissionsTable(self.permission_set_count);
+                    }
+                    
+                    if (memberData.global_admin) {
+                        // clear drawer permission tables
+                        var permissionTables = $('.create-user-drawer .user-access');
+                        
+                        for (var i = 0; i < permissionTables.length; i++) {
+                            if (i >= memberData.permission._.u.length + 1) {
+                                $(permissionTables[i]).remove();
+                            }
+                        }
+                    }
+                    else {
+                        $('.create-user-drawer .user-access').remove();                        
+                    }
+                    
+                    // render new clean tables
+                    for (var i = 0; i < self.user_apps.length; i++) {
+                        self.renderPermissionsTable(i);
+                    }
+
+                    self.permissionSets = countlyAuth.permissionParser('.create-user-drawer', self.memberPermission, countlyAuth.permissionSetGenerator(self.user_apps.length));
+                    
+                    if ($('#user-group-container').length > 0) {
+                        var groupValue = $('#selected-user-group').val();
+                        if (groupValue !== "") {
+                            $('.access-area').hide();
+                            $('#sub-header-1th').hide();
+                            $('.add-new-permission-set').hide();
+                        }
+                    }
+                },
+                error: function() {
+                    console.log('error');
+                }
+            });
+		});
+	
+		$('body').off('click', '.delete-user').on('click', '.delete-user', function() {
+			var self2 = $(this);
+            CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', "<b>" + self2.data('fullname') + "</b>"), "popStyleGreen", function(result) {
+				if (!result) {
+                    return false;
+                }
+
+                var data = {
+                    user_ids: [self2.data('id')]
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.users.w + '/delete',
+                    data: {
+                        args: JSON.stringify(data)
+                    },
+                    dataType: "json",
+                    success: function() {
+                        $(app.manageUsersView).trigger('user-mgmt.user-deleted', data.user_ids);
+                        app.activeView.render();
+                    }
+                });
+            }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["management-users.yes-delete-user"]], {title: jQuery.i18n.map["management-users.delete-confirm-title"], image: "delete-user"});
+		});
+
+
         $('body').on("change", "#permission-app-selector", function() {
             self.showPermissionSection($(this).val());
         });
@@ -3776,6 +3976,7 @@ window.ManageUsersView = countlyView.extend({
                 $('#sub-header-1th').show();
                 $('.admin-access').show();
                 $('.user-access').show();
+                $('.add-new-permission-set').show();
             }
             else {
                 $('.is-global-admin-checkbox').addClass('fa-check-square');
@@ -3783,11 +3984,12 @@ window.ManageUsersView = countlyView.extend({
                 $('#is-global-admin').data('state', 1);
                 $('#sub-header-1th').hide();
                 $('.admin-access').hide();
-                $('.user-access').hide();    
+                $('.user-access').hide(); 
+                $('.add-new-permission-set').hide();
             }
         });
 
-        $('body').on('click', '.create-user-drawer .permission-checkbox', function() {
+        $('body').off('click', '.create-user-drawer .permission-checkbox').on('click', '.create-user-drawer .permission-checkbox', function() {
             var selector = $(this).attr('id').split("-");
             var permission_type = selector[0];
             var feature = selector[1];
@@ -3809,7 +4011,7 @@ window.ManageUsersView = countlyView.extend({
             }
         });
 
-        $('body').on('click', '.create-user-drawer .mark-all', function() {
+        $('body').off('click', '.create-user-drawer .mark-all').on('click', '.create-user-drawer .mark-all', function() {
             var index = $(this).attr('id').split('-')[3];
             var type = $(this).attr('id').split('-')[2];
 
@@ -3871,37 +4073,6 @@ window.ManageUsersView = countlyView.extend({
             }
         });
 
-        /** function saves user */
-        function updateUser(data) {
-            data.user_id = data._id;
-            $.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.users.w + '/update',
-                data: {
-                    args: JSON.stringify(data)
-                },
-                dataType: "json",
-                success: function() {
-                    countlyGlobal.member.full_name = data.full_name;
-                    countlyGlobal.member.username = data.username;
-                    countlyGlobal.member.email = data.email;
-                    if (data.member_image === "delete") {
-                        countlyGlobal.member.member_image = "";
-                    }
-                    else {
-                        countlyGlobal.member.member_image = data.member_image;
-                    }
-
-                    $('.menu').find('.user_name').find('div').first().html($("<div>").text(data.full_name).html());
-                    $('.menu').find('.user_name').find('div').last().html($("<div>").text(data.email).html());
-                    $("#menu-username").text(data.username);
-                    
-                    $(self).trigger('user-mgmt.user-updated', data);
-                    app.activeView.render();
-                }
-            });
-        }
-
         var memberImageDropzone = new Dropzone("#user-avatar-upload-drop", { 
             member: null,
             url: "/member/icon", 
@@ -3915,7 +4086,7 @@ window.ManageUsersView = countlyView.extend({
             init: function() {
                 var thisDropzone = this;
                 this.on('sending', function(file, xhr, formData) {
-                    formData.append('member_image_id', thisDropzone.member._id);
+                	formData.append('member_image_id', thisDropzone.member._id);
                 });
             }
         });
@@ -3925,23 +4096,21 @@ window.ManageUsersView = countlyView.extend({
         });
 
         memberImageDropzone.on("complete", function() {
-            this.member.user_id = this.member._id;
+        	this.member.user_id = this.member._id;
             this.member.member_image = '/memberimages/' + this.member.user_id + '.png';
-            updateUser(this.member);
         });
 
         $("#create-user-button").on("click", function() {
-            $("#listof-apps").hide();
+        	$("#listof-apps").hide();
             $(".row").removeClass("selected");
             $(".email-check.green-text").remove();
             $(".username-check.green-text").remove();
 
             var currUserDetails = $(".create-user-drawer .left-area");
-            var isGroupPluginEnabled = false;
+            var isGroupSelected = false;
 
-
-            if ($('#new-user-group-select').length > 0) {
-                isGroupPluginEnabled = true;
+            if (($('#new-user-group-select').length > 0 && $('#selected-new-user-group').val() !== "") || (typeof $('#selected-user-group').val() !== "undefined" && $('#selected-user-group').val() !== "")) {
+                isGroupSelected = true;
             }
             
             self.memberModel.full_name = currUserDetails.find(".full-name-text").val();
@@ -3949,25 +4118,30 @@ window.ManageUsersView = countlyView.extend({
             self.memberModel.email = currUserDetails.find(".email-text").val();
             self.memberModel.global_admin = $('#is-global-admin').data('state') === 1;
 
-            if (isGroupPluginEnabled) {
-                var selectedGroup = $('#selected-new-user-group').val();
+            if (isGroupSelected) {
+            	var selectedGroup;
+                if (self.drawerMode === 'c') {
+                	selectedGroup = $('#selected-new-user-group').val();
+                }
+                else {
+                	selectedGroup = $('#selected-user-group').val();
+                }
+
                 var groups = groupsModel.data();
                 var groupPermission = {};
 
                 for (var i = 0; i < groups.length; i++) {
-                    if (groups[i]._id === selectedGroup && !groups[i].global_admin) {
-                        groupPermission = groups[i].permission;
-                    }
-                    else if (groups[i]._id === selectedGroup && groups[i].global_admin) {
-                        self.memberModel.global_admin = true;
+                	if (groups[i]._id === selectedGroup) {
+                        self.memberModel.global_admin = groups[i].global_admin;
+                        self.memberModel.permission = groups[i].permission;
                     }
                 }
-
-                self.memberModel.permission = groupPermission;
             }
             else {
-                if (!self.memberModel.global_admin) {
+            	if (!self.memberModel.global_admin) {
                     self.memberModel.permission = countlyAuth.combinePermissionObject(self.user_apps, self.permissionSets, self.memberPermission);
+                    self.memberModel.permission._.u = self.user_apps;
+                    self.memberModel.permission._.a = self.admin_apps;  
                 }
             }
             
@@ -3976,8 +4150,7 @@ window.ManageUsersView = countlyView.extend({
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
 
-            
-            if (!self.memberModel.password.length) {
+			if (!self.memberModel.password.length) {
                 currUserDetails.find(".password-text").after(reqSpan.clone());
             }
             else {
@@ -4019,31 +4192,52 @@ window.ManageUsersView = countlyView.extend({
                 //self.memberModel.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
             }
 
-            app.onUserEdit(self.memberModel, false);
-
-            $.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.users.w + '/create',
-                data: {
-                    args: JSON.stringify(self.memberModel)
-                },
-                dataType: "json",
-                success: function(member) {
-                    $(self).trigger('user-mgmt.user-created', self.memberModel);
-                    // we need to wait until create process done before send upload request,
-                    // because upload request requires member_id as param.
-                    memberImageDropzone.member = member;
-                    memberImageDropzone.processQueue();
-                    if (isGroupPluginEnabled) {
-                        groupsModel.saveUserGroup({ email: member.email, group_id: $('#selected-new-user-group').val() }, function(response) {
-                            app.activeView.render();
-                        });    
-                    }
-                    else {
+            if (self.drawerMode === 'c') {
+            	$.ajax({
+	                type: "POST",
+	                url: countlyCommon.API_PARTS.users.w + '/create',
+	                data: {
+	                    args: JSON.stringify(self.memberModel)
+	                },
+	                dataType: "json",
+	                success: function(member) {
+	                	console.log('create request completed');
+	                	console.log('user-created triggered');
+	                    $(self).trigger('user-mgmt.user-created', self.memberModel);
+	                    // we need to wait until create process done before send upload request,
+	                    // because upload request requires member_id as param.
+	                    memberImageDropzone.member = member;
+	                    memberImageDropzone.processQueue();
+	                    if (isGroupSelected) {
+	                    	groupsModel.saveUserGroup({ email: member.email, group_id: $('#selected-new-user-group').val() }, function(response) {
+	                            app.activeView.render();
+	                        });    
+	                    }
+	                    else {
+	                        app.activeView.render();
+	                    }
+	                }
+	            });	
+            }
+            else {
+            	self.memberModel.user_id = self.selectedMemberId;
+            	$.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.users.w + '/update',
+                    data: {
+                        args: JSON.stringify(self.memberModel)
+                    },
+                    dataType: "json",
+                    success: function() {
+                    	memberImageDropzone.member = { _id: self.selectedMemberId };
+	                    memberImageDropzone.processQueue();
+	                    self.memberModel.group_id = $('#selected-user-group').val();
+	                    $(self).trigger('user-mgmt.user-updated', self.memberModel);
                         app.activeView.render();
                     }
-                }
-            });
+                });
+            }
+            
         });
 
         $(".create-user-drawer #admin-app-selector").off("change").on("change", function() {
@@ -4079,7 +4273,7 @@ window.ManageUsersView = countlyView.extend({
             $('#accessible-app-count').html(self.accessible_apps.length);
         });
 
-        $('body').on('click', '.create-user-drawer .section-close-icon', function() {
+        $('body').off('click', '.create-user-drawer .section-close-icon').on('click', '.create-user-drawer .section-close-icon', function() {
             var that = this;
             CountlyHelpers.confirm($.i18n.map['management-users.are-you-sure-to-continue'], "popStyleGreen", function(result) {
                 if (!result) {
@@ -4098,8 +4292,21 @@ window.ManageUsersView = countlyView.extend({
             });
         });
 
-        $('body').on('click', '#new-user-group-select div.item', function() {
-            if ($('#selected-new-user-group').val() !== "") {
+        $('body').off('click', '#new-user-group-select div.item').on('click', '#new-user-group-select div.item', function() {
+        	if ($('#selected-new-user-group').val() !== "") {
+                $('.access-area').hide();
+                $('#sub-header-1th').hide();
+                $('.add-new-permission-set').hide();
+            }
+            else {
+            	$('.access-area').show();
+                $('#sub-header-1th').show();
+                $('.add-new-permission-set').show();
+            }
+        });
+
+        $('body').off('click', '#group-select div.item').on('click', '#group-select div.item', function() {
+        	if ($('#selected-user-group').val() !== "") {
                 $('.access-area').hide();
                 $('#sub-header-1th').hide();
                 $('.add-new-permission-set').hide();
@@ -4108,6 +4315,14 @@ window.ManageUsersView = countlyView.extend({
                 $('.access-area').show();
                 $('#sub-header-1th').show();
                 $('.add-new-permission-set').show();
+                // reset global admin checkbox
+                $('.create-user-drawer .is-global-admin-checkbox').removeClass('fa-check-square');
+                $('.create-user-drawer .is-global-admin-checkbox').addClass('fa-square-o');
+                $('.create-user-drawer #is-global-admin').data('state', 0);
+                $('.create-user-drawer #sub-header-1th').show();
+                $('.create-user-drawer .admin-access').show();
+                $('.create-user-drawer .user-access').show();
+                $('.create-user-drawer .add-new-permission-set').show();
             }
         });
 
@@ -4319,9 +4534,7 @@ window.ManageUsersView = countlyView.extend({
         });
 
         $(".save-user").off("click").on("click", function() {
-            console.log('user save triggered');
-
-            $("#listof-apps").hide();
+        	$("#listof-apps").hide();
             $(".row").removeClass("selected");
             $(".email-check.green-text").remove();
             $(".username-check.green-text").remove();
@@ -4351,7 +4564,12 @@ window.ManageUsersView = countlyView.extend({
                 }
 
                 data.permission = groupPermission;
+            } else {
+                data.permission = memberPermission;
             }
+
+            data.permission._.u = self.user_apps;
+            data.permission._.a = self.admin_apps;
 
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
@@ -4521,32 +4739,7 @@ window.ManageUsersView = countlyView.extend({
             closeActiveEdit();
         });
         $(".delete-user").off("click").on("click", function() {
-            var currUserDetails = $(".user-details:visible");
-            var fullName = currUserDetails.find(".full-name-text").val();
-
-            var self2 = $(this);
-            CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', "<b>" + fullName + "</b>"), "popStyleGreen", function(result) {
-
-                if (!result) {
-                    return false;
-                }
-
-                var data = {
-                    user_ids: [self2.parent(".button-container").find(".user_id").val()]
-                };
-                $.ajax({
-                    type: "POST",
-                    url: countlyCommon.API_PARTS.users.w + '/delete',
-                    data: {
-                        args: JSON.stringify(data)
-                    },
-                    dataType: "json",
-                    success: function() {
-                        $(app.manageUsersView).trigger('user-mgmt.user-deleted', data.user_ids);
-                        app.activeView.render();
-                    }
-                });
-            }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["management-users.yes-delete-user"]], {title: jQuery.i18n.map["management-users.delete-confirm-title"], image: "delete-user"});
+            return;
         });
         $(".global-admin").off("click").on('click', function() {
             var currUserDetails = $(".user-details:visible");
@@ -4648,194 +4841,6 @@ window.ManageUsersView = countlyView.extend({
             $('.pp-menu-list').show();
             $('.pp-menu-list').focus();
         });
-    },
-    editUser: function(d, self) {
-        $(".create-user-row").slideUp();
-        $('#add-user-mgmt').show();
-        $("#listof-apps").hide();
-        $(".row").removeClass("selected");
-        CountlyHelpers.closeRows(self.dtable);
-        // `d` is the original data object for the row
-        var str = '';
-        if (d) {
-            str += '<div class="user-details datatablesubrow">';
-
-            if (countlyGlobal.member.global_admin) {
-                str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.profile-picture">';
-                str += '<div class="title" data-localize="user-settings.profile-picture">' + jQuery.i18n.map['user-settings.profile-picture'] + '</div>';
-                str += '<div class="detail">';
-                if (d.member_image) {
-                    str += '<div class="pp-circle" id="pp-circle-' + d._id + '" style="background-image:url(\'' + d.member_image + '?now=' + Date.now() + '\');background-size:100%;background-position:0 0">';
-                }
-                else {
-                    var defaultAvatarSelector = d.created_at % 16 * 60;
-                    var name = d.full_name.split(" ");
-                    str += '<div class="pp-circle" id="pp-circle-' + d._id + '" style="background-image:url(\'images/avatar-sprite.png\');background-size:auto;background-position:' + defaultAvatarSelector + 'px">';
-                    str += '<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>';
-                }
-                str += '<input type="file" class="pp-uploader" id="pp-uploader-' + d._id + '"  data-member-id="' + d._id + '" name="member_image">';
-                str += '<input type="hidden" class="member-image-path" name="member-image-path">';
-                str += '</div>';
-                str += '<div class="pp-menu-trigger">';
-                str += '<div class="pp-menu-list" tabindex="0">';
-                str += '<div><label class="pp-menu-label" for="pp-uploader-' + d._id + '"><a class="item edit-symbol"><i class="fa fa-pencil"></i>&nbsp;<span class="edit-pp" data-localize="common.edit"></span></a></label></div>';
-                if (d.member_image) {
-                    str += '<div><a data-member-id="' + d._id + '" class="item delete-member-image"><i class="fa fa-trash"></i>&nbsp;<span class="delete-pp" data-localize="common.delete"></span></a></div>';
-                }
-                str += '</div>';
-                str += '</div>';
-                str += '<div class="clearfix"></div>';
-                str += '</div>';
-                str += '</div>';
-                str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">';
-                str += '<div class="title" data-localize="management-users.full-name">' + jQuery.i18n.map["management-users.full-name"] + '</div>';
-                str += '<div class="detail"><input class="full-name-text" type="text" value="' + d.full_name + '"/></div>';
-                str += '</div>';
-                str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.username">';
-                str += '<div class="title" data-localize="management-users.username">' + jQuery.i18n.map["management-users.username"] + '</div>';
-                str += '<div class="detail">';
-                str += '<input class="username-text" type="text" value="' + d.username + '"/><br/>';
-                str += '<div class="small-link change-password" data-localize="management-users.change-password">' + jQuery.i18n.map["management-users.change-password"] + '</div>';
-                str += '</div>';
-                str += '</div>';
-                str += '<div class="row password-row">';
-                str += '<div class="title" data-localize="management-users.password">' + jQuery.i18n.map["management-users.password"] + '</div>';
-                str += '<div class="detail">';
-                str += '<input class="password-text" type="text" value=""/><br/>';
-                str += '<div class="small-link generate-password" data-localize="management-users.generate-password">' + jQuery.i18n.map["management-users.generate-password"] + '</div>';
-                str += '</div>';
-                str += '</div>';
-                str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.email">';
-                str += '<div class="title" data-localize="management-users.email">' + jQuery.i18n.map["management-users.email"] + '</div>';
-                str += '<div class="detail"><input class="email-text" type="text" value="' + d.email + '"/></div>';
-                str += '</div>';
-            }
-
-            if (!d.is_current_user) {
-                if (countlyGlobal.member.global_admin) {
-                    str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.global-admin">';
-                    str += '<div class="title" data-localize="management-users.global-admin">' + jQuery.i18n.map["management-users.global-admin"] + '</div>';
-                    str += '<div class="detail">';
-                    str += '<div class="option">';
-
-                    if (d.global_admin) {
-                        str += '<div class="global-admin checkbox checked"></div>';
-                    }
-                    else {
-                        str += '<div class="global-admin checkbox"></div>';
-                    }
-
-                    str += '<div class="text"></div>';
-                    str += '</div>';
-                    str += '</div>';
-                    str += '</div>';
-
-                    // Time ban
-                    if (d.blocked) {
-                        str += '<div class="row blocked-user-row help-zone-vs" data-help-localize="help.management-users.time-banned">';
-                        str += '<div class="title" data-localize="management-users.time-banned" style="margin-top:7px">' + jQuery.i18n.map["management-users.time-banned"] + '</div>';
-                        str += '<div class="detail">';
-                        str += '<div class="option">';
-
-                        str += '<a class="icon-button light remove-time-ban" style="margin-left:0px" data-localize="management-users.remove-ban">' + jQuery.i18n.map["management-users.remove-ban"] + '</a>';
-
-                        str += '<div class="text"></div>';
-                        str += '</div>';
-                        str += '</div>';
-                        str += '</div>';
-                    }
-
-                    if (!d.global_admin) {
-                        str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.lock-account">';
-                        str += '<div class="title" data-localize="management-users.lock-account">' + jQuery.i18n.map["management-users.lock-account"] + '</div>';
-                        str += '<div class="detail">';
-                        str += '<div class="option">';
-
-                        if (d.locked) {
-                            str += '<div class="lock-account checkbox checked"></div>';
-                        }
-                        else {
-                            str += '<div class="lock-account checkbox"></div>';
-                        }
-
-                        str += '<div class="text"></div>';
-                        str += '</div>';
-                        str += '</div>';
-                        str += '</div>';
-                    }
-                }
-
-                if (d.global_admin) {
-                    str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of" style="display:none;">';
-                }
-                else {
-                    str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of">';
-                }
-
-                str += '<div class="title" data-localize="management-users.admin-of">' + jQuery.i18n.map["management-users.admin-of"] + '</div>';
-                str += '<div class="select-apps">';
-                str += '<i class="fa fa-plus-circle"></i>';
-                str += '<input type="hidden" value="' + d.admin_of + '" class="app-list"/>';
-                str += '</div>';
-                str += '<div class="detail user-admin-list">';
-
-                if (d.admin_of && d.admin_of.length) {
-                    str += CountlyHelpers.appIdsToNames(d.admin_of);
-                }
-                else {
-                    str += '<span data-localize="management-users.admin-of.tip">' + jQuery.i18n.map["management-users.admin-of.tip"] + '</span>';
-                }
-
-                str += '</div>';
-                str += '<div class="no-apps" data-localize="management-users.admin-of.tip">' + jQuery.i18n.map["management-users.admin-of.tip"] + '</div>';
-                str += '</div>';
-
-                if (d.global_admin) {
-                    str += '<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of" style="display:none;">';
-                }
-                else {
-                    str += '<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of">';
-                }
-
-                str += '<div class="title" data-localize="management-users.user-of">' + jQuery.i18n.map["management-users.user-of"] + '</div>';
-                str += '<div class="select-apps">';
-                str += '<i class="fa fa-plus-circle"></i>';
-                str += '<input type="hidden" value="' + d.user_of + '" class="app-list"/>';
-                str += '</div>';
-                str += '<div class="detail user-admin-list">';
-
-                if (d.user_of && d.user_of.length) {
-                    str += CountlyHelpers.appIdsToNames(d.user_of);
-                }
-                else {
-                    str += '<span data-localize="management-users.user-of.tip">' + jQuery.i18n.map["management-users.user-of.tip"] + '</span>';
-                }
-
-                str += '</div>';
-                str += '<div class="no-apps" data-localize="management-users.user-of.tip">' + jQuery.i18n.map["management-users.user-of.tip"] + '</div>';
-                str += '</div>';
-            }
-
-            str += '<div class="button-container">';
-            str += '<input class="user_id" type="hidden" value="' + d._id + '"/>';
-            str += '<a class="icon-button light save-user" data-localize="common.save">' + jQuery.i18n.map["common.save"] + '</a>';
-            str += '<a class="icon-button light cancel-user" data-localize="common.cancel">' + jQuery.i18n.map["common.cancel"] + '</a>';
-
-            if (!d.is_current_user) {
-                str += '<a class="icon-button red delete-user" data-localize="management-users.delete-user">' + jQuery.i18n.map["management-users.delete-user"] + '</a>';
-            }
-
-            str += '</div>';
-            str += '</div>';
-        }
-
-        str = app.onUserEdit(d, str);
-
-        setTimeout(function() {
-            self.initTable(d);
-            $(self).trigger('user-mgmt.user-selected', d);
-        }, 1);
-        return str;
     }
 });
 

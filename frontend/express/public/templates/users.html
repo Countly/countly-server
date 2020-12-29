@@ -123,10 +123,11 @@
 	    	<input class="drawer-input password-text" autocomplete="new-password" type="password"/> -->
 	    </div>
 	    <div class="right-area">
-	    	<label data-localize="management-users.profile-picture"></label>
+	    	<label data-localize="management-users.profile-picture"></label>&nbsp;<span class="edit-picture" data-localize="management-users.update"></span>
 	    	<div class="img-upload" id="user-avatar-upload-drop">
 	    		<div class="upload-message">Drag & drop or <span style="font-weight:bolder;color:#2EB52B;cursor:pointer;">browse</span> files to add picture</div>
 	    	</div>
+	    	<div class="img-preview"></div>
 	    </div>
 	    <div style="clear:both"></div>
 	    <div class="access-area role-section">
@@ -163,7 +164,7 @@
 	    <button class="add-new-permission-set icon-button" data-localize="management-users.add-permission-set">
 		</button>
     	<div class="create-user-drawer-bottom">
-    		<button id="create-user-button" class="icon-button green create-new-user" data-localize="management-users.create-new-user">
+    		<button id="create-user-button" class="icon-button green create-new-user" data-localize="common.save">
     		</button>
     	</div>
     </div>
@@ -214,9 +215,7 @@
 	    <button class="add-new-permission-set icon-button" data-localize="management-users.add-permission-set">
 		</button>
     	<div class="create-user-drawer-bottom">
-    		<button class="icon-button green create-new-group" data-localize="groups.save-group">
-    		</button>
-    		<button id="drawer-delete-button" class="icon-button red delete-group" data-localize="groups.delete">
+    		<button class="icon-button green create-new-group" data-localize="common.save">
     		</button>
     	</div>
     </div>
