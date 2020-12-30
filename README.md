@@ -59,6 +59,7 @@ And because data-flow security is critical, the Countly Dashboard enables you to
 With Countly, understand your digital customer journey across devices. Build better ones.
 
 Click on the below image for a 1 minute video introduction to Countly (opens Youtube);
+
 [![Countly Community Edition - Video](https://count.ly/github/countly-community-1min-v1808.png)](https://youtu.be/htKeh9bsZwA)
 
 
