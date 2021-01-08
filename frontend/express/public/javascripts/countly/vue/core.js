@@ -78,15 +78,26 @@
         }
     });
 
+    var _uniqueCopiedStoreId = 0;
+
     var _vuex = {
         getGlobalStore: function() {
             return _globalVuexStore;
         },
-        registerGlobally: function(wrapper, force) {
+        registerGlobally: function(wrapper, copy, force) {
             var store = _globalVuexStore;
-            if (!store.hasModule(wrapper.name) || force) {
-                store.registerModule(wrapper.name, wrapper.module);
+            var name = wrapper.name;
+            if (copy) {
+                name += "_" + _uniqueCopiedStoreId;
+                _uniqueCopiedStoreId += 1;
             }
+            if (!store.hasModule(name) || force) {
+                store.registerModule(name, wrapper.module);
+            }
+            return name;
+        },
+        unregister: function(name) {
+            _globalVuexStore.unregisterModule(name);
         }
     };
 
