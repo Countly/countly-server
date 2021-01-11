@@ -403,7 +403,7 @@
                 }
                 else {
                     // vgt-table should determine itself.
-                    return;
+                    return undefined;
                 }
             }
         },
