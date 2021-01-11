@@ -715,8 +715,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         data[z].url = data[z].view_meta[0].url;
                                     }
 
-                                    if (data[z].view_meta[0].sortcol) {
-                                        data[z].display = data[z].view_meta[0].sortcol;
+                                    if (data[z].view_meta[0].display) {
+                                        data[z].display = data[z].view_meta[0].display;
                                     }
                                 }
                             }
@@ -758,6 +758,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         facetLine.push({$limit: dataLength});
                     }
 
+                    if (params.qstring.project) {
+                        query.push({$project: {"Display name": "$sortcol", "view": 1}});
+                    }
                     query.push({$facet: {data: facetLine, count: [{$count: 'count'}]}});
                     common.db.collection("app_viewsmeta" + params.qstring.app_id).aggregate(query, {allowDiskUse: true}, function(err1, res) {
                         if (err1) {
@@ -1044,19 +1047,23 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                     //get timestamps of start of days (DD-MM-YYYY-00:00) with respect to apptimezone for both beginning and end of period arrays
                     var tmpArr;
-                    queryObject.ts = {};
+                    var ts = {};
 
                     tmpArr = periodObj.currentPeriodArr[0].split(".");
-                    queryObject.ts.$gte = new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])));
-                    queryObject.ts.$gte.setTimezone(params.appTimezone);
-                    queryObject.ts.$gte = queryObject.ts.$gte.getTime() + queryObject.ts.$gte.getTimezoneOffset() * 60000;
+                    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+                    if (params.appTimezone) {
+                        ts.$gte.tz(params.appTimezone);
+                    }
+                    ts.$gte = ts.$gte.valueOf() - ts.$gte.utcOffset() * 60000;
 
                     tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
-                    queryObject.ts.$lt = new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])));
-                    queryObject.ts.$lt.setDate(queryObject.ts.$lt.getDate() + 1);
-                    queryObject.ts.$lt.setTimezone(params.appTimezone);
-                    queryObject.ts.$lt = queryObject.ts.$lt.getTime() + queryObject.ts.$lt.getTimezoneOffset() * 60000;
+                    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+                    if (params.appTimezone) {
+                        ts.$lt.tz(params.appTimezone);
+                    }
+                    ts.$lt = ts.$lt.valueOf() - ts.$lt.utcOffset() * 60000;
 
+                    queryObject.ts = ts;
                     queryObject["sg.width"] = {};
                     queryObject["sg.width"].$gt = device.minWidth;
                     queryObject["sg.width"].$lte = device.maxWidth;

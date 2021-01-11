@@ -380,12 +380,14 @@
         </div>
 		<div class="export-columns-selector">
             <p data-localize="export.columns-to-export"></p>
-            <p class="checkbox-line"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-all-columns"></a><span data-localize="export.export-all-columns"><span>
+            <p class="checkbox-line"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-all-columns"></a><span data-localize="export.export-all-columns"></span></p>
+			
 			<div class="export-columns-search"><table><tr><td><input type="text" placeholder="Search" data-localize="placeholder.search-columns" /></td><td><i class="fa fa-search"></i></td><tr></table></div>
             <div class="columns-height-wrapper">
 				<div class="columns-wrapper"></div>
             </div>
         </div>
+		<p class="checkbox-line export-format-option"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-format-columns"></a><span data-localize="export.format-if-possible"></span><i class="ion-information-circled"></i></p>
         <div class="icon-button green export-data" data-localize="export.export"></div>
 	</div>
     <div id="cly-drawer-template" class="cly-drawer">
@@ -461,10 +463,10 @@
                         </tr>
                         <tr>
                             <td class="calendar-block">
-                                <input type="text" class="calendar-input-field" id="date-from-input"></input><span class="date-input-label" data-localize="common.from"></span>
+                                <input type="text" class="calendar-input-field" id="date-from-input" autocomplete="off"></input><span class="date-input-label" data-localize="common.from"></span>
                             </td>
                             <td class="calendar-block">
-                                <input type="text" class="calendar-input-field" id="date-to-input"></input><span class="date-input-label" data-localize="common.to"></span>
+                                <input type="text" class="calendar-input-field" id="date-to-input" autocomplete="off"></input><span class="date-input-label" data-localize="common.to"></span>
                             </td>
                         </tr>
                     </table>
@@ -1273,7 +1275,7 @@
                             </div>
                         </div>
                         <div class="" id="event-groups-settings-table">
-                            <div class="cly-button-menu event-settings-menu event-groups-settings-menu" tabindex="1">
+                            <div class="cly-button-menu event-groups-settings-menu" tabindex="1">
                                 <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
                                 <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
@@ -1616,13 +1618,21 @@
                         <div class="widget-header top-events-widget-header" data-localize="events.top-events.title"></div>
                         <div class="outer">
                             <div class="row border">
-                                <div class="left title" data-localize="events.top-events.24hours"></div>
+                                <div class="left title" data-localize="events.top-events.yesterday"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
-                                    <div class="col">
-                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
-                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-                                    </div>
+                                    {{isDeletedEvent}}
+                                        {{#ifCond isDeletedEvent "==" true}} 
+                                            <div style="cursor: default;pointer-events: none;" class="col">
+                                                <h4 style="cursor: default;color:#DDD">{{this.name}}</h4>
+                                                <label style="cursor: default;color:#DDD">{{this.count}}</label> <span style="color:#DDD"; class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{else}}
+                                            <div class="col">
+                                                <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                                <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{/ifCond}}
                                     {{/eachOfObjectValue}}
                                 </div>
                             </div>
@@ -1630,10 +1640,19 @@
                                 <div class="left title" data-localize="events.top-events.30days"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventData30Day}}
-                                    <div class="col">
-                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
-                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-                                    </div>
+                                    {{isDeletedEvent}}
+                                    {{#ifCond isDeletedEvent "==" true}} 
+                                            <div style="cursor: default;pointer-events: none;" class="col">
+                                                <h4 style="cursor: default;color:#DDD">{{this.name}}</h4>
+                                                <label style="cursor: default;color:#DDD">{{this.count}}</label> <span style="color:#DDD"; class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{else}}
+                                            <div class="col">
+                                            
+                                                <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                                <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                    {{/ifCond}}
                                     {{/eachOfObjectValue}}
                                 </div>
                             </div>
@@ -1844,7 +1863,7 @@
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
 				<div style="overflow:hidden; position:absolute; top:14px; right:10px;">
 					<div class="icon-button help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %>">
-                      <a href="#/analytics/events/blueprint"> <i class="ion-gear-a"></i></a>
+                      <a href="#/analytics/manage-events"> <i class="ion-gear-a"></i></a>
 					</div>
 				</div>
 			</div>

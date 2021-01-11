@@ -11,11 +11,12 @@ const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher} = require('./parts/data/batcher.js');
+const pack = require('../package.json');
 
 var t = ["countly:", "api"];
 
 if (cluster.isMaster) {
-    console.log("Starting master");
+    console.log("Starting master", "version", pack.version);
     if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
         log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
     }
@@ -266,7 +267,7 @@ plugins.connectToAllDatabases().then(function() {
 
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
-            jobs.job('api:topEvents').replace().schedule('every 1 day');
+            jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day');
             jobs.job('api:ping').replace().schedule('every 1 day');
             jobs.job('api:clear').replace().schedule('every 1 day');
             jobs.job('api:clearTokens').replace().schedule('every 1 day');

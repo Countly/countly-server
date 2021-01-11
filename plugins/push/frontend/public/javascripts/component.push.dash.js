@@ -576,6 +576,18 @@ window.component('push.dash', function (dash) {
                 .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
                 .concat(custom);
     };
+
+    dash.getTokenName = function(token) {
+        return token ? t('pu.tk.' + token.substr(2)) : token;
+    };
+
+    dash.getTokenTypes = function() {
+        return ["tkip", "tkia", "tkid", "tkap", "tkat"];
+    };
+
+    dash.getTokenNames = function() {
+        return dash.getTokenTypes().map(dash.getTokenName);
+    };
 });
 
 window.MessagingDashboardView = countlyView.extend({

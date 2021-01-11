@@ -138,6 +138,21 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/drill/preprocess_query', ({query, params}) => {
+        if (query.push) {
+            if (query.push.$nin) {
+                query.$and = query.push.$nin.map(tk => {
+                    return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
+                });
+            }
+            if (query.push.$in) {
+                let q = query.push.$in.map(tk => {
+                    return {[tk]: true};
+                });
+                query.$or = q;
+            }
+            delete query.push;
+        }
+
         if (query.message) {
             let mid = query.message.$in || query.message.$nin,
                 not = !!query.message.$nin;

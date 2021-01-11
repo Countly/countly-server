@@ -631,6 +631,10 @@
     * });
     */
     CountlyHelpers.confirm = function(msg, type, callback, buttonText, moreData) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
         if (moreData && moreData.image) {
@@ -727,6 +731,68 @@
             dialog.find(".export-columns-selector p:first span").text("");
         }
     }
+
+    /** function to show selected column count in export dialog
+	* @param {object} dialog - dialog 
+	* @param {object} data - object with information about formating 
+	* @param {object} instance - refenrence to instance
+	*/
+    function show_formatting_warning(dialog, data, instance) {
+
+        dialog.find(".export-format-option i").not(".tooltipstered").tooltipster({
+            animation: "fade",
+            animationDuration: 50,
+            delay: 100,
+            theme: 'tooltipster-borderless',
+            side: ['top'],
+            maxWidth: 300,
+            trigger: 'hover',
+            interactive: true,
+            functionBefore: function(instance2) {
+                instance2.content("<p>" + jQuery.i18n.map["export.format-if-possible-explain"] + "</p>");
+            },
+            contentAsHTML: true,
+            functionInit: function(instance2) {
+                instance2.content("<p>" + jQuery.i18n.map["export.format-if-possible-explain"] + "</p>");
+            }
+        });
+
+        if (data && data.fields && Object.keys(data.fields).length > 0) {
+            dialog.find(".export-format-option").css("display", "none");
+            if (dialog.find(".export-columns-selector:visible").length > 0) {
+                if (dialog.find(".export-all-columns").hasClass("fa-check-square")) {
+                    //export all columns no need for projections
+                    for (var filed in data.fields) {
+                        if (data.fields[filed].to === "time") {
+                            dialog.find(".export-format-option").css("display", "block");
+                        }
+                    }
+                }
+                else {
+                    var projection = {};
+
+                    var checked = dialog.find('.columns-wrapper .fa-check-square');
+                    for (var kz = 0; kz < checked.length; kz++) {
+                        projection[$(checked[kz]).data("index")] = true;
+                    }
+
+                    if (instance && instance.fixProjectionParams) {
+                        projection = instance.fixProjectionParams(projection);
+                    }
+
+                    for (var filed2 in data.fields) {
+                        if (data.fields[filed2].to === "time" && projection[filed2]) {
+                            dialog.find(".export-format-option").css("display", "block");
+                        }
+                    }
+
+                }
+            }
+        }
+        else {
+            dialog.find(".export-format-option").css("display", "none");
+        }
+    }
     /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
@@ -748,6 +814,13 @@
         //var page = 0;
         var tableCols;
 
+        var formatData = data.formatFields || "";
+        try {
+            formatData = JSON.parse(formatData);
+        }
+        catch (e) {
+            formatData = {};
+        }
         dialog.removeAttr("id");
         /*dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
         if (count <= hardLimit) {
@@ -822,8 +895,29 @@
                     }
                 }
                 show_selected_column_count(dialog);
+                show_formatting_warning(dialog, formatData, instance);
             });
+
+
+
+            dialog.on("click", ".export-format-option", function() {
+                var checkbox = $(this).find("a").first();
+                var isChecked = $(checkbox).hasClass("fa-check-square");//is now checked
+
+                if (isChecked) {
+                    $(checkbox).addClass("fa-square-o");
+                    $(checkbox).removeClass("fa-check-square");
+                }
+                else {
+                    $(checkbox).removeClass("fa-square-o");
+                    $(checkbox).addClass("fa-check-square");
+                }
+            });
+
             show_selected_column_count(dialog);
+            setTimeout(function() {
+                show_formatting_warning(dialog, formatData, instance);
+            }, 10);
             dialog.find(".export-columns-search input").on("keyup", function() {
                 var value = dialog.find(".export-columns-search input").val();
                 value = new RegExp((value || ""), 'i');
@@ -869,9 +963,8 @@
                 data.limit = "";
                 data.skip = 0;
             }*/
-
-            delete data.projection;
-            if (dialog.find(".export-columns-selector")) {
+            if (dialog.find(".export-columns-selector:visible").length > 0) {
+                delete data.projection;
                 if (dialog.find(".export-all-columns").hasClass("fa-check-square")) {
                     //export all columns no need for projections
                 }
@@ -889,7 +982,9 @@
                 }
             }
 
-
+            if (!(dialog.find(".export-format-columns").hasClass("fa-check-square"))) {
+                delete data.formatFields;
+            }
             var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {

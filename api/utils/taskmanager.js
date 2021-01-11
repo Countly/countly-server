@@ -34,6 +34,7 @@ const log = require('./log.js')('core:taskmanager');
 * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
 * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
 * @param {boolean} options.forceCreateTask - force createTask with id supplied ( for import)
+* @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
 * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
 * @example
 * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
@@ -186,6 +187,7 @@ taskmanager.getId = function() {
 * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
 * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
 * @param {boolean} options.manually_create - the task is create from form input
+* @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
 *  @param {function=} callback - callback when data is stored
 */
 taskmanager.createTask = function(options, callback) {
@@ -238,6 +240,7 @@ taskmanager.createTask = function(options, callback) {
 * @param {object} options.errormsg - data object for error msg  - can be also error msg (string)
 * @param {string} options.errormsg.message - Optional. if exists check for message here. If not uses options.errormsg. 
 * @param {object} data - result data of the task
+* @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
 * @param {function=} callback - callback when data is stored
 */
 taskmanager.saveResult = function(options, data, callback) {
@@ -265,44 +268,58 @@ taskmanager.saveResult = function(options, data, callback) {
     }
 
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
-        options.db.collection("long_tasks").update({_id: options.id}, {
-            $set: update
-        }, {'upsert': false}, function(err, res) {
-            if (options.subtask && !err) {
-                var updateObj = {$set: {}};
-                updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
-                updateObj.$set["subtasks." + options.id + ".hasData"] = true;
-                updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
-                if (update.errormsg) {
-                    updateObj.$set["subtasks." + options.id + ".errormsg"] = update.errormsg;
-                }
-                else {
-                    updateObj.$unset = {};
-                    updateObj.$unset["subtasks." + options.id + ".errormsg"] = "";
-                }
+        if (options.gridfs || (task && task.gridfs)) {
+            //let's store it in gridfs
+            update.data = {};
+            update.gridfs = true;
+            options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, function(err) {
+                if (options.subtask && !err) {
+                    var updateObj = {$set: {}};
+                    updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
+                    updateObj.$set["subtasks." + options.id + ".hasData"] = true;
+                    updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
+                    if (update.errormsg) {
+                        updateObj.$set["subtasks." + options.id + ".errormsg"] = update.errormsg;
+                    }
+                    else {
+                        updateObj.$unset = {};
+                        updateObj.$unset["subtasks." + options.id + ".errormsg"] = "";
+                    }
 
-                options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
-            }
-
-            //document too large for update or it was already previous stored in gridfs
-            if ((err && err.code === 17419) || (task && task.gridfs)) {
-                //let's store it in gridfs
-                update.data = {};
-                update.gridfs = true;
-                options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, function() {
-                    countlyFs.gridfs.saveData("task_results", options.id, JSON.stringify(data || {}), {id: options.id}, function(err2, res2) {
-                        if (callback) {
-                            callback(err2, res2);
-                        }
-                    });
+                    options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
+                }
+                countlyFs.gridfs.saveData("task_results", options.id, JSON.stringify(data || {}), {id: options.id}, function(err2, res2) {
+                    if (callback) {
+                        callback(err2, res2);
+                    }
                 });
-            }
-            else {
+            });
+        }
+        else {
+            options.db.collection("long_tasks").update({_id: options.id}, {
+                $set: update
+            }, {'upsert': false}, function(err, res) {
+                if (options.subtask && !err) {
+                    var updateObj = {$set: {}};
+                    updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
+                    updateObj.$set["subtasks." + options.id + ".hasData"] = true;
+                    updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
+                    if (update.errormsg) {
+                        updateObj.$set["subtasks." + options.id + ".errormsg"] = update.errormsg;
+                    }
+                    else {
+                        updateObj.$unset = {};
+                        updateObj.$unset["subtasks." + options.id + ".errormsg"] = "";
+                    }
+
+                    options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
+                }
+
                 if (callback) {
                     callback(err, res);
                 }
-            }
-        });
+            });
+        }
     });
 };
 

@@ -291,11 +291,15 @@ window.component('push.popup', function(popup) {
             }
         }.bind(this);
 
+        var sending = false;
         this.send = function (ev) {
             ev.preventDefault();
             if (!message.ack() && !message.editingAuto) { return; }
+            if (sending) { return; }
+            sending = true;
             C.slider.instance.loading(true);
             message.remoteCreate().then(function () {
+                sending = false;
                 message.saved(true);
 
                 setTimeout(function () {
@@ -312,6 +316,7 @@ window.component('push.popup', function(popup) {
                     m.endComputation();
                 }, 1000);
             }, function (error) {
+                sending = false;
                 C.slider.instance.loading(false);
                 window.CountlyHelpers.alert(error.error || error.result || error, 'popStyleGreen', {title: t('pu.po.tab3.errors.message'), image: 'empty-icon', button_title: t('push.error.i.understand')});
             });
