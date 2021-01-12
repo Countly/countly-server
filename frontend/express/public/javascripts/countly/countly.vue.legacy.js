@@ -110,7 +110,7 @@
             onChange: function(e) {
                 if (this.onValueChanged) {
                     this.onValueChanged({
-                        value: this.inputType.toLowerCase() === "number" ? parseInt(e.target.value) : e.target.value,
+                        value: this.inputType.toLowerCase() === "number" ? parseInt(e.target.value, 10) : e.target.value,
                         type: this.inputType.toLowerCase() === "number" ? "inputnumber" : "inputtext"
                     });
                 }

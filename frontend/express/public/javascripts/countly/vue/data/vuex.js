@@ -86,7 +86,7 @@
                 notFilteredTotalRows: response.iTotalRecords || 0
             };
             if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
-                fields.echo = parseInt(response.sEcho);
+                fields.echo = parseInt(response.sEcho, 10);
             }
             if (Object.prototype.hasOwnProperty.call(requestOptions, "url")) {
                 var pairs = [];
