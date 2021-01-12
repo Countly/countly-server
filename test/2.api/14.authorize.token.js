@@ -11,8 +11,6 @@ var API_KEY_ADMIN = "";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
 
-var plugins = require("../../plugins/pluginManager");
-var db = plugins.dbConnection();
 var authorize = require('../../api/utils/authorizer.js');
 
 var testowner = "";
@@ -20,7 +18,6 @@ var testkey = "";
 var testtoken = "";
 
 describe('create test user', function() {
-
     it('creating test user', function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
@@ -76,7 +73,7 @@ describe('Test if token is created on login', function() {
     });
 
     after(function(done) {
-        db.collection("auth_tokens").find({owner: testowner}).toArray(function(err, res) {
+        testUtils.db.collection("auth_tokens").find({owner: testowner}).toArray(function(err, res) {
             if (err) {
                 done(err);
             }
@@ -109,7 +106,7 @@ describe('Test if token is deleted on logout', function() {
     });
 
     after(function(done) {
-        db.collection("auth_tokens").find({owner: testowner}).toArray(function(err, res) {
+        testUtils.db.collection("auth_tokens").find({owner: testowner}).toArray(function(err, res) {
             if (err) {
                 done(err);
             }
@@ -128,7 +125,7 @@ describe('Test if token is deleted on logout', function() {
 describe('Testing global admin user token', function() {
 /*
     it('cleaning up previous token for this user', function(done) {
-        db.collection("auth_tokens").remove({owner: testowner}, function(err, res) {
+        testUtils.db.collection("auth_tokens").remove({owner: testowner}, function(err, res) {
             done();
         });
     });
@@ -136,7 +133,7 @@ describe('Testing global admin user token', function() {
     it('creating token for user', function(done) {
 
         authorize.save({
-            db: db,
+            db: testUtils.db,
             multi: true,
             owner: testowner,
             callback: function(err, token) {
@@ -212,7 +209,7 @@ describe('Testing global admin user token', function() {
     });
 /*
     it('cleaning up previous token for this user', function(done) {
-        db.collection("auth_tokens").remove({owner: testowner}, function(err, res) {
+        testUtils.db.collection("auth_tokens").remove({owner: testowner}, function(err, res) {
             done();
         });
     });
@@ -222,7 +219,7 @@ describe('Testing global admin user token', function() {
 describe('Creating token to allow only paths under /o/users/', function() {
     it('creating token for user', function(done) {
         authorize.save({
-            db: db,
+            db: testUtils.db,
             endpoint: "^/o/users/",
             multi: true,
             owner: testowner,
@@ -286,7 +283,7 @@ describe("cleaning up", function() {
     });
 
     it('check if token deleted when user deleted', function(done) {
-        db.collection("auth_tokens").find({owner: testowner}).toArray(function(err, res) {
+        testUtils.db.collection("auth_tokens").find({owner: testowner}).toArray(function(err, res) {
             if (err) {
                 done(err);
             }
@@ -294,7 +291,7 @@ describe("cleaning up", function() {
                 done();
             }
             else {
-                db.collection("auth_tokens").remove({owner: testowner});//clean up for other tests
+                testUtils.db.collection("auth_tokens").remove({owner: testowner});//clean up for other tests
                 done('invalid token count');
             }
         });

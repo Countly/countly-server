@@ -9,20 +9,35 @@ app.addAppManagementView(
             this.template = Handlebars.compile(
                 "<div class=\"mgmt-plugins-row\" data-help-localize=\"configs.help.consolidate-app\">" +
                     "<div>" +
-                    "<label for=\"bundle\" data-localize=\"consolidate.app\"/>" +
-                    "<span data-localize=\"configs.help.consolidate-app\"/>" +
+                        "<label for=\"bundle\" data-localize=\"consolidate.app\"/>" +
+                        "<span data-localize=\"configs.help.consolidate-app\"/>" +
                     "</div>" +
-                    "<div>" +
-                    "<br/>" +
-                    "<input type=\"text\" name=\"consolidated-apps\" value=\"\"/>" +
+                    "<div class='selectize-right-drop'>" +
+                        "<br/>" +
+                        "<input type=\"text\" name=\"consolidated-apps\" value=\"\"/>" +
                     "</div>" +
-                    "</div>"
+                "</div>"
             );
             this.resetTemplateData();
         },
         afterRender: function() {
             var self = this;
             this.el.find("input").selectize({
+                onInitialize: function() {
+                    var ref = this;
+                    this.$control.on("click", function() {
+                        var selected = $(this).parents(".selectize-right-drop").hasClass("selected");
+                        if (!selected) {
+                            $(this).parents(".selectize-right-drop").addClass("selected");
+                            ref.open();
+                        }
+                        else {
+                            $(this).parents(".selectize-right-drop").removeClass("selected");
+                            ref.close();
+                        }
+                    });
+                },
+                placeholder: jQuery.i18n.map['configs.help.consolidate-select-apps'],
                 plugins: ["remove_button"],
                 persist: false,
                 maxItems: null,
@@ -48,7 +63,6 @@ app.addAppManagementView(
                 },
                 onChange: function(value) {
                     self.doOnChange("selectedApps", value && value.split(",") || []);
-                    this.$control_input.css("width", "40px");
                 }
             });
         },

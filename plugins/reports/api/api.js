@@ -1,7 +1,8 @@
 var common = require('../../../api/utils/common.js'),
     reports = require("./reports"),
-    time = require('time'),
     async = require('async'),
+    moment = require('moment-timezone'),
+    log = require('../../../api/utils/log')('reports:api'),
     plugins = require('../../pluginManager.js');
 
 (function() {
@@ -238,6 +239,7 @@ var common = require('../../../api/utils/common.js'),
 
                         reports.sendReport(common.db, id, function(err2) {
                             if (err2) {
+                                log.d("Error occurred while sending out report.", err);
                                 common.returnMessage(params, 200, err2);
                             }
                             else {
@@ -292,20 +294,18 @@ var common = require('../../../api/utils/common.js'),
             validate(function(params) {
                 const statusList = params.qstring.args;
 
-                common.db.onOpened(function() {
-                    var bulk = common.db._native.collection("reports").initializeUnorderedBulkOp();
-                    for (const id in statusList) {
-                        bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
-                    }
-                    if (bulk.length > 0) {
-                        bulk.execute(function(err) {
-                            if (err) {
-                                common.returnMessage(params, 200, err);
-                            }
-                            common.returnMessage(params, 200, "Success");
-                        });
-                    }
-                });
+                var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
+                for (const id in statusList) {
+                    bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
+                }
+                if (bulk.length > 0) {
+                    bulk.execute(function(err) {
+                        if (err) {
+                            common.returnMessage(params, 200, err);
+                        }
+                        common.returnMessage(params, 200, "Success");
+                    });
+                }
             }, paramsInstance);
             break;
         default:
@@ -330,10 +330,8 @@ var common = require('../../../api/utils/common.js'),
      */
     function convertToTimezone(props) {
         //convert time
-        var date = new time.Date();
-        var serverOffset = date.getTimezoneOffset();
-        date.setTimezone(props.timezone);
-        var clientOffset = date.getTimezoneOffset();
+        var serverOffset = moment().utcOffset();
+        var clientOffset = moment().tz(props.timezone).utcOffset();
         var diff = serverOffset - clientOffset;
         var day = props.day;
         var hour = props.hour - Math.floor(diff / 60);

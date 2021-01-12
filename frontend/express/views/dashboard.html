@@ -26,7 +26,7 @@
         };
         window.paceOptions = {
             ajax: {
-                ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", ".intercom", "method=get_events", "display_loader=false"]
+                ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", "method=get_events", "display_loader=false"]
             }
         };
     </script>
@@ -43,6 +43,7 @@
     	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
     <% } else { %>
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
+		<link rel="stylesheet" href="<%- cdn %>stylesheets/vue/clyvue.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css?<%= countlyVersion %>" />
@@ -51,9 +52,9 @@
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/drop/drop-theme-countly.min.css?<%= countlyVersion %>" />
-		<% if (plugins) { %>
-			<% for(var i=0, l=plugins.length; i<l; i++) {%>
-		<link rel="stylesheet" href="<%- cdn %><%= plugins[i] %>/stylesheets/main.css?<%= countlyVersion %>" />
+        <% if (stylesheets) { %>
+			<% for(var i=0, l=stylesheets.length; i<l; i++) {%>
+        <link rel="stylesheet" href="<%- cdn %><%= stylesheets[i] %>?<%= countlyVersion %>" />
 			<% } %>
 		<% } %>
 	    <!-- DEVELOPMENT -->
@@ -72,7 +73,7 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment-with-locales.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jstz.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/store+json2.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.idle-timer.js?<%= countlyVersion %>"></script>
@@ -86,7 +87,15 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.xss.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/es6-promise.auto.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuex.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-color.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuelidate.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/v-tooltip.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/validators.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2Dropzone.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js?<%= countlyVersion %>"></script>
@@ -101,7 +110,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jsoneditor/jsoneditor.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/Sortable.min.js?<%= countlyVersion %>"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
 
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
@@ -158,6 +167,23 @@
 			</div>
 		</div>
 		<div class="right-menu">
+			<div class="dropdown icon manage-long-tasks-menu-dropdown">
+				<div id="manage-long-tasks-icon" class="empty-state unread">
+                    <i class="fa fa-clock"></i>
+					<div class="orange-side-notification-banner-wrapper">
+						<div class="orange-side-notification-banner" data-localize="taskmanager.query-added-long"></div>
+					</div>
+                </div>
+				<div class="menu right manage-long-tasks-menu" style="width:400px;">
+                    <div class="menu-category-title">
+						<p data-localize="sidebar.long-running-queries"></p>
+						<a class="see-all"  href="#/manage/tasks#report-automatically"><span data-localize="common.see-all"></span>&rarr;</a>
+					</div>
+					<div class="tasks-wrapper">
+						<div class="tasks scrollable"></div>
+						</div>
+				</div>
+			</div>
             <div class="dropdown icon">
 				<div class="empty-state">
                     <i class="fa fa-cog"></i>
@@ -228,14 +254,8 @@
                             </a>
                             <% } %>
 
-                            <% if(intercom && (typeof feedbackLink === "string")) { %>
+                            <% if(typeof feedbackLink === "string") { %>
                             <a target="_new" href="<%= feedbackLink %>" class="item" data-priority="30">
-                                <i class="ion-ios-star icon"></i>
-                                <div data-localize="common.provide-feedback"></div>
-                            </a>
-                            <% } %>
-                            <% if(intercom && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
-                            <a class="item activate_intercom"  data-priority="30">
                                 <i class="ion-ios-star icon"></i>
                                 <div data-localize="common.provide-feedback"></div>
                             </a>
@@ -355,21 +375,19 @@
 		<p data-localize="export.export-as"></p>
         <div id="export-type-selector" class="button-selector light">
             <div class="button selected active" id="export-csv">.CSV</div>
-			<div class="button" id="export-xls">.XLS</div>
+			<div class="button" id="export-xlsx">.XLSX</div>
 			<div class="button" id="export-json">.JSON</div>
         </div>
-        <p class="details" data-localize="export.export-number"></p>
-        <div class="cly-select">
-            <div class="select-inner">
-                <div class="text-container">
-                    <div class="text" data-localize="export.select"></div>
-                </div>
-                <div class="right combo"></div>
-            </div>
-            <div class="select-items square">
-                <div></div>
+		<div class="export-columns-selector">
+            <p data-localize="export.columns-to-export"></p>
+            <p class="checkbox-line"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-all-columns"></a><span data-localize="export.export-all-columns"></span></p>
+			
+			<div class="export-columns-search"><table><tr><td><input type="text" placeholder="Search" data-localize="placeholder.search-columns" /></td><td><i class="fa fa-search"></i></td><tr></table></div>
+            <div class="columns-height-wrapper">
+				<div class="columns-wrapper"></div>
             </div>
         </div>
+		<p class="checkbox-line export-format-option"><a data-index="" class="fa fa-square-o check-green check-header data-table-toggle-column export-format-columns"></a><span data-localize="export.format-if-possible"></span><i class="ion-information-circled"></i></p>
         <div class="icon-button green export-data" data-localize="export.export"></div>
 	</div>
     <div id="cly-drawer-template" class="cly-drawer">
@@ -445,10 +463,10 @@
                         </tr>
                         <tr>
                             <td class="calendar-block">
-                                <input type="text" class="calendar-input-field" id="date-from-input"></input><span class="date-input-label" data-localize="common.from"></span>
+                                <input type="text" class="calendar-input-field" id="date-from-input" autocomplete="off"></input><span class="date-input-label" data-localize="common.from"></span>
                             </td>
                             <td class="calendar-block">
-                                <input type="text" class="calendar-input-field" id="date-to-input"></input><span class="date-input-label" data-localize="common.to"></span>
+                                <input type="text" class="calendar-input-field" id="date-to-input" autocomplete="off"></input><span class="date-input-label" data-localize="common.to"></span>
                             </td>
                         </tr>
                     </table>
@@ -456,7 +474,7 @@
 				</div>
 			</div>
 		</div>
-	</script>
+    </script>
 
 	<script id="template-date-time-selector" type="text/x-handlebars-template">
 		<div class="date-time-selector-container">
@@ -1257,7 +1275,7 @@
                             </div>
                         </div>
                         <div class="" id="event-groups-settings-table">
-                            <div class="cly-button-menu event-settings-menu event-groups-settings-menu" tabindex="1">
+                            <div class="cly-button-menu event-groups-settings-menu" tabindex="1">
                                 <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
                                 <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
                                 <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
@@ -1600,13 +1618,21 @@
                         <div class="widget-header top-events-widget-header" data-localize="events.top-events.title"></div>
                         <div class="outer">
                             <div class="row border">
-                                <div class="left title" data-localize="events.top-events.24hours"></div>
+                                <div class="left title" data-localize="events.top-events.yesterday"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventDataDaily}}
-                                    <div class="col">
-                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
-                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-                                    </div>
+                                    {{isDeletedEvent}}
+                                        {{#ifCond isDeletedEvent "==" true}} 
+                                            <div style="cursor: default;pointer-events: none;" class="col">
+                                                <h4 style="cursor: default;color:#DDD">{{this.name}}</h4>
+                                                <label style="cursor: default;color:#DDD">{{this.count}}</label> <span style="color:#DDD"; class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{else}}
+                                            <div class="col">
+                                                <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                                <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{/ifCond}}
                                     {{/eachOfObjectValue}}
                                 </div>
                             </div>
@@ -1614,10 +1640,19 @@
                                 <div class="left title" data-localize="events.top-events.30days"></div>
                                 <div class="right">
                                     {{#eachOfObjectValue getTopEventData30Day}}
-                                    <div class="col">
-                                        <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
-                                        <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
-                                    </div>
+                                    {{isDeletedEvent}}
+                                    {{#ifCond isDeletedEvent "==" true}} 
+                                            <div style="cursor: default;pointer-events: none;" class="col">
+                                                <h4 style="cursor: default;color:#DDD">{{this.name}}</h4>
+                                                <label style="cursor: default;color:#DDD">{{this.count}}</label> <span style="color:#DDD"; class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                        {{else}}
+                                            <div class="col">
+                                            
+                                                <h4><a href="#/analytics/events/key/{{encodeURIComponent this.name}}">{{this.name}}</a></h4>
+                                                <label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+                                            </div>
+                                    {{/ifCond}}
                                     {{/eachOfObjectValue}}
                                 </div>
                             </div>
@@ -1690,7 +1725,7 @@
 
                                         {{#if this.value.name}}
                                         <td class="event-overview-grid-block cly-widget">
-                                            <div class="title"><a href="#/analytics/events/key/{{encodeURIComponent this.value.name}}">{{this.value.name}}</a></div>
+                                            <div class="title"><a href="#/analytics/events/key/{{encodeURIComponent this.value.key}}">{{this.value.name}}</a></div>
                                             {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
                                             <table>
                                                 <tr>
@@ -1822,12 +1857,13 @@
             </div>
         </div>
         {{else}}
+        
 		<div id="event-nav">
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
 				<div style="overflow:hidden; position:absolute; top:14px; right:10px;">
 					<div class="icon-button help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %>">
-                      <a href="#/analytics/events/blueprint"> <i class="ion-gear-a"></i></a>
+                      <a href="#/analytics/manage-events"> <i class="ion-gear-a"></i></a>
 					</div>
 				</div>
 			</div>
@@ -1850,6 +1886,7 @@
 		</div>
 
 		<div id="event-main" style="margin-left:199px;">
+        <div id="event-alert"></div>
 		<div class="widget">
 			<div class="widget-header" id="events-widget-header">
 				<div class="left">
@@ -2159,7 +2196,7 @@
 				<div id="report-automatically" class='user-tab'></div>
 			</div>
 
-            <div class="widget-header report-manager-idget-header">
+            <div class="widget-header report-manager-widget-header">
                 <div class="left">
                     <div style="overflow: auto">
                         {{#if filter1}}
@@ -2169,7 +2206,6 @@
                         {{/if}}
                     </div>
                     {{#if filter1}}
-                    <div style="width:300px; display: block;">
                     <div class="cly-select float filter1-segmentation">
                         <div class="select-inner">
                             <div class="text-container">
@@ -2219,7 +2255,6 @@
                         </div>
                     </div>
 					{{/if}}
-                    </div>
                     {{/if}}
 				</div>
 			</div>
@@ -2801,53 +2836,6 @@
     };
     </script>
 
-    <% if (!offline_mode) { %>
-        <% if(intercom && member['global_admin'] || config.autonomous) { %>
-        <script>
-            $(document).ready(function() {
-                $(".activate_intercom").on("click", function() {
-                    Intercom('show');
-                });
-                $('.list .item_info').on("click", function(e){
-                    e.stopPropagation();
-                });
-
-            });
-        </script>
-        <script id="IntercomSettingsScriptTag">
-            var intercomSettings = {
-                app_id: 'pt60eheo',
-                widget: {
-                    activator: '.activate_intercom'
-                },
-                email: "<%= member.email %>",
-                created_at: parseInt("<%= member.created_at %>") || 1349863810,
-                name: "<%= member.full_name %>",
-                user_id: "<%= member.in_user_id %>",
-                user_hash: "<%= member.in_user_hash %>",
-                trial_user: <%= countlyTrial %>
-            };
-        </script>
-        <script>
-            (function() {
-                var i=function(){i.c(arguments)};i.q=[];
-                i.c=function(args){i.q.push(args)};window.Intercom=i;
-                function async_load() {
-                    var s = document.createElement('script');
-                    s.type = 'text/javascript'; s.async = true;
-                    s.src = 'https://api.intercom.io/api/js/library.js';
-                    var x = document.getElementsByTagName('script')[0];
-                    x.parentNode.insertBefore(s, x);
-                }
-                if (window.attachEvent) {
-                    window.attachEvent('onload', async_load);
-                } else {
-                    window.addEventListener('load', async_load, false);
-                }
-            })();
-        </script>
-        <% } %>
-	<% } %>
     <% if (typeof inject_template.html != "undefined") { %>
         <%- inject_template.html %>
     <% } %>

@@ -1,7 +1,6 @@
 /*global countlyCommon, countlyGlobal, countlyEvent, jQuery, _*/
 (function(countlyEventCompare, $) {
     //Private Properties
-    // eslint-disable-next-line
     var _dbOb = {},
         _activeAppKey = 0,
         _initialized = false,
@@ -53,7 +52,6 @@
     };
 
     countlyEventCompare.refresh = function() {
-
         if (!countlyCommon.DEBUG) {
 
             if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY) {

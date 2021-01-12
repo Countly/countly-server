@@ -138,15 +138,42 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/drill/preprocess_query', ({query, params}) => {
-        if (query.message && query.message.$in) {
-            let min = query.message.$in;
+        if (query.push) {
+            if (query.push.$nin) {
+                query.$and = query.push.$nin.map(tk => {
+                    return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
+                });
+            }
+            if (query.push.$in) {
+                let q = query.push.$in.map(tk => {
+                    return {[tk]: true};
+                });
+                query.$or = q;
+            }
+            delete query.push;
+        }
+
+        if (query.message) {
+            let mid = query.message.$in || query.message.$nin,
+                not = !!query.message.$nin;
+
+            if (!mid) {
+                return;
+            }
+
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
 
             if (params && params.qstring.method === 'user_details') {
                 return new Promise((res, rej) => {
                     try {
-                        common.db.collection(`push_${params.app_id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(common.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+                        mid = mid.map(common.db.ObjectID);
+
+                        let q = {msgs: {$elemMatch: {'0': {$in: mid}}}};
+                        if (not) {
+                            q = {msgs: {$not: q.msgs}};
+                        }
+                        common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
                             if (err) {
                                 rej(err);
                             }
@@ -168,9 +195,22 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/drill/postprocess_uids', ({uids, params}) => new Promise((res, rej) => {
-        if (uids.length && params.initialQueryObject && params.initialQueryObject.message) {
+        let message = params.initialQueryObject && params.initialQueryObject.message;
+        if (uids.length && message) {
             log.d(`filtering ${uids.length} uids by message`);
-            return common.db.collection(`push_${params.app_id}`).find({_id: {$in: uids}, msgs: {$elemMatch: {'0': common.db.ObjectID(params.initialQueryObject.message)}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+
+            let q;
+            if (message.$in) {
+                q = {_id: {$in: uids}, msgs: {$elemMatch: {'0': {$in: message.$in.map(common.db.ObjectID)}}}};
+            }
+            else if (message.$nin) {
+                q = {$and: [{_id: {$in: uids}}, {msgs: {$not: {$elemMatch: {'0': {$in: message.$nin.map(common.db.ObjectID)}}}}}]};
+            }
+            else {
+                q = {_id: {$in: uids}, msgs: {$elemMatch: {'0': {$in: message.map(common.db.ObjectID)}}}};
+            }
+
+            return common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
                 if (err) {
                     rej(err);
                 }
@@ -454,9 +494,9 @@ const PUSH_CACHE_GROUP = 'P';
             var userLastSeenTimestamp = dbAppUser[common.dbUserMap.last_seen],
                 currDate = common.getDate(params.time.timestamp, params.appTimezone),
                 userLastSeenDate = common.getDate(userLastSeenTimestamp, params.appTimezone),
-                secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                 secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
             if (userLastSeenTimestamp < (params.time.timestamp - secInMin) && messagingTokenKeys(dbAppUser).length) {
@@ -467,8 +507,8 @@ const PUSH_CACHE_GROUP = 'P';
                 updateUsersMonth['d.' + params.time.day + '.' + common.dbMap['messaging-enabled']] = 1;
             }
 
-            if (userLastSeenDate.getFullYear() === parseInt(params.time.yearly) &&
-                Math.ceil(common.moment(userLastSeenDate).tz(params.appTimezone).format('DDD') / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
+            if (userLastSeenDate.year() === parseInt(params.time.yearly) &&
+                Math.ceil(userLastSeenDate.format('DDD') / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
                 updateUsersZero['d.w' + params.time.weekly + '.' + common.dbMap['messaging-enabled']] = 1;
             }
 
@@ -551,7 +591,7 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {
         if (uids && uids.length) {
             if (!export_commands.push) {
-                export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{uid: {$in: ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
+                export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{"uid": {"$in": ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
             }
         }
     });

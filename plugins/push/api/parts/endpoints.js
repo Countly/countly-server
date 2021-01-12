@@ -1297,7 +1297,7 @@ function cachedData(note) {
                 update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.IOS]: {}});
                 credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.IOS}._id`)));
             }
-            else if (!common.equal(config[N.Platform.IOS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.IOS], true)) {
+            else if (!common.equal(config[N.Platform.IOS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.IOS], true) && config[N.Platform.IOS] && config[N.Platform.IOS].file) {
                 let data = config[N.Platform.IOS],
                     mime = data.file.indexOf(';base64,') === -1 ? null : data.file.substring(0, data.file.indexOf(';base64,')),
                     detected;

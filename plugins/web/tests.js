@@ -75,7 +75,6 @@ describe('Testing Web', function() {
                     var user = ob[0];
                     user.should.have.property("_id");
                     user.should.have.property("uid", '1');
-                    user.should.have.property("did", DEVICE_ID);
                     user.should.have.property("brw", 'Android Browser');
                     user.should.have.property("p", 'Android');
                     done();
@@ -118,7 +117,6 @@ describe('Testing Web', function() {
                     }
                     user.should.have.property("_id");
                     user.should.have.property("uid", '2');
-                    user.should.have.property("did", DEVICE_ID + "2");
                     user.should.have.property("brw", 'Chrome Mobile');
                     user.should.have.property("p", 'iOS');
                     done();

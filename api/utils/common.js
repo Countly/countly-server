@@ -6,7 +6,6 @@
 /** @lends module:api/utils/common */
 var common = {},
     moment = require('moment-timezone'),
-    time = require('time')(Date),
     crypto = require('crypto'),
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
@@ -236,12 +235,6 @@ common.dbEventMap = {
 * @type {object} 
 */
 common.config = countlyConfig;
-
-/**
-* Reference to time module
-* @type {object} 
-*/
-common.time = time;
 
 /**
 * Reference to momentjs
@@ -580,33 +573,32 @@ common.fillTimeObject = function(params, object, property, increment) {
 common.initTimeObj = function(appTimezone, reqTimestamp) {
     var currTimestamp,
         curMsTimestamp,
-        currDate,
-        currDateWithoutTimestamp = new Date();
+        tmpMoment,
+        currDateWithoutTimestamp = moment();
 
     // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer, handling also float timestamps with ms after dot
     if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
         // If the received timestamp is greater than current time use the current time as timestamp
-        currTimestamp = (parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
-        curMsTimestamp = (parseInt(reqTimestamp, 10) > time.time()) ? time.time() * 1000 : parseFloat(reqTimestamp, 10) * 1000;
-        currDate = new Date(currTimestamp * 1000);
+        currTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.unix() : parseInt(reqTimestamp, 10);
+        curMsTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.valueOf() : parseFloat(reqTimestamp, 10) * 1000;
+        tmpMoment = moment(currTimestamp * 1000);
     }
     else if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 && common.isNumber(reqTimestamp)) {
         var tmpTimestamp = Math.floor(parseInt(reqTimestamp, 10) / 1000);
-        curMsTimestamp = (tmpTimestamp > time.time()) ? Date.now() : parseInt(reqTimestamp, 10);
-        currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
-        currDate = new Date(currTimestamp * 1000);
+        currTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.unix() : tmpTimestamp;
+        curMsTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.valueOf() : parseInt(reqTimestamp, 10);
+        tmpMoment = moment(currTimestamp * 1000);
     }
     else {
-        currTimestamp = time.time(); // UTC
-        currDate = new Date();
-        curMsTimestamp = currDate.getTime();
+        tmpMoment = moment();
+        currTimestamp = tmpMoment.unix(); // UTC
+        curMsTimestamp = tmpMoment.valueOf();
     }
 
-    currDate.setTimezone(appTimezone);
-    currDateWithoutTimestamp.setTimezone(appTimezone);
-
-    var tmpMoment = moment(currDate);
-    tmpMoment.tz(appTimezone);
+    if (appTimezone) {
+        currDateWithoutTimestamp.tz(appTimezone);
+        tmpMoment.tz(appTimezone);
+    }
 
     /**
    * @typedef timeObject
@@ -628,8 +620,8 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
    */
     return {
         now: tmpMoment,
-        nowUTC: moment.utc(currDate),
-        nowWithoutTimestamp: moment(currDateWithoutTimestamp).tz(appTimezone),
+        nowUTC: tmpMoment.clone().utc(),
+        nowWithoutTimestamp: currDateWithoutTimestamp,
         timestamp: currTimestamp,
         mstimestamp: curMsTimestamp,
         yearly: tmpMoment.format("YYYY"),
@@ -647,13 +639,13 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 * Creates a Date object from provided seconds timestamp in provided timezone
 * @param {number} timestamp - unix timestamp in seconds
 * @param {string} timezone - name of the timezone
-* @returns {Date} Date object for provided time
+* @returns {moment} moment object for provided time
 */
 common.getDate = function(timestamp, timezone) {
-    var tmpDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
+    var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
 
     if (timezone) {
-        tmpDate.setTimezone(timezone);
+        tmpDate.tz(timezone);
     }
 
     return tmpDate;
@@ -666,30 +658,13 @@ common.getDate = function(timestamp, timezone) {
 * @returns {number} current day of the year
 */
 common.getDOY = function(timestamp, timezone) {
-    var endDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
+    var endDate = (timestamp) ? moment.unix(timestamp * 1000) : moment();
 
     if (timezone) {
-        endDate.setTimezone(timezone);
+        endDate.tz(timezone);
     }
 
-    var startDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
-
-    if (timezone) {
-        startDate.setTimezone(timezone);
-    }
-
-    startDate.setMonth(0);
-    startDate.setDate(1);
-    startDate.setHours(0);
-    startDate.setMinutes(0);
-    startDate.setSeconds(0);
-    startDate.setMilliseconds(0);
-
-    var diff = endDate - startDate;
-    var oneDay = 1000 * 60 * 60 * 24;
-    var currDay = Math.ceil(diff / oneDay);
-
-    return currDay;
+    return endDate.dayOfYear();
 };
 
 /**
@@ -1519,9 +1494,9 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
         if (props.lastTimestamp) {
             var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                 lastDate = common.getDate(props.lastTimestamp, params.appTimezone),
-                secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                 secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
             if (props.lastTimestamp < (params.time.timestamp - secInMin)) {
@@ -1532,8 +1507,8 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
                 updateUsersMonth['d.' + params.time.day + '.' + metric] = props.value;
             }
 
-            if (lastDate.getFullYear() + "" === params.time.yearly + "" &&
-                    Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+            if (lastDate.year() + "" === params.time.yearly + "" &&
+                    Math.ceil(lastDate.format("DDD") / 7) < params.time.weekly) {
                 updateUsersZero["d.w" + params.time.weekly + '.' + metric] = props.value;
             }
 
@@ -1596,9 +1571,9 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
         if (props.lastTimestamp) {
             var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                 lastDate = common.getDate(props.lastTimestamp, params.appTimezone),
-                secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                 secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
             if (props.lastTimestamp < (params.time.timestamp - secInMin)) {
@@ -1609,8 +1584,8 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
                 updateUsersMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + metric] = props.value;
             }
 
-            if (lastDate.getFullYear() + "" === params.time.yearly + "" &&
-                    Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+            if (lastDate.year() + "" === params.time.yearly + "" &&
+                    Math.ceil(lastDate.format("DDD") / 7) < params.time.weekly) {
                 updateUsersZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + metric] = props.value;
             }
 
@@ -1758,9 +1733,11 @@ common.versionCompare = function(v1, v2, options) {
 * @returns {number} adjusted timestamp for timezone
 */
 common.adjustTimestampByTimezone = function(ts, tz) {
-    var d = new Date();
-    d.setTimezone(tz);
-    return ts - (d.getTimezoneOffset() * 60);
+    var d = moment();
+    if (tz) {
+        d.tz(tz);
+    }
+    return ts + (d.utcOffset() * 60);
 };
 
 
@@ -2000,23 +1977,24 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set = {};
                 }
                 if (!update.$set.fac) {
-                    if (user.fs && user.fs * 1000 < params.time.mstimestamp) {
-                        update.$set.fac = user.fs * 1000;
+                    if (user.fs && user.fs < params.time.timestamp) {
+                        update.$set.fac = user.fs;
                     }
                     else {
-                        update.$set.fac = params.time.mstimestamp;
+                        update.$set.fac = params.time.timestamp;
                     }
                 }
+                update.$set.first_sync = Math.round(Date.now() / 1000);
             }
 
-            if (typeof user.lac === "undefined" || user.lac < params.time.mstimestamp) {
+            if (typeof user.lac === "undefined" || (user.lac + "").length === 13 || user.lac < params.time.timestamp) {
                 if (!update.$set) {
                     update.$set = {};
                 }
                 if (!update.$set.lac) {
-                    update.$set.lac = params.time.mstimestamp;
+                    update.$set.lac = params.time.timestamp;
                 }
-                update.$set.last_sync = Date.now();
+                update.$set.last_sync = Math.round(Date.now() / 1000);
             }
 
             if (!user.sdk) {
@@ -2468,5 +2446,266 @@ common.mergeQuery = function(ob1, ob2) {
 
     return ob1;
 };
+
+/**
+ * DataTable is a helper class for data tables in the UI which have bServerSide: true. It provides 
+ * abstraction for server side pagination, searching and column based sorting. The class relies 
+ * on MongoDB's aggregation for all operations. This doesn't include making db calls though. Since 
+ * there can be many different execution scenarios, db left to the users of the class. 
+ * 
+ * There are two main methods of the class:
+ * 
+ * 1) getAggregationPipeline: Creates a pipeline which can be executed by MongoDB. The pipeline 
+ * can be customized, please see its description. 
+ *  
+ * 2) getProcessedResult: Processes the aggregation result. Returns an object, which is ready to be 
+ * served as a response directly.
+ */
+class DataTable {
+
+    /**
+     * Constructor
+     * @param {Object} queryString This object should contain the datatable arguments like iDisplayStart,
+     * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
+     * use-case, please make sure that the object has necessary fields.
+     * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
+     * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
+     * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
+     * @param {Object} options Wraps options
+     * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
+     * specify a column list in order to make it work (e.g. ["name", "status"]). 
+     * @param {Object} options.defaultSorting When there is no sorting provided in query string, sorting 
+     * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
+     * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
+     * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
+     * search is performed on searchableFields. Other values will be considered as hard match.
+     * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
+     * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
+     * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
+     * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
+     * @param {Boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
+     * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
+     * a protection for cases when the sorting is done based on non-unique fields. Injection is enabled by default.
+     * If you want to disable this feature, pass true.
+     */
+    constructor(queryString, {
+        columnOrder = [],
+        defaultSorting = null,
+        searchableFields = [],
+        searchStrategy = "regex",
+        outputProjection = null,
+        defaultOutputFormat = "full",
+        uniqueKey = "_id",
+        disableUniqueSorting = false
+    } = {}) {
+        this.queryString = queryString;
+        this.skip = null;
+        this.limit = null;
+        this.searchTerm = null;
+        this.sorting = null;
+        this.echo = "0";
+        //
+        this.columnOrder = columnOrder;
+        this.defaultSorting = defaultSorting;
+        this.searchableFields = searchableFields;
+        this.searchStrategy = searchStrategy;
+        this.outputProjection = outputProjection;
+        this.defaultOutputFormat = defaultOutputFormat;
+        this.uniqueKey = uniqueKey;
+        this.disableUniqueSorting = disableUniqueSorting;
+        //
+        if (this.columnOrder && this.columnOrder.length > 0) {
+            if (this.queryString.iSortCol_0 && this.queryString.sSortDir_0) {
+                var sortField = this.columnOrder[parseInt(this.queryString.iSortCol_0, 10)];
+                if (sortField) {
+                    this.sorting = {[sortField]: this.queryString.sSortDir_0};
+                }
+            }
+        }
+
+        if (!this.sorting && this.defaultSorting) {
+            this.sorting = this.defaultSorting;
+        }
+
+        if (this.sorting) {
+            var _tempSorting = {};
+            for (var sortKey in this.sorting) {
+                if (this.sorting[sortKey] === "asc") {
+                    _tempSorting[sortKey] = 1;
+                }
+                else {
+                    _tempSorting[sortKey] = -1;
+                }
+            }
+            if (this.disableUniqueSorting !== true && !_tempSorting[this.uniqueKey]) {
+                _tempSorting[this.uniqueKey] = 1;
+            }
+            this.sorting = _tempSorting;
+        }
+
+        if (this.queryString.iDisplayStart) {
+            this.skip = parseInt(this.queryString.iDisplayStart, 10);
+        }
+
+        if (this.queryString.iDisplayLength) {
+            this.limit = parseInt(this.queryString.iDisplayLength, 10);
+        }
+
+        if (this.queryString.sSearch && this.queryString.sSearch !== "") {
+            this.searchTerm = this.queryString.sSearch;
+        }
+
+        if (this.queryString.sEcho) {
+            this.echo = this.queryString.sEcho;
+        }
+    }
+
+    /**
+     * Returns the search field for. Only for internal use.
+     * @returns {Object|String} Regex object or search term itself
+     */
+    _getSearchField() {
+        if (this.searchStrategy === "regex") {
+            return {$regex: this.searchTerm, $options: 'i'};
+        }
+        return this.searchTerm;
+    }
+
+    /**
+     * Creates an aggregation pipeline based on the query string and additional stages/facets
+     * if provided any. Data flow between stages are not checked, so please do check manually.
+     * 
+     * @param {Object} options Wraps options
+     * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
+     * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
+     * Initial pipeline is basically used for counting the total number of documents without pagination and search.
+     * 
+     * # of output rows = total number of docs.
+     * 
+     * @param {Array} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
+     * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
+     * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
+     * 
+     * # of output rows = filtered number of docs.
+     * 
+     * @param {Object} options.customFacets You can add facets to your results using option.customFacets. 
+     * Custom facets will use initial pipeline's output as its input. If the documents you're 
+     * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
+     * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be 
+     * available when the output format is "full".
+     * 
+     * @returns {Object} Pipeline object
+     */
+    getAggregationPipeline({
+        initialPipeline = [],
+        filteredPipeline = [],
+        customFacets = {}
+    } = {}) {
+        var pipeline = [...initialPipeline]; // Initial pipeline (beforeMatch)
+        var $facetPagedData = [];
+        var $facetFilteredTotal = [];
+
+        if (this.searchTerm !== null && this.searchableFields && this.searchableFields.length > 0) {
+            var matcher = null;
+            if (this.searchableFields.length === 1) {
+                matcher = { [this.searchableFields[0]]: this._getSearchField() };
+            }
+            else {
+                var searchOr = [];
+                this.searchableFields.forEach((field) => {
+                    searchOr.push({ [field]: this._getSearchField() });
+                });
+                matcher = { $or: searchOr};
+            }
+            $facetPagedData.push({$match: matcher});
+            $facetFilteredTotal.push({$match: matcher});
+        }
+        $facetPagedData.push(...filteredPipeline);
+        $facetFilteredTotal.push(...filteredPipeline); // TODO: optimize (no need to do pipeline operations unless there is match) 
+        $facetFilteredTotal.push({$group: {"_id": null, "value": {$sum: 1}}});
+        if (this.sorting !== null) {
+            $facetPagedData.push({$sort: this.sorting});
+        }
+        if (this.skip !== null) {
+            $facetPagedData.push({$skip: this.skip});
+        }
+        if (this.limit !== null && this.limit > 0) {
+            $facetPagedData.push({$limit: this.limit});
+        }
+        if (this.outputProjection !== null) {
+            $facetPagedData.push({$project: this.outputProjection});
+        }
+        pipeline.push({
+            $facet:
+            {
+                ...customFacets,
+                fullTotal: [{$group: {"_id": null, "value": {$sum: 1}}}],
+                filteredTotal: $facetFilteredTotal,
+                pagedData: $facetPagedData,
+            }
+        });
+        return pipeline;
+    }
+
+    /**
+     * Processes the aggregation result and returns a ready-to-use response.
+     * @param {Object} queryResult Aggregation result returned by the MongoDB.
+     * @param {Function} processFn A callback function that has a single argument 'rows'.
+     * As the name implies, it is an array of returned rows. The function can be used as
+     * a final stage to do modifications to fetched items before completing the response. 
+     * @returns {Object|Array} Returns the final response
+     */
+    getProcessedResult(queryResult, processFn) {
+        var fullTotal = 0,
+            filteredTotal = 0,
+            pagedData = [];
+
+        var customFacetResults = {};
+
+        if (queryResult && queryResult[0]) {
+            var facets = queryResult[0];
+            if (facets.fullTotal && facets.fullTotal[0] && facets.fullTotal[0].value) {
+                fullTotal = facets.fullTotal[0].value;
+            }
+            if (facets.filteredTotal && facets.filteredTotal[0] && facets.filteredTotal[0].value) {
+                filteredTotal = facets.filteredTotal[0].value;
+            }
+            if (facets.pagedData) {
+                pagedData = facets.pagedData;
+            }
+
+            for (var key in facets) {
+                if (["fullTotal", "filteredTotal", "pagedData"].includes(key)) {
+                    continue;
+                }
+                customFacetResults[key] = facets[key];
+            }
+
+        }
+        if (processFn) {
+            var processed = processFn(pagedData);
+            if (processed) {
+                pagedData = processed;
+            }
+        }
+
+        var outputFormat = this.queryString.outputFormat || this.defaultOutputFormat;
+
+        if (outputFormat === "full") {
+            var outputObject = {
+                sEcho: this.echo,
+                iTotalRecords: fullTotal,
+                iTotalDisplayRecords: filteredTotal,
+                aaData: pagedData
+            };
+            return {...outputObject, ...customFacetResults};
+        }
+        else {
+            return pagedData;
+        }
+    }
+}
+
+common.DataTable = DataTable;
 
 module.exports = common;

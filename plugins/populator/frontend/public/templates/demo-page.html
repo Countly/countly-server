@@ -267,7 +267,8 @@
     Countly.q = Countly.q || [];
 
     // Provide your app key that you retrieved from Countly dashboard
-    Countly.app_key = document.location.href.split("/")[3];
+    var parts = document.location.href.split("/");
+    Countly.app_key = parts[parts.length - 2];
 
     // Provide your server IP or name. Use try.count.ly for EE trial server.
     // If you use your own server, make sure you have https enabled if you use

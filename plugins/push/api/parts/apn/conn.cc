@@ -197,6 +197,7 @@ namespace apns {
 			conn_async->data = this;
 			uv_async_send(conn_async);
 
+
 			uv_sem_wait(tcp_init_sem);
 
 			if (tcp_init_sem) {
@@ -314,7 +315,9 @@ namespace apns {
 		}
 
 		auto item = obj->addresses.begin();
-		std::advance(item, std::rand() % (obj->addresses.size() - 1));
+		if (obj->addresses.size() > 1) {
+			std::advance(item, std::rand() % (obj->addresses.size() - 1));
+		}
 		auto str = item->first;
 		struct addrinfo *i_addrinfo = obj->addresses[str]; 
 		LOG_DEBUG("CONN " << uv_thread_self() << ": connecting to " << obj->hostname << " (" << str << ") in " << uv_thread_self());
@@ -333,7 +336,11 @@ namespace apns {
 
 		int val = 1;
 
+#ifdef SOCK_NONBLOCK
 		obj->fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+#else
+		obj->fd = socket(AF_INET, SOCK_STREAM, 0);
+#endif
 		LOG_DEBUG("CONN " << uv_thread_self() << ": socket " << obj->fd);
 		if (obj->fd == -1) {
 			std::ostringstream out;
@@ -908,10 +915,10 @@ namespace apns {
 		
 		nghttp2_session_callbacks_set_send_callback(callbacks, [](nghttp2_session *session, const uint8_t *data, size_t length, int flags, void *user_data) -> ssize_t { 
 			H2* obj = (H2 *)user_data;
-			unsigned char *ch = (unsigned char *)data;
+			// unsigned char *ch = (unsigned char *)data;
 
 			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: send " << length << " bytes (now " << obj->buffer_out.size() << ")");
-			obj->buffer_out.insert(obj->buffer_out.end(), ch, ch + length);
+			obj->buffer_out.insert(obj->buffer_out.end(), data, data + length);
 
 			obj->conn_thread_uv_check_out(!(obj->stats.state & ST_CONNECTED));
 			// LOG_DEBUG("CONN " << uv_thread_self() << ": send_callback returns " << length);
@@ -1018,10 +1025,10 @@ namespace apns {
 			switch (frame->hd.type) {
 				case NGHTTP2_HEADERS:
 					h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, frame->hd.stream_id);
-					if (strncmp((const char *)name, ":status", MIN(namelen, 7)) == 0) {
+					if (strncmp((const char *)name, ":status", namelen < 7 ? namelen : 7) == 0) {
 						std::string status_string((const char *)value, valuelen);
 						try {
-							int status = std::atoi(status_string.c_str());
+							int status = std::stoi(status_string);
 							if (status != 200 && status != 410) {
 								LOG_DEBUG("CONN " << stream->id << " returned " << status);
 							}
@@ -1029,7 +1036,7 @@ namespace apns {
 								status = -200;
 							}
 							stream->status = status;
-						} catch (const std::invalid_argument &e) {
+						} catch (const std::exception &e) {
 							stream->status = -1;
 						}
 
@@ -1218,8 +1225,8 @@ namespace apns {
 			}
 			if (rv < 0) {
 				std::ostringstream out;
-				// out << "H2: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
-				LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
+				out << "CONN: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
+				LOG_ERROR(out.str());
 				send_error(out.str());
 				conn_thread_stop();
 				return;
@@ -1343,7 +1350,7 @@ namespace apns {
 					if (rv < 0) {
 						std::ostringstream out;
 						out << "H2: Couldn't submit nghttp2_session_mem_send in transmit: " << nghttp2_strerror(rv);
-						LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
+						LOG_ERROR(out.str());
 						send_error(out.str());
 						conn_thread_stop();
 						return;

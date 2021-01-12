@@ -150,6 +150,24 @@ window.component('push.dash', function (dash) {
                 },
                 fnRowCallback: function (nRow, aData) {
                     $(nRow).attr('mid', aData._id());
+                    $(nRow).find('.x-aborted').tooltipster({
+                        animation: 'fade',
+                        animationDuration: 100,
+                        delay: 100,
+                        maxWidth: 240,
+                        theme: 'tooltipster-borderless',
+                        trigger: 'custom',
+                        triggerOpen: {
+                            mouseenter: true,
+                            touchstart: true
+                        },
+                        triggerClose: {
+                            mouseleave: true,
+                            touchleave: true
+                        },
+                        interactive: true,
+                        contentAsHTML: true
+                    });
                 },
                 aoColumns: [
                     { mData: function(x){ 
@@ -158,6 +176,9 @@ window.component('push.dash', function (dash) {
 
                     tableName === 'dtable' ? {
                         mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
+                            if (result.result.isAborted()) {
+                                return '<span class="x-aborted" title="' + t('push.message.status.aborted.tt') + '"><span>' + t('push.message.status.aborted') + '</span>&nbsp;<i class="ion-information-circled"></i></span>';
+                            }
                             var s = result.result.status(),
                                 override;
                             if (PUSH.statusers) {
@@ -248,6 +269,7 @@ window.component('push.dash', function (dash) {
                     message = self.messages().find(function (m) { return m._id() === id; });
                 if (id) {
                     $('.message-menu').find('.view-recipients').data('id', id);
+                    $('.message-menu').find('.resend').data('id', id);
                     $('.message-menu').find('.duplicate-message').data('id', id);
                     $('.message-menu').find('.resend-message').data('id', id);
                     $('.message-menu').find('.edit-message').data('id', id);
@@ -284,9 +306,23 @@ window.component('push.dash', function (dash) {
                     }
                     components.push.popup.show(json, true);
                 } else if ($(data.target).hasClass('resend-message') && message) {
-                    var json = message.toJSON(false, true, true);
-                    var cond = json.userConditions || (json.userConditions = {});
-                    cond.message = {$nin: [message._id]};
+                    var json = message.toJSON(false, true, true),
+                        uc = json.userConditions,
+                        add = {message: {$nin: [message._id()]}};
+                    if (!uc) {
+                        uc = add;
+                    } else {
+                        if (typeof uc === 'string') {
+                            uc = JSON.parse(json.userConditions);
+                        }
+                        if (uc.$and) {
+                            uc.$and.push(add);
+                        } else {
+                            uc.message = add.message;
+                        }
+                    }
+                    json.userConditions = JSON.stringify(uc);
+
                     if (!message.active) {
                         delete json.date;
                     }
@@ -539,6 +575,18 @@ window.component('push.dash', function (dash) {
                 .concat(props)
                 .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
                 .concat(custom);
+    };
+
+    dash.getTokenName = function(token) {
+        return token ? t('pu.tk.' + token.substr(2)) : token;
+    };
+
+    dash.getTokenTypes = function() {
+        return ["tkip", "tkia", "tkid", "tkap", "tkat"];
+    };
+
+    dash.getTokenNames = function() {
+        return dash.getTokenTypes().map(dash.getTokenName);
     };
 });
 

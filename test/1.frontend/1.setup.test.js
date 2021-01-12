@@ -1,5 +1,6 @@
 var request = require('supertest');
 var should = require('should');
+var plugins = require("../../plugins/pluginManager");
 var testUtils = require("../testUtils");
 var agent = request.agent(testUtils.url);
 

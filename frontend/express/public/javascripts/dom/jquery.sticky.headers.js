@@ -13,9 +13,10 @@
         }
         else {
             base.stickyHeader = $('<div></div>').addClass('sticky-header hide');
-            base.headerCellHeight = $(headerCells[0]).height();
         }
-		
+
+		base.headerCellHeight = headerCells[0] && $(headerCells[0]).height();
+
 		base.init = function () {
 			base.table = $(el);
 			var theadClone = base.table.find('thead').clone(true);
@@ -98,7 +99,9 @@
 	
 	$.fn.stickyTableHeaders = function () {
 		var self = this;
-		return (function(){setTimeout(function(){(new $.StickyTableHeaders(self))}, 2000);})();
+		//SetTimeout is added specifically for the cases where the data table is loaded using ajax
+		//If the response time exceeds 1 second, sticky header is buggy
+		return (function(){setTimeout(function(){(new $.StickyTableHeaders(self))}, 1000);})();
 	};
 
 })(jQuery);

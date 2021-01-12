@@ -6,6 +6,7 @@
 /** @lends module:api/parts/data/fetch */
 var fetch = {},
     common = require('./../../utils/common.js'),
+    moment = require('moment-timezone'),
     async = require('async'),
     countlyModel = require('../../lib/countly.model.js'),
     countlySession = countlyModel.load("users"),
@@ -84,9 +85,8 @@ fetch.fetchEventData = function(collection, params) {
 
     common.db.collection(collection).findOne({_id: idToFetch}, fetchFields, function(err, result) {
         if (err || !result) {
-            var now = new common.time.Date();
             result = {};
-            result[now.getFullYear()] = {};
+            result[moment().year()] = {};
         }
 
         common.returnOutput(params, result);
@@ -131,22 +131,41 @@ fetch.fetchEventGroups = function(params) {
 /**
 * The return the merged event data for event groups.
 * @param {Object} params - params object
-* @param {string} params._id - The id of the event group.
 **/
 fetch.fetchMergedEventGroups = function(params) {
-    const COLLECTION_NAME = "event_groups";
     const {qstring: {event}} = params;
+    fetch.getMergedEventGroups(params, event, {}, function(result) {
+        common.returnOutput(params, result);
+    });
+};
+
+
+/**
+* The return the merged event data for event groups.
+* @param {params} params - params object with app_id and date
+* @param {string} event - id of event group
+* @param {object=} options - additional optional settings
+* @param {object=} options.db - database connection to use, by default will try to use common.db
+* @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+* @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+* @param {object=} options.levels - describes which metrics to expect on which levels
+* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+*/
+fetch.getMergedEventGroups = function(params, event, options, callback) {
+    const COLLECTION_NAME = "event_groups";
     common.db.collection(COLLECTION_NAME).findOne({_id: event}, function(error, result) {
         if (error || !result) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
         }
-        let options = {};
+        options = options || {};
         options.event_groups = true;
         // options.segmentation = result.segments;
 
         fetch.getMergedEventData(params, result.source_events, options, function(resultMergedEvents) {
-            common.returnOutput(params, resultMergedEvents);
+            callback(resultMergedEvents);
         });
     });
 };
@@ -266,6 +285,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                     }
                 }
             }
+
             meta = allEventData.map(x => x.meta).reduce((acc, x) => {
                 for (var key in x) {
                     if (acc[key]) {
@@ -277,6 +297,11 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                 }
                 return acc;
             }, {});
+
+            //make meta with unique values only
+            for (let i in meta) {
+                meta[i] = [...new Set(meta[i])];
+            }
 
             /*const createSegmentsForMergedEvents = (dummyMeta, sourceSegments)=>{
                 for (const segment in dummyMeta) {
@@ -335,6 +360,12 @@ fetch.fetchCollection = function(collection, params) {
                     }
                 }
             }
+            const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+            result.limits = {
+                event_limit: pluginsGetConfig.event_limit,
+                event_segmentation_limit: pluginsGetConfig.event_segmentation_limit,
+                event_segmentation_value_limit: pluginsGetConfig.event_segmentation_value_limit,
+            };
         }
 
         common.returnOutput(params, result);
@@ -360,9 +391,8 @@ fetch.fetchTimeData = function(collection, params) {
 
     common.db.collection(collection).findOne({'_id': params.app_id}, fetchFields, function(err, result) {
         if (!result) {
-            let now = new common.time.Date();
             result = {};
-            result[now.getFullYear()] = {};
+            result[moment.year()] = {};
         }
 
         common.returnOutput(params, result);
@@ -1155,28 +1185,74 @@ fetch.fetchDataEventsOverview = function(params) {
         time: common.initTimeObj(params.qstring.timezone, params.qstring.timestamp)
     };
 
-    if (Array.isArray(params.qstring.events)) {
-        var data = {};
-        async.each(params.qstring.events, function(event, done) {
-            var collectionName = "events" + crypto.createHash('sha1').update(event + params.qstring.app_id).digest('hex');
-            fetch.getTimeObjForEvents(collectionName, ob, function(doc) {
-                countlyEvents.setDb(doc || {});
-                var my_line1 = countlyEvents.getNumber("c");
-                var my_line2 = countlyEvents.getNumber("s");
-                var my_line3 = countlyEvents.getNumber("dur");
-                data[event] = {};
-                data[event].data = {
-                    "count": my_line1,
-                    "sum": my_line2,
-                    "dur": my_line3
-                };
-                done();
-            });
-        },
-        function() {
-            common.returnOutput(params, data);
-        });
+    var map = {};
+    for (var k in params.qstring.events) {
+        map[params.qstring.events[k]] = {"key": params.qstring.events[k]};
     }
+
+    //get eventgroups information(because we dont know which is what)
+    common.db.collection("event_groups").find({"_id": {"$in": params.qstring.events}}).toArray(function(err, eventgroups) {
+        if (err) {
+            console.log(err);
+        }
+        for (var n = 0; n < eventgroups.length; n++) {
+            map[eventgroups[n]._id] = {key: eventgroups[n]._id, is_event_group: true, source_events: eventgroups[n].source_events};
+        }
+
+        var events = [];
+        for (var z in map) {
+            events.push(map[z]);
+        }
+
+        if (Array.isArray(params.qstring.events)) {
+            var data = {};
+            async.each(events, function(event, done) {
+                if (event.is_event_group) {
+                    data[event.key] = {};
+                    let options = {};
+                    options.event_groups = true;
+                    // options.segmentation = result.segments;
+                    fetch.getMergedEventData(params, event.source_events, options, function(resultMergedEvents) {
+                        countlyEvents.setDb(resultMergedEvents || {});
+                        var my_line1 = countlyEvents.getNumber("c");
+                        var my_line2 = countlyEvents.getNumber("s");
+                        var my_line3 = countlyEvents.getNumber("dur");
+
+                        data[event.key] = {};
+                        data[event.key].data = {
+                            "count": my_line1,
+                            "sum": my_line2,
+                            "dur": my_line3
+                        };
+
+                        done();
+                    });
+                }
+                else {
+                    var collectionName = "events" + crypto.createHash('sha1').update(event.key + params.qstring.app_id).digest('hex');
+                    fetch.getTimeObjForEvents(collectionName, ob, function(doc) {
+                        countlyEvents.setDb(doc || {});
+                        var my_line1 = countlyEvents.getNumber("c");
+                        var my_line2 = countlyEvents.getNumber("s");
+                        var my_line3 = countlyEvents.getNumber("dur");
+                        data[event.key] = {};
+                        data[event.key].data = {
+                            "count": my_line1,
+                            "sum": my_line2,
+                            "dur": my_line3
+                        };
+                        done();
+                    });
+                }
+            },
+            function() {
+                common.returnOutput(params, data);
+            });
+        }
+        else {
+            common.returnOutput(params, {});
+        }
+    });
 };
 
 /**
@@ -1971,7 +2047,7 @@ fetch.fetchJobs = async function(metric, params) {
 fetch.alljobs = async function(metric, params) {
     const columns = ["name", "schedule", "next", "finished", "status", "total"];
     let sort = {};
-    let total = await common.db._native.collection('jobs').aggregate([
+    let total = await common.db.collection('jobs').aggregate([
         {
             $group: { _id: "$name" }
         },
@@ -2003,7 +2079,7 @@ fetch.alljobs = async function(metric, params) {
             $match: {name: {$regex: new RegExp(params.qstring.sSearch, "i")}}
         });
     }
-    const cursor = common.db._native.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
+    const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);
     cursor.skip(Number(params.qstring.iDisplayStart || 0));
@@ -2025,7 +2101,7 @@ fetch.alljobs = async function(metric, params) {
 fetch.jobDetails = async function(metric, params) {
     const columns = ["schedule", "next", "finished", "status", "data", "duration"];
     let sort = {};
-    const cursor = common.db._native.collection('jobs').find({name: params.qstring.name});
+    const cursor = common.db.collection('jobs').find({name: params.qstring.name});
     const total = await cursor.count();
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
     cursor.sort(sort);

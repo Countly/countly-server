@@ -4,6 +4,7 @@ const pluginManager = require('../../pluginManager.js');
 const PromiseB = require("bluebird");
 const async = require("async");
 const _ = require('underscore');
+const moment = require('moment-timezone');
 
 (function(assistant) {
     const db_name_notifs = "assistant_notifs";
@@ -427,25 +428,6 @@ const _ = require('underscore');
         }
     };
 
-    /**
-     * @param {database} givenDb db link
-     * @param {function} callback callback
-     */
-    function checkIfDbOpened(givenDb, callback) {
-        if (givenDb.isOpen()) {
-            callback();
-        }
-        else {
-            givenDb._emitter.once('open', function(err) {
-                if (!_.isUndefined(err) && err !== null) {
-                    log.e('Failure in checkIfDbOpened, err:[%j]', err);
-                }
-                log.e('Trying to pass "null" dataBatch in doNotificationShowAmountUpdateBulk');
-                callback();
-            });
-        }
-    }
-
     const doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback) {
         //log.d('About to do doNotificationShowAmountUpdateBulk');
 
@@ -467,21 +449,18 @@ const _ = require('underscore');
             return;
         }
 
-        checkIfDbOpened(db, function() {
-            const nativeDb = db._native;
-            nativeDb.collection(db_name_config, {}, function(err, collection) {
-                const bulk = collection.initializeUnorderedBulkOp();
+        db.collection(db_name_config, {}, function(err, collection) {
+            const bulk = collection.initializeUnorderedBulkOp();
 
-                dataBatch.forEach(function(batchElem) {
-                    bulk.find({_id: batchElem.appID}).upsert().update({$inc: batchElem.updateQuery});
-                });
+            dataBatch.forEach(function(batchElem) {
+                bulk.find({_id: batchElem.appID}).upsert().update({$inc: batchElem.updateQuery});
+            });
 
-                bulk.execute(function(errCheckDbOpened, resCheckDbOpened) {
-                    log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', errCheckDbOpened, resCheckDbOpened);
-                    if (callback !== null) {
-                        callback(errCheckDbOpened, resCheckDbOpened);
-                    }
-                });
+            bulk.execute(function(errCheckDbOpened, resCheckDbOpened) {
+                log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', errCheckDbOpened, resCheckDbOpened);
+                if (callback !== null) {
+                    callback(errCheckDbOpened, resCheckDbOpened);
+                }
             });
         });
     };
@@ -613,12 +592,6 @@ const _ = require('underscore');
                         });
                     },
                     function(seriesCallback) {
-                        log.d('Waiting for db connection');
-                        checkIfDbOpened(countlyDb, function() {
-                            seriesCallback();
-                        });
-                    },
-                    function(seriesCallback) {
                         insertNotificationBulk(countlyDb, responseBatchData.newNotifications, function(err_insert) {
                             if (!_.isUndefined(err_insert) && err_insert !== null) {
                                 log.e("insertNotificationBulk, err:[%j]", err_insert);
@@ -675,17 +648,14 @@ const _ = require('underscore');
         apc.is_mobile = appData.type === "mobile";//check if app type is mobile or web
 
         //set the current time info based on the apps timezone
-        apc.dateNow = new Date();//get current day and time
-        try {
-            apc.dateNow.setTimezone(apc.appTimezone);
-        }
-        catch (ex) {
-            log.w('Assistant plugin got exception while trying to set timezone [%j]', { message: ex.message, stack: ex.stack });
+        apc.dateNow = moment();//get current day and time
+        if (apc.appTimezone) {
+            apc.dateNow.tz(apc.appTimezone);
         }
 
-        apc.hour = apc.dateNow.getHours();
-        apc.minutes = apc.dateNow.getMinutes();
-        apc.dow = apc.dateNow.getDay();
+        apc.hour = apc.dateNow.hour();
+        apc.minutes = apc.dateNow.minute();
+        apc.dow = apc.dateNow.day();
         if (apc.dow === 0) {
             apc.dow = 7;
         }

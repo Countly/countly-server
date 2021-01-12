@@ -376,6 +376,10 @@
     padding-left: 5px;
 }
 
+.plugins #plugins-table tr.dirty {
+    background-color: #fbffc4;
+}
+
 .user-config-danger-zone {
     margin-top: 25px;
     

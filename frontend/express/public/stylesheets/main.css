@@ -663,9 +663,9 @@ div.datatablesubrow {display: none;}
         border: 1px solid #243544;
     }
     #date-selector .calendar-block span.date-input-label {float: right; display: inline-block; text-transform: uppercase; color: #d2d2d1; margin-top:11px; font: 12px Ubuntu,Helvetica,sans-serif;}
-    #date-picker, .date-picker { white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
-	#date-picker .calendar-container, .date-picker .calendar-container { overflow:auto; padding:10px 5px; margin-right:200px; }
-	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar { vertical-align: top; margin-bottom:10px; }
+    #date-picker, .date-picker, .date-picker-ext-wrapper{ white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#0b131a; border-radius:2px; right: 2px; top: 41px; }
+	#date-picker .calendar-container, .date-picker .calendar-container, .date-picker-ext-wrapper .calendar-container { overflow:auto; padding:10px 5px; margin-right:200px; }
+	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar, .date-picker-ext-wrapper .calendar-container .calendar { vertical-align: top; margin-bottom:10px; }
     #date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
 	#date-picker .button-container { overflow:auto; position:absolute; right: 20px; bottom: 15px;}
     #date-picker .button-container .icon-button { display: inline-block; padding: 7px 10px; float: right }
@@ -767,6 +767,59 @@ div.datatablesubrow {display: none;}
 .calendar-light .ui-datepicker-calendar tbody,
 .calendar-light .ui-datepicker-inline table tbody { border-color:#CCC; }
 .calendar-light .ui-widget-header { color:#000; }
+
+
+.datepicker-extended{
+    display: inline-block;
+}
+
+.datepicker-extended.datepicker-range .in-range a {
+    background: rgba(46, 167, 50, 0.6);
+    border-radius: 2px;
+    margin: 1px;
+    padding: 4px;
+  }
+  
+  .datepicker-extended.datepicker-range .point a{
+    background-color: #2FA732;
+    color: #FFF;
+    text-shadow: none;
+    background-image: none;
+    margin: 1px;
+    padding: 4px;
+    border-radius: 2px;
+  }
+  .datepicker-extended .text-fields input {
+        height: 19px;
+        background-color: #0b131a;
+        color: white;
+        border: 1px solid #979797;
+        margin-bottom: 4px;
+        font-family: 'Ubuntu';
+        border-radius: 2px;
+        font-size: 12px;
+        padding: 4px 7px;
+    }
+    .datepicker-extended .text-fields input.focused {
+        background-color: #22232b;
+        border-color: #2EB52B;
+    }
+    .datepicker-extended .text-fields{
+        background-color: #0b131a;
+    }
+    .datepicker-extended .text-fields .input-0 {
+        width: 194px;
+      }
+      .datepicker-extended.datepicker-range .text-fields .input-0,
+      .datepicker-extended.datepicker-range .text-fields .input-1 {
+            width: 82px;
+        }
+    .datepicker-extended.datepicker-range .text-fields .input-0 {
+        margin-right: 7px;
+      }
+      .datepicker-extended.datepicker-range .text-fields .input-1 {
+          margin-left: 7px;
+        }
 /* DATEPICKER END */
 
 /* FORMS */
@@ -908,7 +961,7 @@ div.datatablesubrow {display: none;}
 .cly-multi-select.disabled { opacity: 0.4 !important; cursor: default; }
 
 body .selectize-control.multi .selectize-input input { height: 18px; }
-body .selectize-control.multi .selectize-input, body .selectize-control.multi .selectize-input.has-items { position:relative; background-color:#FDFDFD; user-select:none; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:pointer; }
+body .selectize-control.multi .selectize-input, body .selectize-control.multi .selectize-input.has-items { position:relative; background-color:#FDFDFD; user-select:none; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:text; }
 body .selectize-control.multi .selectize-input > div { font-family: Ubuntu,sans-serif; line-height: 14px; border-radius: 2px; background-color: #777; color:#f1f1f1; padding:3px 19px 3px 10px; margin: 0 5px 2px 0; font-size: 12px; }
 body .selectize-control.multi .selectize-input > div:hover { background-color: #5a5a5a; color: #f1f1f1; cursor: default; }
 body .selectize-control.multi .selectize-input > div.active { background-color: #777; color: #f1f1f1; cursor: default; }
@@ -1371,6 +1424,143 @@ margin: 50px 0;}
 .export-dialog .export-data {width: 100%; margin:0px auto; padding-left:0px; padding-right:0px; text-align: center; height:30px;}
 #export-type-selector {width: 100%; float: none; margin:0px auto;  margin-bottom: 10px; height:30px;}
 #export-type-selector .button {width: 33%; text-align: center;}
+.export-dialog .export-columns-selector {
+    overflow:hidden;
+    margin: 0 -15px 10px -15px;
+    display:none;    
+}
+.export-columns-selector .export-columns-search {
+	padding: 7px 15px;
+    border-top: 1px solid #D0D0D0;
+	background-color: #fbfbfb;
+}
+
+.export-columns-selector .export-columns-search table, .data-table-column-selector .export-columns-search table{
+	width:100%;
+	margin:0px;
+}
+ .data-table-column-selector .export-columns-search table td{
+	padding:0px;
+	width:auto;
+	
+ }
+ 
+ .data-table-column-selector .export-columns-search table td:nth-child(1){
+	 padding-right:10px;
+ }
+
+.data-table-column-selector .export-columns-search{
+	padding: 7px 15px;
+    border-bottom: 1px solid #D0D0D0;
+	background-color: #fbfbfb;
+}
+.export-columns-selector .export-columns-search i, .data-table-column-selector .export-columns-search i{
+	font-size: 15px;
+    color: #BBB;
+	line-height:15px;
+	position:relative;
+	top:2px;
+}
+
+.export-columns-selector .export-columns-search td:nth-child(2) {
+	width:13px;
+	
+}
+.export-columns-selector .export-columns-search input, .data-table-column-selector .export-columns-search input {
+	border: none;
+	background-color: #fffff;
+	width:100%;
+	border-radius:2px;
+	color:#6B6B6B;
+	padding: 0 4px;
+	height: 27px;
+}
+
+.export-columns-selector .export-columns-search input::placeholder, .data-table-column-selector .export-columns-search input::placeholder {
+  color: #dddddd;
+}
+
+.export-dialog .columns-height-wrapper {
+    height: 240px;
+    border-bottom: 1px solid #D0D0D0;
+}
+.export-dialog .export-columns-selector  p, .export-dialog .export-format-option{
+    font-size:12px;
+    color:#6b6b6b;
+    padding:7px 15px;
+    font-weight: normal;   
+}
+
+.export-dialog .export-columns-selector  p:first-child{
+    font-size:13px;
+    padding-bottom:0px;
+	margin-top:4px;
+	
+}
+.export-dialog .export-columns-selector  p:nth-child(even){
+	cursor:pointer;
+}
+.export-dialog .export-columns-selector  p:nth-child(even):hover {
+	color:#444444;
+}
+.export-dialog .export-columns-selector  p:nth-child(even) a{
+	position: relative;
+    top: 2px;
+}
+.export-dialog .export-columns-selector  p:first-child span {
+	float:right;
+}
+
+.export-dialog .export-columns-selector .columns-wrapper {
+    border-top:1px solid #D0D0D0;
+	background-color:#FBFBFB;
+    
+}
+.export-dialog .export-columns-selector p .check-green, .export-dialog .export-format-option .check-green {
+    margin-right: 10px;
+}
+.export-dialog .export-format-option{
+	margin: 0 -20px 10px -15px;
+	cursor:pointer;
+	font-size:12px;
+	display:none;
+}
+.export-dialog .export-format-option span {
+	position:relative;
+	top:-2px;
+}
+
+.export-dialog .export-format-option i{
+	color:  #cccccc;
+	font-size: 14px;
+	margin-left: 5px;
+	top:-1px;
+	position:relative;
+	
+}
+.export-dialog .export-columns-selector .columns-wrapper div{
+    font-size:12px;
+    color:#6b6b6b;
+    padding:7px 15px;
+    cursor:pointer;
+}
+.export-dialog .export-columns-selector .columns-wrapper div:hover {
+	color:#444444;
+}
+.export-dialog .export-columns-selector .columns-wrapper div div {
+    display: inline-block;
+    margin-right: 10px;
+    padding:0px;
+	position:relative;
+	top:2px;
+}
+
+.export-dialog .hide-column-selectors .columns-height-wrapper{
+    display: none;
+}
+.export-dialog .hide-column-selectors .export-columns-search{
+	display:none;
+}
 /* EXPORT END */
 
 .cly-button-group .icon-button { border-radius:0; margin:0; border-left:none; }
@@ -2144,14 +2334,15 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     width: 230px;
 }
 .date-picker-component .date-value { cursor: pointer }
-.date-picker-component .date-picker {
+.date-picker-component .date-picker,
+.date-picker-component .date-picker-ext-wrapper{
     padding: 0;
     right: 0;
     top: 33px;
     border: 1px solid #d0d0d0;
     background-color: #ffffff;
 }
-.date-picker-component .date-picker .calendar-container { padding: 14px }
+.date-picker-component .date-picker .calendar-container, .date-picker-component .date-picker-ext-wrapper .calendar-container { padding: 14px }
 .date-picker-component .string-input {
     margin: 0;
     outline: none;
@@ -2163,14 +2354,36 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     font: 13px Ubuntu,Helvetica,sans-serif;
     line-height: 111%;
 }
-.date-picker-component .date-picker {
+.date-picker-component .date-picker, .date-picker-component .date-picker-ext-wrapper {
     padding: 0;
     right: 0;
     top: 33px;
     border: 1px solid #d0d0d0;
     background-color: #ffffff;
 }
-.date-picker-component .date-picker .calendar-container {
+
+.date-picker-component.extended .date-picker-ext-wrapper {
+    background-color: #0b131a;
+    display: block;
+    top: 0px;
+}
+
+.date-picker-component.extended:not(.collapsible){
+    height: 266px;
+    width: 240px;
+}
+
+.date-picker-component.extended:not(.collapsible) .date-picker-ext-wrapper{
+    border: none;
+}
+
+.date-picker-component.extended.collapsible .date-picker-ext-wrapper{
+    display: none;
+    top: 33px;
+}
+
+.date-picker-component .date-picker .calendar-container,
+.date-picker-component .date-picker-ext-wrapper .calendar-container {
     padding: 14px;
 }
 
@@ -2354,9 +2567,10 @@ h4 + .mgmt-plugins-row {
 
 .mgmt-plugins a.icon-button {
     float: right;
-    margin: 1em;
+    margin-right: 10px;
     position:relative;
-    top:-52px;
+    bottom: 4px;
+    color:#FFF;
 }
 
 .mgmt-plugins-row .selectize-input.items {
@@ -2401,6 +2615,171 @@ h4 + .mgmt-plugins-row {
 .report-manager-data-col.report-manager-automatically-created { width: 55%; }
 .report-manager-report-desc { color: #AAA; margin-top:5px;}
 .extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
+#report-manager-view .left {width:500px;}
+
+#top-bar .dropdown .manage-long-tasks-menu {
+	background-color:#e9e9e9;
+}
+.manage-long-tasks-menu .menu-category-title{
+	background-color:#e9e9e9;
+	color:#636363;
+	position: relative;
+	text-transform:uppercase;
+	text-align:left;
+}
+.manage-long-tasks-menu .menu-category-title p {
+	font-size:17px;
+	padding: 20px;
+	line-height:17px;
+	margin:0px;
+	
+} 
+.manage-long-tasks-menu .menu-category-title a.see-all {
+	font-size:13px;
+	position:absolute;
+	right: 10px;
+	top:20px;
+} 
+.manage-long-tasks-menu .menu-category-title a.see-all:hover {
+	cursor:pointer;
+}
+.manage-long-tasks-menu .tasks{
+	padding: 0px 20px;
+}
+.manage-long-tasks-menu .tasks-wrapper{
+	margin-bottom:3px;
+	background-color:#ffffff;
+}
+
+.manage-long-tasks-menu .tasks-wrapper .graph-description{
+	text-align: center;
+    vertical-align: middle;
+    line-height: 140px;
+	height:140px;
+}
+
+.manage-long-tasks-menu .tasks table{
+	width:100%;
+	
+}
+.manage-long-tasks-menu .tasks table td {
+	font-size: 12px;
+	color:#636363;
+	border-bottom: 1px solid #d0d0d0;
+	text-align:left;
+	padding: 15px 0 15px 0;
+	font-family: Ubuntu,Helvetica,sans-serif;
+	
+}
+
+.manage-long-tasks-menu .tasks table tr:last-child td {
+	border-bottom: none;
+}
+.manage-long-tasks-menu .tasks table p {
+		line-height: normal;
+    margin: 0px;
+    padding: 0 0 7px 0;
+}
+
+.manage-long-tasks-menu .tasks table p.title {
+	color:#1e1e1e;
+}
+.manage-long-tasks-menu .tasks table p span{
+	padding-left:8px
+}
+.manage-long-tasks-menu .tasks table tr.completed td:hover {
+	cursor: pointer;
+}
+
+.manage-long-tasks-menu .tasks .circle-arrow {
+    border-radius: 50%;
+    width: 12px;
+    height: 10px;
+    background-color: #e8e8e8;
+    font-size: 8px;
+    text-align: center;
+    padding-top: 2px;
+    padding-left: 1px;
+    color: #636363;
+    vertical-align: middle;
+	margin-left:6px;
+	margin-top:-3px;
+}
+
+.orange-side-notification-banner-wrapper{
+	position: absolute;
+    width: 500px;
+    right: 29px;
+    top: -7px;
+	display:none;
+}
+.orange-side-notification-banner {
+	position: relative;
+	border:1px solid #e3af79;
+	color: #ce8a43;
+	background-color:#fcf5ed;
+	padding: 7px;
+	font-size:12px;
+	border-radius: 2px;
+	float:right;
+	border-left:4px solid #e3af79;
+	
+}
+
+.orange-side-notification-banner:before {
+    border: 6px solid rgba(194, 225, 245, 0);
+    border-left-color: #e3af79;
+    right: -13px;
+    margin-left: -6px;
+    top: 8px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.orange-side-notification-banner:after {
+    border: 6px solid rgba(194, 225, 245, 0);
+    border-left-color: #fcf5ed;
+    right:-12px;
+    margin-left: -6px;
+    top: 8px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.manage-long-tasks-menu .tasks table tr:hover .title {
+	color:#2db52b;
+	cursor: pointer;
+}
+.manage-long-tasks-menu .tasks tr:hover .circle-arrow {
+	background-color:#2db52b;
+	color:#ffffff;
+}
+
+#top-bar .dropdown .manage-long-tasks-menu:before {
+    border-bottom-color: #e9e9e9;
+}
+
+#manage-long-tasks-icon {
+	position:relative;
+}
+#manage-long-tasks-icon.unread:after {
+    content: " ";
+    width: 4px;
+    height: 4px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-radius: 4px;
+    background-color: #FF8700;
+}
 
 .dashboard-summary .item .bar .bar-inner-new-e{
     font-size: 12px;
@@ -2706,7 +3085,7 @@ p.error_message_div {
     top: 41px;
     left: 2px;
     min-width: 280px;
-    max-height: 145px;
+    max-height: 212px;
     margin-left: 0px;
     background-color: #FFF;
     border-radius: 2px;
@@ -2717,7 +3096,7 @@ p.error_message_div {
     padding-top:46px;
 }
 .data-table-column-selector .slimScrollDiv {
-    height:145px !important;
+    height:170px !important;
 }
 .select-column-table-data.active +.data-table-column-selector{
     display:block;
@@ -3747,6 +4126,134 @@ p.error_message_div {
 .view-more:hover {
     color: #2FA732;
 }
+.cly-menu-component .menu-toggler{
+    cursor: pointer;
+    padding: 6px 9px;
+    padding-right: 25px;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #444;
+    font-weight: normal;
+    font: 13px Ubuntu,Helvetica,sans-serif;
+    line-height: 111%;
+}
+
+.cly-menu-component .menu-toggler .label-wrapper {
+    display: inline-block;
+}
+
+.cly-menu-component.empty .menu-toggler .label-wrapper{
+    color: #d0d0d0;
+    border-bottom: 1px dotted #444;
+}
+
+.cly-menu-component .menu-toggler .label-wrapper .text{
+    max-width: 181px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.cly-menu-component .menu-toggler .right {
+    opacity: 0.8;
+    right: auto;
+    position: absolute;
+    width: 8px;
+    height: 100%;
+    line-height: 27px;
+    margin-left: 18px;
+    margin-top: -6px;
+    display: inline-block;
+}
+
+.cly-menu-component .menu-toggler .right.combo:before {
+    color: #717171;
+    font-family: 'Ionicons';
+    content: "\f123";
+    font-size: 9px;
+    position: absolute;
+    right: 8px;
+}
+
+.cly-menu-component .menu-toggler:hover .right.combo:before{
+    color: #2fa732;
+}
+
+.cly-menu-component.shown .menu-toggler .right.combo:before{
+    content: "\f126";
+    color: #2fa732;
+}
+
+.cly-menu-component .menu-toggler:hover {
+    color: #2FA732;
+}
+
+.cly-menu-component .menu-content{
+    position: absolute;
+    /*border: 1px solid #D0D0D0;*/
+}
+
+.cly-menu-component .menu-content::before {
+    border: 6px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #0b131a;
+    right: 9px;
+    top: -12px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.event-remind-tooltip {
+    height: 40px;
+    background-color: #fcf5ed;
+    margin-bottom: 10px;
+    display: none;
+    border: 1px solid #e3af7f;
+    border-radius: 2px;
+}
+
+.event-remind-tooltip:last-of-type {
+    margin-bottom: 20px;
+}
+
+.event-remind-tooltip .content {
+    font-size: 14px;
+    color: #e3af7f;
+    display: flex;
+    align-items: center;
+}
+
+.event-remind-tooltip .content .prefix {
+    width: 5px;
+    background: #e3af7f;
+    height: 40px;
+}
+
+.event-remind-tooltip .content .remind-context {
+    margin-left: 10px;
+    flex-grow: 1;
+}
+
+.event-remind-tooltip .content .remind-context a{
+    text-decoration: underline;
+}
+
+.event-remind-tooltip .content .remind-context a:hover{
+    color:#e29c5b;
+}
+
+.event-remind-tooltip .content i:hover{
+    color:#e29c5b;
+}
+.event-remind-tooltip .content i {
+    margin-right:10px;
+}
+
+.event-remind-tooltip .content i:hover {
+    cursor: pointer;
+}
 
 .routename-events .event-title {
     display: inline-block;
@@ -3767,6 +4274,23 @@ p.error_message_div {
     font-size: 10px;
     margin-top: 2px;
     color: gray;
+}
+
+
+.select-items .item .group-badge {
+    font-size: 9px;
+    margin-top: 0px;
+    color: gray;
+    display:inline;
+    margin-right: 5px;
+    border: 1px solid #D0D0D0;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin: -2px 5px -4px 5px;
+	text-transform: uppercase;
+}
+.select-items .item .group-badge  span {
+	display:none;
 }
 
 #events-blueprint-drawer .panel-body .section:last-child {
@@ -3794,6 +4318,7 @@ p.error_message_div {
     visibility: hidden;
     cursor: pointer;
     margin-right: 15px;
+    color: #6B6B6B;
   }
 
 
@@ -3857,3 +4382,31 @@ p.error_message_div {
 .cly-select:hover .drop-icn {
     background-color: #2FA732;
 }
+
+.selectize-right-drop .selectize-input::after {
+    font-family: 'Ionicons';
+    font-size: 10px;
+    float: right;
+    color: #717171;
+    content: "\f123";
+    position: absolute;
+    right: 6px;
+    top: 8px;
+}
+
+.selected.selectize-right-drop .selectize-input::after {
+    content: "\f126";
+    color: #2fa732;
+}
+
+.selectize-input ::placeholder { 
+    color: #dddddd;
+}
+
+.mgmt-plugins-row ::placeholder { 
+    color: #dddddd;
+}
+
+.mgmt-plugins-row .selectize-dropdown [data-selectable] .highlight {
+    background: #fff;
+  }

@@ -1,0 +1,16 @@
+.vue-example-wrapper .dataTables_wrapper{
+    margin: 0px;
+}
+
+.vue-example-wrapper .example-cell{
+    margin: 20px;
+    width: 25%;
+    height: 200px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.vue-example-wrapper .example-component{
+    border-bottom: 1px solid #ccc;
+    height: 200px;
+}

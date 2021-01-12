@@ -62,36 +62,34 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             resolve();
                             return;
                         }
-                        common.db.onOpened(function() {
-                            const bulk = common.db._native.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
-                            for (var k = 0; k < data.length; k++) {
-                                if (data[k].value !== "") {
-                                    bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
-                                }
-                                else {
-                                    bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$unset: {"display": true}});
-                                }
-                                haveUpdate = true;
-                            }
-
-                            if (haveUpdate) {
-                                bulk.execute(function(err/*, updateResult*/) {
-                                    if (err) {
-                                        log.e(err);
-                                        common.returnMessage(params, 400, err);
-                                        resolve();
-                                    }
-                                    else {
-                                        common.returnMessage(params, 200, 'Success');
-                                        resolve();
-                                    }
-                                });
+                        const bulk = common.db.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
+                        for (var k = 0; k < data.length; k++) {
+                            if (data[k].value !== "") {
+                                bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
                             }
                             else {
-                                common.returnMessage(params, 400, 'Nothing to update');
-                                resolve();
+                                bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$unset: {"display": true}});
                             }
-                        });
+                            haveUpdate = true;
+                        }
+
+                        if (haveUpdate) {
+                            bulk.execute(function(err/*, updateResult*/) {
+                                if (err) {
+                                    log.e(err);
+                                    common.returnMessage(params, 400, err);
+                                    resolve();
+                                }
+                                else {
+                                    common.returnMessage(params, 200, 'Success');
+                                    resolve();
+                                }
+                            });
+                        }
+                        else {
+                            common.returnMessage(params, 400, 'Nothing to update');
+                            resolve();
+                        }
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing request parameter: data');
@@ -165,7 +163,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var newUid = ob.newUser.uid;
         if (oldUid !== newUid) {
             common.db.collection("app_userviews" + appId).find({_id: oldUid}).toArray(function(err, data) {
-                const bulk = common.db._native.collection("app_userviews" + appId).initializeUnorderedBulkOp();
+                const bulk = common.db.collection("app_userviews" + appId).initializeUnorderedBulkOp();
                 var haveUpdate = false;
                 for (var k in data) {
                     for (var view in data[k]) {
@@ -214,7 +212,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             if (!ob.export_commands.views) {
                 ob.export_commands.views = [];
             }
-            ob.export_commands.views.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_userviews' + ob.app_id, '-q', '{_id:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/app_userviews' + ob.app_id + '.json']});
+            ob.export_commands.views.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_userviews' + ob.app_id, '-q', '{"_id":{"$in": ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/app_userviews' + ob.app_id + '.json']});
             resolve();
         });
     });
@@ -717,8 +715,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         data[z].url = data[z].view_meta[0].url;
                                     }
 
-                                    if (data[z].view_meta[0].sortcol) {
-                                        data[z].display = data[z].view_meta[0].sortcol;
+                                    if (data[z].view_meta[0].display) {
+                                        data[z].display = data[z].view_meta[0].display;
                                     }
                                 }
                             }
@@ -760,6 +758,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         facetLine.push({$limit: dataLength});
                     }
 
+                    if (params.qstring.project) {
+                        query.push({$project: {"Display name": "$sortcol", "view": 1}});
+                    }
                     query.push({$facet: {data: facetLine, count: [{$count: 'count'}]}});
                     common.db.collection("app_viewsmeta" + params.qstring.app_id).aggregate(query, {allowDiskUse: true}, function(err1, res) {
                         if (err1) {
@@ -1046,19 +1047,23 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                     //get timestamps of start of days (DD-MM-YYYY-00:00) with respect to apptimezone for both beginning and end of period arrays
                     var tmpArr;
-                    queryObject.ts = {};
+                    var ts = {};
 
                     tmpArr = periodObj.currentPeriodArr[0].split(".");
-                    queryObject.ts.$gte = new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])));
-                    queryObject.ts.$gte.setTimezone(params.appTimezone);
-                    queryObject.ts.$gte = queryObject.ts.$gte.getTime() + queryObject.ts.$gte.getTimezoneOffset() * 60000;
+                    ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+                    if (params.appTimezone) {
+                        ts.$gte.tz(params.appTimezone);
+                    }
+                    ts.$gte = ts.$gte.valueOf() - ts.$gte.utcOffset() * 60000;
 
                     tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
-                    queryObject.ts.$lt = new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])));
-                    queryObject.ts.$lt.setDate(queryObject.ts.$lt.getDate() + 1);
-                    queryObject.ts.$lt.setTimezone(params.appTimezone);
-                    queryObject.ts.$lt = queryObject.ts.$lt.getTime() + queryObject.ts.$lt.getTimezoneOffset() * 60000;
+                    ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+                    if (params.appTimezone) {
+                        ts.$lt.tz(params.appTimezone);
+                    }
+                    ts.$lt = ts.$lt.valueOf() - ts.$lt.utcOffset() * 60000;
 
+                    queryObject.ts = ts;
                     queryObject["sg.width"] = {};
                     queryObject["sg.width"].$gt = device.minWidth;
                     queryObject["sg.width"].$lte = device.maxWidth;
@@ -1651,9 +1656,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     var lastViewTimestamp = view[viewName];
                     var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                         lastViewDate = common.getDate(lastViewTimestamp, params.appTimezone),
-                        secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                        secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                        secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                        secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                        secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                        secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
                         secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
@@ -1665,8 +1670,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         monthSmallerUpdate['d.' + params.time.day + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 
-                    if (lastViewDate.getFullYear() === params.time.yearly &&
-                        Math.ceil(common.moment(lastViewDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+                    if (lastViewDate.year() === params.time.yearly &&
+                        Math.ceil(lastViewDate.format("DDD") / 7) < params.time.weekly) {
                         tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 

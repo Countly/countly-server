@@ -1,8 +1,7 @@
 var pluginManager = require('../../../../plugins/pluginManager.js'),
-    async = require('async'),
-    countlyDb = pluginManager.dbConnection();
+    async = require('async');
 
-(function(){
+pluginManager.dbConnection().then((countlyDb) => {
 
     var dataTransferStatus = false,
         liveDisabledStatus = false,
@@ -73,7 +72,7 @@ var pluginManager = require('../../../../plugins/pluginManager.js'),
             callback(null);
             return;
         }
-        var bulk = countlyDb._native.collection('concurrent_users_max').initializeUnorderedBulkOp();
+        var bulk = countlyDb.collection('concurrent_users_max').initializeUnorderedBulkOp();
     
         docs.forEach(function(doc){
             bulk.find({
@@ -196,4 +195,4 @@ var pluginManager = require('../../../../plugins/pluginManager.js'),
     }
     
     execute();
-})();
+});

@@ -1,0 +1,28 @@
+{
+  "name": "timezones",
+  "version": "1.0.0",
+  "description": "The script mission has to create the latest timezones data from timezonedb",
+  "main": "timezones.js",
+  "scripts": {
+    "generate": "node timezones.js"
+  },
+  "keywords": [
+    "countly",
+    "device",
+    "list"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/countly/countly-server.git"
+  },
+  "author": "Countly <hello@count.ly> (https://count.ly/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Countly/countly-server/issues"
+  },
+  "homepage": "https://count.ly/",
+  "dependencies": {
+    "moment-timezone": "0.5.31",
+    "node-fetch": "2.6.1"
+  }
+}

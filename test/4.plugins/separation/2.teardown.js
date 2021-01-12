@@ -65,5 +65,8 @@ describe('Deleting user', function() {
                     done();
                 });
         });
+        after('Close db connection', async function() {
+            testUtils.client.close();
+        });
     });
 });

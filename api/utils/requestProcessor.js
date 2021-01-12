@@ -578,13 +578,13 @@ const processRequest = (params) => {
             case '/i/event_groups':
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.create(params));
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.create);
                     break;
                 case 'update':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.update(params));
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.update);
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.remove(params));
+                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.remove);
                     break;
                 default:
                     break;
@@ -1424,6 +1424,12 @@ const processRequest = (params) => {
                         }
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
+                        if (params.qstring.app_ids && params.qstring.app_ids !== "") {
+                            var ll = params.qstring.app_ids.split(",");
+                            if (ll.length > 1) {
+                                params.qstring.query.app_id = {$in: ll};
+                            }
+                        }
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
@@ -1645,6 +1651,15 @@ const processRequest = (params) => {
                             }
                             catch (ex) {
                                 params.qstring.sort = null;
+                            }
+                        }
+
+                        if (typeof params.qstring.formatFields === "string") {
+                            try {
+                                params.qstring.formatFields = JSON.parse(params.qstring.formatFields);
+                            }
+                            catch (ex) {
+                                params.qstring.formatFields = null;
                             }
                         }
 
@@ -2309,7 +2324,7 @@ const checksumSaltVerification = (params) => {
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 400, 'Request does not match checksum');
+                common.returnMessage(params, 200, 'Request does not match checksum');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha1';
                 plugins.dispatch("/sdk/cancel", {params: params});
@@ -2322,7 +2337,7 @@ const checksumSaltVerification = (params) => {
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 400, 'Request does not match checksum');
+                common.returnMessage(params, 200, 'Request does not match checksum');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha256';
                 plugins.dispatch("/sdk/cancel", {params: params});
@@ -2330,7 +2345,7 @@ const checksumSaltVerification = (params) => {
             }
         }
         else {
-            common.returnMessage(params, 400, 'Request does not have checksum');
+            common.returnMessage(params, 200, 'Request does not have checksum');
             console.log("Request does not have checksum", params.href, params.req.body);
             params.cancelRequest = "Request does not have checksum";
             plugins.dispatch("/sdk/cancel", {params: params});
@@ -2440,7 +2455,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     });
                 }
                 else {
-                    if (!params.res.finished) {
+                    if (!params.res.finished && !params.waitForResponse) {
                         common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
                         //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
@@ -2565,6 +2580,12 @@ function processUser(params, initiator, done, try_times) {
         if (!params.app_user.uid) {
             //first time we see this user, we need to id him with uid
             countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
+                plugins.dispatch("/i/app_users/create", {
+                    app_id: params.app_id,
+                    user: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    res: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    params: params
+                });
                 if (uid) {
                     params.app_user.uid = uid;
                     if (!params.app_user._id) {
@@ -2673,6 +2694,15 @@ function loadFsVersionMarks(callback) {
                 callback(parseErr, []);
             }
             if (Array.isArray(olderVersions)) {
+                //sort versions here.
+                olderVersions.sort(function(a, b) {
+                    if (typeof a.updated !== "undefined" && typeof b.updated !== "undefined") {
+                        return a.updated - b.updated;
+                    }
+                    else {
+                        return 1;
+                    }
+                });
                 callback(null, olderVersions);
             }
         }

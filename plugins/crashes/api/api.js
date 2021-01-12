@@ -11,7 +11,8 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 plugins.setConfigs("crashes", {
-    report_limit: 100
+    report_limit: 100,
+    grouping_strategy: "error_and_file"
 });
 
 (function() {
@@ -35,7 +36,7 @@ plugins.setConfigs("crashes", {
             common.db.collection("app_crashes" + appId).update({uid: oldUid}, {'$set': {uid: newUid}}, {multi: true}, function() {});
             common.db.collection("app_crashusers" + appId).find({uid: oldUid}).toArray(function(err, res) {
                 if (res && res.length) {
-                    const bulk = common.db._native.collection("app_crashusers" + appId).initializeUnorderedBulkOp();
+                    const bulk = common.db.collection("app_crashusers" + appId).initializeUnorderedBulkOp();
                     for (let i = 0; i < res.length; i++) {
                         const updates = {};
                         for (const key of ['last', 'sessions']) {
@@ -86,8 +87,8 @@ plugins.setConfigs("crashes", {
                 if (!ob.export_commands.crashes) {
                     ob.export_commands.crashes = [];
                 }
-                ob.export_commands.crashes.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_crashes' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/crashes' + ob.app_id + '.json']});
-                ob.export_commands.crashes.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_crashusers' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/crashusers' + ob.app_id + '.json']});
+                ob.export_commands.crashes.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_crashes' + ob.app_id, '-q', '{"uid":{"$in": ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/crashes' + ob.app_id + '.json']});
+                ob.export_commands.crashes.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'app_crashusers' + ob.app_id, '-q', '{"uid":{"$in": ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/crashusers' + ob.app_id + '.json']});
                 resolve();
             }
         });

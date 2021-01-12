@@ -84,7 +84,7 @@ var pluginOb = {},
                 if (currEvent.key === "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name && (!currEvent.segmentation.segment && !currEvent.segmentation.platform)) {
                     currEvent.segmentation.segment = data.os;
                 }
-                else if (currEvent.key === "[CLY]_star_rating" && currEvent.segmentation && !currEvent.segmentation.platform) {
+                else if ((currEvent.key === "[CLY]_star_rating" || currEvent.key === "[CLY]_nps" || currEvent.key === "[CLY]_survey") && currEvent.segmentation && !currEvent.segmentation.platform) {
                     currEvent.segmentation.platform = data.os;
                 }
                 return currEvent;
@@ -128,7 +128,7 @@ var pluginOb = {},
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         if (params.qstring.method === "latest_users") {
             validateUserForDataReadAPI(params, function() {
-                common.db.collection("app_users" + params.app_id).find({}).sort({ls: -1}).limit(50).toArray(function(err, users) {
+                common.db.collection("app_users" + params.app_id).find({}, {projection: {uid: 1, cc: 1, cty: 1, p: 1, brw: 1, lv: 1, src: 1, sc: 1, lac: 1, tsd: 1}}).sort({lac: -1}).limit(50).toArray(function(err, users) {
                     if (!err) {
                         common.returnOutput(params, users);
                     }

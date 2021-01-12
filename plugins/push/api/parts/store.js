@@ -534,6 +534,10 @@ class Store extends Base {
                 }
             }
 
+            if (query.push) {
+                delete query.push;
+            }
+
             if (query.$and) {
                 if (uids) {
                     query.$and.push({uid: {$in: uids}});
@@ -549,6 +553,30 @@ class Store extends Base {
                 if (!toRemove) {
                     query[C.DB_USER_MAP.tokens + this.field] = true;
                 }
+            }
+
+            if (query.geo) {
+                if (this.drill() && this.geo()) {
+                    this.drill().preprocessQuery(query);
+                    let geos = await this.geo().query(this.app._id, query.geo);
+                    if (geos && geos.length) {
+                        if (query.$and) {
+                            query.$and.push({$or: geos.map(g => this.geo().conds(g))});
+                        }
+                        else if (query.$or) {
+                            query.$and = [{$or: query.$or}, this.geo().conds(geos[0])];
+                        }
+                        else {
+                            query.$or = [this.geo().conds(geos[0])];
+                        }
+
+                        query.$or = geos.map(g => this.geo().conds(g));
+                    }
+                    else {
+                        query.invalidgeo = true;
+                    }
+                }
+                delete query.geo;
             }
         }
         else {
@@ -835,6 +863,13 @@ class Store extends Base {
      */
     drill() {
         return plugins.getPluginsApis().drill || null;
+    }
+
+    /** geo
+     * @returns {object} plugin geo functions 
+     */
+    geo() {
+        return plugins.getPluginsApis().geo || null;
     }
 
     /**

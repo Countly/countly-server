@@ -30,21 +30,22 @@ var flattenObject = function(ob) {
 };
 
 function getConfigs(callback) {
-    var db = manager.dbConnection();
-    db.collection("plugins").findOne({_id: "plugins"}, function(err, list) {
-        db.close();
-        var res = {};
-        if (!err && list) {
-            var keys = Object.keys(flattenObject(list));
-            for (var i = 0; i < keys.length; i++) {
-                if (keys[i].indexOf("_id") != 0 && keys[i].indexOf("services.") != 0 && keys[i].indexOf("plugins.") != 0) {
-                    res[keys[i]] = null;
+    manager.dbConnection().then((db) => {
+        db.collection("plugins").findOne({_id: "plugins"}, function(err, list) {
+            db.close();
+            var res = {};
+            if (!err && list) {
+                var keys = Object.keys(flattenObject(list));
+                for (var i = 0; i < keys.length; i++) {
+                    if (keys[i].indexOf("_id") != 0 && keys[i].indexOf("services.") != 0 && keys[i].indexOf("plugins.") != 0) {
+                        res[keys[i]] = null;
+                    }
                 }
             }
-        }
 
-        res.list = {values: null};
-        callback(res);
+            res.list = {values: null};
+            callback(res);
+        });
     });
 }
 

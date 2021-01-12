@@ -670,6 +670,9 @@ window.component('push', function(push) {
             if (this.error() === 'Process exited') {
                 return (this.status() & (1 << 4)) ? 'exited' :  'exited-sent';
             }
+            if (this.error() === '{}') {
+                return 'exited';
+            }
             return this.error();
         };
     };
