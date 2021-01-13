@@ -2,7 +2,7 @@
     <cly-tabs id="basic-tabs" v-model="activeTab">
         <cly-content v-bind:name='"Table"' id="good-table-tab">
             <cly-panel title="DataTable" v-bind:date-selector="false">
-                <template slot="right-top">
+                <template v-slot:right-top>
                     <cly-button v-tooltip="'Tooltip'" v-on:click="add" skin="green" v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
                 </template>
                 <div>
@@ -19,7 +19,7 @@
                             @delayed-delete-record="onDelayedDelete"
                             @delete-record="onDelete"
                             @edit-record="onEditRecord">
-                            <template slot="table-row" slot-scope="scope">
+                            <template v-slot:table-row="scope">
                                 <cly-datatable-detail-toggler v-if="scope.props.column.field == 'cly-detail-toggler'"
                                     :scope="scope">
                                 </cly-datatable-detail-toggler>
@@ -62,7 +62,7 @@
                             mode="remote"
                             @remote-params-change="updateRemoteParams"
                             @set-row-data="setRowData">
-                            <template slot="table-row" slot-scope="scope">
+                            <template v-slot:table-row="scope">
                                 <span>
                                     {{scope.props.formattedRow[scope.props.column.field]}}
                                 </span>
