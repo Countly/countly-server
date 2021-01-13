@@ -1,3 +1,5 @@
+@import './element-variables.scss';
+
 .cly-vue-theme-clydef {
     // tabs component
     .cly-vue-tabs {
@@ -2860,12 +2862,17 @@
     }
 }
 .cly-vue-listbox {
-    border-radius: 4px;
-    border: 1px solid #dcdfe6;
+    height: inherit;
+    border-radius: $--border-radius-base;
+    border: 1px solid $--border-color-base;
+    background-color: $--background-color-base;
     &.is-focus, &:focus-within{
-        border-color: #409eff;
+        border-color: $--color-primary;
     }
-    .el-scrollbar__wrap {
-        overflow-x: hidden;
+    .el-scrollbar{
+        height: inherit;
+        &__wrap {
+            overflow-x: hidden;
+        }
     }
 }

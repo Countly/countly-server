@@ -976,7 +976,6 @@
                     @focus="handleHover"\
                     @blur="handleBlur">\
                     <el-scrollbar\
-                        style="height:140px"\
                         tag="ul"\
                         wrap-class="el-select-dropdown__wrap"\
                         view-class="el-select-dropdown__list">\
