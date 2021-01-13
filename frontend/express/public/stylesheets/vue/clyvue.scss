@@ -2859,3 +2859,13 @@
         transition: opacity 0.05s;
     }
 }
+.cly-vue-listbox {
+    border-radius: 4px;
+    border: 1px solid #dcdfe6;
+    &.is-focus, &:focus-within{
+        border-color: #409eff;
+    }
+    .el-scrollbar__wrap {
+        overflow-x: hidden;
+    }
+}

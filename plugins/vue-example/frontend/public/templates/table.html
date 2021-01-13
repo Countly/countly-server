@@ -76,6 +76,20 @@
             <cly-panel title="Form elements" v-bind:date-selector="false">
                 <div class="example-component">
                     <div class="example-cell">
+                        ListBox
+                    </div>
+                    <div class="example-cell">
+                        <cly-listbox
+                            v-model="selectedLB"
+                            :options="listBoxOptions">
+                        </cly-listbox>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedLB}}
+                    </div>
+                </div>
+                <div class="example-component">
+                    <div class="example-cell">
                         Basic text input
                     </div>
                     <div class="example-cell">

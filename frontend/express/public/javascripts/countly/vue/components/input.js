@@ -966,4 +966,64 @@
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
 
+    Vue.component("cly-listbox", countlyVue.components.BaseComponent.extend({
+        template: '<div\
+                    class="cly-vue-listbox"\
+                    tabindex="0"\
+                    :class="{ \'is-focus\': focused }"\
+                    @mouseenter="handleHover"\
+                    @mouseleave="handleBlur"\
+                    @focus="handleHover"\
+                    @blur="handleBlur">\
+                    <el-scrollbar\
+                        style="height:140px"\
+                        tag="ul"\
+                        wrap-class="el-select-dropdown__wrap"\
+                        view-class="el-select-dropdown__list">\
+                        <li\
+                            tabindex="0"\
+                            class="el-select-dropdown__item"\
+                            :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
+                            :key="option.value"\
+                            @focus="handleItemHover(option)"\
+                            @mouseenter="handleItemHover(option)"\
+                            @keyup.enter="handleItemClick(option)"\
+                            @click.stop="handleItemClick(option)"\
+                            v-for="option in options">\
+                            <span>{{option.label}}</span>\
+                        </li>\
+                    </el-scrollbar>\
+                </div>',
+        props: {
+            options: {type: Array},
+            value: { type: [String, Number] }
+        },
+        methods: {
+            navigateOptions: function() {
+                if (!this.visible) {
+                    this.visible = true;
+                }
+            },
+            handleItemClick: function(option) {
+                this.$emit("input", option.value);
+            },
+            handleItemHover: function(option) {
+                this.hovered = option.value;
+            },
+            handleBlur: function() {
+                this.hovered = this.value;
+                this.focused = false;
+            },
+            handleHover: function() {
+                this.focused = true;
+            }
+        },
+        data: function() {
+            return {
+                hovered: null,
+                focused: false
+            };
+        }
+    }));
+
 }(window.countlyVue = window.countlyVue || {}, jQuery));
