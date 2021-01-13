@@ -1044,7 +1044,7 @@
                             @keydown.native.down.stop.prevent="handleArrowKey"\
                             @keydown.native.up.stop.prevent="handleArrowKey"\
                             readonly="readonly" \
-                            v-model="selectedItem.label"\
+                            v-model="selectedOption.label"\
                             :placeholder="placeholder">\
                             <template slot="suffix">\
                                 <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
@@ -1068,7 +1068,7 @@
                                     </span>\
                                     <cly-listbox\
                                         v-model="innerValue"\
-                                        :options="allItems">\
+                                        :options="getMatching(allOptions)">\
                                     </cly-listbox>\
                                 </el-tab-pane>\
                                 <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
@@ -1077,7 +1077,7 @@
                                     </span>\
                                     <cly-listbox\
                                         v-model="innerValue"\
-                                        :options="tab.options">\
+                                        :options="getMatching(tab.options)">\
                                     </cly-listbox>\
                                 </el-tab-pane>\
                             </el-tabs>\
@@ -1102,7 +1102,7 @@
                     this.$emit("input", newVal);
                 }
             },
-            allItems: function() {
+            allOptions: function() {
                 if (!this.tabs.length) {
                     return [];
                 }
@@ -1110,12 +1110,12 @@
                     return items.concat(tab.options);
                 }, []);
             },
-            selectedItem: function() {
-                if (!this.allItems.length) {
+            selectedOption: function() {
+                if (!this.allOptions.length) {
                     return {};
                 }
                 var self = this;
-                var matching = this.allItems.filter(function(item) {
+                var matching = this.allOptions.filter(function(item) {
                     return item.value === self.value;
                 });
                 if (matching.length) {
@@ -1142,6 +1142,15 @@
                 if (!this.visible) {
                     this.visible = true;
                 }
+            },
+            getMatching: function(options) {
+                if (!this.searchQuery) {
+                    return options;
+                }
+                var self = this;
+                return options.filter(function(option) {
+                    return option.label.indexOf(self.searchQuery) > -1;
+                });
             }
         },
         watch: {
