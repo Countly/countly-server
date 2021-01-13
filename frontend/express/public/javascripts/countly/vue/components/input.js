@@ -1025,121 +1025,61 @@
         }
     }));
 
-    Vue.component("cly-popper", countlyVue.components.BaseComponent.extend({
-        template: '<div\
-                        class="el-select-dropdown el-popper"\
-                        :class="[popperClass]"\
-                        v-bind="$attrs"\
-                        :style="{ minWidth: minWidth }">\
-                        <slot></slot>\
-                    </div>',
-        mixins: [ELEMENT.utils.Popper],
-        props: {
-            placement: {
-                default: 'bottom-start'
-            },
-            boundariesPadding: {
-                default: 0
-            },
-            popperOptions: {
-                default: function() {
-                    return {
-                        gpuAcceleration: false
-                    };
-                }
-            },
-            visibleArrow: {
-                default: true
-            },
-            appendToBody: {
-                type: Boolean,
-                default: true
-            }
-        },
-        data: function() {
-            return {
-                minWidth: ''
-            };
-        },
-        computed: {
-            popperClass: function() {
-                return this.$parent.popperClass;
-            }
-        },
-        watch: {
-            '$parent.inputWidth': function() {
-                this.minWidth = this.$parent.$el.getBoundingClientRect().width + 'px';
-            }
-        },
-        mounted: function() {
-            var self = this;
-            this.referenceElm = this.$parent.$refs.toggler.$el;
-            this.$parent.popperElm = this.popperElm = this.$el;
-            this.$on('updatePopper', function() {
-                if (self.$parent.visible) {
-                    self.updatePopper();
-                }
-            });
-            this.$on('destroyPopper', this.destroyPopper);
-        }
-    }));
-
     Vue.directive("el-clickoutside", ELEMENT.utils.Clickoutside);
 
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
-        template: '<div\
-                    @click.stop="handleToggle"\
-                    v-el-clickoutside="handleClose">\
-                    <el-input\
-                        ref="toggler"\
-                        :class="{ \'is-focus\': visible }"\
-                        @keydown.native.esc.stop.prevent="handleClose"\
-                        @keydown.native.down.stop.prevent="handleArrowKey(\'down\')"\
-                        @keydown.native.up.stop.prevent="handleArrowKey(\'up\')"\
-                        readonly="readonly" \
-                        v-model="selectedItem" \
-                        :placeholder="placeholder">\
-                        <template slot="suffix">\
-                            <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
-                        </template>\
-                    </el-input>\
-                    <cly-popper\
-                        placement="right"\
+        template: '<div class="cly-vue-tabbed-listbox el-select"\
+                    @click.stop.prevent="handleToggle">\
+                    <el-popover\
+                        placement="bottom-start"\
+                        :visible-arrow="false"\
                         width="400"\
-                        ref="popper"\
-                        :append-to-body="popperAppendToBody"\
-                        v-show="visible">\
-                        <el-input \
-                            ref="searchBox"\
-                            v-model="searchQuery"\
-                            @keydown.native.esc.stop.prevent="handleClose" \
-                            :placeholder="searchPlaceholder">\
-                            <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                        v-model="visible"\
+                        trigger="manual">\
+                        <el-input\
+                            slot="reference"\
+                            ref="toggler"\
+                            :class="{ \'is-focus\': visible }"\
+                            @keydown.native.esc.stop.prevent="handleClose"\
+                            @keydown.native.down.stop.prevent="handleArrowKey"\
+                            @keydown.native.up.stop.prevent="handleArrowKey"\
+                            readonly="readonly" \
+                            v-model="value"\
+                            :placeholder="placeholder">\
+                            <template slot="suffix">\
+                                <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                            </template>\
                         </el-input>\
-                        <el-tabs\
-                            v-model="activeTabId"\
-                            @keydown.native.esc.stop.prevent="handleClose">\
-                            <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
-                                <span slot="label">\
-                                    {{tab.label}}\
-                                </span>\
-                                <cly-listbox\
-                                    v-model="innerValue"\
-                                    :options="tab.options">\
-                                </cly-listbox>\
-                            </el-tab-pane>\
-                        </el-tabs>\
-                    </cly-popper>\
+                        <div\
+                            v-el-clickoutside="handleClose">\
+                            <el-input\
+                                ref="searchBox"\
+                                v-model="searchQuery"\
+                                @keydown.native.esc.stop.prevent="handleClose" \
+                                :placeholder="searchPlaceholder">\
+                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                            </el-input>\
+                            <el-tabs\
+                                v-model="activeTabId"\
+                                @keydown.native.esc.stop.prevent="handleClose">\
+                                <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
+                                    <span slot="label">\
+                                        {{tab.label}}\
+                                    </span>\
+                                    <cly-listbox\
+                                        v-model="innerValue"\
+                                        :options="tab.options">\
+                                    </cly-listbox>\
+                                </el-tab-pane>\
+                            </el-tabs>\
+                        </div>\
+                    </el-popover>\
                 </div>',
         props: {
             tabs: {type: Array},
             searchPlaceholder: {type: String, default: 'Search'},
             placeholder: {type: String, default: 'Select'},
-            value: { type: [String, Number] },
-            popperAppendToBody: {
-                type: Boolean,
-                default: true
-            }
+            value: { type: [String, Number] }
         },
         computed: {
             iconClass: function() {
@@ -1158,7 +1098,6 @@
             return {
                 activeTabId: 'all',
                 searchQuery: '',
-                selectedItem: '',
                 visible: false
             };
         },
