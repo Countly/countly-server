@@ -1044,7 +1044,7 @@
                             @keydown.native.down.stop.prevent="handleArrowKey"\
                             @keydown.native.up.stop.prevent="handleArrowKey"\
                             readonly="readonly" \
-                            v-model="value"\
+                            v-model="selectedItem.label"\
                             :placeholder="placeholder">\
                             <template slot="suffix">\
                                 <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
@@ -1062,6 +1062,15 @@
                             <el-tabs\
                                 v-model="activeTabId"\
                                 @keydown.native.esc.stop.prevent="handleClose">\
+                                <el-tab-pane name="_all">\
+                                    <span slot="label">\
+                                        All\
+                                    </span>\
+                                    <cly-listbox\
+                                        v-model="innerValue"\
+                                        :options="allItems">\
+                                    </cly-listbox>\
+                                </el-tab-pane>\
                                 <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
                                     <span slot="label">\
                                         {{tab.label}}\
@@ -1092,11 +1101,32 @@
                 set: function(newVal) {
                     this.$emit("input", newVal);
                 }
+            },
+            allItems: function() {
+                if (!this.tabs.length) {
+                    return [];
+                }
+                return this.tabs.reduce(function(items, tab) {
+                    return items.concat(tab.options);
+                }, []);
+            },
+            selectedItem: function() {
+                if (!this.allItems.length) {
+                    return {};
+                }
+                var self = this;
+                var matching = this.allItems.filter(function(item) {
+                    return item.value === self.value;
+                });
+                if (matching.length) {
+                    return matching[0];
+                }
+                return {};
             }
         },
         data: function() {
             return {
-                activeTabId: 'all',
+                activeTabId: '_all',
                 searchQuery: '',
                 visible: false
             };

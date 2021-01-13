@@ -25,8 +25,8 @@
             }
             return {
                 listBoxTabs: [{
-                    "label": "All Properties",
-                    "name": "all",
+                    "label": "A Items",
+                    "name": "type-1",
                     "options": [
                         {"label": "hello0", "value": 0},
                         {"label": "hello1", "value": 1},
@@ -43,14 +43,14 @@
                     ]
                 },
                 {
-                    "label": "User",
-                    "name": "user",
+                    "label": "B Items",
+                    "name": "type-2",
                     "options": [
-                        {"label": "user0", "value": 0},
-                        {"label": "user1", "value": 1},
+                        {"label": "user0", "value": 12},
+                        {"label": "user1", "value": 13},
                     ]
                 }],
-                selectedTLB: 0,
+                selectedTLB: null,
                 listBoxOptions: [
                     {"label": "hello0", "value": 0},
                     {"label": "hello1", "value": 1},
