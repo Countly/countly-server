@@ -31,6 +31,15 @@
                         {"label": "hello0", "value": 0},
                         {"label": "hello1", "value": 1},
                         {"label": "hello2", "value": 2},
+                        {"label": "hello3", "value": 3},
+                        {"label": "hello4", "value": 4},
+                        {"label": "hello5", "value": 5},
+                        {"label": "hello6", "value": 6},
+                        {"label": "hello7", "value": 7},
+                        {"label": "hello8", "value": 8},
+                        {"label": "hello9", "value": 9},
+                        {"label": "hello10", "value": 10},
+                        {"label": "hello11", "value": 11},
                     ]
                 },
                 {
@@ -41,6 +50,7 @@
                         {"label": "user1", "value": 1},
                     ]
                 }],
+                selectedTLB: 0,
                 listBoxOptions: [
                     {"label": "hello0", "value": 0},
                     {"label": "hello1", "value": 1},

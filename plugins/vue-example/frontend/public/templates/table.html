@@ -90,6 +90,24 @@
                 </div>
                 <div class="example-component">
                     <div class="example-cell">
+                        Tabbed ListBox
+                    </div>
+                    <div class="example-cell">    
+                        <cly-tabbed-listbox
+                            placement="bottom-start"
+                            width="400"
+                            search-placeholder="Search in Properties"
+                            placeholder="Select Property"
+                            v-model="selectedTLB"
+                            :tabs="listBoxTabs">
+                        </cly-tabbed-listbox>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedTLB}}
+                    </div>
+                </div>
+                <div class="example-component">
+                    <div class="example-cell">
                         Basic text input
                     </div>
                     <div class="example-cell">

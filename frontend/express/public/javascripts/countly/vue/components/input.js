@@ -1025,4 +1025,100 @@
         }
     }));
 
+    Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
+        template: '<el-dropdown\
+                    trigger="click">\
+                    <span class="el-dropdown-link">\
+                        <el-input\
+                            ref="toggler"\
+                            :class="{ \'is-focus\': visible }"\
+                            @keydown.native.esc.stop.prevent="handleClose"\
+                            @keydown.native.down.stop.prevent="handleArrowKey(\'down\')"\
+                            @keydown.native.up.stop.prevent="handleArrowKey(\'up\')"\
+                            readonly="readonly" \
+                            v-model="selectedItem" \
+                            :placeholder="placeholder">\
+                            <template slot="suffix">\
+                                <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                            </template>\
+                        </el-input>\
+                    </span>\
+                    <el-dropdown-menu slot="dropdown">\
+                        <el-input \
+                            ref="searchBox"\
+                            v-model="searchQuery"\
+                            @keydown.native.esc.stop.prevent="handleClose" \
+                            :placeholder="searchPlaceholder">\
+                            <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                        </el-input>\
+                        <el-tabs\
+                            v-model="activeTabId"\
+                            @keydown.native.esc.stop.prevent="handleClose">\
+                            <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
+                                <span slot="label">\
+                                    {{tab.label}}\
+                                </span>\
+                                <cly-listbox\
+                                    v-model="innerValue"\
+                                    :options="tab.options">\
+                                </cly-listbox>\
+                            </el-tab-pane>\
+                        </el-tabs>\
+                    </el-dropdown-menu>\
+                </el-dropdown>',
+        props: {
+            tabs: {type: Array},
+            searchPlaceholder: {type: String, default: 'Search'},
+            placeholder: {type: String, default: 'Select'},
+            value: { type: [String, Number] }
+        },
+        computed: {
+            iconClass: function() {
+                return (this.visible ? 'arrow-up is-reverse' : 'arrow-up');
+            },
+            innerValue: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(newVal) {
+                    this.$emit("input", newVal);
+                }
+            }
+        },
+        data: function() {
+            return {
+                activeTabId: 'all',
+                searchQuery: '',
+                selectedItem: '',
+                visible: false
+            };
+        },
+        methods: {
+            handleToggle: function() {
+                this.visible = !this.visible;
+            },
+            handleClose: function() {
+                this.visible = false;
+            },
+            handleArrowKey: function() {
+                if (!this.visible) {
+                    this.visible = true;
+                }
+            }
+        },
+        watch: {
+            visible: function(newValue) {
+                var self = this;
+                this.$nextTick(function() {
+                    if (newValue) {
+                        self.$refs.searchBox.focus();
+                    }
+                    else {
+                        self.$refs.toggler.focus();
+                    }
+                });
+            }
+        }
+    }));
+
 }(window.countlyVue = window.countlyVue || {}, jQuery));
