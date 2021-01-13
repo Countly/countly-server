@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, _, VeeValidate */
+/* global jQuery, Vue, moment, countlyCommon, _, VeeValidate, ELEMENT */
 
 (function(countlyVue, $) {
 
@@ -1025,25 +1025,90 @@
         }
     }));
 
+    Vue.component("cly-popper", countlyVue.components.BaseComponent.extend({
+        template: '<div\
+                        class="el-select-dropdown el-popper"\
+                        :class="[popperClass]"\
+                        v-bind="$attrs"\
+                        :style="{ minWidth: minWidth }">\
+                        <slot></slot>\
+                    </div>',
+        mixins: [ELEMENT.utils.Popper],
+        props: {
+            placement: {
+                default: 'bottom-start'
+            },
+            boundariesPadding: {
+                default: 0
+            },
+            popperOptions: {
+                default: function() {
+                    return {
+                        gpuAcceleration: false
+                    };
+                }
+            },
+            visibleArrow: {
+                default: true
+            },
+            appendToBody: {
+                type: Boolean,
+                default: true
+            }
+        },
+        data: function() {
+            return {
+                minWidth: ''
+            };
+        },
+        computed: {
+            popperClass: function() {
+                return this.$parent.popperClass;
+            }
+        },
+        watch: {
+            '$parent.inputWidth': function() {
+                this.minWidth = this.$parent.$el.getBoundingClientRect().width + 'px';
+            }
+        },
+        mounted: function() {
+            var self = this;
+            this.referenceElm = this.$parent.$refs.toggler.$el;
+            this.$parent.popperElm = this.popperElm = this.$el;
+            this.$on('updatePopper', function() {
+                if (self.$parent.visible) {
+                    self.updatePopper();
+                }
+            });
+            this.$on('destroyPopper', this.destroyPopper);
+        }
+    }));
+
+    Vue.directive("el-clickoutside", ELEMENT.utils.Clickoutside);
+
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
-        template: '<el-dropdown\
-                    trigger="click">\
-                    <span class="el-dropdown-link">\
-                        <el-input\
-                            ref="toggler"\
-                            :class="{ \'is-focus\': visible }"\
-                            @keydown.native.esc.stop.prevent="handleClose"\
-                            @keydown.native.down.stop.prevent="handleArrowKey(\'down\')"\
-                            @keydown.native.up.stop.prevent="handleArrowKey(\'up\')"\
-                            readonly="readonly" \
-                            v-model="selectedItem" \
-                            :placeholder="placeholder">\
-                            <template slot="suffix">\
-                                <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
-                            </template>\
-                        </el-input>\
-                    </span>\
-                    <el-dropdown-menu slot="dropdown">\
+        template: '<div\
+                    @click.stop="handleToggle"\
+                    v-el-clickoutside="handleClose">\
+                    <el-input\
+                        ref="toggler"\
+                        :class="{ \'is-focus\': visible }"\
+                        @keydown.native.esc.stop.prevent="handleClose"\
+                        @keydown.native.down.stop.prevent="handleArrowKey(\'down\')"\
+                        @keydown.native.up.stop.prevent="handleArrowKey(\'up\')"\
+                        readonly="readonly" \
+                        v-model="selectedItem" \
+                        :placeholder="placeholder">\
+                        <template slot="suffix">\
+                            <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                        </template>\
+                    </el-input>\
+                    <cly-popper\
+                        placement="right"\
+                        width="400"\
+                        ref="popper"\
+                        :append-to-body="popperAppendToBody"\
+                        v-show="visible">\
                         <el-input \
                             ref="searchBox"\
                             v-model="searchQuery"\
@@ -1064,13 +1129,17 @@
                                 </cly-listbox>\
                             </el-tab-pane>\
                         </el-tabs>\
-                    </el-dropdown-menu>\
-                </el-dropdown>',
+                    </cly-popper>\
+                </div>',
         props: {
             tabs: {type: Array},
             searchPlaceholder: {type: String, default: 'Search'},
             placeholder: {type: String, default: 'Select'},
-            value: { type: [String, Number] }
+            value: { type: [String, Number] },
+            popperAppendToBody: {
+                type: Boolean,
+                default: true
+            }
         },
         computed: {
             iconClass: function() {
