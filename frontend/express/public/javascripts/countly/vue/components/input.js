@@ -1029,7 +1029,7 @@
 
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
         template: '<div class="cly-vue-tabbed-listbox el-select"\
-                    v-el-clickoutside="handleClose">\
+                    v-el-clickoutside="handleOutsideClick">\
                     <el-input\
                         v-popover:popover\
                         ref="toggler"\
@@ -1136,8 +1136,15 @@
             };
         },
         methods: {
-            handleClose: function() {
+            handleOutsideClick: function() {
                 this.visible = false;
+            },
+            handleClose: function() {
+                var self = this;
+                this.visible = false;
+                this.$nextTick(function() {
+                    self.$refs.toggler.focus();
+                });
             },
             handleArrowKey: function() {
                 if (!this.visible) {
@@ -1152,6 +1159,12 @@
                 return options.filter(function(option) {
                     return option.label.indexOf(self.searchQuery) > -1;
                 });
+            },
+            updatePopper: function() {
+                var self = this;
+                this.$nextTick(function() {
+                    self.$refs.popover.updatePopper();
+                });
             }
         },
         watch: {
@@ -1162,6 +1175,12 @@
                         self.$refs.searchBox.focus();
                     }
                 });
+            },
+            searchQuery: function() {
+                this.updatePopper();
+            },
+            activeTabId: function() {
+                this.updatePopper();
             }
         }
     }));

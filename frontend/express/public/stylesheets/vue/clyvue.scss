@@ -2865,7 +2865,7 @@
     height: inherit;
     border-radius: $--border-radius-base;
     border: 1px solid $--border-color-base;
-    background-color: $--background-color-base;
+    background-color: #FFF;
     &.is-focus, &:focus-within{
         border-color: $--color-primary;
     }
