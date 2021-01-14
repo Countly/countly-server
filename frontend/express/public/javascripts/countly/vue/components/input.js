@@ -1005,6 +1005,7 @@
             },
             handleItemClick: function(option) {
                 this.$emit("input", option.value);
+                this.$emit("change", option.value);
             },
             handleItemHover: function(option) {
                 this.hovered = option.value;
@@ -1068,6 +1069,7 @@
                                         All\
                                     </span>\
                                     <cly-listbox\
+                                        @change="handleClose"\
                                         v-model="innerValue"\
                                         :options="getMatching(allOptions)">\
                                     </cly-listbox>\
@@ -1077,6 +1079,7 @@
                                         {{tab.label}}\
                                     </span>\
                                     <cly-listbox\
+                                        @change="handleClose"\
                                         v-model="innerValue"\
                                         :options="getMatching(tab.options)">\
                                     </cly-listbox>\
@@ -1156,8 +1159,9 @@
                     return options;
                 }
                 var self = this;
+                var query = self.searchQuery.toLowerCase();
                 return options.filter(function(option) {
-                    return option.label.indexOf(self.searchQuery) > -1;
+                    return option.label.toLowerCase().indexOf(query) > -1;
                 });
             },
             updatePopper: function() {
