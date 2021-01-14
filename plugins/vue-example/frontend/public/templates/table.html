@@ -99,6 +99,9 @@
                             v-model="selectedTLB"
                             :tabs="listBoxTabs">
                         </cly-tabbed-listbox>
+                        <el-select v-model="selectedRadio">
+                            <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in selectWItems"></el-option>
+                        </el-select>
                     </div>
                     <div class="example-cell">
                         {{selectedTLB}}

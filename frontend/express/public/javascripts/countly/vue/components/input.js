@@ -1029,29 +1029,30 @@
 
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
         template: '<div class="cly-vue-tabbed-listbox el-select"\
-                    @click.stop.prevent="handleToggle">\
+                    v-el-clickoutside="handleClose">\
+                    <el-input\
+                        v-popover:popover\
+                        ref="toggler"\
+                        :class="{ \'is-focus\': visible }"\
+                        @keydown.native.esc.stop.prevent="handleClose"\
+                        @keydown.native.down.enter.prevent="handleArrowKey"\
+                        @keydown.native.down.stop.prevent="handleArrowKey"\
+                        @keydown.native.up.stop.prevent="handleArrowKey"\
+                        readonly="readonly" \
+                        v-model="selectedOption.label"\
+                        :placeholder="placeholder">\
+                        <template slot="suffix">\
+                            <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                        </template>\
+                    </el-input>\
                     <el-popover\
+                        ref="popover"\
                         placement="bottom-start"\
                         :visible-arrow="false"\
                         width="400"\
                         v-model="visible"\
-                        trigger="manual">\
-                        <el-input\
-                            slot="reference"\
-                            ref="toggler"\
-                            :class="{ \'is-focus\': visible }"\
-                            @keydown.native.esc.stop.prevent="handleClose"\
-                            @keydown.native.down.stop.prevent="handleArrowKey"\
-                            @keydown.native.up.stop.prevent="handleArrowKey"\
-                            readonly="readonly" \
-                            v-model="selectedOption.label"\
-                            :placeholder="placeholder">\
-                            <template slot="suffix">\
-                                <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
-                            </template>\
-                        </el-input>\
-                        <div\
-                            v-el-clickoutside="handleClose">\
+                        trigger="click">\
+                        <div ref="popContent">\
                             <el-input\
                                 ref="searchBox"\
                                 v-model="searchQuery"\
@@ -1124,6 +1125,9 @@
                 return {};
             }
         },
+        mounted: function() {
+            this.popperElm = this.$refs.popContent; // ignore popover clicks (clickoutside)
+        },
         data: function() {
             return {
                 activeTabId: '_all',
@@ -1132,9 +1136,6 @@
             };
         },
         methods: {
-            handleToggle: function() {
-                this.visible = !this.visible;
-            },
             handleClose: function() {
                 this.visible = false;
             },
@@ -1159,9 +1160,6 @@
                 this.$nextTick(function() {
                     if (newValue) {
                         self.$refs.searchBox.focus();
-                    }
-                    else {
-                        self.$refs.toggler.focus();
                     }
                 });
             }
