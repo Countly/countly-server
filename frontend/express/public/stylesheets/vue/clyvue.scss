@@ -2863,19 +2863,37 @@
 }
 .cly-vue-listbox {
     height: inherit;
-    border-radius: $--border-radius-base;
-    border: 1px solid $--border-color-base;
-    background-color: #FFF;
-    &.is-focus, &:focus-within{
-        border-color: $--color-primary;
-    }
     .el-scrollbar{
         height: inherit;
         &__wrap {
             overflow-x: hidden;
         }
+          
     }
     .el-select-dropdown__list {
-        padding: 6px 0 20px 0;
+        padding: 2px 0 15px 0;
+    }
+
+    .el-select-dropdown__item {
+        padding: 0 7px;
+        border-radius: 7px;
+    }
+
+    &--bordered {
+        border-radius: $--border-radius-base;
+        border: 1px solid $--border-color-base;
+        &.is-focus, &:focus-within{
+            border-color: $--color-primary;
+        }
+    }
+}
+
+.cly-vue-listbox__no-data {
+    padding: 11px 7px 2px 7px;
+}
+
+.cly-vue-tabbed-listbox__pop {
+    .el-tabs__header {
+        margin: 0;
     }
 }

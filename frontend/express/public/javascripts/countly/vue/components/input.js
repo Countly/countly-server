@@ -970,12 +970,13 @@
         template: '<div\
                     class="cly-vue-listbox"\
                     tabindex="0"\
-                    :class="{ \'is-focus\': focused }"\
+                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
                     @mouseenter="handleHover"\
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
                     <el-scrollbar\
+                        v-if="options.length > 0"\
                         tag="ul"\
                         wrap-class="el-select-dropdown__wrap"\
                         view-class="el-select-dropdown__list">\
@@ -992,10 +993,14 @@
                             <span>{{option.label}}</span>\
                         </li>\
                     </el-scrollbar>\
+                    <div v-else class="cly-vue-listbox__no-data">\
+                        No data\
+                    </div>\
                 </div>',
         props: {
             options: {type: Array},
-            value: { type: [String, Number] }
+            value: { type: [String, Number] },
+            bordered: {type: Boolean, default: true}
         },
         methods: {
             navigateOptions: function() {
@@ -1053,7 +1058,7 @@
                         width="400"\
                         v-model="visible"\
                         trigger="click">\
-                        <div ref="popContent">\
+                        <div ref="popContent" class="cly-vue-tabbed-listbox__pop">\
                             <el-input\
                                 ref="searchBox"\
                                 v-model="searchQuery"\
@@ -1069,6 +1074,7 @@
                                         All\
                                     </span>\
                                     <cly-listbox\
+                                        :bordered="false"\
                                         @change="handleClose"\
                                         v-model="innerValue"\
                                         :options="getMatching(allOptions)">\
@@ -1079,6 +1085,7 @@
                                         {{tab.label}}\
                                     </span>\
                                     <cly-listbox\
+                                        :bordered="false"\
                                         @change="handleClose"\
                                         v-model="innerValue"\
                                         :options="getMatching(tab.options)">\
