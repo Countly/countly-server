@@ -566,15 +566,55 @@ window.component('push.dash', function (dash) {
         ]);
     };
 
+    function sortOpts(opts) {
+        return opts.sort(function(a, b){
+            var a = (a.title() || '').toLowerCase(),
+                b = (b.title() || '').toLowerCase();
+            return a > b ? 1 : a === b ? 0 : -1;
+        });
+    }
+
+    C.push.PERS_EVENTS = {};
     C.push.initPersOpts = function() {
-        var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
-            props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
-            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.replace('.', '|'), title: f.name}); });
+        var filters = (window.countlySegmentation ? window.countlySegmentation.getFilters() : []),
+            props = sortOpts(filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); })),
+            custom = sortOpts(filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.replace('.', '|'), title: f.name}); }));
 
         C.push.PERS_OPTS = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
                 .concat(props)
                 .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
                 .concat(custom);
+    };
+
+    C.push.initEvent = function(key) {
+        if (C.push.PERS_EVENTS[key]) {
+            return Promise.resolve();
+        } else {
+            return window.countlySegmentation.initialize(key).then(function() {
+                C.push.PERS_EVENTS[key] = [];
+                var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
+                    segments = [],
+                    props = [];
+                for (var i = 1; i < filters.length; i++) {
+                    var f = filters[i];
+                    if (f.id) {
+                        if (f.id === 'did' || f.id.indexOf('up.') === 0) {
+                            break;
+                        }
+                        var opt = new C.selector.Option({value: '[' + key + ']' + f.id.replace('.', '_'), title: f.name, desc: t.p('pu.po.tab2.ev', key, f.name)});
+
+                        if (f.id.indexOf('sg') === 0) {
+                            segments.push(opt);
+                        } else {
+                            props.push(opt);
+                        }
+                    }
+                }
+                sortOpts(segments);
+                sortOpts(props);
+                C.push.PERS_EVENTS[key] = props.concat(segments);
+            });
+        }
     };
 
     dash.getTokenName = function(token) {

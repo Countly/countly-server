@@ -363,7 +363,7 @@ const PUSH_CACHE_GROUP = 'P';
                             else {
                                 date = new Date().toString();
                             }
-                            push.onEvent(params.app_id, params.app_user.uid, evs[0], date, note).catch(log.e.bind(log));
+                            push.onEvent(params.app_id, params.app_user.uid, params.qstring.events.filter(e => e.key === evs[0])[0], date, note).catch(log.e.bind(log));
                         }, e => {
                             log.e('Couldn\'t load notification %s', k, e);
                         });
