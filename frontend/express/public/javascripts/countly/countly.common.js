@@ -2042,8 +2042,16 @@
                 maxItems = rangeNames.length;
             }
 
-            for (var i = 0; i < maxItems; i++) {
+            var totalPercent = 0;
+
+            for (var i = maxItems - 1; i >= 0; i--) {
                 var percent = Math.floor((rangeTotal[i] / totalSum) * 100);
+                totalPercent += percent;
+
+                if (i === 0) {
+                    percent += 100 - totalPercent;
+                }
+
                 barData[i] = { "name": rangeNames[i], "percent": percent };
             }
 
@@ -2094,11 +2102,11 @@
                 sum += rangeTotal[i];
             }
 
-            for (i = 0; i < maxItems; i++) {
+            for (i = maxItems - 1; i >= 0; i--) {
                 var percent = Math.floor((rangeTotal[i] / sum) * 100);
                 totalPercent += percent;
 
-                if (i === (maxItems - 1)) {
+                if (i === 0) {
                     percent += 100 - totalPercent;
                 }
 
