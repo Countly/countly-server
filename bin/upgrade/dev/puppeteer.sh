@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ -f /etc/redhat-release ]; then
 	if grep -q -i "release 8" /etc/redhat-release ; then
 		#Install raven-release for ipa-gothic-fonts required by puppeteer
