@@ -1071,7 +1071,7 @@
                                 @keydown.native.esc.stop.prevent="handleClose">\
                                 <el-tab-pane name="_all">\
                                     <span slot="label">\
-                                        All\
+                                        {{allPlaceholder}}\
                                     </span>\
                                     <cly-listbox\
                                         :bordered="false"\
@@ -1097,6 +1097,7 @@
                 </div>',
         props: {
             tabs: {type: Array},
+            allPlaceholder: {type: String, default: 'All'},
             searchPlaceholder: {type: String, default: 'Search'},
             placeholder: {type: String, default: 'Select'},
             value: { type: [String, Number] }
@@ -1112,6 +1113,17 @@
                 set: function(newVal) {
                     this.$emit("input", newVal);
                 }
+            },
+            val2tab: function() {
+                if (!this.tabs.length) {
+                    return {};
+                }
+                return this.tabs.reduce(function(items, tab) {
+                    tab.options.forEach(function(opt) {
+                        items[opt.value] = tab.name;
+                    });
+                    return items;
+                }, {});
             },
             allOptions: function() {
                 if (!this.tabs.length) {
@@ -1135,23 +1147,39 @@
                 return {};
             }
         },
-        mounted: function() {
-            this.popperElm = this.$refs.popContent; // ignore popover clicks (clickoutside)
-        },
         data: function() {
             return {
-                activeTabId: '_all',
+                activeTabId: '',
                 searchQuery: '',
                 visible: false
             };
         },
+        mounted: function() {
+            this.popperElm = this.$refs.popContent; // ignore popover clicks (clickoutside)
+            this.determineActiveTabId();
+        },
         methods: {
-            handleOutsideClick: function() {
+            doClose: function() {
                 this.visible = false;
+                this.determineActiveTabId();
+            },
+            determineActiveTabId: function() {
+                var self = this;
+                this.$nextTick(function() {
+                    if (self.selectedOption.value && self.val2tab[self.selectedOption.value]) {
+                        self.activeTabId = self.val2tab[self.selectedOption.value];
+                    }
+                    else {
+                        self.activeTabId = "_all";
+                    }
+                });
+            },
+            handleOutsideClick: function() {
+                this.doClose();
             },
             handleClose: function() {
                 var self = this;
-                this.visible = false;
+                this.doClose();
                 this.$nextTick(function() {
                     self.$refs.toggler.focus();
                 });
