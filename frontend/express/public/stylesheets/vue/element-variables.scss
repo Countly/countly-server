@@ -6,17 +6,23 @@
 
 /* Transition
 -------------------------- */
-$--all-transition: all .3s cubic-bezier(.645,.045,.355,1) !default;
-$--fade-transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1) !default;
-$--fade-linear-transition: opacity 200ms linear !default;
-$--md-fade-transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1) !default;
-$--border-transition-base: border-color .2s cubic-bezier(.645,.045,.355,1) !default;
-$--color-transition-base: color .2s cubic-bezier(.645,.045,.355,1) !default;
+// $--all-transition: all .3s cubic-bezier(.645,.045,.355,1) !default;
+// $--fade-transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1) !default;
+// $--fade-linear-transition: opacity 200ms linear !default;
+// $--md-fade-transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1) !default;
+// $--border-transition-base: border-color .2s cubic-bezier(.645,.045,.355,1) !default;
+// $--color-transition-base: color .2s cubic-bezier(.645,.045,.355,1) !default;
+$--all-transition: none !default;
+$--fade-transition: none !default;
+$--fade-linear-transition: none !default;
+$--md-fade-transition: none !default;
+$--border-transition-base: none !default;
+$--color-transition-base: none !default;
 
 /* Color
 -------------------------- */
 /// color|1|Brand Color|0
-$--color-primary: #409EFF !default;
+$--color-primary: #2FA732 !default;
 /// color|1|Background Color|4
 $--color-white: #FFFFFF !default;
 /// color|1|Background Color|4
