@@ -1611,8 +1611,16 @@ function cachedData(note) {
         });
     };
 
-    api.onEvent = function(app_id, uid, key, date, msg) {
-        log.d('[auto] Processing event %j @ %s for user %s', key, new Date(date), uid);
+    api.onEvent = function(app_id, uid, event, date, msg) {
+        let data = {
+            [`[${event.key}]c`]: event.count,
+            [`[${event.key}]s`]: event.sum,
+            [`[${event.key}]d`]: event.duration,
+        };
+        Object.keys(event.segmentation || {}).forEach(k => {
+            data[`[${event.key}]sg_${k}`] = event.segmentation[k];
+        });
+        log.d('[auto] Processing event %j @ %s for user %s', event, new Date(date), uid);
         return new Promise((resolve, reject) => {
             common.db.collection('apps').findOne({_id: typeof app_id === 'string' ? common.db.ObjectID(app_id) : app_id}, (err, app) => {
                 if (err) {
@@ -1625,7 +1633,7 @@ function cachedData(note) {
                         let sg = new S.StoreGroup(common.db),
                             note = new N.Note(msg);
 
-                        sg.pushUids(note, app, [uid], date || new Date().toString()).then(count => {
+                        sg.pushUids(note, app, [uid], date || new Date().toString(), undefined, data).then(count => {
                             if (count) {
                                 note.update(common.db, {$inc: {'result.total': count.total}});
                                 resolve(count.total || 0);
