@@ -1,4 +1,5 @@
 var should = require('should');
+var countlyConfig = require("../frontend/express/config.js");
 should.Assertion.add('haveSameItems', function(other) {
     this.params = { operator: 'to be have same items' };
 
@@ -33,7 +34,7 @@ var testUtils = function testUtils() {
     };
     var RE = /^-{0,1}\d*\.{0,1}\d+$/;
 
-    this.url = "http://localhost";
+    this.url = "http://localhost" + (countlyConfig.path || "");
     this.name = "Test Test";
     this.username = "test";
     this.password = "Test1test$";

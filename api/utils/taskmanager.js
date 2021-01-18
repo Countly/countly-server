@@ -6,6 +6,7 @@
 /** @lends module:api/utils/taskmanager */
 var taskmanager = {};
 var common = require("./common.js");
+var countlyConfig = require("../../frontend/express/config.js");
 var countlyFs = require("./countlyFs.js");
 var crypto = require("crypto");
 var request = require("request");
@@ -79,7 +80,7 @@ taskmanager.longtask = function(options) {
             delete json.api_key;
 
             options.request = {
-                uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.params.fullPath,
+                uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + options.params.fullPath,
                 method: 'POST',
                 json: json
             };
@@ -446,7 +447,7 @@ taskmanager.checkIfRunning = function(options, callback) {
         //delete jquery param to prevent caching
         delete json._;
         query.request = {
-            uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.params.fullPath,
+            uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + options.params.fullPath,
             method: 'POST',
             json: json
         };
