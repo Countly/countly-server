@@ -93,7 +93,7 @@
 .form-group > .comp-grid:nth-child(1) { margin: 0 0 5px 0; }
 .comp-push input { font-size: 12px; }
 
-.comp-slider .btns { position: fixed; bottom: 0; right: 0; width: 968px; height: 78px; padding: 0; background-color: white; z-index: 100001; }
+.comp-slider .btns { position: fixed; bottom: 0; right: 0; left: auto; width: 968px; height: 78px; padding: 0; background-color: white; z-index: 100001; }
 .comp-slider .btns > a { margin: 18px; border-radius: 2px; }
 /* .comp-slider .btns > a:first-child { margin-left: 36px; }
 .comp-slider .btns > a:last-child { margin-right: 36px; } */
@@ -287,8 +287,16 @@
     animation: border-pulsate 0.5s 3;
 }
 
+.cly-select .srch { top:100%; position:absolute; z-index:2; background-color: #FFF; width:100%; border:1px solid #D0D0D0; border-bottom:none; margin-left:-1px; cursor:default; overflow:auto; }
+.cly-select .srch .fa { position: absolute; right:0; top:5px; color:#CCC; font-size: 10px; }
+.cly-select .srch .inner { position:relative; margin:5px 8px; padding:4px 1px; padding-right:20px; background-color:#FFF; font:13px Ubuntu; line-height:111%; }
+.cly-select .srch input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; -webkit-appearance: textfield; }
+.cly-select .srch input::-webkit-srch-decoration { -webkit-appearance: none; }
+.cly-select .srch + .select-items { margin-top: 33px; border-top-left-radius: 0; border-top-right-radius: 0; }
+
 .pers-panel .cly-select .select-items .scroll-list {
-    max-height: 136px;
+    max-height: 170px;
+    z-index: 1;
 }
 
 .comp-slider .pers-panel .btns {
@@ -297,6 +305,7 @@
     border: none;
     margin-top: 20px;
     height: 30px;
+    z-index: 0;
 }
 
 .comp-slider .pers-panel .btns > a {

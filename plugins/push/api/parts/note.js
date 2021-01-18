@@ -406,7 +406,7 @@ class Note {
             k = parseInt(k);
             ret = ret.substr(0, k) + (p.c && v ? v.substr(0, 1).toUpperCase() + v.substr(1) : (v || p.f)) + ret.substr(k);
         });
-        return ret;
+        return ret.trim();
     }
 
     /**
@@ -468,7 +468,7 @@ class Note {
             collapseKey = o.collapseKey || this.collapseKey || null,
             expiryDate = o.expiryDate || this.expiryDate || null,
             buttonsJSON = buttons > 0 ? new Array(buttons).fill(undefined).map((_, i) => {
-                return {t: mpl[`default${S}${i}${S}t`], l: mpl[`default${S}${i}${S}l`]};
+                return {t: (mpl[`default${S}${i}${S}t`] || '').trim(), l: (mpl[`default${S}${i}${S}l`] || '').trim()};
             }) : null,
             compiled;
 

@@ -8,6 +8,7 @@ var exports = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
     plugin = require('./../../../plugins/pluginManager.js'),
+    countlyConfig = require("../../../frontend/express/config.js"),
     json2csv = require('json2csv'),
     json2xls = require('json2xls'),
     request = require("request");
@@ -465,7 +466,7 @@ exports.fromRequest = function(options) {
         options.path = "/" + options.path;
     }
     var opts = {
-        uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.path,
+        uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + options.path,
         method: options.method || 'POST',
         json: options.data || {},
         strictSSL: false

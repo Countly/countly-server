@@ -670,9 +670,10 @@ class Store extends Base {
      * @param {Number} date         date to override sending time
      * @param {Object} over         message properties to override in note
      * @param {Boolean} clear       whether to ensure only one message per note can be in collection at a time for a particular user
+     * @param {Boolean} extras      extra data fields (from event so far)
      * @return {Promise} promise
      */
-    async pushFetched(note, uids, date, over, clear) {
+    async pushFetched(note, uids, date, over, clear, extras) {
         let offset = momenttz.tz(this.app.timezone).utcOffset(),
             fields = note.compilationDataFields(),
             query = await this._fetchedQuery(note, uids);
@@ -703,6 +704,9 @@ class Store extends Base {
             pushed = await this._push(users.map(usr => {
                 let add = (periods.filter(p => p[0] > i)[0] || periods[periods.length - 1])[1];
                 i++;
+                if (extras) {
+                    Object.assign(usr, extras);
+                }
                 return this.mapUser(id++, note, offset, date, over, usr, add);
             }), note._id);
         ret.inserted += pushed.inserted;
@@ -1754,10 +1758,11 @@ class StoreGroup {
      * @param {array} uids - user id's
      * @param {object} date - date
      * @param {object} over - over
+     * @param {object} extras - extra data (from event)
      * @returns {object} - {total: total, next: next}
      */
-    async pushUids(note, app, uids, date, over) {
-        log.i('Note %s pushing %d users for app %s date %j over %j', note.id, uids.length, app._id, date, over);
+    async pushUids(note, app, uids, date, over, extras) {
+        log.i('Note %s pushing %d users for app %s date %j over %j extras %j', note.id, uids.length, app._id, date, over, extras);
         let stores = (await this.stores(note)).filter(store => store.app._id.equals(app._id));
 
         if (!stores.length) {
@@ -1766,7 +1771,7 @@ class StoreGroup {
         }
 
         let results = await Promise.all(stores.map(async store => {
-            let result = await store.pushFetched(note, uids, date, over, true);
+            let result = await store.pushFetched(note, uids, date, over, true, extras);
             result.collection = store.collectionName;
             result.field = store.field;
             result.cid = store.credentials._id;
