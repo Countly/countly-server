@@ -424,7 +424,7 @@ window.component('push.popup', function(popup) {
                         var persOpts = push.PERS_OPTS.slice();
                         if (message.auto() && message.autoOnEntry() === 'events') {
                             message.autoEvents().forEach(function(key) {
-                                let data = push.PERS_EVENTS[key];
+                                var data = push.PERS_EVENTS[key];
                                 if (data && data.length) {
                                     persOpts = persOpts.concat([new C.selector.Option({title: key})]).concat(data);
                                 }
