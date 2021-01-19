@@ -174,7 +174,7 @@
                     if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
                         convertedResponse.echo >= context.state[echoKey]) {
                         if (typeof options.onReady === 'function') {
-                            convertedResponse.rows = options.onReady(convertedResponse.rows);
+                            convertedResponse.rows = options.onReady(context, convertedResponse.rows);
                         }
                         context.commit(_capitalized("set", resourceName), convertedResponse);
                     }

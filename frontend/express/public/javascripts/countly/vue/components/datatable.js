@@ -15,6 +15,7 @@
                                 '<i class="fa fa-search"></i>\n' +
                             '</div>\n' +
                             '<input type="text" ref="searchInput" v-show="searchVisible" class="vgt-input" :placeholder="i18n(\'common.search\')" v-bind:value="searchQuery" @input="queryChanged($event.target.value)"/>\n' +
+                            '<slot name="search-options"></slot>\n' +
                         '</div>\n' +
                         '<div class="cly-vgt-custom-paginator">\n' +
                             '<div class="display-items">\n' +
@@ -357,6 +358,23 @@
             }
         },
         computed: {
+            forwardedSlots: function () {
+                var self = this;
+                return Object.keys(this.$scopedSlots).reduce(function(slots, slotKey) {
+                    if (slotKey !== "search-options") {
+                        slots[slotKey] = self.$scopedSlots[slotKey];
+                    }
+                    return slots;
+                }, {});
+            },
+            controlSlots: function () {
+                if (this.$scopedSlots["search-options"]) {
+                    return {
+                       "search-options": this.$scopedSlots["search-options"]
+                    }
+                }
+                return {};
+            },
             innerStyles: function() {
                 var styles = ['cly-vgt-table'];
                 if (this.striped) {
@@ -576,9 +594,12 @@
                                     ':notFilteredTotal="notFilteredTotal"\n' +
                                     ':pageChanged="props.pageChanged"\n' +
                                     ':perPageChanged="props.perPageChanged">\n' +
+                                    '<template v-for="(_, name) in controlSlots" v-slot:[name]="slotData">\n' +
+                                        '<slot :name="name" v-bind="addTableFns(slotData)" />\n' +
+                                    '</template>\n' +
                                     '</custom-controls>\n' +
                                 '</template>\n' +
-                                '<template v-for="(_, name) in $scopedSlots" v-slot:[name]="slotData">\n' +
+                                '<template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\n' +
                                     '<slot :name="name" v-bind="addTableFns(slotData)" />\n' +
                                 '</template>\n' +
                                 '<template v-slot:table-actions-bottom>\n' +
@@ -619,9 +640,9 @@
             }
         },
         template: '<div class="cly-vue-dt-options">\n' +
-                        '<div v-if="scope.props.row._delayedDelete" class="undo-row">\n' +
+                        '<div @click.stop v-if="scope.props.row._delayedDelete" class="undo-row">\n' +
                             '{{ scope.props.row._delayedDelete.message }}\n' +
-                            '<a @click="scope.props.row._delayedDelete.abort()">Undo.</a>\n' +
+                            '<a @click.stop="scope.props.row._delayedDelete.abort()">Undo.</a>\n' +
                         '</div>\n' +
                         '<span>\n' +
                             '<a class="cly-row-options-trigger" @click.stop="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\n' +
