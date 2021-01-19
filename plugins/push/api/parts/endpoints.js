@@ -1711,25 +1711,25 @@ function cachedData(note) {
         return new Promise((resolve, reject) => {
             try {
                 if (url) {
-                    common.db.collection('plugins').findOne({}, (error, plugins) => {
-                        if (error || !plugins) {
+                    common.db.collection('plugins').findOne({}, (error, configs) => {
+                        if (error || !configs) {
                             return reject([400, 'No db']);
                         }
 
                         log.d('Retrieving URL', url);
                         var parsed = require('url').parse(url);
 
-                        if (plugins.push && plugins.push.proxyhost) {
+                        if (configs.push && configs.push.proxyhost) {
                             let opts = {
-                                host: plugins.push.proxyhost,
+                                host: configs.push.proxyhost,
                                 method: 'CONNECT',
                                 path: parsed.hostname + ':' + (parsed.port ? parsed.port : (parsed.protocol === 'https:' ? 443 : 80))
                             };
-                            if (plugins.push.proxyport) {
-                                opts.port = plugins.push.proxyport;
+                            if (configs.push.proxyport) {
+                                opts.port = configs.push.proxyport;
                             }
-                            if (plugins.push.proxyuser) {
-                                opts.headers = {'Proxy-Authorization': 'Basic ' + Buffer.from(plugins.push.proxyuser + ':' + plugins.push.proxypass).toString('base64')};
+                            if (configs.push.proxyuser) {
+                                opts.headers = {'Proxy-Authorization': 'Basic ' + Buffer.from(configs.push.proxyuser + ':' + configs.push.proxypass).toString('base64')};
                             }
                             log.d('Connecting to proxy', opts);
 
