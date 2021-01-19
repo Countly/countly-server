@@ -78,9 +78,9 @@ function merge_drill_data(viewdata, callback) {
                             type = meta_event.sg[eventdata.segment].type;
                         }
                     }
-					var keyold;
-					var keynew;
-					var updateObj = {$set: {}, $unset: {}};
+                    var keyold;
+                    var keynew;
+                    var updateObj = {$set: {}, $unset: {}};
                     if (type === 'l') {
                         keyold = [eventdata.segment] + ".values." + countlyDb.encode(eventdata.oldvalue);
                         keynew = [eventdata.segment] + ".values." + countlyDb.encode(eventdata.newvalue);
@@ -122,9 +122,9 @@ function merge_drill_data(viewdata, callback) {
 function check_renames(done) {
     console.log("Check if there are not unfinished renaming processes");
     countlyDb.collection('app_viewsmeta_renames').find({}).toArray(function(err, merges) {
-		if(err){
-			console.log(err);
-		}
+        if (err) {
+            console.log(err);
+        }
         if (merges.length === 0) {
             done();
         }
@@ -145,98 +145,98 @@ function check_renames(done) {
 }
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).spread(function(db, db_drill) {
-	countlyDb = db;
-	countly_drill = db_drill;
-	check_renames(function() {
-		countlyDb.collection('views').find({_id: countlyDb.ObjectID(appId)}).toArray(function(err, viewBase) {
-			countlyDb.collection("app_viewsmeta" + appId).find({$or: [{'view': {$regex: fromValue}}, {'url': {$regex: fromValue}}]}).toArray(function(err, res) {
-				if (err) {
-					console.log(err);
-					countlyDb.close();
-				}
-				else {
-					if (res && res.length > 0) {
-						console.log("Updating" + res.length + " views");
-						Promise.each(res, function(viewdata) {
-							return new Promise(function(resolve/*, reject*/) {
-								console.log("Updating view: " + viewdata.view);
-								var ob = {_id: viewdata.view, "view": viewdata.view, "to": viewdata.view.replace(fromValue, toValue)};
-								var setOb = {"view": ob.to};
-								if (viewdata.url) {
-									if (viewdata.url.indexOf(fromValue) > -1) {
-										setOb["url"] = viewdata.url.replace(fromValue, toValue);
-										ob["url"] = setOb["url"];
-									}
-								}
-								else {
-									viewdata.url = viewdata.view;
-									ob["url"] = viewdata.url;
-								}
+    countlyDb = db;
+    countly_drill = db_drill;
+    check_renames(function() {
+        countlyDb.collection('views').find({_id: countlyDb.ObjectID(appId)}).toArray(function(err, viewBase) {
+            countlyDb.collection("app_viewsmeta" + appId).find({$or: [{'view': {$regex: fromValue}}, {'url': {$regex: fromValue}}]}).toArray(function(err, res) {
+                if (err) {
+                    console.log(err);
+                    countlyDb.close();
+                }
+                else {
+                    if (res && res.length > 0) {
+                        console.log("Updating" + res.length + " views");
+                        Promise.each(res, function(viewdata) {
+                            return new Promise(function(resolve/*, reject*/) {
+                                console.log("Updating view: " + viewdata.view);
+                                var ob = {_id: viewdata.view, "view": viewdata.view, "to": viewdata.view.replace(fromValue, toValue)};
+                                var setOb = {"view": ob.to};
+                                if (viewdata.url) {
+                                    if (viewdata.url.indexOf(fromValue) > -1) {
+                                        setOb["url"] = viewdata.url.replace(fromValue, toValue);
+                                        ob["url"] = setOb["url"];
+                                    }
+                                }
+                                else {
+                                    viewdata.url = viewdata.view;
+                                    ob["url"] = viewdata.url;
+                                }
 
-								countlyDb.collection('app_viewsmeta_renames').insert(ob, function(err) {
-									if (err) {
-										if (err.code !== 11000) {
-											console.log(err);
-										}
-									}
-									console.log("Try renaming in app_viewsmeta");
-									console.log(viewdata._id);
-									console.log(JSON.stringify(setOb));
-									countlyDb.collection("app_viewsmeta" + appId).update({_id: countlyDb.ObjectID(viewdata._id)}, {$set: setOb}, function(err) {
-										if (err) {
-											console.log("Couldn't rename");
-											//we have error  - need to merge views.
-											//get current view with that name
-											countlyDb.collection("app_viewsmeta" + appId).findOne({"view": ob.to}, function(err, newview) {
-												console.log(newview);
-												console.log("Add to merge list: " + ob.to);
-												var iOb = {_id: newview._id + "_" + appId, "view": ob.to, "base": countlyDb.ObjectID(newview._id), mergeIn: [viewdata._id], "appID": appId, "segments": viewBase.segments};
+                                countlyDb.collection('app_viewsmeta_renames').insert(ob, function(err) {
+                                    if (err) {
+                                        if (err.code !== 11000) {
+                                            console.log(err);
+                                        }
+                                    }
+                                    console.log("Try renaming in app_viewsmeta");
+                                    console.log(viewdata._id);
+                                    console.log(JSON.stringify(setOb));
+                                    countlyDb.collection("app_viewsmeta" + appId).update({_id: countlyDb.ObjectID(viewdata._id)}, {$set: setOb}, function(err) {
+                                        if (err) {
+                                            console.log("Couldn't rename");
+                                            //we have error  - need to merge views.
+                                            //get current view with that name
+                                            countlyDb.collection("app_viewsmeta" + appId).findOne({"view": ob.to}, function(err, newview) {
+                                                console.log(newview);
+                                                console.log("Add to merge list: " + ob.to);
+                                                var iOb = {_id: newview._id + "_" + appId, "view": ob.to, "base": countlyDb.ObjectID(newview._id), mergeIn: [viewdata._id], "appID": appId, "segments": viewBase.segments};
 
-												countlyDb.collection('app_viewsmeta_merges').insert(iOb, function(err) {
-													if (err) {
-														if (err.code !== 11000) {
-															console.log(err);
-														}
-													}
-													merge_drill_data(viewdata, function() {
-														countlyDb.collection('app_viewsmeta_renames').remove({_id: ob._id}, function() {
-															resolve();
-														});
-													});
-												});
-											});
+                                                countlyDb.collection('app_viewsmeta_merges').insert(iOb, function(err) {
+                                                    if (err) {
+                                                        if (err.code !== 11000) {
+                                                            console.log(err);
+                                                        }
+                                                    }
+                                                    merge_drill_data(viewdata, function() {
+                                                        countlyDb.collection('app_viewsmeta_renames').remove({_id: ob._id}, function() {
+                                                            resolve();
+                                                        });
+                                                    });
+                                                });
+                                            });
 
-										}
-										else {
-											merge_drill_data(viewdata, function() {
-												countlyDb.collection('app_viewsmeta_renames').remove({_id: ob._id}, function() {
-													resolve();
-												});
-											});
-										}
-									});
-								});
-							});
-						}).then(function() {
-							console.log("finished");
-							countlyDb.close();
+                                        }
+                                        else {
+                                            merge_drill_data(viewdata, function() {
+                                                countlyDb.collection('app_viewsmeta_renames').remove({_id: ob._id}, function() {
+                                                    resolve();
+                                                });
+                                            });
+                                        }
+                                    });
+                                });
+                            });
+                        }).then(function() {
+                            console.log("finished");
+                            countlyDb.close();
 
-							if (countly_drill) {
-								countly_drill.close();
-							}
-						});
-					}
-					else {
-						console.log("Couldn't find any view to rename");
-						countlyDb.close();
+                            if (countly_drill) {
+                                countly_drill.close();
+                            }
+                        });
+                    }
+                    else {
+                        console.log("Couldn't find any view to rename");
+                        countlyDb.close();
 
-						if (countly_drill) {
-							countly_drill.close();
-						}
-					}
-				}
-			});
-		});
-	});
+                        if (countly_drill) {
+                            countly_drill.close();
+                        }
+                    }
+                }
+            });
+        });
+    });
 });
 

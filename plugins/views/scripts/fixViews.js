@@ -123,10 +123,11 @@ function fixCollection(collection, mergeIN, mergeTo, appID, done) {
 }
 
 function fixViews(viewBase, appID, views, done) {
+    views = views || {};
     var base = views.viewids[0];
     // var failedCn = 0;
     var mergeIn = [];
-    views = views || {};
+
     views.viewids = views.viewids || [];
     for (var k = 1; k < views.viewids.length; k++) {
         mergeIn.push(countlyDb.ObjectID(views.viewids[k]));
