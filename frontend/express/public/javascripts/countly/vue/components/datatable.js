@@ -640,14 +640,22 @@
             }
         },
         template: '<div class="cly-vue-dt-options">\n' +
-                        '<div @click.stop v-if="scope.props.row._delayedDelete" class="undo-row">\n' +
-                            '{{ scope.props.row._delayedDelete.message }}\n' +
-                            '<a @click.stop="scope.props.row._delayedDelete.abort()">Undo.</a>\n' +
-                        '</div>\n' +
                         '<span>\n' +
                             '<a class="cly-row-options-trigger" @click.stop="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\n' +
                         '</span>\n' +
                     '</div>'
+    }));
+
+    Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({
+        props: {
+            delayedAction: {
+                type: Object
+            },
+        },
+        template:   '<div @click.stop v-if="delayedAction" class="undo-row">\n' +
+                        '<slot></slot>\n' +
+                        '<a @click.stop="delayedAction.abort()">Undo.</a>\n' +
+                    '</div>\n'
     }));
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));

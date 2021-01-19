@@ -36,6 +36,12 @@
                                 <span v-else>
                                     {{scope.props.formattedRow[scope.props.column.field]}}
                                 </span>
+
+                                <cly-datatable-undo-row
+                                    v-if="scope.props.column.field == 'cly-options'"
+                                    :delayed-action="scope.props.row._delayedDelete">
+                                    You deleted a record.
+                                </cly-datatable-undo-row>
                             </template>
                         </cly-datatable>
                         <cly-diff-helper

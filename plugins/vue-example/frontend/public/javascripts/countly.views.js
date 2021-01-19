@@ -193,7 +193,6 @@
                     row: row,
                     fields: {
                         _delayedDelete: new countlyVue.helpers.DelayedAction(
-                            "You deleted a record.",
                             function() {
                                 self.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
                             },
