@@ -1,4 +1,3 @@
-/*global console, require*/
 /**
 Path to file: {COUNTLY DIR}/plugins/views/scripts/renameViews.js
 Script renames views for app. 
