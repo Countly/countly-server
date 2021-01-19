@@ -1711,20 +1711,67 @@ function cachedData(note) {
         return new Promise((resolve, reject) => {
             try {
                 if (url) {
-                    log.d('Retrieving URL', url);
-                    var parsed = require('url').parse(url);
+                    common.db.collection('plugins').findOne({}, (error, plugins) => {
+                        if (error || !plugins) {
+                            return reject([400, 'No db']);
+                        }
 
-                    parsed.method = 'HEAD';
-                    log.d('Parsed', parsed);
+                        log.d('Retrieving URL', url);
+                        var parsed = require('url').parse(url);
 
-                    let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
-                        resolve({status: res.statusCode, headers: res.headers});
+                        if (plugins.push && plugins.push.proxyhost) {
+                            let opts = {
+                                host: plugins.push.proxyhost,
+                                method: 'CONNECT',
+                                path: parsed.hostname + ':' + (parsed.port ? parsed.port : (parsed.protocol === 'https:' ? 443 : 80))
+                            };
+                            if (plugins.push.proxyport) {
+                                opts.port = plugins.push.proxyport;
+                            }
+                            if (plugins.push.proxyuser) {
+                                opts.headers = {'Proxy-Authorization': 'Basic ' + Buffer.from(plugins.push.proxyuser + ':' + plugins.push.proxypass).toString('base64')};
+                            }
+                            log.d('Connecting to proxy', opts);
+
+                            require('http').request(opts).on('connect', (res, socket) => {
+                                if (res.statusCode === 200) {
+                                    parsed.method = 'HEAD';
+                                    parsed.agent = false;
+                                    log.d('Parsed proxied', parsed);
+                                    parsed.socket = socket;
+
+                                    let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res2) => {
+                                        resolve({status: res2.statusCode, headers: res2.headers});
+                                    });
+                                    req.on('error', (err) => {
+                                        log.e('error when HEADing ' + url, err);
+                                        reject([400, 'Cannot access proxied URL']);
+                                    });
+                                    req.end();
+                                }
+                                else {
+                                    log.e('Cannot connect to proxy %j: %j / %j', opts, res.statusCode, res.statusMessage);
+                                    reject([400, 'Cannot access proxy']);
+                                }
+                            }).on('error', (err) => {
+                                reject([400, 'Cannot connect to proxy server']);
+                                log.e('error when CONNECTing %j', opts, err);
+                            }).end();
+                        }
+                        else {
+                            parsed.method = 'HEAD';
+                            log.d('Parsed', parsed);
+
+                            let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
+                                resolve({status: res.statusCode, headers: res.headers});
+                            });
+                            req.on('error', (err) => {
+                                log.e('error when HEADing ' + url, err);
+                                reject([400, 'Cannot access URL']);
+                            });
+                            req.end();
+                        }
                     });
-                    req.on('error', (err) => {
-                        log.e('error when HEADing ' + url, err);
-                        reject([400, 'Cannot access URL']);
-                    });
-                    req.end();
                 }
                 else {
                     reject([400, 'No url']);
