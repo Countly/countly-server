@@ -1291,14 +1291,22 @@ window.component('push.popup', function(popup) {
                                                 el.querySelectorAll('.pers').forEach(function(el){
                                                     el.textContent = el.getAttribute('data-fallback');
 
-                                                    var name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                    var key = el.getAttribute('data-key'),
+                                                    name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === key; })[0];
                                                     if (name) {
-                                                        name = name.title();
+                                                        name =  t.p('pu.po.tab2.tt', name.title(), el.getAttribute('data-fallback'));
+                                                    } else if (message.auto() && message.autoOnEntry() === 'events') {
+                                                        name = message.autoEvents().map(function(event){
+                                                            return push.PERS_EVENTS && push.PERS_EVENTS[event] && push.PERS_EVENTS[event].filter(function(opt){ return opt.value() === key; })[0];
+                                                        }).filter(function(opt) { return !!opt; })[0];
+                                                        if (name) {
+                                                            name = name.desc() || t.p('pu.po.tab2.tt', name.title(), el.getAttribute('data-fallback'));
+                                                        }
                                                     }
                                                     if (!name) {
-                                                        name = el.getAttribute('data-key');
+                                                        name = t.p('pu.po.tab2.tt', el.getAttribute('data-key'), el.getAttribute('data-fallback'));
                                                     }
-                                                    el.title = t.p('pu.po.tab2.tt', name, el.getAttribute('data-fallback'));
+                                                    el.title = name;
                                                     $(el).tooltipster({
                                                         animation: 'fade',
                                                         animationDuration: 100,
