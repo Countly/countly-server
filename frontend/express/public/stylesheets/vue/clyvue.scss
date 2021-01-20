@@ -611,8 +611,15 @@
             }
         }
 
+        &.check-star-skin .ion-icons{
+            color: #6B6B6B;
+            font-size:20px;
+            padding-top:0px;
+        }
+
         &.check-switch-skin,
-        &.check-tick-skin {
+        &.check-tick-skin,
+        &.check-star-skin {
             .check-wrapper {
                 position: relative;
                 -webkit-user-select: none;

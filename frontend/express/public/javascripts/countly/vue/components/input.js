@@ -479,7 +479,7 @@
             computed: {
                 topClasses: function() {
                     var classes = [];
-                    if (["switch", "tick"].indexOf(this.skin) > -1) {
+                    if (["switch", "tick", "star"].indexOf(this.skin) > -1) {
                         classes.push("check-" + this.skin + "-skin");
                     }
                     else {
@@ -509,6 +509,15 @@
                         }
                         else {
                             classes.push("fa-square-o");
+                        }
+                    }
+                    else if (this.skin === "star") {
+                        classes.push("ion-icons");
+                        if (value) {
+                            classes.push("ion-android-star");
+                        }
+                        else {
+                            classes.push("ion-android-star-outline");
                         }
                     }
                     return classes;
