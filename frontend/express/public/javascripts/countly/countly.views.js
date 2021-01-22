@@ -1902,7 +1902,7 @@ window.DeviceTypeView = countlyView.extend({
             "logo-class": "device_type",
             "graph-type-double-pie": true,
             "pie-titles": {
-                "left": jQuery.i18n.map["common.total-users"],
+                "left": jQuery.i18n.map["common.total-sessions"],
                 "right": jQuery.i18n.map["common.new-users"]
             },
             "chart-helper": "device_type.chart"
