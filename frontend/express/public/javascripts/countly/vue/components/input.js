@@ -1040,7 +1040,86 @@
         }
     }));
 
+    var TabbedOptionsMixin = {
+        props: {
+            tabs: {type: Array},
+        },
+        data: function() {
+            return {
+                activeTabId: ''
+            };
+        },
+        computed: {
+            val2tab: function() {
+                if (!this.tabs.length) {
+                    return {};
+                }
+                return this.tabs.reduce(function(items, tab) {
+                    tab.options.forEach(function(opt) {
+                        items[opt.value] = tab.name;
+                    });
+                    return items;
+                }, {});
+            },
+            allOptions: function() {
+                if (!this.tabs.length) {
+                    return [];
+                }
+                return this.tabs.reduce(function(items, tab) {
+                    return items.concat(tab.options);
+                }, []);
+            },
+            selectedOption: function() {
+                if (!this.allOptions.length) {
+                    return {};
+                }
+                var self = this;
+                var matching = this.allOptions.filter(function(item) {
+                    return item.value === self.value;
+                });
+                if (matching.length) {
+                    return matching[0];
+                }
+                return {};
+            }
+        },
+        methods: {
+            determineActiveTabId: function() {
+                var self = this;
+                this.$nextTick(function() {
+                    if (self.selectedOption.value && self.val2tab[self.selectedOption.value]) {
+                        self.activeTabId = self.val2tab[self.selectedOption.value];
+                    }
+                    else {
+                        self.activeTabId = "_all";
+                    }
+                });
+            },
+        }
+    };
+
+    var SearchableOptionsMixin = {
+        data: function() {
+            return {
+                searchQuery: ''
+            };
+        },
+        methods: {
+            getMatching: function(options) {
+                if (!this.searchQuery) {
+                    return options;
+                }
+                var self = this;
+                var query = self.searchQuery.toLowerCase();
+                return options.filter(function(option) {
+                    return option.label.toLowerCase().indexOf(query) > -1;
+                });
+            }
+        }
+    };
+
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
+        mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
         template: '<cly-input-dropdown v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
                         <el-input\
                             ref="searchBox"\
@@ -1077,7 +1156,6 @@
                         </el-tabs>\
                     </cly-input-dropdown>',
         props: {
-            tabs: {type: Array},
             allPlaceholder: {type: String, default: 'All'},
             searchPlaceholder: {type: String, default: 'Search'},
             placeholder: {type: String, default: 'Select'},
@@ -1091,45 +1169,7 @@
                 set: function(newVal) {
                     this.$emit("input", newVal);
                 }
-            },
-            val2tab: function() {
-                if (!this.tabs.length) {
-                    return {};
-                }
-                return this.tabs.reduce(function(items, tab) {
-                    tab.options.forEach(function(opt) {
-                        items[opt.value] = tab.name;
-                    });
-                    return items;
-                }, {});
-            },
-            allOptions: function() {
-                if (!this.tabs.length) {
-                    return [];
-                }
-                return this.tabs.reduce(function(items, tab) {
-                    return items.concat(tab.options);
-                }, []);
-            },
-            selectedOption: function() {
-                if (!this.allOptions.length) {
-                    return {};
-                }
-                var self = this;
-                var matching = this.allOptions.filter(function(item) {
-                    return item.value === self.value;
-                });
-                if (matching.length) {
-                    return matching[0];
-                }
-                return {};
             }
-        },
-        data: function() {
-            return {
-                activeTabId: '',
-                searchQuery: ''
-            };
         },
         mounted: function() {
             this.determineActiveTabId();
@@ -1138,27 +1178,6 @@
             doClose: function() {
                 this.determineActiveTabId();
                 this.$refs.dropdown.handleClose();
-            },
-            determineActiveTabId: function() {
-                var self = this;
-                this.$nextTick(function() {
-                    if (self.selectedOption.value && self.val2tab[self.selectedOption.value]) {
-                        self.activeTabId = self.val2tab[self.selectedOption.value];
-                    }
-                    else {
-                        self.activeTabId = "_all";
-                    }
-                });
-            },
-            getMatching: function(options) {
-                if (!this.searchQuery) {
-                    return options;
-                }
-                var self = this;
-                var query = self.searchQuery.toLowerCase();
-                return options.filter(function(option) {
-                    return option.label.toLowerCase().indexOf(query) > -1;
-                });
             },
             updateDropdown: function() {
                 this.$refs.dropdown.updateDropdown();
