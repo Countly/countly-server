@@ -86,7 +86,7 @@
                     this.visible = true;
                 }
             },
-            updatePopper: function() {
+            updateDropdown: function() {
                 var self = this;
                 this.$nextTick(function() {
                     self.$refs.popover.updatePopper();
@@ -118,8 +118,8 @@
             handleClose: function() {
                 this.$refs.dropdown.handleClose();
             },
-            updatePopper: function() {
-                this.$refs.dropdown.updatePopper();
+            updateDropdown: function() {
+                this.$refs.dropdown.updateDropdown();
             }
         }
     }));

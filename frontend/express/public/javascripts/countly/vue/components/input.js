@@ -1075,7 +1075,7 @@
                                 </cly-listbox>\
                             </el-tab-pane>\
                         </el-tabs>\
-                </cly-input-dropdown>',
+                    </cly-input-dropdown>',
         props: {
             tabs: {type: Array},
             allPlaceholder: {type: String, default: 'All'},
@@ -1160,8 +1160,8 @@
                     return option.label.toLowerCase().indexOf(query) > -1;
                 });
             },
-            updatePopper: function() {
-                this.$refs.dropdown.updatePopper();
+            updateDropdown: function() {
+                this.$refs.dropdown.updateDropdown();
             }
         },
         watch: {
@@ -1174,10 +1174,10 @@
                 });
             },
             searchQuery: function() {
-                this.updatePopper();
+                this.updateDropdown();
             },
             activeTabId: function() {
-                this.updatePopper();
+                this.updateDropdown();
             }
         }
     }));
