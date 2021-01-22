@@ -82,6 +82,24 @@
             <cly-panel title="Form elements" v-bind:date-selector="false">
                 <div class="example-component">
                     <div class="example-cell">
+                        Nested Input Dropdowns
+                    </div>
+                    <div class="example-cell">
+                        <cly-input-dropdown
+                            v-model="selectedLB.name">
+                            Hello
+                            <cly-input-dropdown
+                                v-model="selectedLB.name">
+                                Hello
+                            </cly-input-dropdown>
+                        </cly-input-dropdown>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedLB}}
+                    </div>
+                </div>
+                <div class="example-component">
+                    <div class="example-cell">
                         ListBox
                     </div>
                     <div class="example-cell">

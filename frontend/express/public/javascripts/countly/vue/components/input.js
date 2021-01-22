@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, _, VeeValidate, ELEMENT */
+/* global jQuery, Vue, moment, countlyCommon, _, VeeValidate */
 
 (function(countlyVue, $) {
 
@@ -1040,70 +1040,42 @@
         }
     }));
 
-    Vue.directive("el-clickoutside", ELEMENT.utils.Clickoutside);
-
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
-        template: '<div class="cly-vue-tabbed-listbox el-select"\
-                    v-el-clickoutside="handleOutsideClick">\
-                    <el-input\
-                        v-popover:popover\
-                        ref="toggler"\
-                        :class="{ \'is-focus\': visible }"\
-                        @keydown.native.esc.stop.prevent="handleClose"\
-                        @keydown.native.down.enter.prevent="handleArrowKey"\
-                        @keydown.native.down.stop.prevent="handleArrowKey"\
-                        @keydown.native.up.stop.prevent="handleArrowKey"\
-                        readonly="readonly" \
-                        v-model="selectedOption.label"\
-                        :placeholder="placeholder">\
-                        <template slot="suffix">\
-                            <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
-                        </template>\
-                    </el-input>\
-                    <el-popover\
-                        ref="popover"\
-                        placement="bottom-start"\
-                        :visible-arrow="false"\
-                        width="400"\
-                        v-model="visible"\
-                        trigger="click">\
-                        <div ref="popContent" class="cly-vue-tabbed-listbox__pop">\
-                            <el-input\
-                                ref="searchBox"\
-                                v-model="searchQuery"\
-                                @keydown.native.esc.stop.prevent="handleClose" \
-                                :placeholder="searchPlaceholder">\
-                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
-                            </el-input>\
-                            <el-tabs\
-                                v-model="activeTabId"\
-                                @keydown.native.esc.stop.prevent="handleClose">\
-                                <el-tab-pane name="_all">\
-                                    <span slot="label">\
-                                        {{allPlaceholder}}\
-                                    </span>\
-                                    <cly-listbox\
-                                        :bordered="false"\
-                                        @change="handleClose"\
-                                        v-model="innerValue"\
-                                        :options="getMatching(allOptions)">\
-                                    </cly-listbox>\
-                                </el-tab-pane>\
-                                <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
-                                    <span slot="label">\
-                                        {{tab.label}}\
-                                    </span>\
-                                    <cly-listbox\
-                                        :bordered="false"\
-                                        @change="handleClose"\
-                                        v-model="innerValue"\
-                                        :options="getMatching(tab.options)">\
-                                    </cly-listbox>\
-                                </el-tab-pane>\
-                            </el-tabs>\
-                        </div>\
-                    </el-popover>\
-                </div>',
+        template: '<cly-input-dropdown v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
+                        <el-input\
+                            ref="searchBox"\
+                            v-model="searchQuery"\
+                            @keydown.native.esc.stop.prevent="doClose" \
+                            :placeholder="searchPlaceholder">\
+                            <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                        </el-input>\
+                        <el-tabs\
+                            v-model="activeTabId"\
+                            @keydown.native.esc.stop.prevent="doClose">\
+                            <el-tab-pane name="_all">\
+                                <span slot="label">\
+                                    {{allPlaceholder}}\
+                                </span>\
+                                <cly-listbox\
+                                    :bordered="false"\
+                                    @change="doClose"\
+                                    v-model="innerValue"\
+                                    :options="getMatching(allOptions)">\
+                                </cly-listbox>\
+                            </el-tab-pane>\
+                            <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
+                                <span slot="label">\
+                                    {{tab.label}}\
+                                </span>\
+                                <cly-listbox\
+                                    :bordered="false"\
+                                    @change="doClose"\
+                                    v-model="innerValue"\
+                                    :options="getMatching(tab.options)">\
+                                </cly-listbox>\
+                            </el-tab-pane>\
+                        </el-tabs>\
+                </cly-input-dropdown>',
         props: {
             tabs: {type: Array},
             allPlaceholder: {type: String, default: 'All'},
@@ -1112,9 +1084,6 @@
             value: { type: [String, Number] }
         },
         computed: {
-            iconClass: function() {
-                return (this.visible ? 'arrow-up is-reverse' : 'arrow-up');
-            },
             innerValue: {
                 get: function() {
                     return this.value;
@@ -1159,18 +1128,16 @@
         data: function() {
             return {
                 activeTabId: '',
-                searchQuery: '',
-                visible: false
+                searchQuery: ''
             };
         },
         mounted: function() {
-            this.popperElm = this.$refs.popContent; // ignore popover clicks (clickoutside)
             this.determineActiveTabId();
         },
         methods: {
             doClose: function() {
-                this.visible = false;
                 this.determineActiveTabId();
+                this.$refs.dropdown.handleClose();
             },
             determineActiveTabId: function() {
                 var self = this;
@@ -1183,21 +1150,6 @@
                     }
                 });
             },
-            handleOutsideClick: function() {
-                this.doClose();
-            },
-            handleClose: function() {
-                var self = this;
-                this.doClose();
-                this.$nextTick(function() {
-                    self.$refs.toggler.focus();
-                });
-            },
-            handleArrowKey: function() {
-                if (!this.visible) {
-                    this.visible = true;
-                }
-            },
             getMatching: function(options) {
                 if (!this.searchQuery) {
                     return options;
@@ -1209,10 +1161,7 @@
                 });
             },
             updatePopper: function() {
-                var self = this;
-                this.$nextTick(function() {
-                    self.$refs.popover.updatePopper();
-                });
+                this.$refs.dropdown.updatePopper();
             }
         },
         watch: {

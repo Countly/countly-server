@@ -358,7 +358,7 @@
             }
         },
         computed: {
-            forwardedSlots: function () {
+            forwardedSlots: function() {
                 var self = this;
                 return Object.keys(this.$scopedSlots).reduce(function(slots, slotKey) {
                     if (slotKey !== "search-options") {
@@ -367,11 +367,11 @@
                     return slots;
                 }, {});
             },
-            controlSlots: function () {
+            controlSlots: function() {
                 if (this.$scopedSlots["search-options"]) {
                     return {
-                       "search-options": this.$scopedSlots["search-options"]
-                    }
+                        "search-options": this.$scopedSlots["search-options"]
+                    };
                 }
                 return {};
             },
@@ -652,7 +652,7 @@
                 type: Object
             },
         },
-        template:   '<div @click.stop v-if="delayedAction" class="undo-row">\n' +
+        template: '<div @click.stop v-if="delayedAction" class="undo-row">\n' +
                         '<slot></slot>\n' +
                         '<a @click.stop="delayedAction.abort()">Undo.</a>\n' +
                     '</div>\n'

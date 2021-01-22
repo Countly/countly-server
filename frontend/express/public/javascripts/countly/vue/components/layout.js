@@ -1,4 +1,4 @@
-/* global Vue */
+/* global Vue, ELEMENT */
 
 (function(countlyVue) {
 
@@ -21,6 +21,8 @@
             document.body.removeEventListener('click', el.clickOutsideEvent);
         }
     });
+
+    Vue.directive("el-clickoutside", ELEMENT.utils.Clickoutside);
 
     Vue.component("cly-menubox", countlyBaseComponent.extend({
         template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="close">\n' +
