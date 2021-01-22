@@ -1981,10 +1981,11 @@
          * @returns {Object} - metric data object
          */
         countlyCommon.fixBarSegmentData = function(rangeData, segment) {
+            var i;
             if (segment === "os_versions") {
                 var _os = countlyDeviceDetails.getPlatforms();
                 var newRangeData = {chartData: []};
-                for (var i = 0; i < _os.length; i++) {
+                for (i = 0; i < _os.length; i++) {
                     var osSegmentation = _os[i];
                     //Important to note here that segment parameter is passed as "range" because its extracted under name range from extractTwoLevelData
                     var fixedRangeData = countlyDeviceDetails.eliminateOSVersion(countlyDeviceDetails, rangeData, osSegmentation, "range");
@@ -1992,6 +1993,18 @@
                 }
 
                 rangeData = newRangeData.chartData.length ? newRangeData : rangeData;
+            }
+
+            if (segment === "os") {
+                var chartData = rangeData.chartData;
+                for (i = 0; i < chartData.length; i++) {
+                    if (countlyDeviceDetails.os_mapping[chartData[i].range.toLowerCase()]) {
+                        chartData[i].os = countlyDeviceDetails.os_mapping[chartData[i].range.toLowerCase()].name;
+                    }
+                }
+
+                chartData = countlyCommon.mergeMetricsByName(chartData, "os");
+                rangeData.chartData = chartData;
             }
 
             return rangeData;
