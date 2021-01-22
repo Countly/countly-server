@@ -1317,14 +1317,15 @@ window.FrequencyView = countlyView.extend({
 
 window.DeviceView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("devices")).then(function() {});
+        //Fetches device_details and devices using metric model from countly.helpers.js
+        return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("devices"), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("platform_versions")).then(function() {});
     },
     pageScript: function() {
         app.localize();
     },
     renderCommon: function(isRefresh) {
         var deviceData = countlyDevice.getData();
-        var platformVersions = countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions");
+        var platformVersions = countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions", "u", "platform_versions");
         for (var i = 0; i < platformVersions.length; i++) {
             platformVersions[i].name = countlyDeviceDetails.fixOSVersion(platformVersions[i].name);
         }
@@ -1339,7 +1340,7 @@ window.DeviceView = countlyView.extend({
             "bars": [
                 {
                     "title": jQuery.i18n.map["common.bar.top-platform"],
-                    "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
+                    "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os", "u", "platforms"),
                     "help": "dashboard.top-platforms"
                 },
                 {

@@ -1030,19 +1030,15 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         sum = 0,
         totalPercent = 0;
 
-    if (rangeNames.length < maxItems) {
-        maxItems = rangeNames.length;
-    }
+    rangeTotal.forEach(function(r) {
+        sum += r;
+    });
 
-    for (let i = 0; i < maxItems; i++) {
-        sum += rangeTotal[i];
-    }
-
-    for (let i = maxItems - 1; i >= 0; i--) {
-        var percent = Math.floor((rangeTotal[i] / sum) * 100);
+    for (var i = 0; i < rangeNames.length; i++) {
+        var percent = countlyCommon.round((rangeTotal[i] / sum) * 100, 0);
         totalPercent += percent;
 
-        if (i === 0) {
+        if (i === (rangeNames.length - 1)) {
             percent += 100 - totalPercent;
         }
 
@@ -1052,6 +1048,12 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
             "percent": percent
         };
     }
+
+    if (rangeNames.length < maxItems) {
+        maxItems = rangeNames.length;
+    }
+
+    barData = barData.slice(0, maxItems);
 
     return underscore.sortBy(barData, function(obj) {
         return -obj.value;
@@ -1934,6 +1936,21 @@ countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
 countlyCommon.validateEmail = function(email) {
     var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
     return re.test(email);
+};
+
+/**
+* Round to provided number of digits
+* @memberof countlyCommon
+* @param {number} num - number to round
+* @param {number} digits - amount of digits to round to
+* @returns {number} rounded number
+* @example
+* //outputs 1.235
+* countlyCommon.round(1.2345, 3);
+*/
+countlyCommon.round = function(num, digits) {
+    digits = Math.pow(10, digits || 0);
+    return Math.round(num * digits) / digits;
 };
 
 module.exports = countlyCommon;

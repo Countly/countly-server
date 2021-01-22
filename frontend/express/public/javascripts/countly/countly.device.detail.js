@@ -205,6 +205,43 @@
         return osName;
     };
 
+    countlyDeviceDetails.eliminateOSVersion = function(countlyMetric, data, osSegmentation, segment) {
+        var oSVersionData = JSON.parse(JSON.stringify(data));
+        var chartData = [];
+        var osName = osSegmentation;
+        if (osSegmentation) {
+            if (countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) {
+                osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
+            }
+            else {
+                osName = osSegmentation.toLowerCase()[0];
+            }
+        }
+
+        if (oSVersionData.chartData) {
+            var regTest = new RegExp("^" + osName + "[0-9]");
+            var reg = new RegExp("^" + osName);
+            for (var i = 0; i < oSVersionData.chartData.length; i++) {
+                var shouldDelete = true;
+                oSVersionData.chartData[i][segment] = oSVersionData.chartData[i][segment].replace(/:/g, ".");
+                if (regTest.test(oSVersionData.chartData[i][segment])) {
+                    shouldDelete = false;
+                    oSVersionData.chartData[i][segment] = oSVersionData.chartData[i][segment].replace(reg, "");
+                }
+                else if (countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][segment], osName)) {
+                    shouldDelete = false;
+                }
+                if (!shouldDelete) {
+                    chartData.push(oSVersionData.chartData[i]);
+                }
+            }
+        }
+
+        oSVersionData.chartData = chartData;
+
+        return oSVersionData;
+    };
+
     countlyDeviceDetails.getOSVersionList = function(name) {
         var codes = {};
         var lowerCase = name.toLowerCase();

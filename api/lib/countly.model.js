@@ -406,19 +406,15 @@ countlyModel.create = function(fetchValue) {
                     return -obj[metric];
                 });
 
-            if (topUsers.length < maxItems) {
-                maxItems = topUsers.length;
-            }
+            topUsers.forEach(function(r) {
+                sum += r[metric];
+            });
 
-            for (let i = 0; i < maxItems; i++) {
-                sum += topUsers[i][metric];
-            }
-
-            for (let i = maxItems - 1; i >= 0; i--) {
-                var percent = Math.floor((topUsers[i][metric] / sum) * 100);
+            for (var i = 0; i < topUsers.length; i++) {
+                var percent = countlyCommon.round((topUsers[i][metric] / sum) * 100, 0);
                 totalPercent += percent;
 
-                if (i === 0) {
+                if (i === (topUsers[i].length - 1)) {
                     percent += 100 - totalPercent;
                 }
 
@@ -428,6 +424,12 @@ countlyModel.create = function(fetchValue) {
                     "percent": percent
                 };
             }
+
+            if (topUsers.length < maxItems) {
+                maxItems = topUsers.length;
+            }
+
+            barData = barData.slice(0, maxItems);
 
             return _.sortBy(barData, function(obj) {
                 return -obj.value;

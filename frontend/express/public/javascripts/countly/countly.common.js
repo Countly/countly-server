@@ -1,4 +1,4 @@
-/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, countlyDeviceDetails, filterXSS*/
 (function(window, $) {
     /**
      * Object with common functions to be used for multiple purposes
@@ -1944,9 +1944,12 @@
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
+        * @param {String} segment - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+        * @param {String} metric - name of the metric to use ordering and returning
+        * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -1955,7 +1958,7 @@
         *    {"name":"Windows Phone","percent":32}
         * ]
         */
-        countlyCommon.extractBarDataWPercentageOfTotal = function(db, rangeArray, clearFunction, fetchFunction) {
+        countlyCommon.extractBarDataWPercentageOfTotal = function(db, segment, rangeArray, clearFunction, fetchFunction, metric, estOverrideMetric) {
             fetchFunction = fetchFunction || function(rangeArr) {
                 return rangeArr;
             };
@@ -1965,9 +1968,33 @@
                     name: "range",
                     func: fetchFunction
                 },
-                { "name": "t" }
-            ]);
-            return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
+                { "name": metric }
+            ], estOverrideMetric);
+
+            return countlyCommon.calculateBarDataWPercentageOfTotal(countlyCommon.fixBarSegmentData(rangeData, segment), metric);
+        };
+
+        /**
+         * Function to fix data based on segement for Bars
+         * @param  {Object} rangeData - countly standard metric data object
+         * @param  {String} segment - name of the segment/metric to get data for, by default will use default _name provided on initialization
+         * @returns {Object} - metric data object
+         */
+        countlyCommon.fixBarSegmentData = function(rangeData, segment) {
+            if (segment === "os_versions") {
+                var _os = countlyDeviceDetails.getPlatforms();
+                var newRangeData = {chartData: []};
+                for (var i = 0; i < _os.length; i++) {
+                    var osSegmentation = _os[i];
+                    //Important to note here that segment parameter is passed as "range" because its extracted under name range from extractTwoLevelData
+                    var fixedRangeData = countlyDeviceDetails.eliminateOSVersion(countlyDeviceDetails, rangeData, osSegmentation, "range");
+                    newRangeData.chartData = [].concat.apply([], [newRangeData.chartData, fixedRangeData.chartData]);
+                }
+
+                rangeData = newRangeData.chartData.length ? newRangeData : rangeData;
+            }
+
+            return rangeData;
         };
 
         /**
@@ -2004,6 +2031,7 @@
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData with their percentage of total
         * @memberof countlyCommon
         * @param {object} rangeData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
+        * @param {String} metric - name of the metric to use ordering and returning
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -2012,14 +2040,14 @@
         *    {"name":"Windows Phone","percent":14}
         * ]
         */
-        countlyCommon.calculateBarDataWPercentageOfTotal = function(rangeData) {
+        countlyCommon.calculateBarDataWPercentageOfTotal = function(rangeData, metric) {
             rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
             rangeData.chartData = _.sortBy(rangeData.chartData, function(obj) {
-                return -obj.t;
+                return -obj[metric];
             });
 
             var rangeNames = _.pluck(rangeData.chartData, 'range'),
-                rangeTotal = _.pluck(rangeData.chartData, 't'),
+                rangeTotal = _.pluck(rangeData.chartData, metric),
                 barData = [],
                 maxItems = 3,
                 totalSum = 0;
@@ -2038,24 +2066,24 @@
                 return 0;
             });
 
-            if (rangeNames.length < maxItems) {
-                maxItems = rangeNames.length;
-            }
-
             var totalPercent = 0;
 
-            for (var i = maxItems - 1; i >= 0; i--) {
-                var percent = Math.floor((rangeTotal[i] / totalSum) * 100);
+            for (var i = 0; i < rangeNames.length; i++) {
+                var percent = countlyCommon.round((rangeTotal[i] / totalSum) * 100, 0);
                 totalPercent += percent;
 
-                if (i === 0) {
+                if (i === (rangeNames.length - 1)) {
                     percent += 100 - totalPercent;
                 }
 
                 barData[i] = { "name": rangeNames[i], "percent": percent };
             }
 
-            return barData;
+            if (rangeNames.length < maxItems) {
+                maxItems = rangeNames.length;
+            }
+
+            return barData.slice(0, maxItems);
         };
 
 
