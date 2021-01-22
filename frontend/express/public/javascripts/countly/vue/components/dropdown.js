@@ -48,6 +48,7 @@
                     </trigger-proxy>\
                     <el-popover\
                         ref="popover"\
+                        :append-to-body="false"\
                         placement="bottom-start"\
                         :visible-arrow="false"\
                         width="400"\
