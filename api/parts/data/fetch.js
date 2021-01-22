@@ -702,7 +702,7 @@ function getTopThree(params, collection, callback) {
         pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
     }
     pipeline.push({$sort: {"t": -1}}); //sort values
-    pipeline.push({$limit: 3}); //limit count
+    // pipeline.push({$limit: 3}); //limit count
 
     common.db.collection(collection).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
         var items = [];
@@ -716,9 +716,9 @@ function getTopThree(params, collection, callback) {
                 total = total + items[k].value;
             }
             var totalPercent = 0;
-            for (let k = items.length - 1; k >= 0; k--) {
-                if (k !== 0) {
-                    items[k].percent = Math.floor(items[k].percent * 100 / total);
+            for (let k = 0; k < items.length; k++) {
+                if (k !== (items.length - 1)) {
+                    items[k].percent = countlyCommon.round(items[k].percent * 100 / total, 0);
                     totalPercent += items[k].percent;
                 }
                 else {
@@ -726,7 +726,7 @@ function getTopThree(params, collection, callback) {
                 }
             }
         }
-        callback(items);
+        callback(items.slice(0, 3));
     });
 }
 

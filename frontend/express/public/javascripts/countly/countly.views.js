@@ -1318,13 +1318,20 @@ window.FrequencyView = countlyView.extend({
 window.DeviceView = countlyView.extend({
     beforeRender: function() {
         //Fetches device_details and devices using metric model from countly.helpers.js
-        return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("devices"), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("platform_versions")).then(function() {});
+        return $.when(
+            countlyDevice.initialize(),
+            countlyDeviceDetails.initialize(),
+            countlyTotalUsers.initialize("devices"),
+            countlyTotalUsers.initialize("platforms"),
+            countlyTotalUsers.initialize("platform_versions"),
+            countlyTotalUsers.initialize("resolutions")
+        ).then(function() {});
     },
     pageScript: function() {
         app.localize();
     },
     renderCommon: function(isRefresh) {
-        var deviceData = countlyDevice.getData();
+        var deviceData = countlyDevice.getData(undefined, undefined, "devices", "devices");
         var platformVersions = countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions", "u", "platform_versions");
         for (var i = 0; i < platformVersions.length; i++) {
             platformVersions[i].name = countlyDeviceDetails.fixOSVersion(platformVersions[i].name);
@@ -1334,7 +1341,7 @@ window.DeviceView = countlyView.extend({
             "logo-class": "devices",
             "graph-type-double-pie": true,
             "pie-titles": {
-                "left": jQuery.i18n.map["common.total-users"],
+                "left": jQuery.i18n.map["common.total-sessions"],
                 "right": jQuery.i18n.map["common.new-users"]
             },
             "bars": [
@@ -1350,7 +1357,7 @@ window.DeviceView = countlyView.extend({
                 },
                 {
                     "title": jQuery.i18n.map["common.bar.top-resolution"],
-                    "data": countlyDeviceDetails.getBarsWPercentageOfTotal("resolutions"),
+                    "data": countlyDeviceDetails.getBarsWPercentageOfTotal("resolutions", "u", "resolutions"),
                     "help": "dashboard.top-resolutions"
                 }
             ],
