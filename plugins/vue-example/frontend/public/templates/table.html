@@ -36,6 +36,12 @@
                                 <span v-else>
                                     {{scope.props.formattedRow[scope.props.column.field]}}
                                 </span>
+
+                                <cly-datatable-undo-row
+                                    v-if="scope.props.column.field == 'cly-options'"
+                                    :delayed-action="scope.props.row._delayedDelete">
+                                    You deleted a record.
+                                </cly-datatable-undo-row>
                             </template>
                         </cly-datatable>
                         <cly-diff-helper
@@ -74,6 +80,39 @@
         </cly-content>
         <cly-content name='Form elements' id="form-tab">
             <cly-panel title="Form elements" v-bind:date-selector="false">
+                <div class="example-component">
+                    <div class="example-cell">
+                        ListBox
+                    </div>
+                    <div class="example-cell">
+                        <cly-listbox
+                            v-model="selectedLB"
+                            :options="listBoxOptions">
+                        </cly-listbox>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedLB}}
+                    </div>
+                </div>
+                <div class="example-component">
+                    <div class="example-cell">
+                        Tabbed ListBox
+                    </div>
+                    <div class="example-cell">    
+                        <cly-tabbed-listbox
+                            search-placeholder="Search in Properties"
+                            placeholder="Select Property"
+                            v-model="selectedTLB"
+                            :tabs="listBoxTabs">
+                        </cly-tabbed-listbox>
+                        <el-select v-model="selectedRadio">
+                            <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in selectWItems"></el-option>
+                        </el-select>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedTLB}}
+                    </div>
+                </div>
                 <div class="example-component">
                     <div class="example-cell">
                         Basic text input

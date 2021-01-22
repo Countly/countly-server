@@ -25,6 +25,14 @@
     };
 
     // @vue/component
+    var commonFormattersMixin = {
+        methods: {
+            formatTimeAgo: countlyCommon.formatTimeAgo,
+            formatNumber: countlyCommon.formatTimeAgo
+        }
+    };
+
+    // @vue/component
     var refreshOnParentActiveMixin = {
         watch: {
             isParentActive: function(newState) {
@@ -41,7 +49,8 @@
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
-        'i18n': i18nMixin
+        'i18n': i18nMixin,
+        'commonFormatters': commonFormattersMixin
     };
 
     var _globalVuexStore = new Vuex.Store({
@@ -219,7 +228,8 @@
         {
             mixins: [
                 _mixins.autoRefresh,
-                _mixins.i18n
+                _mixins.i18n,
+                _mixins.commonFormatters
             ],
             props: {
                 name: { type: String, default: null},

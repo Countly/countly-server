@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, _, VeeValidate */
+/* global jQuery, Vue, moment, countlyCommon, _, VeeValidate, ELEMENT */
 
 (function(countlyVue, $) {
 
@@ -479,7 +479,7 @@
             computed: {
                 topClasses: function() {
                     var classes = [];
-                    if (["switch", "tick"].indexOf(this.skin) > -1) {
+                    if (["switch", "tick", "star"].indexOf(this.skin) > -1) {
                         classes.push("check-" + this.skin + "-skin");
                     }
                     else {
@@ -509,6 +509,15 @@
                         }
                         else {
                             classes.push("fa-square-o");
+                        }
+                    }
+                    else if (this.skin === "star") {
+                        classes.push("ion-icons");
+                        if (value) {
+                            classes.push("ion-android-star");
+                        }
+                        else {
+                            classes.push("ion-android-star-outline");
                         }
                     }
                     return classes;
@@ -965,5 +974,263 @@
     ));
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
+
+    Vue.component("cly-listbox", countlyVue.components.BaseComponent.extend({
+        template: '<div\
+                    class="cly-vue-listbox"\
+                    tabindex="0"\
+                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
+                    @mouseenter="handleHover"\
+                    @mouseleave="handleBlur"\
+                    @focus="handleHover"\
+                    @blur="handleBlur">\
+                    <el-scrollbar\
+                        v-if="options.length > 0"\
+                        tag="ul"\
+                        wrap-class="el-select-dropdown__wrap"\
+                        view-class="el-select-dropdown__list">\
+                        <li\
+                            tabindex="0"\
+                            class="el-select-dropdown__item"\
+                            :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
+                            :key="option.value"\
+                            @focus="handleItemHover(option)"\
+                            @mouseenter="handleItemHover(option)"\
+                            @keyup.enter="handleItemClick(option)"\
+                            @click.stop="handleItemClick(option)"\
+                            v-for="option in options">\
+                            <span>{{option.label}}</span>\
+                        </li>\
+                    </el-scrollbar>\
+                    <div v-else class="cly-vue-listbox__no-data">\
+                        No data\
+                    </div>\
+                </div>',
+        props: {
+            options: {type: Array},
+            value: { type: [String, Number] },
+            bordered: {type: Boolean, default: true}
+        },
+        methods: {
+            navigateOptions: function() {
+                if (!this.visible) {
+                    this.visible = true;
+                }
+            },
+            handleItemClick: function(option) {
+                this.$emit("input", option.value);
+                this.$emit("change", option.value);
+            },
+            handleItemHover: function(option) {
+                this.hovered = option.value;
+            },
+            handleBlur: function() {
+                this.hovered = this.value;
+                this.focused = false;
+            },
+            handleHover: function() {
+                this.focused = true;
+            }
+        },
+        data: function() {
+            return {
+                hovered: null,
+                focused: false
+            };
+        }
+    }));
+
+    Vue.directive("el-clickoutside", ELEMENT.utils.Clickoutside);
+
+    Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
+        template: '<div class="cly-vue-tabbed-listbox el-select"\
+                    v-el-clickoutside="handleOutsideClick">\
+                    <el-input\
+                        v-popover:popover\
+                        ref="toggler"\
+                        :class="{ \'is-focus\': visible }"\
+                        @keydown.native.esc.stop.prevent="handleClose"\
+                        @keydown.native.down.enter.prevent="handleArrowKey"\
+                        @keydown.native.down.stop.prevent="handleArrowKey"\
+                        @keydown.native.up.stop.prevent="handleArrowKey"\
+                        readonly="readonly" \
+                        v-model="selectedOption.label"\
+                        :placeholder="placeholder">\
+                        <template slot="suffix">\
+                            <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                        </template>\
+                    </el-input>\
+                    <el-popover\
+                        ref="popover"\
+                        placement="bottom-start"\
+                        :visible-arrow="false"\
+                        width="400"\
+                        v-model="visible"\
+                        trigger="click">\
+                        <div ref="popContent" class="cly-vue-tabbed-listbox__pop">\
+                            <el-input\
+                                ref="searchBox"\
+                                v-model="searchQuery"\
+                                @keydown.native.esc.stop.prevent="handleClose" \
+                                :placeholder="searchPlaceholder">\
+                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                            </el-input>\
+                            <el-tabs\
+                                v-model="activeTabId"\
+                                @keydown.native.esc.stop.prevent="handleClose">\
+                                <el-tab-pane name="_all">\
+                                    <span slot="label">\
+                                        {{allPlaceholder}}\
+                                    </span>\
+                                    <cly-listbox\
+                                        :bordered="false"\
+                                        @change="handleClose"\
+                                        v-model="innerValue"\
+                                        :options="getMatching(allOptions)">\
+                                    </cly-listbox>\
+                                </el-tab-pane>\
+                                <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
+                                    <span slot="label">\
+                                        {{tab.label}}\
+                                    </span>\
+                                    <cly-listbox\
+                                        :bordered="false"\
+                                        @change="handleClose"\
+                                        v-model="innerValue"\
+                                        :options="getMatching(tab.options)">\
+                                    </cly-listbox>\
+                                </el-tab-pane>\
+                            </el-tabs>\
+                        </div>\
+                    </el-popover>\
+                </div>',
+        props: {
+            tabs: {type: Array},
+            allPlaceholder: {type: String, default: 'All'},
+            searchPlaceholder: {type: String, default: 'Search'},
+            placeholder: {type: String, default: 'Select'},
+            value: { type: [String, Number] }
+        },
+        computed: {
+            iconClass: function() {
+                return (this.visible ? 'arrow-up is-reverse' : 'arrow-up');
+            },
+            innerValue: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(newVal) {
+                    this.$emit("input", newVal);
+                }
+            },
+            val2tab: function() {
+                if (!this.tabs.length) {
+                    return {};
+                }
+                return this.tabs.reduce(function(items, tab) {
+                    tab.options.forEach(function(opt) {
+                        items[opt.value] = tab.name;
+                    });
+                    return items;
+                }, {});
+            },
+            allOptions: function() {
+                if (!this.tabs.length) {
+                    return [];
+                }
+                return this.tabs.reduce(function(items, tab) {
+                    return items.concat(tab.options);
+                }, []);
+            },
+            selectedOption: function() {
+                if (!this.allOptions.length) {
+                    return {};
+                }
+                var self = this;
+                var matching = this.allOptions.filter(function(item) {
+                    return item.value === self.value;
+                });
+                if (matching.length) {
+                    return matching[0];
+                }
+                return {};
+            }
+        },
+        data: function() {
+            return {
+                activeTabId: '',
+                searchQuery: '',
+                visible: false
+            };
+        },
+        mounted: function() {
+            this.popperElm = this.$refs.popContent; // ignore popover clicks (clickoutside)
+            this.determineActiveTabId();
+        },
+        methods: {
+            doClose: function() {
+                this.visible = false;
+                this.determineActiveTabId();
+            },
+            determineActiveTabId: function() {
+                var self = this;
+                this.$nextTick(function() {
+                    if (self.selectedOption.value && self.val2tab[self.selectedOption.value]) {
+                        self.activeTabId = self.val2tab[self.selectedOption.value];
+                    }
+                    else {
+                        self.activeTabId = "_all";
+                    }
+                });
+            },
+            handleOutsideClick: function() {
+                this.doClose();
+            },
+            handleClose: function() {
+                var self = this;
+                this.doClose();
+                this.$nextTick(function() {
+                    self.$refs.toggler.focus();
+                });
+            },
+            handleArrowKey: function() {
+                if (!this.visible) {
+                    this.visible = true;
+                }
+            },
+            getMatching: function(options) {
+                if (!this.searchQuery) {
+                    return options;
+                }
+                var self = this;
+                var query = self.searchQuery.toLowerCase();
+                return options.filter(function(option) {
+                    return option.label.toLowerCase().indexOf(query) > -1;
+                });
+            },
+            updatePopper: function() {
+                var self = this;
+                this.$nextTick(function() {
+                    self.$refs.popover.updatePopper();
+                });
+            }
+        },
+        watch: {
+            visible: function(newValue) {
+                var self = this;
+                this.$nextTick(function() {
+                    if (newValue) {
+                        self.$refs.searchBox.focus();
+                    }
+                });
+            },
+            searchQuery: function() {
+                this.updatePopper();
+            },
+            activeTabId: function() {
+                this.updatePopper();
+            }
+        }
+    }));
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));

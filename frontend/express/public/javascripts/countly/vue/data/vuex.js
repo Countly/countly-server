@@ -80,6 +80,14 @@
         toStandardResponse: function(response, requestOptions) {
             response = response || {};
             requestOptions = requestOptions || {};
+
+            var reservedFields = {
+                "aaData": true,
+                "iTotalDisplayRecords": true,
+                "iTotalRecords": true,
+                "sEcho": true
+            }
+
             var fields = {
                 rows: response.aaData || [],
                 totalRows: response.iTotalDisplayRecords || 0,
@@ -88,6 +96,13 @@
             if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
                 fields.echo = parseInt(response.sEcho, 10);
             }
+
+            Object.keys(response).forEach(function(respKey) {
+                if (!reservedFields[respKey] && !Object.prototype.hasOwnProperty.call(fields, respKey)) {
+                    fields[respKey] = response[respKey];
+                }
+            });
+
             if (Object.prototype.hasOwnProperty.call(requestOptions, "url")) {
                 var pairs = [];
                 for (var dataKey in requestOptions.data) {
@@ -174,7 +189,7 @@
                     if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
                         convertedResponse.echo >= context.state[echoKey]) {
                         if (typeof options.onReady === 'function') {
-                            convertedResponse.rows = options.onReady(convertedResponse.rows);
+                            convertedResponse.rows = options.onReady(context, convertedResponse.rows);
                         }
                         context.commit(_capitalized("set", resourceName), convertedResponse);
                     }

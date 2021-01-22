@@ -24,6 +24,48 @@
                 manyItems.push({name: "Type " + i, value: i});
             }
             return {
+                listBoxTabs: [{
+                    "label": "A Items",
+                    "name": "type-1",
+                    "options": [
+                        {"label": "hello0", "value": 0},
+                        {"label": "hello1", "value": 1},
+                        {"label": "hello2", "value": 2},
+                        {"label": "hello3", "value": 3},
+                        {"label": "hello4", "value": 4},
+                        {"label": "hello5", "value": 5},
+                        {"label": "hello6", "value": 6},
+                        {"label": "hello7", "value": 7},
+                        {"label": "hello8", "value": 8},
+                        {"label": "hello9", "value": 9},
+                        {"label": "hello10", "value": 10},
+                        {"label": "hello11", "value": 11},
+                    ]
+                },
+                {
+                    "label": "B Items",
+                    "name": "type-2",
+                    "options": [
+                        {"label": "user0", "value": 12},
+                        {"label": "user1", "value": 13},
+                    ]
+                }],
+                selectedTLB: null,
+                listBoxOptions: [
+                    {"label": "hello0", "value": 0},
+                    {"label": "hello1", "value": 1},
+                    {"label": "hello2", "value": 2},
+                    {"label": "hello3", "value": 3},
+                    {"label": "hello4", "value": 4},
+                    {"label": "hello5", "value": 5},
+                    {"label": "hello6", "value": 6},
+                    {"label": "hello7", "value": 7},
+                    {"label": "hello8", "value": 8},
+                    {"label": "hello9", "value": 9},
+                    {"label": "hello10", "value": 10},
+                    {"label": "hello11", "value": 11},
+                ],
+                selectedLB: 0,
                 activeTab: null,
                 typedText: 'Type sth...',
                 selectedRadio: 2,
@@ -151,7 +193,6 @@
                     row: row,
                     fields: {
                         _delayedDelete: new countlyVue.helpers.DelayedAction(
-                            "You deleted a record.",
                             function() {
                                 self.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
                             },
