@@ -1944,12 +1944,12 @@
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
-        * @param {String} segment - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
         * @param {String} metric - name of the metric to use ordering and returning
         * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
+        * @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -1958,7 +1958,7 @@
         *    {"name":"Windows Phone","percent":32}
         * ]
         */
-        countlyCommon.extractBarDataWPercentageOfTotal = function(db, segment, rangeArray, clearFunction, fetchFunction, metric, estOverrideMetric) {
+        countlyCommon.extractBarDataWPercentageOfTotal = function(db, rangeArray, clearFunction, fetchFunction, metric, estOverrideMetric, fixBarSegmentData) {
             fetchFunction = fetchFunction || function(rangeArr) {
                 return rangeArr;
             };
@@ -1971,43 +1971,11 @@
                 { "name": metric }
             ], estOverrideMetric);
 
-            return countlyCommon.calculateBarDataWPercentageOfTotal(countlyCommon.fixBarSegmentData(rangeData, segment), metric);
-        };
-
-        /**
-         * Function to fix data based on segement for Bars
-         * @param  {Object} rangeData - countly standard metric data object
-         * @param  {String} segment - name of the segment/metric to get data for, by default will use default _name provided on initialization
-         * @returns {Object} - metric data object
-         */
-        countlyCommon.fixBarSegmentData = function(rangeData, segment) {
-            var i;
-            if (segment === "os_versions") {
-                var _os = countlyDeviceDetails.getPlatforms();
-                var newRangeData = {chartData: []};
-                for (i = 0; i < _os.length; i++) {
-                    var osSegmentation = _os[i];
-                    //Important to note here that segment parameter is passed as "range" because its extracted under name range from extractTwoLevelData
-                    var fixedRangeData = countlyDeviceDetails.eliminateOSVersion(countlyDeviceDetails, rangeData, osSegmentation, "range");
-                    newRangeData.chartData = [].concat.apply([], [newRangeData.chartData, fixedRangeData.chartData]);
-                }
-
-                rangeData = newRangeData.chartData.length ? newRangeData : rangeData;
+            if (fixBarSegmentData) {
+                rangeData = fixBarSegmentData(rangeData);
             }
 
-            if (segment === "os") {
-                var chartData = rangeData.chartData;
-                for (i = 0; i < chartData.length; i++) {
-                    if (countlyDeviceDetails.os_mapping[chartData[i].range.toLowerCase()]) {
-                        chartData[i].os = countlyDeviceDetails.os_mapping[chartData[i].range.toLowerCase()].name;
-                    }
-                }
-
-                chartData = countlyCommon.mergeMetricsByName(chartData, "os");
-                rangeData.chartData = chartData;
-            }
-
-            return rangeData;
+            return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, metric);
         };
 
         /**

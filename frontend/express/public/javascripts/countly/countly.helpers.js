@@ -2912,10 +2912,14 @@
                     rangeData.chartData[i] = data[i];
                 }
 
-                return countlyCommon.calculateBarDataWPercentageOfTotal(countlyCommon.fixBarSegmentData(rangeData, segment), mtric);
+                if (this.fixBarSegmentData) {
+                    rangeData = this.fixBarSegmentData(segment, rangeData);
+                }
+
+                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, mtric);
             }
             else {
-                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, segment, this.getMeta(segment), this.clearObject, fetchValue, mtric, estOverrideMetric);
+                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(segment), this.clearObject, fetchValue, mtric, estOverrideMetric, this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
             }
         };
 
