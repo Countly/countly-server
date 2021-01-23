@@ -375,7 +375,7 @@ countlyModel.create = function(fetchValue) {
     countlyMetric.getBars = function(segment, maxItems, metric) {
         metric = metric || _metrics[0];
         if (segment) {
-            return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric, this.getTotalUsersObj());
+            return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric, this.getTotalUsersObj(), this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
         }
         else {
             var barData = [],

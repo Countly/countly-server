@@ -990,6 +990,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 * @param {number} maxItems - amount of items to return, default 3
 * @param {string=} metric - metric to output and use in sorting, default "t"
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
+* @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
 * @returns {array} array with top 3 values
 * @example <caption>Return data</caption>
 * [
@@ -998,7 +999,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 *    {"name":"Windows Phone","percent":32}
 * ]
 */
-countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj) {
+countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj, fixBarSegmentData) {
     metric = metric || "t";
     maxItems = maxItems || 3;
     fetchFunction = fetchFunction || function(rangeArr) {
@@ -1020,6 +1021,11 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         dataProps.push({name: "u"});
     }
     var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj);
+
+    if (fixBarSegmentData) {
+        rangeData = fixBarSegmentData(rangeData);
+    }
+
     rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
     rangeData.chartData = underscore.sortBy(rangeData.chartData, function(obj) {
         return -obj[metric];
