@@ -94,7 +94,7 @@
         // Paged Resource
 
         var tooManyRecordsResource = countlyVue.vuex.Module("tooManyRecords", {
-            resetFn: function() {
+            state: function() {
                 return {
                     paged: {
                         rows: []
@@ -141,7 +141,7 @@
         });
 
         var recordsResource = countlyVue.vuex.Module("myRecords", {
-            resetFn: function() {
+            state: function() {
                 return {
                     all: []
                 };
@@ -229,7 +229,7 @@
         });
 
         return countlyVue.vuex.Module("countlyVueExample", {
-            resetFn: getEmptyState,
+            state: getEmptyState,
             getters: getters,
             actions: actions,
             mutations: mutations,

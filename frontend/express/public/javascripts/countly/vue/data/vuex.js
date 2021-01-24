@@ -23,9 +23,9 @@
         });
 
         var _resetFn = function() {
-            var state = options.resetFn();
+            var state = options.state();
             mixins.forEach(function(mixin) {
-                Object.assign(state, mixin.resetFn());
+                Object.assign(state, mixin.state());
             });
             return state;
         };
@@ -131,7 +131,7 @@
             echoKey = name + "RequestLastEcho",
             paramsKey = name + "Params";
 
-        var resetFn = function() {
+        var state = function() {
             var stateObj = {};
             stateObj[resourceName] = _dataTableAdapters.toStandardResponse();
             stateObj[counterKey] = 0;
@@ -200,7 +200,7 @@
         };
 
         return {
-            resetFn: resetFn,
+            state: state,
             getters: getters,
             mutations: mutations,
             actions: actions
@@ -208,7 +208,7 @@
     };
 
     var MutableTable = function(name, options) {
-        var resetFn = function() {
+        var state = function() {
             return {
                 trackedFields: options.trackedFields || [],
                 patches: {}
@@ -304,7 +304,7 @@
             }
         };
         return VuexModule(name, {
-            resetFn: resetFn,
+            state: state,
             getters: tableGetters,
             mutations: mutations
         });
