@@ -13,25 +13,18 @@
 
         var mutations = options.mutations || {},
             actions = options.actions || {},
-            getters = options.getters || {},
-            mixins = options.mixins || [];
-
-        mixins.forEach(function(mixin) {
-            Object.assign(mutations, mixin.mutations);
-            Object.assign(actions, mixin.actions);
-            Object.assign(getters, mixin.getters);
-        });
+            getters = options.getters || {};
 
         var _resetFn = function() {
-            var state = options.state();
-            mixins.forEach(function(mixin) {
-                Object.assign(state, mixin.state());
-            });
-            return state;
+            if (options.state) {
+                return options.state();
+            }
+            return {};
         };
 
         mutations.resetState = function(state) {
-            Object.assign(state, _resetFn());
+            //Object.assign(state, _resetFn());
+            _.extend(state, _resetFn());
         };
 
         actions.reset = function(context) {
