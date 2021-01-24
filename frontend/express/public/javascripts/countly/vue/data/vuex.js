@@ -39,7 +39,7 @@
         };
 
         var module = {
-            namespaced: true,
+            namespaced: options.namespaced !== false,
             state: _resetFn(),
             getters: getters,
             mutations: mutations,
@@ -86,7 +86,7 @@
                 "iTotalDisplayRecords": true,
                 "iTotalRecords": true,
                 "sEcho": true
-            }
+            };
 
             var fields = {
                 rows: response.aaData || [],
@@ -126,17 +126,20 @@
         var getters = {},
             mutations = {},
             actions = {},
+            lastResponseField = "lastResponse",
+            counterField = "requestCounter",
+            echoField = "requestLastEcho",
+            paramsField = "params",
             resourceName = name,
-            counterKey = name + "RequestCounter",
-            echoKey = name + "RequestLastEcho",
-            paramsKey = name + "Params";
+            counterKey = _capitalized(name, counterField),
+            paramsKey = _capitalized(name, paramsField);
 
         var state = function() {
             var stateObj = {};
-            stateObj[resourceName] = _dataTableAdapters.toStandardResponse();
-            stateObj[counterKey] = 0;
-            stateObj[echoKey] = 0;
-            stateObj[paramsKey] = {
+            stateObj[lastResponseField] = _dataTableAdapters.toStandardResponse();
+            stateObj[counterField] = 0;
+            stateObj[echoField] = 0;
+            stateObj[paramsField] = {
                 ready: false
             };
             return stateObj;
@@ -144,27 +147,27 @@
 
         //
         getters[name] = function(_state) {
-            return _state[name];
+            return _state[lastResponseField];
         };
 
         //
         mutations[_capitalized("set", resourceName)] = function(_state, newValue) {
-            _state[resourceName] = newValue;
-            _state[echoKey] = newValue.echo || 0;
+            _state[lastResponseField] = newValue;
+            _state[echoField] = newValue.echo || 0;
         };
 
         mutations[_capitalized("set", paramsKey)] = function(_state, newValue) {
-            _state[paramsKey] = newValue;
+            _state[paramsField] = newValue;
         };
 
         mutations[_capitalized("increment", counterKey)] = function(_state) {
-            _state[counterKey]++;
+            _state[counterField]++;
         };
 
         //
         actions[_capitalized("fetch", resourceName)] = function(context, actionParams) {
             var promise = null,
-                requestParams = context.state[paramsKey],
+                requestParams = context.state[paramsField],
                 requestOptions = options.onRequest(context, actionParams);
 
             if (!requestParams.ready || !requestOptions) {
@@ -172,7 +175,7 @@
             }
             else {
                 var legacyOptions = _dataTableAdapters.toLegacyRequest(requestParams, options.columns);
-                legacyOptions.sEcho = context.state[counterKey];
+                legacyOptions.sEcho = context.state[counterField];
                 _.extend(requestOptions.data, legacyOptions);
 
                 promise = $.when(
@@ -187,7 +190,7 @@
                     }
                     var convertedResponse = _dataTableAdapters.toStandardResponse(res, requestOptions);
                     if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
-                        convertedResponse.echo >= context.state[echoKey]) {
+                        convertedResponse.echo >= context.state[echoField]) {
                         if (typeof options.onReady === 'function') {
                             convertedResponse.rows = options.onReady(context, convertedResponse.rows);
                         }
@@ -199,16 +202,17 @@
                 });
         };
 
-        return {
+        return VuexModule(name, {
+            namespaced: false,
             state: state,
             getters: getters,
             mutations: mutations,
             actions: actions
-        };
+        });
     };
 
     var MutableTable = function(name, options) {
-        var state = function() {
+        var _state = function() {
             return {
                 trackedFields: options.trackedFields || [],
                 patches: {}
@@ -304,7 +308,7 @@
             }
         };
         return VuexModule(name, {
-            state: state,
+            state: _state,
             getters: tableGetters,
             mutations: mutations
         });
