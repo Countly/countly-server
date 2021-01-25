@@ -2,7 +2,7 @@
 window.BrowserView = countlyView.extend({
     activeSegment: {},
     beforeRender: function() {
-        return $.when(countlyBrowser.initialize(), countlyTotalUsers.initialize("browsers")).then(function() {});
+        return $.when(countlyBrowser.initialize(), countlyTotalUsers.initialize("browser")).then(function() {});
     },
     renderCommon: function(isRefresh) {
         var self = this;
@@ -11,7 +11,7 @@ window.BrowserView = countlyView.extend({
         var chartHTML = "";
         var versionData = {};
         if (data && data.chartDP && data.chartDP.dp && data.chartDP.dp.length) {
-            chartHTML += '<div class="hsb-container top"><div class="label">Platforms</div><div class="chart"><svg id="hsb-platforms"></svg></div></div>';
+            chartHTML += '<div class="hsb-container top"><div class="label">Browsers</div><div class="chart"><svg id="hsb-platforms"></svg></div></div>';
 
             for (var i = 0; i < data.chartDP.dp.length; i++) {
                 var tmpVersion = countlyBrowser.getSegmentedData(data.chartDP.dp[i].label);

@@ -2082,9 +2082,9 @@ function fetchData(params, allMetrics, metric, cb) {
         else {
             fetchTimeObj(metrics[0], params, false, function(db) {
                 fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
-                    countlyDeviceDetails.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
+                    model.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
                     var sgMetric = "t";
-                    if (metrics[1] === "os") {
+                    if (metrics[1] === "os" || metrics[1] === "browser") {
                         sgMetric = "u";
                     }
                     countlyCommon.setTimezone(params.appTimezone);
