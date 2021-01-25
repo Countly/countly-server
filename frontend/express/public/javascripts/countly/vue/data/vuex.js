@@ -11,7 +11,8 @@
 
         options = options || {};
 
-        var namespaced = options.namespaced !== false;
+        var namespaced = options.namespaced !== false,
+            submodules = options.submodules;
 
         var mutations = options.mutations || {},
             actions = options.actions || {},
@@ -22,6 +23,14 @@
                 return options.state();
             }
             return {};
+        };
+
+        var module = {
+            namespaced: namespaced,
+            state: _resetFn(),
+            getters: getters,
+            mutations: mutations,
+            actions: actions
         };
 
         var resetKey = '',
@@ -36,6 +45,13 @@
             resetKey = "reset";
         }
 
+        var ref = {
+            name: name,
+            module: module,
+            _resetKey: resetKey,
+            _parent: null
+        };
+
         mutations[resetStateKey] = function(state) {
             var newState = _resetFn();
             Object.keys(newState).forEach(function(key) {
@@ -43,29 +59,47 @@
             });
         };
 
-        actions[resetKey] = function(context) {
+        actions[resetKey] = function(context, params) {
+            params = params || {};
             context.commit(resetStateKey);
+            var deep = params.deep !== false,
+                path = params._path,
+                currentPath = '';
+
+            if (!path) {
+                var currentParent = ref._parent;
+                currentPath = name;
+                while (currentParent) {
+                    currentPath = currentParent.name + "/" + currentPath;
+                    currentParent = currentParent._parent;
+                }
+            }
+            else {
+                currentPath = path + "/" + name;
+            }
+
+            if (submodules && deep) {
+                submodules.forEach(function(submodule) {
+                    if (submodule.module.namespaced) {
+                        var subReset = currentPath + "/" + submodule.name + "/reset";
+                        context.dispatch(subReset, { deep: true, _path: currentPath }, {root: true});
+                    }
+                    else {
+                        context.dispatch(submodule._resetKey, { deep: true, _path: currentPath });
+                    }
+                });
+            }
         };
 
-        var module = {
-            namespaced: namespaced,
-            state: _resetFn(),
-            getters: getters,
-            mutations: mutations,
-            actions: actions
-        };
-
-        if (options.submodules) {
+        if (submodules) {
             module.modules = {};
-            options.submodules.forEach(function(submodule) {
+            submodules.forEach(function(submodule) {
                 module.modules[submodule.name] = submodule.module;
+                submodule._parent = ref;
             });
         }
 
-        return {
-            name: name,
-            module: module
-        };
+        return ref;
     };
 
     var _dataTableAdapters = {
