@@ -11,6 +11,8 @@
 
         options = options || {};
 
+        var namespaced = options.namespaced !== false;
+
         var mutations = options.mutations || {},
             actions = options.actions || {},
             getters = options.getters || {};
@@ -22,17 +24,31 @@
             return {};
         };
 
-        mutations.resetState = function(state) {
-            //Object.assign(state, _resetFn());
-            _.extend(state, _resetFn());
+        var resetKey = '',
+            resetStateKey = '';
+
+        if (!namespaced) {
+            resetStateKey = _capitalized("reset", name + "State");
+            resetKey = _capitalized("reset", name);
+        }
+        else {
+            resetStateKey = "resetState";
+            resetKey = "reset";
+        }
+
+        mutations[resetStateKey] = function(state) {
+            var newState = _resetFn();
+            Object.keys(newState).forEach(function(key) {
+                state[key] = newState[key];
+            });
         };
 
-        actions.reset = function(context) {
-            context.commit("resetState");
+        actions[resetKey] = function(context) {
+            context.commit(resetStateKey);
         };
 
         var module = {
-            namespaced: options.namespaced !== false,
+            namespaced: namespaced,
             state: _resetFn(),
             getters: getters,
             mutations: mutations,
