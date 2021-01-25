@@ -8,24 +8,10 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    Vue.directive('click-outside', {
-        bind: function(el, binding, vnode) {
-            el.clickOutsideEvent = function(event) {
-                if (!(el === event.target || el.contains(event.target))) {
-                    vnode.context[binding.expression](event);
-                }
-            };
-            document.body.addEventListener('click', el.clickOutsideEvent);
-        },
-        unbind: function(el) {
-            document.body.removeEventListener('click', el.clickOutsideEvent);
-        }
-    });
-
-    Vue.directive("el-clickoutside", ELEMENT.utils.Clickoutside);
+    Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
 
     Vue.component("cly-menubox", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="close">\n' +
+        template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="outsideClose">\n' +
                         '<div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\n' +
                             '<div class="text-container">\n' +
                                 '<div class="text">{{label}}</div>\n' +
@@ -46,6 +32,10 @@
             },
             close: function() {
                 this.setStatus(false);
+            },
+            outsideClose: function() {
+                this.close();
+                this.$emit('discard');
             },
             setStatus: function(targetState) {
                 this.$emit('status-changed', targetState);

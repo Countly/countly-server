@@ -35,7 +35,7 @@
             'trigger-proxy': triggerProxy
         },
         template: '<div class="cly-vue-tabbed-listbox el-select"\
-                    v-el-clickoutside="handleOutsideClick">\
+                    v-click-outside="handleOutsideClick">\
                     <trigger-proxy\
                         ref="toggler"\
                         v-popover:popover\
