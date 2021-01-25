@@ -12,9 +12,9 @@ var countlyModel = require('../../../../api/lib/countly.model.js'),
  * @return {object} - countlySources instance
  */
 function create() {
-    var countlySources = countlyModel.create(function(code, data, separate) {
+    var countlySources = countlyModel.create(function(code, data, separate, appType) {
         code = countlyCommon.decode(code + "");
-        if (!code.startsWith("http") && code.indexOf("://") === -1) {
+        if (appType === "mobile") {
             //ignore incorrect Android values, which are numbers
             if (!isNaN(parseFloat(code)) && isFinite(code)) {
                 return "Unknown";
@@ -35,7 +35,7 @@ function create() {
             }
         }
         else {
-            if (code.indexOf("://") === -1) {
+            if (code.indexOf("://") === -1 && code.indexOf(".") === -1) {
                 if (separate) {
                     return "Organic (" + code + ")";
                 }
@@ -49,9 +49,24 @@ function create() {
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
             /*eslint-enable */
             var domain = matches && matches[1] || code;
-            return domain;
+            return domain.split("/")[0];
         }
     });
+
+    countlySources.fixBarSegmentData = function(segment, params, rangeData) {
+        var fetchValue = countlySources.fetchValue;
+        for (var i = 0; i < rangeData.length; i++) {
+            rangeData[i].sources = fetchValue(countlyCommon.decode(rangeData[i]._id), undefined, undefined, params.app.type);
+        }
+
+        rangeData = countlyCommon.mergeMetricsByName(rangeData, "sources");
+        rangeData.sort(function(a, b) {
+            return b.t - a.t;
+        });
+
+        return rangeData;
+    };
+
     return countlySources;
 }
 module.exports = create;

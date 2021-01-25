@@ -619,7 +619,7 @@ fetch.fetchAllApps = function(params) {
 * @param {string} collection - collection name
 * @param {function} callback - callback function
 **/
-function getTopThree(params, collection, callback) {
+function getDataforTops(params, collection, callback) {
     var periodObj = countlyCommon.getPeriodObj(params);
     var pipeline = [];
 
@@ -705,28 +705,7 @@ function getTopThree(params, collection, callback) {
     // pipeline.push({$limit: 3}); //limit count
 
     common.db.collection(collection).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
-        var items = [];
-        if (res) {
-            items = res;
-            var total = 0;
-            for (let k = 0; k < items.length; k++) {
-                items[k].percent = items[k].t;
-                items[k].value = items[k].t;
-                items[k].name = items[k]._id;
-                total = total + items[k].value;
-            }
-            var totalPercent = 0;
-            for (let k = 0; k < items.length; k++) {
-                if (k !== (items.length - 1)) {
-                    items[k].percent = countlyCommon.round(items[k].percent * 100 / total, 0);
-                    totalPercent += items[k].percent;
-                }
-                else {
-                    items[k].percent = 100 - totalPercent;
-                }
-            }
-        }
-        callback(items.slice(0, 3));
+        callback(res || []);
     });
 }
 
@@ -2072,10 +2051,38 @@ function fetchData(params, allMetrics, metric, cb) {
             model = countlyModel.load(metrics[0]);
         }
         if (metrics[0] === metric && countInCol === 1) {
-            getTopThree(params, metrics[0], function(items) {
-                for (var k = 0; k < items.length; k++) {
-                    items[k].name = model.fetchValue(items[k].name);
+            getDataforTops(params, metrics[0], function(items) {
+                items = items || [];
+                if (items) {
+                    if (model.fixBarSegmentData) {
+                        items = model.fixBarSegmentData(metrics[1], params, items);
+                    }
+
+                    var total = 0;
+                    for (let k = 0; k < items.length; k++) {
+                        items[k].percent = items[k].t;
+                        items[k].value = items[k].t;
+                        items[k].name = items[k]._id;
+                        total = total + items[k].value;
+                    }
+                    var totalPercent = 0;
+                    for (let k = 0; k < items.length; k++) {
+                        if (k !== (items.length - 1)) {
+                            items[k].percent = countlyCommon.round(items[k].percent * 100 / total, 0);
+                            totalPercent += items[k].percent;
+                        }
+                        else {
+                            items[k].percent = 100 - totalPercent;
+                        }
+                    }
+
+                    for (var k = 0; k < items.length; k++) {
+                        items[k].name = model.fetchValue(items[k].name);
+                    }
+
+                    items = items.slice(0, 3);
                 }
+
                 cb(items);
             });
         }
