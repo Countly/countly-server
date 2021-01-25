@@ -60,25 +60,26 @@
         };
 
         actions[resetKey] = function(context, params) {
-            params = params || {};
             context.commit(resetStateKey);
-            var deep = params.deep !== false,
-                path = params._path,
-                currentPath = '';
-
-            if (!path) {
-                var currentParent = ref._parent;
-                currentPath = name;
-                while (currentParent) {
-                    currentPath = currentParent.name + "/" + currentPath;
-                    currentParent = currentParent._parent;
-                }
-            }
-            else {
-                currentPath = path + "/" + name;
-            }
+            params = params || {};
+            var deep = params.deep !== false;
 
             if (submodules && deep) {
+                var path = params._path,
+                    currentPath = '';
+
+                if (!path) {
+                    var currentParent = ref._parent;
+                    currentPath = name;
+                    while (currentParent) {
+                        currentPath = currentParent.name + "/" + currentPath;
+                        currentParent = currentParent._parent;
+                    }
+                }
+                else {
+                    currentPath = path + "/" + name;
+                }
+
                 submodules.forEach(function(submodule) {
                     if (submodule.module.namespaced) {
                         var subReset = currentPath + "/" + submodule.name + "/reset";
