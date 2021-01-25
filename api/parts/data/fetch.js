@@ -2089,7 +2089,7 @@ function fetchData(params, allMetrics, metric, cb) {
                     }
                     countlyCommon.setTimezone(params.appTimezone);
                     model.setDb(db || {});
-                    cb(model.getBars(metrics[1] || metrics[0], undefined, sgMetric));
+                    cb(model.getBars(metrics[1] || metrics[0], 3, sgMetric));
                 });
             });
         }
