@@ -1,4 +1,4 @@
-/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, countlyDeviceDetails, filterXSS*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
 (function(window, $) {
     /**
      * Object with common functions to be used for multiple purposes
