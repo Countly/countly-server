@@ -167,7 +167,7 @@
         return osName;
     };
 
-    countlyDeviceDetails.eliminateOSVersion = function(countlyMetric, data, osSegmentation, segment) {
+    countlyDeviceDetails.eliminateOSVersion = function(data, osSegmentation, segment, fullname) {
         var oSVersionData = JSON.parse(JSON.stringify(data));
         var chartData = [];
         var osName = osSegmentation;
@@ -188,9 +188,11 @@
                 oSVersionData.chartData[i][segment] = oSVersionData.chartData[i][segment].replace(/:/g, ".");
                 if (regTest.test(oSVersionData.chartData[i][segment])) {
                     shouldDelete = false;
-                    oSVersionData.chartData[i][segment] = oSVersionData.chartData[i][segment].replace(reg, "");
+                    if (!fullname) {
+                        oSVersionData.chartData[i][segment] = oSVersionData.chartData[i][segment].replace(reg, "");
+                    }
                 }
-                else if (countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][segment], osName)) {
+                else if (countlyDeviceDetails.checkOS && countlyDeviceDetails.checkOS(osSegmentation, oSVersionData.chartData[i][segment], osName)) {
                     shouldDelete = false;
                 }
                 if (!shouldDelete) {
@@ -230,7 +232,7 @@
             for (i = 0; i < _os.length; i++) {
                 var osSegmentation = _os[i];
                 //Important to note here that segment parameter is passed as "range" because its extracted under name range from extractTwoLevelData
-                var fixedRangeData = countlyDeviceDetails.eliminateOSVersion(countlyDeviceDetails, rangeData, osSegmentation, "range");
+                var fixedRangeData = countlyDeviceDetails.eliminateOSVersion(rangeData, osSegmentation, "range", true);
                 newRangeData.chartData = [].concat.apply([], [newRangeData.chartData, fixedRangeData.chartData]);
             }
 

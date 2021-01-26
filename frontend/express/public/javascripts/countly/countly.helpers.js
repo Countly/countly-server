@@ -3026,7 +3026,7 @@
 
             var chartData2 = [];
             var osSegmentation = os;
-            oSVersionData = countlyDeviceDetails.eliminateOSVersion(countlyMetric, oSVersionData, osSegmentation, metric_pd || _name);
+            oSVersionData = countlyDeviceDetails.eliminateOSVersion(oSVersionData, osSegmentation, metric_pd || _name, false);
 
             var platformVersionTotal = _.pluck(oSVersionData.chartData, 'u');
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
