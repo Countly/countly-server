@@ -3,6 +3,7 @@ var pluginInstance = {},
     plugins = require('../../pluginManager.js'),
     stores = require("../stores.json"),
     fetch = require('../../../api/parts/data/fetch.js'),
+    parseDomain = require('parse-domain'),
     urlParse = require('url');
 
 var searchEngineKeyWord = {
@@ -122,17 +123,15 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
                 if (!params.qstring.metrics._source_channel) {
                     params.qstring.metrics._source_channel = params.qstring.metrics._store;
                     try {
-                        var parts = (params.qstring.metrics._source_channel + "")
-                            .replace(/^(http|https):\/\//, "")
-                            .replace(/^www./, "")
-                            .split("/")
-                            .shift()
-                            .split(".");
-                        if (parts.length === 1) {
-                            params.qstring.metrics._source_channel = parts[0];
+                        const getURL = new URL(params.qstring.metrics._source_channel);
+                        const getHostName = getURL.hostname;
+                        const parseResult = parseDomain.parseDomain(getHostName);
+                        if (parseResult.type === parseDomain.ParseResultType.Listed) {
+                            const { domain} = parseResult;
+                            params.qstring.metrics._source_channel = domain;
                         }
-                        else if (parts.length > 1) {
-                            params.qstring.metrics._source_channel = parts[parts.length - 2];
+                        else {
+                            throw "invalid URL";
                         }
                     }
                     catch (ex) {
