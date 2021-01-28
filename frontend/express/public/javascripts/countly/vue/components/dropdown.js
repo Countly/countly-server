@@ -34,6 +34,12 @@
         components: {
             'trigger-proxy': triggerProxy
         },
+        props: {
+            popperAppendToBody: {
+                type: Boolean,
+                default: true
+            }
+        },
         template: '<div class="cly-vue-dropdown el-select"\
                     v-click-outside="handleOutsideClick">\
                     <trigger-proxy\
@@ -48,6 +54,7 @@
                     </trigger-proxy>\
                     <el-popover\
                         ref="popover"\
+                        :append-to-body="popperAppendToBody"\
                         placement="bottom-start"\
                         :visible-arrow="false"\
                         width="400"\
@@ -96,7 +103,7 @@
     }));
 
     Vue.component("cly-input-dropdown", countlyVue.components.BaseComponent.extend({
-        template: '<cly-dropdown ref="dropdown">\
+        template: '<cly-dropdown ref="dropdown" v-bind="$attrs">\
                         <template v-slot:trigger="dropdown">\
                             <cly-input-dropdown-trigger\
                                 :focused="dropdown.visible"\

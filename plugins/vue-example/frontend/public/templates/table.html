@@ -87,10 +87,19 @@
                     <div class="example-cell">
                         <cly-input-dropdown
                             v-model="selectedLB.name">
-                            Hello
                             <cly-input-dropdown
+                                :popper-append-to-body="false"
                                 v-model="selectedLB.name">
-                                Hello
+                                <el-select 
+                                    :popper-append-to-body="false"
+                                    v-model="selectedRadio">
+                                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in selectWItems"></el-option>
+                                </el-select>
+                                <el-select 
+                                    :popper-append-to-body="false"
+                                    v-model="selectedRadio">
+                                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in selectWItems"></el-option>
+                                </el-select>
                             </cly-input-dropdown>
                         </cly-input-dropdown>
                     </div>

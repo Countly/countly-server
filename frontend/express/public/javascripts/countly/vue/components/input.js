@@ -1120,7 +1120,7 @@
 
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
-        template: '<cly-input-dropdown class="cly-vue-tabbed-listbox" v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
+        template: '<cly-input-dropdown v-bind="$attrs" class="cly-vue-tabbed-listbox" v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
                         <div class="cly-vue-tabbed-listbox__pop">\
                             <el-input\
                                 ref="searchBox"\
