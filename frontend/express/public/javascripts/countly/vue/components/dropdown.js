@@ -34,7 +34,7 @@
         components: {
             'trigger-proxy': triggerProxy
         },
-        template: '<div class="cly-vue-tabbed-listbox el-select"\
+        template: '<div class="cly-vue-dropdown el-select"\
                     v-click-outside="handleOutsideClick">\
                     <trigger-proxy\
                         ref="toggler"\
@@ -48,13 +48,12 @@
                     </trigger-proxy>\
                     <el-popover\
                         ref="popover"\
-                        :append-to-body="false"\
                         placement="bottom-start"\
                         :visible-arrow="false"\
                         width="400"\
                         v-model="visible"\
                         trigger="click">\
-                        <div ref="popContent" class="cly-vue-tabbed-listbox__pop">\
+                        <div ref="popContent" class="cly-vue-dropdown-listbox__pop">\
                             <slot>\
                             </slot>\
                         </div>\

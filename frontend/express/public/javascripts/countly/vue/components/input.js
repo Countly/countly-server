@@ -1120,40 +1120,42 @@
 
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
-        template: '<cly-input-dropdown v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
-                        <el-input\
-                            ref="searchBox"\
-                            v-model="searchQuery"\
-                            @keydown.native.esc.stop.prevent="doClose" \
-                            :placeholder="searchPlaceholder">\
-                            <i slot="prefix" class="el-input__icon el-icon-search"></i>\
-                        </el-input>\
-                        <el-tabs\
-                            v-model="activeTabId"\
-                            @keydown.native.esc.stop.prevent="doClose">\
-                            <el-tab-pane name="_all">\
-                                <span slot="label">\
-                                    {{allPlaceholder}}\
-                                </span>\
-                                <cly-listbox\
-                                    :bordered="false"\
-                                    @change="doClose"\
-                                    v-model="innerValue"\
-                                    :options="getMatching(allOptions)">\
-                                </cly-listbox>\
-                            </el-tab-pane>\
-                            <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
-                                <span slot="label">\
-                                    {{tab.label}}\
-                                </span>\
-                                <cly-listbox\
-                                    :bordered="false"\
-                                    @change="doClose"\
-                                    v-model="innerValue"\
-                                    :options="getMatching(tab.options)">\
-                                </cly-listbox>\
-                            </el-tab-pane>\
-                        </el-tabs>\
+        template: '<cly-input-dropdown class="cly-vue-tabbed-listbox" v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
+                        <div class="cly-vue-tabbed-listbox__pop">\
+                            <el-input\
+                                ref="searchBox"\
+                                v-model="searchQuery"\
+                                @keydown.native.esc.stop.prevent="doClose" \
+                                :placeholder="searchPlaceholder">\
+                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                            </el-input>\
+                            <el-tabs\
+                                v-model="activeTabId"\
+                                @keydown.native.esc.stop.prevent="doClose">\
+                                <el-tab-pane name="_all">\
+                                    <span slot="label">\
+                                        {{allPlaceholder}}\
+                                    </span>\
+                                    <cly-listbox\
+                                        :bordered="false"\
+                                        @change="doClose"\
+                                        v-model="innerValue"\
+                                        :options="getMatching(allOptions)">\
+                                    </cly-listbox>\
+                                </el-tab-pane>\
+                                <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
+                                    <span slot="label">\
+                                        {{tab.label}}\
+                                    </span>\
+                                    <cly-listbox\
+                                        :bordered="false"\
+                                        @change="doClose"\
+                                        v-model="innerValue"\
+                                        :options="getMatching(tab.options)">\
+                                    </cly-listbox>\
+                                </el-tab-pane>\
+                            </el-tabs>\
+                        </div>\
                     </cly-input-dropdown>',
         props: {
             allPlaceholder: {type: String, default: 'All'},
