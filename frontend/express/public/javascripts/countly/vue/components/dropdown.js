@@ -100,11 +100,21 @@
                     self.$refs.popover.updatePopper();
                 });
             }
+        },
+        watch: {
+            visible: function(newValue) {
+                if (newValue) {
+                    this.$emit("show");
+                }
+                else {
+                    this.$emit("hide");
+                }
+            }
         }
     }));
 
     Vue.component("cly-input-dropdown", countlyVue.components.BaseComponent.extend({
-        template: '<cly-dropdown ref="dropdown" v-bind="$attrs">\
+        template: '<cly-dropdown ref="dropdown" v-on="$listeners" v-bind="$attrs">\
                         <template v-slot:trigger="dropdown">\
                             <cly-input-dropdown-trigger\
                                 :focused="dropdown.visible"\

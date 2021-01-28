@@ -1136,7 +1136,13 @@
 
     Vue.component("cly-select-x", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
-        template: '<cly-input-dropdown v-bind="$attrs" class="cly-vue-select-x" v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
+        template: '<cly-input-dropdown\
+                        class="cly-vue-select-x"\
+                        ref="dropdown"\
+                        :placeholder="placeholder"\
+                        @show="focusOnSearch"\
+                        v-bind="$attrs"\
+                        v-model="selectedOption.label">\
                         <div class="cly-vue-select-x__pop" :class="{\'cly-vue-select-x__pop--hidden-tabs\': hideDefaultTabs}">\
                             <div class="cly-vue-select-x__header">\
                                 <div class="cly-vue-select-x__title" v-if="title">{{title}}</div>\
@@ -1194,17 +1200,15 @@
             },
             updateDropdown: function() {
                 this.$refs.dropdown.updateDropdown();
+            },
+            focusOnSearch: function() {
+                var self = this;
+                this.$nextTick(function() {
+                    self.$refs.searchBox.focus();
+                });
             }
         },
         watch: {
-            visible: function(newValue) {
-                var self = this;
-                this.$nextTick(function() {
-                    if (newValue) {
-                        self.$refs.searchBox.focus();
-                    }
-                });
-            },
             searchQuery: function() {
                 this.updateDropdown();
             },
