@@ -229,7 +229,7 @@
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
                             v-model="selectedTLB" 
-                            :tabs="listBoxTabs">
+                            :options="selectXOptions">
                         </cly-select-x>
                     </div>
                     <div class="example-cell">
@@ -247,7 +247,7 @@
                             placeholder="Select Property" 
                             title="Custom header & title"
                             :hide-default-tabs="true"
-                            :tabs="listBoxTabs"
+                            :options="selectXOptions"
                             v-model="selectedTLB">
                             <template v-slot:header="selectScope">
                                 <el-radio-group 

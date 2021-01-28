@@ -24,7 +24,7 @@
                 manyItems.push({name: "Type " + i, value: i});
             }
             return {
-                listBoxTabs: [{
+                selectXOptions: [{
                     "label": "A Items",
                     "name": "type-1",
                     "options": [

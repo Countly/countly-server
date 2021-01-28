@@ -1042,7 +1042,7 @@
 
     var TabbedOptionsMixin = {
         props: {
-            tabs: {type: Array},
+            options: {type: Array},
             hideDefaultTabs: {type: Boolean, default: false},
             allPlaceholder: {type: String, default: 'All'}
         },
@@ -1053,30 +1053,30 @@
         },
         computed: {
             val2tab: function() {
-                if (!this.tabs.length) {
+                if (!this.options.length) {
                     return {};
                 }
-                return this.tabs.reduce(function(items, tab) {
+                return this.options.reduce(function(items, tab) {
                     tab.options.forEach(function(opt) {
                         items[opt.value] = tab.name;
                     });
                     return items;
                 }, {});
             },
-            allOptions: function() {
-                if (!this.tabs.length) {
+            flatOptions: function() {
+                if (!this.options.length) {
                     return [];
                 }
-                return this.tabs.reduce(function(items, tab) {
+                return this.options.reduce(function(items, tab) {
                     return items.concat(tab.options);
                 }, []);
             },
             selectedOption: function() {
-                if (!this.allOptions.length) {
+                if (!this.flatOptions.length) {
                     return {};
                 }
                 var self = this;
-                var matching = this.allOptions.filter(function(item) {
+                var matching = this.flatOptions.filter(function(item) {
                     return item.value === self.value;
                 });
                 if (matching.length) {
@@ -1088,8 +1088,8 @@
                 return [{
                     name: "_all",
                     label: this.allPlaceholder,
-                    options: this.allOptions
-                }].concat(this.tabs);
+                    options: this.flatOptions
+                }].concat(this.options);
             },
         },
         methods: {
