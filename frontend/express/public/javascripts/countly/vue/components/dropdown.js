@@ -53,6 +53,7 @@
                         </slot>\
                     </trigger-proxy>\
                     <el-popover\
+                        :popper-class="\'cly-vue-dropdown__pop\'"\
                         ref="popover"\
                         :append-to-body="popperAppendToBody"\
                         placement="bottom-start"\
@@ -60,7 +61,7 @@
                         width="400"\
                         v-model="visible"\
                         trigger="click">\
-                        <div ref="popContent" class="cly-vue-dropdown-listbox__pop">\
+                        <div ref="popContent" class="cly-vue-dropdown__pop-container">\
                             <slot>\
                             </slot>\
                         </div>\

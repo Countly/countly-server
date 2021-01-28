@@ -1122,13 +1122,15 @@
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
         template: '<cly-input-dropdown v-bind="$attrs" class="cly-vue-tabbed-listbox" v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
                         <div class="cly-vue-tabbed-listbox__pop">\
-                            <el-input\
-                                ref="searchBox"\
-                                v-model="searchQuery"\
-                                @keydown.native.esc.stop.prevent="doClose" \
-                                :placeholder="searchPlaceholder">\
-                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
-                            </el-input>\
+                            <div class="cly-vue-tabbed-listbox__search-wrapper">\
+                                <el-input\
+                                    ref="searchBox"\
+                                    v-model="searchQuery"\
+                                    @keydown.native.esc.stop.prevent="doClose" \
+                                    :placeholder="searchPlaceholder">\
+                                    <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                                </el-input>\
+                            </div>\
                             <el-tabs\
                                 v-model="activeTabId"\
                                 @keydown.native.esc.stop.prevent="doClose">\
