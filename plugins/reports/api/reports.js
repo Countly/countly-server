@@ -13,7 +13,16 @@ var reportsInstance = {},
     localize = require('../../../api/utils/localization.js'),
     common = require('../../../api/utils/common.js'),
     log = require('../../../api/utils/log')('reports:reports'),
-    versionInfo = require('../../../frontend/express/version.info');
+    utils = require('../../../api/utils/utils'),
+    versionInfo = require('../../../frontend/express/version.info'),
+    crypto = require('crypto'),
+    countlyConfig = require('../../../frontend/express/config.js');
+
+countlyConfig.passwordSecret || "";
+
+plugins.setConfigs("reports", {
+    secret: "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
+});
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
@@ -554,12 +563,25 @@ var metricProps = {
                                                 }
                                             }
                                         }
-                                        var message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics, metricProps: metricPropsString});
+                                        const messages = [];
+                                        try{
+                                            for (let i = 0; i < report.emails.length; i++) {
+                                                const msg = reports.genUnsubscribeCode(report, report.emails[i]);
+                                                const unsubscribeLink = host + "/unsubscribe_report?data=" +  encodeURIComponent(msg);
+                                                const html = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics, metricProps: metricPropsString, "unsubscribe_link": unsubscribeLink});
+                                                messages.push({html, unsubscribeLink});
+                                            }
+                                        } catch(e) {
+                                                console.log(e,"#31234124555");
+                                        }
                                         report.subject = versionInfo.title + ': ' + localize.format(
                                             (
                                                 (report.frequency === "weekly") ? report.properties["reports.subject-week"] :
                                                     ((report.frequency === "monthly") ? report.properties["reports.subject-month"] : report.properties["reports.subject-day"])
                                             ), report.total_new);
+                                        report.messages =  messages;
+
+                                        const message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics, metricProps: metricPropsString, "unsubscribe_link": ""});
                                         if (callback) {
                                             return callback(err2, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, message: message});
                                         }
@@ -577,6 +599,39 @@ var metricProps = {
         }
     };
 
+    reports.decryptUnsubscribeCode = function (data) {
+        try {
+            const key = 'JBP7NwmwWTnwTPLpL30IlxwllvmtC4qe';
+            const decipher = crypto.createDecipheriv('aes-256-ctr', key, Buffer.from(data.iv, 'hex'));
+            const decrpyted = Buffer.concat([decipher.update(Buffer.from(data.content, 'hex')), decipher.final()]);
+            const result = JSON.parse(decrpyted.toString());
+            return result;
+        } catch (e) {
+            console.log("decrypt unsubscribe code err", e);
+        }
+    }
+
+    reports.genUnsubscribeCode = function (report, email) {
+        try {
+            const iv = crypto.randomBytes(16);
+            const key = 'JBP7NwmwWTnwTPLpL30IlxwllvmtC4qe';
+            const cipher = crypto.createCipheriv('aes-256-ctr', key, iv);
+            const data = {
+                "reportID": report._id,
+                "email": email,
+            };
+
+            const encrypted = Buffer.concat([cipher.update(JSON.stringify(data)), cipher.final()]);
+            const result = {
+                iv: iv.toString('hex'),
+                content: encrypted.toString('hex')
+            };
+            return JSON.stringify(result);
+        } catch (e) {
+            console.log(e, "[report subscription encode]");
+        }
+    }
+
     reports.send = function(report, message, callback) {
         if (report.emails) {
             for (var i = 0; i < report.emails.length; i++) {
@@ -584,8 +639,19 @@ var metricProps = {
                     to: report.emails[i],
                     from: versionInfo.title,
                     subject: report.subject,
-                    html: message
+                    // if report contains customize message for each email address, use reports.messages[i]
+                    html: report.messages && report.messages[i] && report.messages[i].html || message,
                 };
+
+                if (report.messages && report.messages[i]) {
+                    msg.list = {
+                        unsubscribe: {
+                            url: report.messages[i].unsubscribeLink, 
+                            comment: 'Countly Report Unsubscribe'
+                        }
+                    }
+                }
+                
                 if (mail.sendPoolMail) {
                     mail.sendPoolMail(msg);
                 }
