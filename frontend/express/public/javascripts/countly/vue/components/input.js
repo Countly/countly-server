@@ -1043,7 +1043,8 @@
     var TabbedOptionsMixin = {
         props: {
             tabs: {type: Array},
-            hideDefaultTabs: {type: Boolean, default: false}
+            hideDefaultTabs: {type: Boolean, default: false},
+            allPlaceholder: {type: String, default: 'All'}
         },
         data: function() {
             return {
@@ -1082,7 +1083,14 @@
                     return matching[0];
                 }
                 return {};
-            }
+            },
+            publicTabs: function() {
+                return [{
+                    name: "_all",
+                    label: this.allPlaceholder,
+                    options: this.allOptions
+                }].concat(this.tabs);
+            },
         },
         methods: {
             updateTabFn: function(tabId) {
@@ -1104,7 +1112,8 @@
 
     var SearchableOptionsMixin = {
         props: {
-            searchDisabled: {type: Boolean, default: false}
+            searchDisabled: {type: Boolean, default: false},
+            searchPlaceholder: {type: String, default: 'Search'}
         },
         data: function() {
             return {
@@ -1162,19 +1171,10 @@
                     </cly-input-dropdown>',
         props: {
             title: {type: String, default: ''},
-            allPlaceholder: {type: String, default: 'All'},
-            searchPlaceholder: {type: String, default: 'Search'},
             placeholder: {type: String, default: 'Select'},
             value: { type: [String, Number] }
         },
         computed: {
-            publicTabs: function() {
-                return [{
-                    name: "_all",
-                    label: this.allPlaceholder,
-                    options: this.allOptions
-                }].concat(this.tabs);
-            },
             innerValue: {
                 get: function() {
                     return this.value;
