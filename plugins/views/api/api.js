@@ -1295,6 +1295,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         params.viewsNamingMap = params.viewsNamingMap || {};
                         params.viewsNamingMap[segmentation.name] = view._id;
                         recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
+
+                        if (segmentation.exit || segmentation.bounce) {
+                            plugins.dispatch("/view/duration", {params: params, exit: segmentation.exit, bounce: segmentation.bounce, viewName: view._id});
+                        }
                     }
                 });
             }
@@ -1400,14 +1404,18 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             var projection = {};
                             for (let p = 0; p < results.length; p++) {
                                 if (results[p] !== false) {
-
                                     if (results[p].key === '[CLY]_view') {
                                         if (results[p].segmentation.visit) {
                                             params.views.push(results[p]);
                                             runDrill.push(results[p]);
                                         }
-                                        if (results[p].dur) {
-                                            plugins.dispatch("/view/duration", {params: params, duration: results[p].dur, viewName: results[p].viewAlias});
+                                        else {
+                                            if (results[p].segmentation.exit || results[p].segmentation.bounce) {
+                                                plugins.dispatch("/view/duration", {params: params, duration: results[p].dur || 0, exit: results[p].segmentation.exit, bounce: results[p].segmentation.bounce, viewName: results[p].viewAlias});
+                                            }
+                                            else if (results[p].dur) {
+                                                plugins.dispatch("/view/duration", {params: params, duration: results[p].dur, viewName: results[p].viewAlias});
+                                            }
                                         }
                                         //geting all segment info
                                         if (results[p].segmentation.visit) {
