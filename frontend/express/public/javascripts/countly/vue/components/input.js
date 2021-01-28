@@ -1043,7 +1043,7 @@
     var TabbedOptionsMixin = {
         props: {
             tabs: {type: Array},
-            hideDefaultTabs: {type:Boolean, default: false}
+            hideDefaultTabs: {type: Boolean, default: false}
         },
         data: function() {
             return {
@@ -1104,7 +1104,7 @@
 
     var SearchableOptionsMixin = {
         props: {
-            searchDisabled: {type:Boolean, default: false}
+            searchDisabled: {type: Boolean, default: false}
         },
         data: function() {
             return {
@@ -1146,18 +1146,7 @@
                             <el-tabs\
                                 v-model="activeTabId"\
                                 @keydown.native.esc.stop.prevent="doClose">\
-                                <el-tab-pane name="_all">\
-                                    <span slot="label">\
-                                        {{allPlaceholder}}\
-                                    </span>\
-                                    <cly-listbox\
-                                        :bordered="false"\
-                                        @change="doClose"\
-                                        v-model="innerValue"\
-                                        :options="getMatching(allOptions)">\
-                                    </cly-listbox>\
-                                </el-tab-pane>\
-                                <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in tabs">\
+                                <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in publicTabs">\
                                     <span slot="label">\
                                         {{tab.label}}\
                                     </span>\
@@ -1180,7 +1169,11 @@
         },
         computed: {
             publicTabs: function() {
-                return [{name: "_all", label: this.allPlaceholder}].concat(this.tabs);
+                return [{
+                    name: "_all",
+                    label: this.allPlaceholder,
+                    options: this.allOptions
+                }].concat(this.tabs);
             },
             innerValue: {
                 get: function() {
