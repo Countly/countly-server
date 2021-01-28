@@ -1297,7 +1297,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
 
                         if (segmentation.exit || segmentation.bounce) {
-                            plugins.dispatch("/view/duration", {params: params, exit: segmentation.exit, bounce: segmentation.bounce, viewName: view._id});
+                            plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
                         }
                     }
                 });
@@ -1410,11 +1410,15 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             runDrill.push(results[p]);
                                         }
                                         else {
-                                            if (results[p].segmentation.exit || results[p].segmentation.bounce) {
-                                                plugins.dispatch("/view/duration", {params: params, duration: results[p].dur || 0, exit: results[p].segmentation.exit, bounce: results[p].segmentation.bounce, viewName: results[p].viewAlias});
+                                            var updateMultiViewParams = {};
+                                            if (results[p].dur) {
+                                                updateMultiViewParams.duration = results[p].dur;
                                             }
-                                            else if (results[p].dur) {
-                                                plugins.dispatch("/view/duration", {params: params, duration: results[p].dur, viewName: results[p].viewAlias});
+                                            for (var k in results[p].segmentation) {
+                                                updateMultiViewParams[k] = results[p].segmentation[k];
+                                            }
+                                            if (Object.keys(updateMultiViewParams).length > 0) {
+                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, viewName: results[p].viewAlias});
                                             }
                                         }
                                         //geting all segment info
