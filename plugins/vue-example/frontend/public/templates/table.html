@@ -236,6 +236,33 @@
                         {{selectedTLB}}
                     </div>
                 </div>
+                <div class="example-component">
+                    <div class="example-cell">
+                        Tabbed ListBox (Custom header)
+                    </div>
+                    <div class="example-cell">
+                        <cly-tabbed-listbox 
+                            all-placeholder="All Properties" 
+                            search-placeholder="Search in Properties"
+                            placeholder="Select Property" 
+                            title="Custom header & title"
+                            :hide-default-tabs="true"
+                            :tabs="listBoxTabs"
+                            v-model="selectedTLB">
+                            <template v-slot:header="tabbed">
+                                <el-radio-group 
+                                    :value="tabbed.activeTabId" 
+                                    @input="tabbed.updateTab"
+                                    size="medium">
+                                    <el-radio-button v-for="tab in tabbed.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>
+                                </el-radio-group>
+                            </template>
+                        </cly-tabbed-listbox>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedTLB}}
+                    </div>
+                </div>
             </cly-panel>
         </cly-content>
     </cly-tabs>

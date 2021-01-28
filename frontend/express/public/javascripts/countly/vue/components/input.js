@@ -1043,6 +1043,7 @@
     var TabbedOptionsMixin = {
         props: {
             tabs: {type: Array},
+            hideDefaultTabs: {type:Boolean, default: false}
         },
         data: function() {
             return {
@@ -1084,6 +1085,9 @@
             }
         },
         methods: {
+            updateTabFn: function(tabId) {
+                this.activeTabId = tabId;
+            },
             determineActiveTabId: function() {
                 var self = this;
                 this.$nextTick(function() {
@@ -1099,6 +1103,9 @@
     };
 
     var SearchableOptionsMixin = {
+        props: {
+            searchDisabled: {type:Boolean, default: false}
+        },
         data: function() {
             return {
                 searchQuery: ''
@@ -1106,7 +1113,7 @@
         },
         methods: {
             getMatching: function(options) {
-                if (!this.searchQuery) {
+                if (!this.searchQuery || this.searchDisabled) {
                     return options;
                 }
                 var self = this;
@@ -1121,9 +1128,14 @@
     Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
         template: '<cly-input-dropdown v-bind="$attrs" class="cly-vue-tabbed-listbox" v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
-                        <div class="cly-vue-tabbed-listbox__pop">\
-                            <div class="cly-vue-tabbed-listbox__search-wrapper">\
+                        <div class="cly-vue-tabbed-listbox__pop" :class="{\'cly-vue-tabbed-listbox__pop--hidden-tabs\': hideDefaultTabs}">\
+                            <div class="cly-vue-tabbed-listbox__header">\
+                                <div class="cly-vue-tabbed-listbox__title" v-if="title">{{title}}</div>\
+                                <div class="cly-vue-tabbed-listbox__header-slot" v-if="!!$scopedSlots.header">\
+                                    <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>\
+                                </div>\
                                 <el-input\
+                                    v-if="!searchDisabled"\
                                     ref="searchBox"\
                                     v-model="searchQuery"\
                                     @keydown.native.esc.stop.prevent="doClose" \
@@ -1160,12 +1172,16 @@
                         </div>\
                     </cly-input-dropdown>',
         props: {
+            title: {type: String, default: ''},
             allPlaceholder: {type: String, default: 'All'},
             searchPlaceholder: {type: String, default: 'Search'},
             placeholder: {type: String, default: 'Select'},
             value: { type: [String, Number] }
         },
         computed: {
+            publicTabs: function() {
+                return [{name: "_all", label: this.allPlaceholder}].concat(this.tabs);
+            },
             innerValue: {
                 get: function() {
                     return this.value;

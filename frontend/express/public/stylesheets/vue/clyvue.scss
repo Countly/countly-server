@@ -2933,6 +2933,18 @@
                 left: -15px;
             }
         }
+        &--hidden-tabs {
+            .el-tabs {
+                &__header {
+                    &::after {
+                        top: 0px;
+                    }
+                }
+                &__nav-scroll {
+                    display: none;
+                }
+            }
+        }
         .cly-vue-listbox{
             padding: 0 8px;
             .el-select-dropdown__list,
@@ -2942,7 +2954,17 @@
             
         }
     }
-    &__search-wrapper {
-        padding: 12px;
+    &__title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+        color: #333C48;
+        padding-bottom: 16px;
+    }
+    &__header-slot {
+        padding-bottom: 16px;
+    }
+    &__header {
+        padding: 16px;
     }
 }
