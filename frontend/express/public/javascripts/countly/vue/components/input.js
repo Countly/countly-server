@@ -1125,13 +1125,13 @@
         }
     };
 
-    Vue.component("cly-tabbed-listbox", countlyVue.components.BaseComponent.extend({
+    Vue.component("cly-select-x", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
-        template: '<cly-input-dropdown v-bind="$attrs" class="cly-vue-tabbed-listbox" v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
-                        <div class="cly-vue-tabbed-listbox__pop" :class="{\'cly-vue-tabbed-listbox__pop--hidden-tabs\': hideDefaultTabs}">\
-                            <div class="cly-vue-tabbed-listbox__header">\
-                                <div class="cly-vue-tabbed-listbox__title" v-if="title">{{title}}</div>\
-                                <div class="cly-vue-tabbed-listbox__header-slot" v-if="!!$scopedSlots.header">\
+        template: '<cly-input-dropdown v-bind="$attrs" class="cly-vue-select-x" v-model="selectedOption.label" :placeholder="placeholder" ref="dropdown">\
+                        <div class="cly-vue-select-x__pop" :class="{\'cly-vue-select-x__pop--hidden-tabs\': hideDefaultTabs}">\
+                            <div class="cly-vue-select-x__header">\
+                                <div class="cly-vue-select-x__title" v-if="title">{{title}}</div>\
+                                <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">\
                                     <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>\
                                 </div>\
                                 <el-input\
