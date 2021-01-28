@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise */
 
 (function(countlyVue, $) {
 
@@ -15,12 +15,30 @@
         }
     };
 
+    var _i18n = function() {
+        return jQuery.i18n.prop.apply(null, arguments);
+    };
+
+    var _$ = {
+        ajax: function(request, options) {
+            options = options || {};
+            var ajaxP = new Promise(function(resolve, reject) {
+                $.ajax(request).done(resolve).fail(reject);
+            });
+            if (!options.disableAutoCatch) {
+                return ajaxP.catch(function(err) {
+                    // eslint-disable-next-line no-console
+                    console.log("AJAX Promise error:", err);
+                });
+            }
+            return ajaxP;
+        }
+    };
+
     // @vue/component
     var i18nMixin = {
         methods: {
-            i18n: function() {
-                return jQuery.i18n.prop.apply(null, arguments);
-            }
+            i18n: _i18n
         }
     };
 
@@ -259,6 +277,8 @@
     };
 
     var rootElements = {
+        i18n: _i18n,
+        $: _$,
         mixins: _mixins,
         views: _views,
         components: _components,
@@ -268,5 +288,7 @@
     for (var key in rootElements) {
         countlyVue[key] = rootElements[key];
     }
+
+    window.CV = countlyVue;
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));

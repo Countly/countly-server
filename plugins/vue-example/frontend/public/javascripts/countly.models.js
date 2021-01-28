@@ -1,4 +1,4 @@
-/*global $, countlyCommon, _, countlyVue */
+/*global countlyCommon, _, countlyVue, CV */
 
 (function(countlyVueExample) {
 
@@ -70,14 +70,14 @@
                 context.dispatch("fetchGraphPoints");
             },
             fetchGraphPoints: function(context) {
-                return $.when($.ajax({
+                return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_URL + "/o",
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         method: 'get-random-numbers'
                     }
-                })).then(function(obj) {
+                }).then(function(obj) {
                     context.commit("setGraphPoints", [obj, obj.map(function(x) {
                         return x / 2;
                     })]);
@@ -117,7 +117,7 @@
             },
             actions: {
                 fetchPaged: function(context) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_URL + "/o",
                         data: {
@@ -125,7 +125,7 @@
                             method: 'large-col',
                             table_params: JSON.stringify(context.state.requestParams)
                         }
-                    }))
+                    }, {disableAutoCatch: true})
                         .then(function(res) {
                             context.commit("setPaged", res);
                         })
@@ -158,7 +158,7 @@
             },
             actions: {
                 save: function(context, record) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "POST",
                         url: countlyCommon.API_PARTS.data.w + "/vue_example/save",
                         data: {
@@ -166,10 +166,10 @@
                             "record": JSON.stringify(record)
                         },
                         dataType: "json"
-                    }));
+                    });
                 },
                 remove: function(context, id) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.w + "/vue_example/delete",
                         data: {
@@ -177,10 +177,10 @@
                             "id": id
                         },
                         dataType: "json"
-                    }));
+                    });
                 },
                 status: function(context, updates) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.w + "/vue_example/status",
                         data: {
@@ -188,22 +188,22 @@
                             "records": JSON.stringify(updates)
                         },
                         dataType: "json"
-                    }));
+                    });
                 },
                 fetchAll: function(context) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_URL + "/o",
                         data: {
                             app_id: countlyCommon.ACTIVE_APP_ID,
                             method: 'vue-records'
                         }
-                    })).then(function(res) {
+                    }).then(function(res) {
                         context.commit("setAll", res);
                     });
                 },
                 fetchSingle: function(context, id) {
-                    return $.when($.ajax({
+                    return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_URL + "/o",
                         data: {
@@ -211,7 +211,7 @@
                             method: 'vue-records',
                             id: id
                         }
-                    })).then(function(records) {
+                    }).then(function(records) {
                         return records[0];
                     });
                 }
