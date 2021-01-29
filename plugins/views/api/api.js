@@ -1412,7 +1412,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         else {
                                             var updateMultiViewParams = {};
                                             if (results[p].dur) {
-                                                updateMultiViewParams.duration = results[p].dur;
+                                                plugins.dispatch("/view/duration", {params: params, duration: results[p].dur, viewName: results[p].viewAlias});
                                             }
                                             for (var k in results[p].segmentation) {
                                                 updateMultiViewParams[k] = results[p].segmentation[k];
