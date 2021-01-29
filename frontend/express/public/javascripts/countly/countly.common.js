@@ -2064,6 +2064,10 @@
                 maxItems = rangeNames.length;
             }
 
+            barData = _.sortBy(barData, function(obj) {
+                return -obj.percent;
+            });
+
             return barData.slice(0, maxItems);
         };
 

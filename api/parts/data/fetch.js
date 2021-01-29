@@ -2076,9 +2076,13 @@ function fetchData(params, allMetrics, metric, cb) {
                         }
                     }
 
-                    for (var k = 0; k < items.length; k++) {
+                    for (let k = 0; k < items.length; k++) {
                         items[k].name = model.fetchValue(items[k].name);
                     }
+
+                    items = _.sortBy(items, function(obj) {
+                        return -obj.percent;
+                    });
 
                     items = items.slice(0, 3);
                 }
