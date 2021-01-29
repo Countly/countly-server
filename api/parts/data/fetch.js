@@ -2058,31 +2058,30 @@ function fetchData(params, allMetrics, metric, cb) {
                         items = model.fixBarSegmentData(metrics[1], params, items);
                     }
 
-                    var total = 0;
+                    var total = 0, totalPercent = 0;
                     for (let k = 0; k < items.length; k++) {
-                        items[k].percent = items[k].t;
                         items[k].value = items[k].t;
                         items[k].name = items[k]._id;
                         total = total + items[k].value;
                     }
-                    var totalPercent = 0;
-                    for (let k = 0; k < items.length; k++) {
-                        if (k !== (items.length - 1)) {
-                            items[k].percent = countlyCommon.round(items[k].percent * 100 / total, 0);
-                            totalPercent += items[k].percent;
-                        }
-                        else {
-                            items[k].percent = 100 - totalPercent;
+
+                    items = _.sortBy(items, function(obj) {
+                        return -obj.value;
+                    });
+
+                    for (let k = items.length - 1; k >= 0 ; k--) {
+                        items[k].percent = countlyCommon.round(items[k].t * 100 / total, 0);
+                        totalPercent += items[k].percent;
+
+                        if (k === 0) {
+                            items[k].percent += 100 - totalPercent;
+                            items[k].percent = countlyCommon.round(items[k].percent, 0);
                         }
                     }
 
                     for (let k = 0; k < items.length; k++) {
                         items[k].name = model.fetchValue(items[k].name);
                     }
-
-                    items = _.sortBy(items, function(obj) {
-                        return -obj.percent;
-                    });
 
                     items = items.slice(0, 3);
                 }

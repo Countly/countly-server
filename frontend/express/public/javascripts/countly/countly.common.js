@@ -2049,12 +2049,13 @@
 
             var totalPercent = 0;
 
-            for (var i = 0; i < rangeNames.length; i++) {
+            for (var i = rangeNames.length - 1; i >= 0; i--) {
                 var percent = countlyCommon.round((rangeTotal[i] / totalSum) * 100, 0);
                 totalPercent += percent;
 
-                if (i === (rangeNames.length - 1)) {
+                if (i === 0) {
                     percent += 100 - totalPercent;
+                    percent = countlyCommon.round(percent, 0);
                 }
 
                 barData[i] = { "name": rangeNames[i], "percent": percent };
@@ -2063,10 +2064,6 @@
             if (rangeNames.length < maxItems) {
                 maxItems = rangeNames.length;
             }
-
-            barData = _.sortBy(barData, function(obj) {
-                return -obj.percent;
-            });
 
             return barData.slice(0, maxItems);
         };

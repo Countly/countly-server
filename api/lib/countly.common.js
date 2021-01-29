@@ -1040,12 +1040,13 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         sum += r;
     });
 
-    for (var i = 0; i < rangeNames.length; i++) {
+    for (let i = rangeNames.length - 1; i >= 0; i--) {
         var percent = countlyCommon.round((rangeTotal[i] / sum) * 100, 0);
         totalPercent += percent;
 
-        if (i === (rangeNames.length - 1)) {
+        if (i === 0) {
             percent += 100 - totalPercent;
+            percent = countlyCommon.round(percent, 0);
         }
 
         barData[i] = {
