@@ -221,7 +221,23 @@
                 </div>
                 <div class="example-component">
                     <div class="example-cell">
-                        cly-select-x
+                        cly-select-x (Simple)
+                    </div>
+                    <div class="example-cell">
+                        <cly-select-x
+                            search-placeholder="Search in Properties"
+                            placeholder="Select Property" 
+                            v-model="selectedTLB" 
+                            :options="selectXOptions[0].options">
+                        </cly-select-x>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedTLB}}
+                    </div>
+                </div>
+                <div class="example-component">
+                    <div class="example-cell">
+                        cly-select-x (Tabs)
                     </div>
                     <div class="example-cell">
                         <cly-select-x 
@@ -238,7 +254,7 @@
                 </div>
                 <div class="example-component">
                     <div class="example-cell">
-                        cly-select-x (Custom header)
+                        cly-select-x (Tabs, custom header)
                     </div>
                     <div class="example-cell">
                         <cly-select-x 

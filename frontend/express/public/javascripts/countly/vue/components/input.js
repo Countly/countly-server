@@ -1052,24 +1052,48 @@
             };
         },
         computed: {
-            val2tab: function() {
-                if (!this.options.length) {
-                    return {};
+            hasTabs: function() {
+                if (!this.options || !this.options.length) {
+                    return false;
+                }
+                return !!this.options[0].options;
+            },
+            publicTabs: function() {
+                if (this.hasTabs && !this.hideAllOptions) {
+                    var allOptions = {
+                        name: "__all",
+                        label: this.allPlaceholder,
+                        options: this.flatOptions
+                    };
+                    return [allOptions].concat(this.options);
+                }
+                else if (this.hasTabs) {
+                    return this.options;
+                }
+                return [{
+                    name: "__root",
+                    label: "__root",
+                    options: this.options
+                }];
+            },
+            flatOptions: function() {
+                if (!this.hasTabs || !this.options.length) {
+                    return this.options;
                 }
                 return this.options.reduce(function(items, tab) {
+                    return items.concat(tab.options);
+                }, []);
+            },
+            val2tab: function() {
+                if (!this.publicTabs.length) {
+                    return {};
+                }
+                return this.publicTabs.reduce(function(items, tab) {
                     tab.options.forEach(function(opt) {
                         items[opt.value] = tab.name;
                     });
                     return items;
                 }, {});
-            },
-            flatOptions: function() {
-                if (!this.options.length) {
-                    return [];
-                }
-                return this.options.reduce(function(items, tab) {
-                    return items.concat(tab.options);
-                }, []);
             },
             selectedOption: function() {
                 if (!this.flatOptions.length) {
@@ -1083,14 +1107,7 @@
                     return matching[0];
                 }
                 return {};
-            },
-            publicTabs: function() {
-                return [{
-                    name: "_all",
-                    label: this.allPlaceholder,
-                    options: this.flatOptions
-                }].concat(this.options);
-            },
+            }
         },
         methods: {
             updateTabFn: function(tabId) {
@@ -1099,11 +1116,14 @@
             determineActiveTabId: function() {
                 var self = this;
                 this.$nextTick(function() {
-                    if (self.selectedOption.value && self.val2tab[self.selectedOption.value]) {
+                    if (!self.hasTabs) {
+                        self.activeTabId = "__root";
+                    }
+                    else if (self.selectedOption.value && self.val2tab[self.selectedOption.value]) {
                         self.activeTabId = self.val2tab[self.selectedOption.value];
                     }
                     else {
-                        self.activeTabId = "_all";
+                        self.activeTabId = "__all";
                     }
                 });
             },
@@ -1143,7 +1163,7 @@
                         @show="focusOnSearch"\
                         v-bind="$attrs"\
                         v-model="selectedOption.label">\
-                        <div class="cly-vue-select-x__pop" :class="{\'cly-vue-select-x__pop--hidden-tabs\': hideDefaultTabs}">\
+                        <div class="cly-vue-select-x__pop" :class="{\'cly-vue-select-x__pop--hidden-tabs\': hideDefaultTabs || !hasTabs }">\
                             <div class="cly-vue-select-x__header">\
                                 <div class="cly-vue-select-x__title" v-if="title">{{title}}</div>\
                                 <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">\
