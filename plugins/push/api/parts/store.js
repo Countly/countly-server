@@ -1552,7 +1552,7 @@ class Loader extends Store {
         var params = {
             qstring: {
                 events: [
-                    { key: '[CLY]_push_sent', count: sent, segmentation: {i: note._id.toString(), a: note.auto || false} }
+                    { key: '[CLY]_push_sent', count: sent, segmentation: {i: note._id.toString(), a: note.auto || false, t: note.tx || false} }
                 ]
             },
             app_id: this.app._id,
