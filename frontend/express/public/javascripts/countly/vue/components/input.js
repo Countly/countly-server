@@ -1099,10 +1099,11 @@
             options: {type: Array},
             hideDefaultTabs: {type: Boolean, default: false},
             allPlaceholder: {type: String, default: 'All'},
+            hideAllOptionsTab: {type: Boolean, default: false}
         },
         data: function() {
             return {
-                activeTabId: ''
+                activeTabId: null
             };
         },
         computed: {
@@ -1113,7 +1114,7 @@
                 return !!this.options[0].options;
             },
             publicTabs: function() {
-                if (this.hasTabs && !this.hideAllOptions) {
+                if (this.hasTabs && !this.hideAllOptionsTab) {
                     var allOptions = {
                         name: "__all",
                         label: this.allPlaceholder,
@@ -1183,11 +1184,19 @@
                     else if (self.value && self.val2tab[self.value]) {
                         self.activeTabId = self.val2tab[self.value];
                     }
-                    else {
+                    else if (!this.hideAllOptionsTab) {
                         self.activeTabId = "__all";
+                    }
+                    else if (!self.activeTabId || self.activeTabId === "__all" || self.activeTabId === "__root") {
+                        self.activeTabId = self.publicTabs[0].name;
                     }
                 });
             },
+        },
+        watch: {
+            hideAllOptionsTab: function() {
+                this.determineActiveTabId();
+            }
         }
     };
 

@@ -34,6 +34,7 @@
             return {
                 dropdownsDisabled: false,
                 autoCommitDisabled: false,
+                allOptionsTabHidden: false,
                 selectXOptions: [{
                     "label": "A Items",
                     "name": "type-1",
