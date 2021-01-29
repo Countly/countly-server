@@ -978,7 +978,6 @@
     var AbstractListBox = countlyVue.components.BaseComponent.extend({
         props: {
             options: {type: Array},
-            value: { type: [String, Number] },
             bordered: {type: Boolean, default: true}
         },
         methods: {
@@ -1011,6 +1010,9 @@
     });
 
     Vue.component("cly-listbox", AbstractListBox.extend({
+        props: {
+            value: { type: [String, Number] }
+        },
         template: '<div\
                     class="cly-vue-listbox"\
                     tabindex="0"\
@@ -1044,6 +1046,14 @@
     }));
 
     Vue.component("cly-checklistbox", AbstractListBox.extend({
+        props: {
+            value: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
         computed: {
             innerValue: {
                 get: function() {
@@ -1233,14 +1243,14 @@
                                         v-if="mode === \'single-list\'"\
                                         :bordered="false"\
                                         :options="getMatching(tab.options)"\
-                                        @change="doClose"\
+                                        @change="handleValueChange"\
                                         v-model="innerValue">\
                                     </cly-listbox>\
                                     <cly-checklistbox\
                                         v-if="mode === \'multi-check\'"\
                                         :bordered="false"\
                                         :options="getMatching(tab.options)"\
-                                        @change="doClose"\
+                                        @change="handleValueChange"\
                                         v-model="innerValue">\
                                     </cly-checklistbox>\
                                 </el-tab-pane>\
@@ -1250,8 +1260,8 @@
         props: {
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
-            value: { type: [String, Number] },
-            mode: {type: String, default: 'single-list'}
+            value: { type: [String, Number, Array] },
+            mode: {type: String, default: 'single-list'} // multi-check
         },
         computed: {
             innerValue: {
@@ -1267,6 +1277,11 @@
             this.determineActiveTabId();
         },
         methods: {
+            handleValueChange: function() {
+                if (this.mode === 'single-list') {
+                    this.doClose();
+                }
+            },
             doClose: function() {
                 this.determineActiveTabId();
                 this.$refs.dropdown.handleClose();
