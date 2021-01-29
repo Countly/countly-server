@@ -361,7 +361,12 @@ class ProcessJob extends J.IPCJob {
                 }
 
                 // load next batch
-                let msgs = await this.loader.load(this._id, date, BATCH);
+                let msgs = await this.loader.load(this._id, date, BATCH),
+                    ids = msgs.map(m => m.n.toString());
+
+                // reload notes for msgs
+                ids = ids.filter((id, i) => ids.indexOf(id) === i);
+                notes = await this.loader.notes(ids);
 
                 // no messages left, break from the loop
                 if (!msgs.length) {
