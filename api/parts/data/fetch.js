@@ -2072,12 +2072,9 @@ function fetchData(params, allMetrics, metric, cb) {
                     for (let k = items.length - 1; k >= 0 ; k--) {
                         items[k].percent = countlyCommon.round(items[k].t * 100 / total, 0);
                         totalPercent += items[k].percent;
-
-                        if (k === 0) {
-                            items[k].percent += 100 - totalPercent;
-                            items[k].percent = countlyCommon.round(items[k].percent, 0);
-                        }
                     }
+
+                    items = countlyCommon.fixPercentageDelta(items, totalPercent);
 
                     for (let k = 0; k < items.length; k++) {
                         items[k].name = model.fetchValue(items[k].name);

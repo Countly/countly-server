@@ -2052,14 +2052,21 @@
             for (var i = rangeNames.length - 1; i >= 0; i--) {
                 var percent = countlyCommon.round((rangeTotal[i] / totalSum) * 100, 0);
                 totalPercent += percent;
-
-                if (i === 0) {
-                    percent += 100 - totalPercent;
-                    percent = countlyCommon.round(percent, 0);
-                }
-
                 barData[i] = { "name": rangeNames[i], "percent": percent };
             }
+
+            var deltaFixEl = 0;
+            if (totalPercent < 100) {
+                //Add the missing delta to the first value
+                deltaFixEl = 0;
+            }
+            else if (totalPercent > 100) {
+                //Subtract the extra delta from the last value
+                deltaFixEl = barData.length - 1;
+            }
+
+            barData[deltaFixEl].percent += 100 - totalPercent;
+            barData[deltaFixEl].percent = countlyCommon.round(barData[deltaFixEl].percent, 0);
 
             if (rangeNames.length < maxItems) {
                 maxItems = rangeNames.length;

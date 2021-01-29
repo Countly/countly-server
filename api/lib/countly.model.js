@@ -414,17 +414,14 @@ countlyModel.create = function(fetchValue) {
                 var percent = countlyCommon.round((topUsers[i][metric] / sum) * 100, 0);
                 totalPercent += percent;
 
-                if (i === 0) {
-                    percent += 100 - totalPercent;
-                    percent = countlyCommon.round(percent, 0);
-                }
-
                 barData[i] = {
                     "name": topUsers[i].date,
                     value: topUsers[i][metric],
                     "percent": percent
                 };
             }
+
+            barData = countlyCommon.fixPercentageDelta(barData, totalPercent);
 
             if (topUsers.length < maxItems) {
                 maxItems = topUsers.length;

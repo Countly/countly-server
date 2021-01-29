@@ -1044,17 +1044,14 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         var percent = countlyCommon.round((rangeTotal[i] / sum) * 100, 0);
         totalPercent += percent;
 
-        if (i === 0) {
-            percent += 100 - totalPercent;
-            percent = countlyCommon.round(percent, 0);
-        }
-
         barData[i] = {
             "name": rangeNames[i],
             value: rangeTotal[i],
             "percent": percent
         };
     }
+
+    barData = countlyCommon.fixPercentageDelta(barData, totalPercent);
 
     if (rangeNames.length < maxItems) {
         maxItems = rangeNames.length;
@@ -1958,6 +1955,29 @@ countlyCommon.validateEmail = function(email) {
 countlyCommon.round = function(num, digits) {
     digits = Math.pow(10, digits || 0);
     return Math.round(num * digits) / digits;
+};
+
+/**
+ * Function to fix percentage difference
+ * @param  {Array} items - All items
+ * @param  {Number} totalPercent - Total percentage so far
+ * @returns {Array} items
+ */
+countlyCommon.fixPercentageDelta = function(items, totalPercent) {
+    var deltaFixEl = 0;
+    if (totalPercent < 100) {
+        //Add the missing delta to the first value
+        deltaFixEl = 0;
+    }
+    else if (totalPercent > 100) {
+        //Subtract the extra delta from the last value
+        deltaFixEl = items.length - 1;
+    }
+
+    items[deltaFixEl].percent += 100 - totalPercent;
+    items[deltaFixEl].percent = countlyCommon.round(items[deltaFixEl].percent, 0);
+
+    return items;
 };
 
 module.exports = countlyCommon;
