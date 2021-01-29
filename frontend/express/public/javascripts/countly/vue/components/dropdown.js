@@ -8,6 +8,7 @@
             opened: {type: Boolean, default: false},
             value: {type: [Number, String], default: ''},
             placeholder: {type: String, default: ''},
+            disabled: {type: Boolean, default: false}
         },
         computed: {
             iconClass: function() {
@@ -15,7 +16,7 @@
             }
         },
         template: '<el-input\
-                        :class="{ \'is-focus\': focused }"\
+                        :class="{ \'is-focus\': focused, \'is-disabled\': disabled }"\
                         readonly="readonly" \
                         v-model="value"\
                         :placeholder="placeholder">\
@@ -35,6 +36,10 @@
             'trigger-proxy': triggerProxy
         },
         props: {
+            disabled: {
+                type: Boolean,
+                default: false
+            },
             popperAppendToBody: {
                 type: Boolean,
                 default: true
@@ -45,10 +50,11 @@
                     <trigger-proxy\
                         ref="toggler"\
                         v-popover:popover\
+                        @click.native.stop="handleToggle"\
                         @keydown.native.esc.stop.prevent="handleClose"\
-                        @keydown.native.down.enter.prevent="handleArrowKey"\
-                        @keydown.native.down.stop.prevent="handleArrowKey"\
-                        @keydown.native.up.stop.prevent="handleArrowKey">\
+                        @keydown.native.down.enter.prevent="handleOpen"\
+                        @keydown.native.down.stop.prevent="handleOpen"\
+                        @keydown.native.up.stop.prevent="handleOpen">\
                         <slot name="trigger" :visible="visible">\
                         </slot>\
                     </trigger-proxy>\
@@ -60,7 +66,7 @@
                         :visible-arrow="false"\
                         width="400"\
                         v-model="visible"\
-                        trigger="click">\
+                        trigger="manual">\
                         <div ref="popContent" class="cly-vue-dropdown__pop-container">\
                             <slot>\
                             </slot>\
@@ -89,10 +95,16 @@
                     self.$refs.toggler.focus();
                 });
             },
-            handleArrowKey: function() {
-                if (!this.visible) {
+            handleOpen: function() {
+                if (!this.disabled && !this.visible) {
                     this.visible = true;
                 }
+            },
+            handleToggle: function() {
+                if (this.disabled && !this.visible) {
+                    return;
+                }
+                this.visible = !this.visible;
             },
             updateDropdown: function() {
                 var self = this;
@@ -114,9 +126,10 @@
     }));
 
     Vue.component("cly-input-dropdown", countlyVue.components.BaseComponent.extend({
-        template: '<cly-dropdown ref="dropdown" v-on="$listeners" v-bind="$attrs">\
+        template: '<cly-dropdown ref="dropdown" :disabled="disabled" v-on="$listeners" v-bind="$attrs">\
                         <template v-slot:trigger="dropdown">\
                             <cly-input-dropdown-trigger\
+                                :disabled="disabled"\
                                 :focused="dropdown.visible"\
                                 :opened="dropdown.visible"\
                                 :placeholder="placeholder"\
@@ -130,7 +143,8 @@
                     </cly-dropdown>',
         props: {
             placeholder: {type: String, default: 'Select'},
-            value: { type: [String, Number] }
+            value: { type: [String, Number] },
+            disabled: { type: Boolean, default: false}
         },
         methods: {
             handleClose: function() {

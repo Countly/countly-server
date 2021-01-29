@@ -183,12 +183,22 @@
 
         <cly-content name='Form: Dropdown' id="form-drop-tab">
             <cly-panel title="Form: Dropdown" v-bind:date-selector="false">
+                <el-card class="box-card" style="position:fixed; bottom:25px; right: 25px">
+                    <div slot="header" class="clearfix">
+                        <span>Options</span>
+                    </div>
+                    <el-switch
+                        active-text="Dropdowns disabled"
+                        v-model="dropdownsDisabled"
+                        active-color="#13ce66">
+                    </el-switch>
+                </el-card>
                 <div class="example-component">
                     <div class="example-cell">
                         el-select
                     </div>
                     <div class="example-cell">
-                        <el-select v-model="selectedRadio">
+                        <el-select v-model="selectedRadio" :disabled="dropdownsDisabled">
                             <el-option :key="item.value" :value="item.value" :label="item.name"
                                 v-for="item in selectWItems"></el-option>
                         </el-select>
@@ -202,7 +212,9 @@
                         Nested dropdowns and selects
                     </div>
                     <div class="example-cell">
-                        <cly-input-dropdown v-model="selectedLB.name">
+                        <cly-input-dropdown 
+                            :disabled="dropdownsDisabled"    
+                            v-model="selectedLB.name">
                             <cly-input-dropdown :popper-append-to-body="false" v-model="selectedLB.name">
                                 <el-select :popper-append-to-body="false" v-model="selectedRadio">
                                     <el-option :key="item.value" :value="item.value" :label="item.name"
@@ -228,6 +240,7 @@
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
                             v-model="selectedTLB" 
+                            :disabled="dropdownsDisabled"
                             :options="selectXOptions[0].options">
                         </cly-select-x>
                     </div>
@@ -240,11 +253,12 @@
                         cly-select-x (Tabs)
                     </div>
                     <div class="example-cell">
-                        <cly-select-x 
+                        <cly-select-x
                             all-placeholder="All Properties" 
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
                             v-model="selectedTLB" 
+                            :disabled="dropdownsDisabled"
                             :options="selectXOptions">
                         </cly-select-x>
                     </div>
@@ -262,6 +276,7 @@
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
                             title="Custom header & title"
+                            :disabled="dropdownsDisabled"
                             :hide-default-tabs="true"
                             :options="selectXOptions"
                             v-model="selectedTLB">

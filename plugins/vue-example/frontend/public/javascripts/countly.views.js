@@ -24,6 +24,7 @@
                 manyItems.push({name: "Type " + i, value: i});
             }
             return {
+                dropdownsDisabled: false,
                 selectXOptions: [{
                     "label": "A Items",
                     "name": "type-1",
