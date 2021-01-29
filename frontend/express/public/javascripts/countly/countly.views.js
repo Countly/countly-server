@@ -3236,9 +3236,9 @@ window.ManageAppsView = countlyView.extend({
 });
 
 window.ManageUsersView = countlyView.extend({
-	template: null,
-	dropZone: null,
-	/*
+    template: null,
+    dropZone: null,
+    /*
         Listen for;
             user-mgmt.user-created : On new user created. Param : new user form model.
             user-mgmt.user-updated : On user updated. Param: user form model.
@@ -3375,6 +3375,7 @@ window.ManageUsersView = countlyView.extend({
 
         // jQuery selectize handler for projection input
         var userAppSelector = $('#user-app-selector-' + index).selectize({
+            plugins: ['remove_button'],
             persist: true,
             maxItems: null,
             valueField: 'val',
@@ -3403,6 +3404,9 @@ window.ManageUsersView = countlyView.extend({
             }
         });
 
+        if (!index || index === 0) {
+            self.userAppSelectors = [];
+        }
         self.userAppSelectors.push(userAppSelector);
 
         // render permission checkboxes for features/plugins
@@ -3485,14 +3489,20 @@ window.ManageUsersView = countlyView.extend({
                         if (row.global_admin) {
                             return jQuery.i18n.map["management-users.global-admin"];
                         }
-                        else if (row.admin_of && row.admin_of.length) {
-                            return jQuery.i18n.map["management-users.admin"];
-                        }
-                        else if (row.user_of && row.user_of.length) {
-                            return jQuery.i18n.map["management-users.user"];
-                        }
                         else {
-                            return jQuery.i18n.map["management-users.no-role"];
+                            var apps = [];
+
+                            for (var i = 0; i < row.permission._.a.length; i++) {
+                                apps.push('<b>' + countlyGlobal.apps[row.permission._.a[i]].name + '</b>');
+                            }
+
+                            for (var i = 0; i < row.permission._.u.length; i++) {
+                                for (var j = 0; j < row.permission._.u[i].length; j++) {
+                                    apps.push(countlyGlobal.apps[row.permission._.u[i][j]].name);
+                                }
+                            }
+
+                            return apps.join(", ");
                         }
                     },
                     "sType": "string",
@@ -3636,9 +3646,10 @@ window.ManageUsersView = countlyView.extend({
             Handle create new user button
         */
         $("#add-user-mgmt").on("click", function() {
-            self.drawerMode = 'c';
+        	self.drawerMode = 'c';
             var userCreateDrawer = $('.create-user-drawer');
-            $('#create-user-drawer-title').html($.i18n.map['common.create']);
+            $('.create-user-drawer .discard-changes').hide();
+            $('#create-user-drawer-title').html($.i18n.map['management-users.create-new-user']);
             // clean inputs
             userCreateDrawer.addClass("open");
             userCreateDrawer.find('.full-name-text').val('');
@@ -3663,13 +3674,11 @@ window.ManageUsersView = countlyView.extend({
             var initializedPermissions = countlyAuth.initializePermissions(self.memberModel.permission, self.permissionSets);
             self.memberModel.permission = initializedPermissions.permissionObject;
             self.permissionSets = initializedPermissions.permissionSets;
-
             // clear drawer permission tables
             $('.create-user-drawer .user-access').remove();
             // render permission table
             self.renderPermissionsTable();
             countlyAuth.clearDrawer('.create-user-drawer', self.permissionSets, self.renderPermissionsTable);
-
             $('.create-user-drawer .img-preview').hide();
             $('.create-user-drawer #user-avatar-upload-drop').show();
             $('.create-user-drawer .edit-picture').hide();
@@ -3691,6 +3700,7 @@ window.ManageUsersView = countlyView.extend({
 
         // jQuery selectize handler for projection input
         var adminAppSelector = $('.create-user-drawer #admin-app-selector').selectize({
+            plugins: ['remove_button'],
             persist: true,
             maxItems: null,
             valueField: 'val',
@@ -3746,13 +3756,21 @@ window.ManageUsersView = countlyView.extend({
             this.member.member_image = '/memberimages/' + this.member.user_id + '.png';
         });
 
-        // Events handlers
-        $('body').off('click', '.manage-users-options-item .show-edit-menu').on('click', '.manage-users-options-item .show-edit-menu', function() {
-            $('.manage-users-menu-' + $(this).data('id')).show();
+        tippy('.show-tooltip', {
+            'theme': 'custom',
+            zIndex: 11000,
+            arrowType: 'sharp',
+            arrow: 'down',
+            animation: false
         });
 
-        $('body').off('mouseleave', '.edit-menu').on('mouseleave', '.edit-menu', function() {
-            $('.edit-menu').hide();
+        // Events handlers
+        $('body').off('click', '.manage-users-options-item .show-edit-menu').on('click', '.manage-users-options-item .show-edit-menu', function() {
+            var that = this;
+            $('.manage-users-menu-' + $(this).data('id')).show();
+            setTimeout(function() {
+            	$('.manage-users-menu-' + $(that).data('id')).fadeOut();
+            }, 3000);
         });
 
         $('.create-user-drawer').off('click', '.edit-picture').on('click', '.edit-picture', function() {
@@ -3761,21 +3779,35 @@ window.ManageUsersView = countlyView.extend({
             $('#user-avatar-upload-drop').show();
         });
 
+        $('.create-user-drawer').off('click', '.discard-changes').on('click', '.discard-changes', function() {
+            CountlyHelpers.confirm(jQuery.i18n.prop('management-users.discard-confirm'), "popStyleGreen", function(result) {
+                if (result) {
+                    $('.create-user-drawer').removeClass('open');
+                }
+                else {
+                    return;
+                }
+            });
+        });
+
         $('body').off('click', '.edit-user').on('click', '.edit-user', function() {
-            $('.create-user-drawer').addClass('open');
-            
+        	$('.create-user-drawer').addClass('open');
+
+        	var data = {};
             var id = $(this).data('id');
-            var data = {};
             var url = countlyCommon.API_PARTS.users.r + '/id';
             data.id = id;
-
+                
             self.drawerMode = 'u';
             self.selectedMemberId = id;
             self.renderPermissionsTable();
 
             // show member picture area as edit mode
             $('.create-user-drawer .edit-picture').show();
-            $('#create-user-drawer-title').html($.i18n.map['common.edit']);
+            $('#create-user-drawer-title').html($.i18n.map['management-users.edit-user']);
+            $('.create-user-drawer .discard-changes').show();
+            $('.create-user-drawer .create-user-drawer-detail').hide();
+            $('.create-user-drawer .drawer-loading').show();
 
             $.ajax({
                 url: url,
@@ -3783,7 +3815,7 @@ window.ManageUsersView = countlyView.extend({
                 dataType: "json",
                 success: function(response) {
                     var memberData = response[id];
-                    
+
                     // remove existing group input
                     $('#user-group-container').remove();
                     $('#new-user-group-select').remove();
@@ -3809,7 +3841,6 @@ window.ManageUsersView = countlyView.extend({
                         $('.create-user-drawer .user-access').hide();
                         $('.create-user-drawer .add-new-permission-set').hide();
 
-                        memberData.permission = countlyAuth.initializePermissions(self.memberModel.permission, self.permissionSets);
                     }
                     else {
                         // set checkbox manually
@@ -3822,7 +3853,7 @@ window.ManageUsersView = countlyView.extend({
                         $('.create-user-drawer .user-access').show();
                         $('.create-user-drawer .add-new-permission-set').show();
                     }
-
+                    
                     $('#user-avatar-upload-drop').hide();
                     $('.create-user-drawer .img-preview').show();
                     $('.create-user-drawer .img-preview').css({'background-image': (memberData.member_image) ? 'url('+ memberData.member_image +')' : 'url(/memberimages/' + memberData._id + '.png)' });
@@ -3837,7 +3868,7 @@ window.ManageUsersView = countlyView.extend({
                         self.accessibleApps = self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.userApps[i]));
                     }
                     self.accessibleApps = CountlyHelpers.arrayUnique(self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.adminApps)));
-                    $('#accessible-app-count').html(self.accessibleApps.length);
+                    $('.create-user-drawer #accesible-app-count').html(self.accessibleApps.length);
 
                     // length - 1, bcz we already have one permission set as default in drawer
                     for (var i = 0; i < memberData.permission._.u.length - 1; i++) {
@@ -3859,14 +3890,13 @@ window.ManageUsersView = countlyView.extend({
                     }
                     else {
                         $('.create-user-drawer .user-access').remove();                        
-                    }
-                    
-                    // render new clean tables
-                    for (var i = 0; i < self.userApps.length; i++) {
-                        self.renderPermissionsTable(i);
-                    }
+                        // render new clean tables
+                        for (var i = 0; i < self.userApps.length; i++) {
+                            self.renderPermissionsTable(i);
+                        }
 
-                    self.permissionSets = countlyAuth.permissionParser('.create-user-drawer', self.memberPermission, countlyAuth.permissionSetGenerator(self.userApps.length));
+                        self.permissionSets = countlyAuth.permissionParser('.create-user-drawer', self.memberPermission, countlyAuth.permissionSetGenerator(self.userApps.length));
+                    }
                     
                     // check is group plugin enabled?
                     if ($('#user-group-container').length > 0) {
@@ -3879,6 +3909,9 @@ window.ManageUsersView = countlyView.extend({
                             $('.add-new-permission-set').hide();
                         }
                     }
+                    
+                	$('.create-user-drawer .create-user-drawer-detail').show();
+        			$('.create-user-drawer .drawer-loading').hide();	
                 },
                 error: function() {
                     $(".create-user-drawer").removeClass('open');
@@ -3910,6 +3943,12 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "json",
                     success: function() {
+                    	CountlyHelpers.notify({
+                            type: 'green',
+                            delay: 3000,
+                            title: jQuery.i18n.map['management-users.removed'],
+                            message: jQuery.i18n.map['management-users.removed-message']
+                        });
                         $(app.manageUsersView).trigger('user-mgmt.user-deleted', data.user_ids);
                         app.activeView.render();
                     }
@@ -3997,7 +4036,7 @@ window.ManageUsersView = countlyView.extend({
         });
 
         $("#create-user-button").on("click", function() {
-            $("#listof-apps").hide();
+        	$("#listof-apps").hide();
             $(".row").removeClass("selected");
             $(".email-check.green-text").remove();
             $(".username-check.green-text").remove();
@@ -4036,27 +4075,25 @@ window.ManageUsersView = countlyView.extend({
             else {
                 if (!self.memberModel.global_admin) {
                     self.memberModel.permission = countlyAuth.combinePermissionObject(self.userApps, self.permissionSets, self.memberPermission);
+                    
+                    for (var i = 0; i < self.userApps.length; i++) {
+                    	if (self.userApps[i].length === 0) {
+                    		self.userApps = self.userApps.splice(i, 1);
+                    	}
+                    }
+                    
                     self.memberModel.permission._.u = self.userApps;
                     self.memberModel.permission._.a = self.adminApps;  
+                } else {
+                    self.memberModel.permission = {};
+                    self.memberModel.permission._ = {};
+                    self.memberModel.permission._.u = [[]];
+                    self.memberModel.permission._.a = [];
                 }
             }
             
-            self.memberModel.password = currUserDetails.find(".password-text").val() || 'DummyPassword123+';
-
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
-
-            if (!self.memberModel.password.length) {
-                currUserDetails.find(".password-text").after(reqSpan.clone());
-            }
-            else {
-                $(".password-check").remove();
-                var error = CountlyHelpers.validatePassword(self.memberModel.password);
-                if (error) {
-                    var invalidSpan = $("<span class='password-check red-text'>").html(error);
-                    currUserDetails.find(".password-text").after(invalidSpan.clone());
-                }
-            }
 
             if (!self.memberModel.full_name.length) {
                 currUserDetails.find(".full-name-text").after(reqSpan.clone());
@@ -4089,7 +4126,21 @@ window.ManageUsersView = countlyView.extend({
             }
 
             if (self.drawerMode === 'c') {
-                $.ajax({
+				self.memberModel.password = currUserDetails.find(".password-text").val() || 'DummyPassword123+';
+
+				if (!self.memberModel.password.length) {
+	                currUserDetails.find(".password-text").after(reqSpan.clone());
+	            }
+	            else {
+	                $(".password-check").remove();
+	                var error = CountlyHelpers.validatePassword(self.memberModel.password);
+	                if (error) {
+	                    var invalidSpan = $("<span class='password-check red-text'>").html(error);
+	                    currUserDetails.find(".password-text").after(invalidSpan.clone());
+	                }
+	            }
+
+            	$.ajax({
                     type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/create',
                     data: {
@@ -4097,6 +4148,12 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "json",
                     success: function(member) {
+                    	CountlyHelpers.notify({
+                            type: 'green',
+                            delay: 3000,
+                            title: jQuery.i18n.map['management-users.created'],
+                            message: jQuery.i18n.map['management-users.created-message']
+                        });
                         $(self).trigger('user-mgmt.user-created', self.memberModel);
                         // we need to wait until create process done before send upload request,
                         // because upload request requires member_id as param.
@@ -4113,6 +4170,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     error: function() {
                         CountlyHelpers.notify({
+                        	type: "error",
                             title: "Somethings went wrong",
                             message: "Server doesn't respond, please try again later"
                         });
@@ -4129,6 +4187,12 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "json",
                     success: function() {
+                    	CountlyHelpers.notify({
+                            type: 'green',
+                            delay: 3000,
+                            title: jQuery.i18n.map['management-users.updated'],
+                            message: jQuery.i18n.map['management-users.updated-message']
+                        });
                         memberImageDropzone.member = { _id: self.selectedMemberId };
                         memberImageDropzone.processQueue();
                         self.memberModel.group_id = $('#selected-user-group').val();
@@ -4137,6 +4201,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     error: function() {
                         CountlyHelpers.notify({
+                        	type: "error",
                             title: "Somethings went wrong",
                             message: "Server doesn't respond, please try again later"
                         });
@@ -4149,10 +4214,10 @@ window.ManageUsersView = countlyView.extend({
             var adminApps = $(this).val().split(",");
             var affectedApp = CountlyHelpers.arrayDiff(adminApps, self.adminApps)[0] === "" ? CountlyHelpers.arrayDiff(adminApps, self.adminApps)[1] : CountlyHelpers.arrayDiff(adminApps, self.adminApps)[0];
             var is_already_added = false;
-            var conflictIndex = 0;
+            var conflictIndex = -1;
 
             // check this app added to any user app selector
-            for (var i = 0; i < self.permissionSets.length; i++) {
+            for (var i = 0; i < self.userAppSelectors.length; i++) {
                 if (self.userAppSelectors[i][0].selectize.getValue().split(",").indexOf(affectedApp) > -1) {
                     is_already_added = true;
                     conflictIndex = i;
@@ -4180,7 +4245,7 @@ window.ManageUsersView = countlyView.extend({
                 self.accessibleApps = self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.userApps[i]));
             }
             self.accessibleApps = CountlyHelpers.arrayUnique(self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.adminApps)));
-            $('#accessible-app-count').html(self.accessibleApps.length);
+            $('.create-user-drawer #accessible-app-count').html(self.accessibleApps.length);
         });
 
         $('body').off('click', '.create-user-drawer .section-close-icon').on('click', '.create-user-drawer .section-close-icon', function() {
@@ -4252,10 +4317,10 @@ window.ManageUsersView = countlyView.extend({
                 var selectize = adminAppSelector[0].selectize;
                 selectize.setValue(self.adminApps);
             }
-
+            
             // check is already exist in user apps lists
             if (!isAlreadyAddedToAdmin) {
-                for (var i = 0; i < self.permissionSets.length; i++) {
+                for (var i = 0; i < self.userAppSelectors.length; i++) {
                     if ((i !== index) && self.userAppSelectors[index][0].selectize.getValue().split(",").indexOf(affectedApp) > -1) {
                         isAlreadyAddedToOtherUsers = true;
                         conflictIndex = i;
@@ -4278,10 +4343,10 @@ window.ManageUsersView = countlyView.extend({
                 self.accessibleApps = self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.userApps[i]));
             }
             self.accessibleApps = CountlyHelpers.arrayUnique(self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.adminApps)));
-            $('#accessible-app-count').html(self.accessibleApps.length);
+            $('.create-user-drawer #accessible-app-count').html(self.accessibleApps.length);
         });
 
-        $('body').on('click', '.create-user-drawer .add-new-permission-set', function() {
+        $('body').off('click', '.create-user-drawer .add-new-permission-set').on('click', '.create-user-drawer .add-new-permission-set', function() {
             self.userApps.push([]);
             self.permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
             // pass count - 1 because we'll use it as array index in logic
