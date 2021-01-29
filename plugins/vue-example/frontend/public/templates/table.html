@@ -194,7 +194,7 @@
                     </el-switch>
                     <div>
                         Selection mode:
-                        <el-radio-group v-model="selectXMode">
+                        <el-radio-group v-model="selectXModeBuffer">
                             <el-radio-button label="single-list">Single</el-radio-button>
                             <el-radio-button label="multi-check">Multi</el-radio-button>
                         </el-radio-group>
@@ -246,14 +246,14 @@
                         <cly-select-x
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
-                            v-model="selectedTLB" 
-                            :mode="selectXMode"
+                            v-model="selectX.currentVal" 
+                            :mode="selectX.mode"
                             :disabled="dropdownsDisabled"
                             :options="selectXOptions[0].options">
                         </cly-select-x>
                     </div>
                     <div class="example-cell">
-                        {{selectedTLB}}
+                        {{selectX.currentVal}}
                     </div>
                 </div>
                 <div class="example-component">
@@ -265,14 +265,14 @@
                             all-placeholder="All Properties" 
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
-                            v-model="selectedTLB" 
-                            :mode="selectXMode"
+                            v-model="selectX.currentVal" 
+                            :mode="selectX.mode"
                             :disabled="dropdownsDisabled"
                             :options="selectXOptions">
                         </cly-select-x>
                     </div>
                     <div class="example-cell">
-                        {{selectedTLB}}
+                        {{selectX.currentVal}}
                     </div>
                 </div>
                 <div class="example-component">
@@ -288,8 +288,8 @@
                             :disabled="dropdownsDisabled"
                             :hide-default-tabs="true"
                             :options="selectXOptions"
-                            :mode="selectXMode"
-                            v-model="selectedTLB">
+                            :mode="selectX.mode"
+                            v-model="selectX.currentVal">
                             <template v-slot:header="selectScope">
                                 <el-radio-group 
                                     :value="selectScope.activeTabId" 
@@ -301,7 +301,7 @@
                         </cly-select-x>
                     </div>
                     <div class="example-cell">
-                        {{selectedTLB}}
+                        {{selectX.currentVal}}
                     </div>
                 </div>
                 <div class="example-component">
@@ -314,11 +314,11 @@
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
                             title="Custom header & title"
-                            :mode="selectXMode"
+                            :mode="selectX.mode"
                             :disabled="dropdownsDisabled"
                             :hide-default-tabs="true"
                             :options="selectXOptions"
-                            v-model="selectedTLB">
+                            v-model="selectX.currentVal">
                             <template v-slot:header="selectScope">
                                 <div style="font-size: 12px; padding-bottom: 7px;">Property type</div>                                
                                 <el-select
@@ -331,7 +331,7 @@
                         </cly-select-x>
                     </div>
                     <div class="example-cell">
-                        {{selectedTLB}}
+                        {{selectX.currentVal}}
                     </div>
                 </div>
             </cly-panel>

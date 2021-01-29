@@ -14,6 +14,14 @@
                 return this.$store.getters["countlyVueExample/tooManyRecords/paged"];
             }
         },
+        watch: {
+            selectXModeBuffer: function(newVal) {
+                this.selectX = {
+                    mode: newVal,
+                    currentVal: newVal==='single-list' ? null : []
+                };
+            }
+        },
         data: function() {
             var manyItems = [];
 
@@ -25,7 +33,6 @@
             }
             return {
                 dropdownsDisabled: false,
-                selectXMode: 'single-list',
                 selectXOptions: [{
                     "label": "A Items",
                     "name": "type-1",
@@ -52,7 +59,11 @@
                         {"label": "user1", "value": 13},
                     ]
                 }],
-                selectedTLB: [],
+                selectXModeBuffer: 'single-list',
+                selectX: {
+                    currentVal: null,
+                    mode: 'single-list',
+                },
                 listBoxOptions: [
                     {"label": "hello0", "value": 0},
                     {"label": "hello1", "value": 1},
