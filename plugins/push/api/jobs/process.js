@@ -361,17 +361,17 @@ class ProcessJob extends J.IPCJob {
                 }
 
                 // load next batch
-                let msgs = await this.loader.load(this._id, date, BATCH),
-                    ids = msgs.map(m => m.n.toString());
-
-                // reload notes for msgs
-                ids = ids.filter((id, i) => ids.indexOf(id) === i);
-                notes = await this.loader.notes(ids);
+                let msgs = await this.loader.load(this._id, date, BATCH);
 
                 // no messages left, break from the loop
                 if (!msgs.length) {
                     break;
                 }
+
+                // reload notes for msgs
+                let ids = msgs.map(m => m.n.toString());
+                ids = ids.filter((id, i) => ids.indexOf(id) === i);
+                notes = await this.loader.notes(ids);
 
                 // mark messages as being sent
                 await Promise.all(Object.values(notes).map(json => this.loader.updateNote(json._id, {$addToSet: {jobs: this._id}, $bit: {'result.status': {or: N.Status.Sending}}})));
