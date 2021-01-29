@@ -975,37 +975,7 @@
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
 
-    Vue.component("cly-listbox", countlyVue.components.BaseComponent.extend({
-        template: '<div\
-                    class="cly-vue-listbox"\
-                    tabindex="0"\
-                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
-                    @mouseenter="handleHover"\
-                    @mouseleave="handleBlur"\
-                    @focus="handleHover"\
-                    @blur="handleBlur">\
-                    <el-scrollbar\
-                        v-if="options.length > 0"\
-                        tag="ul"\
-                        wrap-class="el-select-dropdown__wrap"\
-                        view-class="el-select-dropdown__list">\
-                        <li\
-                            tabindex="0"\
-                            class="el-select-dropdown__item"\
-                            :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
-                            :key="option.value"\
-                            @focus="handleItemHover(option)"\
-                            @mouseenter="handleItemHover(option)"\
-                            @keyup.enter="handleItemClick(option)"\
-                            @click.stop="handleItemClick(option)"\
-                            v-for="option in options">\
-                            <span>{{option.label}}</span>\
-                        </li>\
-                    </el-scrollbar>\
-                    <div v-else class="cly-vue-listbox__no-data">\
-                        No data\
-                    </div>\
-                </div>',
+    var AbstractListBox = countlyVue.components.BaseComponent.extend({
         props: {
             options: {type: Array},
             value: { type: [String, Number] },
@@ -1038,6 +1008,80 @@
                 focused: false
             };
         }
+    });
+
+    Vue.component("cly-listbox", AbstractListBox.extend({
+        template: '<div\
+                    class="cly-vue-listbox"\
+                    tabindex="0"\
+                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
+                    @mouseenter="handleHover"\
+                    @mouseleave="handleBlur"\
+                    @focus="handleHover"\
+                    @blur="handleBlur">\
+                    <el-scrollbar\
+                        v-if="options.length > 0"\
+                        tag="ul"\
+                        wrap-class="el-select-dropdown__wrap"\
+                        view-class="el-select-dropdown__list">\
+                        <li\
+                            tabindex="0"\
+                            class="el-select-dropdown__item"\
+                            :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
+                            :key="option.value"\
+                            @focus="handleItemHover(option)"\
+                            @mouseenter="handleItemHover(option)"\
+                            @keyup.enter="handleItemClick(option)"\
+                            @click.stop="handleItemClick(option)"\
+                            v-for="option in options">\
+                            <span>{{option.label}}</span>\
+                        </li>\
+                    </el-scrollbar>\
+                    <div v-else class="cly-vue-listbox__no-data">\
+                        No data\
+                    </div>\
+                </div>'
+    }));
+
+    Vue.component("cly-checklistbox", AbstractListBox.extend({
+        computed: {
+            innerValue: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(newVal) {
+                    this.$emit("input", newVal);
+                    this.$emit("change", newVal);
+                }
+            }
+        },
+        template: '<div\
+                    class="cly-vue-listbox"\
+                    tabindex="0"\
+                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
+                    @mouseenter="handleHover"\
+                    @mouseleave="handleBlur"\
+                    @focus="handleHover"\
+                    @blur="handleBlur">\
+                    <el-scrollbar\
+                        v-if="options.length > 0"\
+                        tag="ul"\
+                        wrap-class="el-select-dropdown__wrap"\
+                        view-class="el-select-dropdown__list">\
+                        <el-checkbox-group\
+                            v-model="innerValue">\
+                            <li\
+                                class="el-select-dropdown__item"\
+                                :key="option.value"\
+                                v-for="option in options">\
+                                <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
+                            </li>\
+                        </el-checkbox-group>\
+                    </el-scrollbar>\
+                    <div v-else class="cly-vue-listbox__no-data">\
+                        No data\
+                    </div>\
+                </div>'
     }));
 
     var TabbedOptionsMixin = {
@@ -1186,11 +1230,19 @@
                                         {{tab.label}}\
                                     </span>\
                                     <cly-listbox\
+                                        v-if="mode === \'single-list\'"\
                                         :bordered="false"\
+                                        :options="getMatching(tab.options)"\
                                         @change="doClose"\
-                                        v-model="innerValue"\
-                                        :options="getMatching(tab.options)">\
+                                        v-model="innerValue">\
                                     </cly-listbox>\
+                                    <cly-checklistbox\
+                                        v-if="mode === \'multi-check\'"\
+                                        :bordered="false"\
+                                        :options="getMatching(tab.options)"\
+                                        @change="doClose"\
+                                        v-model="innerValue">\
+                                    </cly-checklistbox>\
                                 </el-tab-pane>\
                             </el-tabs>\
                         </div>\
@@ -1198,7 +1250,8 @@
         props: {
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
-            value: { type: [String, Number] }
+            value: { type: [String, Number] },
+            mode: {type: String, default: 'single-list'}
         },
         computed: {
             innerValue: {

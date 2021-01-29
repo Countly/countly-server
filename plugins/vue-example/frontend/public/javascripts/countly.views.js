@@ -25,6 +25,7 @@
             }
             return {
                 dropdownsDisabled: false,
+                selectXMode: 'single-list',
                 selectXOptions: [{
                     "label": "A Items",
                     "name": "type-1",
@@ -51,7 +52,7 @@
                         {"label": "user1", "value": 13},
                     ]
                 }],
-                selectedTLB: null,
+                selectedTLB: [],
                 listBoxOptions: [
                     {"label": "hello0", "value": 0},
                     {"label": "hello1", "value": 1},

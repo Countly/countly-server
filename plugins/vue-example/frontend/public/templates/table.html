@@ -192,6 +192,13 @@
                         v-model="dropdownsDisabled"
                         active-color="#13ce66">
                     </el-switch>
+                    <div>
+                        Selection mode:
+                        <el-radio-group v-model="selectXMode">
+                            <el-radio-button label="single-list">Single</el-radio-button>
+                            <el-radio-button label="multi-check">Multi</el-radio-button>
+                        </el-radio-group>
+                    </div>
                 </el-card>
                 <div class="example-component">
                     <div class="example-cell">
@@ -240,6 +247,7 @@
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
                             v-model="selectedTLB" 
+                            :mode="selectXMode"
                             :disabled="dropdownsDisabled"
                             :options="selectXOptions[0].options">
                         </cly-select-x>
@@ -258,6 +266,7 @@
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
                             v-model="selectedTLB" 
+                            :mode="selectXMode"
                             :disabled="dropdownsDisabled"
                             :options="selectXOptions">
                         </cly-select-x>
@@ -279,6 +288,7 @@
                             :disabled="dropdownsDisabled"
                             :hide-default-tabs="true"
                             :options="selectXOptions"
+                            :mode="selectXMode"
                             v-model="selectedTLB">
                             <template v-slot:header="selectScope">
                                 <el-radio-group 
@@ -304,6 +314,7 @@
                             search-placeholder="Search in Properties"
                             placeholder="Select Property" 
                             title="Custom header & title"
+                            :mode="selectXMode"
                             :disabled="dropdownsDisabled"
                             :hide-default-tabs="true"
                             :options="selectXOptions"
