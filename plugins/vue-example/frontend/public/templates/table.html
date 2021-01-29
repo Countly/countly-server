@@ -294,6 +294,35 @@
                         {{selectedTLB}}
                     </div>
                 </div>
+                <div class="example-component">
+                    <div class="example-cell">
+                        cly-select-x (Tabs, custom header #2)
+                    </div>
+                    <div class="example-cell">
+                        <cly-select-x 
+                            all-placeholder="All Properties" 
+                            search-placeholder="Search in Properties"
+                            placeholder="Select Property" 
+                            title="Custom header & title"
+                            :disabled="dropdownsDisabled"
+                            :hide-default-tabs="true"
+                            :options="selectXOptions"
+                            v-model="selectedTLB">
+                            <template v-slot:header="selectScope">
+                                <div style="font-size: 12px; padding-bottom: 7px;">Property type</div>                                
+                                <el-select
+                                    :popper-append-to-body="false" 
+                                    :value="selectScope.activeTabId" 
+                                    @input="selectScope.updateTab">
+                                    <el-option v-for="tab in selectScope.tabs" :key="tab.name" :value="tab.name" :label="tab.label"></el-option>
+                                </el-select>
+                            </template>
+                        </cly-select-x>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedTLB}}
+                    </div>
+                </div>
             </cly-panel>
         </cly-content>
     </cly-tabs>
