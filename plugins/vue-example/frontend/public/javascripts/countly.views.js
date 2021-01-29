@@ -18,7 +18,7 @@
             selectXModeBuffer: function(newVal) {
                 this.selectX = {
                     mode: newVal,
-                    currentVal: newVal==='single-list' ? null : []
+                    currentVal: newVal === 'single-list' ? null : []
                 };
             }
         },
@@ -33,6 +33,7 @@
             }
             return {
                 dropdownsDisabled: false,
+                autoCommitDisabled: false,
                 selectXOptions: [{
                     "label": "A Items",
                     "name": "type-1",
