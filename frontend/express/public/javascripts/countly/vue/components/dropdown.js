@@ -6,19 +6,32 @@
         props: {
             focused: {type: Boolean, default: false},
             opened: {type: Boolean, default: false},
-            value: {type: [Number, String], default: ''},
+            selectedOptions: {
+                type: [Array, Object],
+                default: function() {
+                    return {};
+                }
+            },
             placeholder: {type: String, default: ''},
             disabled: {type: Boolean, default: false}
         },
         computed: {
             iconClass: function() {
                 return (this.opened ? 'arrow-up is-reverse' : 'arrow-up');
+            },
+            description: function() {
+                if (Array.isArray(this.selectedOptions)) {
+                    return this.selectedOptions.map(function(option) {
+                        return option.label;
+                    }).join(', ');
+                }
+                return this.selectedOptions.label;
             }
         },
         template: '<el-input\
                         :class="{ \'is-focus\': focused, \'is-disabled\': disabled }"\
                         readonly="readonly" \
-                        v-model="value"\
+                        v-model="description"\
                         :placeholder="placeholder">\
                         <template slot="suffix">\
                             <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
@@ -133,7 +146,7 @@
                                 :focused="dropdown.visible"\
                                 :opened="dropdown.visible"\
                                 :placeholder="placeholder"\
-                                v-model="value">\
+                                :selected-options="selectedOptions">\
                             </cly-input-dropdown-trigger>\
                         </template>\
                         <template v-slot :handleClose="handleClose">\
@@ -143,7 +156,7 @@
                     </cly-dropdown>',
         props: {
             placeholder: {type: String, default: 'Select'},
-            value: { type: [String, Number] },
+            selectedOptions: { type: [Object, Array] },
             disabled: { type: Boolean, default: false}
         },
         methods: {

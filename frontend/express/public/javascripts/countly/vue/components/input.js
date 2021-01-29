@@ -1098,7 +1098,7 @@
         props: {
             options: {type: Array},
             hideDefaultTabs: {type: Boolean, default: false},
-            allPlaceholder: {type: String, default: 'All'}
+            allPlaceholder: {type: String, default: 'All'},
         },
         data: function() {
             return {
@@ -1149,16 +1149,23 @@
                     return items;
                 }, {});
             },
-            selectedOption: function() {
+            selectedOptions: function() {
                 if (!this.flatOptions.length) {
                     return {};
                 }
                 var self = this;
-                var matching = this.flatOptions.filter(function(item) {
-                    return item.value === self.value;
-                });
-                if (matching.length) {
-                    return matching[0];
+                if (Array.isArray(this.value)) {
+                    return this.flatOptions.filter(function(item) {
+                        return self.value.indexOf(item.value) > -1;
+                    });
+                }
+                else {
+                    var matching = this.flatOptions.filter(function(item) {
+                        return item.value === self.value;
+                    });
+                    if (matching.length) {
+                        return matching[0];
+                    }
                 }
                 return {};
             }
@@ -1173,8 +1180,8 @@
                     if (!self.hasTabs) {
                         self.activeTabId = "__root";
                     }
-                    else if (self.selectedOption.value && self.val2tab[self.selectedOption.value]) {
-                        self.activeTabId = self.val2tab[self.selectedOption.value];
+                    else if (self.value && self.val2tab[self.value]) {
+                        self.activeTabId = self.val2tab[self.value];
                     }
                     else {
                         self.activeTabId = "__all";
@@ -1216,7 +1223,7 @@
                         :placeholder="placeholder"\
                         @show="focusOnSearch"\
                         v-bind="$attrs"\
-                        v-model="selectedOption.label">\
+                        :selected-options="selectedOptions">\
                         <div class="cly-vue-select-x__pop" :class="{\'cly-vue-select-x__pop--hidden-tabs\': hideDefaultTabs || !hasTabs }">\
                             <div class="cly-vue-select-x__header">\
                                 <div class="cly-vue-select-x__title" v-if="title">{{title}}</div>\
