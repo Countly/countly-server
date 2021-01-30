@@ -12,30 +12,30 @@
                         <pre>{{tableRows}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable :rows="tableRows" :columns="tableColumns" :has-detail-rows="true"
-                            @set-row-data="setRowData" @delayed-delete-record="onDelayedDelete"
-                            @delete-record="onDelete" @edit-record="onEditRecord">
-                            <template v-slot:table-row="scope">
-                                <cly-datatable-detail-toggler v-if="scope.props.column.field == 'cly-detail-toggler'"
-                                    :scope="scope">
-                                </cly-datatable-detail-toggler>
-                                <cly-datatable-options v-else-if="scope.props.column.field == 'cly-options'"
-                                    :scope="scope">
-                                </cly-datatable-options>
-                                <span v-else-if="scope.props.column.field == 'status'">
-                                    <cly-check v-tooltip="scope.props.row.status?'Activated':'Deactivated'"
-                                        :value="scope.props.row.status"
-                                        @input="setRowData(scope.props.row, {status: $event})">
-                                    </cly-check>
-                                </span>
-                                <span v-else>
-                                    {{scope.props.formattedRow[scope.props.column.field]}}
-                                </span>
-
-                                <cly-datatable-undo-row v-if="scope.props.column.field == 'cly-options'"
-                                    :delayed-action="scope.props.row._delayedDelete">
-                                    You deleted a record.
-                                </cly-datatable-undo-row>
+                        <cly-datatable-n 
+                            :data="tableRows">
+                            <template v-slot="scope">
+                                <el-table-column type="expand">
+                                  <template v-slot="props">
+                                      Data in expanded row
+                                  </template>
+                                </el-table-column>
+                                <el-table-column
+                                    sortable
+                                    prop="_id"
+                                    label="ID"
+                                    width="200">
+                                </el-table-column>
+                                <el-table-column
+                                    sortable
+                                    prop="name"
+                                    label="Name">
+                                </el-table-column>
+                                <el-table-column
+                                    sortable
+                                    prop="description"
+                                    label="Description">
+                                </el-table-column>
                             </template>
                         </cly-datatable>
                         <cly-diff-helper @save="updateStatusInfo" @discard="unpatchStatusChanges" :diff="tableDiff">

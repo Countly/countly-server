@@ -658,4 +658,53 @@
                     '</div>\n'
     }));
 
+    //
+
+    Vue.component("cly-datatable-n", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
+        computed: {
+            forwardedSlots: function() {
+                var self = this;
+                return Object.keys(this.$scopedSlots).reduce(function(slots, slotKey) {
+                    if (slotKey !== "search-options") {
+                        slots[slotKey] = self.$scopedSlots[slotKey];
+                    }
+                    return slots;
+                }, {});
+            },
+            controlSlots: function() {
+                if (this.$scopedSlots["search-options"]) {
+                    return {
+                        "search-options": this.$scopedSlots["search-options"]
+                    };
+                }
+                return {};
+            }
+        },
+        template: '<div>\n' +
+                        '<div class="cly-eldatatable__table-header"></div>'+
+                        '<el-table\n' +
+                            ':data="data"\n' +
+                            'v-bind="$attrs"\n' +
+                            'v-on="$listeners"\n' +
+                            'ref="table">\n' +
+                                '<template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\n' +
+                                    '<slot :name="name"/>\n' +
+                                '</template>\n' +
+                        '</el-table>\n' +
+                        '<div class="cly-eldatatable__table-footer"></div>'+
+                    '</div>'
+    }));
+
+
 }(window.countlyVue = window.countlyVue || {}, jQuery));

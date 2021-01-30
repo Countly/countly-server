@@ -106,56 +106,6 @@
                 selectWItems: manyItems,
                 selectDWModel: null,
                 selectDWItems: manyItems,
-                tableColumns: [
-                    {
-                        type: "cly-detail-toggler",
-                        sortable: false,
-                        width: "10px",
-                    },
-                    {
-                        label: 'Status',
-                        field: 'status',
-                        type: 'boolean',
-                        sortable: false
-                    },
-                    {
-                        label: 'ID',
-                        field: '_id',
-                        type: 'number',
-                    },
-                    {
-                        type: "text",
-                        field: "name",
-                        label: "Name",
-                    },
-                    {
-                        type: "text",
-                        field: "description",
-                        label: "Description",
-                    },
-                    {
-                        type: "cly-options",
-                        width: "20px",
-                        items: [
-                            {
-                                icon: "fa fa-pencil",
-                                label: "Edit",
-                                event: "edit-record",
-                            },
-                            {
-                                icon: "fa fa-trash",
-                                label: "Delete",
-                                event: "delete-record",
-                            },
-                            {
-                                icon: "fa fa-trash",
-                                label: "Delete (with undo)",
-                                event: "delayed-delete-record",
-                                disabled: !(countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID])
-                            }
-                        ]
-                    },
-                ],
                 rTableColumns: [
                     {
                         label: 'ID',
