@@ -666,13 +666,27 @@
     }
 
     ArrayDataSource.prototype.fetch = function(controlParams) {
-        var currentArray = this.baseArray;
+        var currentArray = this.baseArray.slice();
         if (controlParams.searchQuery) {
             var queryLc = controlParams.searchQuery.toLowerCase();
             currentArray = currentArray.filter(function(item) {
                 return Object.keys(item).some(function(fieldKey) {
                     return item[fieldKey].toString().toLowerCase().indexOf(queryLc) > -1;
                 });
+            });
+        }
+        if (controlParams.sort.length > 0) {
+            var sorting = controlParams.sort[0],
+                dir = sorting.type === "asc" ? 1 : -1;
+
+            currentArray.sort(function(a, b) {
+                if (a[sorting.field] < b[sorting.field]) {
+                    return -dir;
+                }
+                if (a[sorting.field] > b[sorting.field]) {
+                    return dir;
+                }
+                return 0;
             });
         }
         return Promise.resolve(currentArray);
@@ -738,6 +752,21 @@
             this.setControlParams();
         },
         methods: {
+            onSortChange: function(elTableSorting) {
+                if (elTableSorting.order) {
+                    this.updateControlParams({
+                        sort: [{
+                            field: elTableSorting.prop,
+                            type: elTableSorting.order === "ascending" ? "asc" : "desc"
+                        }]
+                    });
+                }
+                else {
+                    this.updateControlParams({
+                        sort: []
+                    });
+                }
+            },
             fetchFromSource: function() {
                 if (!this.source) {
                     return;
@@ -819,6 +848,7 @@
                             ':data="rowsView"\n' +
                             'v-bind="$attrs"\n' +
                             'v-on="$listeners"\n' +
+                            '@sort-change="onSortChange"\n' +
                             'ref="table">\n' +
                                 '<template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\n' +
                                     '<slot :name="name"/>\n' +
