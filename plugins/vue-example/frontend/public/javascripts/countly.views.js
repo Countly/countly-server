@@ -135,6 +135,7 @@
             },
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
+                this.$store.dispatch("countlyVueExample/fetchTooManyRecords");
             },
             add: function() {
                 this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
