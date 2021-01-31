@@ -726,14 +726,11 @@
             publicSearchQuery: function(val) {
                 this.updateControlParams({searchQuery: val});
             },
-            dataSource: function() {
-                this.triggerExternalSource();
-            },
             controlParams: {
                 deep: true,
-                handler: function() {
+                handler: _.debounce(function() {
                     this.triggerExternalSource();
-                }
+                }, 500)
             }
         },
         data: function() {

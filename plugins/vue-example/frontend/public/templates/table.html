@@ -51,15 +51,22 @@
                         <pre>{{rTableData}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable :rows="rTableData.rows" :columns="rTableColumns"
-                            :totalRows="rTableData.totalRows" :notFilteredTotalRows="rTableData.notFilteredTotalRows"
-                            mode="remote" @remote-params-change="updateRemoteParams" @set-row-data="setRowData">
-                            <template v-slot:table-row="scope">
-                                <span>
-                                    {{scope.props.formattedRow[scope.props.column.field]}}
-                                </span>
+                        <cly-datatable-n
+                            :data-source="{data: rTableData, isExternal: true, fetch: updateRemoteParams}">
+                            <template v-slot>
+                                <el-table-column
+                                    sortable="custom"
+                                    prop="_id"
+                                    label="ID"
+                                    width="200">
+                                </el-table-column>
+                                <el-table-column
+                                    sortable="custom"
+                                    prop="name"
+                                    label="Name">
+                                </el-table-column>
                             </template>
-                        </cly-datatable>
+                        </cly-datatable-n>
                     </div>
                 </div>
             </cly-panel>
