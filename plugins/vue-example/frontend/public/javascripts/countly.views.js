@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyGlobal, countlyCommon */
+/*global app, countlyVue, countlyVueExample */
 
 (function() {
     var TableView = countlyVue.views.BaseView.extend({
@@ -11,7 +11,7 @@
                 return this.$store.getters["countlyVueExample/table/diff"];
             },
             rTableData: function() {
-                return this.$store.getters["countlyVueExample/tooManyRecords/paged"];
+                return this.$store.getters["countlyVueExample/tooManyRecords"];
             }
         },
         watch: {
@@ -146,8 +146,7 @@
                 });
             },
             updateRemoteParams: function(remoteParams) {
-                this.$store.commit("countlyVueExample/tooManyRecords/setRequestParams", remoteParams);
-                this.$store.dispatch("countlyVueExample/tooManyRecords/fetchPaged");
+                this.$store.dispatch("countlyVueExample/pasteAndFetchTooManyRecords", remoteParams);
             },
             setRowData: function(row, fields) {
                 this.$store.commit("countlyVueExample/table/patch", {row: row, fields: fields});

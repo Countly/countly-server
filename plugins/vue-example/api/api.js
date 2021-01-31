@@ -35,34 +35,28 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
         }
         else if (ob.params.qstring.method === 'large-col') {
             validateUserForDataReadAPI(params, function() {
-                let tableParams = params.qstring.table_params;
-                tableParams = JSON.parse(tableParams);
+                let tableParams = params.qstring;
                 let currentArray = mockCollection.slice();
-                if (tableParams.searchQuery) {
+                if (tableParams.sSearch) {
                     currentArray = currentArray.filter(function(item) {
-                        return item.name.includes(tableParams.searchQuery);
+                        return item.name.includes(tableParams.sSearch);
                     });
                 }
-                if (tableParams.sort && tableParams.sort.length > 0) {
-                    let sorter = tableParams.sort[0];
+                if (tableParams.iSortDir_0) {
+                    let field = tableParams.iSortCol_0 === '0' ? '_id' : 'name';
+                    let dir = tableParams.iSortDir_0 === 'asc' ? 1 : -1;
                     currentArray.sort(function(a, b) {
-                        if (a[sorter.field] === b[sorter.field]) {
+                        if (a[field] === b[field]) {
                             return 0;
                         }
-                        var comp = a[sorter.field] < b[sorter.field] ? -1 : 1;
-                        if (sorter.type === "asc") {
-                            return comp;
-                        }
-                        return -comp;
+                        return a[field] < b[field] ? -dir : dir;
                     });
                 }
-                let startIndex = (tableParams.page - 1) * tableParams.perPage;
-                let endIndex = startIndex + tableParams.perPage;
-                let currentPage = currentArray.slice(startIndex, endIndex);
+                let currentPage = currentArray.slice(tableParams.iDisplayStart, tableParams.iDisplayLength);
                 common.returnOutput(params, {
-                    rows: currentPage,
-                    notFilteredTotalRows: mockCollection.length,
-                    totalRows: currentArray.length
+                    aaData: currentPage,
+                    iTotalRecords: mockCollection.length,
+                    iTotalDisplayRecords: currentArray.length
                 });
             });
             return true;

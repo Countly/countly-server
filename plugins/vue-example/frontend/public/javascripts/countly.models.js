@@ -93,50 +93,20 @@
 
         // Paged Resource
 
-        var tooManyRecordsResource = countlyVue.vuex.Module("tooManyRecords", {
-            state: function() {
+        var tooManyRecordsResource = countlyVue.vuex.ServerDataTable("tooManyRecords", {
+            columns: ['_id', "name"],
+            onRequest: function() {
                 return {
-                    paged: {
-                        rows: []
-                    },
-                    requestParams: {}
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        method: 'large-col'
+                    }
                 };
             },
-            getters: {
-                paged: function(state) {
-                    return state.paged;
-                }
-            },
-            mutations: {
-                setPaged: function(state, val) {
-                    state.paged = val;
-                },
-                setRequestParams: function(state, val) {
-                    state.requestParams = val;
-                }
-            },
-            actions: {
-                fetchPaged: function(context) {
-                    return CV.$.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            method: 'large-col',
-                            table_params: JSON.stringify(context.state.requestParams)
-                        }
-                    }, {disableAutoCatch: true})
-                        .then(function(res) {
-                            context.commit("setPaged", res);
-                        })
-                        .catch(function() {
-                            context.commit("setPaged", {
-                                rows: [],
-                                totalRows: 0,
-                                notFilteredTotalRows: 0
-                            });
-                        });
-                }
+            onReady: function(context, rows) {
+                return rows;
             }
         });
 
