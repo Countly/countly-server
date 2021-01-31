@@ -728,6 +728,7 @@
             },
             controlParams: {
                 deep: true,
+                immediate: true,
                 handler: _.debounce(function() {
                     this.triggerExternalSource();
                 }, 500)
