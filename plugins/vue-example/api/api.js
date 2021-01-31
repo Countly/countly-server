@@ -42,9 +42,9 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
                         return item.name.includes(tableParams.sSearch);
                     });
                 }
-                if (tableParams.iSortDir_0) {
+                if (tableParams.sSortDir_0) {
                     let field = tableParams.iSortCol_0 === '0' ? '_id' : 'name';
-                    let dir = tableParams.iSortDir_0 === 'asc' ? 1 : -1;
+                    let dir = tableParams.sSortDir_0 === 'asc' ? 1 : -1;
                     currentArray.sort(function(a, b) {
                         if (a[field] === b[field]) {
                             return 0;
