@@ -676,13 +676,7 @@
             }
         },
         computed: {
-            rowsView: function() {
-                if (!this.dataSource) {
-                    return [];
-                }
-                if (this.dataSource.isExternal) {
-                    return this.dataSource.rows;
-                }
+            localDataView: function() {
                 var currentArray = this.dataSource.rows.slice();
                 if (this.controlParams.searchQuery) {
                     var queryLc = this.controlParams.searchQuery.toLowerCase();
@@ -706,7 +700,21 @@
                         return 0;
                     });
                 }
-                return currentArray;
+                return { rows: currentArray, totalRows: this.dataSource.rows.length, notFilteredTotalRows: this.dataSource.rows.length };
+            },
+            externalDataView: function() {
+                return this.dataSource.data;
+            },
+            dataView: function() {
+                if (!this.dataSource) {
+                    return {};
+                }
+                if (this.dataSource.isExternal) {
+                    return this.externalDataView;
+                }
+                else {
+                    return this.localDataView;
+                }
             }
         },
         watch: {
@@ -825,7 +833,7 @@
                             <el-input v-model="publicSearchQuery"></el-input>\
                         </div>' +
                         '<el-table\n' +
-                            ':data="rowsView"\n' +
+                            ':data="dataView.rows"\n' +
                             'v-bind="$attrs"\n' +
                             'v-on="$listeners"\n' +
                             '@sort-change="onSortChange"\n' +
