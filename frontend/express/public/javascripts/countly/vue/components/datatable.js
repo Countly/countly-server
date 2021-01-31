@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _ */
+/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _, Promise */
 
 (function(countlyVue, $) {
 
@@ -660,41 +660,163 @@
 
     //
 
-    Vue.component("cly-datatable-n", countlyBaseComponent.extend({
-        mixins: [
-            _mixins.i18n
-        ],
+    function ArrayDataSource(baseArray) {
+        this.baseArray = baseArray;
+        this.isBlocking = false;
+    }
+
+    ArrayDataSource.prototype.fetch = function(controlParams) {
+        var currentArray = this.baseArray;
+        if (controlParams.searchQuery) {
+            var queryLc = controlParams.searchQuery.toLowerCase();
+            currentArray = currentArray.filter(function(item) {
+                return Object.keys(item).some(function(fieldKey) {
+                    return item[fieldKey].toString().toLowerCase().indexOf(queryLc) > -1;
+                });
+            });
+        }
+        return Promise.resolve(currentArray);
+    };
+
+    var TabularDataManagerMixin = {
         props: {
-            data: {
+            rows: {
                 type: Array,
                 default: function() {
                     return [];
                 }
+            },
+            persistKey: {
+                type: String,
+                default: null
+            },
+            mode: {
+                type: String,
+                default: 'local'
+            },
+            customDataSource: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
             }
+        },
+        watch: {
+            rows: {
+                immediate: true,
+                handler: function(newRows) {
+                    if (this.mode === 'local') {
+                        this.source = Object.freeze(new ArrayDataSource(newRows));
+                    }
+                }
+            },
+            customDataSource: {
+                immediate: true,
+                handler: function(customDataSource) {
+                    if (this.mode === 'custom') {
+                        this.source = customDataSource;
+                    }
+                }
+            },
+            publicSearchQuery: function(val) {
+                this.updateControlParams({searchQuery: val});
+            },
+            source: function() {
+                this.fetchFromSource();
+            }
+        },
+        data: function() {
+            return {
+                controlParams: this.getControlParams(),
+                isDataReady: false,
+                rowsView: [],
+                source: null,
+                publicSearchQuery: ''
+            };
+        },
+        beforeDestroy: function() {
+            this.setControlParams();
+        },
+        methods: {
+            fetchFromSource: function() {
+                if (!this.source) {
+                    return;
+                }
+                var self = this;
+                this.source.fetch(this.controlParams).then(function(rowsView) {
+                    self.isDataReady = true;
+                    self.rowsView = rowsView;
+                });
+            },
+            updateControlParams: function(newParams) {
+                _.extend(this.controlParams, newParams);
+                if (this.source.isBlocking) {
+                    this.isDataReady = false;
+                }
+                this.fetchFromSource();
+            },
+            getControlParams: function() {
+                var defaultState = {
+                    page: 1,
+                    perPage: 10,
+                    searchQuery: '',
+                    sort: []
+                };
+                if (!this.persistKey) {
+                    return defaultState;
+                }
+                var loadedState = localStorage.getItem(this.persistKey);
+                try {
+                    if (loadedState) {
+                        return JSON.parse(loadedState);
+                    }
+                    return defaultState;
+                }
+                catch (ex) {
+                    return defaultState;
+                }
+            },
+            setControlParams: function() {
+                if (this.persistKey) {
+                    localStorage.setItem(this.persistKey, JSON.stringify(this.controlParams));
+                }
+            }
+        }
+    };
+    //
+
+    Vue.component("cly-datatable-n", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n,
+            TabularDataManagerMixin
+        ],
+        data: function() {
+            return {
+                slotMapping: {
+                    'header-left': 'header-left',
+                    'header-right': 'header-right'
+                }
+            };
         },
         computed: {
             forwardedSlots: function() {
                 var self = this;
                 return Object.keys(this.$scopedSlots).reduce(function(slots, slotKey) {
-                    if (slotKey !== "search-options") {
+                    if (!self.slotMapping[slotKey]) {
                         slots[slotKey] = self.$scopedSlots[slotKey];
                     }
                     return slots;
                 }, {});
-            },
-            controlSlots: function() {
-                if (this.$scopedSlots["search-options"]) {
-                    return {
-                        "search-options": this.$scopedSlots["search-options"]
-                    };
-                }
-                return {};
             }
         },
         template: '<div>\n' +
-                        '<div class="cly-eldatatable__table-header"></div>'+
+                        '<div class="cly-eldatatable__table-header">\
+                            <slot name="header-left"></slot>\
+                            <slot name="header-right"></slot>\
+                            <el-input v-model="publicSearchQuery"></el-input>\
+                        </div>' +
                         '<el-table\n' +
-                            ':data="data"\n' +
+                            ':data="rowsView"\n' +
                             'v-bind="$attrs"\n' +
                             'v-on="$listeners"\n' +
                             'ref="table">\n' +
@@ -702,7 +824,7 @@
                                     '<slot :name="name"/>\n' +
                                 '</template>\n' +
                         '</el-table>\n' +
-                        '<div class="cly-eldatatable__table-footer"></div>'+
+                        '<div class="cly-eldatatable__table-footer"></div>' +
                     '</div>'
     }));
 
