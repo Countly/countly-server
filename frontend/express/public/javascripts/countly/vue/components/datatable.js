@@ -700,7 +700,12 @@
                         return 0;
                     });
                 }
-                return { rows: currentArray, totalRows: this.dataSource.rows.length, notFilteredTotalRows: this.dataSource.rows.length };
+                return {
+                    rows: currentArray,
+                    totalRows: this.dataSource.rows.length,
+                    notFilteredTotalRows: this.dataSource.rows.length,
+                    ready: true
+                };
             },
             externalDataView: function() {
                 return this.dataSource.data;
@@ -734,7 +739,6 @@
         data: function() {
             return {
                 controlParams: this.getControlParams(),
-                isDataReady: false,
                 publicSearchQuery: ''
             };
         },
@@ -761,13 +765,7 @@
                 if (!this.dataSource || !this.dataSource.isExternal) {
                     return;
                 }
-                var self = this;
-                if (this.dataSource.isBlocking) {
-                    this.isDataReady = false;
-                }
-                this.dataSource.fetch(this.controlParams).then(function() {
-                    self.isDataReady = true;
-                });
+                this.dataSource.fetch(this.controlParams);
             },
             updateControlParams: function(newParams) {
                 _.extend(this.controlParams, newParams);
