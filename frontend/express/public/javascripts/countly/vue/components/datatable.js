@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _, Promise */
+/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _ */
 
 (function(countlyVue, $) {
 
@@ -660,91 +660,73 @@
 
     //
 
-    function ArrayDataSource(baseArray) {
-        this.baseArray = baseArray;
-        this.isBlocking = false;
-    }
-
-    ArrayDataSource.prototype.fetch = function(controlParams) {
-        var currentArray = this.baseArray.slice();
-        if (controlParams.searchQuery) {
-            var queryLc = controlParams.searchQuery.toLowerCase();
-            currentArray = currentArray.filter(function(item) {
-                return Object.keys(item).some(function(fieldKey) {
-                    return item[fieldKey].toString().toLowerCase().indexOf(queryLc) > -1;
-                });
-            });
-        }
-        if (controlParams.sort.length > 0) {
-            var sorting = controlParams.sort[0],
-                dir = sorting.type === "asc" ? 1 : -1;
-
-            currentArray.sort(function(a, b) {
-                if (a[sorting.field] < b[sorting.field]) {
-                    return -dir;
-                }
-                if (a[sorting.field] > b[sorting.field]) {
-                    return dir;
-                }
-                return 0;
-            });
-        }
-        return Promise.resolve(currentArray);
-    };
-
     var TabularDataManagerMixin = {
         props: {
-            rows: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
-            },
             persistKey: {
                 type: String,
                 default: null
             },
-            mode: {
-                type: String,
-                default: 'local'
-            },
-            customDataSource: {
+            dataSource: {
                 type: Object,
                 default: function() {
-                    return {};
+                    return {
+                        rows: []
+                    };
                 }
             }
         },
+        computed: {
+            rowsView: function() {
+                if (!this.dataSource) {
+                    return [];
+                }
+                if (this.dataSource.isExternal) {
+                    return this.dataSource.rows;
+                }
+                var currentArray = this.dataSource.rows.slice();
+                if (this.controlParams.searchQuery) {
+                    var queryLc = this.controlParams.searchQuery.toLowerCase();
+                    currentArray = currentArray.filter(function(item) {
+                        return Object.keys(item).some(function(fieldKey) {
+                            return item[fieldKey].toString().toLowerCase().indexOf(queryLc) > -1;
+                        });
+                    });
+                }
+                if (this.controlParams.sort.length > 0) {
+                    var sorting = this.controlParams.sort[0],
+                        dir = sorting.type === "asc" ? 1 : -1;
+
+                    currentArray.sort(function(a, b) {
+                        if (a[sorting.field] < b[sorting.field]) {
+                            return -dir;
+                        }
+                        if (a[sorting.field] > b[sorting.field]) {
+                            return dir;
+                        }
+                        return 0;
+                    });
+                }
+                return currentArray;
+            }
+        },
         watch: {
-            rows: {
-                immediate: true,
-                handler: function(newRows) {
-                    if (this.mode === 'local') {
-                        this.source = Object.freeze(new ArrayDataSource(newRows));
-                    }
-                }
-            },
-            customDataSource: {
-                immediate: true,
-                handler: function(customDataSource) {
-                    if (this.mode === 'custom') {
-                        this.source = customDataSource;
-                    }
-                }
-            },
             publicSearchQuery: function(val) {
                 this.updateControlParams({searchQuery: val});
             },
-            source: function() {
-                this.fetchFromSource();
+            dataSource: function() {
+                this.triggerExternalSource();
+            },
+            controlParams: {
+                deep: true,
+                handler: function() {
+                    this.triggerExternalSource();
+                }
             }
         },
         data: function() {
             return {
                 controlParams: this.getControlParams(),
                 isDataReady: false,
-                rowsView: [],
-                source: null,
                 publicSearchQuery: ''
             };
         },
@@ -767,22 +749,20 @@
                     });
                 }
             },
-            fetchFromSource: function() {
-                if (!this.source) {
+            triggerExternalSource: function() {
+                if (!this.dataSource || !this.dataSource.isExternal) {
                     return;
                 }
                 var self = this;
-                this.source.fetch(this.controlParams).then(function(rowsView) {
+                if (this.dataSource.isBlocking) {
+                    this.isDataReady = false;
+                }
+                this.dataSource.fetch(this.controlParams).then(function() {
                     self.isDataReady = true;
-                    self.rowsView = rowsView;
                 });
             },
             updateControlParams: function(newParams) {
                 _.extend(this.controlParams, newParams);
-                if (this.source.isBlocking) {
-                    this.isDataReady = false;
-                }
-                this.fetchFromSource();
             },
             getControlParams: function() {
                 var defaultState = {
