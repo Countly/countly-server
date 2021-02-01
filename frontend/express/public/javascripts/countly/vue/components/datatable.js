@@ -721,6 +721,18 @@
                     return this.localDataView;
                 }
             },
+            totalPages: function() {
+                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
+            },
+            lastPage: function() {
+                return this.totalPages;
+            },
+            prevAvailable: function() {
+                return this.controlParams.page > this.firstPage;
+            },
+            nextAvailable: function() {
+                return this.controlParams.page < this.lastPage;
+            },
             paginationInfo: function() {
                 var page = this.controlParams.page,
                     perPage = this.controlParams.perPage,
@@ -755,13 +767,30 @@
         },
         data: function() {
             return {
-                controlParams: this.getControlParams()
+                controlParams: this.getControlParams(),
+                firstPage: 1
             };
         },
         beforeDestroy: function() {
             this.setControlParams();
         },
         methods: {
+            goToFirstPage: function() {
+                this.controlParams.page = this.firstPage;
+            },
+            goToLastPage: function() {
+                this.controlParams.page = this.lastPage;
+            },
+            goToPrevPage: function() {
+                if (this.prevAvailable) {
+                    this.controlParams.page--;
+                }
+            },
+            goToNextPage: function() {
+                if (this.nextAvailable) {
+                    this.controlParams.page++;
+                }
+            },
             onSortChange: function(elTableSorting) {
                 if (elTableSorting.order) {
                     this.updateControlParams({
@@ -865,6 +894,12 @@
                             {{ paginationInfo }}\
                             <slot name="footer-left"></slot>\
                             <slot name="footer-right"></slot>\
+                            <div class="buttons">\n' +
+                                '<span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\n' +
+                                '<span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\n' +
+                                '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\n' +
+                                '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
+                            '</div>\
                         </div>' +
                     '</div>'
     }));
