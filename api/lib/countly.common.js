@@ -1964,6 +1964,10 @@ countlyCommon.round = function(num, digits) {
  * @returns {Array} items
  */
 countlyCommon.fixPercentageDelta = function(items, totalPercent) {
+    if (!items.length) {
+        return items;
+    }
+
     var deltaFixEl = 0;
     if (totalPercent < 100) {
         //Add the missing delta to the first value
