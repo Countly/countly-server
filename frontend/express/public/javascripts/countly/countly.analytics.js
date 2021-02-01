@@ -32,12 +32,6 @@
     };
 
     countlyAnalyticsAPI.getTop = function(metric) {
-        var topData = countlyAnalyticsAPI.data && countlyAnalyticsAPI.data[metric];
-        if (topData && topData.length) {
-            topData.forEach(function(obj) {
-                obj.barPercent = countlyCommon.round(obj.percent, 0);
-            });
-        }
-        return topData;
+        return countlyAnalyticsAPI.data && countlyAnalyticsAPI.data[metric];
     };
 }());

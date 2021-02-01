@@ -619,12 +619,12 @@
 						{{#each this.data}}
 							{{#if this.type}}
 								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{this.name}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
+									data-item="{{this.name}} ({{this.count}} visits)" data-percent="{{round this.percent 0}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
 								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{this.name}}" data-percent="{{this.percent}}%">
+									data-item="{{this.name}}" data-percent="{{round this.percent 0}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{/if}}
@@ -2069,12 +2069,12 @@
 						{{#each this.data}}
 							{{#if this.type}}
 								<div class="bar-inner bar-inner-new" style="width:calc(100% - 35px);"
-									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} {{this.unit}})" data-percent="{{this.barPercent}}%">
+									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} {{this.unit}})" data-percent="{{round this.percent 0}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
 								<div class="bar-inner bar-inner-new" style="width:calc(100% - 35px);"
-									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{this.barPercent}}%">
+									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{round this.percent 0}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{/if}}

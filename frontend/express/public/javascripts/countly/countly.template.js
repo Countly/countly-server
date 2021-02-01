@@ -1626,6 +1626,16 @@ var AppRouter = Backbone.Router.extend({
                 return string;
             }
         });
+        /**
+        * Round the number
+        * @name round
+        * @memberof Handlebars
+        * @example
+        * <span>{{round number limit}}</span>
+		*/
+        Handlebars.registerHelper('round', function(number, limit) {
+            return countlyCommon.round(number, limit);
+        });
         Handlebars.registerHelper('include', function(templatename, options) {
             var partial = Handlebars.partials[templatename];
             var context = $.extend({}, this, options.hash);
