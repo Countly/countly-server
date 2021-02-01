@@ -411,7 +411,7 @@ countlyModel.create = function(fetchValue) {
             });
 
             for (var i = topUsers.length - 1; i >= 0; i--) {
-                var percent = countlyCommon.round((topUsers[i][metric] / sum) * 100, 1);
+                var percent = countlyCommon.round((topUsers[i][metric] / sum) * 100, 0);
                 totalPercent += percent;
 
                 barData[i] = {

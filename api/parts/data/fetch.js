@@ -2070,7 +2070,7 @@ function fetchData(params, allMetrics, metric, cb) {
                     });
 
                     for (let k = items.length - 1; k >= 0 ; k--) {
-                        items[k].percent = countlyCommon.round(items[k].t * 100 / total, 1);
+                        items[k].percent = countlyCommon.round(items[k].t * 100 / total, 0);
                         totalPercent += items[k].percent;
                     }
 

@@ -2050,7 +2050,7 @@
             var totalPercent = 0;
 
             for (var i = rangeNames.length - 1; i >= 0; i--) {
-                var percent = countlyCommon.round((rangeTotal[i] / totalSum) * 100, 1);
+                var percent = countlyCommon.round((rangeTotal[i] / totalSum) * 100, 0);
                 totalPercent += percent;
                 barData[i] = { "name": rangeNames[i], "percent": percent };
             }
@@ -2066,7 +2066,7 @@
             }
 
             barData[deltaFixEl].percent += 100 - totalPercent;
-            barData[deltaFixEl].percent = countlyCommon.round(barData[deltaFixEl].percent, 1);
+            barData[deltaFixEl].percent = countlyCommon.round(barData[deltaFixEl].percent, 0);
 
             if (rangeNames.length < maxItems) {
                 maxItems = rangeNames.length;
