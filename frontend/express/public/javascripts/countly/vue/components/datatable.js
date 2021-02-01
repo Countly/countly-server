@@ -759,7 +759,10 @@
                 if (!this.dataSource || !this.dataSource.isExternal) {
                     return;
                 }
-                this.dataSource.fetch(this.controlParams);
+                if (this.dataSource.fetch) {
+                    this.dataSource.fetch(this.controlParams);
+                }
+                this.$emit("params-change", this.controlParams);
             },
             updateControlParams: function(newParams) {
                 _.extend(this.controlParams, newParams);
