@@ -1,6 +1,6 @@
-/* global Vue, jQuery, _, countlyGlobal, CV */
+/* global Vue, _, countlyGlobal, CV, Promise */
 
-(function(countlyVue, $) {
+(function(countlyVue) {
 
 
     var _capitalized = function(prefix, str) {
@@ -218,6 +218,12 @@
 
         //
         actions[_capitalized("fetch", resourceName)] = function(context, actionParams) {
+
+            if (context.state[statusField] !== 'ready') {
+                // There is a pending request.
+                return Promise.resolve();
+            }
+
             var promise = null,
                 requestParams = context.state[paramsField],
                 requestOptions = options.onRequest(context, actionParams);
@@ -229,7 +235,12 @@
                 var legacyOptions = _dataTableAdapters.toLegacyRequest(requestParams, options.columns);
                 legacyOptions.sEcho = context.state[counterField];
                 _.extend(requestOptions.data, legacyOptions);
-                context.commit(_capitalized("set", statusKey), "pending");
+                if (actionParams && actionParams._silent === false) {
+                    context.commit(_capitalized("set", statusKey), "pending");
+                }
+                else {
+                    context.commit(_capitalized("set", statusKey), "silent-pending");
+                }
                 promise = CV.$.ajax(requestOptions, { disableAutoCatch: true });
                 context.commit(_capitalized("increment", counterKey));
             }
@@ -254,7 +265,7 @@
 
         actions[_capitalized("pasteAndFetch", resourceName)] = function(context, remoteParams) {
             context.commit(_capitalized("set", paramsKey), Object.assign({}, remoteParams, {ready: true}));
-            return context.dispatch(_capitalized("fetch", resourceName));
+            return context.dispatch(_capitalized("fetch", resourceName), { _silent: false });
         };
 
         return VuexModule(name, {
@@ -373,4 +384,4 @@
     countlyVue.vuex.MutableTable = MutableTable;
     countlyVue.vuex.ServerDataTable = ServerDataTable;
 
-}(window.countlyVue = window.countlyVue || {}, jQuery));
+}(window.countlyVue = window.countlyVue || {}));

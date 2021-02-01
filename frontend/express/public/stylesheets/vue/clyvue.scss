@@ -2538,6 +2538,14 @@
         }
     }
 
+    .cly-vue-datatable-n {
+        &.silent-loading {
+            .el-loading-spinner {
+                visibility: hidden;
+            }
+        }
+    }
+
     .cly-vue-diff-helper {
         position: fixed;
         z-index: 9999;

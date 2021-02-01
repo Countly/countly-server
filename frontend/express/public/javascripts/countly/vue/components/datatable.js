@@ -889,9 +889,15 @@
                     return false;
                 }
                 return this.dataSource.status !== 'ready';
+            },
+            classes: function() {
+                if (this.dataSource.status === 'silent-pending') {
+                    return ["silent-loading"];
+                }
+                return [];
             }
         },
-        template: '<div v-loading="isLoading">\n' +
+        template: '<div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)" class="cly-vue-datatable-n" :class="classes">\n' +
                         '<div class="cly-eldatatable__table-header">\
                             <slot name="header-left"></slot>\
                             <slot name="header-right"></slot>\
