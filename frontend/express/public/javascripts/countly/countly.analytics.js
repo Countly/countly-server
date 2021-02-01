@@ -32,16 +32,6 @@
     };
 
     countlyAnalyticsAPI.getTop = function(metric) {
-        var topData = countlyAnalyticsAPI.data && countlyAnalyticsAPI.data[metric];
-
-        if (topData) {
-            for (var i = 0; i < topData.length; i++) {
-                if ((topData[i].percent < 1) && topData[i].percent !== 0) {
-                    topData[i].percent = "< 1";
-                }
-            }
-        }
-
-        return topData;
+        return countlyAnalyticsAPI.data && countlyAnalyticsAPI.data[metric];
     };
 }());
