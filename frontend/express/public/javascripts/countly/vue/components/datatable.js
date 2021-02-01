@@ -700,6 +700,11 @@
                         return 0;
                     });
                 }
+                if (this.controlParams.perPage < currentArray.length) {
+                    var startIndex = (this.controlParams.page - 1) * this.controlParams.perPage,
+                        endIndex = startIndex + this.controlParams.perPage;
+                    currentArray = currentArray.slice(startIndex, endIndex);
+                }
                 return {
                     rows: currentArray,
                     totalRows: this.dataSource.rows.length,
@@ -894,6 +899,7 @@
                             {{ paginationInfo }}\
                             <slot name="footer-left"></slot>\
                             <slot name="footer-right"></slot>\
+                            {{ i18n("common.show-items") }} <el-input type="number" v-model.number="controlParams.perPage"></el-input>\
                             <div class="buttons">\n' +
                                 '<span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\n' +
                                 '<span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\n' +

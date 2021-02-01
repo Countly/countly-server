@@ -52,7 +52,10 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
                         return a[field] < b[field] ? -dir : dir;
                     });
                 }
-                let currentPage = currentArray.slice(tableParams.iDisplayStart, tableParams.iDisplayLength);
+                let startIndex = parseInt(tableParams.iDisplayStart, 10),
+                    length = parseInt(tableParams.iDisplayLength, 10);
+
+                let currentPage = currentArray.slice(startIndex, startIndex + length);
                 common.returnOutput(params, {
                     aaData: currentPage,
                     iTotalRecords: mockCollection.length,
