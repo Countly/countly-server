@@ -700,6 +700,7 @@
                         return 0;
                     });
                 }
+                var filteredTotal = currentArray.length;
                 if (this.controlParams.perPage < currentArray.length) {
                     var startIndex = (this.controlParams.page - 1) * this.controlParams.perPage,
                         endIndex = startIndex + this.controlParams.perPage;
@@ -707,9 +708,8 @@
                 }
                 return {
                     rows: currentArray,
-                    totalRows: this.dataSource.rows.length,
-                    notFilteredTotalRows: this.dataSource.rows.length,
-                    ready: true
+                    totalRows: filteredTotal,
+                    notFilteredTotalRows: this.dataSource.rows.length
                 };
             },
             externalDataView: function() {
@@ -865,8 +865,14 @@
                     'header-right': 'header-right',
                     'footer-left': 'footer-left',
                     'footer-right': 'footer-right'
-                }
+                },
+                searchQueryProxy: ''
             };
+        },
+        watch: {
+            searchQueryProxy: function (newValue) {
+                _.extend(this.controlParams, { searchQuery: newValue, page: 1});
+            }
         },
         computed: {
             forwardedSlots: function() {
@@ -879,11 +885,11 @@
                 }, {});
             }
         },
-        template: '<div>\n' +
+        template: '<div v-loading="dataView._locked">\n' +
                         '<div class="cly-eldatatable__table-header">\
                             <slot name="header-left"></slot>\
                             <slot name="header-right"></slot>\
-                            <el-input v-model="controlParams.searchQuery"></el-input>\
+                            <el-input v-model="searchQueryProxy"></el-input>\
                         </div>' +
                         '<el-table\n' +
                             ':data="dataView.rows"\n' +
