@@ -723,9 +723,6 @@
             }
         },
         watch: {
-            publicSearchQuery: function(val) {
-                this.updateControlParams({searchQuery: val});
-            },
             controlParams: {
                 deep: true,
                 immediate: true,
@@ -736,8 +733,7 @@
         },
         data: function() {
             return {
-                controlParams: this.getControlParams(),
-                publicSearchQuery: ''
+                controlParams: this.getControlParams()
             };
         },
         beforeDestroy: function() {
@@ -826,7 +822,7 @@
                         '<div class="cly-eldatatable__table-header">\
                             <slot name="header-left"></slot>\
                             <slot name="header-right"></slot>\
-                            <el-input v-model="publicSearchQuery"></el-input>\
+                            <el-input v-model="controlParams.searchQuery"></el-input>\
                         </div>' +
                         '<el-table\n' +
                             ':data="dataView.rows"\n' +
