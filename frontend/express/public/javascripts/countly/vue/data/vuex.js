@@ -1,4 +1,4 @@
-/* global Vue, jQuery, _, countlyGlobal */
+/* global Vue, jQuery, _, countlyGlobal, CV */
 
 (function(countlyVue, $) {
 
@@ -223,16 +223,14 @@
                 requestOptions = options.onRequest(context, actionParams);
 
             if (!requestParams.ready || !requestOptions) {
-                promise = $.Deferred().resolve();
+                promise = Promise.resolve();
             }
             else {
                 var legacyOptions = _dataTableAdapters.toLegacyRequest(requestParams, options.columns);
                 legacyOptions.sEcho = context.state[counterField];
                 _.extend(requestOptions.data, legacyOptions);
                 context.commit(_capitalized("set", statusKey), "pending");
-                promise = $.when(
-                    $.ajax(requestOptions)
-                );
+                promise = CV.$.ajax(requestOptions, { disableAutoCatch: true });
                 context.commit(_capitalized("increment", counterKey));
             }
             return promise
