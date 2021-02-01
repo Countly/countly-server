@@ -2068,13 +2068,13 @@
 					<div class="bar bar-new">
 						{{#each this.data}}
 							{{#if this.type}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} {{this.unit}})" data-percent="{{this.percent}}%">
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 35px);"
+									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} {{this.unit}})" data-percent="{{this.barPercent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{this.percent}}%">
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 35px);"
+									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{this.barPercent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{/if}}
