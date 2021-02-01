@@ -1041,7 +1041,7 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
     });
 
     for (let i = rangeNames.length - 1; i >= 0; i--) {
-        var percent = countlyCommon.round((rangeTotal[i] / sum) * 100, 0);
+        var percent = countlyCommon.round((rangeTotal[i] / sum) * 100, 1);
         totalPercent += percent;
 
         barData[i] = {
@@ -1975,7 +1975,7 @@ countlyCommon.fixPercentageDelta = function(items, totalPercent) {
     }
 
     items[deltaFixEl].percent += 100 - totalPercent;
-    items[deltaFixEl].percent = countlyCommon.round(items[deltaFixEl].percent, 0);
+    items[deltaFixEl].percent = countlyCommon.round(items[deltaFixEl].percent, 1);
 
     return items;
 };
