@@ -870,7 +870,7 @@
             };
         },
         watch: {
-            searchQueryProxy: function (newValue) {
+            searchQueryProxy: function(newValue) {
                 _.extend(this.controlParams, { searchQuery: newValue, page: 1});
             }
         },
@@ -883,9 +883,15 @@
                     }
                     return slots;
                 }, {});
+            },
+            isLoading: function() {
+                if (!Object.prototype.hasOwnProperty.call(this.dataSource, 'status')) {
+                    return false;
+                }
+                return this.dataSource.status !== 'ready';
             }
         },
-        template: '<div v-loading="dataView._locked">\n' +
+        template: '<div v-loading="isLoading">\n' +
                         '<div class="cly-eldatatable__table-header">\
                             <slot name="header-left"></slot>\
                             <slot name="header-right"></slot>\

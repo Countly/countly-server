@@ -174,7 +174,9 @@
             counterField = "requestCounter",
             echoField = "requestLastEcho",
             paramsField = "params",
+            statusField = "status",
             resourceName = name,
+            statusKey = _capitalized(name, statusField),
             counterKey = _capitalized(name, counterField),
             paramsKey = _capitalized(name, paramsField);
 
@@ -182,6 +184,7 @@
             var stateObj = {};
             stateObj[lastResponseField] = _dataTableAdapters.toStandardResponse();
             stateObj[counterField] = 0;
+            stateObj[statusField] = "ready";
             stateObj[echoField] = 0;
             stateObj[paramsField] = {
                 ready: false
@@ -197,6 +200,7 @@
         //
         mutations[_capitalized("set", resourceName)] = function(_state, newValue) {
             _state[lastResponseField] = newValue;
+            _state[statusField] = "ready";
             _state[echoField] = newValue.echo || 0;
         };
 
@@ -206,6 +210,10 @@
 
         mutations[_capitalized("increment", counterKey)] = function(_state) {
             _state[counterField]++;
+        };
+
+        mutations[_capitalized("set", statusKey)] = function(_state, newValue) {
+            _state[statusField] = newValue;
         };
 
         //
@@ -221,7 +229,7 @@
                 var legacyOptions = _dataTableAdapters.toLegacyRequest(requestParams, options.columns);
                 legacyOptions.sEcho = context.state[counterField];
                 _.extend(requestOptions.data, legacyOptions);
-
+                context.commit(_capitalized("set", statusKey), "pending");
                 promise = $.when(
                     $.ajax(requestOptions)
                 );

@@ -12,6 +12,9 @@
             },
             rTableData: function() {
                 return this.$store.getters["countlyVueExample/tooManyRecords"];
+            },
+            rTableDataStatus: function() {
+                return this.$store.state.countlyVueExample.tooManyRecords.status;
             }
         },
         watch: {
