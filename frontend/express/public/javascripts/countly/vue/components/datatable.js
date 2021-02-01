@@ -720,6 +720,28 @@
                 else {
                     return this.localDataView;
                 }
+            },
+            paginationInfo: function() {
+                var page = this.controlParams.page,
+                    perPage = this.controlParams.perPage,
+                    searchQuery = this.controlParams.searchQuery,
+                    grandTotal = this.dataView.notFilteredTotalRows,
+                    filteredTotal = this.dataView.totalRows,
+                    startEntries = (page - 1) * perPage + 1,
+                    endEntries = Math.min(startEntries + perPage - 1, filteredTotal),
+                    info = this.i18n("common.table.no-data");
+
+                if (filteredTotal > 0) {
+                    info = this.i18n("common.showing")
+                        .replace("_START_", startEntries)
+                        .replace("_END_", endEntries)
+                        .replace("_TOTAL_", filteredTotal);
+                }
+
+                if (searchQuery) {
+                    info += " " + this.i18n("common.filtered").replace("_MAX_", grandTotal);
+                }
+                return info;
             }
         },
         watch: {
@@ -806,7 +828,9 @@
             return {
                 slotMapping: {
                     'header-left': 'header-left',
-                    'header-right': 'header-right'
+                    'header-right': 'header-right',
+                    'footer-left': 'footer-left',
+                    'footer-right': 'footer-right'
                 }
             };
         },
@@ -837,7 +861,11 @@
                                     '<slot :name="name"/>\n' +
                                 '</template>\n' +
                         '</el-table>\n' +
-                        '<div class="cly-eldatatable__table-footer"></div>' +
+                        '<div class="cly-eldatatable__table-footer">\
+                            {{ paginationInfo }}\
+                            <slot name="footer-left"></slot>\
+                            <slot name="footer-right"></slot>\
+                        </div>' +
                     '</div>'
     }));
 
