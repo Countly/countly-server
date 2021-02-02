@@ -1,49 +1,11 @@
-/*global CountlyHelpers, countlyDeviceDetails, countlyAppVersion, countlyCommon, _, jQuery*/
+/*global CountlyHelpers, countlyDeviceDetails, countlyAppVersion, countlyCommon, _, jQuery, countlyOsMapping*/
 (function() {
 
     window.countlyDeviceDetails = window.countlyDeviceDetails || {};
     CountlyHelpers.createMetricModel(window.countlyDeviceDetails, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
 
-    countlyDeviceDetails.os_mapping = {
-        "webos": {short: "webos", name: "Webos"},
-        "brew": {short: "brew", name: "Brew"},
-        "unknown": {short: "unk", name: "Unknown"},
-        "undefined": {short: "unk", name: "Unknown"},
-        "tvos": {short: "atv", name: "Apple TV"},
-        "apple tv": {short: "atv", name: "Apple TV"},
-        "watchos": {short: "wos", name: "Apple Watch"},
-        "unity editor": {short: "uty", name: "Unknown"},
-        "qnx": {short: "qnx", name: "QNX"},
-        "os/2": {short: "os2", name: "OS/2"},
-        "amazon fire tv": {short: "aft", name: "Amazon Fire TV"},
-        "amazon": {short: "amz", name: "Amazon"},
-        "web": {short: "web", name: "Web"},
-        "windows": {short: "mw", name: "Windows"},
-        "microsoft windows": {short: "wmw", name: "Windows"},
-        "open bsd": {short: "ob", name: "Open BSD"},
-        "searchbot": {short: "sb", name: "SearchBot"},
-        "sun os": {short: "so", name: "Sun OS"},
-        "solaris": {short: "so", name: "Sun OS"},
-        "beos": {short: "bo", name: "BeOS"},
-        "mac osx": {short: "o", name: "Mac"},
-        "macos": {short: "o", name: "Mac"},
-        "mac": {short: "o", name: "Mac"},
-        "osx": {short: "o", name: "Mac"},
-        "linux": {short: "l", name: "Linux"},
-        "unix": {short: "u", name: "UNIX"},
-        "ios": {short: "i", name: "iOS"},
-        "android": {short: "a", name: "Android"},
-        "blackberry": {short: "b", name: "BlackBerry"},
-        "windows phone": {short: "w", name: "Windows Phone"},
-        "wp": {short: "w", name: "Windows Phone"},
-        "roku": {short: "r", name: "Roku"},
-        "symbian": {short: "s", name: "Symbian"},
-        "chrome": {short: "c", name: "Chrome OS"},
-        "debian": {short: "d", name: "Debian"},
-        "nokia": {short: "n", name: "Nokia"},
-        "firefox": {short: "f", name: "Firefox OS"},
-        "tizen": {short: "t", name: "Tizen"}
-    };
+    //If you add something to the os mappings, dont forget to add it to the os mappings in the backend
+    countlyDeviceDetails.os_mapping = countlyOsMapping;
 
     countlyDeviceDetails.getCleanVersion = function(version) {
         for (var i in countlyDeviceDetails.os_mapping) {
@@ -205,6 +167,45 @@
         return osName;
     };
 
+    countlyDeviceDetails.eliminateOSVersion = function(data, osSegmentation, segment, fullname) {
+        var oSVersionData = JSON.parse(JSON.stringify(data));
+        var chartData = [];
+        var osName = osSegmentation;
+        if (osSegmentation) {
+            if (countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) {
+                osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
+            }
+            else {
+                osName = osSegmentation.toLowerCase()[0];
+            }
+        }
+
+        if (oSVersionData.chartData) {
+            var regTest = new RegExp("^" + osName + "[0-9]");
+            var reg = new RegExp("^" + osName);
+            for (var i = 0; i < oSVersionData.chartData.length; i++) {
+                var shouldDelete = true;
+                oSVersionData.chartData[i][segment] = oSVersionData.chartData[i][segment].replace(/:/g, ".");
+                if (regTest.test(oSVersionData.chartData[i][segment])) {
+                    shouldDelete = false;
+                    if (!fullname) {
+                        oSVersionData.chartData[i][segment] = oSVersionData.chartData[i][segment].replace(reg, "");
+                    }
+                }
+                else if (countlyDeviceDetails.checkOS && countlyDeviceDetails.checkOS(osSegmentation, oSVersionData.chartData[i][segment], osName)) {
+                    shouldDelete = false;
+                }
+                if (!shouldDelete) {
+                    chartData.push(oSVersionData.chartData[i]);
+                }
+            }
+        }
+
+        oSVersionData.chartData = chartData;
+
+        return oSVersionData;
+    };
+
     countlyDeviceDetails.getOSVersionList = function(name) {
         var codes = {};
         var lowerCase = name.toLowerCase();
@@ -221,6 +222,36 @@
 
         }
         return Object.keys(codes);
+    };
+
+    countlyDeviceDetails.fixBarSegmentData = function(segment, rangeData) {
+        var i;
+        if (segment === "os_versions") {
+            var _os = countlyDeviceDetails.getPlatforms();
+            var newRangeData = {chartData: []};
+            for (i = 0; i < _os.length; i++) {
+                var osSegmentation = _os[i];
+                //Important to note here that segment parameter is passed as "range" because its extracted under name range from extractTwoLevelData
+                var fixedRangeData = countlyDeviceDetails.eliminateOSVersion(rangeData, osSegmentation, "range", true);
+                newRangeData.chartData = [].concat.apply([], [newRangeData.chartData, fixedRangeData.chartData]);
+            }
+
+            rangeData = newRangeData.chartData.length ? newRangeData : rangeData;
+        }
+
+        if (segment === "os") {
+            var chartData = rangeData.chartData;
+            for (i = 0; i < chartData.length; i++) {
+                if (countlyDeviceDetails.os_mapping[chartData[i].range.toLowerCase()]) {
+                    chartData[i].os = countlyDeviceDetails.os_mapping[chartData[i].range.toLowerCase()].name;
+                }
+            }
+
+            chartData = countlyCommon.mergeMetricsByName(chartData, "os");
+            rangeData.chartData = chartData;
+        }
+
+        return rangeData;
     };
 
 }());

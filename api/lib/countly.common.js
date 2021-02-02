@@ -990,6 +990,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 * @param {number} maxItems - amount of items to return, default 3
 * @param {string=} metric - metric to output and use in sorting, default "t"
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
+* @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
 * @returns {array} array with top 3 values
 * @example <caption>Return data</caption>
 * [
@@ -998,7 +999,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 *    {"name":"Windows Phone","percent":32}
 * ]
 */
-countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj) {
+countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj, fixBarSegmentData) {
     metric = metric || "t";
     maxItems = maxItems || 3;
     fetchFunction = fetchFunction || function(rangeArr) {
@@ -1020,6 +1021,11 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         dataProps.push({name: "u"});
     }
     var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj);
+
+    if (fixBarSegmentData) {
+        rangeData = fixBarSegmentData(rangeData);
+    }
+
     rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
     rangeData.chartData = underscore.sortBy(rangeData.chartData, function(obj) {
         return -obj[metric];
@@ -1030,21 +1036,13 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         sum = 0,
         totalPercent = 0;
 
-    if (rangeNames.length < maxItems) {
-        maxItems = rangeNames.length;
-    }
+    rangeTotal.forEach(function(r) {
+        sum += r;
+    });
 
-    for (let i = 0; i < maxItems; i++) {
-        sum += rangeTotal[i];
-    }
-
-    for (let i = maxItems - 1; i >= 0; i--) {
-        var percent = Math.floor((rangeTotal[i] / sum) * 100);
+    for (let i = rangeNames.length - 1; i >= 0; i--) {
+        var percent = countlyCommon.round((rangeTotal[i] / sum) * 100, 1);
         totalPercent += percent;
-
-        if (i === 0) {
-            percent += 100 - totalPercent;
-        }
 
         barData[i] = {
             "name": rangeNames[i],
@@ -1052,6 +1050,14 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
             "percent": percent
         };
     }
+
+    barData = countlyCommon.fixPercentageDelta(barData, totalPercent);
+
+    if (rangeNames.length < maxItems) {
+        maxItems = rangeNames.length;
+    }
+
+    barData = barData.slice(0, maxItems);
 
     return underscore.sortBy(barData, function(obj) {
         return -obj.value;
@@ -1934,6 +1940,48 @@ countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
 countlyCommon.validateEmail = function(email) {
     var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
     return re.test(email);
+};
+
+/**
+* Round to provided number of digits
+* @memberof countlyCommon
+* @param {number} num - number to round
+* @param {number} digits - amount of digits to round to
+* @returns {number} rounded number
+* @example
+* //outputs 1.235
+* countlyCommon.round(1.2345, 3);
+*/
+countlyCommon.round = function(num, digits) {
+    digits = Math.pow(10, digits || 0);
+    return Math.round(num * digits) / digits;
+};
+
+/**
+ * Function to fix percentage difference
+ * @param  {Array} items - All items
+ * @param  {Number} totalPercent - Total percentage so far
+ * @returns {Array} items
+ */
+countlyCommon.fixPercentageDelta = function(items, totalPercent) {
+    if (!items.length) {
+        return items;
+    }
+
+    var deltaFixEl = 0;
+    if (totalPercent < 100) {
+        //Add the missing delta to the first value
+        deltaFixEl = 0;
+    }
+    else if (totalPercent > 100) {
+        //Subtract the extra delta from the last value
+        deltaFixEl = items.length - 1;
+    }
+
+    items[deltaFixEl].percent += 100 - totalPercent;
+    items[deltaFixEl].percent = countlyCommon.round(items[deltaFixEl].percent, 1);
+
+    return items;
 };
 
 module.exports = countlyCommon;

@@ -8,7 +8,7 @@ var exported = {},
         common.dbUserMap.browser = 'brw';
     });
     plugins.register("/o/method/total_users", function(ob) {
-        ob.shortcodesForMetrics.browsers = "brw";
+        ob.shortcodesForMetrics.browser = "brw";
     });
     plugins.register("/session/metrics", function(ob) {
         var predefinedMetrics = ob.predefinedMetrics;

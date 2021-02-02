@@ -619,7 +619,7 @@ fetch.fetchAllApps = function(params) {
 * @param {string} collection - collection name
 * @param {function} callback - callback function
 **/
-function getTopThree(params, collection, callback) {
+function getDataforTops(params, collection, callback) {
     var periodObj = countlyCommon.getPeriodObj(params);
     var pipeline = [];
 
@@ -702,31 +702,10 @@ function getTopThree(params, collection, callback) {
         pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
     }
     pipeline.push({$sort: {"t": -1}}); //sort values
-    pipeline.push({$limit: 3}); //limit count
+    // pipeline.push({$limit: 3}); //limit count
 
     common.db.collection(collection).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
-        var items = [];
-        if (res) {
-            items = res;
-            var total = 0;
-            for (let k = 0; k < items.length; k++) {
-                items[k].percent = items[k].t;
-                items[k].value = items[k].t;
-                items[k].name = items[k]._id;
-                total = total + items[k].value;
-            }
-            var totalPercent = 0;
-            for (let k = items.length - 1; k >= 0; k--) {
-                if (k !== 0) {
-                    items[k].percent = Math.floor(items[k].percent * 100 / total);
-                    totalPercent += items[k].percent;
-                }
-                else {
-                    items[k].percent = 100 - totalPercent;
-                }
-            }
-        }
-        callback(items);
+        callback(res || []);
     });
 }
 
@@ -736,48 +715,12 @@ function getTopThree(params, collection, callback) {
 **/
 fetch.fetchTop = function(params) {
     var obj = {};
-    var Allmetrics = usage.getPredefinedMetrics(params, obj);
-    var countInCol = 1;
+    var allMetrics = usage.getPredefinedMetrics(params, obj);
     if (params.qstring.metric) {
         let metric = params.qstring.metric;
-        const metrics = fetch.metricToCollection(params.qstring.metric);
-        if (metrics[0]) {
-            for (let i = 0; i < Allmetrics.length; i++) {
-                if (Allmetrics[i].db === metrics[0]) {
-                    countInCol = Allmetrics[i].metrics.length;
-                    break;
-                }
-            }
-            var model;
-            if (metrics[2] && typeof metrics[2] === "object") {
-                model = metrics[2];
-            }
-            else if (typeof metrics[2] === "string" && metrics[2].length) {
-                model = countlyModel.load(metrics[2]);
-            }
-            else {
-                model = countlyModel.load(metrics[0]);
-            }
-            //collection metric model
-            if (metrics[0] === metric && countInCol === 1) {
-                getTopThree(params, metrics[0], function(items) {
-                    for (var k = 0; k < items.length; k++) {
-                        items[k].name = model.fetchValue(items[k].name);
-                    }
-                    common.returnOutput(params, items);
-                });
-            }
-            else {
-                fetchTimeObj(metrics[0], params, false, function(data) {
-                    countlyCommon.setTimezone(params.appTimezone);
-                    model.setDb(data || {});
-                    common.returnOutput(params, model.getBars(metrics[1] || metrics[0]));
-                });
-            }
-        }
-        else {
-            common.returnOutput(params, []);
-        }
+        fetchData(params, allMetrics, metric, function(res) {
+            common.returnOutput(params, res);
+        });
     }
     else if (params.qstring.metrics) {
         if (typeof params.qstring.metrics === "string") {
@@ -792,47 +735,10 @@ fetch.fetchTop = function(params) {
         if (params.qstring.metrics.length) {
             var data = {};
             async.each(params.qstring.metrics, function(metric, done) {
-                var metrics = fetch.metricToCollection(metric);
-                if (metrics[0]) {
-
-                    for (let i = 0; i < Allmetrics.length; i++) {
-                        if (Allmetrics[i].db === metrics[0]) {
-                            countInCol = Allmetrics[i].metrics.length;
-                            break;
-                        }
-                    }
-
-                    var model2;
-                    if (metrics[2] && typeof metrics[2] === "object") {
-                        model2 = metrics[2];
-                    }
-                    else if (typeof metrics[2] === "string" && metrics[2].length) {
-                        model2 = countlyModel.load(metrics[2]);
-                    }
-                    else {
-                        model2 = countlyModel.load(metrics[0]);
-                    }
-                    if (metrics[0] === metric && countInCol === 1) {
-                        getTopThree(params, metrics[0], function(items) {
-                            for (var k = 0; k < items.length; k++) {
-                                items[k].name = model2.fetchValue(items[k].name);
-                            }
-                            data[metric] = items;
-                            done();
-                        });
-                    }
-                    else {
-                        fetchTimeObj(metrics[0], params, false, function(db) {
-                            countlyCommon.setTimezone(params.appTimezone);
-                            model2.setDb(db || {});
-                            data[metric] = model2.getBars(metrics[1] || metrics[0]);
-                            done();
-                        });
-                    }
-                }
-                else {
+                fetchData(params, allMetrics, metric, function(res) {
+                    data[metric] = res;
                     done();
-                }
+                });
             }, function() {
                 common.returnOutput(params, data);
             });
@@ -2115,5 +2021,89 @@ fetch.jobDetails = async function(metric, params) {
     cursor.close();
     common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || []});
 };
+
+/**
+ * Fetch data for tops
+ * @param {params} params - params object
+ * @param  {Array} allMetrics - All metrics array
+ * @param  {String} metric - metric to fetch data for
+ * @param  {Function} cb - callback function
+ */
+function fetchData(params, allMetrics, metric, cb) {
+    var metrics = fetch.metricToCollection(metric);
+    var countInCol = 1;
+    if (metrics[0]) {
+        for (let i = 0; i < allMetrics.length; i++) {
+            if (allMetrics[i].db === metrics[0]) {
+                countInCol = allMetrics[i].metrics.length;
+                break;
+            }
+        }
+
+        var model;
+        if (metrics[2] && typeof metrics[2] === "object") {
+            model = metrics[2];
+        }
+        else if (typeof metrics[2] === "string" && metrics[2].length) {
+            model = countlyModel.load(metrics[2]);
+        }
+        else {
+            model = countlyModel.load(metrics[0]);
+        }
+        if (metrics[0] === metric && countInCol === 1) {
+            getDataforTops(params, metrics[0], function(items) {
+                items = items || [];
+                if (items) {
+                    if (model.fixBarSegmentData) {
+                        items = model.fixBarSegmentData(metrics[1], params, items);
+                    }
+
+                    var total = 0, totalPercent = 0;
+                    for (let k = 0; k < items.length; k++) {
+                        items[k].value = items[k].t;
+                        items[k].name = items[k]._id;
+                        total = total + items[k].value;
+                    }
+
+                    items = _.sortBy(items, function(obj) {
+                        return -obj.value;
+                    });
+
+                    for (let k = items.length - 1; k >= 0 ; k--) {
+                        items[k].percent = countlyCommon.round(items[k].t * 100 / total, 1);
+                        totalPercent += items[k].percent;
+                    }
+
+                    items = countlyCommon.fixPercentageDelta(items, totalPercent);
+
+                    for (let k = 0; k < items.length; k++) {
+                        items[k].name = model.fetchValue(items[k].name);
+                    }
+
+                    items = items.slice(0, 3);
+                }
+
+                cb(items);
+            });
+        }
+        else {
+            fetchTimeObj(metrics[0], params, false, function(db) {
+                fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
+                    model.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, null, true));
+                    var sgMetric = "t";
+                    if (metrics[1] === "os" || metrics[1] === "browser") {
+                        sgMetric = "u";
+                    }
+                    countlyCommon.setTimezone(params.appTimezone);
+                    model.setDb(db || {});
+                    cb(model.getBars(metrics[1] || metrics[0], 3, sgMetric));
+                });
+            });
+        }
+    }
+    else {
+        cb([]);
+    }
+}
 
 module.exports = fetch;

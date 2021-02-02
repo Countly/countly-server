@@ -1947,6 +1947,9 @@
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+        * @param {String} metric - name of the metric to use ordering and returning
+        * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
+        * @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -1955,7 +1958,7 @@
         *    {"name":"Windows Phone","percent":32}
         * ]
         */
-        countlyCommon.extractBarDataWPercentageOfTotal = function(db, rangeArray, clearFunction, fetchFunction) {
+        countlyCommon.extractBarDataWPercentageOfTotal = function(db, rangeArray, clearFunction, fetchFunction, metric, estOverrideMetric, fixBarSegmentData) {
             fetchFunction = fetchFunction || function(rangeArr) {
                 return rangeArr;
             };
@@ -1965,9 +1968,14 @@
                     name: "range",
                     func: fetchFunction
                 },
-                { "name": "t" }
-            ]);
-            return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
+                { "name": metric }
+            ], estOverrideMetric);
+
+            if (fixBarSegmentData) {
+                rangeData = fixBarSegmentData(rangeData);
+            }
+
+            return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, metric);
         };
 
         /**
@@ -2004,6 +2012,7 @@
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData with their percentage of total
         * @memberof countlyCommon
         * @param {object} rangeData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
+        * @param {String} metric - name of the metric to use ordering and returning
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -2012,14 +2021,14 @@
         *    {"name":"Windows Phone","percent":14}
         * ]
         */
-        countlyCommon.calculateBarDataWPercentageOfTotal = function(rangeData) {
+        countlyCommon.calculateBarDataWPercentageOfTotal = function(rangeData, metric) {
             rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
             rangeData.chartData = _.sortBy(rangeData.chartData, function(obj) {
-                return -obj.t;
+                return -obj[metric];
             });
 
             var rangeNames = _.pluck(rangeData.chartData, 'range'),
-                rangeTotal = _.pluck(rangeData.chartData, 't'),
+                rangeTotal = _.pluck(rangeData.chartData, metric),
                 barData = [],
                 maxItems = 3,
                 totalSum = 0;
@@ -2038,24 +2047,32 @@
                 return 0;
             });
 
+            var totalPercent = 0;
+
+            for (var i = rangeNames.length - 1; i >= 0; i--) {
+                var percent = countlyCommon.round((rangeTotal[i] / totalSum) * 100, 1);
+                totalPercent += percent;
+                barData[i] = { "name": rangeNames[i], "percent": percent };
+            }
+
+            var deltaFixEl = 0;
+            if (totalPercent < 100) {
+                //Add the missing delta to the first value
+                deltaFixEl = 0;
+            }
+            else if (totalPercent > 100) {
+                //Subtract the extra delta from the last value
+                deltaFixEl = barData.length - 1;
+            }
+
+            barData[deltaFixEl].percent += 100 - totalPercent;
+            barData[deltaFixEl].percent = countlyCommon.round(barData[deltaFixEl].percent, 1);
+
             if (rangeNames.length < maxItems) {
                 maxItems = rangeNames.length;
             }
 
-            var totalPercent = 0;
-
-            for (var i = maxItems - 1; i >= 0; i--) {
-                var percent = Math.floor((rangeTotal[i] / totalSum) * 100);
-                totalPercent += percent;
-
-                if (i === 0) {
-                    percent += 100 - totalPercent;
-                }
-
-                barData[i] = { "name": rangeNames[i], "percent": percent };
-            }
-
-            return barData;
+            return barData.slice(0, maxItems);
         };
 
 

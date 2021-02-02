@@ -23,7 +23,7 @@ window.SourcesView = countlyView.extend({
             "font-logo-class": "fa-crosshairs",
             "graph-type-double-pie": true,
             "pie-titles": {
-                "left": jQuery.i18n.map["common.total-users"],
+                "left": jQuery.i18n.map["common.total-sessions"],
                 "right": jQuery.i18n.map["common.new-users"]
             },
             "chart-helper": "sources.chart"
