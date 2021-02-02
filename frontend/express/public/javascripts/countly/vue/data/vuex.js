@@ -196,6 +196,9 @@
         getters[name] = function(_state) {
             return _state[lastResponseField];
         };
+        getters[statusKey] = function(_state) {
+            return _state[statusField];
+        };
 
         //
         mutations[_capitalized("set", resourceName)] = function(_state, newValue) {
@@ -380,8 +383,25 @@
         });
     };
 
+    var getServerDataSource = function(storeInstance, path, resourceName) {
+        var statusPath = path + _capitalized(resourceName, statusField),
+            actionPath = path + _capitalized("pasteAndFetch", resourceName),
+            resourcePath = path + resourceName;
+
+        return function () {
+            return {
+                fetch: function (params) {
+                    return storeInstance.dispatch(actionPath, params);
+                },
+                status: storeInstance.getters[statusPath],
+                data: storeInstance.getters[resourcePath]
+            }
+        }
+    }
+
     countlyVue.vuex.Module = VuexModule;
     countlyVue.vuex.MutableTable = MutableTable;
     countlyVue.vuex.ServerDataTable = ServerDataTable;
+    countlyVue.vuex.getServerDataSource = getServerDataSource;
 
 }(window.countlyVue = window.countlyVue || {}));

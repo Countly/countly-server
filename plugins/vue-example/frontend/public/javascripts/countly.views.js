@@ -11,7 +11,7 @@
                 return this.$store.getters["countlyVueExample/tooManyRecords"];
             },
             rTableDataStatus: function() {
-                return this.$store.state.countlyVueExample.tooManyRecords.status;
+                return this.$store.getters["countlyVueExample/tooManyRecordsStatus"];
             }
         },
         watch: {
@@ -32,6 +32,8 @@
                 manyItems.push({name: "Type " + i, value: i});
             }
             return {
+                localTableTrackedFields: ['status'],
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),
                 dropdownsDisabled: false,
                 autoCommitDisabled: false,
                 allOptionsTabHidden: false,

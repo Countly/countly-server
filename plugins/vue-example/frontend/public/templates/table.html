@@ -12,7 +12,7 @@
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
                         <cly-datatable-n 
-                            :tracked-fields="['status']"
+                            :tracked-fields="localTableTrackedFields"
                             :rows="tableRows">
                             <template v-slot="scope">
                                 <el-table-column type="expand">
