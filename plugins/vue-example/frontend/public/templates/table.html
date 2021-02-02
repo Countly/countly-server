@@ -26,7 +26,7 @@
                                     <template v-slot="rowScope">
                                         <el-switch 
                                             :value="rowScope.row.status" 
-                                            @input="scope.patchRow(rowScope.row, {status: !rowScope.row.status})">
+                                            @input="scope.patch(rowScope.row, {status: !rowScope.row.status})">
                                         </el-switch>
                                     </template>
                                 </el-table-column>
@@ -49,7 +49,7 @@
                             </template>
                             <template v-slot:mutations="scope">
                                 <pre>{{scope.diff}}</pre>
-                                <cly-diff-helper :diff="scope.diff">
+                                <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
                                 </cly-diff-helper>
                             </template>
                         </cly-datatable-n>

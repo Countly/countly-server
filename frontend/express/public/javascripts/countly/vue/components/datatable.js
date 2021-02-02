@@ -873,13 +873,13 @@
                 }
                 return JSON.stringify(this.keyFn(row));
             },
-            patchRow: function(row, fields) {
+            patch: function(row, fields) {
                 var rowKey = this.keyOf(row);
                 var currentPatch = Object.assign({}, this.patches[rowKey], fields);
 
                 Vue.set(this.patches, rowKey, currentPatch);
             },
-            unpatchRow: function(row, fields) {
+            unpatch: function(row, fields) {
                 var self = this;
 
                 var rowKeys = null;
@@ -1010,8 +1010,8 @@
             commonScope: function() {
                 return {
                     diff: this.diff,
-                    patchRow: this.patchRow,
-                    unpatchRow: this.unpatchRow
+                    patch: this.patch,
+                    unpatch: this.unpatch
                 }
             }
         },
