@@ -11,9 +11,7 @@
                         <pre>{{tableRows}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable-n 
-                            :tracked-fields="localTableTrackedFields"
-                            :rows="tableRows">
+                        <cly-datatable-n :tracked-fields="localTableTrackedFields" :rows="tableRows">
                             <template v-slot="scope">
                                 <el-table-column type="expand">
                                   <template v-slot="props">
@@ -47,7 +45,7 @@
                                     label="Description">
                                 </el-table-column>
                             </template>
-                            <template v-slot:mutations="scope">
+                            <template v-slot:bottomline="scope">
                                 <pre>{{scope.diff}}</pre>
                                 <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
                                 </cly-diff-helper>
@@ -64,8 +62,7 @@
                         <pre>{{rTableData}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable-n
-                            :data-source="remoteTableDataSource">
+                        <cly-datatable-n :data-source="remoteTableDataSource">
                             <template v-slot>
                                 <el-table-column
                                     sortable="custom"

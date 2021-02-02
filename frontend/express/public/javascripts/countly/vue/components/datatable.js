@@ -721,12 +721,9 @@
                     notFilteredTotalRows: this.rows.length
                 };
             },
-            externalDataView: function() {
-                return this.externalData;
-            },
             dataView: function() {
                 if (this.dataSource) {
-                    return this.externalDataView;
+                    return this.externalData;
                 }
                 else {
                     return this.localDataView;
@@ -1064,7 +1061,7 @@
                                 '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
                             '</div>\
                         </div>\n' +
-                        '<slot name="mutations" v-bind="commonScope"></slot>\n' +
+                        '<slot name="bottomline" v-bind="commonScope"></slot>\n' +
                     '</div>'
     }));
 
