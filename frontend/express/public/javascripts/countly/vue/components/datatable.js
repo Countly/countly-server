@@ -680,7 +680,7 @@
             }
         },
         computed: {
-            localDataView: function() {
+            localSearchedRows: function () {
                 var currentArray = this.rows.slice();
                 if (this.controlParams.searchQuery) {
                     var queryLc = this.controlParams.searchQuery.toLowerCase();
@@ -690,10 +690,15 @@
                         });
                     });
                 }
+                return currentArray;
+            },
+            localDataView: function() {
+                var currentArray = this.localSearchedRows;
                 if (this.controlParams.sort.length > 0) {
                     var sorting = this.controlParams.sort[0],
                         dir = sorting.type === "asc" ? 1 : -1;
 
+                    currentArray = currentArray.slice();
                     currentArray.sort(function(a, b) {
                         if (a[sorting.field] < b[sorting.field]) {
                             return -dir;
