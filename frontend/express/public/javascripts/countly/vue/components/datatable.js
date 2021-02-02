@@ -669,15 +669,19 @@
             dataSource: {
                 type: Object,
                 default: function() {
-                    return {
-                        rows: []
-                    };
+                    return null;
+                }
+            },
+            rows: {
+                type: Array,
+                default: function() {
+                    return [];
                 }
             }
         },
         computed: {
             localDataView: function() {
-                var currentArray = this.dataSource.rows.slice();
+                var currentArray = this.rows.slice();
                 if (this.controlParams.searchQuery) {
                     var queryLc = this.controlParams.searchQuery.toLowerCase();
                     currentArray = currentArray.filter(function(item) {
@@ -709,17 +713,14 @@
                 return {
                     rows: currentArray,
                     totalRows: filteredTotal,
-                    notFilteredTotalRows: this.dataSource.rows.length
+                    notFilteredTotalRows: this.rows.length
                 };
             },
             externalDataView: function() {
                 return this.dataSource.data;
             },
             dataView: function() {
-                if (!this.dataSource) {
-                    return {};
-                }
-                if (this.dataSource.isExternal) {
+                if (this.dataSource) {
                     return this.externalDataView;
                 }
                 else {
@@ -812,7 +813,7 @@
                 }
             },
             triggerExternalSource: function() {
-                if (!this.dataSource || !this.dataSource.isExternal) {
+                if (!this.dataSource) {
                     return;
                 }
                 if (this.dataSource.fetch) {
@@ -993,13 +994,13 @@
                 }, {});
             },
             isLoading: function() {
-                if (!Object.prototype.hasOwnProperty.call(this.dataSource, 'status')) {
+                if (!this.dataSource || !Object.prototype.hasOwnProperty.call(this.dataSource, 'status')) {
                     return false;
                 }
                 return this.dataSource.status !== 'ready';
             },
             classes: function() {
-                if (this.dataSource.status === 'silent-pending') {
+                if (this.dataSource && this.dataSource.status === 'silent-pending') {
                     return ["silent-loading"];
                 }
                 return [];
