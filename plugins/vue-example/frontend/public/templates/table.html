@@ -24,7 +24,10 @@
                                     label="Status"
                                     width="200">
                                     <template v-slot="rowScope">
-                                        <el-switch :value="rowScope.row.status" @input="scope.patchRow(rowScope.row, {status: !rowScope.row.status})"></el-switch>
+                                        <el-switch 
+                                            :value="rowScope.row.status" 
+                                            @input="scope.patchRow(rowScope.row, {status: !rowScope.row.status})">
+                                        </el-switch>
                                     </template>
                                 </el-table-column>
                                 <el-table-column
