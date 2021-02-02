@@ -65,7 +65,7 @@
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
                         <cly-datatable-n
-                            :data-source="{data: rTableData, isExternal: true, fetch: updateRemoteParams, status: rTableDataStatus}">
+                            :data-source="remoteTableDataSource">
                             <template v-slot>
                                 <el-table-column
                                     sortable="custom"

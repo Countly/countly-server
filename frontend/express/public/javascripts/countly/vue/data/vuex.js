@@ -384,20 +384,26 @@
     };
 
     var getServerDataSource = function(storeInstance, path, resourceName) {
-        var statusPath = path + _capitalized(resourceName, statusField),
-            actionPath = path + _capitalized("pasteAndFetch", resourceName),
-            resourcePath = path + resourceName;
+        var statusPath = path + "/" + _capitalized(resourceName, 'status'),
+            actionPath = path + "/" + _capitalized("pasteAndFetch", resourceName),
+            resourcePath = path + "/" + resourceName;
 
-        return function () {
-            return {
-                fetch: function (params) {
-                    return storeInstance.dispatch(actionPath, params);
-                },
-                status: storeInstance.getters[statusPath],
-                data: storeInstance.getters[resourcePath]
+        return {
+            fetch: function(params) {
+                return storeInstance.dispatch(actionPath, params);
+            },
+            statusAddress: {
+                type: 'vuex-getter',
+                store: storeInstance,
+                path: statusPath
+            },
+            dataAddress: {
+                type: 'vuex-getter',
+                store: storeInstance,
+                path: resourcePath
             }
-        }
-    }
+        };
+    };
 
     countlyVue.vuex.Module = VuexModule;
     countlyVue.vuex.MutableTable = MutableTable;

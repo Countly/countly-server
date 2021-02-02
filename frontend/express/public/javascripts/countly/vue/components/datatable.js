@@ -680,7 +680,7 @@
             }
         },
         computed: {
-            localSearchedRows: function () {
+            localSearchedRows: function() {
                 var currentArray = this.rows.slice();
                 if (this.controlParams.searchQuery) {
                     var queryLc = this.controlParams.searchQuery.toLowerCase();
@@ -722,7 +722,7 @@
                 };
             },
             externalDataView: function() {
-                return this.dataSource.data;
+                return this.externalData;
             },
             dataView: function() {
                 if (this.dataSource) {
@@ -765,6 +765,20 @@
                     info += " " + this.i18n("common.filtered").replace("_MAX_", grandTotal);
                 }
                 return info;
+            },
+            externalData: function() {
+                if (!this.dataSource) {
+                    return [];
+                }
+                var addr = this.dataSource.dataAddress;
+                return addr.store.getters[addr.path];
+            },
+            externalStatus: function() {
+                if (!this.dataSource) {
+                    return undefined;
+                }
+                var addr = this.dataSource.statusAddress;
+                return addr.store.getters[addr.path];
             }
         },
         watch: {
@@ -999,13 +1013,13 @@
                 }, {});
             },
             isLoading: function() {
-                if (!this.dataSource || !Object.prototype.hasOwnProperty.call(this.dataSource, 'status')) {
+                if (!this.dataSource) {
                     return false;
                 }
-                return this.dataSource.status !== 'ready';
+                return this.externalStatus !== 'ready';
             },
             classes: function() {
-                if (this.dataSource && this.dataSource.status === 'silent-pending') {
+                if (this.dataSource && this.externalStatus === 'silent-pending') {
                     return ["silent-loading"];
                 }
                 return [];
@@ -1018,7 +1032,7 @@
                     diff: this.diff,
                     patch: this.patch,
                     unpatch: this.unpatch
-                }
+                };
             }
         },
         template: '<div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)" class="cly-vue-datatable-n" :class="classes">\n' +
