@@ -5,10 +5,7 @@
         template: '#vue-example-table-template',
         computed: {
             tableRows: function() {
-                return this.$store.getters["countlyVueExample/table/rows"];
-            },
-            tableDiff: function() {
-                return this.$store.getters["countlyVueExample/table/diff"];
+                return this.$store.getters["countlyVueExample/myRecords/all"];
             },
             rTableData: function() {
                 return this.$store.getters["countlyVueExample/tooManyRecords"];
@@ -124,18 +121,6 @@
             };
         },
         methods: {
-            updateStatusInfo: function() {
-                var newStatusInfo = this.tableDiff.map(function(item) {
-                    return {
-                        _id: item.key,
-                        status: item.newValue
-                    };
-                });
-                this.$store.dispatch("countlyVueExample/myRecords/status", newStatusInfo);
-            },
-            unpatchStatusChanges: function() {
-                this.$store.commit("countlyVueExample/table/unpatch", {fields: ["status"]});
-            },
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
                 this.$store.dispatch("countlyVueExample/fetchTooManyRecords");
@@ -151,25 +136,6 @@
             },
             updateRemoteParams: function(remoteParams) {
                 this.$store.dispatch("countlyVueExample/pasteAndFetchTooManyRecords", remoteParams);
-            },
-            setRowData: function(row, fields) {
-                this.$store.commit("countlyVueExample/table/patch", {row: row, fields: fields});
-            },
-            onDelayedDelete: function(row) {
-                var self = this;
-                this.$store.commit("countlyVueExample/table/patch", {
-                    row: row,
-                    fields: {
-                        _delayedDelete: new countlyVue.helpers.DelayedAction(
-                            function() {
-                                self.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
-                            },
-                            function() {
-                                self.$store.commit("countlyVueExample/table/unpatch", {row: row, fields: ["_delayedDelete"]});
-                            })
-                    }
-                }
-                );
             },
             onDelete: function(row) {
                 this.$store.dispatch("countlyVueExample/myRecords/remove", row._id);

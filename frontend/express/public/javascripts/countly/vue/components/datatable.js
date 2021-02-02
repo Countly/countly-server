@@ -851,20 +851,128 @@
             }
         }
     };
+
+    var MutationTrackerMixin = {
+        data: function() {
+            return {
+                patches: {}
+            };
+        },
+        props: {
+            trackedFields: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
+        methods: {
+            keyOf: function(row, dontStringify) {
+                if (dontStringify) {
+                    return this.keyFn(row);
+                }
+                return JSON.stringify(this.keyFn(row));
+            },
+            patchRow: function(row, fields) {
+                var rowKey = this.keyOf(row);
+                var currentPatch = Object.assign({}, this.patches[rowKey], fields);
+
+                Vue.set(this.patches, rowKey, currentPatch);
+            },
+            unpatchRow: function(row, fields) {
+                var self = this;
+
+                var rowKeys = null;
+                if (!row) {
+                    rowKeys = Object.keys(this.patches);
+                }
+                else {
+                    rowKeys = [this.keyOf(row)];
+                }
+
+                rowKeys.forEach(function(rowKey) {
+                    if (!self.patches[rowKey]) {
+                        return;
+                    }
+
+                    if (!fields) {
+                        Vue.delete(self.patches, rowKey);
+                    }
+                    else {
+                        fields.forEach(function(fieldName) {
+                            Vue.delete(self.patches[rowKey], fieldName);
+                        });
+                        if (Object.keys(self.patches[rowKey]).length === 0) {
+                            Vue.delete(self.patches, rowKey);
+                        }
+                    }
+                });
+
+            }
+        },
+        computed: {
+            diff: function() {
+                if (this.trackedFields.length === 0 || Object.keys(this.patches).length === 0) {
+                    return [];
+                }
+                var diff = [],
+                    self = this;
+                this.sourceRows.forEach(function(row) {
+                    var rowKey = self.keyOf(row);
+                    if (self.patches[rowKey]) {
+                        var originalKey = self.keyOf(row, true);
+                        self.trackedFields.forEach(function(fieldName) {
+                            if (Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldName) && row[fieldName] !== self.patches[rowKey][fieldName]) {
+                                diff.push({
+                                    key: originalKey,
+                                    field: fieldName,
+                                    newValue: self.patches[rowKey][fieldName],
+                                    oldValue: row[fieldName]
+                                });
+                            }
+                        });
+                    }
+                });
+                return diff;
+            },
+            mutatedRows: function() {
+                if (Object.keys(this.patches).length === 0) {
+                    return this.sourceRows;
+                }
+                var self = this;
+                return self.sourceRows.map(function(row) {
+                    var rowKey = self.keyOf(row);
+                    if (self.patches[rowKey]) {
+                        return Object.assign({}, row, self.patches[rowKey]);
+                    }
+                    return row;
+                });
+            }
+        }
+    };
     //
 
     Vue.component("cly-datatable-n", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n,
-            TabularDataManagerMixin
+            TabularDataManagerMixin,
+            MutationTrackerMixin
         ],
+        props: {
+            keyFn: {
+                type: Function,
+                default: function(row) {
+                    return row._id;
+                }
+            },
+        },
         data: function() {
             return {
                 slotMapping: {
                     'header-left': 'header-left',
                     'header-right': 'header-right',
                     'footer-left': 'footer-left',
-                    'footer-right': 'footer-right'
+                    'footer-right': 'footer-right',
                 },
                 searchQueryProxy: ''
             };
@@ -895,6 +1003,9 @@
                     return ["silent-loading"];
                 }
                 return [];
+            },
+            sourceRows: function() {
+                return this.dataView.rows;
             }
         },
         template: '<div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)" class="cly-vue-datatable-n" :class="classes">\n' +
@@ -904,13 +1015,14 @@
                             <el-input v-model="searchQueryProxy"></el-input>\
                         </div>' +
                         '<el-table\n' +
-                            ':data="dataView.rows"\n' +
+                            ':row-key="keyFn"\n' +
+                            ':data="mutatedRows"\n' +
                             'v-bind="$attrs"\n' +
                             'v-on="$listeners"\n' +
                             '@sort-change="onSortChange"\n' +
                             'ref="table">\n' +
                                 '<template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\n' +
-                                    '<slot :name="name"/>\n' +
+                                    '<slot :name="name" :patchRow="patchRow"/>\n' +
                                 '</template>\n' +
                         '</el-table>\n' +
                         '<div class="cly-eldatatable__table-footer">\
@@ -924,7 +1036,8 @@
                                 '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\n' +
                                 '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
                             '</div>\
-                        </div>' +
+                        </div>\n' +
+                        '<slot name="mutations" :diff="diff"></slot>\n' +
                     '</div>'
     }));
 

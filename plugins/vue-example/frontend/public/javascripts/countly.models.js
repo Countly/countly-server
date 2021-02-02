@@ -188,22 +188,12 @@
             }
         });
 
-        var table = countlyVue.vuex.MutableTable("table", {
-            sourceRows: function(_state, _getters, _rootState, _rootGetters) {
-                return _rootGetters["countlyVueExample/myRecords/all"] || [];
-            },
-            trackedFields: ["status"],
-            keyFn: function(row) {
-                return row._id;
-            }
-        });
-
         return countlyVue.vuex.Module("countlyVueExample", {
             state: getEmptyState,
             getters: getters,
             actions: actions,
             mutations: mutations,
-            submodules: [recordsResource, tooManyRecordsResource, table]
+            submodules: [recordsResource, tooManyRecordsResource]
         });
     };
 
