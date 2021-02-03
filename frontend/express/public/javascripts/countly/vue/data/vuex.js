@@ -221,12 +221,6 @@
 
         //
         actions[_capitalized("fetch", resourceName)] = function(context, actionParams) {
-
-            if (context.state[statusField] !== 'ready') {
-                // There is a pending request.
-                return Promise.resolve();
-            }
-
             var promise = null,
                 requestParams = context.state[paramsField],
                 requestOptions = options.onRequest(context, actionParams);
