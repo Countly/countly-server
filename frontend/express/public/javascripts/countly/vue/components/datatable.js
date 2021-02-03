@@ -883,6 +883,31 @@
                 }
             }
         },
+        watch: {
+            sourceRows: function(newSourceRows) {
+                if (Object.keys(this.patches).length === 0) {
+                    return [];
+                }
+                var self = this;
+
+                newSourceRows.forEach(function(row) {
+                    var rowKey = self.keyOf(row);
+                    if (!self.patches[rowKey]) {
+                        return;
+                    }
+                    var sourceChanges = Object.keys(self.patches[rowKey]).reduce(function(acc, fieldKey) {
+                        var currentPatch = self.patches[rowKey][fieldKey];
+                        if (currentPatch.originalValue !== row[fieldKey]) {
+                            acc[fieldKey] = { originalValue: row[fieldKey], newValue: currentPatch.newValue };
+                        }
+                        return acc;
+                    }, {});
+                    if (Object.keys(sourceChanges).length > 0) {
+                        Vue.set(self.patches, rowKey, sourceChanges);
+                    }
+                });
+            }
+        },
         methods: {
             keyOf: function(row, dontStringify) {
                 if (dontStringify) {
