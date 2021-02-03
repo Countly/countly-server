@@ -891,10 +891,22 @@
                 return JSON.stringify(this.keyFn(row));
             },
             patch: function(row, fields) {
-                var rowKey = this.keyOf(row);
-                var currentPatch = Object.assign({}, this.patches[rowKey], fields);
+                var rowKey = this.keyOf(row),
+                    self = this;
+                var newPatch = Object.keys(fields).reduce(function(acc, fieldKey) {
+                    if (self.patches[rowKey] && Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldKey)) {
+                        var originalValue = self.patches[rowKey][fieldKey].originalValue;
+                        if (originalValue !== fields[fieldKey]) {
+                            acc[fieldKey] = { originalValue: originalValue, newValue: fields[fieldKey] };
+                        }
+                    }
+                    else if (row[fieldKey] !== fields[fieldKey]) {
+                        acc[fieldKey] = { originalValue: row[fieldKey], newValue: fields[fieldKey] };
+                    }
+                    return acc;
+                }, {});
 
-                Vue.set(this.patches, rowKey, currentPatch);
+                Vue.set(this.patches, rowKey, newPatch);
             },
             unpatch: function(row, fields) {
                 var self = this;
@@ -936,11 +948,13 @@
                     self = this;
                 Object.keys(this.patches).forEach(function(rowKey) {
                     self.trackedFields.forEach(function(fieldName) {
-                        if (Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldName)) {
+                        if (self.patches[rowKey] && Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldName)) {
+                            var patch = self.patches[rowKey][fieldName];
                             diff.push({
                                 key: JSON.parse(rowKey),
                                 field: fieldName,
-                                newValue: self.patches[rowKey][fieldName]
+                                newValue: patch.newValue,
+                                originalValue: patch.originalValue
                             });
                         }
                     });
@@ -955,7 +969,11 @@
                 return self.sourceRows.map(function(row) {
                     var rowKey = self.keyOf(row);
                     if (self.patches[rowKey]) {
-                        return Object.assign({}, row, self.patches[rowKey]);
+                        var newValues = Object.keys(self.patches[rowKey]).reduce(function(acc, fieldKey) {
+                            acc[fieldKey] = self.patches[rowKey][fieldKey].newValue;
+                            return acc;
+                        }, {});
+                        return Object.assign({}, row, newValues);
                     }
                     return row;
                 });
@@ -1028,7 +1046,7 @@
             }
         },
         template: '<div class="cly-vue-datatable-n" :class="classes">\n' +
-                        '<div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">\n' + 
+                        '<div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">\n' +
                             '<div class="cly-eldatatable__table-header">\
                                 <slot v-bind="commonScope" name="header-left"></slot>\
                                 <slot v-bind="commonScope" name="header-right"></slot>\
@@ -1058,7 +1076,7 @@
                                 '</div>\
                             </div>\n' +
                             '<slot name="bottomline" v-bind="commonScope"></slot>\n' +
-                        '</div>\n' + 
+                        '</div>\n' +
                     '</div>'
     }));
 
