@@ -22,11 +22,12 @@ window.component('push.popup', function(popup) {
         var message = prefilled instanceof push.Message ? prefilled : new push.Message(prefilled || {});
         if (!duplicate) {
             message.sound('default');
-            if (message.auto()) {
+            message.expiration(1000 * 3600 * 24 * 7);
+            if (message.auto() || message.tx()) {
                 if (message._id()) {
                     message.editingAuto = true;
                 }
-                else {
+                else if (!message.tx()) {
                     message.autoOnEntry(true);
                     message.autoCapMessages(2);
                     message.autoCapSleep(1000 * 3600 * 24);
@@ -74,7 +75,7 @@ window.component('push.popup', function(popup) {
                 ];
                 return m('h3', els);
             },
-            desc: message.auto() ? t('pu.po.desc').replace('4', '5') : t('pu.po.desc'),
+            desc: message.auto() || message.tx() ? t('pu.po.desc').replace('4', '5') : t('pu.po.desc'),
             // onclose: function() {
             //  console.log('slider closed');
             // },
@@ -111,7 +112,7 @@ window.component('push.popup', function(popup) {
             events = push.dashboard.events.map(function (event) {
                 return new C.selector.Option({ value: event.key, title: event.name, selected: message.autoEvents().indexOf(event.name) !== -1 });
             });
-        } else {
+        } else if (!message.tx()) {
             onetimeCohorts = push.dashboard.cohorts.map(function (cohort) {
                 return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: message.cohorts().indexOf(cohort._id) !== -1 });
             }); 
@@ -125,12 +126,12 @@ window.component('push.popup', function(popup) {
         this.message = message;
         this.renderTab = function (i, active) {
             var tab;
-            if ((message.auto() && i <= 2) || (!message.auto() && i <= 1)) {
+            if (((message.auto() || message.tx()) && i <= 2) || (!message.auto() && !message.tx() && i <= 1)) {
                 tab = 'tab' + i;
             } else {
-                if ((message.auto() && i === 3) || (!message.auto() && i === 2)) {
+                if (((message.auto() || message.tx()) && i === 3) || (!message.auto() && !message.tx() && i === 2)) {
                     tab = 'compose';
-                } else if ((message.auto() && i === 4) || (!message.auto() && i === 3)) {
+                } else if (((message.auto() || message.tx()) && i === 4) || (!message.auto() && !message.tx() && i === 3)) {
                     tab = 'review';
                 }
             }
@@ -140,8 +141,8 @@ window.component('push.popup', function(popup) {
                     i < 2 ? push.ICON.WARN('comp-push-tab-warn') : m('.comp-push-tab-num', i + 1)
                     // i < 2 ? m('svg.comp-push-tab-warn[width=21][height=18]', m('path[fill="#FF9E43"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')) : m('.comp-push-tab-num', i + 1)
                     : i < this.tabs.tab() ? m('.comp-push-tab-num.ion-checkmark') : m('.comp-push-tab-num', i + 1),
-                m('.comp-push-tab-title', t('pu.po.' + tab + '.title' + (message.auto() ? '.auto' : ''), t('pu.po.' + tab + '.title'))),
-                m('.comp-push-tab-desc', t('pu.po.' + tab + '.desc' + (message.auto() ? '.auto' : ''), t('pu.po.' + tab + '.desc')))
+                m('.comp-push-tab-title', t('pu.po.' + tab + '.title' + (message.auto() || message.tx() ? '.auto' : ''), t('pu.po.' + tab + '.title'))),
+                m('.comp-push-tab-desc', t('pu.po.' + tab + '.desc' + (message.auto() || message.tx() ? '.auto' : ''), t('pu.po.' + tab + '.desc')))
             ]);
         };
 
@@ -161,7 +162,7 @@ window.component('push.popup', function(popup) {
             }
 
             var enabled = true;
-            if ((message.auto() && tab >= 4) || (!message.auto() && tab >= 3)) {
+            if (((message.auto() || message.tx()) && tab >= 4) || (!message.auto() && !message.tx() && tab >= 3)) {
                 if (message.type() === push.C.TYPE.MESSAGE) {
                     enabled = enabled && message.messagePerLocale().default;
                 } else if (message.type() === push.C.TYPE.DATA) {
@@ -177,7 +178,7 @@ window.component('push.popup', function(popup) {
                     enabled = false;
                 }
             }
-            if (enabled && message.auto() && tab >= 3) {
+            if (enabled && (message.auto() || message.tx()) && tab >= 3) {
                 if (message.autoDelay() === null ||
                     message.autoTime() === null ||
                     message.autoCapMessages() === null || 
@@ -185,13 +186,15 @@ window.component('push.popup', function(popup) {
                     enabled = false;
                 }
             }
-            if (enabled && !message.auto() && tab >= 2) {
+            if (enabled && !message.auto() && !message.tx() && tab >= 2) {
                 if (message.date() === null) {
                     enabled = enabled && !!message.date();
                 }
             }
-            if (enabled && message.auto() && tab >= 2) {
-                if (message.autoOnEntry() === 'events'){
+            if (enabled && (message.auto() || message.tx()) && tab >= 2) {
+                if (message.tx()) {
+                    enabled = true;
+                } else if (message.autoOnEntry() === 'events'){
                     if (message.autoEvents().length === 0 ||
                         message.date() === null ||
                         message.autoEnd() === null) {
@@ -260,7 +263,7 @@ window.component('push.popup', function(popup) {
                 //      message.tz(false);
                 //  }
                 // }
-                if (((message.auto() && tab >= 3) || (!message.auto() && tab >= 2)) && !message.count()) {
+                if ((((message.auto() || message.tx()) && tab >= 3) || (!message.auto() && !message.tx() && tab >= 2)) && !message.count()) {
                     C.slider.instance.loading(true);
                     message.remotePrepare(this.checkForNoUsers.bind(this, true)).then(function () {
                         var done = function () {
@@ -318,7 +321,7 @@ window.component('push.popup', function(popup) {
                     window.app.recordEvent({
                         "key": "push-create",
                         "count": 1,
-                        "segmentation": {type: (message.auto() === true) ? "auto" : "one-time" }
+                        "segmentation": {type: (message.auto() === true) ? "auto" : message.tx() === true ? 'tx' : "one-time" }
                     });
                     m.endComputation();
                 }, 1000);
@@ -731,14 +734,14 @@ window.component('push.popup', function(popup) {
                                     ]);
                                 })
                             ]),
-                            !message.auto() && push.dashboard.geos && push.dashboard.geos.length ?
+                            !message.auto() && !message.tx() && push.dashboard.geos && push.dashboard.geos.length ?
                                 m('.form-group', [
                                     m('h4', t('pu.po.tab1.geos')),
                                     C.multiselect.view(ctrl.selectGeos),
                                     m('.desc', t('pu.po.tab1.geos-desc')),
                                 ])
                                 : '',
-                            !message.auto() && push.dashboard.cohorts && push.dashboard.cohorts.length ?
+                            !message.auto() && !message.tx() && push.dashboard.cohorts && push.dashboard.cohorts.length ?
                                 m('.form-group', [
                                     m('h4', t('pu.po.tab1.chr')),
                                     C.multiselect.view(ctrl.selectOnetimeCohorts),
@@ -761,7 +764,7 @@ window.component('push.popup', function(popup) {
             }
         ];
 
-        if (message.auto()) {
+        if (message.auto() || message.tx()) {
             // Campaign Rules
             tabs.push({
                 tab: this.renderTab.bind(this, 1),
@@ -883,52 +886,54 @@ window.component('push.popup', function(popup) {
                 },
                 view: function (ctrl) {
                     return m('.comp-push-tab-content',
-                        m('.comp-panel', [
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab1.trigger-type')),
-                                C.radio.view(ctrl.radioType)
-                            ]),
-                            message.autoOnEntry() === 'events' ?
+                        m('.comp-panel', 
+                            (message.tx() ? [] : [
                                 m('.form-group', [
-                                    m('h4', t('pu.po.tab1.select-event')),
-                                    C.multiselect.view(ctrl.selectEvents),
-                                ]) :
+                                    m('h4', t('pu.po.tab1.trigger-type')),
+                                    C.radio.view(ctrl.radioType)
+                                ]),
+                                message.autoOnEntry() === 'events' ?
+                                    m('.form-group', [
+                                        m('h4', t('pu.po.tab1.select-event')),
+                                        C.multiselect.view(ctrl.selectEvents),
+                                    ]) :
+                                    m('.form-group', [
+                                        m('h4', t('pu.po.tab1.select-cohort')),
+                                        C.multiselect.view(ctrl.selectCohorts),
+                                        m('.desc', t('pu.po.tab1.select-cohort-desc')),
+                                    ]),
+    
+                                message.autoOnEntry() === 'events' ? m('.form-group', [
+                                    m('h4', t('pu.po.tab2.ddc')),
+                                    C.radio.view(ctrl.radioActualDates),
+                                    // m('.desc', t('pu.po.tab2.ddc.h'))
+                                ]) : '',
+    
+                                message.autoOnEntry() !== 'events' ? m('.form-group', [
+                                    m('h4', t('pu.po.tab2.trc')),
+                                    message.autoOnEntry() === true ? C.radio.view(ctrl.radioCancelTriggerEntry) : C.radio.view(ctrl.radioCancelTriggerExit),
+                                    // m('.desc', t('pu.po.tab2.ddc.h'))
+                                ]) : '',
+                            ]).concat([
                                 m('.form-group', [
-                                    m('h4', t('pu.po.tab1.select-cohort')),
-                                    C.multiselect.view(ctrl.selectCohorts),
-                                    m('.desc', t('pu.po.tab1.select-cohort-desc')),
+                                    m('h4', t('pu.po.tab1.campaign-start-date')),
+                                    C.radio.view(ctrl.radioStartDate)
                                 ]),
 
-                            message.autoOnEntry() === 'events' ? m('.form-group', [
-                                m('h4', t('pu.po.tab2.ddc')),
-                                C.radio.view(ctrl.radioActualDates),
-                                // m('.desc', t('pu.po.tab2.ddc.h'))
-                            ]) : '',
-
-                            message.autoOnEntry() !== 'events' ? m('.form-group', [
-                                m('h4', t('pu.po.tab2.trc')),
-                                message.autoOnEntry() === true ? C.radio.view(ctrl.radioCancelTriggerEntry) : C.radio.view(ctrl.radioCancelTriggerExit),
-                                // m('.desc', t('pu.po.tab2.ddc.h'))
-                            ]) : '',
-
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab1.campaign-start-date')),
-                                C.radio.view(ctrl.radioStartDate)
-                            ]),
-
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab1.additional-options')),
-                                m('.comp-grid.comp-unpadded', [
-                                    C.checkbox.view(ctrl.checkAutoEnd)
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab1.additional-options')),
+                                    m('.comp-grid.comp-unpadded', [
+                                        C.checkbox.view(ctrl.checkAutoEnd)
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.delivery-end-desc')),
                                 ]),
-                                m('.desc', t('pu.po.tab2.delivery-end-desc')),
-                            ]),
 
-                            m('.btns', {key: 'btns'}, [
-                                m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
-                                popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
+                                m('.btns', {key: 'btns'}, [
+                                    m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
+                                    popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
+                                ])
                             ])
-                        ]));
+                        ));
                 }
             });
 
@@ -938,6 +943,7 @@ window.component('push.popup', function(popup) {
                 controller: function () {
                     this.delay = new C.delay.controller({days: true, hours: true, value: message.autoDelay});
                     this.sleep = new C.delay.controller({days: true, hours: true, value: message.autoCapSleep});
+                    this.expiration = new C.delay.controller({days: true, hours: true, value: message.expiration});
                     this.messageCapped = function(){
                         if (arguments.length) {
                             if (arguments[0]) {
@@ -999,7 +1005,7 @@ window.component('push.popup', function(popup) {
 
                     this.radioCap = new C.radio.controller({
                         options: [
-                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc' + (message.autoOnEntry() === 'events' ? '-event' : ''))  },
+                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc' + (message.autoOnEntry() === 'events' ? '-event' : message.tx() ? '-tx' : ''))  },
                             { value: true,  title: t('pu.po.tab2.capping.yes'), desc: t('pu.po.tab2.capping.yes-desc') }
                         ], value: this.messageCapped
                     });
@@ -1019,67 +1025,79 @@ window.component('push.popup', function(popup) {
                 },
                 view: function (ctrl) {
                     return m('.comp-push-tab-content',
-                        m('.comp-panel', [
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab2.delivery-method')),
-                                C.radio.view(ctrl.radioDelay),
-                                m('.desc', t('pu.po.tab2.delivery-method-desc')),
-                            ]),
-
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab2.delivery-time')),
-                                m('.comp-grid.comp-unpadded', [
-                                    C.checkbox.view(ctrl.checkTime)
+                        m('.comp-panel', 
+                            (message.tx() ? [] : [
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab2.delivery-method')),
+                                    C.radio.view(ctrl.radioDelay),
+                                    m('.desc', t('pu.po.tab2.delivery-method-desc')),
                                 ]),
-                                m('.desc', t('pu.po.tab2.delivery-time-desc')),
-                            ]),
 
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab2.capping')),
-                                C.radio.view(ctrl.radioCap),
-                                m('.desc', t('pu.po.tab2.capping-desc')),
-                            ]),
-
-                            ctrl.messageCapped() ? m('.form-group', [
-                                m('.comp-grid', [
-                                    m('.comp-grid-row', [
-                                        m('.comp-grid-cell', t('pu.po.tab2.message-per-user')),
-                                        m('.comp-grid-cell', m('.comp-delay.single', [
-                                            m('input.comp-delay-days', {
-                                                type: 'number', 
-                                                value: message.autoCapMessages(),
-                                                min: 0,
-                                                oninput: function(){
-                                                    if (!('' + this.value).length) {
-                                                        message.autoCapMessages(undefined);
-                                                    } else if (('' + this.value).length && !isNaN(parseInt(this.value)) && parseInt(this.value) >= 0) {
-                                                        message.autoCapMessages(parseInt(this.value));
-                                                    }
-                                                },
-                                                placeholder: 'unlimited'
-                                            }),
-                                            m('label.comp-delay-days', t.n('pu.messages', message.autoCapMessages()))
-                                        ]))
-                                    ])
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab2.delivery-time')),
+                                    m('.comp-grid.comp-unpadded', [
+                                        C.checkbox.view(ctrl.checkTime)
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.delivery-time-desc')),
+                                ])
+                            ]).concat([
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab2.capping')),
+                                    C.radio.view(ctrl.radioCap),
+                                    m('.desc', t('pu.po.tab2.capping-desc')),
                                 ]),
-                                m('.desc', t('pu.po.tab2.message-per-user-desc'))
-                            ]) : '',
-
-                            ctrl.messageCapped() ? m('.form-group', [
-                                m('.comp-grid', [
-                                    m('.comp-grid-row', [
-                                        m('.comp-grid-cell', t('pu.po.tab2.sleep')),
-                                        m('.comp-grid-cell', C.delay.view(ctrl.sleep))
-                                    ])
+    
+                                ctrl.messageCapped() ? m('.form-group', [
+                                    m('.comp-grid', [
+                                        m('.comp-grid-row', [
+                                            m('.comp-grid-cell', t('pu.po.tab2.message-per-user')),
+                                            m('.comp-grid-cell', m('.comp-delay.single', [
+                                                m('input.comp-delay-days', {
+                                                    type: 'number', 
+                                                    value: message.autoCapMessages(),
+                                                    min: 0,
+                                                    oninput: function(){
+                                                        if (!('' + this.value).length) {
+                                                            message.autoCapMessages(undefined);
+                                                        } else if (('' + this.value).length && !isNaN(parseInt(this.value)) && parseInt(this.value) >= 0) {
+                                                            message.autoCapMessages(parseInt(this.value));
+                                                        }
+                                                    },
+                                                    placeholder: 'unlimited'
+                                                }),
+                                                m('label.comp-delay-days', t.n('pu.messages', message.autoCapMessages()))
+                                            ]))
+                                        ])
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.message-per-user-desc'))
+                                ]) : '',
+    
+                                ctrl.messageCapped() ? m('.form-group', [
+                                    m('.comp-grid', [
+                                        m('.comp-grid-row', [
+                                            m('.comp-grid-cell', t('pu.po.tab2.sleep')),
+                                            m('.comp-grid-cell', C.delay.view(ctrl.sleep))
+                                        ])
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.sleep-desc'))
+                                ]) : '',
+    
+                                m('.form-group', [
+                                    m('.comp-grid', [
+                                        m('.comp-grid-row', [
+                                            m('.comp-grid-cell', t('pu.po.tab2.expiry')),
+                                            m('.comp-grid-cell', C.delay.view(ctrl.expiration))
+                                        ])
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.expiry-desc'))
                                 ]),
-                                m('.desc', t('pu.po.tab2.sleep-desc'))
-                            ]) : '',
-
-                            m('.btns', {key: 'btns'}, [
-                                m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(3) ? false : 'disabled' }, t('pu.po.next')),
-                                popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
+    
+                                m('.btns', {key: 'btns'}, [
+                                    m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(3) ? false : 'disabled' }, t('pu.po.next')),
+                                    popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
+                                ])
                             ])
-                        ])
+                        )
                     );
                 }
             });
@@ -1118,6 +1136,8 @@ window.component('push.popup', function(popup) {
                         }.bind(this)
                     });
 
+                    this.expiration = new C.delay.controller({days: true, hours: true, value: message.expiration});
+
                     this.radioTz = new C.radio.controller({
                         options: [
                             { value: false, title: t('pu.no'), desc: t('pu.po.tab1.tz-no-desc') },
@@ -1155,6 +1175,17 @@ window.component('push.popup', function(popup) {
                                     ]),
                                     C.radio.view(ctrl.radioTz)
                                 ]) : '',
+
+                            m('.form-group', [
+                                m('.comp-grid', [
+                                    m('.comp-grid-row', [
+                                        m('.comp-grid-cell', t('pu.po.tab2.expiry')),
+                                        m('.comp-grid-cell', C.delay.view(ctrl.expiration))
+                                    ])
+                                ]),
+                                m('.desc', t('pu.po.tab2.expiry-desc'))
+                            ]),
+
                             m('.btns', {key: 'btns'}, [
                                 m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
                                 popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
