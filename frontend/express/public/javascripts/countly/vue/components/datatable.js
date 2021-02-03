@@ -934,21 +934,16 @@
                 }
                 var diff = [],
                     self = this;
-                this.sourceRows.forEach(function(row) {
-                    var rowKey = self.keyOf(row);
-                    if (self.patches[rowKey]) {
-                        var originalKey = self.keyOf(row, true);
-                        self.trackedFields.forEach(function(fieldName) {
-                            if (Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldName) && row[fieldName] !== self.patches[rowKey][fieldName]) {
-                                diff.push({
-                                    key: originalKey,
-                                    field: fieldName,
-                                    newValue: self.patches[rowKey][fieldName],
-                                    oldValue: row[fieldName]
-                                });
-                            }
-                        });
-                    }
+                Object.keys(this.patches).forEach(function(rowKey) {
+                    self.trackedFields.forEach(function(fieldName) {
+                        if (Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldName)) {
+                            diff.push({
+                                key: JSON.parse(rowKey),
+                                field: fieldName,
+                                newValue: self.patches[rowKey][fieldName]
+                            });
+                        }
+                    });
                 });
                 return diff;
             },

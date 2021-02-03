@@ -9,9 +9,6 @@
             },
             rTableData: function() {
                 return this.$store.getters["countlyVueExample/tooManyRecords"];
-            },
-            rTableDataStatus: function() {
-                return this.$store.getters["countlyVueExample/tooManyRecordsStatus"];
             }
         },
         watch: {
@@ -135,9 +132,6 @@
                 this.$store.dispatch("countlyVueExample/myRecords/fetchSingle", row._id).then(function(doc) {
                     self.$emit("open-drawer", "main", doc);
                 });
-            },
-            updateRemoteParams: function(remoteParams) {
-                this.$store.dispatch("countlyVueExample/pasteAndFetchTooManyRecords", remoteParams);
             },
             onDelete: function(row) {
                 this.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
