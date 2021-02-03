@@ -51,7 +51,7 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
 
     yum -y --enablerepo=extras install epel-release
     yum install -y python-pip
-    pip install pip --upgrade
+    #pip install pip --upgrade
     yum install -y python-meld3
     pip install supervisor --ignore-installed meld3
     yum -y install python-setuptools
