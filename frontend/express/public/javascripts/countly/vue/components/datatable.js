@@ -900,6 +900,9 @@
                         if (currentPatch.originalValue !== row[fieldKey]) {
                             acc[fieldKey] = { originalValue: row[fieldKey], newValue: currentPatch.newValue };
                         }
+                        else {
+                            acc[fieldKey] = currentPatch;
+                        }
                         return acc;
                     }, {});
                     if (Object.keys(sourceChanges).length > 0) {
