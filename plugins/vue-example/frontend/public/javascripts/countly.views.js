@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample */
+/*global app, countlyVue, countlyVueExample, countlyCommon */
 
 (function() {
     var TableView = countlyVue.views.BaseView.extend({
@@ -31,6 +31,7 @@
             return {
                 localTableTrackedFields: ['status'],
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),
+                tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,
                 dropdownsDisabled: false,
                 autoCommitDisabled: false,
                 allOptionsTabHidden: false,

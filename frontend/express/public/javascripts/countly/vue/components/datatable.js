@@ -900,14 +900,9 @@
                         if (currentPatch.originalValue !== row[fieldKey]) {
                             acc[fieldKey] = { originalValue: row[fieldKey], newValue: currentPatch.newValue };
                         }
-                        else {
-                            acc[fieldKey] = currentPatch;
-                        }
                         return acc;
                     }, {});
-                    if (Object.keys(sourceChanges).length > 0) {
-                        Vue.set(self.patches, rowKey, sourceChanges);
-                    }
+                    Vue.set(self.patches, rowKey, sourceChanges);
                 });
             }
         },
@@ -1031,16 +1026,18 @@
                     'header-right': 'header-right',
                     'footer-left': 'footer-left',
                     'footer-right': 'footer-right',
-                },
-                searchQueryProxy: ''
+                }
             };
         },
-        watch: {
-            searchQueryProxy: function(newValue) {
-                _.extend(this.controlParams, { searchQuery: newValue, page: 1});
-            }
-        },
         computed: {
+            searchQueryProxy: {
+                get: function() {
+                    return this.controlParams.searchQuery;
+                },
+                set: function(query) {
+                    _.extend(this.controlParams, { searchQuery: query, page: 1});
+                }
+            },
             forwardedSlots: function() {
                 var self = this;
                 return Object.keys(this.$scopedSlots).reduce(function(slots, slotKey) {
