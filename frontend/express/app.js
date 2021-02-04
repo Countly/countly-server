@@ -1048,11 +1048,30 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         });
     });
 
+    app.get("/unsubscribe_report", function (req, res) {
+        res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+        res.header('Expires', '0');
+        res.header('Pragma', 'no-cache');
+        try {
+            const reports = require('../../plugins/reports/api/reports');
+            const data = JSON.parse(req.query.data);
+            const parsedData = reports.decryptUnsubscribeCode(data);
+            const {reportID, email} = parsedData;
+            countlyDb.collection('reports').update({_id: common.db.ObjectID(reportID)}, { $pull: {'emails': email}},function(err, result) {
+                // silence procedure
+                res.redirect(countlyConfig.path + '/login?message=report.unsubscribe-successful&no_redirect=true');
+            });
+        } catch (e) {
+            console.log(e);
+            res.redirect(countlyConfig.path + '/login?message=report.unsubscribe-failed&no_redirect=true');
+        }
+    });
+
     app.get(countlyConfig.path + '/login', function(req, res) {
         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
         res.header('Expires', '0');
         res.header('Pragma', 'no-cache');
-        if (req.session.uid) {
+        if (req.session.uid && !req.query.no_redirect) {
             res.redirect(countlyConfig.path + '/dashboard');
         }
         else {
