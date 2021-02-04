@@ -776,6 +776,13 @@
                 }
                 var addr = this.dataSource.statusAddress;
                 return addr.store.getters[addr.path];
+            },
+            availablePages: function() {
+                var pages = [];
+                for(var i = this.firstPage, I=this.lastPage; i<=I; i++) {
+                    pages.push(i);
+                }
+                return pages;
             }
         },
         watch: {
@@ -1039,6 +1046,7 @@
                     'header-right': 'header-right',
                     'footer-left': 'footer-left',
                     'footer-right': 'footer-right',
+                    'bottomline': 'bottomline'
                 }
             };
         },
@@ -1111,8 +1119,11 @@
                                     '<span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\n' +
                                     '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\n' +
                                     '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
-                                '</div>\
-                            </div>\n' +
+                                '</div>\n' +
+                                '<el-select v-model="controlParams.page">\
+                                    <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>\
+                                </el-select>\n' +
+                            '</div>\n' +
                             '<slot name="bottomline" v-bind="commonScope"></slot>\n' +
                         '</div>\n' +
                     '</div>'
