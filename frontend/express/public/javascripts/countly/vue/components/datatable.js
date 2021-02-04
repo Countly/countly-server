@@ -779,7 +779,7 @@
             },
             availablePages: function() {
                 var pages = [];
-                for(var i = this.firstPage, I=this.lastPage; i<=I; i++) {
+                for (var i = this.firstPage, I = this.lastPage; i <= I; i++) {
                     pages.push(i);
                 }
                 return pages;
@@ -1091,42 +1091,55 @@
                 };
             }
         },
-        template: '<div class="cly-vue-datatable-n" :class="classes">\n' +
-                        '<div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">\n' +
-                            '<div class="cly-eldatatable__table-header">\
-                                <slot v-bind="commonScope" name="header-left"></slot>\
-                                <slot v-bind="commonScope" name="header-right"></slot>\
-                                <el-input v-model="searchQueryProxy"></el-input>\
-                            </div>' +
-                            '<el-table\n' +
-                                ':row-key="keyFn"\n' +
-                                ':data="mutatedRows"\n' +
-                                'v-bind="$attrs"\n' +
-                                'v-on="$listeners"\n' +
-                                '@sort-change="onSortChange"\n' +
-                                'ref="table">\n' +
-                                    '<template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\n' +
-                                        '<slot :name="name" v-bind="commonScope"/>\n' +
-                                    '</template>\n' +
-                            '</el-table>\n' +
-                            '<div class="cly-eldatatable__table-footer">\
-                                {{ paginationInfo }}\
-                                <slot v-bind="commonScope" name="footer-left"></slot>\
-                                <slot v-bind="commonScope" name="footer-right"></slot>\
-                                {{ i18n("common.show-items") }} <el-input type="number" v-model.number="controlParams.perPage"></el-input>\
-                                <div class="buttons">\n' +
-                                    '<span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\n' +
-                                    '<span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\n' +
-                                    '<span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\n' +
-                                    '<span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\n' +
-                                '</div>\n' +
-                                '<el-select v-model="controlParams.page">\
-                                    <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>\
-                                </el-select>\n' +
-                            '</div>\n' +
-                            '<slot name="bottomline" v-bind="commonScope"></slot>\n' +
-                        '</div>\n' +
-                    '</div>'
+        template: '<div class="cly-vue-eldatatable" :class="classes">\
+                        <div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">\
+                            <div class="cly-vue-eldatatable__table-header">\
+                                <div class="cly-vue-eldatatable__table-header-left">\
+                                    <slot v-bind="commonScope" name="header-left"></slot>\
+                                </div>\
+                                <div class="cly-vue-eldatatable__table-header-right">\
+                                    <slot v-bind="commonScope" name="header-right"></slot>\
+                                    <el-input size="small" v-model="searchQueryProxy"></el-input>\
+                                </div>\
+                            </div>\
+                            <el-table\
+                                :row-key="keyFn"\
+                                :data="mutatedRows"\
+                                v-bind="$attrs"\
+                                v-on="$listeners"\
+                                @sort-change="onSortChange"\
+                                ref="table">\
+                                    <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
+                                        <slot :name="name" v-bind="commonScope"/>\
+                                    </template>\
+                            </el-table>\
+                            <div class="cly-vue-eldatatable__table-footer">\
+                                <div class="cly-vue-eldatatable__table-footer-left">\
+                                    {{ i18n("common.show-items") }}\
+                                    <el-input type="number" size="mini" v-model.number="controlParams.perPage"></el-input>\
+                                    {{ paginationInfo }}\
+                                    <slot v-bind="commonScope" name="footer-left"></slot>\
+                                </div>\
+                                <div class="cly-vue-eldatatable__table-footer-right">\
+                                    <slot v-bind="commonScope" name="footer-right"></slot>\
+                                    <div class="cly-vue-eldatatable__table-page-selector">\
+                                        <el-select v-model="controlParams.page" size="mini">\
+                                            <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>\
+                                        </el-select>\
+                                    </div>\
+                                    <div class="cly-vue-eldatatable__table-nav-arrows">\
+                                        <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
+                                        <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
+                                        <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\
+                                        <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                            <div class="cly-vue-eldatatable__table-bottomline">\
+                                <slot name="bottomline" v-bind="commonScope"></slot>\
+                            </div>\
+                        </div>\
+                    </div>'
     }));
 
 

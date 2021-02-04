@@ -2538,10 +2538,30 @@
         }
     }
 
-    .cly-vue-datatable-n {
+    .cly-vue-eldatatable {
         &.silent-loading {
             .el-loading-spinner {
                 visibility: hidden;
+            }
+        }
+        &__table-header-left,
+        &__table-footer-left {
+            float: left;
+        }
+        &__table-header-right,
+        &__table-footer-right {
+            float: right;
+        }
+        &__table-nav-arrows,
+        &__table-page-selector{
+            display: inline-block;
+        }
+        &__table-bottomline {
+            clear: both;
+        }
+        &__table-footer-left {
+            .el-input {
+                width: 60px;
             }
         }
     }
