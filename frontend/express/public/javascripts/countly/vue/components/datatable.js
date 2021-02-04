@@ -1026,13 +1026,27 @@
             }
         }
     };
+
+    var DynamicColumnsMixin = {
+        data: function() {
+            return {
+                dynamicCols: []
+            };
+        },
+        methods: {
+            setDynamicCols: function(dynamicCols) {
+                this.dynamicCols = dynamicCols;
+            }
+        },
+    };
     //
 
     Vue.component("cly-datatable-n", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n,
             TabularDataManagerMixin,
-            MutationTrackerMixin
+            MutationTrackerMixin,
+            DynamicColumnsMixin
         ],
         props: {
             keyFn: {
@@ -1096,7 +1110,9 @@
                 return {
                     diff: this.diff,
                     patch: this.patch,
-                    unpatch: this.unpatch
+                    unpatch: this.unpatch,
+                    dynamicCols: this.dynamicCols,
+                    setDynamicCols: this.setDynamicCols
                 };
             }
         },
@@ -1112,7 +1128,6 @@
                                 </div>\
                             </div>\
                             <el-table\
-                                :resizable="true"\
                                 :border="true"\
                                 :row-key="keyFn"\
                                 :data="mutatedRows"\

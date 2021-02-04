@@ -14,6 +14,7 @@
                         <cly-datatable-n
                             :tracked-fields="localTableTrackedFields"
                             :rows="tableRows"
+                            :resizable="false"
                             :persist-key="tablePersistKey">
                             <template v-slot="scope">
                                 <el-table-column fixed type="expand">
@@ -22,8 +23,8 @@
                                   </template>
                                 </el-table-column>
                                 <el-table-column
-                                    label="Status"
-                                    width="200">
+                                    fixed="right"
+                                    label="Status">
                                     <template v-slot="rowScope">
                                         <el-switch 
                                             :value="rowScope.row.status" 
@@ -35,24 +36,32 @@
                                     fixed
                                     sortable="custom"
                                     prop="_id"
-                                    label="ID"
-                                    width="200">
+                                    label="ID">
                                 </el-table-column>
-                                <el-table-column
-                                    sortable="custom"
-                                    prop="name"
-                                    label="Name">
-                                </el-table-column>
-                                <el-table-column
-                                    sortable="custom"
-                                    prop="description"
-                                    label="Description">
-                                </el-table-column>
+                                <template v-for="(col,idx) in scope.dynamicCols" :key="idx">
+                                    <el-table-column
+                                        v-if="col === 'description'"
+                                        sortable="custom"
+                                        prop="description"
+                                        label="Description">
+                                        Some custom template for description
+                                    </el-table-column>
+                                    <el-table-column
+                                        v-else
+                                        sortable="custom"
+                                        :prop="col"
+                                        :label="col">
+                                    </el-table-column>
+                                </template>
                             </template>
                             <template v-slot:bottomline="scope">
                                 <pre>{{scope.diff}}</pre>
                                 <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
                                 </cly-diff-helper>
+                                <el-checkbox-group :value="scope.dynamicCols" @input="scope.setDynamicCols">
+                                    <el-checkbox label="name"></el-checkbox>
+                                    <el-checkbox label="description"></el-checkbox>
+                                </el-checkbox-group>
                             </template>
                         </cly-datatable-n>
                     </div>
@@ -68,13 +77,13 @@
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
                         <cly-datatable-n
                             :data-source="remoteTableDataSource"
+                            :resizable="true"
                             :persist-key="remoteTablePersistKey">
                             <template v-slot>
                                 <el-table-column
                                     sortable="custom"
                                     prop="_id"
-                                    label="ID"
-                                    width="200">
+                                    label="ID">
                                 </el-table-column>
                                 <el-table-column
                                     sortable="custom"
