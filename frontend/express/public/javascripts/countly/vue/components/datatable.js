@@ -920,6 +920,9 @@
                         if (currentPatch.originalValue !== row[fieldKey]) {
                             acc[fieldKey] = { originalValue: row[fieldKey], newValue: currentPatch.newValue };
                         }
+                        else if (currentPatch.newValue !== row[fieldKey]) {
+                            acc[fieldKey] = currentPatch;
+                        }
                         return acc;
                     }, {});
                     Vue.set(self.patches, rowKey, sourceChanges);
