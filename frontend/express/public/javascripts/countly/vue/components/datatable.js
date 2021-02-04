@@ -779,7 +779,7 @@
             },
             availablePages: function() {
                 var pages = [];
-                for (var i = this.firstPage, I = this.lastPage; i <= I; i++) {
+                for (var i = this.firstPage, I = Math.min(this.lastPage, 10000); i <= I; i++) {
                     pages.push(i);
                 }
                 return pages;
@@ -1038,6 +1038,12 @@
                     return row._id;
                 }
             },
+            availablePageSizes: {
+                type: Array,
+                default: function() {
+                    return [5, 10, 20, 50, 100, 200, 1000];
+                }
+            }
         },
         data: function() {
             return {
@@ -1115,8 +1121,12 @@
                             </el-table>\
                             <div class="cly-vue-eldatatable__table-footer">\
                                 <div class="cly-vue-eldatatable__table-footer-left">\
-                                    {{ i18n("common.show-items") }}\
-                                    <el-input type="number" size="mini" v-model.number="controlParams.perPage"></el-input>\
+                                    <div class="cly-vue-eldatatable__table-page-size-selector">\
+                                        {{ i18n("common.show-items") }}\
+                                        <el-select v-model="controlParams.perPage" size="mini">\
+                                            <el-option v-for="pageSize in availablePageSizes" :key="pageSize" :value="pageSize" :label="pageSize"></el-option>\
+                                        </el-select>\
+                                    </div>\
                                     {{ paginationInfo }}\
                                     <slot v-bind="commonScope" name="footer-left"></slot>\
                                 </div>\

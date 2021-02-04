@@ -2553,16 +2553,16 @@
             float: right;
         }
         &__table-nav-arrows,
-        &__table-page-selector{
+        &__table-page-selector,
+        &__table-page-size-selector
+        {
             display: inline-block;
+            .el-select {
+                width: 70px; 
+            }
         }
         &__table-bottomline {
             clear: both;
-        }
-        &__table-footer-left {
-            .el-input {
-                width: 60px;
-            }
         }
     }
 
