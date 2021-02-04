@@ -11,7 +11,10 @@
                         <pre>{{tableRows}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable-n :tracked-fields="localTableTrackedFields" :rows="tableRows" :persist-key="tablePersistKey">
+                        <cly-datatable-n
+                            :tracked-fields="localTableTrackedFields"
+                            :rows="tableRows"
+                            :persist-key="tablePersistKey">
                             <template v-slot="scope">
                                 <el-table-column type="expand">
                                   <template v-slot="props">
@@ -62,7 +65,9 @@
                         <pre>{{rTableData}}</pre>
                     </div>
                     <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable-n :data-source="remoteTableDataSource">
+                        <cly-datatable-n
+                            :data-source="remoteTableDataSource"
+                            :persist-key="remoteTablePersistKey">
                             <template v-slot>
                                 <el-table-column
                                     sortable="custom"

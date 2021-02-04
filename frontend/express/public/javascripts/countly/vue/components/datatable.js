@@ -781,10 +781,15 @@
         watch: {
             controlParams: {
                 deep: true,
-                immediate: true,
                 handler: _.debounce(function() {
                     this.triggerExternalSource();
                 }, 500)
+            },
+            'controlParams.page': function() {
+                this.checkPageBoundaries();
+            },
+            lastPage: function() {
+                this.checkPageBoundaries();
             }
         },
         data: function() {
@@ -793,10 +798,18 @@
                 firstPage: 1
             };
         },
+        mounted: function() {
+            this.triggerExternalSource();
+        },
         beforeDestroy: function() {
             this.setControlParams();
         },
         methods: {
+            checkPageBoundaries: function() {
+                if (this.lastPage > 0 && this.controlParams.page > this.lastPage) {
+                    this.controlParams.page = this.lastPage;
+                }
+            },
             goToFirstPage: function() {
                 this.controlParams.page = this.firstPage;
             },
