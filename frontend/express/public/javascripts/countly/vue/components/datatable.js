@@ -1112,6 +1112,8 @@
                                 </div>\
                             </div>\
                             <el-table\
+                                :resizable="true"\
+                                :border="true"\
                                 :row-key="keyFn"\
                                 :data="mutatedRows"\
                                 v-bind="$attrs"\
