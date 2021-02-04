@@ -1824,13 +1824,17 @@ countlyCommon.mergeMetricsByName = function(chartData, metric) {
         else {
             for (var key in data) {
                 if (typeof data[key] === "string") {
-                    uniqueNames[data[metric]][key] = data[key];
+                    if (uniqueNames[data[metric]]) {
+                        uniqueNames[data[metric]][key] = data[key];
+                    }
                 }
                 else if (typeof data[key] === "number") {
-                    if (!uniqueNames[data[metric]][key]) {
-                        uniqueNames[data[metric]][key] = 0;
+                    if (uniqueNames[data[metric]]) {
+                        if (!uniqueNames[data[metric]][key]) {
+                            uniqueNames[data[metric]][key] = 0;
+                        }
+                        uniqueNames[data[metric]][key] += data[key];
                     }
-                    uniqueNames[data[metric]][key] += data[key];
                 }
             }
         }
