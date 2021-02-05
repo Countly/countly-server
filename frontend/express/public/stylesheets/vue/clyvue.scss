@@ -2995,4 +2995,11 @@
     &__header {
         padding: 16px;
     }
+    &__footer {
+        border-top: 1px solid #ECECEC;
+    }
+    &__commit-section {
+        float: right;
+        margin: 16px;
+    }
 }

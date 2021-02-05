@@ -1312,7 +1312,7 @@
     };
 
     Vue.component("cly-select-x", countlyVue.components.BaseComponent.extend({
-        mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
+        mixins: [TabbedOptionsMixin, SearchableOptionsMixin, _mixins.i18n],
         template: '<cly-input-dropdown\
                         class="cly-vue-select-x"\
                         ref="dropdown"\
@@ -1366,21 +1366,42 @@
                                     </cly-checklistbox>\
                                 </el-tab-pane>\
                             </el-tabs>\
+                            <div class="cly-vue-select-x__footer" v-if="!autoCommit">\
+                                <div class="cly-vue-select-x__commit-section">\
+                                    <el-button @click="doDiscard" size="small">{{ i18n("common.cancel") }}</el-button>\
+                                    <el-button @click="doCommit" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>\
+                                </div>\
+                            </div>\
                         </div>\
                     </cly-input-dropdown>',
         props: {
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
             value: { type: [String, Number, Array] },
-            mode: {type: String, default: 'single-list'} // multi-check
+            mode: {type: String, default: 'single-list'}, // multi-check,
+            autoCommit: {type: Boolean, default: true}
+        },
+        data: function() {
+            return {
+                uncommittedValue: null
+            }
         },
         computed: {
             innerValue: {
                 get: function() {
+                    if (this.uncommittedValue && this.uncommittedValue !== this.value) {
+                        return this.uncommittedValue;
+                    }
                     return this.value;
                 },
                 set: function(newVal) {
-                    this.$emit("input", newVal);
+                    if (this.autoCommit) {
+                        this.$emit("input", newVal);
+                        this.$emit("change", newVal);
+                    }
+                    else {
+                        this.uncommittedValue = newVal;
+                    }
                 }
             }
         },
@@ -1389,7 +1410,7 @@
         },
         methods: {
             handleValueChange: function() {
-                if (this.mode === 'single-list') {
+                if (this.mode === 'single-list' && this.autoCommit) {
                     this.doClose();
                 }
             },
@@ -1405,6 +1426,18 @@
                 this.$nextTick(function() {
                     self.$refs.searchBox.focus();
                 });
+            },
+            doCommit: function() {
+                if (this.uncommittedValue) {
+                    this.$emit("input", this.uncommittedValue);
+                    this.$emit("change", this.uncommittedValue);
+                    this.uncommittedValue = null;
+                }
+                this.doClose();
+            },
+            doDiscard: function () {
+                this.uncommittedValue = null;
+                this.doClose();
             }
         },
         watch: {
@@ -1413,6 +1446,9 @@
             },
             activeTabId: function() {
                 this.updateDropdown();
+            },
+            value: function() {
+                this.uncommittedValue = null;
             }
         }
     }));
