@@ -2906,7 +2906,7 @@
           
     }
     .el-select-dropdown__list {
-        padding: 2px 0 15px 0;
+        padding: 0;
     }
 
     .el-select-dropdown__item {
@@ -2915,7 +2915,7 @@
     }
 
     &--bordered {
-        border-radius: $--border-radius-base;
+        border-radius: 7px;
         border: 1px solid $--border-color-base;
         &.is-focus, &:focus-within{
             border-color: $--color-primary;
@@ -2975,9 +2975,12 @@
         }
         .cly-vue-listbox{
             padding: 0 8px;
+            .el-scrollbar{
+                margin-right: -7px;
+            }
             .el-select-dropdown__list,
             &__no-data {
-                margin: 8px 0;
+                margin: 8px 7px 25px 0;
             }
             
         }
