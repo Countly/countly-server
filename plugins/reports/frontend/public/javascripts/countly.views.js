@@ -1022,4 +1022,11 @@ app.route('/manage/reports', 'reports', function() {
 
 $(document).ready(function() {
     app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("reports", "reports.title");
+        app.configurationsView.registerLabel(
+            "reports.secretKey",
+            "reports.secretKey"
+        );
+    }
 });

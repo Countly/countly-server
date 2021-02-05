@@ -21,7 +21,7 @@ var reportsInstance = {},
 countlyConfig.passwordSecret || "";
 
 plugins.setConfigs("reports", {
-    secret: "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
+    secretKey: "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
 });
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
@@ -572,7 +572,7 @@ var metricProps = {
                                                 messages.push({html, unsubscribeLink});
                                             }
                                         } catch(e) {
-                                                console.log(e,"#31234124555");
+                                                log.e(e);
                                         }
                                         report.subject = versionInfo.title + ': ' + localize.format(
                                             (
@@ -601,20 +601,23 @@ var metricProps = {
 
     reports.decryptUnsubscribeCode = function (data) {
         try {
-            const key = 'JBP7NwmwWTnwTPLpL30IlxwllvmtC4qe';
+            const reportConfig = plugins.getConfig("reports", null, true);
+            const key = reportConfig.secretKey;
             const decipher = crypto.createDecipheriv('aes-256-ctr', key, Buffer.from(data.iv, 'hex'));
             const decrpyted = Buffer.concat([decipher.update(Buffer.from(data.content, 'hex')), decipher.final()]);
             const result = JSON.parse(decrpyted.toString());
             return result;
         } catch (e) {
-            console.log("decrypt unsubscribe code err", e);
+            log.e("decrypt unsubscribe code err", e);
         }
     }
 
     reports.genUnsubscribeCode = function (report, email) {
         try {
+            const reportConfig = plugins.getConfig("reports", null, true);
+ 
             const iv = crypto.randomBytes(16);
-            const key = 'JBP7NwmwWTnwTPLpL30IlxwllvmtC4qe';
+            const key = reportConfig.secretKey;
             const cipher = crypto.createCipheriv('aes-256-ctr', key, iv);
             const data = {
                 "reportID": report._id,
