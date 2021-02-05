@@ -1052,7 +1052,16 @@
                 default: function() {
                     return [];
                 }
+            },
+            sortable: {
+                type: Boolean,
+                default: false
             }
+        },
+        data: function() {
+            return {
+                sortMap: {}
+            };
         },
         computed: {
             innerValue: {
@@ -1062,6 +1071,34 @@
                 set: function(newVal) {
                     this.$emit("input", newVal);
                     this.$emit("change", newVal);
+                }
+            },
+            sortedOptions: {
+                get: function() {
+                    if (!this.sortable) {
+                        return this.options;
+                    }
+                    var sortMap = this.sortMap,
+                        wrapped = this.options.map(function(opt, idx) {
+                            return { opt: opt, idx: idx, ord: sortMap[opt.value] || 0 };
+                        });
+
+                    wrapped.sort(function(a, b) {
+                        return (a.ord - b.ord) || (a.idx - b.idx);
+                    });
+
+                    return wrapped.map(function(item) {
+                        return item.opt;
+                    });
+                },
+                set: function(sorted) {
+                    if (!this.sortable) {
+                        return;
+                    }
+                    this.sortMap = Object.freeze(sorted.reduce(function(acc, opt, idx) {
+                        acc[opt.value] = idx;
+                        return acc;
+                    }, {}));
                 }
             }
         },
@@ -1080,12 +1117,18 @@
                         view-class="el-select-dropdown__list">\
                         <el-checkbox-group\
                             v-model="innerValue">\
+                            <draggable \
+                                handle=".drag-handler"\
+                                v-model="sortedOptions"\
+                                :options="{disabled: !sortable}">\
                             <li\
                                 class="el-select-dropdown__item"\
                                 :key="option.value"\
-                                v-for="option in options">\
+                                v-for="option in sortedOptions">\
+                                <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
                                 <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
                             </li>\
+                            </draggable>\
                         </el-checkbox-group>\
                     </el-scrollbar>\
                     <div v-else class="cly-vue-listbox__no-data">\

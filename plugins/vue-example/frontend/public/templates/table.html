@@ -112,6 +112,18 @@
                 </div>
                 <div class="example-component">
                     <div class="example-cell">
+                        CheckListBox
+                    </div>
+                    <div class="example-cell">
+                        <cly-checklistbox v-model="selectedCLB" :options="listBoxOptions" :sortable="true">
+                        </cly-checklistbox>
+                    </div>
+                    <div class="example-cell">
+                        {{selectedCLB}}
+                    </div>
+                </div>
+                <div class="example-component">
+                    <div class="example-cell">
                         Basic text input
                     </div>
                     <div class="example-cell">

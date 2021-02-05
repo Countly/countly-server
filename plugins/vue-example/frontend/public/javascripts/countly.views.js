@@ -82,6 +82,7 @@
                     {"label": "hello11", "value": 11},
                 ],
                 selectedLB: 0,
+                selectedCLB: [],
                 activeTab: null,
                 typedText: 'Type sth...',
                 selectedRadio: 2,
