@@ -115,11 +115,13 @@
                         CheckListBox
                     </div>
                     <div class="example-cell">
-                        <cly-checklistbox v-model="selectedCLB" :options="listBoxOptions" :sortable="true">
+                        <cly-checklistbox v-model="selectedCLB" :options.sync="clistBoxOptions" :sortable="true">
                         </cly-checklistbox>
                     </div>
                     <div class="example-cell">
                         {{selectedCLB}}
+                        ---------------------
+                        {{clistBoxOptions}}
                     </div>
                 </div>
                 <div class="example-component">
