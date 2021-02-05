@@ -1188,6 +1188,12 @@
             };
         },
         computed: {
+            hasAllOptionsTab: function() {
+                if (this.hideAllOptionsTab || this.mode === "multi-check-sortable") {
+                    return false;
+                }
+                return true;
+            },
             hasTabs: function() {
                 if (!this.options || !this.options.length) {
                     return false;
@@ -1195,7 +1201,7 @@
                 return !!this.options[0].options;
             },
             publicTabs: function() {
-                if (this.hasTabs && !this.hideAllOptionsTab) {
+                if (this.hasTabs && this.hasAllOptionsTab) {
                     var allOptions = {
                         name: "__all",
                         label: this.allPlaceholder,
@@ -1265,7 +1271,7 @@
                     else if (self.value && self.val2tab[self.value]) {
                         self.activeTabId = self.val2tab[self.value];
                     }
-                    else if (!this.hideAllOptionsTab) {
+                    else if (this.hasAllOptionsTab) {
                         self.activeTabId = "__all";
                     }
                     else if (!self.activeTabId || self.activeTabId === "__all" || self.activeTabId === "__root") {
@@ -1275,7 +1281,7 @@
             },
         },
         watch: {
-            hideAllOptionsTab: function() {
+            hasAllOptionsTab: function() {
                 this.determineActiveTabId();
             }
         }
@@ -1344,7 +1350,15 @@
                                         v-model="innerValue">\
                                     </cly-listbox>\
                                     <cly-checklistbox\
-                                        v-if="mode === \'multi-check\'"\
+                                        v-else-if="mode === \'multi-check\'"\
+                                        :bordered="false"\
+                                        :options="getMatching(tab.options)"\
+                                        @change="handleValueChange"\
+                                        v-model="innerValue">\
+                                    </cly-checklistbox>\
+                                    <cly-checklistbox\
+                                        v-else-if="mode === \'multi-check-sortable\'"\
+                                        :sortable="true"\
                                         :bordered="false"\
                                         :options="getMatching(tab.options)"\
                                         @change="handleValueChange"\
