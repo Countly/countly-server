@@ -1060,8 +1060,21 @@
         },
         data: function() {
             return {
-                sortMap: {}
+                sortMap: null
             };
+        },
+        watch: {
+            options: {
+                immediate: true,
+                handler: function(options) {
+                    if (this.sortable && !this.sortMap) {
+                        this.sortMap = Object.freeze(options.reduce(function(acc, opt, idx) {
+                            acc[opt.value] = idx;
+                            return acc;
+                        }, {}));
+                    }
+                }
+            }
         },
         computed: {
             innerValue: {
@@ -1069,13 +1082,31 @@
                     return this.value;
                 },
                 set: function(newVal) {
-                    this.$emit("input", newVal);
-                    this.$emit("change", newVal);
+                    if (this.sortable && this.sortMap) {
+                        var sortMap = this.sortMap,
+                            wrapped = newVal.map(function(value, idx) {
+                                return { value: value, idx: idx, ord: sortMap[value] || 0 };
+                            });
+
+                        wrapped.sort(function(a, b) {
+                            return (a.ord - b.ord) || (a.idx - b.idx);
+                        });
+
+                        var sorted = wrapped.map(function(item) {
+                            return item.value;
+                        });
+                        this.$emit("input", sorted);
+                        this.$emit("change", sorted);
+                    }
+                    else {
+                        this.$emit("input", newVal);
+                        this.$emit("change", newVal);
+                    }
                 }
             },
             sortedOptions: {
                 get: function() {
-                    if (!this.sortable) {
+                    if (!this.sortable || !this.sortMap) {
                         return this.options;
                     }
                     var sortMap = this.sortMap,
@@ -1099,6 +1130,7 @@
                         acc[opt.value] = idx;
                         return acc;
                     }, {}));
+                    this.innerValue = this.value; // triggers innerValue.set
                 }
             }
         },
