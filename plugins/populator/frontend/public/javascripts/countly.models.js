@@ -232,7 +232,7 @@
      * @returns {object} returns user properties
      **/
     function getUserProperties(templateUp) {
-        var up = {};
+        var up = {populator: true};
 
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && (Math.random() > 0.5)) {
             up.utm_source = sources[getRandomInt(0, sources.length - 1)];
