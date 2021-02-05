@@ -1076,6 +1076,25 @@
                 }
             }
         },
+        methods: {
+            computeSortedOptions: function() {
+                if (!this.sortable || !this.sortMap) {
+                    return this.options;
+                }
+                var sortMap = this.sortMap,
+                    wrapped = this.options.map(function(opt, idx) {
+                        return { opt: opt, idx: idx, ord: sortMap[opt.value] || 0 };
+                    });
+
+                wrapped.sort(function(a, b) {
+                    return (a.ord - b.ord) || (a.idx - b.idx);
+                });
+
+                return wrapped.map(function(item) {
+                    return item.opt;
+                });
+            }
+        },
         computed: {
             innerValue: {
                 get: function() {
@@ -1106,21 +1125,7 @@
             },
             sortedOptions: {
                 get: function() {
-                    if (!this.sortable || !this.sortMap) {
-                        return this.options;
-                    }
-                    var sortMap = this.sortMap,
-                        wrapped = this.options.map(function(opt, idx) {
-                            return { opt: opt, idx: idx, ord: sortMap[opt.value] || 0 };
-                        });
-
-                    wrapped.sort(function(a, b) {
-                        return (a.ord - b.ord) || (a.idx - b.idx);
-                    });
-
-                    return wrapped.map(function(item) {
-                        return item.opt;
-                    });
+                   return this.computeSortedOptions();
                 },
                 set: function(sorted) {
                     if (!this.sortable) {
@@ -1131,6 +1136,7 @@
                         return acc;
                     }, {}));
                     this.innerValue = this.value; // triggers innerValue.set
+                    this.$emit('update:options', this.computeSortedOptions());
                 }
             }
         },
