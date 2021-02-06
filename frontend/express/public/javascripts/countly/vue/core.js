@@ -223,6 +223,7 @@
             self.elementsToBeRendered = [];
             if (self.vm) {
                 self.vm.$destroy();
+                self.vm = null;
             }
         }
     });
