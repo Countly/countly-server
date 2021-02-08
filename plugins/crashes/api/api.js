@@ -483,7 +483,7 @@ plugins.setConfigs("crashes", {
                                 const hooksData = {
                                     params: {...params}
                                 };
-                                hooksData.params.qstring.events = events
+                                hooksData.params.qstring.events = events;
                                 plugins.dispatch("/hooks/incoming_data", hooksData);
 
 

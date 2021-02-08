@@ -1064,7 +1064,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
         const hooksData = {
             params: {...params}
         };
-        hooksData.params.qstring.events = [{key:"[CLY]_session", count:1}]
+        hooksData.params.qstring.events = [{key: "[CLY]_session", count: 1}];
         plugins.dispatch("/hooks/incoming_data", hooksData);
 
         if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
@@ -1095,7 +1095,6 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     session_duration: params.session_duration,
                     end_session: false
                 });
-                
                 userProps.sd = 0;
                 userProps.data = {};
             }
