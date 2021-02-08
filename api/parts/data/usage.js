@@ -1061,6 +1061,12 @@ plugins.register("/sdk/user_properties", async function(ob) {
     if (params.qstring.begin_session) {
         var lastEndSession = params.app_user[common.dbUserMap.last_end_session_timestamp];
 
+        const hooksData = {
+            params: {...params}
+        };
+        hooksData.params.qstring.events = [{key:"[CLY]_session", count:1}]
+        plugins.dispatch("/hooks/incoming_data", hooksData);
+
         if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
             userProps[common.dbUserMap.has_ongoing_session] = true;
         }
@@ -1089,6 +1095,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                     session_duration: params.session_duration,
                     end_session: false
                 });
+                
                 userProps.sd = 0;
                 userProps.data = {};
             }

@@ -480,6 +480,12 @@ plugins.setConfigs("crashes", {
                                 }];
                                 plugins.dispatch("/plugins/drill", {params: params, dbAppUser: dbAppUser, events: events});
 
+                                const hooksData = {
+                                    params: {...params}
+                                };
+                                hooksData.params.qstring.events = events
+                                plugins.dispatch("/hooks/incoming_data", hooksData);
+
 
                                 const processCrash = function(userAll) {
                                     var groupSet = {};
