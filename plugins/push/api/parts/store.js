@@ -1122,18 +1122,18 @@ class Loader extends Store {
     }
 
     /**
-     * Remove messages from collection - they're sent.
+     * Remove messages from collection - they're sent or being discarded.
      * 
      * @param  {Array} ids array of message ids
      * @return {Promise} resolves to number of deleted messages
      */
     ack(ids) {
         log.i('Acking %d in %s', ids && ids.length || 0, this.collectionName);
-        return new Promise((resolve, reject) => {
-            if (!ids.length) {
+        return sequence(split(ids, BATCH), chunk => new Promise((resolve, reject) => {
+            if (!chunk.length) {
                 return resolve(0);
             }
-            this.collection.deleteMany({_id: {$in: ids}}, (err, res) => {
+            this.collection.deleteMany({_id: {$in: chunk}}, (err, res) => {
                 log.i('Acked %j in %s', res && res.deletedCount || err, this.collectionName);
                 if (err) {
                     reject(err);
@@ -1142,7 +1142,7 @@ class Loader extends Store {
                     resolve(res && res.deletedCount || 0);
                 }
             });
-        });
+        }));
     }
 
     /**
