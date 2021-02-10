@@ -1044,6 +1044,18 @@
         computed: {
             hasDynamicCols: function() {
                 return this.availableDynamicCols.length > 0;
+            },
+            availableDynamicColsLookup: function (){
+                return this.availableDynamicCols.reduce(function(acc, col) {
+                    acc[col.value] = col;
+                    return acc;
+                }, {});
+            },
+            publicDynamicCols: function() {
+                var self = this;
+                return this.selectedDynamicCols.map(function (val) {
+                    return self.availableDynamicColsLookup[val];
+                });
             }
         }
     };
@@ -1119,7 +1131,7 @@
                     diff: this.diff,
                     patch: this.patch,
                     unpatch: this.unpatch,
-                    dynamicCols: this.selectedDynamicCols
+                    dynamicCols: this.publicDynamicCols
                 };
             }
         },

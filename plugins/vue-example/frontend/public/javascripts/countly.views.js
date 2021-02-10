@@ -36,7 +36,8 @@
                 },
                 {
                     value: "description",
-                    label: "Description"
+                    label: "Description",
+                    default: true
                 }],
                 localTableTrackedFields: ['status'],
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),

@@ -41,7 +41,7 @@
                                 </el-table-column>
                                 <template v-for="(col,idx) in scope.dynamicCols" :key="idx">
                                     <el-table-column
-                                        v-if="col === 'description'"
+                                        v-if="col.value === 'description'"
                                         sortable="custom"
                                         prop="description"
                                         label="Description">
@@ -50,8 +50,8 @@
                                     <el-table-column
                                         v-else
                                         sortable="custom"
-                                        :prop="col"
-                                        :label="col">
+                                        :prop="col.value"
+                                        :label="col.label">
                                     </el-table-column>
                                 </template>
                             </template>
