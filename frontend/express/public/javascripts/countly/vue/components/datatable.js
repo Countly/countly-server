@@ -1028,16 +1028,24 @@
     };
 
     var DynamicColumnsMixin = {
-        data: function() {
-            return {
-                dynamicCols: []
-            };
-        },
-        methods: {
-            setDynamicCols: function(dynamicCols) {
-                this.dynamicCols = dynamicCols;
+        props: {
+            availableDynamicCols: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
             }
         },
+        data: function() {
+            return {
+                selectedDynamicCols: []
+            };
+        },
+        computed: {
+            hasDynamicCols: function() {
+                return this.availableDynamicCols.length > 0;
+            }
+        }
     };
     //
 
@@ -1111,8 +1119,7 @@
                     diff: this.diff,
                     patch: this.patch,
                     unpatch: this.unpatch,
-                    dynamicCols: this.dynamicCols,
-                    setDynamicCols: this.setDynamicCols
+                    dynamicCols: this.selectedDynamicCols
                 };
             }
         },
@@ -1124,6 +1131,18 @@
                                 </div>\
                                 <div class="cly-vue-eldatatable__table-header-right">\
                                     <slot v-bind="commonScope" name="header-right"></slot>\
+                                    <cly-select-x\
+                                        v-if="hasDynamicCols"\
+                                        search-placeholder="Search in Columns"\
+                                        placeholder="Edit columns" \
+                                        title="Edit columns"\
+                                        mode="multi-check-sortable"\
+                                        :auto-commit="false"\
+                                        :hide-default-tabs="true"\
+                                        :hide-all-options-tab="true"\
+                                        :options="availableDynamicCols"\
+                                        v-model="selectedDynamicCols">\
+                                    </cly-select-x>\
                                     <el-input size="small" v-model="searchQueryProxy"></el-input>\
                                 </div>\
                             </div>\

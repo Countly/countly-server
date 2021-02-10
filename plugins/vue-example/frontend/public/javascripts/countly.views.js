@@ -29,6 +29,15 @@
                 manyItems.push({name: "Type " + i, value: i});
             }
             return {
+                tableDynamicCols: [{
+                    value: "name",
+                    label: "Name",
+                    required: true
+                },
+                {
+                    value: "description",
+                    label: "Description"
+                }],
                 localTableTrackedFields: ['status'],
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),
                 tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,

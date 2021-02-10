@@ -1125,7 +1125,7 @@
             },
             sortedOptions: {
                 get: function() {
-                   return this.computeSortedOptions();
+                    return this.computeSortedOptions();
                 },
                 set: function(sorted) {
                     if (!this.sortable) {
@@ -1384,7 +1384,7 @@
         data: function() {
             return {
                 uncommittedValue: null
-            }
+            };
         },
         computed: {
             innerValue: {
@@ -1435,7 +1435,7 @@
                 }
                 this.doClose();
             },
-            doDiscard: function () {
+            doDiscard: function() {
                 this.uncommittedValue = null;
                 this.doClose();
             }

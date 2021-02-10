@@ -98,7 +98,7 @@
                 this.doClose();
             },
             handleClose: function() {
-                var self = this;
+                // var self = this;
                 this.doClose();
                 // this.$nextTick(function() {
                 //     self.$refs.toggler.focus();
