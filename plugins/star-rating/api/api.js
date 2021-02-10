@@ -5,6 +5,10 @@ var exported = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     {validateUserForWrite} = require('../../../api/utils/rights.js');
+var fetch = require('../../../api/parts/data/fetch.js');
+var ejs = require("ejs"),
+    path = require('path'),
+    reportUtils = require('../../reports/api/utils.js');
 
 const widgetProperties = {
     popup_header_text: {
@@ -780,10 +784,207 @@ const widgetPropertyPreprocessors = {
                 if (!ob.export_commands.feedback) {
                     ob.export_commands.feedback = [];
                 }
-                ob.export_commands.feedback.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'feedback' + ob.app_id, '-q', '{uid:{$in: ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/feedback' + ob.app_id + '.json']});
+                ob.export_commands.feedback.push({cmd: 'mongoexport', args: [...ob.dbargs, '--collection', 'feedback' + ob.app_id, '-q', '{"uid":{"$in": ["' + uids.join('","') + '"]}}', '--out', ob.export_folder + '/feedback' + ob.app_id + '.json']});
                 resolve();
             }
         });
+    });
+
+    plugins.register("/export", async function({plugin, selectedIds}) {
+        if (plugin === "feedback_widgets") {
+            const data = await exportPlugin(selectedIds);
+            return data;
+        }
+    });
+
+    plugins.register("/import", async function({params, importData}) {
+        if (importData.name === 'feedback_widgets') {
+            await importPopulator(params, importData);
+            return true;
+        }
+        return false;
+    });
+
+    plugins.register("/import/validate", function({params, pluginData, pluginName}) {
+        if (pluginName === 'feedback_widgets') {
+            return validateImport(params, pluginData);
+        }
+        else {
+            return false;
+        }
+    });
+
+    /**
+     * 
+     * @param {String[]} ids ids of documents to be exported
+     * @param {String} app_id app Id
+     */
+    async function exportPlugin(ids) {
+        const data = await common.db.collection("feedback_widgets").find({_id: {$in: ids.map((id) => common.db.ObjectID(id))}}).toArray();
+        data.forEach(((widget) => {
+            widget.app_id = "APP_ID";
+        }));
+        const dependencies = [];
+
+        return {
+            name: 'feedback_widgets',
+            data: data,
+            dependencies: dependencies
+        };
+    }
+
+    /**
+     * Validation before import
+     * 
+     * @param {Object} params params object 
+     * @param {Object} widget feedback widget Object
+     * @returns {Promise<Object>} validation result
+    */
+    function validateImport(params, widget) {
+        return {
+            code: 200,
+            message: "Success",
+            data: {
+                newId: common.db.ObjectID(),
+                oldId: widget._id
+            }
+        };
+    }
+
+    /**
+     * Insert Feedback Objects
+     * 
+     * @param {Object} params params object
+     * @param {Object} importData iomport data Object - MUTABLE
+     * @returns {Promise} promise array of all inserts
+     */
+    function importPopulator(params, importData) {
+        const widget = importData.data;
+        return new Promise((resolve, reject) => {
+            widget._id = common.db.ObjectID(widget._id);
+            common.db.collection('feedback_widgets').insert(widget, function(err) {
+                if (!err) {
+                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                    return resolve();
+                }
+                else {
+                    return reject();
+                }
+            });
+        });
+    }
+
+    plugins.register("/email/report", async function(ob) {
+        const {params, metric} = ob;
+        const {report, app, member} = params;
+        try {
+            if (metric !== 'star-rating') {
+                return;
+            }
+            const calCumulativeData = function(result, periodArray) {
+                const cumulativeData = [
+                    { count: 0, percent: 0 },
+                    { count: 0, percent: 0 },
+                    { count: 0, percent: 0 },
+                    { count: 0, percent: 0 },
+                    { count: 0, percent: 0 },
+                ];
+
+                for (var i = 0; i < periodArray.length; i++) {
+                    var dateArray = periodArray[i].split('.');
+                    var year = dateArray[0];
+                    var month = dateArray[1];
+                    var day = dateArray[2];
+                    if (result[year] && result[year][month] && result[year][month][day]) {
+                        for (var rating in result[year][month][day]) {
+                            var rank = (rating.split("**"))[2];
+                            if (cumulativeData[rank - 1]) {
+                                cumulativeData[rank - 1].count += result[year][month][day][rating].c;
+                            }
+                        }
+                    }
+                }
+                return cumulativeData;
+            };
+
+            /**
+             * fetch event data
+             * @return {object} - promise object
+             **/
+            const fetchData = () => {
+                return new Promise((resolve) => {
+                    const starRatingCollection = 'events' + crypto.createHash('sha1').update('[CLY]_star_rating' + app._id).digest('hex');
+                    fetch.fetchTimeObj(
+                        starRatingCollection,
+                        {
+                            app_id: "platform_version_rate",
+                            qstring: {
+                                period: report.period,
+                            }
+                        },
+                        false,
+                        function(result) {
+                            const periodObj = countlyCommon.getPeriodObj({qstring: {period: report.period}, app: app});
+                            const {currentPeriodArr, previousPeriodArr} = periodObj;
+                            const currentData = calCumulativeData(result, currentPeriodArr);
+                            const previousData = calCumulativeData(result, previousPeriodArr);
+                            let sum = 0;
+                            currentData.forEach((item, index) => {
+                                sum += item.count;
+                                if (previousData[index].count > 0) {
+                                    item.change = (((item.count / previousData[index].count) - 1) * 100).toFixed(2) + "%";
+                                }
+                                else {
+                                    item.change = 'NA';
+                                }
+                            });
+                            currentData.forEach((item) => {
+                                if (sum > 0) {
+                                    item.percent = ((item.count / sum) * 100).toFixed(2) + "%";
+                                }
+                            });
+                            resolve(currentData);
+                        }
+                    );
+                });
+            };
+            const results = await fetchData();
+            const coloums = {
+                name: "star.rating",
+                count: "star.number-of-ratings-cap",
+                percent: "star.percentage-cap",
+                change: "star.change",
+            };
+
+            const columsString = [];
+            for (let ck in coloums) {
+                const col = await reportUtils.getLocaleLangString(member.lang, coloums[ck]);
+                columsString.push(col);
+            }
+
+            const tableData = [];
+            const keyIndex = ['one', 'two', 'three', 'four', 'five'];
+            for (let i = 0; i < results.length; i++) {
+                const ratingTitle = await reportUtils.getLocaleLangString(member.lang, 'star.' + keyIndex[i] + '-star');
+                const data = results[i];
+                const row = [ratingTitle, data.count, data.percent, data.change];
+                tableData.push(row);
+            }
+
+            const result = {
+                title: await reportUtils.getLocaleLangString(member.lang, "reports.star-rating"),
+                colums: columsString,
+                table: tableData,
+            };
+            const templateString = await reportUtils.readReportTemplate(path.resolve(__dirname, '../frontend/public/templates/report.html'));
+            const reportString = ejs.render(templateString, {...result});
+            ob.reportAPICallback(null, {html: reportString});
+            return;
+        }
+        catch (err) {
+            console.log(err);
+            ob.reportAPICallback(err, null);
+        }
     });
 }(exported));
 module.exports = exported;

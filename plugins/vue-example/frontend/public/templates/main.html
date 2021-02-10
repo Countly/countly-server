@@ -1,0 +1,5 @@
+<div class="vue-example-wrapper" v-bind:class="[componentId]">
+    <tg-view></tg-view>
+    <table-view v-on:open-drawer="openDrawer"></table-view>
+    <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
+</div>

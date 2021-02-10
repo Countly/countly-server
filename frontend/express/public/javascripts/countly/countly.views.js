@@ -1,4 +1,4 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation, JobsView, JobDetailView */
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter, countlySegmentation, JobsView, JobDetailView */
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
@@ -859,6 +859,7 @@ window.LoyaltyView = countlyView.extend({
 
             this.byDisabled = true;
             if (typeof extendViewWithFilter === "function") {
+                this.hideDrillEventMetaProperties = true;
                 extendViewWithFilter(this);
                 $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
                     self.initDrill();
@@ -1881,6 +1882,84 @@ window.ResolutionView = countlyView.extend({
     }
 });
 
+window.DeviceTypeView = countlyView.extend({
+    beforeRender: function() {
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("device_type")).then(function() {});
+    },
+    renderCommon: function(isRefresh) {
+        var deviceTypeData = countlyDeviceDetails.getData(false, false, "device_type", "device_type");
+
+        this.templateData = {
+            "page-title": jQuery.i18n.map["device_type.title"],
+            "logo-class": "device_type",
+            "graph-type-double-pie": true,
+            "pie-titles": {
+                "left": jQuery.i18n.map["common.total-users"],
+                "right": jQuery.i18n.map["common.new-users"]
+            },
+            "chart-helper": "device_type.chart"
+        };
+
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+
+            countlyCommon.drawGraph(deviceTypeData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(deviceTypeData.chartDPNew, "#dashboard-graph2", "pie");
+
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": deviceTypeData.chartData,
+                "aoColumns": [
+                    { "mData": "device_type", "sTitle": jQuery.i18n.map["device_type.table.device_type"], "bSortable": false },
+                    {
+                        "mData": "t",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
+                    },
+                    {
+                        "mData": "u",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.total-users"]
+                    },
+                    {
+                        "mData": "n",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.new-users"]
+                    }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
+        }
+    },
+    refresh: function() {
+        var self = this;
+        $.when(this.beforeRender()).then(function() {
+            if (app.activeView !== self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var deviceTypeData = countlyDeviceDetails.getData(false, false, "device_type", "device_type");
+
+            countlyCommon.drawGraph(deviceTypeData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(deviceTypeData.chartDPNew, "#dashboard-graph2", "pie");
+            CountlyHelpers.refreshTable(self.dtable, deviceTypeData.chartData);
+        });
+    }
+});
+
 window.DurationView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize()).then(function() {});
@@ -1955,7 +2034,7 @@ window.ManageAppsView = countlyView.extend({
         return { 1: jQuery.i18n.map["application-category.books"], 2: jQuery.i18n.map["application-category.business"], 3: jQuery.i18n.map["application-category.education"], 4: jQuery.i18n.map["application-category.entertainment"], 5: jQuery.i18n.map["application-category.finance"], 6: jQuery.i18n.map["application-category.games"], 7: jQuery.i18n.map["application-category.health-fitness"], 8: jQuery.i18n.map["application-category.lifestyle"], 9: jQuery.i18n.map["application-category.medical"], 10: jQuery.i18n.map["application-category.music"], 11: jQuery.i18n.map["application-category.navigation"], 12: jQuery.i18n.map["application-category.news"], 13: jQuery.i18n.map["application-category.photography"], 14: jQuery.i18n.map["application-category.productivity"], 15: jQuery.i18n.map["application-category.reference"], 16: jQuery.i18n.map["application-category.social-networking"], 17: jQuery.i18n.map["application-category.sports"], 18: jQuery.i18n.map["application-category.travel"], 19: jQuery.i18n.map["application-category.utilities"], 20: jQuery.i18n.map["application-category.weather"]};
     },
     getTimeZones: function() {
-        return { "AF": {"n": "Afghanistan", "z": [{"(GMT+04:30) Kabul": "Asia/Kabul"}]}, "AL": {"n": "Albania", "z": [{"(GMT+01:00) Tirane": "Europe/Tirane"}]}, "DZ": {"n": "Algeria", "z": [{"(GMT+01:00) Algiers": "Africa/Algiers"}]}, "AS": {"n": "American Samoa", "z": [{"(GMT-11:00) Pago Pago": "Pacific/Pago_Pago"}]}, "AD": {"n": "Andorra", "z": [{"(GMT+01:00) Andorra": "Europe/Andorra"}]}, "AO": {"n": "Angola", "z": [{"(GMT+01:00) Luanda": "Africa/Luanda"}]}, "AI": {"n": "Anguilla", "z": [{"(GMT-04:00) Anguilla": "America/Anguilla"}]}, "AQ": {"n": "Antarctica", "z": [{"(GMT-04:00) Palmer": "Antarctica/Palmer"}, {"(GMT-03:00) Rothera": "Antarctica/Rothera"}, {"(GMT+03:00) Syowa": "Antarctica/Syowa"}, {"(GMT+05:00) Mawson": "Antarctica/Mawson"}, {"(GMT+06:00) Vostok": "Antarctica/Vostok"}, {"(GMT+07:00) Davis": "Antarctica/Davis"}, {"(GMT+08:00) Casey": "Antarctica/Casey"}, {"(GMT+10:00) Dumont D'Urville": "Antarctica/DumontDUrville"}]}, "AG": {"n": "Antigua and Barbuda", "z": [{"(GMT-04:00) Antigua": "America/Antigua"}]}, "AR": {"n": "Argentina", "z": [{"(GMT-03:00) Buenos Aires": "America/Buenos_Aires"}]}, "AM": {"n": "Armenia", "z": [{"(GMT+04:00) Yerevan": "Asia/Yerevan"}]}, "AW": {"n": "Aruba", "z": [{"(GMT-04:00) Aruba": "America/Aruba"}]}, "AU": {"n": "Australia", "z": [{"(GMT+08:00) Western Time - Perth": "Australia/Perth"}, {"(GMT+09:30) Central Time - Adelaide": "Australia/Adelaide"}, {"(GMT+09:30) Central Time - Darwin": "Australia/Darwin"}, {"(GMT+10:00) Eastern Time - Brisbane": "Australia/Brisbane"}, {"(GMT+10:00) Eastern Time - Hobart": "Australia/Hobart"}, {"(GMT+10:00) Eastern Time - Melbourne, Sydney": "Australia/Sydney"}]}, "AT": {"n": "Austria", "z": [{"(GMT+01:00) Vienna": "Europe/Vienna"}]}, "AZ": {"n": "Azerbaijan", "z": [{"(GMT+04:00) Baku": "Asia/Baku"}]}, "BS": {"n": "Bahamas", "z": [{"(GMT-05:00) Nassau": "America/Nassau"}]}, "BH": {"n": "Bahrain", "z": [{"(GMT+03:00) Bahrain": "Asia/Bahrain"}]}, "BD": {"n": "Bangladesh", "z": [{"(GMT+06:00) Dhaka": "Asia/Dhaka"}]}, "BB": {"n": "Barbados", "z": [{"(GMT-04:00) Barbados": "America/Barbados"}]}, "BY": {"n": "Belarus", "z": [{"(GMT+03:00) Minsk": "Europe/Minsk"}]}, "BE": {"n": "Belgium", "z": [{"(GMT+01:00) Brussels": "Europe/Brussels"}]}, "BZ": {"n": "Belize", "z": [{"(GMT-06:00) Belize": "America/Belize"}]}, "BJ": {"n": "Benin", "z": [{"(GMT+01:00) Porto-Novo": "Africa/Porto-Novo"}]}, "BM": {"n": "Bermuda", "z": [{"(GMT-04:00) Bermuda": "Atlantic/Bermuda"}]}, "BT": {"n": "Bhutan", "z": [{"(GMT+06:00) Thimphu": "Asia/Thimphu"}]}, "BO": {"n": "Bolivia", "z": [{"(GMT-04:00) La Paz": "America/La_Paz"}]}, "BA": {"n": "Bosnia and Herzegovina", "z": [{"(GMT+01:00) Central European Time - Belgrade": "Europe/Sarajevo"}]}, "BW": {"n": "Botswana", "z": [{"(GMT+02:00) Gaborone": "Africa/Gaborone"}]}, "BR": {"n": "Brazil", "z": [{"(GMT-04:00) Boa Vista": "America/Boa_Vista"}, {"(GMT-04:00) Campo Grande": "America/Campo_Grande"}, {"(GMT-04:00) Cuiaba": "America/Cuiaba"}, {"(GMT-04:00) Manaus": "America/Manaus"}, {"(GMT-04:00) Porto Velho": "America/Porto_Velho"}, {"(GMT-04:00) Rio Branco": "America/Rio_Branco"}, {"(GMT-03:00) Araguaina": "America/Araguaina"}, {"(GMT-03:00) Belem": "America/Belem"}, {"(GMT-03:00) Fortaleza": "America/Fortaleza"}, {"(GMT-03:00) Maceio": "America/Maceio"}, {"(GMT-03:00) Recife": "America/Recife"}, {"(GMT-03:00) Salvador": "America/Bahia"}, {"(GMT-03:00) Sao Paulo": "America/Sao_Paulo"}, {"(GMT-02:00) Noronha": "America/Noronha"}]}, "IO": {"n": "British Indian Ocean Territory", "z": [{"(GMT+06:00) Chagos": "Indian/Chagos"}]}, "VG": {"n": "British Virgin Islands", "z": [{"(GMT-04:00) Tortola": "America/Tortola"}]}, "BN": {"n": "Brunei", "z": [{"(GMT+08:00) Brunei": "Asia/Brunei"}]}, "BG": {"n": "Bulgaria", "z": [{"(GMT+02:00) Sofia": "Europe/Sofia"}]}, "BF": {"n": "Burkina Faso", "z": [{"(GMT+00:00) Ouagadougou": "Africa/Ouagadougou"}]}, "BI": {"n": "Burundi", "z": [{"(GMT+02:00) Bujumbura": "Africa/Bujumbura"}]}, "KH": {"n": "Cambodia", "z": [{"(GMT+07:00) Phnom Penh": "Asia/Phnom_Penh"}]}, "CM": {"n": "Cameroon", "z": [{"(GMT+01:00) Douala": "Africa/Douala"}]}, "CA": {"n": "Canada", "z": [{"(GMT-07:00) Mountain Time - Dawson Creek": "America/Dawson_Creek"}, {"(GMT-08:00) Pacific Time - Vancouver": "America/Vancouver"}, {"(GMT-08:00) Pacific Time - Whitehorse": "America/Whitehorse"}, {"(GMT-06:00) Central Time - Regina": "America/Regina"}, {"(GMT-07:00) Mountain Time - Edmonton": "America/Edmonton"}, {"(GMT-07:00) Mountain Time - Yellowknife": "America/Yellowknife"}, {"(GMT-06:00) Central Time - Winnipeg": "America/Winnipeg"}, {"(GMT-05:00) Eastern Time - Iqaluit": "America/Iqaluit"}, {"(GMT-05:00) Eastern Time - Montreal": "America/Montreal"}, {"(GMT-05:00) Eastern Time - Toronto": "America/Toronto"}, {"(GMT-04:00) Atlantic Time - Halifax": "America/Halifax"}, {"(GMT-03:30) Newfoundland Time - St. Johns": "America/St_Johns"}]}, "CV": {"n": "Cape Verde", "z": [{"(GMT-01:00) Cape Verde": "Atlantic/Cape_Verde"}]}, "KY": {"n": "Cayman Islands", "z": [{"(GMT-05:00) Cayman": "America/Cayman"}]}, "CF": {"n": "Central African Republic", "z": [{"(GMT+01:00) Bangui": "Africa/Bangui"}]}, "TD": {"n": "Chad", "z": [{"(GMT+01:00) Ndjamena": "Africa/Ndjamena"}]}, "CL": {"n": "Chile", "z": [{"(GMT-06:00) Easter Island": "Pacific/Easter"}, {"(GMT-04:00) Santiago": "America/Santiago"}]}, "CN": {"n": "China", "z": [{"(GMT+08:00) China Time - Beijing": "Asia/Shanghai"}]}, "CX": {"n": "Christmas Island", "z": [{"(GMT+07:00) Christmas": "Indian/Christmas"}]}, "CC": {"n": "Cocos [Keeling] Islands", "z": [{"(GMT+06:30) Cocos": "Indian/Cocos"}]}, "CO": {"n": "Colombia", "z": [{"(GMT-05:00) Bogota": "America/Bogota"}]}, "KM": {"n": "Comoros", "z": [{"(GMT+03:00) Comoro": "Indian/Comoro"}]}, "CD": {"n": "Congo [DRC]", "z": [{"(GMT+01:00) Kinshasa": "Africa/Kinshasa"}, {"(GMT+02:00) Lubumbashi": "Africa/Lubumbashi"}]}, "CG": {"n": "Congo [Republic]", "z": [{"(GMT+01:00) Brazzaville": "Africa/Brazzaville"}]}, "CK": {"n": "Cook Islands", "z": [{"(GMT-10:00) Rarotonga": "Pacific/Rarotonga"}]}, "CR": {"n": "Costa Rica", "z": [{"(GMT-06:00) Costa Rica": "America/Costa_Rica"}]}, "CI": {"n": "Côte d'Ivoire", "z": [{"(GMT+00:00) Abidjan": "Africa/Abidjan"}]}, "HR": {"n": "Croatia", "z": [{"(GMT+01:00) Central European Time - Belgrade": "Europe/Zagreb"}]}, "CU": {"n": "Cuba", "z": [{"(GMT-05:00) Havana": "America/Havana"}]}, "CW": {"n": "Curaçao", "z": [{"(GMT-04:00) Curacao": "America/Curacao"}]}, "CY": {"n": "Cyprus", "z": [{"(GMT+02:00) Nicosia": "Asia/Nicosia"}]}, "CZ": {"n": "Czech Republic", "z": [{"(GMT+01:00) Central European Time - Prague": "Europe/Prague"}]}, "DK": {"n": "Denmark", "z": [{"(GMT+01:00) Copenhagen": "Europe/Copenhagen"}]}, "DJ": {"n": "Djibouti", "z": [{"(GMT+03:00) Djibouti": "Africa/Djibouti"}]}, "DM": {"n": "Dominica", "z": [{"(GMT-04:00) Dominica": "America/Dominica"}]}, "DO": {"n": "Dominican Republic", "z": [{"(GMT-04:00) Santo Domingo": "America/Santo_Domingo"}]}, "EC": {"n": "Ecuador", "z": [{"(GMT-06:00) Galapagos": "Pacific/Galapagos"}, {"(GMT-05:00) Guayaquil": "America/Guayaquil"}]}, "EG": {"n": "Egypt", "z": [{"(GMT+02:00) Cairo": "Africa/Cairo"}]}, "SV": {"n": "El Salvador", "z": [{"(GMT-06:00) El Salvador": "America/El_Salvador"}]}, "GQ": {"n": "Equatorial Guinea", "z": [{"(GMT+01:00) Malabo": "Africa/Malabo"}]}, "ER": {"n": "Eritrea", "z": [{"(GMT+03:00) Asmera": "Africa/Asmera"}]}, "EE": {"n": "Estonia", "z": [{"(GMT+02:00) Tallinn": "Europe/Tallinn"}]}, "ET": {"n": "Ethiopia", "z": [{"(GMT+03:00) Addis Ababa": "Africa/Addis_Ababa"}]}, "FK": {"n": "Falkland Islands [Islas Malvinas]", "z": [{"(GMT-03:00) Stanley": "Atlantic/Stanley"}]}, "FO": {"n": "Faroe Islands", "z": [{"(GMT+00:00) Faeroe": "Atlantic/Faeroe"}]}, "FJ": {"n": "Fiji", "z": [{"(GMT+12:00) Fiji": "Pacific/Fiji"}]}, "FI": {"n": "Finland", "z": [{"(GMT+02:00) Helsinki": "Europe/Helsinki"}]}, "FR": {"n": "France", "z": [{"(GMT+01:00) Paris": "Europe/Paris"}]}, "GF": {"n": "French Guiana", "z": [{"(GMT-03:00) Cayenne": "America/Cayenne"}]}, "PF": {"n": "French Polynesia", "z": [{"(GMT-10:00) Tahiti": "Pacific/Tahiti"}, {"(GMT-09:30) Marquesas": "Pacific/Marquesas"}, {"(GMT-09:00) Gambier": "Pacific/Gambier"}]}, "TF": {"n": "French Southern Territories", "z": [{"(GMT+05:00) Kerguelen": "Indian/Kerguelen"}]}, "GA": {"n": "Gabon", "z": [{"(GMT+01:00) Libreville": "Africa/Libreville"}]}, "GM": {"n": "Gambia", "z": [{"(GMT+00:00) Banjul": "Africa/Banjul"}]}, "GE": {"n": "Georgia", "z": [{"(GMT+04:00) Tbilisi": "Asia/Tbilisi"}]}, "DE": {"n": "Germany", "z": [{"(GMT+01:00) Berlin": "Europe/Berlin"}]}, "GH": {"n": "Ghana", "z": [{"(GMT+00:00) Accra": "Africa/Accra"}]}, "GI": {"n": "Gibraltar", "z": [{"(GMT+01:00) Gibraltar": "Europe/Gibraltar"}]}, "GR": {"n": "Greece", "z": [{"(GMT+02:00) Athens": "Europe/Athens"}]}, "GL": {"n": "Greenland", "z": [{"(GMT-04:00) Thule": "America/Thule"}, {"(GMT-03:00) Godthab": "America/Godthab"}, {"(GMT-01:00) Scoresbysund": "America/Scoresbysund"}, {"(GMT+00:00) Danmarkshavn": "America/Danmarkshavn"}]}, "GD": {"n": "Grenada", "z": [{"(GMT-04:00) Grenada": "America/Grenada"}]}, "GP": {"n": "Guadeloupe", "z": [{"(GMT-04:00) Guadeloupe": "America/Guadeloupe"}]}, "GU": {"n": "Guam", "z": [{"(GMT+10:00) Guam": "Pacific/Guam"}]}, "GT": {"n": "Guatemala", "z": [{"(GMT-06:00) Guatemala": "America/Guatemala"}]}, "GN": {"n": "Guinea", "z": [{"(GMT+00:00) Conakry": "Africa/Conakry"}]}, "GW": {"n": "Guinea-Bissau", "z": [{"(GMT+00:00) Bissau": "Africa/Bissau"}]}, "GY": {"n": "Guyana", "z": [{"(GMT-04:00) Guyana": "America/Guyana"}]}, "HT": {"n": "Haiti", "z": [{"(GMT-05:00) Port-au-Prince": "America/Port-au-Prince"}]}, "HN": {"n": "Honduras", "z": [{"(GMT-06:00) Central Time - Tegucigalpa": "America/Tegucigalpa"}]}, "HK": {"n": "Hong Kong", "z": [{"(GMT+08:00) Hong Kong": "Asia/Hong_Kong"}]}, "HU": {"n": "Hungary", "z": [{"(GMT+01:00) Budapest": "Europe/Budapest"}]}, "IS": {"n": "Iceland", "z": [{"(GMT+00:00) Reykjavik": "Atlantic/Reykjavik"}]}, "IN": {"n": "India", "z": [{"(GMT+05:30) India Standard Time": "Asia/Calcutta"}]}, "ID": {"n": "Indonesia", "z": [{"(GMT+07:00) Jakarta": "Asia/Jakarta"}, {"(GMT+08:00) Makassar": "Asia/Makassar"}, {"(GMT+09:00) Jayapura": "Asia/Jayapura"}]}, "IR": {"n": "Iran", "z": [{"(GMT+03:30) Tehran": "Asia/Tehran"}]}, "IQ": {"n": "Iraq", "z": [{"(GMT+03:00) Baghdad": "Asia/Baghdad"}]}, "IE": {"n": "Ireland", "z": [{"(GMT+00:00) Dublin": "Europe/Dublin"}]}, "IL": {"n": "Israel", "z": [{"(GMT+02:00) Jerusalem": "Asia/Jerusalem"}]}, "IT": {"n": "Italy", "z": [{"(GMT+01:00) Rome": "Europe/Rome"}]}, "JM": {"n": "Jamaica", "z": [{"(GMT-05:00) Jamaica": "America/Jamaica"}]}, "JP": {"n": "Japan", "z": [{"(GMT+09:00) Tokyo": "Asia/Tokyo"}]}, "JO": {"n": "Jordan", "z": [{"(GMT+02:00) Amman": "Asia/Amman"}]}, "KZ": {"n": "Kazakhstan", "z": [{"(GMT+05:00) Aqtau": "Asia/Aqtau"}, {"(GMT+05:00) Aqtobe": "Asia/Aqtobe"}, {"(GMT+06:00) Almaty": "Asia/Almaty"}]}, "KE": {"n": "Kenya", "z": [{"(GMT+03:00) Nairobi": "Africa/Nairobi"}]}, "KI": {"n": "Kiribati", "z": [{"(GMT+12:00) Tarawa": "Pacific/Tarawa"}, {"(GMT+13:00) Enderbury": "Pacific/Enderbury"}, {"(GMT+14:00) Kiritimati": "Pacific/Kiritimati"}]}, "KW": {"n": "Kuwait", "z": [{"(GMT+03:00) Kuwait": "Asia/Kuwait"}]}, "KG": {"n": "Kyrgyzstan", "z": [{"(GMT+06:00) Bishkek": "Asia/Bishkek"}]}, "LA": {"n": "Laos", "z": [{"(GMT+07:00) Vientiane": "Asia/Vientiane"}]}, "LV": {"n": "Latvia", "z": [{"(GMT+02:00) Riga": "Europe/Riga"}]}, "LB": {"n": "Lebanon", "z": [{"(GMT+02:00) Beirut": "Asia/Beirut"}]}, "LS": {"n": "Lesotho", "z": [{"(GMT+02:00) Maseru": "Africa/Maseru"}]}, "LR": {"n": "Liberia", "z": [{"(GMT+00:00) Monrovia": "Africa/Monrovia"}]}, "LY": {"n": "Libya", "z": [{"(GMT+02:00) Tripoli": "Africa/Tripoli"}]}, "LI": {"n": "Liechtenstein", "z": [{"(GMT+01:00) Vaduz": "Europe/Vaduz"}]}, "LT": {"n": "Lithuania", "z": [{"(GMT+02:00) Vilnius": "Europe/Vilnius"}]}, "LU": {"n": "Luxembourg", "z": [{"(GMT+01:00) Luxembourg": "Europe/Luxembourg"}]}, "MO": {"n": "Macau", "z": [{"(GMT+08:00) Macau": "Asia/Macau"}]}, "MK": {"n": "Macedonia [FYROM]", "z": [{"(GMT+01:00) Central European Time - Belgrade": "Europe/Skopje"}]}, "MG": {"n": "Madagascar", "z": [{"(GMT+03:00) Antananarivo": "Indian/Antananarivo"}]}, "MW": {"n": "Malawi", "z": [{"(GMT+02:00) Blantyre": "Africa/Blantyre"}]}, "MY": {"n": "Malaysia", "z": [{"(GMT+08:00) Kuala Lumpur": "Asia/Kuala_Lumpur"}]}, "MV": {"n": "Maldives", "z": [{"(GMT+05:00) Maldives": "Indian/Maldives"}]}, "ML": {"n": "Mali", "z": [{"(GMT+00:00) Bamako": "Africa/Bamako"}]}, "MT": {"n": "Malta", "z": [{"(GMT+01:00) Malta": "Europe/Malta"}]}, "MH": {"n": "Marshall Islands", "z": [{"(GMT+12:00) Kwajalein": "Pacific/Kwajalein"}, {"(GMT+12:00) Majuro": "Pacific/Majuro"}]}, "MQ": {"n": "Martinique", "z": [{"(GMT-04:00) Martinique": "America/Martinique"}]}, "MR": {"n": "Mauritania", "z": [{"(GMT+00:00) Nouakchott": "Africa/Nouakchott"}]}, "MU": {"n": "Mauritius", "z": [{"(GMT+04:00) Mauritius": "Indian/Mauritius"}]}, "YT": {"n": "Mayotte", "z": [{"(GMT+03:00) Mayotte": "Indian/Mayotte"}]}, "MX": {"n": "Mexico", "z": [{"(GMT-07:00) Mountain Time - Hermosillo": "America/Hermosillo"}, {"(GMT-08:00) Pacific Time - Tijuana": "America/Tijuana"}, {"(GMT-07:00) Mountain Time - Chihuahua, Mazatlan": "America/Mazatlan"}, {"(GMT-06:00) Central Time - Mexico City": "America/Mexico_City"}]}, "FM": {"n": "Micronesia", "z": [{"(GMT+10:00) Truk": "Pacific/Truk"}, {"(GMT+11:00) Kosrae": "Pacific/Kosrae"}, {"(GMT+11:00) Ponape": "Pacific/Ponape"}]}, "MD": {"n": "Moldova", "z": [{"(GMT+02:00) Chisinau": "Europe/Chisinau"}]}, "MC": {"n": "Monaco", "z": [{"(GMT+01:00) Monaco": "Europe/Monaco"}]}, "MN": {"n": "Mongolia", "z": [{"(GMT+07:00) Hovd": "Asia/Hovd"}, {"(GMT+08:00) Choibalsan": "Asia/Choibalsan"}, {"(GMT+08:00) Ulaanbaatar": "Asia/Ulaanbaatar"}]}, "MS": {"n": "Montserrat", "z": [{"(GMT-04:00) Montserrat": "America/Montserrat"}]}, "MA": {"n": "Morocco", "z": [{"(GMT+00:00) Casablanca": "Africa/Casablanca"}]}, "MZ": {"n": "Mozambique", "z": [{"(GMT+02:00) Maputo": "Africa/Maputo"}]}, "MM": {"n": "Myanmar [Burma]", "z": [{"(GMT+06:30) Rangoon": "Asia/Rangoon"}]}, "NA": {"n": "Namibia", "z": [{"(GMT+01:00) Windhoek": "Africa/Windhoek"}]}, "NR": {"n": "Nauru", "z": [{"(GMT+12:00) Nauru": "Pacific/Nauru"}]}, "NP": {"n": "Nepal", "z": [{"(GMT+05:45) Katmandu": "Asia/Katmandu"}]}, "NL": {"n": "Netherlands", "z": [{"(GMT+01:00) Amsterdam": "Europe/Amsterdam"}]}, "NC": {"n": "New Caledonia", "z": [{"(GMT+11:00) Noumea": "Pacific/Noumea"}]}, "NZ": {"n": "New Zealand", "z": [{"(GMT+12:00) Auckland": "Pacific/Auckland"}]}, "NI": {"n": "Nicaragua", "z": [{"(GMT-06:00) Managua": "America/Managua"}]}, "NE": {"n": "Niger", "z": [{"(GMT+01:00) Niamey": "Africa/Niamey"}]}, "NG": {"n": "Nigeria", "z": [{"(GMT+01:00) Lagos": "Africa/Lagos"}]}, "NU": {"n": "Niue", "z": [{"(GMT-11:00) Niue": "Pacific/Niue"}]}, "NF": {"n": "Norfolk Island", "z": [{"(GMT+11:30) Norfolk": "Pacific/Norfolk"}]}, "KP": {"n": "North Korea", "z": [{"(GMT+09:00) Pyongyang": "Asia/Pyongyang"}]}, "MP": {"n": "Northern Mariana Islands", "z": [{"(GMT+10:00) Saipan": "Pacific/Saipan"}]}, "NO": {"n": "Norway", "z": [{"(GMT+01:00) Oslo": "Europe/Oslo"}]}, "OM": {"n": "Oman", "z": [{"(GMT+04:00) Muscat": "Asia/Muscat"}]}, "PK": {"n": "Pakistan", "z": [{"(GMT+05:00) Karachi": "Asia/Karachi"}]}, "PW": {"n": "Palau", "z": [{"(GMT+09:00) Palau": "Pacific/Palau"}]}, "PS": {"n": "Palestinian Territories", "z": [{"(GMT+02:00) Gaza": "Asia/Gaza"}]}, "PA": {"n": "Panama", "z": [{"(GMT-05:00) Panama": "America/Panama"}]}, "PG": {"n": "Papua New Guinea", "z": [{"(GMT+10:00) Port Moresby": "Pacific/Port_Moresby"}]}, "PY": {"n": "Paraguay", "z": [{"(GMT-04:00) Asuncion": "America/Asuncion"}]}, "PE": {"n": "Peru", "z": [{"(GMT-05:00) Lima": "America/Lima"}]}, "PH": {"n": "Philippines", "z": [{"(GMT+08:00) Manila": "Asia/Manila"}]}, "PN": {"n": "Pitcairn Islands", "z": [{"(GMT-08:00) Pitcairn": "Pacific/Pitcairn"}]}, "PL": {"n": "Poland", "z": [{"(GMT+01:00) Warsaw": "Europe/Warsaw"}]}, "PT": {"n": "Portugal", "z": [{"(GMT-01:00) Azores": "Atlantic/Azores"}, {"(GMT+00:00) Lisbon": "Europe/Lisbon"}]}, "PR": {"n": "Puerto Rico", "z": [{"(GMT-04:00) Puerto Rico": "America/Puerto_Rico"}]}, "QA": {"n": "Qatar", "z": [{"(GMT+03:00) Qatar": "Asia/Qatar"}]}, "RE": {"n": "Réunion", "z": [{"(GMT+04:00) Reunion": "Indian/Reunion"}]}, "RO": {"n": "Romania", "z": [{"(GMT+02:00) Bucharest": "Europe/Bucharest"}]}, "RU": {"n": "Russia", "z": [{"(GMT+02:00) Moscow-01 - Kaliningrad": "Europe/Kaliningrad"}, {"(GMT+04:00) Moscow+00": "Europe/Moscow"}, {"(GMT+04:00) Moscow+00 - Samara": "Europe/Samara"}, {"(GMT+06:00) Moscow+02 - Yekaterinburg": "Asia/Yekaterinburg"}, {"(GMT+07:00) Moscow+03 - Omsk, Novosibirsk": "Asia/Omsk"}, {"(GMT+08:00) Moscow+04 - Krasnoyarsk": "Asia/Krasnoyarsk"}, {"(GMT+09:00) Moscow+05 - Irkutsk": "Asia/Irkutsk"}, {"(GMT+10:00) Moscow+06 - Yakutsk": "Asia/Yakutsk"}, {"(GMT+11:00) Moscow+07 - Yuzhno-Sakhalinsk": "Asia/Vladivostok"}, {"(GMT+12:00) Moscow+08 - Magadan": "Asia/Magadan"}, {"(GMT+12:00) Moscow+08 - Petropavlovsk-Kamchatskiy": "Asia/Kamchatka"}]}, "RW": {"n": "Rwanda", "z": [{"(GMT+02:00) Kigali": "Africa/Kigali"}]}, "SH": {"n": "Saint Helena", "z": [{"(GMT+00:00) St Helena": "Atlantic/St_Helena"}]}, "KN": {"n": "Saint Kitts and Nevis", "z": [{"(GMT-04:00) St. Kitts": "America/St_Kitts"}]}, "LC": {"n": "Saint Lucia", "z": [{"(GMT-04:00) St. Lucia": "America/St_Lucia"}]}, "PM": {"n": "Saint Pierre and Miquelon", "z": [{"(GMT-03:00) Miquelon": "America/Miquelon"}]}, "VC": {"n": "Saint Vincent and the Grenadines", "z": [{"(GMT-04:00) St. Vincent": "America/St_Vincent"}]}, "WS": {"n": "Samoa", "z": [{"(GMT+13:00) Apia": "Pacific/Apia"}]}, "SM": {"n": "San Marino", "z": [{"(GMT+01:00) Rome": "Europe/San_Marino"}]}, "ST": {"n": "São Tomé and Príncipe", "z": [{"(GMT+00:00) Sao Tome": "Africa/Sao_Tome"}]}, "SA": {"n": "Saudi Arabia", "z": [{"(GMT+03:00) Riyadh": "Asia/Riyadh"}]}, "SN": {"n": "Senegal", "z": [{"(GMT+00:00) Dakar": "Africa/Dakar"}]}, "RS": {"n": "Serbia", "z": [{"(GMT+01:00) Central European Time - Belgrade": "Europe/Belgrade"}]}, "SC": {"n": "Seychelles", "z": [{"(GMT+04:00) Mahe": "Indian/Mahe"}]}, "SL": {"n": "Sierra Leone", "z": [{"(GMT+00:00) Freetown": "Africa/Freetown"}]}, "SG": {"n": "Singapore", "z": [{"(GMT+08:00) Singapore": "Asia/Singapore"}]}, "SK": {"n": "Slovakia", "z": [{"(GMT+01:00) Central European Time - Prague": "Europe/Bratislava"}]}, "SI": {"n": "Slovenia", "z": [{"(GMT+01:00) Central European Time - Belgrade": "Europe/Ljubljana"}]}, "SB": {"n": "Solomon Islands", "z": [{"(GMT+11:00) Guadalcanal": "Pacific/Guadalcanal"}]}, "SO": {"n": "Somalia", "z": [{"(GMT+03:00) Mogadishu": "Africa/Mogadishu"}]}, "ZA": {"n": "South Africa", "z": [{"(GMT+02:00) Johannesburg": "Africa/Johannesburg"}]}, "GS": {"n": "South Georgia and the South Sandwich Islands", "z": [{"(GMT-02:00) South Georgia": "Atlantic/South_Georgia"}]}, "KR": {"n": "South Korea", "z": [{"(GMT+09:00) Seoul": "Asia/Seoul"}]}, "ES": {"n": "Spain", "z": [{"(GMT+00:00) Canary Islands": "Atlantic/Canary"}, {"(GMT+01:00) Ceuta": "Africa/Ceuta"}, {"(GMT+01:00) Madrid": "Europe/Madrid"}]}, "LK": {"n": "Sri Lanka", "z": [{"(GMT+05:30) Colombo": "Asia/Colombo"}]}, "SD": {"n": "Sudan", "z": [{"(GMT+03:00) Khartoum": "Africa/Khartoum"}]}, "SR": {"n": "Suriname", "z": [{"(GMT-03:00) Paramaribo": "America/Paramaribo"}]}, "SJ": {"n": "Svalbard and Jan Mayen", "z": [{"(GMT+01:00) Oslo": "Arctic/Longyearbyen"}]}, "SZ": {"n": "Swaziland", "z": [{"(GMT+02:00) Mbabane": "Africa/Mbabane"}]}, "SE": {"n": "Sweden", "z": [{"(GMT+01:00) Stockholm": "Europe/Stockholm"}]}, "CH": {"n": "Switzerland", "z": [{"(GMT+01:00) Zurich": "Europe/Zurich"}]}, "SY": {"n": "Syria", "z": [{"(GMT+02:00) Damascus": "Asia/Damascus"}]}, "TW": {"n": "Taiwan", "z": [{"(GMT+08:00) Taipei": "Asia/Taipei"}]}, "TJ": {"n": "Tajikistan", "z": [{"(GMT+05:00) Dushanbe": "Asia/Dushanbe"}]}, "TZ": {"n": "Tanzania", "z": [{"(GMT+03:00) Dar es Salaam": "Africa/Dar_es_Salaam"}]}, "TH": {"n": "Thailand", "z": [{"(GMT+07:00) Bangkok": "Asia/Bangkok"}]}, "TL": {"n": "Timor-Leste", "z": [{"(GMT+09:00) Dili": "Asia/Dili"}]}, "TG": {"n": "Togo", "z": [{"(GMT+00:00) Lome": "Africa/Lome"}]}, "TK": {"n": "Tokelau", "z": [{"(GMT+14:00) Fakaofo": "Pacific/Fakaofo"}]}, "TO": {"n": "Tonga", "z": [{"(GMT+13:00) Tongatapu": "Pacific/Tongatapu"}]}, "TT": {"n": "Trinidad and Tobago", "z": [{"(GMT-04:00) Port of Spain": "America/Port_of_Spain"}]}, "TN": {"n": "Tunisia", "z": [{"(GMT+01:00) Tunis": "Africa/Tunis"}]}, "TR": {"n": "Turkey", "z": [{"(GMT+03:00) Istanbul": "Europe/Istanbul"}]}, "TM": {"n": "Turkmenistan", "z": [{"(GMT+05:00) Ashgabat": "Asia/Ashgabat"}]}, "TC": {"n": "Turks and Caicos Islands", "z": [{"(GMT-05:00) Grand Turk": "America/Grand_Turk"}]}, "TV": {"n": "Tuvalu", "z": [{"(GMT+12:00) Funafuti": "Pacific/Funafuti"}]}, "UM": {"n": "U.S. Minor Outlying Islands", "z": [{"(GMT-11:00) Midway": "Pacific/Midway"}, {"(GMT-10:00) Johnston": "Pacific/Johnston"}, {"(GMT+12:00) Wake": "Pacific/Wake"}]}, "VI": {"n": "U.S. Virgin Islands", "z": [{"(GMT-04:00) St. Thomas": "America/St_Thomas"}]}, "UG": {"n": "Uganda", "z": [{"(GMT+03:00) Kampala": "Africa/Kampala"}]}, "UA": {"n": "Ukraine", "z": [{"(GMT+02:00) Kiev": "Europe/Kiev"}]}, "AE": {"n": "United Arab Emirates", "z": [{"(GMT+04:00) Dubai": "Asia/Dubai"}]}, "GB": {"n": "United Kingdom", "z": [{"(GMT+00:00) GMT (no daylight saving)": "Etc/GMT"}, {"(GMT+00:00) London": "Europe/London"}]}, "US": {"n": "United States", "z": [{"(GMT-10:00) Hawaii Time": "Pacific/Honolulu"}, {"(GMT-09:00) Alaska Time": "America/Anchorage"}, {"(GMT-07:00) Mountain Time - Arizona": "America/Phoenix"}, {"(GMT-08:00) Pacific Time": "America/Los_Angeles"}, {"(GMT-07:00) Mountain Time": "America/Denver"}, {"(GMT-06:00) Central Time": "America/Chicago"}, {"(GMT-05:00) Eastern Time": "America/New_York"}]}, "UY": {"n": "Uruguay", "z": [{"(GMT-03:00) Montevideo": "America/Montevideo"}]}, "UZ": {"n": "Uzbekistan", "z": [{"(GMT+05:00) Tashkent": "Asia/Tashkent"}]}, "VU": {"n": "Vanuatu", "z": [{"(GMT+11:00) Efate": "Pacific/Efate"}]}, "VA": {"n": "Vatican City", "z": [{"(GMT+01:00) Rome": "Europe/Vatican"}]}, "VE": {"n": "Venezuela", "z": [{"(GMT-04:30) Caracas": "America/Caracas"}]}, "VN": {"n": "Vietnam", "z": [{"(GMT+07:00) Hanoi": "Asia/Saigon"}]}, "WF": {"n": "Wallis and Futuna", "z": [{"(GMT+12:00) Wallis": "Pacific/Wallis"}]}, "EH": {"n": "Western Sahara", "z": [{"(GMT+00:00) El Aaiun": "Africa/El_Aaiun"}]}, "YE": {"n": "Yemen", "z": [{"(GMT+03:00) Aden": "Asia/Aden"}]}, "ZM": {"n": "Zambia", "z": [{"(GMT+02:00) Lusaka": "Africa/Lusaka"}]}, "ZW": {"n": "Zimbabwe", "z": [{"(GMT+02:00) Harare": "Africa/Harare"}]} };
+        return countlyGlobal.timezones;
     },
     renderCommon: function() {
         var appTypes = {}, self = this;
@@ -2254,16 +2333,18 @@ window.ManageAppsView = countlyView.extend({
             });
             var appTimezone = timezones[countlyGlobal.apps[app_id].country];
 
-            for (var i = 0; i < appTimezone.z.length; i++) {
-                for (var tzone in appTimezone.z[i]) {
-                    if (appTimezone.z[i][tzone] === countlyGlobal.apps[app_id].timezone) {
-                        var appEditTimezone = store.get('first_app') ? $("#first-app-edit-timezone").find(".read") : $("#app-edit-timezone").find(".read"),
-                            appCountryCode = countlyGlobal.apps[app_id].country;
-                        appEditTimezone.find(".flag").css({"background-image": "url(" + countlyGlobal.cdn + "images/flags/" + appCountryCode.toLowerCase() + ".png)"});
-                        appEditTimezone.find(".country").text(appTimezone.n);
-                        appEditTimezone.find(".timezone").text(tzone);
-                        store.get('first_app') ? initCountrySelect("#first-app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]) : initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
-                        break;
+            if (appTimezone && appTimezone.z) {
+                for (var i = 0; i < appTimezone.z.length; i++) {
+                    for (var tzone in appTimezone.z[i]) {
+                        if (appTimezone.z[i][tzone] === countlyGlobal.apps[app_id].timezone) {
+                            var appEditTimezone = store.get('first_app') ? $("#first-app-edit-timezone").find(".read") : $("#app-edit-timezone").find(".read"),
+                                appCountryCode = countlyGlobal.apps[app_id].country;
+                            appEditTimezone.find(".flag").css({"background-image": "url(" + countlyGlobal.cdn + "images/flags/" + appCountryCode.toLowerCase() + ".png)"});
+                            appEditTimezone.find(".country").text(appTimezone.n);
+                            appEditTimezone.find(".timezone").text(tzone);
+                            store.get('first_app') ? initCountrySelect("#first-app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]) : initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
+                            break;
+                        }
                     }
                 }
             }
@@ -4204,7 +4285,12 @@ window.ManageUsersView = countlyView.extend({
 });
 
 window.EventsBlueprintView = countlyView.extend({
-    beforeRender: function() {},
+    beforeRender: function() {
+        this.selectedEventGroups = {};
+        this.selectedEventGroupsName = {};
+        this.selectedEventGroupsIds = [];
+        this.selectedEventGroupsNames = [];
+    },
     initialize: function() {
         var previousEvent = countlyCommon.getPersistentSettings()["activeEvent_" + countlyCommon.ACTIVE_APP_ID];
         if (previousEvent) {
@@ -4212,6 +4298,25 @@ window.EventsBlueprintView = countlyView.extend({
         }
         this.template = Handlebars.compile($("#template-events-blueprint").html());
         this.textLimit = 100;
+
+    },
+    initializeTabs: function() {
+        var self = this;
+        var urlPref = "#/analytics/manage-events/";
+        if (countlyCommon.APP_NAMESPACE !== false) {
+            urlPref = "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/manage-events/";
+        }
+        this.tabs = $("#tabs").tabs();
+        this.tabs.on("tabsactivate", function(event, ui) {
+            $(window).trigger("resize"); //DATA TABLES HACK FOR STICKY HEADERS
+            if (ui && ui.newPanel) {
+                var tab = ($(ui.newPanel).attr("id") + "").replace("events-", "");
+                self._tab = tab;
+                if (tab && tab.length) {
+                    Backbone.history.noHistory(urlPref + tab);
+                }
+            }
+        });
     },
     pageScript: function() {
         var self = this;
@@ -4334,7 +4439,6 @@ window.EventsBlueprintView = countlyView.extend({
             }
         });
 
-        //hide apply button
         $("#events-apply-changes").css('display', 'none');
         self.preventHashChange = false;
         $("#events-apply-order").css('display', 'none');
@@ -4342,6 +4446,10 @@ window.EventsBlueprintView = countlyView.extend({
 
         CountlyHelpers.initializeTableOptions($("#events-custom-settings-table"));
         $(".cly-button-menu").on("cly-list.click", function(event, data) {
+            if (!$(data.target).parents("#events-custom-settings-table").length) {
+                return;
+            }
+
             var id = $(data.target).parents("tr").data("id");
             var name = $(data.target).parents("tr").data("name");
             var visibility = $(data.target).parents("tr").data("visible");
@@ -4359,25 +4467,654 @@ window.EventsBlueprintView = countlyView.extend({
                 }
             }
         });
+    },
+    initEventGroupDrawer: function() {
+        var self = this;
+        this.eventGroupDrawer = CountlyHelpers.createDrawer({
+            id: "event-group-drawer",
+            form: $('#event-groups-blueprint-drawer'),
+            title: jQuery.i18n.map["events.event-group-drawer-create"],
+            applyChangeTriggers: false,
+            resetForm: function() {
+                $(self.eventGroupDrawer).find('.title span').first().html(jQuery.i18n.map["events.event-group-drawer-create"]);
+                $("#current_group_id").text('');
+                $("#group-name-input").val('');
+                $("#event-group-description").val("");
+                $("#event-group-include-events-dropdown").clyMultiSelectClearSelection({});
+                $("#group-count-input").val('');
+                $("#group-sum-input").val('');
+                $("#group-duration-input").val('');
 
+                $("#create-widget").show();
+                self.checkEventGroupDrawerInterval = setInterval(function() {
+                    self.checkEventGroupDrawerDisabled();
+                    if (!app.activeView.eventGroupDrawer) {
+                        clearInterval(self.checkEventGroupDrawerInterval);
+                    }
+                }, 1000);
+            },
+            onClosed: function() {
+                $(".grid-stack-item").removeClass("marked-for-editing");
+                clearInterval(self.checkEventGroupDrawerInterval);
+            }
+        });
 
+        this.eventGroupDrawer.init();
+        $("#event-group-drawer #use-description-checkbox").off("click").on("click", function(e) {
+            var checked = e.target.checked;
+            if (checked) {
+                $("#event-group-description").attr("disabled", false);
+            }
+            else {
+                $("#event-group-description").val("");
+                $("#event-group-description").attr("disabled", true);
+            }
+        });
 
+        $("#event-group-drawer .on-off-switch input").on("change", function() {
+            var isChecked = $(this).is(":checked");
+            // var id = $(this).attr("id");
+            if (isChecked) {
+                $(this).parent().find(".text").replaceWith('<span style="opacity: 1" class="text">' + jQuery.i18n.map["events.group-visibility-checkbox"] + '</span>');
+            }
+            else {
+                $(this).parent().find(".text").replaceWith('<span class="text">' + jQuery.i18n.map["events.group-invisibility-checkbox"] + '</span>');
+            }
+        });
+
+        var events = countlyEvent.getEvents(true);
+        var tableData = [];
+        for (var i = 0; i < events.length; i++) {
+            if (!events[i].is_event_group) {
+                tableData.push({value: events[i].key, name: events[i].name});
+            }
+        }
+        $("#event-group-include-events-dropdown").clyMultiSelectSetItems(tableData);
+        $("#event-group-drawer #save-widget").hide();
+        $("#event-group-drawer #create-widget").addClass("disabled");
+
+        $("#event-group-drawer #create-widget").off("click").on("click", function() {
+            countlyEvent.createEventGroup(JSON.stringify(self.getEventGroupDrawerSetting()), function(res) {
+                if (res === true) {
+                    CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                    self.refresh(true, false);
+                }
+                else {
+                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                }
+            });
+            self.eventGroupDrawer.close();
+        });
+        $("#event-group-drawer #save-widget").off("click").on("click", function() {
+            countlyEvent.updateEventGroup(JSON.stringify(self.getEventGroupDrawerSetting()), "", "", "", function(res) {
+                if (res === true) {
+                    CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                    self.refresh(true, false);
+                }
+                else {
+                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                }
+            });
+            self.eventGroupDrawer.close();
+        });
+    },
+    getEventGroupDrawerSetting: function() {
+        var groupInstance = {
+            name: $("#group-name-input").val() || null,
+            description: null,
+            app_id: countlyCommon.ACTIVE_APP_ID,
+            source_events: null,
+            status: $("#event-group-drawer .on-off-switch input").is(":checked"),
+            display_map: {
+                c: $("#group-count-input").val() || null,
+                d: $("#group-duration-input").val() || null,
+                s: $("#group-sum-input").val() || null
+            }
+        };
+
+        if (!$("#event-group-description").prop("disabled")) {
+            groupInstance.description = $("#event-group-description").val() || null;
+        }
+        else {
+            groupInstance.description = "";
+        }
+
+        if ($("#current_group_id").text().length > 0) {
+            groupInstance._id = $("#current_group_id").text();
+        }
+
+        var source_events = $("#event-group-include-events-dropdown").clyMultiSelectGetSelection();
+        if (source_events.length > 0) {
+            groupInstance.source_events = source_events;
+        }
+        return groupInstance;
+    },
+    checkEventGroupDrawerDisabled: function() {
+        var groupConfig = this.getEventGroupDrawerSetting();
+        $("#create-widget").removeClass("disabled");
+        $("#save-widget").removeClass("disabled");
+        for (var key in groupConfig) {
+            if (groupConfig[key] === null) {
+                $("#create-widget").addClass("disabled");
+                $("#save-widget").addClass("disabled");
+            }
+        }
+    },
+    loadEventGroupDrawerSetting: function(data) {
+        this.eventGroupDrawer.resetForm();
+        $("#current_group_id").text(data._id);
+        $("#group-name-input").val(_.unescape(data.name));
+        var eventsOptions = data.source_events.map(function(e) {
+            return {value: e, name: e};
+        });
+        $("#event-group-include-events-dropdown").clyMultiSelectSetSelection(eventsOptions);
+        if (data.description) {
+            $("#event-group-drawer #use-description-checkbox").attr("checked", true);
+            $("#event-group-description").attr("disabled", false);
+            $("#event-group-description").val(_.unescape(data.description));
+        }
+        else {
+            $("#event-group-drawer #use-description-checkbox").attr("checked", false);
+            $("#event-group-description").val("");
+            $("#event-group-description").attr("disabled", true);
+        }
+        if (data.status) {
+            $("#event-group-drawer .on-off-switch input").attr("checked", true);
+        }
+        else {
+            $("#event-group-drawer .on-off-switch input").attr("checked", false);
+        }
+
+        $("#group-count-input").val(_.unescape(data.display_map.c));
+        $("#group-duration-input").val(_.unescape(data.display_map.d));
+        $("#group-sum-input").val(_.unescape(data.display_map.s));
+
+        // todo: more properties
+        window.dd = this.eventGroupDrawer;
+
+        $(this.eventGroupDrawer).find('.title span').first().html(jQuery.i18n.map["events.edit-your-group"]);
+        $(this.evntGroupDrawer).addClass("open editing");
+        $("#create-widget").hide();
+        $("#save-widget").show();
+    },
+    eventGroupSettingMenu: function() {
+        var self = this;
+        $(".cly-button-menu").on("cly-list.click", function(event, data) {
+            if (!$(data.target).parents("#event-groups-settings-table").length) {
+                return;
+            }
+
+            var id = $(data.target).parents("tr").attr("id");
+            var name = $(data.target).parents("tr").attr("name");
+            var visibility = $(data.target).parents("tr").attr("status");
+            if (id) {
+                $(".event-groups-settings-menu").find(".delete_single_event").attr("id", id);
+                $(".event-groups-settings-menu").find(".delete_single_event").attr("name", name);
+                $(".event-groups-settings-menu").find(".event_toggle_visibility").attr("id", id);
+                if (visibility === "true") {
+                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=hide]").show();
+                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=show]").hide();
+                }
+                else {
+                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=hide]").hide();
+                    $(".event-groups-settings-menu").find(".event_toggle_visibility[data-changeto=show]").show();
+                }
+            }
+        });
+        CountlyHelpers.initializeTableOptions($('#events-event-groups'));
+        $("#new-event-group-button").off("click").on("click", function() {
+            $("#save-widget").hide();
+            self.eventGroupDrawer.resetForm();
+            self.eventGroupDrawer.open();
+        });
+
+        $('.event-groups-table').find("tbody td .edit-event").off("click").on("click", function() {
+            self.eventGroupDrawer.resetForm();
+            self.eventGroupDrawer.open();
+            countlyEvent.getEventGroupById($(this).attr("data-event-group-id"), function(result) {
+                self.loadEventGroupDrawerSetting(result);
+            });
+        });
+    },
+    initEventGroupsTable: function() {
+        var self = this;
+        this.getEventGroups = countlyEvent.getEventGroupsTable();
+        var aoColumns = [
+            {
+                "mData": function(row) {
+                    return "<i class='fa fa-reorder event-order' data-event-group-order=\"" + row.order + "\" data-event-group-id=\"" + row._id + "\"></i>";
+                },
+                "bSortable": false,
+                "sTitle": "",
+                "sClass": 'events-blueprint-order',
+                "sWidth": '30px',
+            },
+            {
+                "mData": function(row) {
+                    if (self.selectedEventGroups[row._id]) {
+                        return "<a class='fa fa-check-square check-green' id=\"" + row._id + "\"></a>";
+                    }
+                    else {
+                        return "<a class='fa fa-square-o check-green'  id=\"" + row._id + "\"></a>";
+                    }
+                },
+                "sType": "numeric",
+                "sClass": "center",
+                "sWidth": "30px",
+                "bSortable": false,
+                "sTitle": "<a class='fa fa-square-o check-green check-header'></a>"
+            },
+            {
+                "mData": function(row) {
+                    return row.name + '<br>' + '<span style="margin-top:2px; opacity: 0.5;">' + row.source_events.length + 'events</span>';
+                },
+                "sType": "string",
+                "sTitle": jQuery.i18n.map['events.general.event'],
+                "bSortable": false
+            },
+            {
+                "mData": function(row) {
+                    if (row.status) {
+                        return '<div class="event_visibility_row_visible"><i class="fa fa-eye"></i> ' + jQuery.i18n.map["events.general.status.visible"] + "</div>";
+                    }
+                    else {
+                        return '<div class="event_visibility_row_hidden"><i class="fa fa-eye-slash"></i>' + jQuery.i18n.map["events.general.status.hidden"] + "</div>";
+                    }
+                },
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["events.general.status"],
+                "bSortable": false,
+                "sWidth": "8%"
+            },
+            {
+                "mData": function(row) {
+                    return row.source_events.map(function(o) {
+                        return o;
+                    }).join("<br>");
+                },
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["events.blueprint-event-group-included-events"],
+                "bSortable": false,
+                "sWidth": "12%"
+            },
+            {
+                "mData": function(row) {
+                    if (!row.description) {
+                        return '-';
+                    }
+                    return row.description;
+                },
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["events.general.event-description"],
+                "bSortable": false,
+            },
+            {
+                "mData": function(row) {
+                    return "<div><button class='edit-event' data-event-group-id=" + row._id + ">" + jQuery.i18n.map["events.blueprint-edit"] + "</button><a class='cly-list-options'></a></div>";
+                },
+                "sType": "string",
+                "sTitle": "",
+                "sClass": 'shrink right',
+                "sWidth": '100px',
+                "bSortable": false,
+                "bSearchable": false,
+                "noExport": true
+            }
+        ];
+        this.eventGroupsTable = $('.event-groups-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaData": this.getEventGroups,
+            "fnRowCallback": function(nRow, aData) {
+                $(nRow).attr("id", aData._id);
+                $(nRow).attr("name", aData.name);
+                $(nRow).attr("status", aData.status);
+                $(nRow).css("height", "72px");
+            },
+            "aoColumns": aoColumns,
+            "fnDrawCallback": function(oSettings) {
+                $.fn.dataTable.defaults.fnDrawCallback(oSettings);
+            }
+        }));
+        $("#event-group-general-filter").off("cly-select-change").on("cly-select-change", function(e, val) {
+            if (val === "all") {
+                self.eventGroupFilter = null;
+            }
+            else if (val === "hidden") {
+                self.eventGroupFilter = false;
+            }
+            else if (val === "visible") {
+                self.eventGroupFilter = true;
+            }
+            self.refresh(true);
+        });
+        $(".event-groups-table").sortable({
+            items: "tbody tr",
+            revert: true,
+            handle: "td:first-child",
+            helper: function(e, elem) {
+                elem.children().each(function() {
+                    $(this).width($(this).width());
+                });
+                elem.addClass("moving");
+                elem.css("width", (parseInt(elem.width())) + "px");//to not go over line
+                return elem;
+            },
+            cursor: "move",
+            containment: "parent",
+            tolerance: "pointer",
+            placeholder: "event-row-placeholder",
+            stop: function(e, elem) {
+                elem.item.removeClass("moving");
+                $("#event-groups-apply-order").css('display', 'block');
+            }
+        });
+        $("#event-groups-apply-order").on("click", function() {
+            var eventOrder = [];
+            $("#events-event-groups .event-groups-table").find(".event-order").each(function() {
+                if ($(this).attr("data-event-group-id")) {
+                    eventOrder.push($(this).attr("data-event-group-id"));
+                }
+            });
+            countlyEvent.updateEventGroup("", JSON.stringify(eventOrder), "", "", function(res) {
+                if (res) {
+                    var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
+                    CountlyHelpers.notify(msg);
+                    self.resetSelection();
+                }
+                else {
+                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                }
+            });
+        });
+        $("#event-groups-apply-order").css('display', 'none');
+        this.eventGroupsTable.find("thead .check-green").click(function() {
+            if ($(this).hasClass("fa-check-square")) {
+                // $(".sticky-header .check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                self.eventGroupsTable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                self.selectedEventGroups = {};
+                self.selectedEventGroupsName = {};
+                self.selectedEventGroupsIds = [];
+                self.selectedEventGroupsNames = [];
+                $("#event-groups-general-action").addClass("disabled");
+            }
+            else {
+                // $(".sticky-header .check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                self.eventGroupsTable.find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                self.eventGroupsTable.find(".check-green").parents("tr").each(function() {
+                    var id = $(this).attr("id");
+                    var name = $(this).attr("name");
+                    if (id) {
+                        if (!self.selectedEventGroups[id]) {
+                            self.selectedEventGroupsIds.push(id);
+                        }
+                        self.selectedEventGroups[id] = true;
+                        $("#event-groups-general-action").removeClass("disabled");
+                    }
+                    if (name) {
+                        if (!self.selectedEventGroupsName[name]) {
+                            self.selectedEventGroupsNames.push(name);
+                        }
+                        self.selectedEventGroupsName[name] = true;
+                    }
+                });
+            }
+        });
+        $('.event-groups-table tbody ').off("click", "td:nth-child(2)").on("click", "td:nth-child(2)", function(e) {
+            e.cancelBubble = true; // IE Stop propagation
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            } // Other Broswers
+            var id = $(this).parent().attr("id");
+            if (id) {
+                if (self.selectedEventGroups[id]) {
+                    $(this).find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                    self.selectedEventGroups[id] = null;
+                    var index = self.selectedEventGroupsIds.indexOf(id);
+                    if (index !== -1) {
+                        self.selectedEventGroupsIds.splice(index, 1);
+                    }
+                }
+                else {
+                    self.selectedEventGroups[id] = true;
+                    self.selectedEventGroupsIds.push(id);
+                    $(this).find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                }
+
+                if (self.selectedEventGroupsName[name]) {
+                    self.selectedEventGroupsName[name] = null;
+                    var k = self.selectedEventGroupsNames.indexOf(name);
+                    if (k !== -1) {
+                        self.selectedEventGroupsNames.splice(k, 1);
+                    }
+                }
+                else {
+                    self.selectedEventGroupsName[name] = true;
+                    self.selectedEventGroupsNames.push(name);
+                }
+
+                if (self.selectedEventGroupsIds.length) {
+                    $("#event-groups-general-action").removeClass("disabled");
+                }
+                else {
+                    $("#event-groups-general-action").addClass("disabled");
+                }
+            }
+        });
+        $("#event-groups-general-action").off("cly-select-change").on("cly-select-change", function(e, selected) {
+            if (selected !== "") {
+                $(".event-groups-general-action").clySelectSetSelection("", jQuery.i18n.map["crashes.make-action"]);
+                if (self.selectedEventGroupsIds.length === 0) {
+                    CountlyHelpers.alert(jQuery.i18n.map["events.general.none-chosen"], "red");
+                }
+                else {
+                    if (selected === "show" || selected === "hide") {
+                        if (selected === "show") {
+                            selected = true;
+                        }
+                        if (selected === "hide") {
+                            selected = false;
+                        }
+                        countlyEvent.updateEventGroup("", "", JSON.stringify(self.selectedEventGroupsIds), selected, function(result) {
+                            if (result === true) {
+                                var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
+                                CountlyHelpers.notify(msg);
+                                self.resetSelection();
+                            }
+                            else {
+                                CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                            }
+                        });
+                    }
+                    else if (selected === "delete") {
+                        var title = jQuery.i18n.map["events.general.want-delete-title"];
+                        var msg = jQuery.i18n.prop("events.general.want-delete", "<b>" + self.selectedEventGroupsNames.join(", ") + "</b>");
+                        if (self.selectedEventGroupsNames.join(", ").length > self.textLimit) {
+                            var mz = jQuery.i18n.prop("events.delete.multiple-events", self.selectedEventGroupsNames.length);
+                            msg = jQuery.i18n.prop("events.general.want-delete", "<b>" + mz + "</b>");
+                        }
+                        var yes_but = jQuery.i18n.map["events.general.yes-delete-events"];
+                        if (self.selectedEventGroupsIds.length === 1) {
+                            if (self.selectedEventGroupsNames[0].length > self.textLimit) {
+                                self.selectedEventGroupsNames[0] = self.selectedEventGroupsNames[0].substr(0, self.textLimit) + "...";
+                            }
+                            msg = jQuery.i18n.prop("events.general.want-delete-this", "<b>" + self.selectedEventGroupsNames.join(", ") + "</b>");
+                            title = jQuery.i18n.map["events.general.want-delete-this-title"];
+                            yes_but = jQuery.i18n.map["events.general.yes-delete-event"];
+                        }
+                        CountlyHelpers.confirm(msg, "popStyleGreen", function(result) {
+                            if (!result) {
+                                return true;
+                            }
+                            countlyEvent.deleteEventGroup(JSON.stringify(self.selectedEventGroupsIds), function(result1) {
+                                if (result1 === true) {
+                                    var msg1 = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"], sticky: false, clearAll: true, type: "ok"};
+                                    CountlyHelpers.notify(msg1);
+                                    self.resetSelection();
+                                }
+                                else {
+                                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                                }
+                            });
+                        }, [jQuery.i18n.map["common.no-dont-delete"], yes_but], {title: title, image: "delete-an-event"});
+                    }
+                }
+            }
+        });
+        self.eventGroupSettingMenu();
+        $(".event-groups-settings-menu").on("cly-list.item", function(event, data) {
+            var el = $(data.target).parent() || $(data.target);
+
+            if (!el.parents(".event-groups-settings-menu").length) {
+                return;
+            }
+
+            var id = el.attr("id") || $(data.target).attr("id");
+
+            if (id) {
+                if (el.hasClass("delete_single_event")) {
+                    var eventName = el.attr("name");
+                    if (eventName === "") {
+                        eventName = id;
+                    }
+                    if (eventName.length > self.textLimit) {
+                        eventName = eventName.substr(0, self.textLimit) + "...";
+                    }
+                    CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this", "<b>" + eventName + "</b>"), "popStyleGreen", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyEvent.deleteEventGroup(JSON.stringify([id]), function(result1) {
+                            if (result1 === true) {
+                                var msg1 = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"], sticky: false, clearAll: true, type: "ok"};
+                                CountlyHelpers.notify(msg1);
+                                self.resetSelection();
+                            }
+                            else {
+                                CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                            }
+                        });
+                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map['events.general.yes-delete-event']], {title: jQuery.i18n.map['events.general.want-delete-this-title'], image: "delete-an-event"});
+                }
+                else if (el.hasClass("event_toggle_visibility")) {
+                    var toggleto = el.data("changeto");
+                    if (toggleto === "show") {
+                        toggleto = true;
+                    }
+                    if (toggleto === "hide") {
+                        toggleto = false;
+                    }
+                    countlyEvent.updateEventGroup("", "", JSON.stringify([id]), toggleto, function(result) {
+                        if (result === true) {
+                            var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
+                            CountlyHelpers.notify(msg);
+                            self.resetSelection();
+                        }
+                        else {
+                            CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                        }
+                    });
+                }
+            }
+        });
+        $(".cly-button-menu-trigger").off("click").on("click", function(event) {
+            event.stopPropagation();
+            $(event.target).toggleClass("active");
+            if ($(event.target).hasClass("active")) {
+                $('.events-right-menu').focus();
+                $(event.target).removeClass("disabled");
+            }
+            else {
+                $(event.target).removeClass("active").addClass("disabled");
+            }
+        });
+        $(".eb-event-group-include-events-tooltip").tooltipster({
+            theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+            contentCloning: true,
+            interactive: true,
+            trigger: 'hover',
+            side: 'right',
+            zIndex: 10001,
+            maxWidth: 250,
+            content: $.i18n.map["events.blueprint-event-groups-include-events-tooltip"]
+        });
+        $(".eb-event-group-properties-events-tooltip").tooltipster({
+            theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+            contentCloning: true,
+            interactive: true,
+            trigger: 'hover',
+            side: 'right',
+            zIndex: 10001,
+            maxWidth: 250,
+            content: $.i18n.map["events.blueprint-event-groups-properties-tooltip"]
+        });
+    },
+    rightButtonsEvents: function() {
+        var self = this;
+        self.dtable.find("tbody tr").hover(function() {
+            $(this).find(".edit-box").css({"visibility": "visible"});
+            //$(this).find(".cly-list-options").addClass('cly-list-options-row');
+            $(this).find(".edit-event").css({"visibility": "visible"});
+        }, function() {
+            $(this).find("td .edit-box").css({"visibility": "hidden"});
+            //$(this).find(".cly-list-options").removeClass('cly-list-options-row');
+            $(this).find(".edit-event").css({"visibility": "hidden"});
+        });
+    },
+    rightButttonsEventGroups: function() {
+        var self = this;
+        $('.event-groups-table').find("tbody tr").hover(function() {
+            $(this).find(".edit-box").css({"visibility": "visible"});
+            //$(this).find(".cly-list-options").addClass('cly-list-options-row');
+            $(this).find(".edit-event").css({"visibility": "visible"});
+        }, function() {
+            $(this).find("td .edit-box").css({"visibility": "hidden"});
+            //$(this).find(".cly-list-options").removeClass('cly-list-options-row');
+            $(this).find(".edit-event").css({"visibility": "hidden"});
+        });
+        self.eventGroupsTable.find("tbody td .edit-box").click(function() {
+            self.eventGroupDrawer.resetForm();
+            self.eventGroupDrawer.open();
+            countlyEvent.getEventGroupById($(this).attr("data-event-group-id"), function(result) {
+                self.loadEventGroupDrawerSetting(result);
+            });
+        });
+    },
+    resetSelection: function() {
+        this.selectedEventGroups = {};
+        this.selectedEventGroupsIds = [];
+        this.selectedEventGroupsName = {};
+        this.selectedEventGroupsNames = [];
+        this.eventGroupsTable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+        $("#event-groups-general-action").addClass("disabled");
+        $("#event-groups-apply-order").css('display', 'none');
+        this.refresh(true);
     },
     renderCommon: function(isRefresh) {
         var eventData = countlyEvent.getEventData();
         var self = this;
 
-        var eventmap = countlyEvent.getEvents(true);
         this.activeEvent = "";
-        var i = 0;
 
-        var tableData = [];
-        for (i = 0; i < eventmap.length; i++) {
-            if (eventmap[i].is_active === true) {
-                this.activeEvent = eventmap[i];
+        /**
+         * Function to fetch events table data
+         * @returns {Array} table data - table data
+         */
+        function fetchEventsTableData() {
+            var em = countlyEvent.getEvents(true);
+            var td = [];
+            for (var k = 0; k < em.length; k++) {
+                if (em[k].is_active === true) {
+                    this.activeEvent = em[k];
+                }
+                if (!em[k].is_event_group) {
+                    td.push(em[k]);
+                }
             }
-            tableData.push(eventmap[i]);
+
+            return td;
         }
+
+        var eventmap = countlyEvent.getEvents(true);
+        var tableData = fetchEventsTableData();
         this.tableData = tableData;
 
         this.have_drill = false;
@@ -4390,7 +5127,7 @@ window.EventsBlueprintView = countlyView.extend({
         var allCount = keys.length;
         var visibleCount = 0;
         var hiddenCount = 0;
-        for (i = 0; i < keys.length; i++) {
+        for (var i = 0; i < keys.length; i++) {
             if (for_general[keys[i]].is_visible === false) {
                 hiddenCount++;
             }
@@ -4504,27 +5241,37 @@ window.EventsBlueprintView = countlyView.extend({
                 },
                 {
                     "mData": function() {
-                        return '<a class="cly-list-options"></a>';
+                        return "<div><button class='edit-event'>" + jQuery.i18n.map["events.blueprint-edit"] + "</button><a class='cly-list-options'></a></div>";
                     },
                     "sType": "string",
                     "sTitle": "",
-                    "bSortable": false
+                    "sClass": 'shrink right',
+                    "sWidth": '100px',
+                    "bSortable": false,
+                    "bSearchable": false,
+                    "noExport": true
                 },
             ];
 
-
             $(this.el).html(this.template(this.templateData));
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            self.initializeTabs();
+            var index = $(".ui-tabs-panel", self.tabs).index($("#events-" + self._tab));
+            if (index !== -1) {
+                self.tabs.tabs("option", "active", index);
+            }
+            self.initEventGroupsTable();
+            this.dtable = $('.events-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": tableData,
                 "aoColumns": this.columns,
                 "fnRowCallback": function(nRow, aData) {
                     $(nRow).attr("data-id", aData.key);
                     $(nRow).attr("data-name", aData.name);
                     $(nRow).attr("data-visible", aData.is_visible);
+                    $(nRow).css("height", "72px");
                 }
             }));
 
-            $(".d-table").stickyTableHeaders();
+            $(".events-table").stickyTableHeaders();
 
             self.check_changes();
             self.pageScript();
@@ -4540,7 +5287,6 @@ window.EventsBlueprintView = countlyView.extend({
             $("#events-event-settings").on("keyup", "textarea", function() {
                 self.check_changes();
             });
-
 
             //General settings, select all checkbox
             $("#events-custom-settings-table").on("click", "#select-all-events", function() {
@@ -4642,9 +5388,6 @@ window.EventsBlueprintView = countlyView.extend({
                     }
                     else {
                         if (selected === "show" || selected === "hide") {
-                            for (var k = 0; k < changeList.length; k++) {
-                                changeList[k] = changeList[k].replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
-                            }
                             countlyEvent.update_visibility(changeList, selected, function(result) {
                                 if (result === true) {
                                     var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
@@ -4697,7 +5440,7 @@ window.EventsBlueprintView = countlyView.extend({
             //save chenges for one event
             $("#events-apply-changes").on("click", function() {
                 var eventMap = {};
-                var eventKey = $("#events-settings-table").find(".event_key").val().replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
+                var eventKey = $("#events-settings-table").find(".event_key").val();
                 eventMap[eventKey] = {};
                 var omitted_segments = {};
 
@@ -4763,16 +5506,15 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#events-custom-settings').css("display", "none");
             }
 
-            $(".cly-button-menu").on("cly-list.item", function(event1, data) {
-                var el = null;
-                var tmpEl = $(data.target);
-                if (tmpEl.parent().is("a") && tmpEl.parent().data("id") !== undefined) {
-                    el = tmpEl.parent();
+            $(".event-settings-menu").on("cly-list.item", function(event1, data) {
+                var el = $(data.target).parent() || $(data.target);
+
+                if (!el.parents(".event-settings-menu").length) {
+                    return;
                 }
-                else {
-                    el = tmpEl;
-                }
-                var event = el.data("id");
+
+                var event = el.data("id") || $(data.target).data("id");
+
                 if (event) {
                     if (el.hasClass("delete_single_event")) {
                         var eventName = el.data('name');
@@ -4801,7 +5543,7 @@ window.EventsBlueprintView = countlyView.extend({
                     }
                     else if (el.hasClass("event_toggle_visibility")) {
                         var toggleto = el.data("changeto");
-                        event = event.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
+
                         countlyEvent.update_visibility([event], toggleto, function(result) {
                             if (result === true) {
                                 var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], info: "", sticky: false, clearAll: true, type: "ok"};
@@ -4815,8 +5557,176 @@ window.EventsBlueprintView = countlyView.extend({
                     }
                 }
             });
+            self.rightButtonsEvents();
+            self.rightButttonsEventGroups();
 
+            self.initEventGroupDrawer();
+            this.dtable.on('click', '.edit-event', function() {
+                var key = $(this).parents("tr").data("id");
+                var td = fetchEventsTableData();
+                var event = td.filter(function(e) {
+                    return e.key === key;
+                });
+
+                if (!event.length) {
+                    return;
+                }
+
+                event = event[0];
+
+                $("#events-blueprint-drawer").addClass("open");
+                $('#eb-key-name').val(_.unescape(event.key));
+                $('#eb-event-name').val(_.unescape(event.name));
+                $('#eb-duration-name').val(_.unescape(event.dur));
+                $('#eb-sum-name').val(_.unescape(event.sum));
+                $('#eb-count-name').val(_.unescape(event.count));
+                $('#eb-event-desc-input').val(_.unescape(event.description));
+
+                var segments = [];
+                event.segments = event.segments || [];
+                for (var j = 0; j < event.segments.length; j++) {
+                    segments.push({name: event.segments[j], value: event.segments[j]});
+                }
+
+                var omittedSegments = [];
+                event.omittedSegments = event.omittedSegments || [];
+                for (var k = 0; k < event.omittedSegments.length; k++) {
+                    omittedSegments.push({name: event.omittedSegments[k], value: event.omittedSegments[k]});
+                }
+
+                self.activeEvent.omittedSegments = event.omittedSegments;
+                $("#eb-multi-omit-segments-drop").clyMultiSelectSetItems(segments);
+                $("#eb-multi-omit-segments-drop").clyMultiSelectSetSelection(omittedSegments || []);
+
+                if (event.is_visible) {
+                    $('#eb-event-visibility .on-off-switch input').attr('checked', true);
+                    $('#eb-event-visibility > div.on-off-switch > span').html(jQuery.i18n.map["events.edit.event-visible"]);
+                }
+                else {
+                    $('#eb-event-visibility .on-off-switch input').removeAttr('checked', false);
+                    $('#eb-event-visibility > div.on-off-switch > span').html();
+                }
+
+                $('#eb-event-desc-input').show();
+
+                if (event.description !== "") {
+                    $('#eb-description-checkbox').removeClass('fa-square-o');
+                    $('#eb-description-checkbox').addClass('fa-check-square');
+                    $('#eb-event-desc-input').removeAttr('disabled');
+                }
+                else {
+                    $('#eb-description-checkbox').removeClass('fa-check-square');
+                    $('#eb-description-checkbox').addClass('fa-square-o');
+                    $('#eb-event-desc-input').attr('disabled', 'disabled');
+                }
+            });
+            self.initEventDrawer();
         }
+    },
+    initEventDrawer: function() {
+        var self = this;
+        $("#eb-event-desc-input").show();
+        $("#eb-description-checkbox, #eb-description-section .label span").on("click", function() {
+            var check = $("#eb-description-checkbox").hasClass("fa-check-square");
+            if (check) {
+                $("#eb-description-checkbox").removeClass('fa-check-square').addClass('fa-square-o');
+                $('#eb-event-desc-input').attr('disabled', 'disabled');
+            }
+            else {
+                $("#eb-description-checkbox").removeClass('fa-square-o').addClass('fa-check-square');
+                $('#eb-event-desc-input').removeAttr('disabled');
+            }
+        });
+
+        $('#events-blueprint-drawer .on-off-switch input').off("change").on("change", function() {
+            var isChecked = $(this).is(":checked");
+            if (isChecked) {
+                $(this).parents(".on-off-switch").find("span").text(jQuery.i18n.map["events.edit.event-visible"]);
+            }
+            else {
+                $(this).parents(".on-off-switch").find("span").text("");
+            }
+        });
+
+        $("#save-event").on("click", function() {
+            var settings = self.getEventBlueprintDrawerSettings();
+            var event_map = {};
+            event_map[settings.key] = settings;
+            var omitted_segments = {};
+            omitted_segments[settings.key] = settings.omit_list;
+            if (self.compare_arrays(omitted_segments[settings.key], self.activeEvent.omittedSegments || []) && omitted_segments[settings.key].length > 0) {
+                CountlyHelpers.confirm(jQuery.i18n.map["event.edit.omitt-warning"], "red", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+                    countlyEvent.update_map(JSON.stringify(event_map), "", "", JSON.stringify(omitted_segments), function(result1) {
+                        if (result1 === true) {
+                            CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                            $("#events-blueprint-drawer").removeClass("open");
+                            self.refresh(true);
+                        }
+                        else {
+                            CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                        }
+                    });
+                });
+            }
+            else {
+                countlyEvent.update_map(JSON.stringify(event_map), "", "", JSON.stringify(omitted_segments), function(result2) {
+                    if (result2 === true) {
+                        CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                        $("#events-blueprint-drawer").removeClass("open");
+                        self.refresh(true);
+                    }
+                    else {
+                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"], "red");
+                    }
+                });
+            }
+        });
+        $(".cly-drawer").find(".close").off("click").on("click", function() {
+            $(this).parents(".cly-drawer").removeClass("open");
+        });
+        $("#eb-event-visibility .on-off-switch input").on("change", function() {
+            var isChecked = $(this).is(":checked");
+            if (isChecked) {
+                $(this).parent().find(".text").replaceWith('<span style="opacity: 1;vertical-align: middle; margin-bottom: 0px;" class="text">' + jQuery.i18n.map["events.edit.event-visible"] + '</span>');
+            }
+            else {
+                $(this).parent().find(".text").replaceWith('<span style="vertical-align: middle; margin-bottom: 0px;" class="text">' + jQuery.i18n.map["events.edit.event-invisible"] + '</span>');
+            }
+        });
+        $(".eb-event-properties-tooltip").tooltipster({
+            theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+            contentCloning: true,
+            interactive: true,
+            trigger: 'hover',
+            side: 'right',
+            zIndex: 10001,
+            maxWidth: 250,
+            content: $.i18n.map["events.blueprint-events-properties-tooltip"]
+        });
+    },
+    getEventBlueprintDrawerSettings: function() {
+        var keyName = $("#eb-key-name").val();
+        var eventName = $("#eb-event-name").val();
+        var eventDesc = $("#eb-event-desc-input").val();
+        var status = $("#eb-event-visibility .on-off-switch input").is(":checked");
+        var countName = $("#eb-count-name").val();
+        var sumName = $("#eb-sum-name").val();
+        var durationName = $("#eb-duration-name").val();
+        var omitList = $("#eb-multi-omit-segments-drop").clyMultiSelectGetSelection();
+
+        return {
+            key: keyName,
+            name: eventName,
+            description: eventDesc || "",
+            is_visible: status,
+            count: countName || "Count",
+            sum: sumName || "Sum",
+            dur: durationName || "Duration",
+            omit_list: omitList || []
+        };
     },
     compare_arrays: function(array1, array2) {
         if (Array.isArray(array1) && Array.isArray(array2)) {
@@ -4883,15 +5793,17 @@ window.EventsBlueprintView = countlyView.extend({
         var self = this;
 
         this.dtable.fnDestroy(false);
-        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+        this.dtable = $('.events-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": self.tableData,
             "aoColumns": self.columns,
             "fnRowCallback": function(nRow, aData) {
                 $(nRow).attr("data-id", aData.key);
                 $(nRow).attr("data-name", aData.name);
                 $(nRow).attr("data-visible", aData.is_visible);
+                $(nRow).css("height", "72px");
             }
         }));
+        self.rightButtonsEvents();
     },
     refresh: function(eventChanged) {
         var self = this;
@@ -4906,28 +5818,50 @@ window.EventsBlueprintView = countlyView.extend({
                 $("#events-event-settings .widget-header .title").html(self.activeEvent.name);//change event settings title
                 $(self.el).find("#event-nav-eventitems").html(newPage.find("#event-nav-eventitems").html());//reset navigation
 
-                $('#event-filter-types div[data-value="all"]').html('<span>' + jQuery.i18n.map["events.general.show.all"] + '</span> (' + self.templateData.allCount + ')');
-                $('#event-filter-types div[data-value="visible"]').html('<span>' + jQuery.i18n.map["events.general.show.visible"] + '</span> (' + self.templateData.visibleCount + ')');
-                $('#event-filter-types div[data-value="hidden"]').html('<span>' + jQuery.i18n.map["events.general.show.hidden"] + '</span> (' + self.templateData.hiddenCount + ')');
+                $('#event-filter-types div[data-value="all"]').html('<span>' + jQuery.i18n.map["events.blueprint-events-show.all"] + '</span>');
+                $('#event-filter-types div[data-value="visible"]').html('<span>' + jQuery.i18n.map["events.blueprint-events-show.visible"] + '</span>');
+                $('#event-filter-types div[data-value="hidden"]').html('<span>' + jQuery.i18n.map["events.blueprint-events-show.hidden"] + '</span>');
 
                 if (self.visibilityFilter === true) {
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.visible"] + ' (' + self.templateData.visibleCount + ')');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.blueprint-events-show.visible"] + '');
                 }
                 else if (self.visibilityFilter === false) {
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.hidden"] + ' (' + self.templateData.hiddenCount + ')');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.blueprint-events-show.hidden"] + '');
                 }
                 else {
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.all"] + ' (' + self.templateData.allCount + ')');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.blueprint-events-show.all"] + '');
                 }
                 self.pageScript(); //add scripts
 
 
-
                 app.localize($("#events-event-settings"));
                 app.localize($("#events-custom-settings-table"));
-
+                app.localize($("#event-groups-settings-table"));
+                self.tableData = self.tableData.filter(function(event) {
+                    var sourceEventFilter = self.visibilityFilter;
+                    var getEventFilter = event.is_visible;
+                    if (sourceEventFilter === true) {
+                        return getEventFilter;
+                    }
+                    else if (sourceEventFilter === false) {
+                        return !getEventFilter;
+                    }
+                    else {
+                        return self.tableData;
+                    }
+                });
                 CountlyHelpers.refreshTable(self.dtable, self.tableData);
-
+                CountlyHelpers.refreshTable(self.eventGroupsTable, countlyEvent.getEventGroupsTable(self.eventGroupFilter));
+                self.rightButttonsEventGroups();
+                self.eventGroupSettingMenu();
+                var events = countlyEvent.getEvents(true);
+                var tableData = [];
+                for (var i = 0; i < events.length; i++) {
+                    if (!events[i].is_event_group && events[i].is_visible) {
+                        tableData.push({value: events[i].key, name: events[i].name});
+                    }
+                }
+                $("#event-group-include-events-dropdown").clyMultiSelectSetItems(tableData);
                 $('#select-all-events').addClass("fa-square-o");
                 $('#select-all-events').removeClass("fa-check-square");
 
@@ -4940,6 +5874,8 @@ window.EventsBlueprintView = countlyView.extend({
                     $('#events-custom-settings').css("display", "none");
                 }
                 $("#events-apply-order").trigger("eventSettingsTableUpdated");
+                $("#event-groups-apply-order").css('display', 'none');
+                self.rightButtonsEvents();
             });
         }
     }
@@ -5081,6 +6017,9 @@ window.EventsOverviewView = countlyView.extend({
                     dd.data[index].classdiv = element.classdiv;
                     dd.data[index].arrow_class = element.arrow_class;
                     dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
+                    if (!countlyEvent.getEventMap(true, false)[dd.data[index].name]) {
+                        dd.data[index].isDeletedEvent = true;
+                    }
                 }
             }
             self.refresh(true);
@@ -5096,6 +6035,9 @@ window.EventsOverviewView = countlyView.extend({
                     dd.data[index].classdiv = element.classdiv;
                     dd.data[index].arrow_class = element.arrow_class;
                     dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
+                    if (!countlyEvent.getEventMap(true, false)[dd.data[index].name]) {
+                        dd.data[index].isDeletedEvent = true;
+                    }
                 }
             }
             self.refresh(true);
@@ -5113,7 +6055,7 @@ window.EventsOverviewView = countlyView.extend({
             if ($(this).attr("data-order-key")) {
                 var i = $(this).attr("data-order-key");
                 $(this).attr("data-order-key", NeweventOrder.length);
-                NeweventOrder.push({"order": NeweventOrder.length, "eventKey": self.overviewList[i].eventKey, "eventProperty": self.overviewList[i].eventProperty, "eventName": self.overviewList[i].eventName, "propertyName": self.overviewList[i].propertyName});
+                NeweventOrder.push({"order": NeweventOrder.length, "eventKey": self.overviewList[i].eventKey, "eventProperty": self.overviewList[i].eventProperty, is_event_group: (self.overviewList[i].is_event_group || false), "eventName": self.overviewList[i].eventName, "propertyName": self.overviewList[i].propertyName});
                 $("#update_overview_button").removeClass('disabled');
             }
         });
@@ -5131,7 +6073,7 @@ window.EventsOverviewView = countlyView.extend({
             if (this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname]) {
                 propname = this.eventmap[overviewList[i].eventKey][propname];
             }
-            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, "eventName": evname, "propertyName": propname});
+            this.overviewList.push({"order": i, "eventKey": overviewList[i].eventKey, "eventProperty": overviewList[i].eventProperty, is_event_group: (overviewList[i].is_event_group || false), "eventName": evname, "propertyName": propname});
         }
         this.templateData["overview-list"] = this.overviewList;
     },
@@ -5157,7 +6099,7 @@ window.EventsOverviewView = countlyView.extend({
     renderCommon: function(isRefresh) {
         var self = this;
         this.currentOverviewList = countlyEvent.getOverviewList();
-        this.eventmap = countlyEvent.getEventMap();
+        this.eventmap = countlyEvent.getEventMap(false, true); //with event groups
         var app_admin = false;
         if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             app_admin = true;
@@ -5233,7 +6175,19 @@ window.EventsOverviewView = countlyView.extend({
                 self.overviewDrawer.resetForm();
                 self.overviewDrawer.open();
             });
+            $("#events-overview-event").off("cly-select-change").on("cly-select-change", function() {
+                var event = $("#events-overview-event").clySelectGetSelection();
+                event = countlyCommon.encodeHtml(event);
+                var prop = ["count", "sum", "dur"];
+                for (var z = 0; z < prop.length; z++) {
+                    var text = jQuery.i18n.map["events.table." + prop[z]];
+                    if (self.eventmap[event] && self.eventmap[event][prop[z]]) {
+                        text = self.eventmap[event][prop[z]];
+                    }
+                    $("#events-overview-attr").find(".item[data-value=" + prop[z] + "]").html(text);
+                }
 
+            });
             //Add new item to overview
             $("#add_to_overview").on("click", function() {
                 var event = $("#events-overview-event").clySelectGetSelection();
@@ -5249,7 +6203,7 @@ window.EventsOverviewView = countlyView.extend({
                             }
                         }
                         if (unique_over === true) {
-                            self.overviewList.push({eventKey: event, eventProperty: property, eventName: self.eventmap[event_encoded].name, propertyName: self.eventmap[event_encoded][property] || jQuery.i18n.map["events.table." + property], order: self.overviewList.length});
+                            self.overviewList.push({is_event_group: self.eventmap[event_encoded].is_event_group || false, eventKey: event, eventProperty: property, eventName: self.eventmap[event_encoded].name, propertyName: self.eventmap[event_encoded][property] || jQuery.i18n.map["events.table." + property], order: self.overviewList.length});
                             $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
                             $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
                             $("#update_overview_button").removeClass('disabled');
@@ -5289,7 +6243,7 @@ window.EventsOverviewView = countlyView.extend({
                             var overviewList2 = countlyEvent.getOverviewList();
                             this.overviewList = [];
                             for (var p = 0; p < overviewList2.length; p++) {
-                                this.overviewList.push({"order": p, "eventKey": overviewList2[p].eventKey, "eventProperty": overviewList2[p].eventProperty, "eventName": overviewList2[p].eventName, "propertyName": overviewList2[p].propertyName});
+                                this.overviewList.push({is_event_group: overviewList2[p].is_event_group || false, "order": p, "eventKey": overviewList2[p].eventKey, "eventProperty": overviewList2[p].eventProperty, "eventName": overviewList2[p].eventName, "propertyName": overviewList2[p].propertyName});
                             }
                             self.dateChanged();
                         });
@@ -5372,6 +6326,50 @@ window.EventsView = countlyView.extend({
             countlyEvent.setActiveEvent(previousEvent);
         }
         this.template = Handlebars.compile($("#template-events").html());
+    },
+    showExceedRemind: function() {
+        /**
+         * generate event limitaion remind tooltips
+         * @param {string} text - i18n text for reminding
+         */
+        function generateDom(text) {
+            var html = '<div class="event-remind-tooltip" style="display: block;">' +
+                '<div class="content">' +
+                        '<span class="prefix"></span>' +
+                        '<span class="remind-context">' + text + '</span>' +
+                        '<i class="fas fa-times"></i>' +
+                '</div>' +
+            '</div>';
+            setTimeout(function() {
+                $(".routename-events #event-alert").append(html);
+            }, 0);
+            $(".event-remind-tooltip .fa-times").off("click").on("click", function(e) {
+                $(e.currentTarget.parentElement.parentElement).remove();
+            });
+        }
+        $(".routename-events #event-alert").html("");
+        var limitation = countlyEvent.getLimitation();
+        var currentEventList = countlyEvent.getEvents() || [];
+        if (currentEventList.length >= limitation.event_limit) {
+            var tips = jQuery.i18n.prop("events.max-event-key-limit", limitation.event_limit);
+            generateDom(tips);
+        }
+
+        var event_name = countlyEvent.getEventData().eventName;
+        var segments = countlyEvent.getEventSegmentations() || [];
+        if (segments && segments.length >= limitation.event_segmentation_limit) {
+            var tips2 = jQuery.i18n.prop("events.max-segmentation-limit", limitation.event_segmentation_limit, event_name);
+            generateDom(tips2);
+        }
+
+        var metaDB = countlyEvent.getActiveEventSegmentMeta();
+        segments.forEach(function(s) {
+            if (metaDB[s] && metaDB[s].length >= limitation.event_segmentation_value_limit) {
+                var tips3 = jQuery.i18n.prop("events.max-unique-value-limit", limitation.event_segmentation_value_limit, s);
+                generateDom(tips3);
+            }
+        });
+
     },
     pageScript: function() {
         $(".event-container").unbind("click");
@@ -5491,7 +6489,7 @@ window.EventsView = countlyView.extend({
         var aaColumns = [];
 
         if (countlyEvent.isSegmentedView()) {
-            aaColumns.push({"mData": "curr_segment", "sTitle": jQuery.i18n.map["events.table.segmentation"]});
+            aaColumns.push({"mData": "curr_segment", "sTitle": jQuery.i18n.map["events.table.segmentation"], "sClass": 'break'});
         }
         else {
             aaColumns.push({"mData": "date", "sType": "customDate", "sTitle": jQuery.i18n.map["common.date"]});
@@ -5635,20 +6633,31 @@ window.EventsView = countlyView.extend({
     renderCommon: function(isRefresh) {
         var eventData = countlyEvent.getEventData(),
             eventSummary = countlyEvent.getEventSummary(),
+            eventGroups = countlyEvent.getEventGroups(),
+            events = countlyEvent.getEvents(false, true),
             self = this;
 
+        // manipulate events list & replace keys with event_group names
+        for (var i = 0; i < events.length; i++) {
+            if (eventGroups[events[i].key]) {
+                events[i].name = eventGroups[events[i].key].label;
+                events[i].is_event_group = true;
+            }
+        }
+
         var showManagmentButton = false;
-        (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1);
-        {
+        if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyGlobal.member.active_app_id) > -1) {
             showManagmentButton = true;
         }
+
         var eventCount = countlyEvent.getEvents().length;
         this.templateData = {
             "page-title": eventData.eventName.toUpperCase(),
+            "is_event_group": eventData.is_event_group,
             "active-app-id": countlyCommon.ACTIVE_APP_ID,
             "event-description": eventData.eventDescription,
             "logo-class": "events",
-            "events": countlyEvent.getEvents(),
+            "events": events,
             "event-map": countlyEvent.getEventMap(),
             "segmentations": countlyEvent.getEventSegmentations(),
             "active-segmentation": countlyEvent.getActiveSegmentation(),
@@ -5666,8 +6675,8 @@ window.EventsView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             CountlyHelpers.applyColors();
             if (eventCount > 0) {
-                for (var i in this.showOnGraph) {
-                    self.showOnGraph[i] = $(".big-numbers.selected." + i).length;
+                for (var k in this.showOnGraph) {
+                    self.showOnGraph[k] = $(".big-numbers.selected." + k).length;
                 }
                 this.drawGraph(eventData);
                 this.drawTable(eventData);
@@ -5686,6 +6695,7 @@ window.EventsView = countlyView.extend({
                     countlyEvent.setActiveEvent(targetEvent);
                 }
             }
+            this.showExceedRemind();
         }
     },
     refresh: function(eventChanged, segmentationChanged) {
@@ -5771,6 +6781,9 @@ window.EventsView = countlyView.extend({
                 }
                 app.localize();
                 $('.nav-search').find("input").trigger("input");
+                if (segmentationChanged || eventChanged) {
+                    self.showExceedRemind();
+                }
             }
         });
     }
@@ -5827,6 +6840,7 @@ window.LongTaskView = countlyView.extend({
             "all": jQuery.i18n.map["common.all"],
             "funnels": jQuery.i18n.map["sidebar.funnels"] || "Funnels",
             "drill": jQuery.i18n.map["drill.drill"] || "Drill",
+            "flows": jQuery.i18n.map["flows.flows"] || "Flows",
             "retention": jQuery.i18n.map["retention.retention"] || "Retention",
             "formulas": jQuery.i18n.map["calculated-metrics.formulas"] || "Formulas",
             "dbviewer": jQuery.i18n.map["dbviewer.title"] || "DBViewer"
@@ -6048,21 +7062,20 @@ window.LongTaskView = countlyView.extend({
         this.showTableColumns(self);
     },
     showTableColumns: function(self) {
-        var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
-        var automaticallyColumns = [false, true, true, true, false, false, false, false, true, true];
+        var manuallyColumns = [true, true, true, true, true, true, true, true, false, true];
+        var automaticallyColumns = [false, true, true, true, false, false, false, true, true, true];
+        //                         [NAME, DATA, STAT(R),ORIGIN, TYPE,PERIOD,VISIB,LASTUp,Started,duration,status(SUB),but]
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
             });
-            $(".report-manager-idget-header .filter2-segmentation").show();
-            $(".report-manager-idget-header .filter3-segmentation").hide();
+            $(".report-manager-widget-header .filter2-segmentation").show();
         }
         else {
             automaticallyColumns.forEach(function(vis, index) {
                 self.dtable.fnSetColumnVis(index, vis);
             });
-            $(".report-manager-idget-header .filter2-segmentation").hide();
-            $(".report-manager-idget-header .filter3-segmentation").show();
+            $(".report-manager-widget-header .filter2-segmentation").hide();
         }
     },
     renderTable: function() {
@@ -6080,7 +7093,7 @@ window.LongTaskView = countlyView.extend({
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.name-and-desc"],
-                "bSortable": true,
+                "bSortable": false,
                 "sClass": "report-manager-break"
             },
             {
@@ -6094,9 +7107,53 @@ window.LongTaskView = countlyView.extend({
             },
             {
                 "mData": function(row) {
-                    return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "</span>";
+                    if (row.taskgroup && row.subtasks) {
+                        var difStats = false;
+                        var stat = "completed";
+                        var dd = "";
+
+                        for (var k in row.subtasks) {
+                            if (row.subtasks[k].status !== stat) {
+                                difStats = true;
+                            }
+                            var color = "green";
+                            if (row.subtasks[k].status === "errored") {
+                                color = "red";
+                            }
+                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                color = "blue";
+                            }
+                            if (row.subtasks[k].errormsg) {
+                                dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<p class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
+                            }
+                            else {
+                                dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
+                            }
+
+                        }
+                        if (difStats) {
+                            return dd;
+                        }
+                        else {
+                            if (row.errormsg && row.status === "errored") {
+                                return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
+                            }
+                            else {
+                                return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "</span>";
+                            }
+                        }
+                    }
+                    else {
+                        if (row.errormsg) {
+                            return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
+                        }
+                        else {
+                            return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "</span>";
+                        }
+                    }
                 },
                 "sType": "string",
+                "bSortable": false,
                 "sTitle": jQuery.i18n.map["common.status"]
             },
             {
@@ -6104,6 +7161,7 @@ window.LongTaskView = countlyView.extend({
                     return '<span class="status-color" style="text-transform:capitalize">' + row.type + "</span>";
                 },
                 "sType": "string",
+                "bSortable": false,
                 "sTitle": jQuery.i18n.map["taskmanager.origin"]
             },
             {
@@ -6147,18 +7205,6 @@ window.LongTaskView = countlyView.extend({
             },
             {
                 "mData": function(row, type) {
-                    if (type === "display") {
-                        return countlyCommon.formatTimeAgo(row.start);
-                    }
-                    else {
-                        return row.start;
-                    }
-                },
-                "sType": "string",
-                "sTitle": jQuery.i18n.map["common.started"]
-            },
-            {
-                "mData": function(row, type) {
                     var time = 0;
                     if (row.taskgroup && row.subtasks) {
                         for (var k in row.subtasks) {
@@ -6189,66 +7235,6 @@ window.LongTaskView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["events.table.dur"]
             },
             {
-                "mData": function(row/*, type*/) {
-                    var color = "green";
-                    if (row.taskgroup && row.subtasks) {
-                        var difStats = false;
-                        var stat = "completed";
-                        var dd = "";
-
-                        for (var k in row.subtasks) {
-                            if (row.subtasks[k].status !== stat) {
-                                difStats = true;
-                            }
-                            color = "green";
-                            if (row.subtasks[k].status === "errored") {
-                                color = "red";
-                            }
-                            if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
-                                color = "blue";
-                            }
-                            if (row.subtasks[k].errormsg) {
-                                dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<div class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
-                            }
-                            else {
-                                dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
-                            }
-
-                        }
-                        if (difStats) {
-                            return dd;
-                        }
-                        else {
-                            color = "green";
-                            if (row.status === "errored") {
-                                color = "red";
-                            }
-                            if (row.status === "running" || row.status === "rerunning") {
-                                color = "yellow";
-                            }
-                            if (row.errormsg) {
-                                return "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "<div class='error_message_div'>" + row.errormsg + "</div></div>";
-                            }
-                            else {
-                                return "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "</div>";
-                            }
-                        }
-                    }
-                    else {
-                        if (row.status === "errored") {
-                            color = "red";
-                        }
-                        if (row.status === "running" || row.status === "rerunning") {
-                            color = "yellow";
-                        }
-                        return "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.status + "</div>";
-                    }
-                },
-                "bSortable": false,
-                "sType": "string",
-                "sTitle": jQuery.i18n.map["common.status"]
-            },
-            {
                 "mData": function() {
                     return '<a class="cly-list-options"></a>';
                 },
@@ -6269,7 +7255,6 @@ window.LongTaskView = countlyView.extend({
                 Object.assign(queryObject, self._query);
                 if (self.taskCreatedBy === 'manually') {
                     queryObject.manually_create = true;
-                    delete queryObject.status;
                 }
                 else {
                     queryObject.manually_create = {$ne: true};
@@ -6298,8 +7283,8 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
-        this.addErrorTooltips();
-        this.dtable.fnSort([ [8, 'desc'] ]);
+        // this.addErrorTooltips();
+        this.dtable.fnSort([ [7, 'desc'] ]);
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
             '<a class="item view-task" href="" data-localize="common.view"></a>' +
             '<a class="item rerun-task" data-localize="taskmanager.rerun"></a>' +
@@ -6381,13 +7366,13 @@ window.LongTaskView = countlyView.extend({
                         if (!result) {
                             return true;
                         }
-                        countlyTaskManager.update(id, function(res) {
+                        countlyTaskManager.update(id, function(res, error) {
                             if (res.result === "Success") {
                                 countlyTaskManager.monitor(id, true);
                                 self.refresh();
                             }
                             else {
-                                CountlyHelpers.alert(res.result, "red");
+                                CountlyHelpers.alert(error, "red");
                             }
                         });
                     }, [jQuery.i18n.map["common.no-dont-do-that"], jQuery.i18n.map["taskmanager.yes-rerun-report"]], {title: jQuery.i18n.map["taskmanager.confirm-rerun-title"], image: "rerunning-task"});
@@ -7317,6 +8302,7 @@ app.platformView = new PlatformView();
 app.appVersionView = new AppVersionView();
 app.carrierView = new CarrierView();
 app.resolutionView = new ResolutionView();
+app.deviceTypeView = new DeviceTypeView();
 app.durationView = new DurationView();
 app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
@@ -7369,6 +8355,9 @@ app.route("/analytics/carriers", "carriers", function() {
 app.route("/analytics/resolutions", "resolutions", function() {
     this.renderWhenReady(this.resolutionView);
 });
+app.route("/analytics/device_type", "device_type", function() {
+    this.renderWhenReady(this.deviceTypeView);
+});
 app.route("/analytics/durations", "durations", function() {
     this.renderWhenReady(this.durationView);
 });
@@ -7406,19 +8395,29 @@ app.route("/analytics/events/key/:event", "events", function() {
 });
 app.route("/analytics/events/:subpageid", "events", function(subpageid) {
     this.eventsView.subpageid = subpageid;
-    if (subpageid === 'blueprint') {
-        if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) > -1) {
-            this.renderWhenReady(this.eventsBlueprintView);
-        }
-        else {
-            app.navigate("/analytics/events", true);
-        }
-    }
-    else if (subpageid === 'overview') {
+    if (subpageid === 'overview') {
         this.renderWhenReady(this.eventsOverviewView);
     }
     else {
         this.renderWhenReady(this.eventsView);
+    }
+});
+app.route('/analytics/manage-events', 'events', function() {
+    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) > -1) {
+        this.eventsBlueprintView._tab = "events";
+        this.renderWhenReady(this.eventsBlueprintView);
+    }
+    else {
+        app.navigate("/analytics/events", true);
+    }
+});
+app.route('/analytics/manage-events/:tab', 'event-groups', function(tab) {
+    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) > -1) {
+        this.eventsBlueprintView._tab = tab;
+        this.renderWhenReady(this.eventsBlueprintView);
+    }
+    else {
+        app.navigate("/analytics/events", true);
     }
 });
 app.route("/manage/jobs", "manageJobs", function() {
@@ -7436,6 +8435,38 @@ app.addAppSwitchCallback(function(appId) {
     else {
         $('.sidebar-menu #events-submenu .events-blueprint-side-menu').css("display", "none");
     }
+
+    $.when(countlyVersionHistoryManager.initialize()).then(function() {
+        var versionsData = countlyVersionHistoryManager.getData(true) || {fs: [], db: [], pkg: ""};
+        var dbVersion = countlyGlobal.countlyVersion;
+        if (versionsData.db && versionsData.db.length > 0) {
+            dbVersion = versionsData.db[versionsData.db.length - 1];
+        }
+
+        var fsVersion = countlyGlobal.countlyVersion;
+        if (versionsData.fs && versionsData.fs.length > 0) {
+            fsVersion = versionsData.fs[versionsData.fs.length - 1];
+        }
+
+        var versions = [versionsData.pkg, dbVersion, fsVersion];
+        for (var z = 0; z < versions.length; z++) {
+            if (versions[z].version) {
+                versions[z] = versions[z].version;
+            }
+            versions[z] = versions[z].split(".");
+            if (versions[z].length > 2) {
+                versions[z] = versions[z].slice(0, 2);
+            }
+            versions[z] = versions[z].join(".");
+        }
+
+        if (versions[0] !== versions[1] || versions[1] !== versions[2]) {
+            CountlyHelpers.notify({
+                title: jQuery.i18n.map["version_history.alert-title"],
+                message: jQuery.i18n.map["version_history.alert-message"]
+            });
+        }
+    });
 });
 
 

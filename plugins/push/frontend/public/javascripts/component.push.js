@@ -85,6 +85,7 @@ window.component('push', function(push) {
         // Automated push fields
         this.auto = m.prop(data.auto || false);
         this.autoOnEntry = m.prop(data.autoOnEntry || false);
+        this.autoCancelTrigger = m.prop(data.autoCancelTrigger || false);
         this.autoCohorts = m.prop(data.autoCohorts || []);
         this.autoEvents = m.prop(data.autoEvents || []);
         this.autoEnd = m.prop(data.autoEnd || undefined);
@@ -175,14 +176,22 @@ window.component('push', function(push) {
             el.querySelectorAll('.pers').forEach(function(el){
                 el.textContent = el.getAttribute('data-fallback');
 
-                var name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                var key = el.getAttribute('data-key'),
+                    name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === key; })[0];
                 if (name) {
-                    name = name.title();
+                    name =  t.p('pu.po.tab2.tt', name.title(), el.getAttribute('data-fallback'));
+                } else if (this.auto() && this.autoOnEntry() === 'events') {
+                    name = this.autoEvents().map(function(event){
+                        return push.PERS_EVENTS && push.PERS_EVENTS[event] && push.PERS_EVENTS[event].filter(function(opt){ return opt.value() === key; })[0];
+                    }).filter(function(opt) { return !!opt; })[0];
+                    if (name) {
+                        name = name.desc() || t.p('pu.po.tab2.tt', name.title(), el.getAttribute('data-fallback'));
+                    }
                 }
                 if (!name) {
-                    name = el.getAttribute('data-key');
+                    name = t.p('pu.po.tab2.tt', el.getAttribute('data-key'), el.getAttribute('data-fallback'));
                 }
-                el.title = t.p('pu.po.tab2.tt', name, el.getAttribute('data-fallback'));
+                el.title = name;
                 $(el).tooltipster({
                     animation: 'fade',
                     animationDuration: 100,
@@ -201,7 +210,7 @@ window.component('push', function(push) {
                     interactive: true,
                     contentAsHTML: true
                 });
-            });
+            }.bind(this));
         };
 
         this.result = new push.MessageResult(data.result || {});
@@ -396,6 +405,7 @@ window.component('push', function(push) {
                 obj.buttons = parseInt(this.buttons());
                 obj.media = this.media();
                 obj.autoOnEntry = this.autoOnEntry();
+                obj.autoCancelTrigger = this.autoCancelTrigger();
                 obj.autoCohorts = this.autoCohorts();
                 obj.autoEvents = this.autoEvents();
                 obj.autoEnd = this.autoEnd();
@@ -667,6 +677,9 @@ window.component('push', function(push) {
         this.errorFixed = function() {
             if (this.error() === 'Process exited') {
                 return (this.status() & (1 << 4)) ? 'exited' :  'exited-sent';
+            }
+            if (this.error() === '{}') {
+                return 'exited';
             }
             return this.error();
         };

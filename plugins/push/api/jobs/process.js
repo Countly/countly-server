@@ -254,6 +254,7 @@ class ProcessJob extends J.IPCJob {
      */
     compile(notes, msgs) {
         // let pm, pn, pp, po;
+        this.log.d('Compiling notes %j, messages %j', notes, msgs);
 
         let invalid = [];
 

@@ -59,7 +59,7 @@ window.PluginsView = countlyView.extend({
                         "mData": function(row, type) {
                             if (type === "display") {
                                 var disabled = (row.prepackaged) ? 'disabled' : '';
-                                var input = '<div class="on-off-switch ' + disabled + '">';
+                                var input = '<div data-initial="' + row.enabled + '" class="on-off-switch ' + disabled + '">';
 
                                 if (row.enabled) {
                                     input += '<input type="checkbox" class="on-off-switch-checkbox" id="plugin-' + row.code + '" checked ' + disabled + '>';
@@ -94,6 +94,18 @@ window.PluginsView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["plugins.description"],
                         "bSortable": false,
                         "sClass": "light"
+                    },
+                    {
+                        "mData": function(row) {
+                            var dependentKeys = Object.keys(row.dependents).map(function(item) {
+                                return countlyPlugins.getTitle(item);
+                            });
+                            return dependentKeys.join(", ");
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["plugins.dependents"],
+                        "sClass": "center",
+                        "bSortable": false
                     },
                     {
                         "mData": function(row) {
@@ -1477,10 +1489,10 @@ if (countlyGlobal.member.global_admin) {
                     }
 
                     if (this.isSaveAvailable()) {
-                        this.el.find('.icon-button').show();
+                        this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').show();
                     }
                     else {
-                        this.el.find('.icon-button').hide();
+                        this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').hide();
                     }
                     this.onChange(name, value);
                 }
@@ -1586,29 +1598,106 @@ app.addPageScript("/manage/plugins", function() {
 
     var pluginsData = countlyPlugins.getData();
     var plugins = [];
+    var dirtyPlugins = {};
     for (var i = 0; i < pluginsData.length; i++) {
-        plugins.push(pluginsData[i].code);
+        if (pluginsData[i].enabled) {
+            plugins.push(pluginsData[i].code);
+        }
+    }
+
+    /**
+     *  Change state of plugins
+     *  @param {Array} pluginList - list of plugins to change state for
+     *  @param {Boolean} newState - State to change to
+     */
+    function changeStateOf(pluginList, newState) {
+        pluginList.forEach(function(item) {
+            $("#plugin-" + item).prop('checked', newState);
+            if (newState) {
+                plugins.push(item);
+                plugins = _.uniq(plugins);
+            }
+            else {
+                plugins = _.without(plugins, item);
+            }
+        });
     }
 
     $("#plugins-table").on("change", ".on-off-switch input", function() {
         var $checkBox = $(this),
             plugin = $checkBox.attr("id").replace(/^plugin-/, '');
 
-        if ($checkBox.is(":checked")) {
-            plugins.push(plugin);
-            plugins = _.uniq(plugins);
+        var defaultAction = function(affected) {
+            if ($checkBox.is(":checked")) {
+                plugins.push(plugin);
+                plugins = _.uniq(plugins);
+            }
+            else {
+                plugins = _.without(plugins, plugin);
+            }
+
+            if (!affected) {
+                affected = [plugin];
+            }
+            else {
+                affected = [plugin].concat(affected);
+            }
+
+            affected.forEach(function(item) {
+                var itemCb = $("#plugin-" + item);
+                if (itemCb.length > 0 && itemCb.is(":checked") !== itemCb.parent().data("initial")) {
+                    itemCb.parents("tr").addClass("dirty");
+                    dirtyPlugins[item] = 1;
+                }
+                else {
+                    itemCb.parents("tr").removeClass("dirty");
+                    delete dirtyPlugins[item];
+                }
+            });
+
+            var isDirty = Object.keys(dirtyPlugins).length > 0;
+
+            if (isDirty) {
+                $(".btn-plugin-enabler").show();
+            }
+            else {
+                $(".btn-plugin-enabler").hide();
+            }
+        };
+
+        var enabledDescendants = _.intersection(countlyPlugins.getRelativePlugins(plugin, "down"), plugins),
+            disabledAncestors = _.difference(countlyPlugins.getRelativePlugins(plugin, "up"), plugins);
+
+        if (!$checkBox.is(":checked") && enabledDescendants.length > 0) {
+            CountlyHelpers.confirm(jQuery.i18n.prop("plugins.disable-descendants", countlyPlugins.getTitle(plugin), enabledDescendants.map(function(item) {
+                return countlyPlugins.getTitle(item);
+            }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
+                if (result) {
+                    changeStateOf(enabledDescendants, false);
+                    defaultAction(enabledDescendants);
+                }
+                else {
+                    $checkBox.prop('checked', true);
+                }
+            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-continue"]], { title: jQuery.i18n.map["plugins.indirect-status-change"], image: "apply-changes-to-plugins" });
+        }
+        else if ($checkBox.is(":checked") && disabledAncestors.length > 0) {
+            CountlyHelpers.confirm(jQuery.i18n.prop("plugins.enable-ancestors", countlyPlugins.getTitle(plugin), disabledAncestors.map(function(item) {
+                return countlyPlugins.getTitle(item);
+            }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
+                if (result) {
+                    changeStateOf(disabledAncestors, true);
+                    defaultAction(disabledAncestors);
+                }
+                else {
+                    $checkBox.prop('checked', false);
+                }
+            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-continue"]], { title: jQuery.i18n.map["plugins.indirect-status-change"], image: "apply-changes-to-plugins" });
         }
         else {
-            plugins = _.without(plugins, plugin);
+            defaultAction();
         }
 
-        if (_.difference(countlyGlobal.plugins, plugins).length === 0 &&
-            _.difference(plugins, countlyGlobal.plugins).length === 0) {
-            $(".btn-plugin-enabler").hide();
-        }
-        else {
-            $(".btn-plugin-enabler").show();
-        }
     });
 
     $(document).on("click", ".btn-plugin-enabler", function() {

@@ -367,6 +367,7 @@ function cachedData(note) {
                 'autoTime': { 'required': false, 'type': 'Number' },
                 'autoCapMessages': { 'required': false, 'type': 'Number' },
                 'autoCapSleep': { 'required': false, 'type': 'Number' },
+                'autoCancelTrigger': { 'required': false, 'type': 'Boolean' },
                 'actualDates': { 'required': false, 'type': 'Boolean' },
             },
             data = common.validateArgs(params.qstring.args, argProps, true);
@@ -611,6 +612,7 @@ function cachedData(note) {
             tx: data.tx || false,
             auto: data.auto || false,
             autoOnEntry: data.auto ? data.autoOnEntry : undefined,
+            autoCancelTrigger: data.auto ? data.autoCancelTrigger : undefined,
             autoCohorts: data.auto && autoCohorts && autoCohorts.length ? autoCohorts.map(c => c._id) : undefined,
             autoEvents: data.auto && data.autoEvents && data.autoEvents.length && data.autoEvents || undefined,
             autoEnd: data.auto ? data.autoEnd : undefined,
@@ -1295,7 +1297,7 @@ function cachedData(note) {
                 update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.IOS]: {}});
                 credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.IOS}._id`)));
             }
-            else if (!common.equal(config[N.Platform.IOS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.IOS], true)) {
+            else if (!common.equal(config[N.Platform.IOS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.IOS], true) && config[N.Platform.IOS] && config[N.Platform.IOS].file) {
                 let data = config[N.Platform.IOS],
                     mime = data.file.indexOf(';base64,') === -1 ? null : data.file.substring(0, data.file.indexOf(';base64,')),
                     detected;
@@ -1567,6 +1569,38 @@ function cachedData(note) {
                                 });
                             }
                         });
+
+                        let cancelQuery = Object.assign({}, query, {autoOnEntry: !entered, autoCancelTrigger: true});
+                        common.db.collection('messages').find(cancelQuery).toArray((err2, msgs) => {
+                            if (err2) {
+                                log.e('[auto] Error while loading messages to cancel: %j', err2);
+                                reject(err2);
+                            }
+                            else if (!msgs || !msgs.length) {
+                                log.d('[auto] Won\'t process - no messages to cancel');
+                                resolve(0);
+                            }
+                            else {
+                                Promise.all(msgs.map(async msg => {
+                                    log.d('[auto] Cancelling message %j', msg);
+                                    let sg = new S.StoreGroup(common.db),
+                                        note = new N.Note(msg),
+                                        count = await sg.cancelUids(note, app, uids);
+                                    if (count) {
+                                        await note.update(common.db, {$inc: {'result.total': count}});
+                                    }
+                                    return count;
+                                })).then(results => {
+                                    log.i('[auto] Finished processing cohort %j with results %j', cohort._id, results);
+                                    resolve((results || []).map(r => r.total).reduce((a, b) => a + b, 0));
+                                }, err1 => {
+                                    log.i('[auto] Finished processing cohort %j with error %j / %j', cohort._id, err1, err1.stack);
+                                    reject(err);
+                                });
+                            }
+                        });
+
+
                     }
                     else {
                         log.d('[auto] Won\'t process - no push credentials in app');
@@ -1577,8 +1611,16 @@ function cachedData(note) {
         });
     };
 
-    api.onEvent = function(app_id, uid, key, date, msg) {
-        log.d('[auto] Processing event %j @ %s for user %s', key, new Date(date), uid);
+    api.onEvent = function(app_id, uid, event, date, msg) {
+        let data = {
+            [`[${event.key}]c`]: event.count,
+            [`[${event.key}]s`]: event.sum,
+            [`[${event.key}]d`]: event.duration,
+        };
+        Object.keys(event.segmentation || {}).forEach(k => {
+            data[`[${event.key}]sg_${k}`] = event.segmentation[k];
+        });
+        log.d('[auto] Processing event %j @ %s for user %s', event, new Date(date), uid);
         return new Promise((resolve, reject) => {
             common.db.collection('apps').findOne({_id: typeof app_id === 'string' ? common.db.ObjectID(app_id) : app_id}, (err, app) => {
                 if (err) {
@@ -1591,7 +1633,7 @@ function cachedData(note) {
                         let sg = new S.StoreGroup(common.db),
                             note = new N.Note(msg);
 
-                        sg.pushUids(note, app, [uid], date || new Date().toString()).then(count => {
+                        sg.pushUids(note, app, [uid], date || new Date().toString(), undefined, data).then(count => {
                             if (count) {
                                 note.update(common.db, {$inc: {'result.total': count.total}});
                                 resolve(count.total || 0);

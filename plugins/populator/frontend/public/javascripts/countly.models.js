@@ -1,8 +1,8 @@
 /*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
 (function(countlyPopulator) {
     var metric_props = {
-        mobile: ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"],
-        web: ["_os", "_os_version", "_resolution", "_device", "_app_version", "_density", "_locale", "_store", "_browser"],
+        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_carrier", "_app_version", "_density", "_locale", "_store"],
+        web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_app_version", "_density", "_locale", "_store", "_browser"],
         desktop: ["_os", "_os_version", "_resolution", "_app_version", "_locale"]
     };
     var props = {
@@ -21,6 +21,7 @@
         _device_android: ["GT-S5830L", "HTC6525LVW", "MB860", "LT18i", "LG-P500", "Desire V", "Wildfire S A510e"],
         _device_ios: ["iPhone8,1", "iPhone9,1", "iPhone9,2", "iPod7,1", "iPad3,6"],
         _device_windows_phone: ["Lumia 535", "Lumia 540", "Lumia 640 XL"],
+        _device_type: ["console", "mobile", "tablet", "smarttv", "wearable", "embedded", "desktop"],
         _manufacture_android: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Huaiwei", "Lenovo", "Acer"],
         _manufacture_ios: ["Apple"],
         _manufacture_windows_phone: ["Nokia", "Microsoft"],
@@ -39,7 +40,7 @@
         _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.slideme.sam.manager", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.nokia.payment.iapenabler", "com.qihoo.appstore", "cn.goapk.market", "com.wandoujia.phoenix2", "com.hiapk.marketpho", "com.hiapk.marketpad", "com.dragon.android.pandaspace", "me.onemobile.android", "com.aspire.mm", "com.xiaomi.market", "com.miui.supermarket", "com.baidu.appsearch", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "cm.aptoide.pt", "com.nduoa.nmarket", "com.rim.marketintent", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.keenhi.mid.kitservice", "com.yingyonghui.market", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "com.appslib.vending", "com.mappn.gfan", "com.diguayouxi", "um.market.android", "com.huawei.appmarket", "com.oppo.market", "com.taobao.appcenter"],
         _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
     };
-    var widgetList = [];
+    var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
     var viewSegments = {
         name: ["Login", "Home", "Dashboard", "Main View", "Detail View Level 1", "Detail View Level 2", "Profile", "Settings", "About", "Privacy Policy", "Terms and Conditions"],
         visit: [1],
@@ -552,6 +553,9 @@
                     event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
                 });
             }
+            else if (id === "[CLY]_orientation") {
+                event.segmentation = {mode: (Math.random() > 0.5) ? "landscape" : "portrait"};
+            }
             else if (eventTemplate && eventTemplate.segments) {
                 event.segmentation = {};
                 Object.keys(eventTemplate.segments).forEach(function(key) {
@@ -581,12 +585,16 @@
         };
 
         this.getFeedbackEvents = function() {
-            var events = this.getFeedbackEvent();
-
+            var events = [];
+            events.push(this.getRatingEvent());
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1) {
+                events.push(this.getNPSEvent());
+                events.push(this.getSurveyEvent());
+            }
             return events;
         };
 
-        this.getFeedbackEvent = function() {
+        this.getRatingEvent = function() {
             this.stats.e++;
 
             var event = {
@@ -605,10 +613,91 @@
             event.segmentation.rating = getRandomInt(1, 5);
             event.segmentation.app_version = this.metrics._app_version;
             event.segmentation.platform = this.metrics._os;
-            if (widgetList.length) {
-                event.segmentation.widget_id = widgetList[getRandomInt(0, widgetList.length - 1)]._id;
+            if (ratingWidgetList.length) {
+                event.segmentation.widget_id = ratingWidgetList[getRandomInt(0, ratingWidgetList.length - 1)]._id;
             }
-            return [event];
+            return event;
+        };
+
+        this.getNPSEvent = function() {
+            this.stats.e++;
+
+            var event = {
+                "key": "[CLY]_nps",
+                "count": 1,
+                "timestamp": this.ts,
+                "hour": getRandomInt(0, 23),
+                "dow": getRandomInt(1, 6),
+                "test": 1,
+            };
+
+            this.ts += 1000;
+            event.segmentation = {};
+            event.segmentation.comment = chance.sentence({words: 7});
+            event.segmentation.rating = getRandomInt(0, 10);
+            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.platform = this.metrics._os;
+            event.segmentation.shown = 1;
+            if (npsWidgetList.length) {
+                event.segmentation.widget_id = npsWidgetList[getRandomInt(0, npsWidgetList.length - 1)];
+            }
+            return event;
+        };
+
+        this.getSurveyEvent = function() {
+            this.stats.e++;
+
+            var event = {
+                "key": "[CLY]_survey",
+                "count": 1,
+                "timestamp": this.ts,
+                "hour": getRandomInt(0, 23),
+                "dow": getRandomInt(1, 6),
+                "test": 1,
+            };
+
+            this.ts += 1000;
+            event.segmentation = {};
+            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.platform = this.metrics._os;
+            event.segmentation.shown = 1;
+            var keys = Object.keys(surveyWidgetList);
+            if (keys.length) {
+
+                event.segmentation.widget_id = keys[getRandomInt(0, keys.length - 1)];
+
+                var structure = surveyWidgetList[event.segmentation.widget_id];
+
+                for (var z = 0; z < structure.questions.length; z++) {
+                    //"multi", "radio", "text", "dropdown", "rating"
+                    if (structure.questions[z].type === "text") {
+                        event.segmentation["answ-" + structure.questions[z].id] = chance.sentence({words: 7});
+                    }
+                    else if (structure.questions[z].type === "rating") {
+                        event.segmentation["answ-" + structure.questions[z].id] = getRandomInt(0, 10);
+                    }
+                    else {
+                        if (structure.questions[z].choices && structure.questions[z].choices.length > 0) {
+
+                            var ch = [];
+                            var chcount = 1;
+                            if (structure.questions[z].type === "multi") { //multiple choices
+                                chcount = getRandomInt(1, structure.questions[z].choices.length - 1);
+                            }
+                            var pp = getRandomInt(0, structure.questions[z].choices.length - 1);
+                            var ll = structure.questions[z].choices.length;
+                            for (var k = 0; k < chcount; k++) {
+                                ch.push(structure.questions[z].choices[(pp + k) % ll].key);
+                            }
+                            event.segmentation["answ-" + structure.questions[z].id] = ch.join(",");
+                        }
+                        else {
+                            event.segmentation["answ-" + structure.questions[z].id] = "No chances???";
+                        }
+                    }
+                }
+            }
+            return event;
         };
 
         this.getHeatmapEvents = function() {
@@ -712,7 +801,7 @@
                 this.isRegistered = true;
                 this.stats.u++;
                 // note login event was here
-                events = this.getEvent("[CLY]_view").concat(this.getEvents(4, template && template.events));
+                events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.5) {
                     this.hasPush = true;
@@ -726,7 +815,7 @@
                 }
             }
             else {
-                events = this.getEvent("[CLY]_view").concat(this.getEvents(4, template && template.events));
+                events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
             }
 
@@ -754,7 +843,7 @@
                 this.ts = this.ts + 30;
                 this.stats.x++;
                 this.stats.d += 30;
-                var events = this.getEvent("[CLY]_view").concat(this.getEvents(2, template && template.events));
+                var events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(2, template && template.events));
                 req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.8) {
                     this.timer = setTimeout(function() {
@@ -945,29 +1034,237 @@
     }
 
     /**
+     *  Create NPS popup
+     *  @param {string} name - NPS Widget name
+     *  @param {string} followUpType - type of follow up question
+     *  @param {string} mainQuestion - main question
+     *  @param {string} followUpPromoter - follow up question for promoter
+     *  @param {string} followUpPassive - follow up question for passive
+     *  @param {string} followUpDetractor - follow up question for detractor
+     *  @param {string} followUpAll - follow up question for all
+     *  @param {string} thanks - thank you text
+     *  @param {string} style - type of displaying widget (full or outline)
+     *  @param {string} show - show until specific action from user
+     *  @param {string} color - color theme
+     *  @param {function} callback - callback method
+     *  @return {function} returns ajax get request
+     */
+    function createNPSWidget(name, followUpType, mainQuestion, followUpPromoter, followUpPassive, followUpDetractor, followUpAll, thanks, style, show, color, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/surveys/nps/create",
+            data: {
+                status: true,
+                name: name,
+                followUpType: followUpType || "score",
+                msg: JSON.stringify({
+                    mainQuestion: mainQuestion,
+                    followUpPromoter: followUpPromoter,
+                    followUpPassive: followUpPassive,
+                    followUpDetractor: followUpDetractor,
+                    followUpAll: followUpAll,
+                    thanks: thanks
+                }),
+                appearance: JSON.stringify({
+                    style: style || "",
+                    show: show || "",
+                    color: color || ""
+                }),
+                targeting: null,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                populator: true
+            },
+            success: function(json, textStatus, xhr) {
+                if (json && json.result) {
+                    var id = json.result.split(" ");
+                    npsWidgetList.push(id[2]);
+                }
+                callback(json, textStatus, xhr);
+            },
+            error: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            }
+        });
+    }
+
+    /**
+     *  Create survey popup
+     *  @param {string} name - widget name
+     *  @param {array} questions - array with question objects
+     *  @param {string} thanks - thank you message
+     *  @param {string} position - survey position
+     *  @param {string} show - show until specific action from user
+     *  @param {string} color - color theme
+     *  @param {string} logo - link to logo
+     *  @param {string} exitPolicy - what to count as exit
+     *  @param {function} callback - callback method
+     *  @return {function} returns ajax get request
+     */
+    function createSurveyWidget(name, questions, thanks, position, show, color, logo, exitPolicy, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/surveys/survey/create",
+            data: {
+                status: true,
+                name: name,
+                questions: JSON.stringify(questions),
+                msg: JSON.stringify({
+                    thanks: thanks
+                }),
+                appearance: JSON.stringify({
+                    position: position,
+                    show: show,
+                    color: color,
+                    logo: logo
+                }),
+                targeting: null,
+                exitPolicy: exitPolicy || "onAbandon",
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                populator: true
+            },
+            success: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            },
+            error: function(json, textStatus, xhr) {
+                callback(json, textStatus, xhr);
+            }
+        });
+    }
+
+    /**
      * Generate feedback popups three times
-     * @param {callback} callback - callback method
+     * @param {funciton} done - callback method
      **/
-    function generateWidgets(callback) {
-        createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, function() {
-            createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
-                createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
-                    $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o/feedback/widgets",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID
-                        },
-                        success: function(json) {
-                            widgetList = json;
-                            callback();
-                        },
-                        error: function() {
-                            callback();
-                        }
+    function generateWidgets(done) {
+
+        /**
+         *  Create rating widgets
+         *  @param {function} callback - callback method
+         */
+        function generateRatingWidgets(callback) {
+            createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, function() {
+                createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
+                    createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o/feedback/widgets",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID
+                            },
+                            success: function(json) {
+                                ratingWidgetList = json;
+                                callback();
+                            },
+                            error: function() {
+                                callback();
+                            }
+                        });
                     });
                 });
             });
+        }
+
+        /**
+         *  Create NPS widgets
+         *  @param {function} callback - callback method
+         */
+        function generateNPSWidgets(callback) {
+            createNPSWidget("Separate per response type", "score", "How likely are you to recommend our product to a friend or colleague?", "We're glad you like us. What do you like the most about our product?", "Thank you for your feedback. How can we improve your experience?", "We're sorry to hear it. What would you like us to improve on?", "", "Thank you for your feedback", "full", "uclose", "#ddd", function() {
+                createNPSWidget("One response for all", "one", "How likely are you to recommend our product to a friend or colleague?", "", "", "", "What can/should we do to WOW you?", "Thank you for your feedback", "full", "uclose", "#ddd", callback);
+            });
+        }
+
+        /**
+         *  Create survey widgets
+         *  @param {function} callback - callback method
+         */
+        function generateSurveyWidgets(callback) {
+            createSurveyWidget("Product Feedback example", [
+                {
+                    "type": "rating",
+                    "question": "How satisfied are you with the stability of the app?",
+                    "required": true
+                },
+                {
+                    "type": "multi",
+                    "question": "Which feature of the app are most important to you?",
+                    "choices": ["Ready-to-use templates", "Image editor", "Download in multiple formats"],
+                    "required": true
+                },
+                {
+                    "type": "text",
+                    "question": "What features would you like to add to the app?",
+                    "required": true
+                }
+            ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                createSurveyWidget("User Experience example", [
+                    {
+                        "type": "rating",
+                        "question": "How satisfied are you with the look and feel of the app?",
+                        "required": true
+                    },
+                    {
+                        "type": "text",
+                        "question": "What confused/annoyed you about the app?",
+                        "required": true
+                    },
+                    {
+                        "type": "dropdown",
+                        "question": "Which feature did you like most on new version?",
+                        "choices": ["In-app support", "Quick access to menu", "Template library", "User management"],
+                        "required": true
+                    }
+                ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                    createSurveyWidget("Customer support example", [
+                        {
+                            "type": "radio",
+                            "question": "Were you able to find the information you were looking for?",
+                            "choices": ["Yes", "No"],
+                            "required": true
+                        },
+                        {
+                            "type": "text",
+                            "question": "What type of support communication methods do you prefer?",
+                            "required": true
+                        },
+                        {
+                            "type": "rating",
+                            "question": "How would you rate our service on a scale of 0-10?",
+                            "required": true
+                        }
+                    ], "Thank you for your feedback", "bottom right", "uclose", "#ddd", null, "onAbandon", function() {
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o/surveys/survey/widgets",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID
+                            },
+                            success: function(json) {
+                                if (json && json.aaData) {
+                                    for (var i = 0; i < json.aaData.length; i++) {
+                                        surveyWidgetList[json.aaData[i]._id] = json.aaData[i];
+                                    }
+                                }
+                                callback();
+                            },
+                            error: function() {
+                                callback();
+                            }
+                        });
+                    });
+                });
+            });
+        }
+
+        generateRatingWidgets(function() {
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1) {
+                generateNPSWidgets(function() {
+                    generateSurveyWidgets(done);
+                });
+            }
+            else {
+                done();
+            }
         });
     }
 

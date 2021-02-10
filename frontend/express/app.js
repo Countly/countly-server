@@ -7,6 +7,7 @@
 process.title = "countly: dashboard node " + process.argv[1];
 
 var versionInfo = require('./version.info'),
+    pack = require('../../package.json'),
     COUNTLY_VERSION = versionInfo.version,
     COUNTLY_COMPANY = versionInfo.company || '',
     COUNTLY_TYPE = versionInfo.type,
@@ -55,7 +56,10 @@ var versionInfo = require('./version.info'),
     rateLimit = require("express-rate-limit"),
     membersUtility = require("./libs/members.js"),
     argon2 = require('argon2'),
-    countlyCommon = require('../../api/lib/countly.common.js');
+    countlyCommon = require('../../api/lib/countly.common.js'),
+    timezones = require('../../api/utils/timezones.js').getTimeZones;
+
+console.log("Starting Countly", "version", pack.version);
 
 var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
@@ -853,7 +857,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
-                ssr: serverSideRendering
+                ssr: serverSideRendering,
+                timezones: timezones
             };
 
             var toDashboard = {
@@ -1549,6 +1554,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
     countlyDb.collection('jobs').createIndex({ finished: 1 }, function() {});
     countlyDb.collection('jobs').createIndex({ name: 1 }, function() {});
+    countlyDb.collection('long_tasks').createIndex({ manually_create: 1, start: -1 }, function() {});
 
     app.listen(countlyConfig.web.port, countlyConfig.web.host || '');
 });

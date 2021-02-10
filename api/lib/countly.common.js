@@ -1038,11 +1038,11 @@ countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunc
         sum += rangeTotal[i];
     }
 
-    for (let i = 0; i < maxItems; i++) {
+    for (let i = maxItems - 1; i >= 0; i--) {
         var percent = Math.floor((rangeTotal[i] / sum) * 100);
         totalPercent += percent;
 
-        if (i === (maxItems - 1)) {
+        if (i === 0) {
             percent += 100 - totalPercent;
         }
 

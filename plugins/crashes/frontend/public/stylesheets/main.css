@@ -341,3 +341,94 @@ td.details table tr.header, td.details table tr.header:hover {
     background-color:#ffffff;
 
 }
+
+
+#config-table-container .cly-select.crashes-group-input {
+    width: auto;
+}
+
+#config-table-container .cly-select.crashes-group-input .select-items {
+    width: auto;
+    padding-right: 16px;
+}
+
+#binary-images-table > tbody > tr > td:last-child { text-align: right; }
+#binary-images-table > thead > tr > th:last-child { text-align: right; }
+.binary-image-info {
+    float: left;
+    margin-top:3px;
+    margin-left: 30px;
+}
+.binary-image-info-title {
+    color: #b3b3b3;
+}
+.binary-image-info-data {
+    margin-top:5px;
+}
+
+.show-binaries {
+    display: none;
+}
+
+.binary-image-item {
+    margin:10px;
+    border-bottom:1px solid #ebebeb;
+    font-size:12px;
+    padding-bottom: 5px;
+}
+
+.binary-image-item > .binary-image-section:first-child {
+    width: 20%;
+    float:left;
+}
+
+.binary-image-item > .binary-image-section:nth-child(2) {
+    width: 20%;
+    float:left;
+}
+
+.binary-image-item > .binary-image-section:nth-child(3) {
+    width: 45%;
+    float:left;
+}
+
+.binary-image-item > .binary-image-section:nth-child(4) {
+    width: 15%;
+    float: left;
+    text-align: center;
+}
+
+.binary-image-section > .add-symbol-file {
+    border: none;
+    padding: 3px 8px 3px 8px;
+    background-color: #2FA732;
+    color: white;
+    outline: none;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.binary-image-dialog {
+    width: 600px !important;
+    max-width: 600px;
+    border-top: none !important;
+    border: none !important;
+    height: auto !important;
+}
+
+.binary-image-dialog > .indicator {
+    background-color: #2FA732 !important;
+    border-bottom: 1px solid #2FA732 !important;
+}
+
+.close-binary-image-popup {
+    font-size: 12px;
+    text-align: center;
+    color: #999;
+    width: 100%;
+    margin-bottom:10px;
+}
+
+.error-show-binaries {
+    display: none;
+}

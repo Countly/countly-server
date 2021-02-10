@@ -110,6 +110,15 @@
                     return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
                 });
             }
+            
+            if (!currentDevice.length) {
+                currentDevice = [{
+                    type: "all",
+                    displayText: "All",
+                    minWidth: 0,
+                    maxWidth: 10240
+                }];
+            }
 
             //TOPBAR IMAGE
             var img = document.createElement('img');

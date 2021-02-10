@@ -19,6 +19,7 @@
         "amazon": {short: "amz", name: "Amazon"},
         "web": {short: "web", name: "Web"},
         "windows": {short: "mw", name: "Windows"},
+        "microsoft windows": {short: "wmw", name: "Windows"},
         "open bsd": {short: "ob", name: "Open BSD"},
         "searchbot": {short: "sb", name: "SearchBot"},
         "sun os": {short: "so", name: "Sun OS"},

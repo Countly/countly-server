@@ -100,6 +100,7 @@ class Note {
         this.autoCapMessages = data.autoCapMessages; // Automated message: limit number of messages per user
         this.autoCapSleep = data.autoCapSleep; // Automated message: how much ms to wait before sending a message
         this.actualDates = data.actualDates; // Automated message: whether to use actual event dates instead of server arrival whenever possible
+        this.autoCancelTrigger = data.autoCancelTrigger; // Automated message: cancel the message when trigger condition is no longer valid
 
         this.result = {
             status: data.result && data.result.status || Status.NotCreated,
@@ -176,6 +177,7 @@ class Note {
             autoCapMessages: this.autoCapMessages,
             autoCapSleep: this.autoCapSleep,
             actualDates: this.actualDates,
+            autoCancelTrigger: this.autoCancelTrigger,
             created: this.created,
             test: this.test,
             build: this.build,
@@ -404,7 +406,7 @@ class Note {
             k = parseInt(k);
             ret = ret.substr(0, k) + (p.c && v ? v.substr(0, 1).toUpperCase() + v.substr(1) : (v || p.f)) + ret.substr(k);
         });
-        return ret;
+        return ret.trim();
     }
 
     /**
@@ -466,7 +468,7 @@ class Note {
             collapseKey = o.collapseKey || this.collapseKey || null,
             expiryDate = o.expiryDate || this.expiryDate || null,
             buttonsJSON = buttons > 0 ? new Array(buttons).fill(undefined).map((_, i) => {
-                return {t: mpl[`default${S}${i}${S}t`], l: mpl[`default${S}${i}${S}l`]};
+                return {t: (mpl[`default${S}${i}${S}t`] || '').trim(), l: (mpl[`default${S}${i}${S}l`] || '').trim()};
             }) : null,
             compiled;
 

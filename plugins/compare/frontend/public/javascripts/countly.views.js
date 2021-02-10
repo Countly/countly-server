@@ -191,6 +191,12 @@ window.CompareView = countlyView.extend({
         }
 
         countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
+
+        var list = [];
+        for (var z in this.templateData.alternatives) {
+            list.push({"value": z, "name": this.templateData.alternatives[z]});
+        }
+        $("#alternative-selector").clyMultiSelectSetItems(list);
     },
     refresh: function() {
         var self = this;
@@ -296,14 +302,14 @@ var compareEventsViewHelper = {
         ];
     },
     getAlternatives: function() {
-        var events = countlyEvent.getEvents(),
-            keys = _.pluck(events, "key"),
-            names = _.pluck(events, "name");
-
+        var events = countlyEvent.getEvents(false, true);
         var toReturn = {};
 
-        for (var i = 0; i < keys.length; i++) {
-            toReturn[keys[i]] = names[i] || keys[i];
+        for (var i = 0; i < events.length; i++) {
+            toReturn[events[i].key] = events[i].name || events[i].key;
+            if (events[i].is_event_group) {
+                toReturn[events[i].key] += "<div class='group-badge'><span> (</span>" + jQuery.i18n.prop("common.group") + "<span>)</span></div>";
+            }
         }
 
         return toReturn;

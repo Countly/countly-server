@@ -53,7 +53,14 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/dropzone.js',
                     'frontend/express/public/javascripts/utils/webfont.js',
                     'frontend/express/public/javascripts/utils/selectize.min.js',
-                    'frontend/express/public/javascripts/utils/vue.min.js',
+                    'frontend/express/public/javascripts/utils/polyfill/es6-promise.auto.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vuex.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-color.min.js',
+                    'frontend/express/public/javascripts/utils/vue/v-tooltip.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vee-validate.full.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-good-table.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue2Dropzone.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/simpleUpload.min.js',
@@ -64,7 +71,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
-                    'frontend/express/public/javascripts/utils/vuedraggable.umd.min.js'
+                    'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
@@ -106,7 +113,16 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.app.users.js',
                     'frontend/express/public/javascripts/countly/countly.template.js',
                     'frontend/express/public/javascripts/countly/countly.views.js',
-                    'frontend/express/public/javascripts/countly/countly.vue.components.js',
+                    'frontend/express/public/javascripts/countly/vue/core.js',
+                    'frontend/express/public/javascripts/countly/vue/helpers.js',
+                    'frontend/express/public/javascripts/countly/vue/data/vuex.js',
+                    'frontend/express/public/javascripts/countly/vue/components/layout.js',
+                    'frontend/express/public/javascripts/countly/vue/components/input.js',
+                    'frontend/express/public/javascripts/countly/vue/components/datatable.js',
+                    'frontend/express/public/javascripts/countly/vue/components/drawer.js',
+                    'frontend/express/public/javascripts/countly/vue/components/vis.js',
+                    'frontend/express/public/javascripts/countly/vue/components/helpers.js',
+                    'frontend/express/public/javascripts/countly/countly.vue.legacy.js',
                     'frontend/express/public/javascripts/countly/countly.token.manager.js',
                     'frontend/express/public/javascripts/countly/countly.version.history.js',
                     'frontend/express/public/javascripts/countly/countly.analytics.js'
@@ -136,6 +152,7 @@ module.exports = function(grunt) {
                 files: {
                     'frontend/express/public/stylesheets/main.min.css': [
                         'frontend/express/public/stylesheets/main.css',
+                        'frontend/express/public/stylesheets/vue/clyvue.css',
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
                         'frontend/express/public/stylesheets/jsoneditor/codemirror.css',
@@ -254,7 +271,7 @@ module.exports = function(grunt) {
 
                     files.forEach(function(name) {
                         var file = path.join(javascripts, name);
-                        if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
+                        if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.js')) {
                             js.push('plugins/' + plugin + '/frontend/public/javascripts/' + name);
                         }
                     });
@@ -265,7 +282,7 @@ module.exports = function(grunt) {
                 files = fs.readdirSync(stylesheets);
                 files.forEach(function(name) {
                     var file = path.join(stylesheets, name);
-                    if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0) {
+                    if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.endsWith('.css')) {
                         css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
                     }
                 });

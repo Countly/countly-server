@@ -67,7 +67,7 @@ window.component('push.popup', function(popup) {
         }
 
         push.popup.slider = C.slider.show({
-            key: 'meow',
+            key: 'meow' + Math.random(),
             title: function () {
                 var els = [
                     t('pu.po.title')
@@ -263,7 +263,7 @@ window.component('push.popup', function(popup) {
                 if (((message.auto() && tab >= 3) || (!message.auto() && tab >= 2)) && !message.count()) {
                     C.slider.instance.loading(true);
                     message.remotePrepare(this.checkForNoUsers.bind(this, true)).then(function () {
-                        setTimeout(function () {
+                        var done = function () {
                             m.startComputation();
                             C.slider.instance.loading(false);
                             this.checkForNoUsers();
@@ -271,7 +271,14 @@ window.component('push.popup', function(popup) {
                                 popup.tabs.set(tab);
                             }
                             m.endComputation();
-                        }.bind(this), 400);
+                        }.bind(this);
+                        setTimeout(function(){
+                            if (message.auto() && message.autoOnEntry() === 'events') {
+                                Promise.all(message.autoEvents().map(function(key) { return C.push.initEvent(key); })).then(done, done);
+                            } else {
+                                done();
+                            }
+                        }, 400);
                     }.bind(this), C.slider.instance.loading.bind(C.slider.instance, false));
                 } else {
                     this.tabs.customComponent = null;
@@ -291,11 +298,15 @@ window.component('push.popup', function(popup) {
             }
         }.bind(this);
 
+        var sending = false;
         this.send = function (ev) {
             ev.preventDefault();
             if (!message.ack() && !message.editingAuto) { return; }
+            if (sending) { return; }
+            sending = true;
             C.slider.instance.loading(true);
             message.remoteCreate().then(function () {
+                sending = false;
                 message.saved(true);
 
                 setTimeout(function () {
@@ -312,6 +323,7 @@ window.component('push.popup', function(popup) {
                     m.endComputation();
                 }, 1000);
             }, function (error) {
+                sending = false;
                 C.slider.instance.loading(false);
                 window.CountlyHelpers.alert(error.error || error.result || error, 'popStyleGreen', {title: t('pu.po.tab3.errors.message'), image: 'empty-icon', button_title: t('push.error.i.understand')});
             });
@@ -409,6 +421,16 @@ window.component('push.popup', function(popup) {
                         l.buttonUrl0 = buttonTitle(0, 'l', l.value);
                         l.buttonUrl1 = buttonTitle(1, 'l', l.value);
 
+                        var persOpts = push.PERS_OPTS.slice();
+                        if (message.auto() && message.autoOnEntry() === 'events') {
+                            message.autoEvents().forEach(function(key) {
+                                var data = push.PERS_EVENTS[key];
+                                if (data && data.length) {
+                                    persOpts = persOpts.concat([new C.selector.Option({title: key})]).concat(data);
+                                }
+                            });
+                        }
+
                         l.titleCtrl = new C.emoji.controller({
                             key: 't' + l.value, 
                             value: l.messageTitle, 
@@ -416,7 +438,7 @@ window.component('push.popup', function(popup) {
                             valuePers: l.messageTitlePers, 
                             valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
-                            persOpts: push.PERS_OPTS && push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
+                            persOpts: persOpts && persOpts.length ? persOpts : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
                         l.messageCtrl = new C.emoji.controller({
@@ -427,7 +449,7 @@ window.component('push.popup', function(popup) {
                             valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
-                            persOpts: push.PERS_OPTS && push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
+                            persOpts: persOpts && persOpts.length ? persOpts : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
 
@@ -830,6 +852,20 @@ window.component('push.popup', function(popup) {
                         ], value: message.actualDates
                     });
 
+                    this.radioCancelTriggerEntry = new C.radio.controller({
+                        options: [
+                            { value: false, title: t('pu.po.tab2.trc.dont') },
+                            { value: true, title: t('pu.po.tab2.trc.true') }
+                        ], value: message.autoCancelTrigger
+                    });
+
+                    this.radioCancelTriggerExit = new C.radio.controller({
+                        options: [
+                            { value: false, title: t('pu.po.tab2.trc.dont') },
+                            { value: true, title: t('pu.po.tab2.trc.false') }
+                        ], value: message.autoCancelTrigger
+                    });
+
                     this.checkAutoEnd = new C.checkbox.controller({
                         class: 'comp-grid-row',
                         group: 'comp-grid-cell',
@@ -866,6 +902,12 @@ window.component('push.popup', function(popup) {
                             message.autoOnEntry() === 'events' ? m('.form-group', [
                                 m('h4', t('pu.po.tab2.ddc')),
                                 C.radio.view(ctrl.radioActualDates),
+                                // m('.desc', t('pu.po.tab2.ddc.h'))
+                            ]) : '',
+
+                            message.autoOnEntry() !== 'events' ? m('.form-group', [
+                                m('h4', t('pu.po.tab2.trc')),
+                                message.autoOnEntry() === true ? C.radio.view(ctrl.radioCancelTriggerEntry) : C.radio.view(ctrl.radioCancelTriggerExit),
                                 // m('.desc', t('pu.po.tab2.ddc.h'))
                             ]) : '',
 

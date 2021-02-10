@@ -190,6 +190,14 @@ class CacheWorker {
     start() {
         log.d('starting worker');
         this.ipc.attach();
+        this.ipc.request({o: OP.INIT}).then(ret => {
+            log.d('got init response: %j', ret);
+            Object.keys(ret).forEach(g => {
+                if (!this.data.read(g)) {
+                    this.data.write(g, new DataStore(ret[g].size, ret[g].age));
+                }
+            });
+        });
     }
 
     /**
@@ -360,7 +368,15 @@ class CacheWorker {
             remove: this.remove.bind(this, group),
             purge: this.purge.bind(this, group),
             has: this.has.bind(this, group),
-            iterate: f => this.data.read(group).iterate(f)
+            iterate: f => {
+                let g = this.data.read(group);
+                if (g) {
+                    g.iterate(f);
+                }
+                else {
+                    log.e('no cache group %s to iterate on', group);
+                }
+            }
         };
     }
 }
@@ -413,6 +429,15 @@ class CacheMaster {
 
         this.ipc = new CentralMaster(CENTRAL, ({o, g, k, d}, reply, from) => {
             log.d('handling %s: %j / %j / %j / %j', reply ? 'reply' : 'broadcast', o, g, k, d);
+
+            if (o === OP.INIT) {
+                let ret = {};
+                this.data.iterate((group, store) => {
+                    ret[group] = {size: store.size, age: store.age};
+                });
+                return ret;
+            }
+
             let store = this.data.read(g);
             if (!store) {
                 throw new Error('No such store ' + g);
@@ -446,12 +471,11 @@ class CacheMaster {
      */
     start() {
         log.d('starting master');
-        this.ipc.attach(worker => {
-            this.data.iterate((group, store) => {
-                this.ipc.send(worker.process.pid, {o: OP.INIT, g: group, d: {size: store.size, age: store.age}});
-            });
-        });
-        return this.col.start();
+        this.ipc.attach();
+        return this.col.start().then(() => new Promise(res => setTimeout(() => {
+            log.d('started master');
+            res();
+        }, 10000)));
     }
 
     /**
@@ -704,7 +728,15 @@ class CacheMaster {
             remove: this.remove.bind(this, group),
             purge: this.purge.bind(this, group),
             has: this.has.bind(this, group),
-            iterate: f => this.data.read(group).iterate(f)
+            iterate: f => {
+                let g = this.data.read(group);
+                if (g) {
+                    g.iterate(f);
+                }
+                else {
+                    log.e('no cache group %s to iterate on', group);
+                }
+            }
         };
     }
 

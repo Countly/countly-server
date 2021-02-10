@@ -7,16 +7,16 @@ const plugins = require('../plugins/pluginManager.js');
 const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
-const countlyFs = require('./utils/countlyFs.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher} = require('./parts/data/batcher.js');
+const pack = require('../package.json');
 
 var t = ["countly:", "api"];
 
 if (cluster.isMaster) {
-    console.log("Starting master");
+    console.log("Starting master", "version", pack.version);
     if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
         log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
     }
@@ -31,23 +31,11 @@ else {
 
 // Finaly set the visible title
 process.title = t.join(' ');
-var databases = [plugins.dbConnection("countly"), plugins.dbConnection("countly_out"), plugins.dbConnection("countly_fs")];
 
-if (plugins.isPluginEnabled("drill")) {
-    databases.push(plugins.dbConnection("countly_drill"));
-}
-
-Promise.all(databases).then(function(dbs) {
-    common.db = dbs[0];
-    common.outDb = dbs[1];
-    countlyFs.setHandler(dbs[2]);
-
+plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
 
-    if (dbs[3]) {
-        common.drillDb = dbs[3];
-    }
     let workers = [];
 
     /**
@@ -77,7 +65,7 @@ Promise.all(databases).then(function(dbs) {
         offline_mode: false,
         reports_regenerate_interval: 3600,
         send_test_email: "",
-        data_retention_period: 0,
+        //data_retention_period: 0,
         batch_processing: true,
         batch_on_master: false,
         batch_period: 10,
@@ -279,14 +267,14 @@ Promise.all(databases).then(function(dbs) {
 
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
-            jobs.job('api:topEvents').replace().schedule('every 1 day');
+            jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day');
             jobs.job('api:ping').replace().schedule('every 1 day');
             jobs.job('api:clear').replace().schedule('every 1 day');
             jobs.job('api:clearTokens').replace().schedule('every 1 day');
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
             jobs.job('api:task').replace().schedule('every 5 minutes');
             //jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
-            jobs.job('api:appExpire').replace().schedule('every 1 day');
+            //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
     }
     else {

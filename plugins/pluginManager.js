@@ -1,11 +1,15 @@
-var plugins = require('./plugins.json', 'dont-enclose'),
+var pluginDependencies = require('./pluginDependencies.js'),
+    path = require('path'),
+    plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
+        "discoveryStrategy": "disableChildren",
+        "overwrite": path.resolve(__dirname, './plugins.json')
+    }),
     pluginsApis = {},
     mongodb = require('mongodb'),
     cluster = require('cluster'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
-    path = require('path'),
     url = require('url'),
     querystring = require('querystring'),
     cp = require('child_process'),
@@ -431,12 +435,13 @@ var pluginManager = function pluginManager() {
     * Register listening to new event on api side
     * @param {string} event - event to listen to
     * @param {function} callback - function to call, when event happens
+    * @param {boolean} unshift - whether to register a high-priority callback (unshift it to the listeners array)
     **/
-    this.register = function(event, callback) {
+    this.register = function(event, callback, unshift = false) {
         if (!events[event]) {
             events[event] = [];
         }
-        events[event].push(callback);
+        events[event][unshift ? 'unshift' : 'push'](callback);
     };
 
     // TODO: Remove this function and all it calls when moving to Node 12.
@@ -629,7 +634,10 @@ var pluginManager = function pluginManager() {
     **/
     this.reloadPlugins = function() {
         delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
-        plugins = require('./plugins.json', 'dont-enclose');
+        plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
+            "discoveryStrategy": "disableChildren",
+            "overwrite": path.resolve(__dirname, './plugins.json')
+        });
     };
 
     /**
@@ -937,7 +945,7 @@ var pluginManager = function pluginManager() {
     **/
     this.prepareProduction = function(callback) {
         console.log('Preparing production files');
-        exec('countly task locales', {cwd: path.dirname(process.argv[1])}, function(error, stdout) {
+        exec('countly task dist-all', {cwd: path.dirname(process.argv[1])}, function(error, stdout) {
             console.log('Done preparing production files with %j / %j', error, stdout);
             var errors;
             if (error && error !== 'Error: Command failed: ') {
@@ -1107,6 +1115,24 @@ var pluginManager = function pluginManager() {
         return str;
     };
 
+    this.connectToAllDatabases = async() => {
+        let dbs = ['countly', 'countly_out', 'countly_fs'];
+        if (this.isPluginEnabled('drill')) {
+            dbs.push('countly_drill');
+        }
+
+        const databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        const [dbCountly, dbOut, dbFs, dbDrill] = databases;
+
+        let common = require('../api/utils/common');
+        common.db = dbCountly;
+        common.outDb = dbOut;
+        require('../api/utils/countlyFs').setHandler(dbFs);
+        common.drillDb = dbDrill;
+
+        return databases;
+    };
+
     /**
     * Get database connection with configured pool size
     * @param {object} config - connection configs
@@ -1158,11 +1184,15 @@ var pluginManager = function pluginManager() {
         var dbName;
         var dbOptions = {
             poolSize: maxPoolSize,
+            maxPoolSize: maxPoolSize,
             noDelay: true,
             keepAlive: true,
             keepAliveInitialDelay: 30000,
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
+            serverSelectionTimeoutMS: 999999999,
+            maxIdleTimeMS: 0,
+            waitQueueTimeoutMS: 0,
             useNewUrlParser: true,
             useUnifiedTopology: true,
             auto_reconnect: true,

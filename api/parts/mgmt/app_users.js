@@ -108,6 +108,9 @@ usersApi.update = function(app_id, query, update, params, callback) {
         callback = params;
         params = {};
     }
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
     if (Object.keys(update).length) {
         for (var i in update) {
             if (i.indexOf("$") !== 0) {
@@ -152,6 +155,9 @@ usersApi.delete = function(app_id, query, params, callback) {
         callback = params;
         params = {};
     }
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
     common.db.collection("app_users" + app_id).aggregate([
         {$match: query},
         {
@@ -238,6 +244,10 @@ usersApi.search = function(app_id, query, project, sort, limit, skip, callback) 
         }
     }
 
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
+
     project = project || {};
     if (typeof project === "string" && project.length) {
         try {
@@ -293,6 +303,10 @@ usersApi.count = function(app_id, query, callback) {
             query = {};
         }
     }
+
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
 
     common.db.collection('app_users' + app_id).find(query).count(callback);
 };
@@ -704,6 +718,11 @@ usersApi.export = function(app_id, query, params, callback) {
             }
         });
     }
+
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query
+    });
+
     common.db.collection("app_users" + app_id).aggregate([
         {$match: query},
         {
@@ -817,10 +836,10 @@ usersApi.export = function(app_id, query, params, callback) {
                 }
             }).then(function() {
                 //export data from metric_changes
-                return run_command('mongoexport', [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{uid:{$in: ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]);
+                return run_command('mongoexport', [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]);
             }).then(function() {
                 //export data from app_users
-                return run_command('mongoexport', [...dbargs, "--collection", "app_users" + app_id, "-q", '{uid:{$in: ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]);
+                return run_command('mongoexport', [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]);
             }).then(
                 function() {
                     //get other export commands from other plugins

@@ -6,6 +6,7 @@
 /** @lends module:api/utils/taskmanager */
 var taskmanager = {};
 var common = require("./common.js");
+var countlyConfig = require("../../frontend/express/config.js");
 var countlyFs = require("./countlyFs.js");
 var crypto = require("crypto");
 var request = require("request");
@@ -33,6 +34,8 @@ const log = require('./log.js')('core:taskmanager');
 * @param {boolean} options.global - the task is private or global visit. 
 * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
 * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
+* @param {boolean} options.forceCreateTask - force createTask with id supplied ( for import)
+* @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
 * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
 * @example
 * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
@@ -77,7 +80,7 @@ taskmanager.longtask = function(options) {
             delete json.api_key;
 
             options.request = {
-                uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.params.fullPath,
+                uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + options.params.fullPath,
                 method: 'POST',
                 json: json
             };
@@ -89,7 +92,7 @@ taskmanager.longtask = function(options) {
             }
             if (!options.app_id) {
                 if (options.params) {
-                    options.app_id = (options.params.app_id || options.params.app._id || options.params.qstring.app_id) + "";
+                    options.app_id = (options.params.app_id || (options.params.app && options.params.app._id) || options.params.qstring.app_id) + "";
                 }
             }
             if (options.params && options.params.qstring && options.params.qstring.task_id) {
@@ -100,6 +103,19 @@ taskmanager.longtask = function(options) {
                 options.start = start;
                 taskmanager.createTask(options);
             }
+        }
+        // force createTask with id supplied ( for import)
+        if (options.id && options.forceCreateTask) {
+            if (options.params && options.params.member && options.params.member._id) {
+                options.creator = options.params.member._id + "";
+            }
+            if (!options.app_id) {
+                if (options.params) {
+                    options.app_id = (options.params.app_id || options.params.app._id || options.params.qstring.app_id) + "";
+                }
+            }
+            options.start = start;
+            taskmanager.createTask(options);
         }
         options.outputData(null, {task_id: options.id});
     }
@@ -172,6 +188,7 @@ taskmanager.getId = function() {
 * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
 * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
 * @param {boolean} options.manually_create - the task is create from form input
+* @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
 *  @param {function=} callback - callback when data is stored
 */
 taskmanager.createTask = function(options, callback) {
@@ -224,6 +241,7 @@ taskmanager.createTask = function(options, callback) {
 * @param {object} options.errormsg - data object for error msg  - can be also error msg (string)
 * @param {string} options.errormsg.message - Optional. if exists check for message here. If not uses options.errormsg. 
 * @param {object} data - result data of the task
+* @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
 * @param {function=} callback - callback when data is stored
 */
 taskmanager.saveResult = function(options, data, callback) {
@@ -246,46 +264,63 @@ taskmanager.saveResult = function(options, data, callback) {
         update.status = "errored";
         update.errormsg = message;
     }
+    else {
+        update.errormsg = "";//rewrite any old error message
+    }
 
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
-        options.db.collection("long_tasks").update({_id: options.id}, {
-            $set: update
-        }, {'upsert': false}, function(err, res) {
-            if (options.subtask && !err) {
-                var updateObj = {$set: {}};
-                updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
-                updateObj.$set["subtasks." + options.id + ".hasData"] = true;
-                updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
-                if (update.errormsg) {
-                    updateObj.$set["subtasks." + options.id + ".errormsg"] = update.errormsg;
-                }
-                else {
-                    updateObj.$unset = {};
-                    updateObj.$unset["subtasks." + options.id + ".errormsg"] = "";
-                }
+        if (options.gridfs || (task && task.gridfs)) {
+            //let's store it in gridfs
+            update.data = {};
+            update.gridfs = true;
+            options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, function(err) {
+                if (options.subtask && !err) {
+                    var updateObj = {$set: {}};
+                    updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
+                    updateObj.$set["subtasks." + options.id + ".hasData"] = true;
+                    updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
+                    if (update.errormsg) {
+                        updateObj.$set["subtasks." + options.id + ".errormsg"] = update.errormsg;
+                    }
+                    else {
+                        updateObj.$unset = {};
+                        updateObj.$unset["subtasks." + options.id + ".errormsg"] = "";
+                    }
 
-                options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
-            }
-
-            //document too large for update or it was already previous stored in gridfs
-            if ((err && err.code === 17419) || (task && task.gridfs)) {
-                //let's store it in gridfs
-                update.data = {};
-                update.gridfs = true;
-                options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, function() {
-                    countlyFs.gridfs.saveData("task_results", options.id, JSON.stringify(data || {}), {id: options.id}, function(err2, res2) {
-                        if (callback) {
-                            callback(err2, res2);
-                        }
-                    });
+                    options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
+                }
+                countlyFs.gridfs.saveData("task_results", options.id, JSON.stringify(data || {}), {id: options.id}, function(err2, res2) {
+                    if (callback) {
+                        callback(err2, res2);
+                    }
                 });
-            }
-            else {
+            });
+        }
+        else {
+            options.db.collection("long_tasks").update({_id: options.id}, {
+                $set: update
+            }, {'upsert': false}, function(err, res) {
+                if (options.subtask && !err) {
+                    var updateObj = {$set: {}};
+                    updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
+                    updateObj.$set["subtasks." + options.id + ".hasData"] = true;
+                    updateObj.$set["subtasks." + options.id + ".end"] = new Date().getTime();
+                    if (update.errormsg) {
+                        updateObj.$set["subtasks." + options.id + ".errormsg"] = update.errormsg;
+                    }
+                    else {
+                        updateObj.$unset = {};
+                        updateObj.$unset["subtasks." + options.id + ".errormsg"] = "";
+                    }
+
+                    options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
+                }
+
                 if (callback) {
                     callback(err, res);
                 }
-            }
-        });
+            });
+        }
     });
 };
 
@@ -412,7 +447,7 @@ taskmanager.checkIfRunning = function(options, callback) {
         //delete jquery param to prevent caching
         delete json._;
         query.request = {
-            uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.params.fullPath,
+            uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + options.params.fullPath,
             method: 'POST',
             json: json
         };
@@ -563,13 +598,14 @@ taskmanager.deleteResult = function(options, callback) {
 */
 taskmanager.errorResults = function(options, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").update({status: "running"}, {$set: {status: "errored"}}, {multi: true}, function() {
-        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored"}}, {multi: true}, function() {
+    options.db.collection("long_tasks").update({status: "running"}, {$set: {status: "errored", errormsg: "Task was killed during server restart."}}, {multi: true}, function() {
+        options.db.collection("long_tasks").update({status: "rerunning"}, {$set: {status: "errored", errormsg: "Task was killed during server restart."}}, {multi: true}, function() {
             options.db.collection("long_tasks").find({status: "errored", subtask: {$exists: true}}).toArray(function(err, res) {
                 if (res && res.length > 0) {
                     for (var k = 0; k < res.length; k++) {
                         var updateSub = {$set: {}};
                         updateSub.$set["subtasks." + res[k]._id + ".status"] = "errored";
+                        updateSub.$set["subtasks." + res[k]._id + ".errormsg"] = "Task was killed during server restart.";
                         options.db.collection("long_tasks").update({_id: res[k].subtask}, updateSub, {}, function(/*err,res*/) {});
                     }
                 }
@@ -578,7 +614,6 @@ taskmanager.errorResults = function(options, callback) {
                 }
             });
         });
-        //callback);
     });
 };
 
@@ -614,11 +649,69 @@ taskmanager.rerunTask = function(options, callback) {
                 }
                 //we got response, if it contains task_id, then task is rerunning
                 //if it does not, then possibly task completed faster this time and we can get new result
-                else if (body && !body.task_id) {
+                else if (body) {
+                    if (!body.task_id) {
+                        var code = "";
+                        var msg = "";
+                        if (response && response.statusCode) {
+                            code = response.statusCode;
+                            msg = response.statusMessage || "";
+                            if (response.body && response.body !== '') {
+                                if (typeof response.body === 'string') {
+                                    try {
+                                        msg = JSON.parse(response.body);
+                                        if (msg.result) {
+                                            msg = msg.result;
+                                        }
+                                    }
+                                    catch (exp) {
+                                        log.e('Parse ' + response.body + ' JSON failed');
+                                        msg = response.body;
+                                    }
+                                }
+                                else {
+                                    if (response.body.result) {
+                                        msg = response.body.result;
+                                    }
+                                    else {
+                                        msg = JSON.stringify(response.body);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (code === 200) {
+                            taskmanager.saveResult({
+                                db: options1.db,
+                                id: options1.id,
+                                subtask: options1.subtask,
+                                request: res.request
+                            }, body);
+                        }
+                        else {
+                            taskmanager.saveResult({
+                                db: options1.db,
+                                id: options1.id,
+                                subtask: options1.subtask,
+                                errormsg: msg,
+                                errored: true,
+                                request: res.request
+                            }, body);
+
+                        }
+                    }
+                    else {
+                        //we have task id. so it is running and will update itself
+                    }
+                }
+                else {
+                    //We don't have body. Something is definetly wrong. Try logging error
                     taskmanager.saveResult({
                         db: options1.db,
                         id: options1.id,
                         subtask: options1.subtask,
+                        errormsg: "Missing body. " + JSON.stringify(error || {}),
+                        errored: true,
                         request: res.request
                     }, body);
                 }

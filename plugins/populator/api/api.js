@@ -253,6 +253,87 @@ const templateProperties = {
         return true;
     });
 
+    plugins.register("/export", async function({plugin, selectedIds}) {
+        if (plugin === "populator") {
+            const data = await exportPlugin(selectedIds);
+            return data;
+        }
+    });
+
+    plugins.register("/import", async function({params, importData}) {
+        if (importData.name === 'populator') {
+            await importPopulator(params, importData);
+            return true;
+        }
+        return false;
+    });
+
+    plugins.register("/import/validate", function({params, pluginData, pluginName}) {
+        if (pluginName === 'populator') {
+            return validateImport(params, pluginData);
+        }
+        else {
+            return false;
+        }
+    });
+
+    /**
+     * 
+     * @param {String[]} ids ids of documents to be exported
+     * @param {String} app_id app Id
+     */
+    async function exportPlugin(ids) {
+        const data = await common.db.collection("populator_templates").find({_id: {$in: ids.map((id) => common.db.ObjectID(id))}}).toArray();
+        const dependencies = [];
+
+        return {
+            name: 'populator',
+            data: data,
+            dependencies: dependencies
+        };
+    }
+
+    /**
+     * Validation before import
+     * 
+     * @param {Object} params params object 
+     * @param {Object} template template Object
+     * @returns {Promise<Object>} validation result
+    */
+    function validateImport(params, template) {
+        return {
+            code: 200,
+            message: "Success",
+            data: {
+                newId: common.db.ObjectID(),
+                oldId: template._id
+            }
+        };
+    }
+
+    /**
+     * Insert Template Objects
+     * 
+     * @param {Object} params params object
+     * @param {Object} importData iomport data Object
+     * @returns {Promise} promise array of all inserts
+     */
+    function importPopulator(params, importData) {
+        const template = importData.data;
+        return new Promise((resolve, reject) => {
+            template._id = common.db.ObjectID(template._id);
+            common.db.collection('populator_templates').insert(template, function(insertTemplateErr) {
+                if (!insertTemplateErr) {
+                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_created", data: template});
+                    return resolve();
+                }
+                else {
+                    return reject();
+                }
+            });
+        });
+    }
+
 }(exported));
 
 module.exports = exported;

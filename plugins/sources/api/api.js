@@ -3,6 +3,7 @@ var pluginInstance = {},
     plugins = require('../../pluginManager.js'),
     stores = require("../stores.json"),
     fetch = require('../../../api/parts/data/fetch.js'),
+    parseDomain = require('parse-domain'),
     urlParse = require('url');
 
 var searchEngineKeyWord = {
@@ -104,19 +105,39 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
             ob.data = ["sources", "sources", "sources"];
         }
     });
-    plugins.register("/session/metrics", function(ob) {
-        var predefinedMetrics = ob.predefinedMetrics;
+    plugins.register("/sdk", function(ob) {
         var params = ob.params;
-        var user = ob.user;
+        var user = ob.params.app_user;
 
         if (params.qstring.metrics && (!user || typeof user[common.dbUserMap.source] === "undefined")) {
             if (typeof params.qstring.metrics._store === "undefined" && params.qstring.metrics._os) {
                 params.qstring.metrics._store = params.qstring.metrics._os;
+                if (!params.qstring.metrics._source_channel) {
+                    params.qstring.metrics._source_channel = "Direct";
+                }
             }
         }
         if (params.qstring.metrics && typeof params.qstring.metrics._store !== "undefined") {
 
             if (params.app && params.app.type === "web") {
+                if (!params.qstring.metrics._source_channel) {
+                    params.qstring.metrics._source_channel = params.qstring.metrics._store;
+                    try {
+                        const getURL = new URL(params.qstring.metrics._source_channel);
+                        const getHostName = getURL.hostname;
+                        const parseResult = parseDomain.parseDomain(getHostName);
+                        if (parseResult.type === parseDomain.ParseResultType.Listed) {
+                            const { domain} = parseResult;
+                            params.qstring.metrics._source_channel = domain;
+                        }
+                        else {
+                            throw "invalid URL";
+                        }
+                    }
+                    catch (ex) {
+                        delete params.qstring.metrics._source_channel;
+                    }
+                }
                 params.qstring.metrics._store = plugin.urlParser(params.qstring.metrics._store);
             }
 
@@ -126,6 +147,15 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
 
             params.qstring.metrics._store = common.db.encode(params.qstring.metrics._store);
         }
+    });
+    plugins.register("/sdk/user_properties", function(ob) {
+        if (ob.params.qstring.metrics && ob.params.qstring.metrics._source_channel) {
+            ob.updates.push({$set: {src_ch: ob.params.qstring.metrics._source_channel}});
+        }
+    });
+    plugins.register("/session/metrics", function(ob) {
+        var predefinedMetrics = ob.predefinedMetrics;
+
         predefinedMetrics.push({
             db: "sources",
             metrics: [

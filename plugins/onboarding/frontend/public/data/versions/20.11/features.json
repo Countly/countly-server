@@ -1,0 +1,86 @@
+[
+  {
+    "image": "1-Surveys.png",
+    "title": "Surveys",
+    "text": "Make the voice of your customer part of your analytics strategy using surveys. Ask up to 5 questions in a single survey, customize the appearance & behaviour and target your surveys based on in-app behaviour & properties of your users. Available for mobile and web apps.",
+    "showIn": "EE"
+  },
+  {
+    "image": "2-NPS.png",
+    "title": "Net Promoter® Score",
+    "text": "Measure your customer experience using Net Promoter® Score (NPS®) surveys. Customize the follow-up question based on the given score, target the NPS® survey based on in-app behaviour & properties of your users, visualize the NPS® as part of the customer journey.",
+    "showIn": "EE"
+  },
+  {
+    "image": "3-Hooks.png",
+    "title": "Hooks",
+    "text": "Trigger external HTTP endpoints & receive emails based on incoming data and internal events such as a user entering a cohort or a user profile getting updated. A brand new way to use the power of Countly data to feed external systems.",
+    "showIn": "EE"
+  },
+  {
+    "image": "4-Activity-Maps.png",
+    "title": "Activity Maps",
+    "text": "Visualize the session & custom event data in country, state and city level detail in the brand new activity maps. Navigate to the list of user profiles from any of the detail levels to dig into the individual user behaviour.",
+    "showIn": "EE"
+  },
+  {
+    "image": "5_Funnels.png",
+    "title": "Funnels",
+    "text": "Configure each individual funnel to be calculated based on whether steps are performed in a single session or across multiple sessions and fine-tune your customer journey analysis.",
+    "showIn": "EE"
+  },
+  {
+    "image": "6-Huawei-PushKit.png",
+    "title": "Huawei Push Kit",
+    "text": "Send push notifications to Huawei devices using the Huawei Push Kit integration. Use Huawei Push Kit to deliver push notifications to your entire Android user base, or use it side by side with Firebase Cloud Messaging.",
+    "showIn": "All"
+  },
+  {
+    "image": "7-Event-Grouping.png",
+    "title": "Custom Event Grouping",
+    "text": "A new way to explore your custom event data. Create custom event groups by selecting the individual custom events to be included in your group and visualize your grouped custom event data inside the All Events section.",
+    "showIn": "All"
+  },
+  {
+    "image": "8-User-Profiles-Export.png",
+    "title": "User Profile Exports",
+    "text": "Configure the default, custom and calculated properties to be included in your user profile exports. Furthermore, your individual user profile event timeline exports now contain the segments & properties of each timeline event.",
+    "showIn": "EE"
+  },
+  {
+    "image": "9-Optimized-Core.png",
+    "title": "Optimized Core",
+    "text": "An improved data ingestion system, that has optimized data inserts and updates giving you up to 10x data write performance compared to previous Countly versions.",
+    "showIn": "All"
+  },
+  {
+    "image": "10-App-Consolidation.png",
+    "title": "App Consolidation",
+    "text": "A new app data consolidation logic, that lets you create apps that consolidate data from other apps. When configured, a consolidated app combines data from the selected apps and makes it available as a single app within your dashboard.",
+    "showIn": "All"
+  },
+  {
+    "image": "11_Data-Manager.png",
+    "title": "Data Manager",
+    "text": "Adjust the data types of user properties and custom event segments. Transform incoming data to rename & merge your event segments and user properties.",
+    "showIn": "EE"
+  },
+  {
+    "image": "12-Config-Transfer.png",
+    "title": "Config Transfer",
+    "text": "Transfer your app configurations such as funnels, cohorts, remote config variables, formulas, data populator templates, custom dashboard configurations and feedback widgets between apps and servers.",
+    "showIn": "EE"
+  },
+  {
+    "image": "13-Device-Types.png",
+    "title": "Device Types",
+    "text": "Device type reporting is now available in Analytics → Device Types. Device type metric is also available as a property in filtering throughout the Countly UI so that you can filter data such as display all sessions from mobile or custom event X from web + desktop.",
+    "showIn": "All"
+  },
+  {
+    "image": "14-Updated-Email-Reports.png",
+    "title": "Customizable Email Reports",
+    "text": "Customize your email reports and select which data points you would like to get reports on. If you choose to have custom events in your email reports, you can select the individual custom events to be included.",
+    "showIn": "All"
+  }
+]

@@ -282,7 +282,7 @@ function modifyUserDetailsForPush() {
                             platforms: platforms,
                             apps: [countlyCommon.ACTIVE_APP_ID],
                             test: test && !prod,
-                            userConditions: {_id: app.userdetailsView.user_id}
+                            userConditions: {did: {$in: [app.userdetailsView.user_did]}}
                         });
                     }
                     else {

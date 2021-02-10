@@ -37,7 +37,6 @@ var pluginOb = {},
                 countlyCommon.getPeriodObj(params);
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
-            query._id = {$ne: "meta_v2"};
             validate(params, function(paramsNew) {
                 var columns = [null, "ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
@@ -233,10 +232,17 @@ var pluginOb = {},
             }
         }
         for (let i = 0; i < keys.length; i++) {
-            if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
+            if (after[keys[i]] === null || before[keys[i]] === null) {
+                if (after[keys[i]] !== before[keys[i]]) {
+                    databefore[keys[i]] = before[keys[i]];
+                    dataafter[keys[i]] = after[keys[i]];
+                }
+            }
+            else if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
                 if (typeof after[keys[i]] === "object") {
                     if (Array.isArray(after[keys[i]])) {
                         if (JSON.stringify(after[keys[i]]) !== JSON.stringify(before[keys[i]])) {
+
                             databefore[keys[i]] = before[keys[i]];
                             dataafter[keys[i]] = after[keys[i]];
                         }
@@ -290,6 +296,7 @@ var pluginOb = {},
      */
     function processRecording(ob) {
         var user = ob.user || ob.params.member;
+        ob.data = ob.data || {};
         if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {
