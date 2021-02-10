@@ -223,6 +223,8 @@
             self.elementsToBeRendered = [];
             if (self.vm) {
                 self.vm.$destroy();
+                self.vm.$off();
+                $(self.vm.$el).remove();
                 self.vm = null;
             }
         }
