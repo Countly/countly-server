@@ -832,9 +832,13 @@
                 initialSelectedDynamicCols = controlParams.selectedDynamicCols;
             }
             else {
-                initialSelectedDynamicCols = this.availableDynamicCols.filter(function(option) {
-                    return option.default;
-                });
+                initialSelectedDynamicCols = this.availableDynamicCols.reduce(function(acc, option) {
+                    if (option.default) {
+                        acc.push(option.value);
+                    }
+                    return acc;
+                }, []);
+                controlParams.selectedDynamicCols = initialSelectedDynamicCols;
             }
 
             return {
