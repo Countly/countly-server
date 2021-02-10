@@ -62,7 +62,6 @@
                     v-click-outside="handleOutsideClick">\
                     <trigger-proxy\
                         ref="toggler"\
-                        v-popover:popover\
                         @click.native.stop="handleToggle"\
                         @keydown.native.esc.stop.prevent="handleClose"\
                         @keydown.native.down.enter.prevent="handleOpen"\
@@ -91,9 +90,6 @@
                 visible: false
             };
         },
-        mounted: function() {
-            this.popperElm = this.$refs.popContent; // ignore popover clicks (clickoutside)
-        },
         methods: {
             doClose: function() {
                 this.visible = false;
@@ -104,9 +100,9 @@
             handleClose: function() {
                 var self = this;
                 this.doClose();
-                this.$nextTick(function() {
-                    self.$refs.toggler.focus();
-                });
+                // this.$nextTick(function() {
+                //     self.$refs.toggler.focus();
+                // });
             },
             handleOpen: function() {
                 if (!this.disabled && !this.visible) {
@@ -121,9 +117,10 @@
             },
             updateDropdown: function() {
                 var self = this;
-                this.$nextTick(function() {
-                    self.$refs.popover.updatePopper();
-                });
+                self.$refs.popover.updatePopper();
+                // this.$nextTick(function() {
+                //     self.$refs.popover.updatePopper();
+                // });
             }
         },
         watch: {
