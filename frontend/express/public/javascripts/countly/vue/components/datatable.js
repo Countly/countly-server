@@ -817,6 +817,9 @@
             'controlParams.page': function() {
                 this.checkPageBoundaries();
             },
+            'controlParams.selectedDynamicCols': function(){
+                this.$refs.elTable.store.updateColumns(); // TODO: Hacky, check for memory leaks.
+            },
             lastPage: function() {
                 this.checkPageBoundaries();
             }
@@ -826,7 +829,7 @@
 
             if (!controlParams.selectedDynamicCols || !Array.isArray(controlParams.selectedDynamicCols)) {
                 controlParams.selectedDynamicCols = this.availableDynamicCols.reduce(function(acc, option) {
-                    if (option.default) {
+                    if (option.default || options.required) {
                         acc.push(option.value);
                     }
                     return acc;
@@ -1165,7 +1168,7 @@
                                 v-bind="$attrs"\
                                 v-on="$listeners"\
                                 @sort-change="onSortChange"\
-                                ref="table">\
+                                ref="elTable">\
                                     <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
                                         <slot :name="name" v-bind="commonScope"/>\
                                     </template>\
