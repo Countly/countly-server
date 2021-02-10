@@ -697,7 +697,7 @@
             },
             publicDynamicCols: function() {
                 var self = this;
-                return this.selectedDynamicCols.map(function (val) {
+                return this.controlParams.selectedDynamicCols.map(function (val) {
                     return self.availableDynamicColsLookup[val];
                 });
             },
@@ -819,30 +819,21 @@
             },
             lastPage: function() {
                 this.checkPageBoundaries();
-            },
-            selectedDynamicCols: function(newVal) {
-                Vue.set(this.controlParams, 'selectedDynamicCols', newVal);
             }
         },
         data: function() {
-            var initialSelectedDynamicCols = null,
-                controlParams = this.getControlParams();
+            var controlParams = this.getControlParams();
 
-            if (controlParams.selectedDynamicCols && Array.isArray(controlParams.selectedDynamicCols)) {
-                initialSelectedDynamicCols = controlParams.selectedDynamicCols;
-            }
-            else {
-                initialSelectedDynamicCols = this.availableDynamicCols.reduce(function(acc, option) {
+            if (!controlParams.selectedDynamicCols || !Array.isArray(controlParams.selectedDynamicCols)) {
+                controlParams.selectedDynamicCols = this.availableDynamicCols.reduce(function(acc, option) {
                     if (option.default) {
                         acc.push(option.value);
                     }
                     return acc;
                 }, []);
-                controlParams.selectedDynamicCols = initialSelectedDynamicCols;
             }
 
             return {
-                selectedDynamicCols: initialSelectedDynamicCols,
                 controlParams: controlParams,
                 firstPage: 1
             };
@@ -1162,7 +1153,7 @@
                                         :hide-default-tabs="true"\
                                         :hide-all-options-tab="true"\
                                         :options="availableDynamicCols"\
-                                        v-model="selectedDynamicCols">\
+                                        v-model="controlParams.selectedDynamicCols">\
                                     </cly-select-x>\
                                     <el-input size="small" v-model="searchQueryProxy"></el-input>\
                                 </div>\
