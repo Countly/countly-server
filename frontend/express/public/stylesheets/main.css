@@ -964,7 +964,7 @@ div.datatablesubrow {display: none;}
 .cly-multi-select.disabled { opacity: 0.4 !important; cursor: default; }
 
 body .selectize-control.multi .selectize-input input { height: 18px; }
-body .selectize-control.multi .selectize-input, body .selectize-control.multi .selectize-input.has-items { position:relative; background-color:#FDFDFD; user-select:none; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:pointer; }
+body .selectize-control.multi .selectize-input, body .selectize-control.multi .selectize-input.has-items { position:relative; background-color:#FDFDFD; user-select:none; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:text; }
 body .selectize-control.multi .selectize-input > div { font-family: Ubuntu,sans-serif; line-height: 14px; border-radius: 2px; background-color: #777; color:#f1f1f1; padding:3px 19px 3px 10px; margin: 0 5px 2px 0; font-size: 12px; }
 body .selectize-control.multi .selectize-input > div:hover { background-color: #5a5a5a; color: #f1f1f1; cursor: default; }
 body .selectize-control.multi .selectize-input > div.active { background-color: #777; color: #f1f1f1; cursor: default; }
@@ -2228,6 +2228,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .dashboard-summary .item .bar .bar-inner-new:nth-child(2){background: #ececec;}
 .dashboard-summary .item .bar .bar-inner-new:nth-child(3){background: #ececec;}
 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='0%']::before{ width: 0% }
 .dashboard-summary .item .bar .bar-inner-new[data-percent='1%']::before{ width: 1% }
 .dashboard-summary .item .bar .bar-inner-new[data-percent='2%']::before{ width: 2% }
 .dashboard-summary .item .bar .bar-inner-new[data-percent='3%']::before{ width: 3% }
@@ -4385,3 +4386,31 @@ p.error_message_div {
 .cly-select:hover .drop-icn {
     background-color: #2FA732;
 }
+
+.selectize-right-drop .selectize-input::after {
+    font-family: 'Ionicons';
+    font-size: 10px;
+    float: right;
+    color: #717171;
+    content: "\f123";
+    position: absolute;
+    right: 6px;
+    top: 8px;
+}
+
+.selected.selectize-right-drop .selectize-input::after {
+    content: "\f126";
+    color: #2fa732;
+}
+
+.selectize-input ::placeholder { 
+    color: #dddddd;
+}
+
+.mgmt-plugins-row ::placeholder { 
+    color: #dddddd;
+}
+
+.mgmt-plugins-row .selectize-dropdown [data-selectable] .highlight {
+    background: #fff;
+  }

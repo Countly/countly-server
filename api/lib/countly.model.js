@@ -414,11 +414,11 @@ countlyModel.create = function(fetchValue) {
                 sum += topUsers[i][metric];
             }
 
-            for (let i = 0; i < maxItems; i++) {
+            for (let i = maxItems - 1; i >= 0; i--) {
                 var percent = Math.floor((topUsers[i][metric] / sum) * 100);
                 totalPercent += percent;
 
-                if (i === (maxItems - 1)) {
+                if (i === 0) {
                     percent += 100 - totalPercent;
                 }
 

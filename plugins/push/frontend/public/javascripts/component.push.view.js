@@ -19,6 +19,9 @@ window.component('push.view', function(view) {
 	
     view.show = function(message){
         message = message instanceof components.push.Message ? message : new components.push.Message(message);
+        if (message.auto() && message.autoOnEntry() === 'events' && message.autoEvents().filter(function(ev){ return !push.PERS_EVENTS[ev]; }).length) {
+            return Promise.all(message.autoEvents().map(function(key) { return components.push.initEvent(key); })).then(view.show.bind(view, message), view.show.bind(view, message));
+        }
         view.slider = components.slider.show({
             key: message._id() + Math.random(),
             title: function(){

@@ -81,6 +81,7 @@ then
     countly plugin upgrade web
     countly plugin upgrade active_directory
     countly plugin upgrade crash_symbolication
+    countly plugin upgrade concurrent_users
 
     sudo bash "$DIR/scripts/install.nghttp2.sh"
     countly plugin upgrade push

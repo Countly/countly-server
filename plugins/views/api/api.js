@@ -1283,7 +1283,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
 
             if (user.lv) {
-                var segmentation = {name: user.lv.replace(/^\$/, "").replace(/\./g, "&#46;"), exit: 1};
+                var segmentation = {name: user.lv, exit: 1};
                 getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err, view) {
                     if (err) {
                         log.e(err);

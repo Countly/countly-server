@@ -10,6 +10,7 @@ window.ViewsView = countlyView.extend({
     graphColors: {},
     selectedSegment: {"segmentKey": "", "segmentValue": ""},
     ids: {},
+    viewMap: {},
     lastId: 0,
     token: false,
     useView: null,
@@ -299,6 +300,7 @@ window.ViewsView = countlyView.extend({
                     }
                     $(nRow).attr("id", self.ids[aData._id]);
                     $(nRow).data("viewid", aData._id);
+                    self.viewMap[aData._id] = aData.display || aData.view || aData._id;
                 },
                 "fnInitComplete": function(oSettings, json) {
                     $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
@@ -535,12 +537,18 @@ window.ViewsView = countlyView.extend({
         }
     },
     drawGraph: function() {
-        var props = this.getProperties();
         var dp = [];
         for (var i = 0; i < this.selectedViews.length; i++) {
             var color = countlyCommon.GRAPH_COLORS[i];
-            var data = countlyViews.getChartData(this.selectedViews[i], this.selectedMetric, props[this.selectedMetric], this.selectedSegment.segmentKey, this.selectedSegment.segmentValue).chartDP;
+            var data = countlyViews.getChartData(this.selectedViews[i], this.selectedMetric, this.viewMap[this.selectedViews[i]], this.selectedSegment.segmentKey, this.selectedSegment.segmentValue).chartDP;
             if (data) {
+                for (var index = 0; index < data.length; index++) {
+                    var point = data[index];
+                    if (point && point.label) {
+                        var n = 25;
+                        point.label = point.label.substr(0, n) + '&hellip;';
+                    }
+                }
                 data[1].color = color;
                 $("#" + this.ids[this.selectedViews[i]] + " .color").css("background-color", color);
                 this.graphColors[this.selectedViews[i]] = color;
