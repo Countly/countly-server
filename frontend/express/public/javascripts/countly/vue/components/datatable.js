@@ -660,7 +660,7 @@
 
     //
 
-    var TabularDataManagerMixin = {
+    var TableExtensionsMixin = {
         props: {
             persistKey: {
                 type: String,
@@ -677,9 +677,30 @@
                 default: function() {
                     return [];
                 }
+            },
+            availableDynamicCols: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
             }
         },
         computed: {
+            hasDynamicCols: function() {
+                return this.availableDynamicCols.length > 0;
+            },
+            availableDynamicColsLookup: function (){
+                return this.availableDynamicCols.reduce(function(acc, col) {
+                    acc[col.value] = col;
+                    return acc;
+                }, {});
+            },
+            publicDynamicCols: function() {
+                var self = this;
+                return this.selectedDynamicCols.map(function (val) {
+                    return self.availableDynamicColsLookup[val];
+                });
+            },
             localSearchedRows: function() {
                 var currentArray = this.rows.slice();
                 if (this.controlParams.searchQuery) {
@@ -790,6 +811,7 @@
                 deep: true,
                 handler: _.debounce(function() {
                     this.triggerExternalSource();
+                    this.setControlParams();
                 }, 500)
             },
             'controlParams.page': function() {
@@ -797,11 +819,27 @@
             },
             lastPage: function() {
                 this.checkPageBoundaries();
+            },
+            selectedDynamicCols: function(newVal) {
+                Vue.set(this.controlParams, 'selectedDynamicCols', newVal);
             }
         },
         data: function() {
+            var initialSelectedDynamicCols = null,
+                controlParams = this.getControlParams();
+
+            if (controlParams.selectedDynamicCols && Array.isArray(controlParams.selectedDynamicCols)) {
+                initialSelectedDynamicCols = controlParams.selectedDynamicCols;
+            }
+            else {
+                initialSelectedDynamicCols = this.availableDynamicCols.filter(function(option) {
+                    return option.default;
+                });
+            }
+
             return {
-                controlParams: this.getControlParams(),
+                selectedDynamicCols: initialSelectedDynamicCols,
+                controlParams: controlParams,
                 firstPage: 1
             };
         },
@@ -865,7 +903,8 @@
                     page: 1,
                     perPage: 10,
                     searchQuery: '',
-                    sort: []
+                    sort: [],
+                    selectedDynamicCols: false
                 };
                 if (!this.persistKey) {
                     return defaultState;
@@ -1026,47 +1065,13 @@
             }
         }
     };
-
-    var DynamicColumnsMixin = {
-        props: {
-            availableDynamicCols: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
-            }
-        },
-        data: function() {
-            return {
-                selectedDynamicCols: []
-            };
-        },
-        computed: {
-            hasDynamicCols: function() {
-                return this.availableDynamicCols.length > 0;
-            },
-            availableDynamicColsLookup: function (){
-                return this.availableDynamicCols.reduce(function(acc, col) {
-                    acc[col.value] = col;
-                    return acc;
-                }, {});
-            },
-            publicDynamicCols: function() {
-                var self = this;
-                return this.selectedDynamicCols.map(function (val) {
-                    return self.availableDynamicColsLookup[val];
-                });
-            }
-        }
-    };
     //
 
     Vue.component("cly-datatable-n", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n,
-            TabularDataManagerMixin,
-            MutationTrackerMixin,
-            DynamicColumnsMixin
+            TableExtensionsMixin,
+            MutationTrackerMixin
         ],
         props: {
             keyFn: {
