@@ -6,6 +6,9 @@ var common = require('../../../api/utils/common.js'),
 const mockCollection = [...Array(100)].map((elem, idx) => {
     return {
         _id: idx,
+        number_0: Math.floor(Math.random() * 1000) + "",
+        number_1: Math.floor(Math.random() * 1000) + "",
+        number_2: Math.floor(Math.random() * 1000) + "",
         name: "File " + Math.floor(Math.random() * 1000)
     };
 });
@@ -39,7 +42,10 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
                 let currentArray = mockCollection.slice();
                 if (tableParams.sSearch) {
                     currentArray = currentArray.filter(function(item) {
-                        return item.name.includes(tableParams.sSearch);
+                        return item.name.includes(tableParams.sSearch) ||
+                                item.number_0.includes(tableParams.sSearch) ||
+                                item.number_1.includes(tableParams.sSearch) ||
+                                item.number_2.includes(tableParams.sSearch);
                     });
                 }
                 if (tableParams.sSortDir_0) {
@@ -56,6 +62,19 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
                     length = parseInt(tableParams.iDisplayLength, 10);
 
                 let currentPage = currentArray.slice(startIndex, startIndex + length);
+
+                currentPage = currentPage.map(function(row) {
+                    var obj = {
+                        _id: row._id,
+                        name: row.name
+                    };
+                    if (tableParams.visibleColumns) {
+                        JSON.parse(tableParams.visibleColumns).forEach(function(col) {
+                            obj[col] = row[col];
+                        });
+                    }
+                    return obj;
+                });
                 common.returnOutput(params, {
                     aaData: currentPage,
                     iTotalRecords: mockCollection.length,

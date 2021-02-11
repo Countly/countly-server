@@ -39,6 +39,20 @@
                     label: "Description",
                     default: true
                 }],
+                remoteTableDynamicCols: [{
+                    value: "number_0",
+                    label: "Number 0",
+                    required: true
+                },
+                {
+                    value: "number_1",
+                    label: "Number 1"
+                },
+                {
+                    value: "number_2",
+                    label: "Number 2",
+                    default: true
+                }],
                 localTableTrackedFields: ['status'],
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),
                 tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,

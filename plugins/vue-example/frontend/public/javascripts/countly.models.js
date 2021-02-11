@@ -95,13 +95,14 @@
 
         var tooManyRecordsResource = countlyVue.vuex.ServerDataTable("tooManyRecords", {
             columns: ['_id', "name"],
-            onRequest: function() {
+            onRequest: function(context) {
                 return {
                     type: "GET",
                     url: countlyCommon.API_URL + "/o",
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
-                        method: 'large-col'
+                        method: 'large-col',
+                        visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols)
                     }
                 };
             },
