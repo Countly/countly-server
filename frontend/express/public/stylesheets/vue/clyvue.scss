@@ -2914,6 +2914,10 @@
         border-radius: 7px;
     }
 
+    label.el-checkbox{
+        width: 100%;
+    }
+
     &--bordered {
         border-radius: 7px;
         border: 1px solid $--border-color-base;
