@@ -1,27 +1,9 @@
-/* global jQuery, Vue, moment, countlyCommon, _, VeeValidate */
+/* global jQuery, Vue, moment, countlyCommon, _ */
 
 (function(countlyVue, $) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
-
-    Vue.use(VeeValidate);
-    Vue.component('validation-provider', VeeValidate.ValidationProvider);
-    Vue.component('validation-observer', VeeValidate.ValidationObserver);
-
-    VeeValidate.extend('arrmin', {
-        validate: function(value, args) {
-            return value.length >= args.length;
-        },
-        params: ['length']
-    });
-
-    VeeValidate.extend('arrmax', {
-        validate: function(value, args) {
-            return value.length <= args.length;
-        },
-        params: ['length']
-    });
 
     var objectWithoutProperties = function(obj, excluded) {
         if (!obj || !excluded || excluded.length === 0) {

@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT */
+/* global Vue */
 
 (function(countlyVue) {
 
@@ -7,8 +7,6 @@
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
-
-    Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
 
     Vue.component("cly-menubox", countlyBaseComponent.extend({
         template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="outsideClose">\n' +
