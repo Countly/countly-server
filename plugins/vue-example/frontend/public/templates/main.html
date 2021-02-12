@@ -1,5 +1,5 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
-    <cly-tabs v-model="currentTab">
+    <cly-tabs v-model="currentTab" :route-pattern="'#/' + appId + '/vue/example/:tab'" route-key="tab">
         <el-tab-pane name="tables">
             <span slot="label">Tables</span>
             <cly-header title="Tables"></cly-header>

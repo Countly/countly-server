@@ -1,4 +1,4 @@
-/* global Vue */
+/* global Vue, Backbone */
 
 (function(countlyVue) {
 
@@ -7,7 +7,9 @@
 
     Vue.component("cly-tabs", countlyBaseComponent.extend({
         props: {
-            value: String
+            value: String,
+            routePattern: String,
+            routeKey: String
         },
         computed: {
             currentTab: {
@@ -15,12 +17,15 @@
                     return this.value;
                 },
                 set: function(val) {
+                    if (this.routePattern && this.routeKey) {
+                        Backbone.history.noHistory(this.routePattern.replace(":" + this.routeKey, val));
+                    }
                     this.$emit("input", val);
                 }
             }
         },
         template: '<div class="cly-vue-tabs">\
-                        <el-tabs v-model="currentTab">\
+                        <el-tabs v-model="currentTab" v-on="$listeners" v-bind="$attrs">\
                             <template v-slot>\
                                 <slot></slot>\
                             </template>\

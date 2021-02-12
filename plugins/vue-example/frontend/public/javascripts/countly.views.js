@@ -314,6 +314,7 @@
         },
         data: function() {
             return {
+                appId: countlyCommon.ACTIVE_APP_ID,
                 currentTab: (this.$route.params && this.$route.params.tab) || "tables"
             };
         }
