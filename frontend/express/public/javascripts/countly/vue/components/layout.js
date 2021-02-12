@@ -135,7 +135,7 @@
         props: {
             title: String
         },
-        template: '<div style="background-color: white; border-bottom: 1px solid #ECECEC; padding:16px"><div style="padding:8px"><h2>{{title}}</h2></div></div>'
+        template: '<div style="background-color: white; border-bottom: 1px solid #ECECEC; display: flex; height: 112px; align-items: flex-end;"><div><h2 style="margin: 0 0 32px 24px">{{title}}</h2></div></div>'
     }));
 
     Vue.component("cly-main", countlyBaseComponent.extend({
