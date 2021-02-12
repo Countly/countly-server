@@ -3271,7 +3271,7 @@ window.ManageUsersView = countlyView.extend({
     appOptions: [],
     // TODO: don't rely plugins for features. change this section
     features: {
-        "plugins": countlyGlobal.plugins,
+        "plugins": [],
         "others": ["core", "events", "global_applications", "global_users", "global_jobs"]
     },
     // CRUD_CONTEXT_PROPERTIES END
@@ -3420,6 +3420,10 @@ window.ManageUsersView = countlyView.extend({
                 key: countlyGlobal.apps[app].name,
                 val: app
             });
+        }
+
+        for (var i = 0; i < countlyGlobal.plugins.length; i++) {
+            this.features.plugins.push(countlyGlobal.plugins[i].split("-").join(""))
         }
     },
     beforeRender: function() {
@@ -3650,6 +3654,7 @@ window.ManageUsersView = countlyView.extend({
             var userCreateDrawer = $('.create-user-drawer');
             $('.create-user-drawer .discard-changes').hide();
             $('#create-user-drawer-title').html($.i18n.map['management-users.create-new-user']);
+            $('.create-user-drawer #create-user-button').html($.i18n.map['management-users.create-user']);
             // clean inputs
             userCreateDrawer.addClass("open");
             userCreateDrawer.find('.full-name-text').val('');
@@ -3808,6 +3813,7 @@ window.ManageUsersView = countlyView.extend({
             $('.create-user-drawer .discard-changes').show();
             $('.create-user-drawer .create-user-drawer-detail').hide();
             $('.create-user-drawer .drawer-loading').show();
+            $('.create-user-drawer #create-user-button').html($.i18n.map['common.save']);
 
             $.ajax({
                 url: url,
@@ -3857,7 +3863,7 @@ window.ManageUsersView = countlyView.extend({
                     $('#user-avatar-upload-drop').hide();
                     $('.create-user-drawer .img-preview').show();
                     $('.create-user-drawer .img-preview').css({'background-image': (memberData.member_image) ? 'url('+ memberData.member_image +')' : 'url(/memberimages/' + memberData._id + '.png)' });
-                    
+
                     // set local permission box configs as member's permission
                     self.userApps = memberData.permission._.u;
                     self.adminApps = memberData.permission._.a;

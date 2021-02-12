@@ -181,40 +181,40 @@ usersApi.createUser = function(params) {
     }
 
     var argProps = {
-            'full_name': {
-                'required': true,
-                'type': 'String'
-            },
-            'username': {
-                'required': true,
-                'type': 'String'
-            },
-            'password': {
-                'required': true,
-                'type': 'String',
-                'min-length': plugins.getConfig("security").password_min,
-                'has-number': plugins.getConfig("security").password_number,
-                'has-upchar': plugins.getConfig("security").password_char,
-                'has-special': plugins.getConfig("security").password_symbol
-            },
-            'email': {
-                'required': true,
-                'type': 'String'
-            },
-            'lang': {
-                'required': false,
-                'type': 'String'
-            },
-            'permission': {
-                'required': true,
-                'type': 'Object'
-            },
-            'global_admin': {
-                'required': false,
-                'type': 'Boolean'
-            }
+        'full_name': {
+            'required': true,
+            'type': 'String'
         },
-        newMember = {};
+        'username': {
+            'required': true,
+            'type': 'String'
+        },
+        'password': {
+            'required': true,
+            'type': 'String',
+            'min-length': plugins.getConfig("security").password_min,
+            'has-number': plugins.getConfig("security").password_number,
+            'has-upchar': plugins.getConfig("security").password_char,
+            'has-special': plugins.getConfig("security").password_symbol
+        },
+        'email': {
+            'required': true,
+            'type': 'String'
+        },
+        'lang': {
+            'required': false,
+            'type': 'String'
+        },
+        'permission': {
+            'required': true,
+            'type': 'Object'
+        },
+        'global_admin': {
+            'required': false,
+            'type': 'Boolean'
+        }
+    },
+    newMember = {};
 
     var createUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(newMember = createUserValidation.obj)) {
@@ -325,65 +325,69 @@ function killAllSessionForUser(userId) {
 **/
 usersApi.updateUser = async function(params) {
     var argProps = {
-            'user_id': {
-                'required': true,
-                'type': 'String',
-                'min-length': 24,
-                'max-length': 24,
-                'exclude-from-ret-obj': true
-            },
-            'full_name': {
-                'required': false,
-                'type': 'String'
-            },
-            'username': {
-                'required': false,
-                'type': 'String'
-            },
-            'password': {
-                'required': false,
-                'type': 'String',
-                'min-length': plugins.getConfig("security").password_min,
-                'has-number': plugins.getConfig("security").password_number,
-                'has-upchar': plugins.getConfig("security").password_char,
-                'has-special': plugins.getConfig("security").password_symbol
-            },
-            'email': {
-                'required': false,
-                'type': 'String'
-            },
-            'lang': {
-                'required': false,
-                'type': 'String'
-            },
-            'admin_of': {
-                'required': false,
-                'type': 'Array'
-            },
-            'user_of': {
-                'required': false,
-                'type': 'Array'
-            },
-            'global_admin': {
-                'required': false,
-                'type': 'Boolean'
-            },
-            'locked': {
-                'required': false,
-                'type': 'Boolean'
-            },
-            'send_notification': {
-                'required': false,
-                'type': 'Boolean',
-                'exclude-from-ret-obj': true
-            },
-            'member_image': {
-                'type': 'String',
-                'required': false
-            }
+        'user_id': {
+            'required': true,
+            'type': 'String',
+            'min-length': 24,
+            'max-length': 24,
+            'exclude-from-ret-obj': true
         },
-        updatedMember = {},
-        passwordNoHash = "";
+        'full_name': {
+            'required': false,
+            'type': 'String'
+        },
+        'username': {
+            'required': false,
+            'type': 'String'
+        },
+        'password': {
+            'required': false,
+            'type': 'String',
+            'min-length': plugins.getConfig("security").password_min,
+            'has-number': plugins.getConfig("security").password_number,
+            'has-upchar': plugins.getConfig("security").password_char,
+            'has-special': plugins.getConfig("security").password_symbol
+        },
+        'email': {
+            'required': false,
+            'type': 'String'
+        },
+        'lang': {
+            'required': false,
+            'type': 'String'
+        },
+        'admin_of': {
+            'required': false,
+            'type': 'Array'
+        },
+        'user_of': {
+            'required': false,
+            'type': 'Array'
+        },
+        'global_admin': {
+            'required': false,
+            'type': 'Boolean'
+        },
+        'locked': {
+            'required': false,
+            'type': 'Boolean'
+        },
+        'send_notification': {
+            'required': false,
+            'type': 'Boolean',
+            'exclude-from-ret-obj': true
+        },
+        'member_image': {
+            'type': 'String',
+            'required': false
+        },
+        'permission': {
+            'required': false,
+            'type': 'Object'
+        }
+    },
+    updatedMember = {},
+    passwordNoHash = "";
 
     var updateUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(updatedMember = updateUserValidation.obj)) {
@@ -395,7 +399,7 @@ usersApi.updateUser = async function(params) {
         common.returnMessage(params, 401, 'User is not a global administrator');
         return false;
     }
-
+    
     if (updatedMember.password) {
         var secret = countlyConfig.passwordSecret || "";
         passwordNoHash = updatedMember.password;
@@ -414,7 +418,6 @@ usersApi.updateUser = async function(params) {
     if (updatedMember.member_image && updatedMember.member_image === 'delete') {
         updatedMember.member_image = "";
     }
-
 
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
         common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function() {

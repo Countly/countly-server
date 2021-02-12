@@ -5,9 +5,14 @@
     countlyAuth.types = ["c", "r", "u", "d"];
     countlyAuth.typeNames = ["create", "read", "update", "delete"];
     countlyAuth.features = {
-        "plugins": countlyGlobal.plugins,
+        "plugins": [],
         "others": ["core", "events", "global_applications", "global_users", "global_jobs"]
     };
+
+    for (var i = 0; i < countlyGlobal.plugins.length; i++) {
+        countlyAuth.features.plugins.push(countlyGlobal.plugins[i].split("-").join(""))
+    }
+
     /**
      * validate write requests for specific feature on specific app
      * @param {string} accessType - write process type [c, u, d]
