@@ -1,3 +1,4 @@
+@import './typography-variables.scss';
 /* Element Chalk Variables */
 
 // Special comment for theme configurator
@@ -112,21 +113,21 @@ $--fill-base: $--color-white !default;
 $--font-path: 'fonts' !default;
 $--font-display: 'auto' !default;
 /// fontSize|1|Font Size|0
-$--font-size-extra-large: 20px !default;
+$--font-size-extra-large: $--text-2xl-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-large: 18px !default;
+$--font-size-large: $--text-xl-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-medium: 16px !default;
+$--font-size-medium: $--text-lg-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-base: 14px !default;
+$--font-size-base: $--text-md-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-small: 13px !default;
+$--font-size-small: $--text-sm-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-extra-small: 12px !default;
+$--font-size-extra-small: $--text-xs-size !default;
 /// fontWeight|1|Font Weight|1
-$--font-weight-primary: 500 !default;
+//$--font-weight-primary: 500 !default;
 /// fontWeight|1|Font Weight|1
-$--font-weight-secondary: 100 !default;
+//$--font-weight-secondary: 100 !default;
 /// fontLineHeight|1|Line Height|2
 $--font-line-height-primary: 24px !default;
 /// fontLineHeight|1|Line Height|2
@@ -273,7 +274,7 @@ $--radio-bordered-mini-input-width: 12px !default;
 $--radio-bordered-mini-height: 28px !default;
 
 /// fontSize||Font|1
-$--radio-button-font-size: $--font-size-base !default;
+$--radio-button-font-size: $--text-button-size !default;
 /// color||Color|0
 $--radio-button-checked-background-color: $--color-primary !default;
 /// color||Color|0

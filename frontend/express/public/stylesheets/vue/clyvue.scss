@@ -1,6 +1,64 @@
-@import './element-variables.scss';
+@import "./element-variables.scss";
+@import "./typography-variables.scss";
 
 .cly-vue-theme-clydef {
+    // Typography
+    h1 {
+        font-size: $--heading-1-size;
+        line-height: $--heading-1-line-height;
+        font-weight: $--heading-1-weight;
+    }
+
+    h2 {
+        font-size: $--heading-2-size;
+        line-height: $--heading-2-line-height;
+        font-weight: $--heading-2-weight;
+    }
+
+    h3 {
+        font-size: $--heading-3-size;
+        line-height: $--heading-3-line-height;
+        font-weight: $--heading-3-weight;
+    }
+
+    h4 {
+        font-size: $--heading-4-size;
+        line-height: $--heading-4-line-height;
+        font-weight: $--heading-4-weight;
+    }
+
+    h5 {
+        font-size: $--heading-5-size;
+        line-height: $--heading-5-line-height;
+        font-weight: $--heading-5-weight;
+    }
+
+    h6 {
+        font-size: $--heading-6-size;
+        line-height: $--heading-6-line-height;
+        font-weight: $--heading-6-weight;
+    }
+
+    .font-weight-bold {
+        font-weight: $--font-weight-bold !important;
+    }
+
+    .font-weight-normal {
+        font-weight: $--font-weight-text !important;
+    }
+
+    .font-italic {
+        font-style: italic !important;
+    }
+
+    .text-lowercase {
+        text-transform: lowercase !important;
+    }
+
+    .text-uppercase {
+        text-transform: uppercase !important;
+    }
+
     // tabs component
     .cly-vue-tabs {
         &.tabs-main-skin {
@@ -611,10 +669,10 @@
             }
         }
 
-        &.check-star-skin .ion-icons{
-            color: #6B6B6B;
-            font-size:20px;
-            padding-top:0px;
+        &.check-star-skin .ion-icons {
+            color: #6b6b6b;
+            font-size: 20px;
+            padding-top: 0px;
         }
 
         &.check-switch-skin,
@@ -1100,7 +1158,7 @@
                     border-radius: 4px;
                     overflow: hidden;
                     font-size: 0;
-                    opacity: .8;
+                    opacity: 0.8;
                     position: relative;
 
                     &:before {
@@ -1613,7 +1671,7 @@
                     border-radius: 4px;
                     overflow: hidden;
                     font-size: 0;
-                    opacity: .8;
+                    opacity: 0.8;
                     position: relative;
 
                     &:before {
@@ -2554,11 +2612,10 @@
         }
         &__table-nav-arrows,
         &__table-page-selector,
-        &__table-page-size-selector
-        {
+        &__table-page-size-selector {
             display: inline-block;
             .el-select {
-                width: 70px; 
+                width: 70px;
             }
         }
         &__table-bottomline {
@@ -2898,12 +2955,11 @@
 }
 .cly-vue-listbox {
     height: inherit;
-    .el-scrollbar{
+    .el-scrollbar {
         height: inherit;
         &__wrap {
             overflow-x: hidden;
         }
-          
     }
     .el-select-dropdown__list {
         padding: 0;
@@ -2914,14 +2970,15 @@
         border-radius: 7px;
     }
 
-    label.el-checkbox{
+    label.el-checkbox {
         width: 100%;
     }
 
     &--bordered {
         border-radius: 7px;
         border: 1px solid $--border-color-base;
-        &.is-focus, &:focus-within{
+        &.is-focus,
+        &:focus-within {
             border-color: $--color-primary;
         }
     }
@@ -2937,11 +2994,11 @@
     }
 }
 
-.cly-vue-select-x{
+.cly-vue-select-x {
     &__pop {
         .el-tabs {
             &__nav-wrap::after {
-                background-color:transparent;
+                background-color: transparent;
             }
             &__nav-scroll {
                 padding: 0 14px;
@@ -2955,7 +3012,7 @@
                     position: absolute;
                     width: 100%;
                     height: 12px;
-                    background: linear-gradient(180deg, #333C48 0%, rgba(51, 60, 72, 0.0001) 100%);
+                    background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
                     top: 40px;
                     opacity: 0.12;
                 }
@@ -2977,23 +3034,22 @@
                 }
             }
         }
-        .cly-vue-listbox{
+        .cly-vue-listbox {
             padding: 0 8px;
-            .el-scrollbar{
+            .el-scrollbar {
                 margin-right: -7px;
             }
             .el-select-dropdown__list,
             &__no-data {
                 margin: 8px 7px 25px 0;
             }
-            
         }
     }
     &__title {
         font-weight: 500;
         font-size: 16px;
         line-height: 24px;
-        color: #333C48;
+        color: #333c48;
         padding-bottom: 16px;
     }
     &__header-slot {
@@ -3003,7 +3059,7 @@
         padding: 16px;
     }
     &__footer {
-        border-top: 1px solid #ECECEC;
+        border-top: 1px solid #ececec;
     }
     &__commit-section {
         float: right;
