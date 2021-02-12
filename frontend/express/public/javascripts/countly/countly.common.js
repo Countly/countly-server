@@ -1971,11 +1971,7 @@
                 { "name": metric }
             ], estOverrideMetric);
 
-            if (fixBarSegmentData) {
-                rangeData = fixBarSegmentData(rangeData);
-            }
-
-            return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, metric);
+            return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, metric, fixBarSegmentData);
         };
 
         /**
@@ -2013,6 +2009,7 @@
         * @memberof countlyCommon
         * @param {object} rangeData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
         * @param {String} metric - name of the metric to use ordering and returning
+        * @param {Function} fixBarSegmentData - Function to fix bar data segment data
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -2021,8 +2018,13 @@
         *    {"name":"Windows Phone","percent":14}
         * ]
         */
-        countlyCommon.calculateBarDataWPercentageOfTotal = function(rangeData, metric) {
+        countlyCommon.calculateBarDataWPercentageOfTotal = function(rangeData, metric, fixBarSegmentData) {
             rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
+
+            if (fixBarSegmentData) {
+                rangeData = fixBarSegmentData(rangeData);
+            }
+
             rangeData.chartData = _.sortBy(rangeData.chartData, function(obj) {
                 return -obj[metric];
             });

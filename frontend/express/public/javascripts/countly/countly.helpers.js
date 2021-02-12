@@ -2912,11 +2912,7 @@
                     rangeData.chartData[i] = data[i];
                 }
 
-                if (this.fixBarSegmentData) {
-                    rangeData = this.fixBarSegmentData(segment, rangeData);
-                }
-
-                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, mtric);
+                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, mtric, this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
             }
             else {
                 return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(segment), this.clearObject, fetchValue, mtric, estOverrideMetric, this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
