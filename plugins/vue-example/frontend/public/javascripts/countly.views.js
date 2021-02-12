@@ -11,23 +11,7 @@
                 return this.$store.getters["countlyVueExample/tooManyRecords"];
             }
         },
-        watch: {
-            selectXModeBuffer: function(newVal) {
-                this.selectX = {
-                    mode: newVal,
-                    currentVal: newVal === 'single-list' ? null : []
-                };
-            }
-        },
         data: function() {
-            var manyItems = [];
-
-            for (var i = 0;i <= 50;i++) {
-                if (i > 0 && i % 10 === 0) {
-                    manyItems.push({name: (i - i % 10) + "s"});
-                }
-                manyItems.push({name: "Type " + i, value: i});
-            }
             return {
                 tableDynamicCols: [{
                     value: "name",
@@ -57,107 +41,6 @@
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),
                 tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,
                 remoteTablePersistKey: "vueExample_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
-                dropdownsDisabled: false,
-                autoCommitDisabled: false,
-                allOptionsTabHidden: false,
-                selectXOptions: [{
-                    "label": "A Items",
-                    "name": "type-1",
-                    "options": [
-                        {"label": "hello0", "value": 0},
-                        {"label": "hello1", "value": 1},
-                        {"label": "hello2", "value": 2},
-                        {"label": "hello3", "value": 3},
-                        {"label": "hello4", "value": 4},
-                        {"label": "hello5", "value": 5},
-                        {"label": "hello6", "value": 6},
-                        {"label": "hello7", "value": 7},
-                        {"label": "hello8", "value": 8},
-                        {"label": "hello9", "value": 9},
-                        {"label": "hello10", "value": 10},
-                        {"label": "hello11", "value": 11},
-                    ]
-                },
-                {
-                    "label": "B Items",
-                    "name": "type-2",
-                    "options": [
-                        {"label": "user0", "value": 12},
-                        {"label": "user1", "value": 13},
-                    ]
-                }],
-                selectXModeBuffer: 'single-list',
-                selectX: {
-                    currentVal: null,
-                    mode: 'single-list',
-                },
-                listBoxOptions: [
-                    {"label": "hello0", "value": 0},
-                    {"label": "hello1", "value": 1},
-                    {"label": "hello2", "value": 2},
-                    {"label": "hello3", "value": 3},
-                    {"label": "hello4", "value": 4},
-                    {"label": "hello5", "value": 5},
-                    {"label": "hello6", "value": 6},
-                    {"label": "hello7", "value": 7},
-                    {"label": "hello8", "value": 8},
-                    {"label": "hello9", "value": 9},
-                    {"label": "hello10", "value": 10},
-                    {"label": "hello11", "value": 11},
-                ],
-                clistBoxOptions: [
-                    {"label": "hello0", "value": 0},
-                    {"label": "hello1", "value": 1},
-                    {"label": "hello2", "value": 2},
-                    {"label": "hello3", "value": 3},
-                    {"label": "hello4", "value": 4},
-                    {"label": "hello5", "value": 5},
-                    {"label": "hello6", "value": 6},
-                    {"label": "hello7", "value": 7},
-                    {"label": "hello8", "value": 8},
-                    {"label": "hello9", "value": 9},
-                    {"label": "hello10", "value": 10},
-                    {"label": "hello11", "value": 11},
-                ],
-                selectedLB: 0,
-                selectedCLB: [],
-                activeTab: null,
-                typedText: 'Type sth...',
-                selectedRadio: 2,
-                availableRadio: [
-                    {label: "Type 1", value: 1},
-                    {label: "Type 2", value: 2},
-                    {label: "Type 3", value: 3, description: "Some description..."},
-                ],
-                selectedGenericRadio: 2,
-                availableGenericRadio: [
-                    {label: "Type 1", value: 1, cmp: {'template': '<div>Template</div>'}},
-                    {label: "Type 2", value: 2},
-                    {label: "Type 3", value: 3},
-                ],
-                selectedCheckFlag: true,
-                selectedCheck: [1, 2],
-                availableCheck: [
-                    {label: "Type 1", value: 1},
-                    {label: "Type 2", value: 2},
-                    {label: "Type 3", value: 3},
-                ],
-                selectWModel: 1, // it would automatically find the record {"name": "Type 1", "value": 1}
-                selectWItems: manyItems,
-                selectDWModel: null,
-                selectDWItems: manyItems,
-                rTableColumns: [
-                    {
-                        label: 'ID',
-                        field: '_id',
-                        type: 'number',
-                    },
-                    {
-                        type: "text",
-                        field: "name",
-                        label: "Name",
-                    }
-                ]
             };
         },
         methods: {
@@ -176,26 +59,6 @@
             },
             onDelete: function(row) {
                 this.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
-            },
-            onDSSearch: function(query) {
-                var self = this;
-                setTimeout(function() {
-                    // Mimic an async search event
-                    if (query && query !== "") {
-                        self.selectDWItems = [
-                            {name: "Related with (" + query + ") 1", value: 1},
-                            {name: "Related with (" + query + ") 2", value: 2},
-                            {name: "Related with (" + query + ") 3", value: 3},
-                        ];
-                    }
-                    else {
-                        var manyItems = [];
-                        for (var i = 1;i <= 50;i++) {
-                            manyItems.push({name: "Type " + i, value: i});
-                        }
-                        self.selectDWItems = manyItems;
-                    }
-                }, 500);
             }
         }
     });
@@ -211,68 +74,6 @@
                 manyItems.push({name: "Type " + i, value: i});
             }
             return {
-                tableDynamicCols: [{
-                    value: "name",
-                    label: "Name",
-                    required: true
-                },
-                {
-                    value: "description",
-                    label: "Description",
-                    default: true
-                }],
-                remoteTableDynamicCols: [{
-                    value: "number_0",
-                    label: "Number 0",
-                    required: true
-                },
-                {
-                    value: "number_1",
-                    label: "Number 1"
-                },
-                {
-                    value: "number_2",
-                    label: "Number 2",
-                    default: true
-                }],
-                localTableTrackedFields: ['status'],
-                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),
-                tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,
-                remoteTablePersistKey: "vueExample_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
-                dropdownsDisabled: false,
-                autoCommitDisabled: false,
-                allOptionsTabHidden: false,
-                selectXOptions: [{
-                    "label": "A Items",
-                    "name": "type-1",
-                    "options": [
-                        {"label": "hello0", "value": 0},
-                        {"label": "hello1", "value": 1},
-                        {"label": "hello2", "value": 2},
-                        {"label": "hello3", "value": 3},
-                        {"label": "hello4", "value": 4},
-                        {"label": "hello5", "value": 5},
-                        {"label": "hello6", "value": 6},
-                        {"label": "hello7", "value": 7},
-                        {"label": "hello8", "value": 8},
-                        {"label": "hello9", "value": 9},
-                        {"label": "hello10", "value": 10},
-                        {"label": "hello11", "value": 11},
-                    ]
-                },
-                {
-                    "label": "B Items",
-                    "name": "type-2",
-                    "options": [
-                        {"label": "user0", "value": 12},
-                        {"label": "user1", "value": 13},
-                    ]
-                }],
-                selectXModeBuffer: 'single-list',
-                selectX: {
-                    currentVal: null,
-                    mode: 'single-list',
-                },
                 listBoxOptions: [
                     {"label": "hello0", "value": 0},
                     {"label": "hello1", "value": 1},
@@ -324,22 +125,10 @@
                     {label: "Type 2", value: 2},
                     {label: "Type 3", value: 3},
                 ],
-                selectWModel: 1, // it would automatically find the record {"name": "Type 1", "value": 1}
+                selectWModel: 1,
                 selectWItems: manyItems,
                 selectDWModel: null,
-                selectDWItems: manyItems,
-                rTableColumns: [
-                    {
-                        label: 'ID',
-                        field: '_id',
-                        type: 'number',
-                    },
-                    {
-                        type: "text",
-                        field: "name",
-                        label: "Name",
-                    }
-                ]
+                selectDWItems: manyItems
             };
         }
     });
@@ -363,34 +152,6 @@
                 manyItems.push({name: "Type " + i, value: i});
             }
             return {
-                tableDynamicCols: [{
-                    value: "name",
-                    label: "Name",
-                    required: true
-                },
-                {
-                    value: "description",
-                    label: "Description",
-                    default: true
-                }],
-                remoteTableDynamicCols: [{
-                    value: "number_0",
-                    label: "Number 0",
-                    required: true
-                },
-                {
-                    value: "number_1",
-                    label: "Number 1"
-                },
-                {
-                    value: "number_2",
-                    label: "Number 2",
-                    default: true
-                }],
-                localTableTrackedFields: ['status'],
-                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),
-                tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,
-                remoteTablePersistKey: "vueExample_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
                 dropdownsDisabled: false,
                 autoCommitDisabled: false,
                 allOptionsTabHidden: false,
@@ -425,34 +186,7 @@
                     currentVal: null,
                     mode: 'single-list',
                 },
-                listBoxOptions: [
-                    {"label": "hello0", "value": 0},
-                    {"label": "hello1", "value": 1},
-                    {"label": "hello2", "value": 2},
-                    {"label": "hello3", "value": 3},
-                    {"label": "hello4", "value": 4},
-                    {"label": "hello5", "value": 5},
-                    {"label": "hello6", "value": 6},
-                    {"label": "hello7", "value": 7},
-                    {"label": "hello8", "value": 8},
-                    {"label": "hello9", "value": 9},
-                    {"label": "hello10", "value": 10},
-                    {"label": "hello11", "value": 11},
-                ],
-                clistBoxOptions: [
-                    {"label": "hello0", "value": 0},
-                    {"label": "hello1", "value": 1},
-                    {"label": "hello2", "value": 2},
-                    {"label": "hello3", "value": 3},
-                    {"label": "hello4", "value": 4},
-                    {"label": "hello5", "value": 5},
-                    {"label": "hello6", "value": 6},
-                    {"label": "hello7", "value": 7},
-                    {"label": "hello8", "value": 8},
-                    {"label": "hello9", "value": 9},
-                    {"label": "hello10", "value": 10},
-                    {"label": "hello11", "value": 11},
-                ],
+                
                 selectedLB: 0,
                 selectedCLB: [],
                 activeTab: null,
@@ -479,19 +213,7 @@
                 selectWModel: 1, // it would automatically find the record {"name": "Type 1", "value": 1}
                 selectWItems: manyItems,
                 selectDWModel: null,
-                selectDWItems: manyItems,
-                rTableColumns: [
-                    {
-                        label: 'ID',
-                        field: '_id',
-                        type: 'number',
-                    },
-                    {
-                        type: "text",
-                        field: "name",
-                        label: "Name",
-                    }
-                ]
+                selectDWItems: manyItems
             };
         }
     });
