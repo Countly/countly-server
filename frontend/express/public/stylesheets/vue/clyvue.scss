@@ -94,12 +94,12 @@ body {
                     top: 1px;
                     white-space: nowrap;
                     margin: 0;
-                    background-color: #f8f8f8;
+                    background-color: #fcfcfc;
                     border-radius: 0;
                     border: none;
                     background-image: none;
                     padding: 0;
-                    border-top: 3px solid #f8f8f8;
+                    border-top: 3px solid #fcfcfc;
                     border-bottom: none !important;
                     width: auto;
                     margin-right: 30px;
@@ -148,7 +148,7 @@ body {
                     text-align: center;
                     border-left: 1px solid #d0d0d0;
                     border-bottom: 1px solid #d0d0d0;
-                    background-color: #f9f9f9;
+                     background-color: #fcfcfc;
                     height: 23px;
                     vertical-align: middle;
 
@@ -294,7 +294,7 @@ body {
         }
 
         > .calendar {
-            background-color: #f9f9f9;
+             background-color: #fcfcfc;
             border: 1px solid #d0d0d0;
             color: #767676;
             cursor: pointer;
@@ -307,7 +307,7 @@ body {
             min-width: 200px;
             text-align: left;
             &:hover {
-                background-color: #f9f9f9;
+                 background-color: #fcfcfc;
             }
             i {
                 font-size: 18px;
@@ -767,7 +767,7 @@ body {
         transition: transform 0.3s;
         right: 0;
         top: 0;
-        background-color: #f9f9f9;
+         background-color: #fcfcfc;
         border-left: 1px solid #d0d0d0;
         z-index: 10001;
 
@@ -1763,7 +1763,7 @@ body {
             background-color: #fff;
         }
         &.striped tbody tr:nth-of-type(even) {
-            background-color: #f9f9f9;
+             background-color: #fcfcfc;
         }
         tbody tr,
         &.striped tbody tr {
@@ -1775,7 +1775,7 @@ body {
             }
         }
         tbody > tr.vgt-detail-row {
-            background-color: #f9f9f9;
+             background-color: #fcfcfc;
         }
         &:not(.striped) > tbody > tr {
             border-bottom: solid 1px #e1e1e1;

@@ -184,5 +184,15 @@
         }
     ));
 
+    Vue.component("cly-header", countlyBaseComponent.extend({
+        props: {
+            title: String
+        },
+        template: '<div style="background-color: white; border-bottom: 1px solid #ECECEC; padding:16px"><div style="padding:8px"><h2>{{title}}</h2></div></div>'
+    }));
+
+    Vue.component("cly-main", countlyBaseComponent.extend({
+        template: '<div style="padding:24px"><slot></slot></div>'
+    }));
 
 }(window.countlyVue = window.countlyVue || {}));
