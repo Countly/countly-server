@@ -18,7 +18,3 @@
 .vue-example-wrapper .options-box div.item {
     padding: 10px 0;
 }
-
-.cly-vue-theme-clydef *:not(i), .el-popper *:not(i) {
-    font-family: Inter!important;
-}

@@ -1,7 +1,16 @@
 @import "./element-variables.scss";
 @import "./typography-variables.scss";
 
+body {
+    .el-popper {
+        font-family: $--font-family !important;
+    }
+}
+
 .cly-vue-theme-clydef {
+
+    font-family: $--font-family !important;
+
     // Typography
     h1 {
         font-size: $--heading-1-size;
@@ -98,7 +107,6 @@
                         cursor: pointer;
                         display: block;
                         float: none;
-                        font-family: Ubuntu;
                         text-transform: uppercase;
                         background-color: transparent;
                         color: #666;
@@ -225,7 +233,6 @@
         }
 
         .legendLabel {
-            font-family: Ubuntu;
             font-size: 14px;
         }
     }
@@ -233,7 +240,7 @@
     // global date selector
     .cly-vue-global-date-selector-w {
         float: right;
-        font: 13px Ubuntu, Helvetica, sans-serif;
+        font-size: 13px;
         line-height: 111%;
         color: #6b6b6b;
         padding: 6px;
@@ -351,7 +358,7 @@
                 text-transform: uppercase;
                 color: #d2d2d1;
                 margin-top: 11px;
-                font: 12px Ubuntu, Helvetica, sans-serif;
+                font-size: 12px;
             }
         }
 
@@ -722,7 +729,7 @@
         float: left;
         padding: 7px 12px;
         border-radius: 2px;
-        font: 12px Ubuntu, Helvetica, sans-serif;
+        font-size: 12px;
         line-height: 15px;
         overflow: auto;
 
@@ -922,7 +929,7 @@
                     border: 1px solid #d6d6d6;
                     outline: none;
                     padding: 7px;
-                    font: 12px Ubuntu, Helvetica, sans-serif;
+                    font-size: 12px;
                 }
             }
             &.multi-step {
@@ -1090,7 +1097,6 @@
 
                     .text {
                         font-size: 13px;
-                        font-family: Ubuntu, Helvetica, sans-serif;
                         text-overflow: ellipsis;
                         overflow: hidden;
                         white-space: nowrap;
@@ -1245,7 +1251,7 @@
     }
 
     .cly-vue-text-area {
-        font: 13px Ubuntu, Helvetica, sans-serif;
+        font-size: 13px;
         color: #444;
         width: 100%;
         border-radius: 2px;
@@ -1263,7 +1269,6 @@
         width: 100%;
         position: relative;
         .remove-button {
-            font-family: Ubuntu;
             font-size: 12px;
             color: #d06d6d;
             display: none;
@@ -1470,7 +1475,7 @@
             white-space: nowrap;
             color: #444;
             font-weight: normal;
-            font: 13px Ubuntu, Helvetica, sans-serif;
+            font-size: 13px;
             padding: 0;
             margin: 0;
         }
@@ -1498,7 +1503,7 @@
                 padding: 4px 1px;
                 padding-right: 20px;
                 background-color: #fff;
-                font: 13px Ubuntu;
+                font-size: 13px;
                 line-height: 111%;
             }
             input {
@@ -1508,7 +1513,7 @@
                 border: none;
                 outline: none;
                 width: 100%;
-                font: 13px Ubuntu;
+                font-size: 13px;
                 line-height: 111%;
                 -webkit-appearance: textfield;
                 &::-webkit-search-decoration {
@@ -1539,7 +1544,7 @@
                 color: #ff8700;
                 font-weight: normal;
                 border-bottom: 1px solid #e6e6e6;
-                font: 11px Ubuntu, Helvetica, sans-serif;
+                font-size: 11px;
                 line-height: 14px;
                 padding: 7px 9px;
                 cursor: default;
@@ -1552,7 +1557,7 @@
                 color: #666;
                 font-weight: normal;
                 border-bottom: 1px solid #e6e6e6;
-                font: 13px Ubuntu, Helvetica, sans-serif;
+                font-size: 13px;
                 line-height: 111%;
                 padding: 5px 9px;
                 padding-bottom: 7px;
@@ -1583,7 +1588,7 @@
                 color: #2fa732;
                 font-weight: bold;
                 border-bottom: 1px solid #e6e6e6;
-                font: 11px Ubuntu, Helvetica, sans-serif;
+                font-size: 11px;
                 line-height: 100%;
                 padding: 13px 9px 7px 9px;
                 text-align: left;
@@ -1861,7 +1866,6 @@
             padding: 10px 10px;
             margin: 0;
             border-radius: 0 !important;
-            font-family: Ubuntu, Helvetica, sans-serif;
             font-size: 12px;
             line-height: 15px;
             vertical-align: top;
@@ -2336,7 +2340,6 @@
             color: #000;
             box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
             border-radius: 5px;
-            font-family: Ubuntu, Helvetica, sans-serif;
             line-height: 18px;
             font-size: 11px;
             border: 1px solid #d0d0d0;
@@ -2381,13 +2384,13 @@
             display: inline-block;
             p {
                 margin: 0px;
-                font: 14px Ubuntu, Helvetica, sans-serif;
+                font-size: 14px;
                 font-weight: bold;
                 line-height: 111%;
                 margin-bottom: 10px;
             }
             .button-selector {
-                font: 13px Ubuntu, Helvetica, sans-serif;
+                font-size: 13px;
                 line-height: 111%;
                 color: #6b6b6b;
                 padding: 0;
@@ -2640,7 +2643,6 @@
         .message {
             float: left;
             padding: 21px;
-            font-family: Ubuntu;
             font-style: normal;
             font-weight: normal;
             font-size: 17px;
@@ -2792,7 +2794,6 @@
         background-color: #ffffff;
         letter-spacing: 0.2px;
         transition: 0.2s linear;
-        font-family: Ubuntu;
         font-size: 12px;
         color: #636363;
     }
