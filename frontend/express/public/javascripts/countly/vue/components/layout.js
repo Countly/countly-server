@@ -195,4 +195,11 @@
         template: '<div style="padding:24px"><slot></slot></div>'
     }));
 
+    Vue.component("cly-section", countlyBaseComponent.extend({
+        props: {
+            title: String
+        },
+        template: '<div style="padding:12px 0"><h4>{{title}}</h4><div style="background-color:white; border-top:1px solid #ECECEC; border-bottom:2px solid #ECECEC"><slot></slot></div></div>'
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));

@@ -1,414 +1,50 @@
 <div>
-    <cly-tabs id="basic-tabs" v-model="activeTab">
-        <cly-content v-bind:name='"Table"' id="good-table-tab">
-            <cly-panel title="DataTable" v-bind:date-selector="false">
-                <template v-slot:right-top>
-                    <cly-button v-tooltip="'Tooltip'" v-on:click="add" skin="green"
-                        v-bind:label="i18n('vue-example.add-new-row')"></cly-button>
+    <cly-section title="Local Table">
+        <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :tracked-fields="localTableTrackedFields"
+            :rows="tableRows" :resizable="false" :persist-key="tablePersistKey">
+            <template v-slot="scope">
+                <el-table-column fixed type="expand">
+                    <template v-slot="props">
+                        Data in expanded row
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="Status">
+                    <template v-slot="rowScope">
+                        <el-switch :value="rowScope.row.status"
+                            @input="scope.patch(rowScope.row, {status: !rowScope.row.status})">
+                        </el-switch>
+                    </template>
+                </el-table-column>
+                <el-table-column fixed sortable="custom" prop="_id" label="ID">
+                </el-table-column>
+                <template v-for="(col,idx) in scope.dynamicCols">
+                    <el-table-column v-if="col.value === 'description'" sortable="custom" :key="idx"
+                        prop="description" label="Description">
+                        Some custom template for description
+                    </el-table-column>
+                    <el-table-column v-else :key="idx" sortable="custom" :prop="col.value" :label="col.label">
+                    </el-table-column>
                 </template>
-                <div>
-                    <div style="width: 20%;display: inline-block;padding: 20px 30px 30px 30px; min-height: 150px;">
-                        <pre>{{tableRows}}</pre>
-                    </div>
-                    <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable-n
-                            :available-dynamic-cols="tableDynamicCols"
-                            :tracked-fields="localTableTrackedFields"
-                            :rows="tableRows"
-                            :resizable="false"
-                            :persist-key="tablePersistKey">
-                            <template v-slot="scope">
-                                <el-table-column fixed type="expand">
-                                  <template v-slot="props">
-                                      Data in expanded row
-                                  </template>
-                                </el-table-column>
-                                <el-table-column
-                                    fixed="right"
-                                    label="Status">
-                                    <template v-slot="rowScope">
-                                        <el-switch 
-                                            :value="rowScope.row.status" 
-                                            @input="scope.patch(rowScope.row, {status: !rowScope.row.status})">
-                                        </el-switch>
-                                    </template>
-                                </el-table-column>
-                                <el-table-column
-                                    fixed
-                                    sortable="custom"
-                                    prop="_id"
-                                    label="ID">
-                                </el-table-column>
-                                <template v-for="(col,idx) in scope.dynamicCols" :key="idx">
-                                    <el-table-column
-                                        v-if="col.value === 'description'"
-                                        sortable="custom"
-                                        prop="description"
-                                        label="Description">
-                                        Some custom template for description
-                                    </el-table-column>
-                                    <el-table-column
-                                        v-else
-                                        sortable="custom"
-                                        :prop="col.value"
-                                        :label="col.label">
-                                    </el-table-column>
-                                </template>
-                            </template>
-                            <template v-slot:bottomline="scope">
-                                <pre>{{scope.diff}}</pre>
-                                <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
-                                </cly-diff-helper>
-                            </template>
-                        </cly-datatable-n>
-                    </div>
-                </div>
-            </cly-panel>
-        </cly-content>
-        <cly-content v-bind:name='"Remote Table"' id="remote-table-tab">
-            <cly-panel title="DataTable" v-bind:date-selector="false">
-                <div>
-                    <div style="width: 20%;display: inline-block;padding: 20px 30px 30px 30px; min-height: 150px;">
-                        <pre>{{rTableData}}</pre>
-                    </div>
-                    <div style="width: 71%;vertical-align: top;float: right;padding: 30px 0 30px 30px;">
-                        <cly-datatable-n
-                            :available-dynamic-cols="remoteTableDynamicCols"
-                            :data-source="remoteTableDataSource"
-                            :resizable="true"
-                            :persist-key="remoteTablePersistKey">
-                            <template v-slot="scope">
-                                <el-table-column
-                                    sortable="custom"
-                                    prop="_id"
-                                    label="ID">
-                                </el-table-column>
-                                <el-table-column
-                                    sortable="custom"
-                                    prop="name"
-                                    label="Name">
-                                </el-table-column>
-                                <el-table-column
-                                    v-for="(col,idx) in scope.dynamicCols" :key="idx"
-                                    sortable="custom"
-                                    :prop="col.value"
-                                    :label="col.label">
-                                </el-table-column>
-                            </template>
-                        </cly-datatable-n>
-                    </div>
-                </div>
-            </cly-panel>
-        </cly-content>
-        <cly-content name='Form: Basics' id="form-basic-tab">
-            <cly-panel title="Form: Basics" v-bind:date-selector="false">
-                <div class="example-component">
-                    <div class="example-cell">
-                        ListBox
-                    </div>
-                    <div class="example-cell">
-                        <cly-listbox v-model="selectedLB" :options="listBoxOptions">
-                        </cly-listbox>
-                    </div>
-                    <div class="example-cell">
-                        {{selectedLB}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        CheckListBox
-                    </div>
-                    <div class="example-cell">
-                        <cly-checklistbox v-model="selectedCLB" :options.sync="clistBoxOptions" :sortable="true">
-                        </cly-checklistbox>
-                    </div>
-                    <div class="example-cell">
-                        {{selectedCLB}}
-                        ---------------------
-                        {{clistBoxOptions}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        Basic text input
-                    </div>
-                    <div class="example-cell">
-                        <cly-text-field v-model="typedText"></cly-text-field>
-                    </div>
-                    <div class="example-cell">
-                        {{typedText}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        RadioButtons
-                    </div>
-                    <div class="example-cell">
-                        <cly-radio v-bind:items="availableRadio" v-model="selectedRadio"></cly-radio>
-                    </div>
-                    <div class="example-cell">
-                        Selected value: {{selectedRadio}}
-                    </div>
-                </div>
-                <div class="example-component" style="height: 250px;">
-                    <div class="example-cell">
-                        Generic RadioButtons
-                    </div>
-                    <div class="example-cell">
-                        <cly-generic-radio v-bind:items="availableGenericRadio" v-model="selectedGenericRadio">
-                        </cly-generic-radio>
-                    </div>
-                    <div class="example-cell">
-                        Selected value: {{selectedGenericRadio}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        Checkbox (flag)
-                    </div>
-                    <div class="example-cell">
-                        <cly-check v-bind:label="'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'"
-                            v-model="selectedCheckFlag"></cly-check>
-                        <cly-check skin="tick" v-bind:label="'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'"
-                            v-model="selectedCheckFlag"></cly-check>
-                    </div>
-                    <div class="example-cell">
-                        Selected value: {{selectedCheckFlag}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        Checkbox (list)
-                    </div>
-                    <div class="example-cell">
-                        <cly-check-list v-bind:items="availableCheck" v-model="selectedCheck"></cly-check-list>
-                        <cly-check-list skin="tick" v-bind:items="availableCheck" v-model="selectedCheck">
-                        </cly-check-list>
-                    </div>
-                    <div class="example-cell">
-                        Selected value: {{selectedCheck}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        Select (static)
-                    </div>
-                    <div class="example-cell">
-                        <cly-select-n style="width:220px" v-bind:items="selectWItems" v-model="selectWModel"
-                            placeholder="Select an item">
-                        </cly-select-n>
-                        <cly-select-n style="width:220px" v-bind:items="selectWItems" v-model="selectWModel"
-                            placeholder="Select an item" aligned="center">
-                        </cly-select-n>
-                        <cly-select-n style="width:220px" v-bind:items="selectWItems" v-model="selectWModel"
-                            placeholder="Select an item" aligned="right">
-                        </cly-select-n>
-                        <cly-select-n style="width:220px" v-bind:items="selectWItems" v-model="selectWModel"
-                            placeholder="Select an item" :disabled="true">
-                        </cly-select-n>
-                        <cly-select-n style="width:120px" v-bind:items="selectWItems" v-model="selectWModel"
-                            placeholder="Select an item" skin="slim">
-                        </cly-select-n>
-                    </div>
-                    <div class="example-cell">
-                        Selected item: {{selectWModel}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        Select (dynamic)
-                    </div>
-                    <div class="example-cell">
-                        <cly-select-n style="width:220px" :items="selectDWItems" :dynamic-items="true"
-                            :list-delay-warning="i18n('drill.big-list-warning')" v-model="selectDWModel"
-                            @search="onDSSearch" placeholder="Select an item">
-                        </cly-select-n>
-                    </div>
-                    <div class="example-cell">
-                        Selected item: {{selectDWModel}}
-                    </div>
-                </div>
-            </cly-panel>
-        </cly-content>
-
-        <cly-content name='Form: Dropdown' id="form-drop-tab">
-            <cly-panel title="Form: Dropdown" v-bind:date-selector="false">
-                <el-card class="box-card options-box" style="position:fixed; bottom:25px; right: 25px">
-                    <div slot="header" class="clearfix">
-                        <span>Options</span>
-                    </div>
-                    <div class="item">
-                        <el-switch
-                            active-text="Disable dropdowns"
-                            v-model="dropdownsDisabled"
-                            active-color="#2FA732">
-                        </el-switch>
-                    </div>
-                    <div class="item">
-                        <el-switch
-                            active-text="Disable auto-commit"
-                            v-model="autoCommitDisabled"
-                            active-color="#2FA732">
-                        </el-switch>
-                    </div>
-                    <div class="item">
-                        <el-switch
-                            active-text="Hide all options tab"
-                            v-model="allOptionsTabHidden"
-                            active-color="#2FA732">
-                        </el-switch>
-                    </div>
-                    <div class="item">
-                        <el-radio-group v-model="selectXModeBuffer" size="small">
-                            <el-radio-button label="single-list">Single</el-radio-button>
-                            <el-radio-button label="multi-check">Multi</el-radio-button>
-                            <el-radio-button label="multi-check-sortable">Multi w/ sorting</el-radio-button>
-                        </el-radio-group>
-                    </div>
-                </el-card>
-                <div class="example-component">
-                    <div class="example-cell">
-                        el-select
-                    </div>
-                    <div class="example-cell">
-                        <el-select v-model="selectedRadio" :disabled="dropdownsDisabled">
-                            <el-option :key="item.value" :value="item.value" :label="item.name"
-                                v-for="item in selectWItems"></el-option>
-                        </el-select>
-                    </div>
-                    <div class="example-cell">
-
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        Nested dropdowns and selects
-                    </div>
-                    <div class="example-cell">
-                        <cly-input-dropdown 
-                            :disabled="dropdownsDisabled"    
-                            v-model="selectedLB.name">
-                            <cly-input-dropdown :popper-append-to-body="false" v-model="selectedLB.name">
-                                <el-select :popper-append-to-body="false" v-model="selectedRadio">
-                                    <el-option :key="item.value" :value="item.value" :label="item.name"
-                                        v-for="item in selectWItems"></el-option>
-                                </el-select>
-                                <el-select :popper-append-to-body="false" v-model="selectedRadio">
-                                    <el-option :key="item.value" :value="item.value" :label="item.name"
-                                        v-for="item in selectWItems"></el-option>
-                                </el-select>
-                            </cly-input-dropdown>
-                        </cly-input-dropdown>
-                    </div>
-                    <div class="example-cell">
-                        {{selectedLB}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        cly-select-x (Simple)
-                    </div>
-                    <div class="example-cell">
-                        <cly-select-x
-                            search-placeholder="Search in Properties"
-                            placeholder="Select Property" 
-                            v-model="selectX.currentVal"
-                            :auto-commit="!autoCommitDisabled" 
-                            :mode="selectX.mode"
-                            :disabled="dropdownsDisabled"
-                            :hide-all-options-tab="allOptionsTabHidden"
-                            :options="selectXOptions[0].options">
-                        </cly-select-x>
-                    </div>
-                    <div class="example-cell">
-                        {{selectX.currentVal}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        cly-select-x (Tabs)
-                    </div>
-                    <div class="example-cell">
-                        <cly-select-x
-                            all-placeholder="All Properties" 
-                            search-placeholder="Search in Properties"
-                            placeholder="Select Property" 
-                            v-model="selectX.currentVal" 
-                            :auto-commit="!autoCommitDisabled"
-                            :mode="selectX.mode"
-                            :disabled="dropdownsDisabled"
-                            :hide-all-options-tab="allOptionsTabHidden"
-                            :options="selectXOptions">
-                        </cly-select-x>
-                    </div>
-                    <div class="example-cell">
-                        {{selectX.currentVal}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        cly-select-x (Tabs, custom header)
-                    </div>
-                    <div class="example-cell">
-                        <cly-select-x 
-                            all-placeholder="All Properties" 
-                            search-placeholder="Search in Properties"
-                            placeholder="Select Property" 
-                            title="Custom header & title"
-                            :auto-commit="!autoCommitDisabled"
-                            :disabled="dropdownsDisabled"
-                            :hide-default-tabs="true"
-                            :options="selectXOptions"
-                            :mode="selectX.mode"
-                            :hide-all-options-tab="allOptionsTabHidden"
-                            v-model="selectX.currentVal">
-                            <template v-slot:header="selectScope">
-                                <el-radio-group 
-                                    :value="selectScope.activeTabId" 
-                                    @input="selectScope.updateTab"
-                                    size="medium">
-                                    <el-radio-button v-for="tab in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>
-                                </el-radio-group>
-                            </template>
-                        </cly-select-x>
-                    </div>
-                    <div class="example-cell">
-                        {{selectX.currentVal}}
-                    </div>
-                </div>
-                <div class="example-component">
-                    <div class="example-cell">
-                        cly-select-x (Tabs, custom header #2)
-                    </div>
-                    <div class="example-cell">
-                        <cly-select-x 
-                            all-placeholder="All Properties" 
-                            search-placeholder="Search in Properties"
-                            placeholder="Select Property" 
-                            title="Custom header & title"
-                            :auto-commit="!autoCommitDisabled"
-                            :mode="selectX.mode"
-                            :disabled="dropdownsDisabled"
-                            :hide-default-tabs="true"
-                            :options="selectXOptions"
-                            :hide-all-options-tab="allOptionsTabHidden"
-                            v-model="selectX.currentVal">
-                            <template v-slot:header="selectScope">
-                                <div style="font-size: 12px; padding-bottom: 7px;">Property type</div>                                
-                                <el-select
-                                    :popper-append-to-body="false" 
-                                    :value="selectScope.activeTabId" 
-                                    @input="selectScope.updateTab">
-                                    <el-option v-for="tab in selectScope.tabs" :key="tab.name" :value="tab.name" :label="tab.label"></el-option>
-                                </el-select>
-                            </template>
-                        </cly-select-x>
-                    </div>
-                    <div class="example-cell">
-                        {{selectX.currentVal}}
-                    </div>
-                </div>
-            </cly-panel>
-        </cly-content>
-    </cly-tabs>
+            </template>
+            <template v-slot:bottomline="scope">
+                <pre>{{scope.diff}}</pre>
+                <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
+                </cly-diff-helper>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+    <cly-section title="Remote Table">
+        <cly-datatable-n :available-dynamic-cols="remoteTableDynamicCols" :data-source="remoteTableDataSource"
+            :resizable="true" :persist-key="remoteTablePersistKey">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="_id" label="ID">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="name" label="Name">
+                </el-table-column>
+                <el-table-column v-for="(col,idx) in scope.dynamicCols" :key="idx" sortable="custom"
+                    :prop="col.value" :label="col.label">
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
 </div>

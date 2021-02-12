@@ -1,0 +1,249 @@
+<script type="text/x-template" id="form-basics-template">
+    <div>
+        <cly-section title="ListBox">
+            <div class="example-cell">
+                <cly-listbox v-model="selectedLB" :options="listBoxOptions">
+                </cly-listbox>
+            </div>
+            <div class="example-cell">
+                {{selectedLB}}
+            </div>
+        </cly-section>
+        <cly-section title="CheckListBox">
+            <div class="example-cell">
+                <cly-checklistbox v-model="selectedCLB" :options.sync="clistBoxOptions" :sortable="true">
+                </cly-checklistbox>
+            </div>
+            <div class="example-cell">
+                {{selectedCLB}}
+                ---------------------
+                {{clistBoxOptions}}
+            </div>
+        </cly-section>
+        <cly-section title="Basic text input">
+            <div class="example-cell">
+                <cly-text-field v-model="typedText"></cly-text-field>
+            </div>
+            <div class="example-cell">
+                {{typedText}}
+            </div>
+        </cly-section>
+        <cly-section title="RadioButtons">
+            <div class="example-cell">
+                <cly-radio v-bind:items="availableRadio" v-model="selectedRadio"></cly-radio>
+            </div>
+            <div class="example-cell">
+                Selected value: {{selectedRadio}}
+            </div>
+        </cly-section>
+        <cly-section title="Generic RadioButtons">
+            <div class="example-cell">
+                <cly-generic-radio v-bind:items="availableGenericRadio" v-model="selectedGenericRadio">
+                </cly-generic-radio>
+            </div>
+            <div class="example-cell">
+                Selected value: {{selectedGenericRadio}}
+            </div>
+        </cly-section>
+        <cly-section title="Checkbox (flag)">
+            <div class="example-cell">
+                <cly-check v-bind:label="'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'"
+                    v-model="selectedCheckFlag"></cly-check>
+                <cly-check skin="tick" v-bind:label="'I am ' + (selectedCheckFlag ?'':'not') + ' checked.'"
+                    v-model="selectedCheckFlag"></cly-check>
+            </div>
+            <div class="example-cell">
+                Selected value: {{selectedCheckFlag}}
+            </div>
+        </cly-section>
+        <cly-section title="Checkbox (list)">
+            <div class="example-cell">
+                <cly-check-list v-bind:items="availableCheck" v-model="selectedCheck"></cly-check-list>
+                <cly-check-list skin="tick" v-bind:items="availableCheck" v-model="selectedCheck">
+                </cly-check-list>
+            </div>
+            <div class="example-cell">
+                Selected value: {{selectedCheck}}
+            </div>
+        </cly-section>
+    </div>
+</script>
+<script type="text/x-template" id="form-dropdown-template">
+    <cly-panel title="Form: Dropdown" v-bind:date-selector="false">
+        <el-card class="box-card options-box" style="position:fixed; bottom:25px; right: 25px">
+            <div slot="header" class="clearfix">
+                <span>Options</span>
+            </div>
+            <div class="item">
+                <el-switch
+                    active-text="Disable dropdowns"
+                    v-model="dropdownsDisabled"
+                    active-color="#2FA732">
+                </el-switch>
+            </div>
+            <div class="item">
+                <el-switch
+                    active-text="Disable auto-commit"
+                    v-model="autoCommitDisabled"
+                    active-color="#2FA732">
+                </el-switch>
+            </div>
+            <div class="item">
+                <el-switch
+                    active-text="Hide all options tab"
+                    v-model="allOptionsTabHidden"
+                    active-color="#2FA732">
+                </el-switch>
+            </div>
+            <div class="item">
+                <el-radio-group v-model="selectXModeBuffer" size="small">
+                    <el-radio-button label="single-list">Single</el-radio-button>
+                    <el-radio-button label="multi-check">Multi</el-radio-button>
+                    <el-radio-button label="multi-check-sortable">Multi w/ sorting</el-radio-button>
+                </el-radio-group>
+            </div>
+        </el-card>
+        <div class="example-component">
+            <div class="example-cell">
+                el-select
+            </div>
+            <div class="example-cell">
+                <el-select v-model="selectedRadio" :disabled="dropdownsDisabled">
+                    <el-option :key="item.value" :value="item.value" :label="item.name"
+                        v-for="item in selectWItems"></el-option>
+                </el-select>
+            </div>
+            <div class="example-cell">
+
+            </div>
+        </div>
+        <div class="example-component">
+            <div class="example-cell">
+                Nested dropdowns and selects
+            </div>
+            <div class="example-cell">
+                <cly-input-dropdown 
+                    :disabled="dropdownsDisabled"    
+                    v-model="selectedLB.name">
+                    <cly-input-dropdown :popper-append-to-body="false" v-model="selectedLB.name">
+                        <el-select :popper-append-to-body="false" v-model="selectedRadio">
+                            <el-option :key="item.value" :value="item.value" :label="item.name"
+                                v-for="item in selectWItems"></el-option>
+                        </el-select>
+                        <el-select :popper-append-to-body="false" v-model="selectedRadio">
+                            <el-option :key="item.value" :value="item.value" :label="item.name"
+                                v-for="item in selectWItems"></el-option>
+                        </el-select>
+                    </cly-input-dropdown>
+                </cly-input-dropdown>
+            </div>
+            <div class="example-cell">
+                {{selectedLB}}
+            </div>
+        </div>
+        <div class="example-component">
+            <div class="example-cell">
+                cly-select-x (Simple)
+            </div>
+            <div class="example-cell">
+                <cly-select-x
+                    search-placeholder="Search in Properties"
+                    placeholder="Select Property" 
+                    v-model="selectX.currentVal"
+                    :auto-commit="!autoCommitDisabled" 
+                    :mode="selectX.mode"
+                    :disabled="dropdownsDisabled"
+                    :hide-all-options-tab="allOptionsTabHidden"
+                    :options="selectXOptions[0].options">
+                </cly-select-x>
+            </div>
+            <div class="example-cell">
+                {{selectX.currentVal}}
+            </div>
+        </div>
+        <div class="example-component">
+            <div class="example-cell">
+                cly-select-x (Tabs)
+            </div>
+            <div class="example-cell">
+                <cly-select-x
+                    all-placeholder="All Properties" 
+                    search-placeholder="Search in Properties"
+                    placeholder="Select Property" 
+                    v-model="selectX.currentVal" 
+                    :auto-commit="!autoCommitDisabled"
+                    :mode="selectX.mode"
+                    :disabled="dropdownsDisabled"
+                    :hide-all-options-tab="allOptionsTabHidden"
+                    :options="selectXOptions">
+                </cly-select-x>
+            </div>
+            <div class="example-cell">
+                {{selectX.currentVal}}
+            </div>
+        </div>
+        <div class="example-component">
+            <div class="example-cell">
+                cly-select-x (Tabs, custom header)
+            </div>
+            <div class="example-cell">
+                <cly-select-x 
+                    all-placeholder="All Properties" 
+                    search-placeholder="Search in Properties"
+                    placeholder="Select Property" 
+                    title="Custom header & title"
+                    :auto-commit="!autoCommitDisabled"
+                    :disabled="dropdownsDisabled"
+                    :hide-default-tabs="true"
+                    :options="selectXOptions"
+                    :mode="selectX.mode"
+                    :hide-all-options-tab="allOptionsTabHidden"
+                    v-model="selectX.currentVal">
+                    <template v-slot:header="selectScope">
+                        <el-radio-group 
+                            :value="selectScope.activeTabId" 
+                            @input="selectScope.updateTab"
+                            size="medium">
+                            <el-radio-button v-for="tab in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>
+                        </el-radio-group>
+                    </template>
+                </cly-select-x>
+            </div>
+            <div class="example-cell">
+                {{selectX.currentVal}}
+            </div>
+        </div>
+        <div class="example-component">
+            <div class="example-cell">
+                cly-select-x (Tabs, custom header #2)
+            </div>
+            <div class="example-cell">
+                <cly-select-x 
+                    all-placeholder="All Properties" 
+                    search-placeholder="Search in Properties"
+                    placeholder="Select Property" 
+                    title="Custom header & title"
+                    :auto-commit="!autoCommitDisabled"
+                    :mode="selectX.mode"
+                    :disabled="dropdownsDisabled"
+                    :hide-default-tabs="true"
+                    :options="selectXOptions"
+                    :hide-all-options-tab="allOptionsTabHidden"
+                    v-model="selectX.currentVal">
+                    <template v-slot:header="selectScope">
+                        <div style="font-size: 12px; padding-bottom: 7px;">Property type</div>                                
+                        <el-select
+                            :popper-append-to-body="false" 
+                            :value="selectScope.activeTabId" 
+                            @input="selectScope.updateTab">
+                            <el-option v-for="tab in selectScope.tabs" :key="tab.name" :value="tab.name" :label="tab.label"></el-option>
+                        </el-select>
+                    </template>
+                </cly-select-x>
+            </div>
+            <div class="example-cell">
+                {{selectX.currentVal}}
+            </div>
+        </div>
+    </cly-panel>
+</script>

@@ -5,14 +5,8 @@
 .vue-example-wrapper .example-cell{
     margin: 20px;
     width: 25%;
-    height: 200px;
     display: inline-block;
     vertical-align: middle;
-}
-
-.vue-example-wrapper .example-component{
-    border-bottom: 1px solid #ccc;
-    height: 240px;
 }
 
 .vue-example-wrapper .options-box div.item {

@@ -1,8 +1,20 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
     <cly-header title="Vue Store"></cly-header>
     <cly-main>
-        <tg-view></tg-view>
-        <table-view v-on:open-drawer="openDrawer"></table-view>
+        <el-tabs>
+            <el-tab-pane label="Tables">
+                <table-view v-on:open-drawer="openDrawer"></table-view>
+            </el-tab-pane>
+            <el-tab-pane label="Form: Basic">
+                <form-basics></form-basics>
+            </el-tab-pane>
+            <el-tab-pane label="Form: Dropdown">
+                <form-dropdown></form-dropdown>
+            </el-tab-pane>
+            <el-tab-pane label="Charts">
+                <tg-view></tg-view>
+            </el-tab-pane>
+        </el-tabs>
         <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
     </cly-main>
 </div>
