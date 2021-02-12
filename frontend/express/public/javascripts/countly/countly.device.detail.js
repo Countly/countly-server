@@ -229,8 +229,15 @@
         if (segment === "os_versions") {
             var _os = countlyDeviceDetails.getPlatforms();
             var newRangeData = {chartData: []};
+            var doneOs = {};
             for (i = 0; i < _os.length; i++) {
                 var osSegmentation = _os[i];
+
+                if (doneOs[osSegmentation.toLowerCase()]) {
+                    continue;
+                }
+
+                doneOs[osSegmentation.toLowerCase()] = 1;
                 //Important to note here that segment parameter is passed as "range" because its extracted under name range from extractTwoLevelData
                 var fixedRangeData = countlyDeviceDetails.eliminateOSVersion(rangeData, osSegmentation, "range", true);
                 newRangeData.chartData = [].concat.apply([], [newRangeData.chartData, fixedRangeData.chartData]);
