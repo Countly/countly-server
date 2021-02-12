@@ -186,7 +186,7 @@
                     currentVal: null,
                     mode: 'single-list',
                 },
-                
+
                 selectedLB: 0,
                 selectedCLB: [],
                 activeTab: null,
@@ -311,37 +311,50 @@
         },
         beforeCreate: function() {
             this.$store.dispatch("countlyVueExample/initialize");
+        },
+        data: function() {
+            return {
+                currentTab: (this.$route.params && this.$route.params.tab) || "tables"
+            };
         }
     });
 
-    var vuex = [{
-        clyModel: countlyVueExample
-    }];
+    var getMainView = function() {
+        var vuex = [{
+            clyModel: countlyVueExample
+        }];
 
-    var exampleView = new countlyVue.views.BackboneWrapper({
-        component: MainView,
-        vuex: vuex,
-        templates: [
-            "/vue-example/templates/empty.html",
-            "/vue-example/templates/drawer.html",
-            "/vue-example/templates/form.html",
-            {
-                namespace: 'vue-example',
-                mapping: {
-                    'table-template': '/vue-example/templates/table.html',
-                    'tg-template': '/vue-example/templates/tg.html',
-                    'main-template': '/vue-example/templates/main.html'
+        return new countlyVue.views.BackboneWrapper({
+            component: MainView,
+            vuex: vuex,
+            templates: [
+                "/vue-example/templates/empty.html",
+                "/vue-example/templates/drawer.html",
+                "/vue-example/templates/form.html",
+                {
+                    namespace: 'vue-example',
+                    mapping: {
+                        'table-template': '/vue-example/templates/table.html',
+                        'tg-template': '/vue-example/templates/tg.html',
+                        'main-template': '/vue-example/templates/main.html'
+                    }
                 }
-            }
-        ]
-    });
-
-    app.vueExampleView = exampleView;
+            ]
+        });
+    };
 
     app.route("/vue/example", 'vue-example', function() {
-        var params = {};
-        this.vueExampleView.params = params;
-        this.renderWhenReady(this.vueExampleView);
+        var exampleView = getMainView();
+        this.renderWhenReady(exampleView);
+    });
+
+    app.route("/vue/example/*tab", 'vue-example-tab', function(tab) {
+        var exampleView = getMainView();
+        var params = {
+            tab: tab
+        };
+        exampleView.params = params;
+        this.renderWhenReady(exampleView);
     });
 
 })();

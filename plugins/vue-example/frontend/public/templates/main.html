@@ -1,20 +1,33 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
-    <cly-header title="Vue Store"></cly-header>
-    <cly-main>
-        <el-tabs>
-            <el-tab-pane label="Tables">
+    <cly-tabs v-model="currentTab">
+        <el-tab-pane name="tables">
+            <span slot="label">Tables</span>
+            <cly-header title="Tables"></cly-header>
+            <cly-main>
                 <table-view v-on:open-drawer="openDrawer"></table-view>
-            </el-tab-pane>
-            <el-tab-pane label="Form: Basic">
+            </cly-main>
+        </el-tab-pane>
+        <el-tab-pane name="form-basic">
+            <span slot="label">Form: Basic</span>
+            <cly-header title="Basic Form components"></cly-header>
+            <cly-main>
                 <form-basics></form-basics>
-            </el-tab-pane>
-            <el-tab-pane label="Form: Dropdown">
+            </cly-main>
+        </el-tab-pane>
+        <el-tab-pane name="form-dropdown">
+            <span slot="label">Form: Dropdown</span>
+            <cly-header title="Dropdown components"></cly-header>
+            <cly-main>
                 <form-dropdown></form-dropdown>
-            </el-tab-pane>
-            <el-tab-pane label="Charts">
+            </cly-main>
+        </el-tab-pane>
+        <el-tab-pane name="charts">
+            <span slot="label">Charts</span>
+            <cly-header title="Chart components"></cly-header>
+            <cly-main>
                 <tg-view></tg-view>
-            </el-tab-pane>
-        </el-tabs>
-        <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
-    </cly-main>
+            </cly-main>
+        </el-tab-pane>
+    </cly-tabs>
+    <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
 </div>

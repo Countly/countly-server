@@ -50,59 +50,6 @@
         }
     });
 
-    Vue.component("cly-tabs", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            mixins: [
-                _mixins.i18n
-            ],
-            props: {
-                value: { default: null, type: String },
-                skin: { default: "main", type: String}
-            },
-            data: function() {
-                return {
-                    tabs: []
-                };
-            },
-            computed: {
-                skinClass: function() {
-                    if (["main", "graphs"].indexOf(this.skin) > -1) {
-                        return "tabs-" + this.skin + "-skin";
-                    }
-                    return "tabs-main-skin";
-                },
-                numberOfTabsClass: function() {
-                    return "tabs-" + this.tabs.length;
-                },
-                activeContentId: function() {
-                    return this.value;
-                }
-            },
-            mounted: function() {
-                this.tabs = this.$children;
-                if (!this.value) {
-                    this.$emit("input", this.tabs[0].tId);
-                }
-            },
-            methods: {
-                setTab: function(tId) {
-                    this.$emit("input", tId);
-                }
-            },
-            template: '<div class="cly-vue-tabs" v-bind:class="[skinClass]">\n' +
-                            '<ul class="cly-vue-tabs-list" v-bind:class="[numberOfTabsClass]">\n' +
-                                '<li @click="setTab(tab.tId)" v-for="(tab, i) in tabs" :key="i" :class="{\'is-active\': tab.isActive}">\n' +
-                                    '<a v-html="tab.tName"></a>\n' +
-                                '</li>\n' +
-                            '</ul>\n' +
-                            '<div class="cly-vue-tabs-container">\n' +
-                                '<slot/>\n' +
-                            '</div>\n' +
-                        '</div>'
-        }
-    ));
-
     Vue.component("cly-content", BaseContent.extend({
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
                         '<div v-show="isActive"><slot/></div>\n' +
