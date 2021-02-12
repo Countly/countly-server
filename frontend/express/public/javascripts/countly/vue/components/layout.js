@@ -2,90 +2,54 @@
 
 (function(countlyVue) {
 
-    window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
-    window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
-
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    Vue.component("cly-menubox", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="outsideClose">\n' +
-                        '<div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\n' +
-                            '<div class="text-container">\n' +
-                                '<div class="text">{{label}}</div>\n' +
-                            '</div>\n' +
-                            '<div class="drop"></div>\n' +
-                        '</div>\n' +
-                        '<div class="menu-body" v-show="isOpened">\n' +
-                            '<slot></slot>\n' +
-                        '</div>\n' +
-                    '</div>',
-        props: {
-            label: { type: String, default: '' },
-            isOpened: { type: Boolean, default: false }
-        },
-        methods: {
-            toggle: function() {
-                this.setStatus(!this.isOpened);
+    var BaseContent = countlyBaseComponent.extend(
+        // @vue/component
+        {
+            inheritAttrs: false,
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                name: { type: String, default: null},
+                id: { type: String, default: null },
+                alwaysMounted: { type: Boolean, default: true },
+                alwaysActive: { type: Boolean, default: false },
+                role: { type: String, default: "default" }
             },
-            close: function() {
-                this.setStatus(false);
+            data: function() {
+                return {
+                    isContent: true
+                };
             },
-            outsideClose: function() {
-                this.close();
-                this.$emit('discard');
-            },
-            setStatus: function(targetState) {
-                this.$emit('status-changed', targetState);
+            computed: {
+                isActive: function() {
+                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
+                },
+                tName: function() {
+                    return this.name;
+                },
+                tId: function() {
+                    return this.id;
+                },
+                elementId: function() {
+                    return this.componentId + "-" + this.id;
+                }
             }
         }
-    }));
+    );
 
-    Vue.component("cly-button-menu", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">\n' +
-                        '<div class="toggler" @click.stop="toggle"></div>\n' +
-                        '<div class="menu-body" :class="{active: opened}">\n' +
-                            '<a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\n' +
-                                '<i :class="item.icon"></i>\n' +
-                                '<span>{{item.label}}</span>\n' +
-                            '</a>\n' +
-                        '</div>\n' +
-                    '</div>',
-        props: {
-            items: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
-            },
-            skin: { default: "default", type: String}
-        },
-        computed: {
-            skinClass: function() {
-                if (["default", "single"].indexOf(this.skin) > -1) {
-                    return "button-menu-" + this.skin + "-skin";
-                }
-                return "button-menu-default-skin";
-            },
-        },
+    var BaseStep = BaseContent.extend({
         data: function() {
             return {
-                opened: false
+                isValid: true,
+                isStep: true
             };
-        },
-        methods: {
-            toggle: function() {
-                this.opened = !this.opened;
-            },
-            close: function() {
-                this.opened = false;
-            },
-            fireEvent: function(eventKey) {
-                this.$emit(eventKey);
-                this.close();
-            }
         }
-    }));
+    });
+
     Vue.component("cly-tabs", countlyBaseComponent.extend(
         // @vue/component
         {
@@ -139,56 +103,11 @@
         }
     ));
 
-    var BaseContent = countlyBaseComponent.extend(
-        // @vue/component
-        {
-            inheritAttrs: false,
-            mixins: [
-                _mixins.i18n
-            ],
-            props: {
-                name: { type: String, default: null},
-                id: { type: String, default: null },
-                alwaysMounted: { type: Boolean, default: true },
-                alwaysActive: { type: Boolean, default: false },
-                role: { type: String, default: "default" }
-            },
-            data: function() {
-                return {
-                    isContent: true
-                };
-            },
-            computed: {
-                isActive: function() {
-                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
-                },
-                tName: function() {
-                    return this.name;
-                },
-                tId: function() {
-                    return this.id;
-                },
-                elementId: function() {
-                    return this.componentId + "-" + this.id;
-                }
-            }
-        }
-    );
-
     Vue.component("cly-content", BaseContent.extend({
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
                         '<div v-show="isActive"><slot/></div>\n' +
                     '</div>'
     }));
-
-    var BaseStep = BaseContent.extend({
-        data: function() {
-            return {
-                isValid: true,
-                isStep: true
-            };
-        }
-    });
 
     Vue.component("cly-step", BaseStep.extend({
         methods: {

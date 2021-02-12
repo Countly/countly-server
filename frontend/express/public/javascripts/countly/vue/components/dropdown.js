@@ -2,7 +2,9 @@
 
 (function(countlyVue) {
 
-    Vue.component("cly-input-dropdown-trigger", countlyVue.components.BaseComponent.extend({
+    var countlyBaseComponent = countlyVue.components.BaseComponent;
+
+    Vue.component("cly-input-dropdown-trigger", countlyBaseComponent.extend({
         props: {
             focused: {type: Boolean, default: false},
             opened: {type: Boolean, default: false},
@@ -40,11 +42,11 @@
 
     }));
 
-    var triggerProxy = countlyVue.components.BaseComponent.extend({
+    var triggerProxy = countlyBaseComponent.extend({
         template: '<div><slot v-slot></slot></div>'
     });
 
-    Vue.component("cly-dropdown", countlyVue.components.BaseComponent.extend({
+    Vue.component("cly-dropdown", countlyBaseComponent.extend({
         components: {
             'trigger-proxy': triggerProxy
         },
@@ -135,7 +137,7 @@
         }
     }));
 
-    Vue.component("cly-input-dropdown", countlyVue.components.BaseComponent.extend({
+    Vue.component("cly-input-dropdown", countlyBaseComponent.extend({
         template: '<cly-dropdown ref="dropdown" :disabled="disabled" v-on="$listeners" v-bind="$attrs">\
                         <template v-slot:trigger="dropdown">\
                             <cly-input-dropdown-trigger\
@@ -162,6 +164,85 @@
             },
             updateDropdown: function() {
                 this.$refs.dropdown.updateDropdown();
+            }
+        }
+    }));
+
+    Vue.component("cly-menubox", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="outsideClose">\n' +
+                        '<div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\n' +
+                            '<div class="text-container">\n' +
+                                '<div class="text">{{label}}</div>\n' +
+                            '</div>\n' +
+                            '<div class="drop"></div>\n' +
+                        '</div>\n' +
+                        '<div class="menu-body" v-show="isOpened">\n' +
+                            '<slot></slot>\n' +
+                        '</div>\n' +
+                    '</div>',
+        props: {
+            label: { type: String, default: '' },
+            isOpened: { type: Boolean, default: false }
+        },
+        methods: {
+            toggle: function() {
+                this.setStatus(!this.isOpened);
+            },
+            close: function() {
+                this.setStatus(false);
+            },
+            outsideClose: function() {
+                this.close();
+                this.$emit('discard');
+            },
+            setStatus: function(targetState) {
+                this.$emit('status-changed', targetState);
+            }
+        }
+    }));
+
+    Vue.component("cly-button-menu", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">\n' +
+                        '<div class="toggler" @click.stop="toggle"></div>\n' +
+                        '<div class="menu-body" :class="{active: opened}">\n' +
+                            '<a @click="fireEvent(item.event)" class="item" v-for="(item, i) in items" :key="i">\n' +
+                                '<i :class="item.icon"></i>\n' +
+                                '<span>{{item.label}}</span>\n' +
+                            '</a>\n' +
+                        '</div>\n' +
+                    '</div>',
+        props: {
+            items: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            skin: { default: "default", type: String}
+        },
+        computed: {
+            skinClass: function() {
+                if (["default", "single"].indexOf(this.skin) > -1) {
+                    return "button-menu-" + this.skin + "-skin";
+                }
+                return "button-menu-default-skin";
+            },
+        },
+        data: function() {
+            return {
+                opened: false
+            };
+        },
+        methods: {
+            toggle: function() {
+                this.opened = !this.opened;
+            },
+            close: function() {
+                this.opened = false;
+            },
+            fireEvent: function(eventKey) {
+                this.$emit(eventKey);
+                this.close();
             }
         }
     }));
