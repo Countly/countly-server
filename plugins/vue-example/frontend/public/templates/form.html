@@ -69,7 +69,7 @@
     </div>
 </script>
 <script type="text/x-template" id="form-dropdown-template">
-    <cly-panel title="Form: Dropdown" v-bind:date-selector="false">
+    <div>
         <el-card class="box-card options-box" style="position:fixed; bottom:25px; right: 25px">
             <div slot="header" class="clearfix">
                 <span>Options</span>
@@ -103,10 +103,7 @@
                 </el-radio-group>
             </div>
         </el-card>
-        <div class="example-component">
-            <div class="example-cell">
-                el-select
-            </div>
+        <cly-section title="el-select">
             <div class="example-cell">
                 <el-select v-model="selectedRadio" :disabled="dropdownsDisabled">
                     <el-option :key="item.value" :value="item.value" :label="item.name"
@@ -116,11 +113,8 @@
             <div class="example-cell">
 
             </div>
-        </div>
-        <div class="example-component">
-            <div class="example-cell">
-                Nested dropdowns and selects
-            </div>
+        </cly-section>
+        <cly-section title="Nested dropdowns and selects">
             <div class="example-cell">
                 <cly-input-dropdown 
                     :disabled="dropdownsDisabled"    
@@ -140,11 +134,8 @@
             <div class="example-cell">
                 {{selectedLB}}
             </div>
-        </div>
-        <div class="example-component">
-            <div class="example-cell">
-                cly-select-x (Simple)
-            </div>
+        </cly-section>
+        <cly-section title="cly-select-x (Simple)">
             <div class="example-cell">
                 <cly-select-x
                     search-placeholder="Search in Properties"
@@ -160,11 +151,8 @@
             <div class="example-cell">
                 {{selectX.currentVal}}
             </div>
-        </div>
-        <div class="example-component">
-            <div class="example-cell">
-                cly-select-x (Tabs)
-            </div>
+        </cly-section>
+        <cly-section title="cly-select-x (Tabs)">
             <div class="example-cell">
                 <cly-select-x
                     all-placeholder="All Properties" 
@@ -181,11 +169,8 @@
             <div class="example-cell">
                 {{selectX.currentVal}}
             </div>
-        </div>
-        <div class="example-component">
-            <div class="example-cell">
-                cly-select-x (Tabs, custom header)
-            </div>
+        </cly-section>
+        <cly-section title="cly-select-x (Tabs, custom header)">
             <div class="example-cell">
                 <cly-select-x 
                     all-placeholder="All Properties" 
@@ -212,11 +197,8 @@
             <div class="example-cell">
                 {{selectX.currentVal}}
             </div>
-        </div>
-        <div class="example-component">
-            <div class="example-cell">
-                cly-select-x (Tabs, custom header #2)
-            </div>
+        </cly-section>
+        <cly-section title=" cly-select-x (Tabs, custom header #2)">
             <div class="example-cell">
                 <cly-select-x 
                     all-placeholder="All Properties" 
@@ -244,6 +226,6 @@
             <div class="example-cell">
                 {{selectX.currentVal}}
             </div>
-        </div>
-    </cly-panel>
+        </cly-section>
+    </div>
 </script>
