@@ -43,7 +43,12 @@
     }));
 
     var triggerProxy = countlyBaseComponent.extend({
-        template: '<div><slot v-slot></slot></div>'
+        template: '<div><slot v-slot></slot></div>',
+        methods: {
+            doFocus: function() {
+
+            }
+        }
     });
 
     Vue.component("cly-dropdown", countlyBaseComponent.extend({
@@ -63,6 +68,7 @@
         template: '<div class="cly-vue-dropdown el-select"\
                     v-click-outside="handleOutsideClick">\
                     <trigger-proxy\
+                        v-popover:popover\
                         ref="toggler"\
                         @click.native.stop="handleToggle"\
                         @keydown.native.esc.stop.prevent="handleClose"\
@@ -92,6 +98,12 @@
                 visible: false
             };
         },
+        mounted: function() {
+            this.popperElm = this.$refs.popContent;
+        },
+        beforeDestroy: function() {
+            this.popperElm = null;
+        },
         methods: {
             doClose: function() {
                 this.visible = false;
@@ -100,11 +112,11 @@
                 this.doClose();
             },
             handleClose: function() {
-                // var self = this;
+                var self = this;
                 this.doClose();
-                // this.$nextTick(function() {
-                //     self.$refs.toggler.focus();
-                // });
+                this.$nextTick(function() {
+                    self.$refs.toggler.doFocus();
+                });
             },
             handleOpen: function() {
                 if (!this.disabled && !this.visible) {
@@ -119,10 +131,9 @@
             },
             updateDropdown: function() {
                 var self = this;
-                self.$refs.popover.updatePopper();
-                // this.$nextTick(function() {
-                //     self.$refs.popover.updatePopper();
-                // });
+                this.$nextTick(function() {
+                    self.$refs.popover.updatePopper();
+                });
             }
         },
         watch: {

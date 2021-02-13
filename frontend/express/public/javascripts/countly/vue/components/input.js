@@ -1295,13 +1295,25 @@
 
     Vue.component("cly-select-x", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin, _mixins.i18n],
-        template: '<cly-input-dropdown\
+        template: '<cly-dropdown\
                         class="cly-vue-select-x"\
                         ref="dropdown"\
                         :placeholder="placeholder"\
                         @show="focusOnSearch"\
                         v-bind="$attrs"\
-                        :selected-options="selectedOptions">\
+                        v-on="$listeners"\
+                        :disabled="disabled">\
+                        <template v-slot:trigger="dropdown">\
+                            <slot name="trigger">\
+                                <cly-input-dropdown-trigger\
+                                    :disabled="disabled"\
+                                    :focused="dropdown.visible"\
+                                    :opened="dropdown.visible"\
+                                    :placeholder="placeholder"\
+                                    :selected-options="selectedOptions">\
+                                </cly-input-dropdown-trigger>\
+                            </slot>\
+                        </template>\
                         <div class="cly-vue-select-x__pop" :class="{\'cly-vue-select-x__pop--hidden-tabs\': hideDefaultTabs || !hasTabs }">\
                             <div class="cly-vue-select-x__header">\
                                 <div class="cly-vue-select-x__title" v-if="title">{{title}}</div>\
@@ -1355,13 +1367,14 @@
                                 </div>\
                             </div>\
                         </div>\
-                    </cly-input-dropdown>',
+                    </cly-dropdown>',
         props: {
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
             value: { type: [String, Number, Array] },
             mode: {type: String, default: 'single-list'}, // multi-check,
-            autoCommit: {type: Boolean, default: true}
+            autoCommit: {type: Boolean, default: true},
+            disabled: { type: Boolean, default: false}
         },
         data: function() {
             return {
