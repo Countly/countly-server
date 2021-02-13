@@ -25,7 +25,7 @@
             }
         },
         template: '<div class="cly-vue-tabs">\
-                        <el-tabs v-model="currentTab" v-on="$listeners" v-bind="$attrs">\
+                        <el-tabs v-model="currentTab" type="button" v-on="$listeners" v-bind="$attrs">\
                             <template v-slot>\
                                 <slot></slot>\
                             </template>\
