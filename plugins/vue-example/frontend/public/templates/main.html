@@ -1,27 +1,27 @@
 <div class="vue-example-wrapper" v-bind:class="[componentId]">
     <cly-tabs v-model="currentTab" :route-pattern="'#/' + appId + '/vue/example/:tab'" route-key="tab">
-        <el-tab-pane name="tables">
+        <el-tab-pane name="tables" lazy>
             <span slot="label">Tables</span>
             <cly-header title="Tables"></cly-header>
             <cly-main>
                 <table-view v-on:open-drawer="openDrawer"></table-view>
             </cly-main>
         </el-tab-pane>
-        <el-tab-pane name="form-basic">
+        <el-tab-pane name="form-basic" lazy>
             <span slot="label">Form: Basic</span>
             <cly-header title="Basic Form components"></cly-header>
             <cly-main>
                 <form-basics></form-basics>
             </cly-main>
         </el-tab-pane>
-        <el-tab-pane name="form-dropdown">
+        <el-tab-pane name="form-dropdown" lazy>
             <span slot="label">Form: Dropdown</span>
             <cly-header title="Dropdown components"></cly-header>
             <cly-main>
                 <form-dropdown></form-dropdown>
             </cly-main>
         </el-tab-pane>
-        <el-tab-pane name="charts">
+        <el-tab-pane name="charts" lazy>
             <span slot="label">Charts</span>
             <cly-header title="Chart components"></cly-header>
             <cly-main>

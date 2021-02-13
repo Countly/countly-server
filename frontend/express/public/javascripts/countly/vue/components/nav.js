@@ -9,7 +9,11 @@
         props: {
             value: String,
             routePattern: String,
-            routeKey: String
+            routeKey: String,
+            noHistory: {
+                type: Boolean,
+                default: true
+            }
         },
         computed: {
             currentTab: {
@@ -18,7 +22,13 @@
                 },
                 set: function(val) {
                     if (this.routePattern && this.routeKey) {
-                        Backbone.history.noHistory(this.routePattern.replace(":" + this.routeKey, val));
+                        var target = this.routePattern.replace(":" + this.routeKey, val);
+                        if (this.noHistory) {
+                            Backbone.history.noHistory(target);
+                        }
+                        else {
+                            window.location.hash = target;
+                        }
                     }
                     this.$emit("input", val);
                 }
