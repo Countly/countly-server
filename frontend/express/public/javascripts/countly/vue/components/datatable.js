@@ -427,6 +427,10 @@
                 default: function() {
                     return [5, 10, 20, 50, 100, 200, 1000];
                 }
+            },
+            searchPlaceholder: {
+                type: String,
+                default: 'Search'
             }
         },
         data: function() {
@@ -503,8 +507,11 @@
                                         :hide-all-options-tab="true"\
                                         :options="availableDynamicCols"\
                                         v-model="controlParams.selectedDynamicCols">\
+                                        <template v-slot:trigger>\
+                                            <el-button size="small" icon="el-icon-setting">Edit columns</el-button>\
+                                        </template>\
                                     </cly-select-x>\
-                                    <el-input size="small" v-model="searchQueryProxy"></el-input>\
+                                    <el-input size="small" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>\
                                 </div>\
                             </div>\
                             <el-table\
