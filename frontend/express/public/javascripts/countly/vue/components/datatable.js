@@ -496,6 +496,8 @@
                                         placeholder="Edit columns" \
                                         title="Edit columns"\
                                         mode="multi-check-sortable"\
+                                        placement="bottom-end"\
+                                        :width="300"\
                                         :auto-commit="false"\
                                         :hide-default-tabs="true"\
                                         :hide-all-options-tab="true"\

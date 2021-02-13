@@ -64,6 +64,14 @@
             popperAppendToBody: {
                 type: Boolean,
                 default: true
+            },
+            width: {
+                type: Number,
+                default: 400
+            },
+            placement: {
+                type: String,
+                default: 'bottom-start'
             }
         },
         template: '<div class="cly-vue-dropdown el-select"\
@@ -80,12 +88,12 @@
                         </slot>\
                     </trigger-proxy>\
                     <el-popover\
-                        :popper-class="\'cly-vue-dropdown__pop\'"\
                         ref="popover"\
+                        :popper-class="\'cly-vue-dropdown__pop\'"\
                         :append-to-body="popperAppendToBody"\
-                        placement="bottom-start"\
+                        :placement="placement"\
                         :visible-arrow="false"\
-                        width="400"\
+                        :width="width"\
                         v-model="visible"\
                         trigger="manual">\
                         <div ref="popContent" class="cly-vue-dropdown__pop-container">\
