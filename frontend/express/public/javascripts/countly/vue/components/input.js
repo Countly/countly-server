@@ -1300,14 +1300,16 @@
                         ref="dropdown"\
                         :placeholder="placeholder"\
                         @show="focusOnSearch"\
+                        @hide="focusOnTrigger"\
                         v-bind="$attrs"\
                         v-on="$listeners"\
                         :disabled="disabled">\
                         <template v-slot:trigger="dropdown">\
                             <slot name="trigger">\
                                 <cly-input-dropdown-trigger\
+                                    ref="trigger"\
                                     :disabled="disabled"\
-                                    :focused="dropdown.visible"\
+                                    :focused="dropdown.focused"\
                                     :opened="dropdown.visible"\
                                     :placeholder="placeholder"\
                                     :selected-options="selectedOptions">\
@@ -1421,6 +1423,14 @@
                 this.$nextTick(function() {
                     self.$refs.searchBox.focus();
                 });
+            },
+            focusOnTrigger: function() {
+                var self = this;
+                if (this.$refs.trigger && this.$refs.trigger.focus()) {
+                    this.$nextTick(function() {
+                        self.$refs.trigger.focus();
+                    });
+                }
             },
             doCommit: function() {
                 if (this.uncommittedValue) {

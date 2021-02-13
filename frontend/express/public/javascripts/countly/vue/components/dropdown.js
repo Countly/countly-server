@@ -30,7 +30,13 @@
                 return this.selectedOptions.label;
             }
         },
+        methods: {
+            focus: function() {
+                this.$refs.elInput.focus();
+            }
+        },
         template: '<el-input\
+                        ref="elInput"\
                         :class="{ \'is-focus\': focused, \'is-disabled\': disabled }"\
                         readonly="readonly" \
                         v-model="description"\
@@ -43,12 +49,7 @@
     }));
 
     var triggerProxy = countlyBaseComponent.extend({
-        template: '<div><slot v-slot></slot></div>',
-        methods: {
-            doFocus: function() {
-
-            }
-        }
+        template: '<div><slot v-slot></slot></div>'
     });
 
     Vue.component("cly-dropdown", countlyBaseComponent.extend({
@@ -75,7 +76,7 @@
                         @keydown.native.down.enter.prevent="handleOpen"\
                         @keydown.native.down.stop.prevent="handleOpen"\
                         @keydown.native.up.stop.prevent="handleOpen">\
-                        <slot name="trigger" :visible="visible">\
+                        <slot name="trigger" :visible="visible" :focused="focused">\
                         </slot>\
                     </trigger-proxy>\
                     <el-popover\
@@ -95,7 +96,8 @@
                 </div>',
         data: function() {
             return {
-                visible: false
+                visible: false,
+                focused: false
             };
         },
         mounted: function() {
@@ -110,13 +112,10 @@
             },
             handleOutsideClick: function() {
                 this.doClose();
+                this.focused = false;
             },
             handleClose: function() {
-                var self = this;
                 this.doClose();
-                this.$nextTick(function() {
-                    self.$refs.toggler.doFocus();
-                });
             },
             handleOpen: function() {
                 if (!this.disabled && !this.visible) {
@@ -140,6 +139,7 @@
             visible: function(newValue) {
                 if (newValue) {
                     this.$emit("show");
+                    this.focused = true;
                 }
                 else {
                     this.$emit("hide");
