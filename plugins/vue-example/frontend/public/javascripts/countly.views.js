@@ -299,6 +299,10 @@
         }
     });
 
+    var DateView = countlyVue.views.BaseView.extend({
+        template: '#vue-example-date-template',
+    });
+
     var MainView = countlyVue.views.BaseView.extend({
         template: '#vue-example-main-template',
         mixins: [countlyVue.mixins.hasDrawers("main")],
@@ -307,6 +311,7 @@
             "form-basics": FormBasics,
             "form-dropdown": FormDropdown,
             "tg-view": TimeGraphView,
+            "date-view": DateView,
             "drawer": ExampleDrawer
         },
         beforeCreate: function() {
@@ -335,6 +340,7 @@
                 {
                     namespace: 'vue-example',
                     mapping: {
+                        'date-template': '/vue-example/templates/date.html',
                         'table-template': '/vue-example/templates/table.html',
                         'tg-template': '/vue-example/templates/tg.html',
                         'main-template': '/vue-example/templates/main.html'

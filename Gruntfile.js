@@ -120,6 +120,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/imports.js',
                     'frontend/express/public/javascripts/countly/vue/components/nav.js',
                     'frontend/express/public/javascripts/countly/vue/components/layout.js',
+                    'frontend/express/public/javascripts/countly/vue/components/date.js',
                     'frontend/express/public/javascripts/countly/vue/components/dropdown.js',
                     'frontend/express/public/javascripts/countly/vue/components/input.js',
                     'frontend/express/public/javascripts/countly/vue/components/datatable-legacy.js',

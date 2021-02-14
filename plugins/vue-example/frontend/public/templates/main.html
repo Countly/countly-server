@@ -28,6 +28,13 @@
                 <tg-view></tg-view>
             </cly-main>
         </el-tab-pane>
+        <el-tab-pane name="date" lazy>
+            <span slot="label">Date</span>
+            <cly-header title="Date picking"></cly-header>
+            <cly-main>
+                <date-view></date-view>
+            </cly-main>
+        </el-tab-pane>
     </cly-tabs>
     <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
 </div>
