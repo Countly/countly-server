@@ -13,18 +13,21 @@
         },
         template: '<div class="cly-vue-daterp">\
                     <div class="cly-vue-daterp__shortcuts-col">\
-                        <div class="text-medium" v-for="shortcut in shortcuts" @click="handleShortcutClick(shortcut.value)">{{shortcut.label}}</div>\
+                        <div class="text-medium font-weight-bold" v-for="shortcut in shortcuts" @click="handleShortcutClick(shortcut.value)">{{shortcut.label}}</div>\
                     </div>\
                     <div class="cly-vue-daterp__calendars-col">\
-                        <div class="cly-vue-daterp__input-col">\
+                        <div class="cly-vue-daterp__input-methods">\
                             <el-tabs>\
-                                <el-tab-pane name="in-between" label="In Between">\
+                                <el-tab-pane name="in-between">\
+                                    <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                     <el-input size="small"></el-input> and <el-input size="small"></el-input>\
                                 </el-tab-pane>\
-                                <el-tab-pane name="since" label="Since">\
+                                <el-tab-pane name="since">\
+                                    <template slot="label"><span class="text-medium font-weight-bold">Since</span></template>\
                                     <el-input size="small"></el-input>\
                                 </el-tab-pane>\
-                                <el-tab-pane name="in-the-last" label="In The Last">\
+                                <el-tab-pane name="in-the-last">\
+                                    <template slot="label"><span class="text-medium font-weight-bold">In The Last</span></template>\
                                     <el-input size="small"></el-input> <el-input size="small"></el-input>\
                                 </el-tab-pane>\
                             </el-tabs>\
@@ -34,8 +37,8 @@
                             view-class="cly-vue-daterp__table-view">\
                             <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
                                 <div class="cly-vue-daterp__table-view">\
-                                    <div v-for="item in globalRange">\
-                                        <span>{{ item.title }}</span>\
+                                    <div :key="item.key" v-for="item in globalRange">\
+                                        <span class="text-medium">{{ item.title }}</span>\
                                         <date-table \
                                             selection-mode="range"\
                                             :date="item.date"\
@@ -60,7 +63,11 @@
 
             while (cursor < globalMax) {
                 cursor = cursor.add(1, "M");
-                globalRange.push({ date: cursor.toDate(), title: cursor.format("MMMM, YYYY") });
+                globalRange.push({
+                    date: cursor.toDate(),
+                    title: cursor.format("MMMM, YYYY"),
+                    key: cursor.unix()
+                });
             }
             return {
                 rangeState: {

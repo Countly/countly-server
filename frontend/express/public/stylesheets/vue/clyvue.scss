@@ -72,19 +72,29 @@ body {
         font-size: $--text-lg-size;
         font-weight: $--font-weight-text;
         line-height: $--text-lg-size + 6px;
+        &.font-weight-bold {
+            font-weight: $--font-weight-primary !important;
+        }
     }
 
     .text-medium {
         font-size: $--text-md-size;
         font-weight: $--font-weight-text;
         line-height: $--text-md-size + 6px;
+        &.font-weight-bold {
+            font-weight: $--font-weight-primary !important;
+        }
     }
 
     .text-small {
         font-size: $--text-sm-size;
         font-weight: $--font-weight-text;
         line-height: $--text-sm-size + 6px;
+        &.font-weight-bold {
+            font-weight: $--font-weight-primary !important;
+        }
     }
+
 
     // tabs component
     .cly-vue-tabs {
