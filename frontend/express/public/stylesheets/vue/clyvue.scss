@@ -3209,10 +3209,10 @@ body {
                     opacity: 0.12;
                 }
             }
-            &__active-bar {
-                padding: 0 15px;
-                left: -15px;
-            }
+            // &__active-bar {
+            //     padding: 0 15px;
+            //     left: -15px;
+            // }
         }
         &--hidden-tabs {
             .el-tabs {
