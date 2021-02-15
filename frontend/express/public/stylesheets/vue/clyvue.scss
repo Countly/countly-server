@@ -524,6 +524,16 @@ body {
                 border-radius: 4px;
                 color: $--color-primary;
             }
+
+            &--custom {
+                margin-bottom: 24px;
+            }
+            i {
+                color: #808081;
+                float: right;
+                margin-top: 1px;
+                margin-right: -2px;
+            }
         }
 
         &__input-wrapper {

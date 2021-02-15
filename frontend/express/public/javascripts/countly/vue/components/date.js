@@ -13,9 +13,9 @@
         },
         template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': !selectedShortcut}">\
                     <div class="cly-vue-daterp__shortcuts-col">\
-                        <div class="text-medium font-weight-bold"\
+                        <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"\
                             @click="handleShortcutClick()">\
-                            Custom Range\
+                            Custom Range<i class="el-icon-caret-right"></i>\
                         </div>\
                         <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"\
                             :class="{\'cly-vue-daterp__shortcut--active\': selectedShortcut == shortcut.value}"\
@@ -42,7 +42,7 @@
                                     </div>\
                                 </el-tab-pane>\
                                 <el-tab-pane name="in-the-last">\
-                                    <template slot="label"><span class="text-medium font-weight-bold">In The Last</span></template>\
+                                    <template slot="label"><span class="text-medium font-weight-bold">In the Last</span></template>\
                                     <div class="cly-vue-daterp__input-wrapper">\
                                         <el-input size="small"></el-input> <el-input size="small"></el-input>\
                                     </div>\
