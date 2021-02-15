@@ -572,8 +572,18 @@ body {
             }
         }
 
-        .el-tabs__header {
-            margin: 0;
+        .el-tabs {
+            &__nav-scroll {
+                justify-content: center;
+                display: flex;
+            }
+            &__header {
+                margin: 0;
+            }
+            &__item {
+                height: 44px;    
+                line-height: 44px;
+            }
         }
 
         .el-date-table {
