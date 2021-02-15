@@ -458,14 +458,79 @@ body {
     .cly-vue-daterp {
         background: #FFFFFF;
         border-radius: 4px;
-        height:434px;
         width: 495px;
+        border: 1px #EBEBEF solid;
 
         &__shortcuts-col {
             width: 160px;
         }
+        
+        &__calendars-col {
+            border-left: 1px #EBEBEF solid;
+        }
+
+        &__calendars-wrapper {
+            background-color: #f9f9f9;
+            position: relative;
+            &::before {
+                // shadow
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 12px;
+                background: linear-gradient(180deg, rgba(51, 60, 72, 0.8) 0%, rgba(51, 60, 72, 8e-05) 100%);
+                mix-blend-mode: normal;
+                opacity: 0.1;
+                top: 0px;
+            }
+            &::after {
+                // shadow
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 12px;
+                background: linear-gradient(180deg, rgba(51, 60, 72, 0.6) 0%, rgba(51, 60, 72, 6e-05) 100%);
+                mix-blend-mode: normal;
+                opacity: 0.1;
+                transform: rotate(-180deg);
+                bottom: 0px;
+            }
+        }
+
+        &__date-table-wrapper {
+            margin: 0 16px;
+        }
+
         &__shortcuts-col, &__calendars-col {
             display: inline-block;
+        }
+
+        &__input-wrapper {
+            width: 295px;
+            display: flex;
+            margin: 0;
+            padding: 16px;
+            span {
+                padding: 11px 11px 0 11px;
+            }
+        }
+
+        &__commit-section {
+            float: right;
+            margin: 16px;
+        }
+
+        .el-tabs__header {
+            margin: 0;
+        }
+
+        .el-date-table {
+            tr:first-of-type {
+                display: none; // hide day names
+            }
+            td {
+                width: 42px;
+            }
         }
     }
 

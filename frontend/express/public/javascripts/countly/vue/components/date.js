@@ -17,41 +17,55 @@
                     </div>\
                     <div class="cly-vue-daterp__calendars-col">\
                         <div class="cly-vue-daterp__input-methods">\
-                            <el-tabs>\
+                            <el-tabs v-model="rangeMode">\
                                 <el-tab-pane name="in-between">\
                                     <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
-                                    <el-input size="small"></el-input> and <el-input size="small"></el-input>\
+                                    <div class="cly-vue-daterp__input-wrapper">\
+                                        <el-input size="small"></el-input>\
+                                        <span class="text-medium">and</span>\
+                                        <el-input size="small"></el-input>\
+                                    </div>\
                                 </el-tab-pane>\
                                 <el-tab-pane name="since">\
                                     <template slot="label"><span class="text-medium font-weight-bold">Since</span></template>\
-                                    <el-input size="small"></el-input>\
+                                    <div class="cly-vue-daterp__input-wrapper">\
+                                        <el-input size="small"></el-input>\
+                                    </div>\
                                 </el-tab-pane>\
                                 <el-tab-pane name="in-the-last">\
                                     <template slot="label"><span class="text-medium font-weight-bold">In The Last</span></template>\
-                                    <el-input size="small"></el-input> <el-input size="small"></el-input>\
+                                    <div class="cly-vue-daterp__input-wrapper">\
+                                        <el-input size="small"></el-input> <el-input size="small"></el-input>\
+                                    </div>\
                                 </el-tab-pane>\
                             </el-tabs>\
                         </div>\
-                        <el-scrollbar\
-                            wrap-class="cly-vue-daterp__table-wrap"\
-                            view-class="cly-vue-daterp__table-view">\
-                            <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
-                                <div class="cly-vue-daterp__table-view">\
-                                    <div :key="item.key" v-for="item in globalRange">\
-                                        <span class="text-medium">{{ item.title }}</span>\
-                                        <date-table \
-                                            selection-mode="range"\
-                                            :date="item.date"\
-                                            :min-date="minDate"\
-                                            :max-date="maxDate"\
-                                            :range-state="rangeState"\
-                                            @pick="handleRangePick"\
-                                            @changerange="handleChangeRange">\
-                                        </date-table>\
+                        <div class="cly-vue-daterp__calendars-wrapper">\
+                            <el-scrollbar\
+                                wrap-class="cly-vue-daterp__table-wrap"\
+                                view-class="cly-vue-daterp__table-view">\
+                                <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
+                                    <div class="cly-vue-daterp__table-view">\
+                                        <div class="cly-vue-daterp__date-table-wrapper" :key="item.key" v-for="item in globalRange">\
+                                            <span class="text-medium">{{ item.title }}</span>\
+                                            <date-table \
+                                                selection-mode="range"\
+                                                :date="item.date"\
+                                                :min-date="minDate"\
+                                                :max-date="maxDate"\
+                                                :range-state="rangeState"\
+                                                @pick="handleRangePick"\
+                                                @changerange="handleChangeRange">\
+                                            </date-table>\
+                                        </div>\
                                     </div>\
                                 </div>\
-                            </div>\
-                        </el-scrollbar>\
+                            </el-scrollbar>\
+                        </div>\
+                        <div class="cly-vue-daterp__commit-section">\
+                            <el-button @click="doDiscard" size="small">{{ i18n("common.cancel") }}</el-button>\
+                            <el-button @click="doCommit" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>\
+                        </div>\
                     </div>\
                 </div>',
         data: function() {
@@ -87,7 +101,8 @@
                     {label: this.i18n("taskmanager.last-60days"), value: "60days"},
                     {label: moment().format("MMMM, YYYY"), value: "day"},
                     {label: moment().year(), value: "month"},
-                ]
+                ],
+                rangeMode: 'in-between'
             };
         },
         methods: {
@@ -115,6 +130,12 @@
                 this.rangeState = val.rangeState;
             },
             handleShortcutClick: function() {
+
+            },
+            doDiscard: function() {
+
+            },
+            doCommit: function() {
 
             }
         }
