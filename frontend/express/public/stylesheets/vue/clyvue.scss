@@ -462,7 +462,9 @@ body {
         border: 1px #EBEBEF solid;
         color: $--color-text-custom-1-active;
         &__shortcuts-col {
-            width: 160px;
+            width: 144px;
+            padding: 8px;
+            vertical-align: top;
         }
         
         &__calendars-col {
@@ -504,6 +506,18 @@ body {
 
         &__shortcuts-col, &__calendars-col {
             display: inline-block;
+        }
+
+        &__shortcut {
+            padding: 8px;
+            cursor: pointer;
+            line-height: 16px;
+        
+            &--active {
+                background: #F9F9F9;
+                border-radius: 4px;
+                color: $--color-primary;
+            }
         }
 
         &__input-wrapper {

@@ -13,7 +13,10 @@
         },
         template: '<div class="cly-vue-daterp">\
                     <div class="cly-vue-daterp__shortcuts-col">\
-                        <div class="text-medium font-weight-bold" v-for="shortcut in shortcuts" @click="handleShortcutClick(shortcut.value)">{{shortcut.label}}</div>\
+                        <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"\
+                            :class="{\'cly-vue-daterp__shortcut--active\': selectedShortcut == shortcut.value}"\
+                            v-for="shortcut in shortcuts"\
+                            @click="handleShortcutClick(shortcut.value)">{{shortcut.label}}</div>\
                     </div>\
                     <div class="cly-vue-daterp__calendars-col">\
                         <div class="cly-vue-daterp__input-methods">\
@@ -99,7 +102,7 @@
                 maxDate: globalMax.toDate(),
                 globalRange: globalRange,
                 shortcuts: [
-                    {label: moment().subtract(1, "days").format("Do"), value: "yesterday"},
+                    {label: this.i18n("common.yesterday"), value: "yesterday"},
                     {label: this.i18n("common.today"), value: "hour"},
                     {label: this.i18n("taskmanager.last-7days"), value: "7days"},
                     {label: this.i18n("taskmanager.last-30days"), value: "30days"},
@@ -107,7 +110,8 @@
                     {label: moment().format("MMMM, YYYY"), value: "day"},
                     {label: moment().year(), value: "month"},
                 ],
-                rangeMode: 'in-between'
+                rangeMode: 'in-between',
+                selectedShortcut: ''
             };
         },
         methods: {
@@ -134,8 +138,8 @@
                 this.maxDate = val.maxDate;
                 this.rangeState = val.rangeState;
             },
-            handleShortcutClick: function() {
-
+            handleShortcutClick: function(value) {
+                this.selectedShortcut = value;
             },
             doDiscard: function() {
 
