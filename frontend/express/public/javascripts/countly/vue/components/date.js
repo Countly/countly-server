@@ -46,6 +46,7 @@
                                 view-class="cly-vue-daterp__table-view">\
                                 <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
                                     <div class="cly-vue-daterp__table-view">\
+                                        <div style="height:12px"></div>\
                                         <div class="cly-vue-daterp__date-table-wrapper" :key="item.key" v-for="item in globalRange">\
                                             <span class="text-medium">{{ item.title }}</span>\
                                             <date-table \
@@ -58,6 +59,7 @@
                                                 @changerange="handleChangeRange">\
                                             </date-table>\
                                         </div>\
+                                        <div style="height:1px"></div>\
                                     </div>\
                                 </div>\
                             </el-scrollbar>\
