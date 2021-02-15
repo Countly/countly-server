@@ -458,9 +458,14 @@ body {
     .cly-vue-daterp {
         background: #FFFFFF;
         border-radius: 4px;
-        width: 506px;
+        width: 160px;
         border: 1px #EBEBEF solid;
         color: $--color-text-custom-1-active;
+
+        &--custom-selection {
+            width: 501px;
+        }
+
         &__shortcuts-col {
             width: 144px;
             padding: 8px;
@@ -469,6 +474,7 @@ body {
         
         &__calendars-col {
             border-left: 1px #EBEBEF solid;
+            margin-left:-5px;
         }
 
         &__calendars-wrapper {

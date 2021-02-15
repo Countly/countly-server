@@ -11,14 +11,20 @@
         components: {
             'date-table': ELEMENT.DateTable
         },
-        template: '<div class="cly-vue-daterp">\
+        template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': !selectedShortcut}">\
                     <div class="cly-vue-daterp__shortcuts-col">\
+                        <div class="text-medium font-weight-bold"\
+                            @click="handleShortcutClick()">\
+                            Custom Range\
+                        </div>\
                         <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"\
                             :class="{\'cly-vue-daterp__shortcut--active\': selectedShortcut == shortcut.value}"\
                             v-for="shortcut in shortcuts"\
-                            @click="handleShortcutClick(shortcut.value)">{{shortcut.label}}</div>\
+                            @click="handleShortcutClick(shortcut.value)">\
+                            {{shortcut.label}}\
+                        </div>\
                     </div>\
-                    <div class="cly-vue-daterp__calendars-col">\
+                    <div class="cly-vue-daterp__calendars-col" v-if="!selectedShortcut">\
                         <div class="cly-vue-daterp__input-methods">\
                             <el-tabs v-model="rangeMode">\
                                 <el-tab-pane name="in-between">\
@@ -111,7 +117,7 @@
                     {label: moment().year(), value: "month"},
                 ],
                 rangeMode: 'in-between',
-                selectedShortcut: ''
+                selectedShortcut: null
             };
         },
         methods: {
