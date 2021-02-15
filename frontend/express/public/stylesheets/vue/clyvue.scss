@@ -498,7 +498,7 @@ body {
         }
 
         &__date-table-wrapper {
-            margin: 0 16px;
+            margin: 0 16px 12px 16px;
         }
 
         &__shortcuts-col, &__calendars-col {
@@ -525,11 +525,43 @@ body {
         }
 
         .el-date-table {
+            margin-top: 2px;
             tr:first-of-type {
                 display: none; // hide day names
             }
             td {
-                width: 42px;
+                width: 44px;
+                height: 36px;
+                padding: 0;
+                > div { 
+                    padding: 0px;
+                    height: 32px;
+                    span {
+                        width: 40px;
+                        height: 32px;
+                        background: #FFFFFF;
+                        border-radius: 4px;
+                    }
+                }
+                &.in-range{
+                    > div span {
+                        background: #ccdbf2;
+                        mix-blend-mode: normal;
+                    }
+                }
+                &.start-date, &.end-date {
+                    > div span {
+                        background: #1967D2
+                    }
+                }
+                &.prev-month, &.next-month {
+                    visibility: hidden;
+                    height: 0px;
+                    div, span {
+                        display: none;
+                        height: 0px;
+                    }
+                }
             }
         }
     }
