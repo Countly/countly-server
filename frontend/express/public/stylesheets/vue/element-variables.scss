@@ -72,6 +72,9 @@ $--border-color-lighter: #EBEEF5 !default;
 /// color|1|Border Color|3
 $--border-color-extra-light: #F2F6FC !default;
 
+$--color-text-custom-1-active: #333C48 !default;
+$--color-text-custom-1-passive: #858A91 !default;
+
 // Background
 /// color|1|Background Color|4
 $--background-color-base: #F5F7FA !default;
@@ -506,9 +509,9 @@ $--group-title-width: 66px !default;
 -------------------------- */
 $--tab-font-size: $--font-size-base !default;
 $--tab-border-line: 1px solid #e4e4e4 !default;
-$--tab-header-color-active: $--color-text-secondary !default;
-$--tab-header-color-hover: $--color-text-regular !default;
-$--tab-header-color: $--color-text-regular !default;
+$--tab-header-color-active: $--color-text-custom-1-active !default;
+$--tab-header-color-hover: $--color-text-custom-1-active !default;
+$--tab-header-color: $--color-text-custom-1-passive !default;
 $--tab-header-fill-active: rgba($--color-black, 0.06) !default;
 $--tab-header-fill-hover: rgba($--color-black, 0.06) !default;
 $--tab-vertical-header-width: 90px !default;
