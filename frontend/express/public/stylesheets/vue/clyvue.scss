@@ -521,6 +521,20 @@ body {
             margin: 16px;
         }
 
+        &__day-names-wrapper {
+            margin: 0 14px 9px 14px;
+        }
+
+        &__day-names {
+            th {
+                font-size: 13px;
+                line-height: 13px;
+                font-weight: 500;
+                color: #858A91;
+                width: 42px;
+            }
+        }
+
         .el-tabs__header {
             margin: 0;
         }

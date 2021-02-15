@@ -39,6 +39,9 @@
                                     </div>\
                                 </el-tab-pane>\
                             </el-tabs>\
+                            <div class="cly-vue-daterp__day-names-wrapper">\
+                                <table class="cly-vue-daterp__day-names"><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></table>\
+                            </div>\
                         </div>\
                         <div class="cly-vue-daterp__calendars-wrapper">\
                             <el-scrollbar\
