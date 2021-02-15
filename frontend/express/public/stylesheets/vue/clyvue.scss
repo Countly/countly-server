@@ -4,12 +4,19 @@
 body {
     .el-popper {
         font-family: $--font-family !important;
+        button {
+            font: $--font-weight-primary $--text-button-size $--font-family !important;
+        }
     }
 }
 
 .cly-vue-theme-clydef {
 
     font-family: $--font-family !important;
+
+    button {
+        font: $--font-weight-primary $--text-button-size $--font-family !important;
+    }
 
     // Typography
     h1 {
