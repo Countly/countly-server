@@ -3,8 +3,17 @@
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
+        _mixins = countlyVue.mixins,
+        availableDateFormats = ['MMDDYYYY', 'MM-DD-YYYY', 'MM/DD/YYYY', 'MMDDYY', 'MM-DD-YY', 'MM/DD/YYYY'];
 
+    /**
+     * Attempts to parse the provided string using one of the available date formats.
+     * @param {String} rawString String value to be parsed
+     * @returns {Object} Moment object 
+     */
+    function tryParsingDate(rawString) {
+        return moment(rawString, availableDateFormats, true);
+    }
 
     Vue.component("cly-daterangepicker", countlyBaseComponent.extend({
         mixins: [_mixins.i18n],
@@ -25,26 +34,34 @@
                         </div>\
                     </div>\
                     <div class="cly-vue-daterp__calendars-col" v-if="!selectedShortcut">\
+                        <pre>{{ inBetweenInput }}</pre>\
+                        <pre>{{ sinceInput }}</pre>\
+                        <pre>{{ inTheLastInput }}</pre>\
                         <div class="cly-vue-daterp__input-methods">\
                             <el-tabs v-model="rangeMode">\
                                 <el-tab-pane name="in-between">\
                                     <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                     <div class="cly-vue-daterp__input-wrapper">\
-                                        <el-input size="small"></el-input>\
+                                        <el-input size="small" v-model="inBetweenInput.raw.textStart"></el-input>\
                                         <span class="text-medium">and</span>\
-                                        <el-input size="small"></el-input>\
+                                        <el-input size="small" v-model="inBetweenInput.raw.textEnd"></el-input>\
                                     </div>\
                                 </el-tab-pane>\
                                 <el-tab-pane name="since">\
                                     <template slot="label"><span class="text-medium font-weight-bold">Since</span></template>\
                                     <div class="cly-vue-daterp__input-wrapper">\
-                                        <el-input size="small"></el-input>\
+                                        <el-input size="small" v-model="sinceInput.raw.text"></el-input>\
                                     </div>\
                                 </el-tab-pane>\
                                 <el-tab-pane name="in-the-last">\
                                     <template slot="label"><span class="text-medium font-weight-bold">In the Last</span></template>\
                                     <div class="cly-vue-daterp__input-wrapper">\
-                                        <el-input size="small"></el-input> <el-input size="small"></el-input>\
+                                        <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>\
+                                        <el-select size="small" v-model="inTheLastInput.raw.level">\
+                                            <el-option label="Days" value="days"></el-option>\
+                                            <el-option label="Weeks" value="weeks"></el-option>\
+                                            <el-option label="Months" value="months"></el-option>\
+                                        </el-select>\
                                     </div>\
                                 </el-tab-pane>\
                             </el-tabs>\
@@ -87,7 +104,8 @@
                 globalRange = [],
                 globalMin = moment().subtract(maxYearsBack, 'y').startOf("M"),
                 globalMax = moment(),
-                cursor = moment(globalMin.toDate());
+                cursor = moment(globalMin.toDate()),
+                now = moment().toDate();
 
             while (cursor < globalMax) {
                 cursor = cursor.add(1, "M");
@@ -104,6 +122,7 @@
                     row: null,
                     column: null
                 },
+                now: now,
                 minDate: moment().subtract(1, 'M').startOf("M").toDate(),
                 maxDate: globalMax.toDate(),
                 globalRange: globalRange,
@@ -117,8 +136,62 @@
                     {label: moment().year(), value: "month"},
                 ],
                 rangeMode: 'in-between',
-                selectedShortcut: null
+                selectedShortcut: null,
+                inBetweenInput: {
+                    raw: {
+                        textStart: '',
+                        textEnd: ''
+                    },
+                    effectiveRange: [null, null]
+                },
+                sinceInput: {
+                    raw: {
+                        text: '',
+                    },
+                    effectiveRange: [null, now]
+                },
+                inTheLastInput: {
+                    raw: {
+                        text: '',
+                        level: 'days'
+                    },
+                    effectiveRange: [null, now]
+                },
             };
+        },
+        watch: {
+            'inBetweenInput.raw': {
+                deep: true,
+                handler: function(newVal) {
+                    var parsedStart = tryParsingDate(newVal.textStart),
+                        parsedEnd = tryParsingDate(newVal.textEnd);
+
+                    if (parsedStart && parsedStart.isValid()) {
+                        this.inBetweenInput.effectiveRange[0] = parsedStart.toDate();
+                    }
+                    if (parsedEnd && parsedEnd.isValid()) {
+                        this.inBetweenInput.effectiveRange[1] = parsedEnd.toDate();
+                    }
+                }
+            },
+            'sinceInput.raw': {
+                deep: true,
+                handler: function(newVal) {
+                    var parsed = tryParsingDate(newVal.text);
+                    if (parsed && parsed.isValid()) {
+                        this.sinceInput.effectiveRange[0] = parsed.toDate();
+                    }
+                }
+            },
+            'inTheLastInput.raw': {
+                deep: true,
+                handler: function(newVal) {
+                    var parsed = moment().subtract(newVal.text, newVal.level);
+                    if (parsed && parsed.isValid()) {
+                        this.inTheLastInput.effectiveRange[0] = parsed.toDate();
+                    }
+                }
+            }
         },
         methods: {
             handleRangePick: function(val) {
