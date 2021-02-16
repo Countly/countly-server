@@ -34,11 +34,8 @@
                         </div>\
                     </div>\
                     <div class="cly-vue-daterp__calendars-col" v-if="!selectedShortcut">\
-                        <pre>{{ inBetweenInput }}</pre>\
-                        <pre>{{ sinceInput }}</pre>\
-                        <pre>{{ inTheLastInput }}</pre>\
                         <div class="cly-vue-daterp__input-methods">\
-                            <el-tabs v-model="rangeMode" @change="handleUserInputUpdate">\
+                            <el-tabs v-model="rangeMode" @tab-click="handleUserInputUpdate">\
                                 <el-tab-pane name="inBetween">\
                                     <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                     <div class="cly-vue-daterp__input-wrapper">\
@@ -212,6 +209,7 @@
         },
         methods: {
             handleRangePick: function(val) {
+                this.rangeMode = "inBetween";
                 var defaultTime = this.defaultTime || [];
                 var minDate = ELEMENT.DateUtil.modifyWithTimeString(val.minDate, defaultTime[0]);
                 var maxDate = ELEMENT.DateUtil.modifyWithTimeString(val.maxDate, defaultTime[1]);
@@ -231,7 +229,6 @@
                 this.minDate = val.minDate;
                 this.maxDate = val.maxDate;
                 this.rangeState = val.rangeState;
-                this.rangeMode = "inBetween";
 
                 var startsAt, endsAt;
 
