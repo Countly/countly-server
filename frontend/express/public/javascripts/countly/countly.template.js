@@ -3852,14 +3852,21 @@ var AppRouter = Backbone.Router.extend({
                 if (event.keyCode === 13) {
                     var date = moment($("#date-from-input").val(), "MM/DD/YYYY");
 
-                    if (date.format("MM/DD/YYYY") !== $("#date-from-input").val() || date.valueOf() > self.dateToSelected) {
+                    if (date.format("MM/DD/YYYY") !== $("#date-from-input").val()) {
                         var jsDate = $('#date-from').datepicker('getDate');
                         $("#date-from-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
                     }
                     else {
                         dateTo.datepicker("option", "minDate", date.toDate());
+                        if (date.valueOf() > self.dateToSelected) {
+                            date.startOf('day');
+                            self.dateToSelected = date.valueOf();
+                            dateFrom.datepicker("option", "maxDate", date.toDate());
+                            dateTo.datepicker("setDate", date.toDate());
+                            $("#date-to-input").val(date.format("MM/DD/YYYY"));
+
+                        }
                         dateFrom.datepicker("setDate", date.toDate());
-                        self.dateFromSelected = date.valueOf();
                     }
                 }
             });
