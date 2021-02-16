@@ -1868,29 +1868,11 @@ var AppRouter = Backbone.Router.extend({
             }
 
             // If date range is selected initialize the calendar with these
-            self.setCalenderInitialized = function() {
-                var periodObj = countlyCommon.getPeriod();
-                if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
-                    self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
-                    self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
-                }
-                else {
-                    if (periodObj === "yesterday" || periodObj === "hour") {
-                        self.dateFromSelected = parseInt(moment(countlyCommon.calcSpecificPeriodObj(periodObj).activePeriod, "YYYY.MM.DD").valueOf());
-                        self.dateToSelected = parseInt(moment(countlyCommon.calcSpecificPeriodObj(periodObj).activePeriod, "YYYY.MM.DD").valueOf());
-                    }
-                    if (/([0-9]+)days/.test(periodObj) || periodObj === "day") {
-                        self.dateFromSelected = parseInt(moment(countlyCommon.calcSpecificPeriodObj(periodObj).currentPeriodArr[0], "YYYY.MM.DD").valueOf());
-                        self.dateToSelected = parseInt(moment(countlyCommon.calcSpecificPeriodObj(periodObj).currentPeriodArr[countlyCommon.calcSpecificPeriodObj(periodObj).currentPeriodArr.length - 1], "YYYY.MM.DD").valueOf());
-                    }
-                    if (periodObj === "month") {
-                        self.dateFromSelected = parseInt(moment([countlyCommon.calcSpecificPeriodObj(periodObj).activePeriod]).startOf("year").valueOf());
-                        self.dateToSelected = parseInt(moment([countlyCommon.calcSpecificPeriodObj(periodObj).activePeriod]).endOf("year").valueOf());
-                    }
-                }
-            };
-
-            self.setCalenderInitialized();
+            var periodObj = countlyCommon.getPeriod();
+            if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
+                self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
+                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
+            }
 
             // Initialize localization related stuff
 
@@ -3710,15 +3692,6 @@ var AppRouter = Backbone.Router.extend({
             // Translate all elements with a data-help-localize or data-localize attribute
             self.localize();
 
-            self.setCalenderInitialized();
-            /**
-             * Reset Calnder
-             */
-            function resetCalender() {
-                $("#date-to-input, #date-to-input:hover, #date-from-input, #date-from-input:hover").removeAttr("style");
-                $("#date-submit").css({"pointer-events": "auto"});
-            }
-
             if ($("#help-toggle").hasClass("active")) {
                 $('.help-zone-vb').tipsy({
                     gravity: $.fn.tipsy.autoNS,
@@ -3769,11 +3742,9 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.setUpDateSelectors(self.activeView);
 
             $(window).click(function() {
-                resetCalender();
                 $("#date-picker").hide();
                 $(".date-time-picker").hide();
                 $(".cly-select").removeClass("active");
-                $("#date-submit").css({"opacity": "1"});
             });
 
             $("#date-picker").click(function(e) {
@@ -3786,10 +3757,7 @@ var AppRouter = Backbone.Router.extend({
 
             var dateTo;
             var dateFrom;
-            self.isUpdated = false;
-            $("#date-picker-button").off("click").on("click", function(e) {
-                self.setCalenderInitialized();
-                resetCalender();
+            $("#date-picker-button").click(function(e) {
                 $("#date-picker").toggle();
                 $("#date-picker-button").toggleClass("active");
                 var date;
@@ -3827,12 +3795,12 @@ var AppRouter = Backbone.Router.extend({
                 //setSelectedDate();
                 e.stopPropagation();
             });
+
             dateTo = $("#date-to").datepicker({
                 numberOfMonths: 1,
                 showOtherMonths: true,
                 maxDate: moment().toDate(),
                 onSelect: function(selectedDate) {
-                    self.isUpdated = true;
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
                     date.setHours(0, 0, 0, 0);
@@ -3853,12 +3821,12 @@ var AppRouter = Backbone.Router.extend({
                     }
                 }
             });
+
             dateFrom = $("#date-from").datepicker({
                 numberOfMonths: 1,
                 showOtherMonths: true,
                 maxDate: moment().subtract(1, 'days').toDate(),
                 onSelect: function(selectedDate) {
-                    self.isUpdated = true;
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
                     date.setHours(0, 0, 0, 0);
@@ -3880,67 +3848,41 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 
-            $("#date-from-input").on("keyup change", function(event, validation) {
-                var date = moment($("#date-from-input").val(), "MM/DD/YYYY");
-                if (date.format("MM/DD/YYYY") !== $("#date-from-input").val() || date.valueOf() > self.dateToSelected) {
-                    $("#date-submit").css({"pointer-events": "none"});
-                    $("#date-submit").css({"opacity": "0.5"});
-                    $("#date-submit").data("date-from-valid", false);
-                    $("#date-from-input, #date-from-input:hover").css({"border-color": "#D34247", "border-width": "1px", "border-style": "solid"});
-                }
-                else {
-                    if (!validation) {
-                        setTimeout(function() {
-                            $("#date-to-input").trigger("keyup", true);
-                            dateTo.datepicker("setDate", moment($("#date-to-input").val(), "MM/DD/YYYY").toDate());
-                            dateTo.datepicker("refresh");
-                        });
+            $("#date-from-input").keyup(function(event) {
+                if (event.keyCode === 13) {
+                    var date = moment($("#date-from-input").val(), "MM/DD/YYYY");
+
+                    if (date.format("MM/DD/YYYY") !== $("#date-from-input").val() || date.valueOf() > self.dateToSelected) {
+                        var jsDate = $('#date-from').datepicker('getDate');
+                        $("#date-from-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
                     }
-                    var jsDate = $('#date-from').datepicker('getDate');
-                    if (moment(jsDate.getTime()).format("MM/DD/YYYY") !== $("#date-from-input").val()) {
-                        self.isUpdated = true;
+                    else {
+                        dateTo.datepicker("option", "minDate", date.toDate());
+                        dateFrom.datepicker("setDate", date.toDate());
+                        self.dateFromSelected = date.valueOf();
                     }
-                    $("#date-submit").data("date-from-valid", true);
-                    if ($("#date-submit").data("date-to-valid")) {
-                        $("#date-submit").css({"pointer-events": "auto"});
-                        $("#date-submit").css({"opacity": "1"});
-                    }
-                    $("#date-from-input, #date-from-input:hover").removeAttr("style");
-                    dateTo.datepicker("option", "minDate", date.toDate());
-                    dateFrom.datepicker("setDate", date.toDate());
-                    self.dateFromSelected = date.valueOf();
                 }
             });
 
-            $("#date-to-input").on("keyup change", function(event, validation) {
-                var date = moment($("#date-to-input").val(), "MM/DD/YYYY");
-                if (date.format("MM/DD/YYYY") !== $("#date-to-input").val() || date.valueOf() < self.dateFromSelected || date.valueOf() > moment().endOf('day').valueOf()) {
-                    $("#date-submit").css({"pointer-events": "none"});
-                    $("#date-submit").css({"opacity": "0.5"});
-                    $("#date-submit").data("date-to-valid", false);
-                    $("#date-to-input, #date-to-input:hover").css({"border-color": "#D34247", "border-width": "1px", "border-style": "solid"});
-                }
-                else {
-                    if (!validation) {
-                        setTimeout(function() {
-                            $("#date-from-input").trigger("keyup", true);
-                            dateFrom.datepicker("setDate", moment($("#date-from-input").val(), "MM/DD/YYYY").toDate());
-                            dateFrom.datepicker("refresh");
-                        });
+
+            $("#date-to-input").keyup(function(event) {
+                if (event.keyCode === 13) {
+                    var date = moment($("#date-to-input").val(), "MM/DD/YYYY");
+                    if (date.format("MM/DD/YYYY") !== $("#date-to-input").val()) {
+                        var jsDate = $('#date-to').datepicker('getDate');
+                        $("#date-to-input").val(moment(jsDate.getTime()).format("MM/DD/YYYY"));
                     }
-                    var jsDate = $('#date-to').datepicker('getDate');
-                    if (moment(jsDate.getTime()).format("MM/DD/YYYY") !== $("#date-to-input").val()) {
-                        self.isUpdated = true;
+                    else {
+                        dateFrom.datepicker("option", "maxDate", date.toDate());
+                        if (date.toDate() < self.dateFromSelected) {
+                            date.startOf('day');
+                            self.dateFromSelected = date.valueOf();
+                            dateTo.datepicker("option", "minDate", date.toDate());
+                            dateFrom.datepicker("setDate", date.toDate());
+                            $("#date-from-input").val(date.format("MM/DD/YYYY"));
+                        }
+                        dateTo.datepicker("setDate", date.toDate());
                     }
-                    $("#date-submit").data("date-to-valid", true);
-                    if ($("#date-submit").data("date-from-valid")) {
-                        $("#date-submit").css({"pointer-events": "auto"});
-                        $("#date-submit").css({"opacity": "1"});
-                    }
-                    $("#date-to-input, #date-to-input:hover").removeAttr("style");
-                    dateFrom.datepicker("option", "maxDate", date.toDate());
-                    dateTo.datepicker("setDate", date.toDate());
-                    self.dateToSelected = date.valueOf();
                 }
             });
             /** function sets selected date */
@@ -3957,12 +3899,6 @@ var AppRouter = Backbone.Router.extend({
                 if (!self.dateFromSelected && !self.dateToSelected) {
                     return false;
                 }
-                if (!self.isUpdated) {
-                    $("#date-picker").hide();
-                    $("#date-submit").css({"pointer-events": "auto"});
-                    $("#date-submit").css({"opacity": "1"});
-                    return false;
-                }
 
                 countlyCommon.setPeriod([
                     self.dateFromSelected - countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected),
@@ -3974,13 +3910,15 @@ var AppRouter = Backbone.Router.extend({
                 setSelectedDate();
                 $("#date-selector .calendar").removeClass("active");
                 $(".date-selector").removeClass("selected").removeClass("active");
-                resetCalender();
                 $("#date-picker").hide();
-                self.isUpdated = false;
             });
 
             $("#date-cancel").click(function() {
-                resetCalender();
+                $("#date-selector .calendar").removeClass("selected").removeClass("active");
+                $("#date-picker").hide();
+            });
+
+            $("#date-cancel").click(function() {
                 $("#date-selector .calendar").removeClass("selected").removeClass("active");
                 $("#date-picker").hide();
             });
