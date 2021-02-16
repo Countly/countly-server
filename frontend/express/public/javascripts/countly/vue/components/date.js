@@ -173,17 +173,23 @@
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
-                var parsed = tryParsingDate(newVal);
-                if (parsed && parsed.isValid()) {
-                    this.inBetweenInput.parsed[0] = parsed.toDate();
-                    this.handleUserInputUpdate();
+                var needsSync = newVal !== moment(this.inBetweenInput.parsed[0]).format("MM/DD/YYYY");
+                if (needsSync) {
+                    var parsed = tryParsingDate(newVal);
+                    if (parsed && parsed.isValid()) {
+                        this.inBetweenInput.parsed[0] = parsed.toDate();
+                        this.handleUserInputUpdate();
+                    }
                 }
             },
             'inBetweenInput.raw.textEnd': function(newVal) {
-                var parsed = tryParsingDate(newVal);
-                if (parsed && parsed.isValid()) {
-                    this.inBetweenInput.parsed[1] = parsed.toDate();
-                    this.handleUserInputUpdate();
+                var needsSync = newVal !== moment(this.inBetweenInput.parsed[1]).format("MM/DD/YYYY");
+                if (needsSync) {
+                    var parsed = tryParsingDate(newVal);
+                    if (parsed && parsed.isValid()) {
+                        this.inBetweenInput.parsed[1] = parsed.toDate();
+                        this.handleUserInputUpdate();
+                    }
                 }
             },
             'sinceInput.raw.text': function(newVal) {
@@ -226,6 +232,25 @@
                 this.maxDate = val.maxDate;
                 this.rangeState = val.rangeState;
                 this.rangeMode = "inBetween";
+
+                var startsAt, endsAt;
+
+                if (this.minDate < this.rangeState.endDate) {
+                    startsAt = this.minDate;
+                    endsAt = this.rangeState.endDate;
+                }
+                else {
+                    startsAt = this.rangeState.endDate;
+                    endsAt = this.minDate;
+                }
+
+                this.inBetweenInput = {
+                    raw: {
+                        textStart: moment(startsAt).format("MM/DD/YYYY"),
+                        textEnd: moment(endsAt).format("MM/DD/YYYY")
+                    },
+                    parsed: [startsAt, endsAt]
+                };
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
