@@ -1665,65 +1665,79 @@ common.getDiff = function(moment1, moment2, measure) {
 * @param {string} v2 - second version
 * @param {object} options - providing additional options
 * @param {string} options.delimiter - delimiter between version, subversion, etc, defaults :
-* @param {string} options.zeroExtend - changes the result if one version string has less parts than the other. In this case the shorter string will be padded with "zero" parts instead of being considered smaller.
-* @param {string} options.lexicographical - compares each part of the version strings lexicographically instead of naturally; this allows suffixes such as "b" or "dev" but will cause "1.10" to be considered smaller than "1.2".
 * @returns {number} 0 if they are both the same, 1 if first one is higher and -1 is second one is higher
 */
 common.versionCompare = function(v1, v2, options) {
-    var lexicographical = options && options.lexicographical,
-        zeroExtend = options && options.zeroExtend,
-        delimiter = options && options.delimiter || ":",
-        v1parts = v1.split(delimiter),
-        v2parts = v2.split(delimiter);
+    var delimiter = (options && options.delimiter) || ":";
 
     /**
-    * Check if provided version is correct
-    * @param {string} x - version to test
-    * @returns {boolean} if version is correct
-    **/
-    function isValidPart(x) {
-        return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
-    }
+    * Parses a version string into an object we can process more easily
+    * @param {string} s - version string
+    * @returns {object} - a version object
+    */
+    function parseVersion(s) {
+        var ob = {},
+            build_metadata_index = s.indexOf("+"),
+            prerelease_identifier_index = s.indexOf("-");
 
-    if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) {
-        return NaN;
-    }
-
-    if (zeroExtend) {
-        while (v1parts.length < v2parts.length) {
-            v1parts.push("0");
-        }
-        while (v2parts.length < v1parts.length) {
-            v2parts.push("0");
-        }
-    }
-
-    if (!lexicographical) {
-        v1parts = v1parts.map(Number);
-        v2parts = v2parts.map(Number);
-    }
-
-    for (var i = 0; i < v1parts.length; ++i) {
-        if (v2parts.length === i) {
-            return 1;
+        // if - appears after +, just use the whole thing as a build metadata identifier
+        if ((build_metadata_index !== -1) && (prerelease_identifier_index > build_metadata_index)) {
+            prerelease_identifier_index = -1;
         }
 
-        if (v1parts[i] === v2parts[i]) {
-            continue;
+        if (build_metadata_index !== -1) {
+            ob.build_metadata = s.slice(build_metadata_index + 1);
+            s = s.slice(0, build_metadata_index);
         }
-        else if (v1parts[i] > v2parts[i]) {
-            return 1;
+
+        if (prerelease_identifier_index !== -1) {
+            ob.prerelease_identifier = s.slice(prerelease_identifier_index + 1);
+            s = s.slice(0, prerelease_identifier_index);
         }
-        else {
-            return -1;
+
+        // if it's all decimal digits, parse as number; else, it's a string
+        ob.parts = s.split(delimiter).map(function(rawPart) {
+            return /^[0-9]+$/.test(rawPart) ? parseInt(rawPart) : rawPart;
+        });
+
+        return ob;
+    }
+
+    v1 = parseVersion(v1);
+    v2 = parseVersion(v2);
+
+    var minPartsLength = Math.min(v1.parts.length, v2.parts.length);
+    var compareParts = 0;
+
+    for (var i = 0; i < minPartsLength; i++) {
+        var p1 = v1.parts[i],
+            p2 = v2.parts[i];
+
+        // if both parts aren't numbers, we'll compare them as strings
+        if ((typeof p1 !== "number") || (typeof p1 !== typeof p2)) {
+            p1 = p1.toString();
+            p2 = p2.toString();
+        }
+
+        if (p1 !== p2) {
+            compareParts = (p1 < p2) ? -1 : 1;
+            break;
         }
     }
 
-    if (v1parts.length !== v2parts.length) {
-        return -1;
+    // if the compared parts are equal but...
+    if (compareParts === 0) {
+        // only one of them has a prerelease identifier, it is the smaller one
+        if ((v1.prerelease_identifier === undefined) !== (v2.prerelease_identifier === undefined)) {
+            return (v1.prerelease_identifier !== undefined) ? -1 : 1;
+        }
+        // one has less parts, it is the smaller one
+        else if (v1.parts.length !== v2.parts.length) {
+            return (v1.parts.length < v2.parts.length) ? -1 : 1;
+        }
     }
 
-    return 0;
+    return compareParts;
 };
 
 /**
