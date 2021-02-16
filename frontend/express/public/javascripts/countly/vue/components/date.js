@@ -116,16 +116,26 @@
                 });
             }
             return {
+                // Calendar state
+
+                minDate: moment().subtract(1, 'M').startOf("M").toDate(),
+                maxDate: globalMax.toDate(),
+
                 rangeState: {
                     endDate: null,
                     selecting: false,
                     row: null,
                     column: null
                 },
+
+                // Time constants
+
                 now: now,
-                minDate: moment().subtract(1, 'M').startOf("M").toDate(),
-                maxDate: globalMax.toDate(),
                 globalRange: globalRange,
+
+                // Shortcuts
+
+                selectedShortcut: null,
                 shortcuts: [
                     {label: this.i18n("common.yesterday"), value: "yesterday"},
                     {label: this.i18n("common.today"), value: "hour"},
@@ -135,8 +145,10 @@
                     {label: moment().format("MMMM, YYYY"), value: "day"},
                     {label: moment().year(), value: "month"},
                 ],
+
+                // User input
+
                 rangeMode: 'inBetween',
-                selectedShortcut: null,
                 inBetweenInput: {
                     raw: {
                         textStart: '',
@@ -204,8 +216,6 @@
                 this.onPick && this.onPick(val);
                 this.maxDate = maxDate;
                 this.minDate = minDate;
-
-                // workaround for https://github.com/ElemeFE/element/issues/7539, should remove this block when we don't have to care about Chromium 55 - 57
                 setTimeout(function() {
                     this.maxDate = maxDate;
                     this.minDate = minDate;
@@ -215,6 +225,7 @@
                 this.minDate = val.minDate;
                 this.maxDate = val.maxDate;
                 this.rangeState = val.rangeState;
+                this.rangeMode = "inBetween";
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
