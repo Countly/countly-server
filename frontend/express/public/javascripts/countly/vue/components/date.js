@@ -15,10 +15,28 @@
         return moment(rawString, availableDateFormats, true);
     }
 
+    var dateTableComponent = {
+        components: {
+            'el-date-table': ELEMENT.DateTable
+        },
+        data: function() {
+            return {
+                visible: false
+            };
+        },
+        mixins: [ _mixins.inViewport ],
+        watch: {
+            'inViewport.now': function(visible) {
+                this.visible = visible;
+            }
+        },
+        template: '<div><div></div><el-date-table ref="elDateTable" v-if="visible" v-bind="$attrs" v-on="$listeners"></el-date-table></div>',
+    };
+
     Vue.component("cly-daterangepicker", countlyBaseComponent.extend({
         mixins: [_mixins.i18n],
         components: {
-            'date-table': ELEMENT.DateTable
+            'date-table': dateTableComponent
         },
         template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': !selectedShortcut}">\
                     <div class="cly-vue-daterp__shortcuts-col">\
@@ -97,9 +115,8 @@
                     </div>\
                 </div>',
         data: function() {
-            var maxYearsBack = 1,
-                globalRange = [],
-                globalMin = moment().subtract(maxYearsBack, 'y').startOf("M"),
+            var globalRange = [],
+                globalMin = moment([2000, 0, 1]),
                 globalMax = moment(),
                 cursor = moment(globalMin.toDate()),
                 now = moment().toDate();

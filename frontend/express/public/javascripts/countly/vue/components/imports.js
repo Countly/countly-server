@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, VeeValidate */
+/* global Vue, ELEMENT, VeeValidate, inViewport */
 
 (function() {
 
@@ -26,5 +26,6 @@
         params: ['length']
     });
 
+    countlyVue.mixins.inViewport = inViewportMixin;
 
 }(window.countlyVue = window.countlyVue || {}));
