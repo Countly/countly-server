@@ -1,6 +1,6 @@
-/* global Vue, ELEMENT, VeeValidate, inViewport */
+/* global Vue, ELEMENT, VeeValidate, inViewportMixin */
 
-(function() {
+(function(countlyVue) {
 
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
     window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';

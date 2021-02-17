@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, moment */
+/* global Vue, ELEMENT, moment, _ */
 
 (function(countlyVue) {
 
@@ -61,7 +61,7 @@
                     </div>\
                     <div class="cly-vue-daterp__calendars-col" v-if="!selectedShortcut">\
                         <div class="cly-vue-daterp__input-methods">\
-                            <el-tabs v-model="rangeMode" @tab-click="handleUserInputUpdate">\
+                            <el-tabs v-model="rangeMode" @tab-click="handleUserInputUpdate()">\
                                 <el-tab-pane name="inBetween">\
                                     <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                     <div class="cly-vue-daterp__input-wrapper">\
@@ -202,7 +202,7 @@
                     var parsed = tryParsingDate(newVal);
                     if (parsed && parsed.isValid()) {
                         this.inBetweenInput.parsed[0] = parsed.toDate();
-                        this.handleUserInputUpdate();
+                        this.handleUserInputUpdate(this.inBetweenInput.parsed[0]);
                     }
                 }
             },
@@ -212,7 +212,7 @@
                     var parsed = tryParsingDate(newVal);
                     if (parsed && parsed.isValid()) {
                         this.inBetweenInput.parsed[1] = parsed.toDate();
-                        this.handleUserInputUpdate();
+                        this.handleUserInputUpdate(this.inBetweenInput.parsed[1]);
                     }
                 }
             },
@@ -220,7 +220,7 @@
                 var parsed = tryParsingDate(newVal);
                 if (parsed && parsed.isValid()) {
                     this.sinceInput.parsed[0] = parsed.toDate();
-                    this.handleUserInputUpdate();
+                    this.handleUserInputUpdate(this.sinceInput.parsed[0]);
                 }
             },
             'inTheLastInput.raw': {
@@ -229,8 +229,7 @@
                     var parsed = moment().subtract(newVal.text, newVal.level);
                     if (parsed && parsed.isValid()) {
                         this.inTheLastInput.parsed[0] = parsed.toDate();
-                        this.scrollTo(this.inTheLastInput.parsed[0]);
-                        this.handleUserInputUpdate();
+                        this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
                     }
                 }
             }
@@ -284,7 +283,7 @@
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
             },
-            handleUserInputUpdate: function() {
+            handleUserInputUpdate: function(scrollToDate) {
                 var inputObj = null;
 
                 switch (this.rangeMode) {
@@ -304,6 +303,13 @@
                 if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] < inputObj[1]) {
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
+
+                    if (scrollToDate) {
+                        this.scrollTo(scrollToDate);
+                    }
+                    else {
+                        this.scrollTo(inputObj[0]);
+                    }
                 }
             },
             doDiscard: function() {
