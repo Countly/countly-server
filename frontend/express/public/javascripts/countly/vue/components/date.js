@@ -34,8 +34,8 @@
                 this.visible = visible;
             }
         },
-        template: '<div class="cly-vue-daterp__date-table-wrapper">\
-                        <span class="text-medium" :class="[\'anchor-\' + dateMeta.key]">{{ dateMeta.title }}</span>\
+        template: '<div class="cly-vue-daterp__date-table-wrapper" :class="[\'anchor-\' + dateMeta.key]">\
+                        <span class="text-medium">{{ dateMeta.title }}</span>\
                         <el-date-table ref="elDateTable" :range-state="rangeState" v-if="visible" v-bind="$attrs" v-on="$listeners">\
                         </el-date-table>\
                     </div>',
@@ -93,29 +93,25 @@
                             </div>\
                         </div>\
                         <div class="cly-vue-daterp__calendars-wrapper">\
-                            <el-scrollbar\
-                                wrap-class="cly-vue-daterp__table-wrap"\
-                                view-class="cly-vue-daterp__table-view">\
                                 <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
-                                    <div class="cly-vue-daterp__table-view">\
-                                        <div style="height:12px"></div>\
-                                        <date-table\
-                                            v-for="item in globalRange"\
-                                            :key="item.key"\
-                                            :date-meta="item"\
-                                            in-viewport-root-margin="10% 0%"\
-                                            selection-mode="range"\
-                                            :date="item.date"\
-                                            :min-date="minDate"\
-                                            :max-date="maxDate"\
-                                            :range-state="rangeState"\
-                                            @pick="handleRangePick"\
-                                            @changerange="handleChangeRange">\
-                                        </date-table>\
-                                        <div style="height:1px"></div>\
-                                    </div>\
+                                    <vue-scroll ref="vs" :ops="scrollOps">\
+                                        <div class="cly-vue-daterp__table-view">\
+                                            <date-table\
+                                                v-for="item in globalRange"\
+                                                :key="item.key"\
+                                                :date-meta="item"\
+                                                in-viewport-root-margin="10% 0%"\
+                                                selection-mode="range"\
+                                                :date="item.date"\
+                                                :min-date="minDate"\
+                                                :max-date="maxDate"\
+                                                :range-state="rangeState"\
+                                                @pick="handleRangePick"\
+                                                @changerange="handleChangeRange">\
+                                            </date-table>\
+                                        </div>\
+                                    </vue-scroll>\
                                 </div>\
-                            </el-scrollbar>\
                         </div>\
                         <div class="cly-vue-daterp__commit-section">\
                             <el-button @click="doDiscard" size="small">{{ i18n("common.cancel") }}</el-button>\
@@ -141,7 +137,7 @@
             return {
                 // Calendar state
 
-                minDate: moment().subtract(1, 'M').startOf("M").toDate(),
+                minDate: moment().subtract(1, 'month').startOf("month").toDate(),
                 maxDate: globalMax.toDate(),
 
                 rangeState: {
@@ -149,6 +145,11 @@
                     selecting: false,
                     row: null,
                     column: null
+                },
+
+                scrollOps: {
+                    scrollPanel: { scrollingX: false},
+                    bar: {minSize: 0.2, background: 'rgba(129,134,141,.3)'}
                 },
 
                 // Time constants
@@ -228,12 +229,17 @@
                     var parsed = moment().subtract(newVal.text, newVal.level);
                     if (parsed && parsed.isValid()) {
                         this.inTheLastInput.parsed[0] = parsed.toDate();
+                        this.scrollTo(this.inTheLastInput.parsed[0]);
                         this.handleUserInputUpdate();
                     }
                 }
             }
         },
         methods: {
+            scrollTo: function(date) {
+                var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
+                this.$refs.vs.scrollIntoView(anchorClass);
+            },
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
                 var defaultTime = this.defaultTime || [];
