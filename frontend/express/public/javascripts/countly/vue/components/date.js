@@ -118,8 +118,8 @@
                             </div>\
                         </div>\
                         <div class="cly-vue-daterp__commit-section">\
-                            <el-button @click="doDiscard" size="small">{{ i18n("common.cancel") }}</el-button>\
-                            <el-button @click="doCommit" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>\
+                            <el-button @click="handleDiscardClick" size="small">{{ i18n("common.cancel") }}</el-button>\
+                            <el-button @click="handleConfirmClick" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>\
                         </div>\
                     </div>\
                 </div>',
@@ -141,7 +141,7 @@
             return {
                 // Calendar state
 
-                minDate: moment().subtract(1, 'month').startOf("month").toDate(),
+                minDate: moment().subtract(1, 'month').toDate(),
                 maxDate: globalMax.toDate(),
 
                 rangeState: {
@@ -251,67 +251,74 @@
         },
         methods: {
             loadValue: function(value) {
-                var meta = countlyCommon.convertToTimePeriodObj(value),
-                    now = moment().toDate(),
-                    rangeMode = 'inBetween',
-                    minDate = moment().subtract(1, 'month').startOf("month").toDate(),
-                    maxDate = now,
-                    sinceInput = {
-                        raw: {
-                            text: moment(minDate).format("MM/DD/YYYY"),
-                        },
-                        parsed: [minDate, maxDate]
-                    },
-                    inTheLastInput = {
-                        raw: {
-                            text: '1',
-                            level: 'months'
-                        },
-                        parsed: [minDate, maxDate]
-                    };
+                var isShortcut = this.shortcuts.some(function(shortcut) {
+                    return shortcut.value === value;
+                });
 
-                if (meta.type === "range") {
-                    rangeMode = 'inBetween';
-                    minDate = new Date(meta.value[0] * 1000);
-                    maxDate = new Date(meta.value[1] * 1000);
+                if (isShortcut) {
+                    this.selectedShortcut = value;
                 }
-                else if (meta.type === "since") {
-                    rangeMode = 'since';
-                    minDate = new Date(meta.value.since * 1000);
-                    sinceInput = {
-                        raw: {
-                            text: moment(minDate).format("MM/DD/YYYY"),
+                else {
+                    var meta = countlyCommon.convertToTimePeriodObj(value),
+                        now = moment().toDate(),
+                        rangeMode = 'inBetween',
+                        minDate = moment().subtract(1, 'month').toDate(),
+                        maxDate = now,
+                        sinceInput = {
+                            raw: {
+                                text: moment(minDate).format("MM/DD/YYYY"),
+                            },
+                            parsed: [minDate, maxDate]
                         },
-                        parsed: [minDate, maxDate]
-                    };
-                }
-                else if (meta.type === "last-n") {
-                    rangeMode = 'inTheLast';
-                    minDate = moment().subtract(meta.value, meta.level).toDate();
-                    inTheLastInput = {
-                        raw: {
-                            text: meta.value + '',
-                            level: meta.level
-                        },
-                        parsed: [minDate, maxDate]
-                    };
-                    // TODO: check shortcuts
-                }
+                        inTheLastInput = {
+                            raw: {
+                                text: '1',
+                                level: 'months'
+                            },
+                            parsed: [minDate, maxDate]
+                        };
 
-                this.now = now;
-                this.rangeMode = rangeMode;
-                this.minDate = minDate;
-                this.maxDate = maxDate;
-                this.inBetweenInput = {
-                    raw: {
-                        textStart: moment(minDate).format("MM/DD/YYYY"),
-                        textEnd: moment(maxDate).format("MM/DD/YYYY")
-                    },
-                    parsed: [minDate, maxDate]
-                };
-                this.sinceInput = sinceInput;
-                this.inTheLastInput = inTheLastInput;
-                //var selectedShortcut = null;
+                    if (meta.type === "range") {
+                        rangeMode = 'inBetween';
+                        minDate = new Date(meta.value[0] * 1000);
+                        maxDate = new Date(meta.value[1] * 1000);
+                    }
+                    else if (meta.type === "since") {
+                        rangeMode = 'since';
+                        minDate = new Date(meta.value.since * 1000);
+                        sinceInput = {
+                            raw: {
+                                text: moment(minDate).format("MM/DD/YYYY"),
+                            },
+                            parsed: [minDate, maxDate]
+                        };
+                    }
+                    else if (meta.type === "last-n") {
+                        rangeMode = 'inTheLast';
+                        minDate = moment().subtract(meta.value, meta.level).toDate();
+                        inTheLastInput = {
+                            raw: {
+                                text: meta.value + '',
+                                level: meta.level
+                            },
+                            parsed: [minDate, maxDate]
+                        };
+                    }
+
+                    this.now = now;
+                    this.rangeMode = rangeMode;
+                    this.minDate = minDate;
+                    this.maxDate = maxDate;
+                    this.inBetweenInput = {
+                        raw: {
+                            textStart: moment(minDate).format("MM/DD/YYYY"),
+                            textEnd: moment(maxDate).format("MM/DD/YYYY")
+                        },
+                        parsed: [minDate, maxDate]
+                    };
+                    this.sinceInput = sinceInput;
+                    this.inTheLastInput = inTheLastInput;
+                }
 
             },
             scrollTo: function(date) {
@@ -363,6 +370,9 @@
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
+                if (value) {
+                    this.doCommit(value);
+                }
             },
             handleUserInputUpdate: function(scrollToDate) {
                 var inputObj = null;
@@ -420,9 +430,26 @@
                 this.abortPicking();
                 this.handleUserInputUpdate();
             },
+            handleConfirmClick: function() {
+                if (this.rangeMode === 'inBetween') {
+                    this.doCommit([Math.floor(this.minDate.valueOf() / 1000), Math.floor(this.maxDate.valueOf() / 1000)]);
+                }
+                else if (this.rangeMode === 'since') {
+                    this.doCommit({ since: Math.floor(this.minDate.valueOf() / 1000) });
+                }
+                else if (this.rangeMode === 'inTheLast') {
+                    this.doCommit(this.inTheLastInput.raw.text + this.inTheLastInput.raw.level);
+                }
+            },
+            handleDiscardClick: function() {
+                // reload value
+            },
             doDiscard: function() {
             },
-            doCommit: function() {
+            doCommit: function(value) {
+                if (this.value) {
+                    this.$emit("input", value);
+                }
             }
         }
     }));
