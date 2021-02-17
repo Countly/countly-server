@@ -62,7 +62,7 @@
                     </div>\
                     <div class="cly-vue-daterp__calendars-col" v-if="!selectedShortcut">\
                         <div class="cly-vue-daterp__input-methods">\
-                            <el-tabs v-model="rangeMode" @tab-click="handleUserInputUpdate()">\
+                            <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
                                 <el-tab-pane name="inBetween">\
                                     <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                     <div class="cly-vue-daterp__input-wrapper">\
@@ -146,6 +146,11 @@
                     selecting: false,
                     row: null,
                     column: null
+                },
+
+                rangeBackup: {
+                    minDate: null,
+                    maxDate: null
                 },
 
                 scrollOps: {
@@ -242,6 +247,12 @@
             },
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
+                if (!this.rangeState.selecting) {
+                    this.rangeBackup = {
+                        minDate: this.minDate,
+                        maxDate: this.maxDate
+                    }
+                }
                 var defaultTime = this.defaultTime || [];
                 var minDate = ELEMENT.DateUtil.modifyWithTimeString(val.minDate, defaultTime[0]);
                 var maxDate = ELEMENT.DateUtil.modifyWithTimeString(val.maxDate, defaultTime[1]);
@@ -252,10 +263,6 @@
                 this.onPick && this.onPick(val);
                 this.maxDate = maxDate;
                 this.minDate = minDate;
-                setTimeout(function() {
-                    this.maxDate = maxDate;
-                    this.minDate = minDate;
-                }, 10);
             },
             handleChangeRange: function(val) {
                 this.minDate = val.minDate;
@@ -312,6 +319,33 @@
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
                 }
+            },
+            abortPicking: function() {
+                if (this.rangeState.selecting) {
+                    this.rangeState = {
+                        endDate: null,
+                        selecting: false,
+                        row: null,
+                        column: null
+                    }
+                    this.minDate = this.rangeBackup.minDate;
+                    this.maxDate = this.rangeBackup.maxDate;
+                    this.rangeBackup = {
+                        minDate: null,
+                        maxDate: null
+                    }
+                    this.inBetweenInput = {
+                        raw: {
+                            textStart: moment(this.minDate).format("MM/DD/YYYY"),
+                            textEnd: moment(this.maxDate).format("MM/DD/YYYY")
+                        },
+                        parsed: [this.minDate, this.maxDate]
+                    };
+                }
+            },
+            handleTabChange: function() {
+                this.abortPicking();
+                this.handleUserInputUpdate();
             },
             doDiscard: function() {
 
