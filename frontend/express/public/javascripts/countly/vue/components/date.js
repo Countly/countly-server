@@ -16,6 +16,9 @@
     }
 
     var dateTableComponent = {
+        props: {
+            rangeState: Object
+        },
         components: {
             'el-date-table': ELEMENT.DateTable
         },
@@ -30,7 +33,7 @@
                 this.visible = visible;
             }
         },
-        template: '<div><div></div><el-date-table ref="elDateTable" v-if="visible" v-bind="$attrs" v-on="$listeners"></el-date-table></div>',
+        template: '<div><div></div><el-date-table ref="elDateTable" :range-state="rangeState" v-if="visible" v-bind="$attrs" v-on="$listeners"></el-date-table></div>',
     };
 
     Vue.component("cly-daterangepicker", countlyBaseComponent.extend({
@@ -94,6 +97,7 @@
                                         <div class="cly-vue-daterp__date-table-wrapper" :key="item.key" v-for="item in globalRange">\
                                             <span class="text-medium">{{ item.title }}</span>\
                                             <date-table \
+                                                in-viewport-root-margin="10% 0%"\
                                                 selection-mode="range"\
                                                 :date="item.date"\
                                                 :min-date="minDate"\
@@ -116,7 +120,7 @@
                 </div>',
         data: function() {
             var globalRange = [],
-                globalMin = moment([2000, 0, 1]),
+                globalMin = moment([2010, 0, 1]),
                 globalMax = moment(),
                 cursor = moment(globalMin.toDate()),
                 now = moment().toDate();
