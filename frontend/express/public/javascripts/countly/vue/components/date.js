@@ -38,6 +38,7 @@
                         <span class="text-medium">{{ dateMeta.title }}</span>\
                         <el-date-table ref="elDateTable" :range-state="rangeState" v-if="visible" v-bind="$attrs" v-on="$listeners">\
                         </el-date-table>\
+                        <div v-if="!visible" style="height:180px"></div>\
                     </div>',
     };
 
@@ -235,10 +236,10 @@
             }
         },
         methods: {
-            scrollTo: _.throttle(function(date) {
+            scrollTo: function(date) {
                 var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
                 this.$refs.vs.scrollIntoView(anchorClass);
-            }, 200),
+            },
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
                 var defaultTime = this.defaultTime || [];
@@ -300,16 +301,16 @@
                     return;
                 }
 
+                if (scrollToDate) {
+                    this.scrollTo(scrollToDate);
+                }
+                else if (inputObj[0]) {
+                    this.scrollTo(inputObj[0]);
+                }
+
                 if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] < inputObj[1]) {
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
-
-                    if (scrollToDate) {
-                        this.scrollTo(scrollToDate);
-                    }
-                    else {
-                        this.scrollTo(inputObj[0]);
-                    }
                 }
             },
             doDiscard: function() {
