@@ -67,7 +67,7 @@
                                     <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                     <div class="cly-vue-daterp__input-wrapper">\
                                         <el-input size="small" v-model="inBetweenInput.raw.textStart"></el-input>\
-                                        <span class="text-medium">and</span>\
+                                        <span class="text-medium cly-vue-daterp__in-between-conj">and</span>\
                                         <el-input size="small" v-model="inBetweenInput.raw.textEnd"></el-input>\
                                     </div>\
                                 </el-tab-pane>\
@@ -94,25 +94,25 @@
                             </div>\
                         </div>\
                         <div class="cly-vue-daterp__calendars-wrapper">\
-                                <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
-                                    <vue-scroll ref="vs" :ops="scrollOps">\
-                                        <div class="cly-vue-daterp__table-view">\
-                                            <date-table\
-                                                v-for="item in globalRange"\
-                                                :key="item.key"\
-                                                :date-meta="item"\
-                                                in-viewport-root-margin="10% 0%"\
-                                                selection-mode="range"\
-                                                :date="item.date"\
-                                                :min-date="minDate"\
-                                                :max-date="maxDate"\
-                                                :range-state="rangeState"\
-                                                @pick="handleRangePick"\
-                                                @changerange="handleChangeRange">\
-                                            </date-table>\
-                                        </div>\
-                                    </vue-scroll>\
-                                </div>\
+                            <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
+                                <vue-scroll ref="vs" :ops="scrollOps">\
+                                    <div class="cly-vue-daterp__table-view">\
+                                        <date-table\
+                                            v-for="item in globalRange"\
+                                            :key="item.key"\
+                                            :date-meta="item"\
+                                            in-viewport-root-margin="10% 0%"\
+                                            selection-mode="range"\
+                                            :date="item.date"\
+                                            :min-date="minDate"\
+                                            :max-date="maxDate"\
+                                            :range-state="rangeState"\
+                                            @pick="handleRangePick"\
+                                            @changerange="handleChangeRange">\
+                                        </date-table>\
+                                    </div>\
+                                </vue-scroll>\
+                            </div>\
                         </div>\
                         <div class="cly-vue-daterp__commit-section">\
                             <el-button @click="doDiscard" size="small">{{ i18n("common.cancel") }}</el-button>\

@@ -549,9 +549,10 @@ body {
             display: flex;
             margin: 0;
             padding: 16px;
-            span {
-                padding: 11px 11px 0 11px;
-            }
+        }
+        
+        &__in-between-conj {
+            padding: 11px 11px 0 11px;
         }
 
         &__commit-section {
