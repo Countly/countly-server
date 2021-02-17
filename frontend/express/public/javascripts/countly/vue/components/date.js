@@ -17,6 +17,7 @@
 
     var dateTableComponent = {
         props: {
+            dateMeta: Object,
             rangeState: Object
         },
         components: {
@@ -33,7 +34,11 @@
                 this.visible = visible;
             }
         },
-        template: '<div><div></div><el-date-table ref="elDateTable" :range-state="rangeState" v-if="visible" v-bind="$attrs" v-on="$listeners"></el-date-table></div>',
+        template: '<div class="cly-vue-daterp__date-table-wrapper">\
+                        <span class="text-medium" :class="[\'anchor-\' + dateMeta.key]">{{ dateMeta.title }}</span>\
+                        <el-date-table ref="elDateTable" :range-state="rangeState" v-if="visible" v-bind="$attrs" v-on="$listeners">\
+                        </el-date-table>\
+                    </div>',
     };
 
     Vue.component("cly-daterangepicker", countlyBaseComponent.extend({
@@ -94,19 +99,19 @@
                                 <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
                                     <div class="cly-vue-daterp__table-view">\
                                         <div style="height:12px"></div>\
-                                        <div class="cly-vue-daterp__date-table-wrapper" :key="item.key" v-for="item in globalRange">\
-                                            <span class="text-medium">{{ item.title }}</span>\
-                                            <date-table \
-                                                in-viewport-root-margin="10% 0%"\
-                                                selection-mode="range"\
-                                                :date="item.date"\
-                                                :min-date="minDate"\
-                                                :max-date="maxDate"\
-                                                :range-state="rangeState"\
-                                                @pick="handleRangePick"\
-                                                @changerange="handleChangeRange">\
-                                            </date-table>\
-                                        </div>\
+                                        <date-table\
+                                            v-for="item in globalRange"\
+                                            :key="item.key"\
+                                            :date-meta="item"\
+                                            in-viewport-root-margin="10% 0%"\
+                                            selection-mode="range"\
+                                            :date="item.date"\
+                                            :min-date="minDate"\
+                                            :max-date="maxDate"\
+                                            :range-state="rangeState"\
+                                            @pick="handleRangePick"\
+                                            @changerange="handleChangeRange">\
+                                        </date-table>\
                                         <div style="height:1px"></div>\
                                     </div>\
                                 </div>\
