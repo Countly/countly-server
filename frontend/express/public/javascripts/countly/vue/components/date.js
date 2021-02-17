@@ -236,10 +236,10 @@
             }
         },
         methods: {
-            scrollTo: function(date) {
+            scrollTo: _.throttle(function(date) {
                 var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
                 this.$refs.vs.scrollIntoView(anchorClass);
-            },
+            }, 200),
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
                 var defaultTime = this.defaultTime || [];
