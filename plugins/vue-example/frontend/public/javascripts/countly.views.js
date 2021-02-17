@@ -301,6 +301,11 @@
 
     var DateView = countlyVue.views.BaseView.extend({
         template: '#vue-example-date-template',
+        data: function() {
+            return {
+                selectedDate: '10weeks'
+            }
+        }
     });
 
     var MainView = countlyVue.views.BaseView.extend({

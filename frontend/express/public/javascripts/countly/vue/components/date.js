@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, moment, _ */
+/* global Vue, ELEMENT, moment, countlyCommon */
 
 (function(countlyVue) {
 
@@ -46,6 +46,9 @@
         mixins: [_mixins.i18n],
         components: {
             'date-table': dateTableComponent
+        },
+        props: {
+            value: [Object, String, Array]
         },
         template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': !selectedShortcut}">\
                     <div class="cly-vue-daterp__shortcuts-col">\
@@ -238,9 +241,79 @@
                         this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
                     }
                 }
+            },
+            'value': {
+                immediate: true,
+                handler: function(newVal) {
+                    this.loadValue(newVal);
+                }
             }
         },
         methods: {
+            loadValue: function(value) {
+                var meta = countlyCommon.convertToTimePeriodObj(value),
+                    now = moment().toDate(),
+                    rangeMode = 'inBetween',
+                    minDate = moment().subtract(1, 'month').startOf("month").toDate(),
+                    maxDate = now,
+                    sinceInput = {
+                        raw: {
+                            text: moment(minDate).format("MM/DD/YYYY"),
+                        },
+                        parsed: [minDate, maxDate]
+                    },
+                    inTheLastInput = {
+                        raw: {
+                            text: '1',
+                            level: 'months'
+                        },
+                        parsed: [minDate, maxDate]
+                    };
+
+                if (meta.type === "range") {
+                    rangeMode = 'inBetween';
+                    minDate = new Date(meta.value[0] * 1000);
+                    maxDate = new Date(meta.value[1] * 1000);
+                }
+                else if (meta.type === "since") {
+                    rangeMode = 'since';
+                    minDate = new Date(meta.value.since * 1000);
+                    sinceInput = {
+                        raw: {
+                            text: moment(minDate).format("MM/DD/YYYY"),
+                        },
+                        parsed: [minDate, maxDate]
+                    };
+                }
+                else if (meta.type === "last-n") {
+                    rangeMode = 'inTheLast';
+                    minDate = moment().subtract(meta.value, meta.level).toDate();
+                    inTheLastInput = {
+                        raw: {
+                            text: meta.value + '',
+                            level: meta.level
+                        },
+                        parsed: [minDate, maxDate]
+                    };
+                    // TODO: check shortcuts
+                }
+
+                this.now = now;
+                this.rangeMode = rangeMode;
+                this.minDate = minDate;
+                this.maxDate = maxDate;
+                this.inBetweenInput = {
+                    raw: {
+                        textStart: moment(minDate).format("MM/DD/YYYY"),
+                        textEnd: moment(maxDate).format("MM/DD/YYYY")
+                    },
+                    parsed: [minDate, maxDate]
+                };
+                this.sinceInput = sinceInput;
+                this.inTheLastInput = inTheLastInput;
+                //var selectedShortcut = null;
+
+            },
             scrollTo: function(date) {
                 var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
                 this.$refs.vs.scrollIntoView(anchorClass);
@@ -251,7 +324,7 @@
                     this.rangeBackup = {
                         minDate: this.minDate,
                         maxDate: this.maxDate
-                    }
+                    };
                 }
                 var defaultTime = this.defaultTime || [];
                 var minDate = ELEMENT.DateUtil.modifyWithTimeString(val.minDate, defaultTime[0]);
@@ -327,13 +400,13 @@
                         selecting: false,
                         row: null,
                         column: null
-                    }
+                    };
                     this.minDate = this.rangeBackup.minDate;
                     this.maxDate = this.rangeBackup.maxDate;
                     this.rangeBackup = {
                         minDate: null,
                         maxDate: null
-                    }
+                    };
                     this.inBetweenInput = {
                         raw: {
                             textStart: moment(this.minDate).format("MM/DD/YYYY"),
@@ -348,10 +421,8 @@
                 this.handleUserInputUpdate();
             },
             doDiscard: function() {
-
             },
             doCommit: function() {
-
             }
         }
     }));
