@@ -6,15 +6,6 @@
         _mixins = countlyVue.mixins;
 
     /**
-     * Attempts to parse the provided string using one of the available date formats.
-     * @param {String} rawString String value to be parsed
-     * @returns {Object} Moment object 
-     */
-    function tryParsingDate(rawString) {
-        return moment(rawString);
-    }
-
-    /**
      * Provides picker with the default input state
      * @param {String} formatter Formatter string e.g. MM/DD/YYYY
      * @returns {Object} State object, can be merged to component data  
@@ -152,41 +143,19 @@
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
-                var needsSync = newVal !== moment(this.inBetweenInput.parsed[0]).format(this.formatter);
-                if (needsSync) {
-                    var parsed = tryParsingDate(newVal);
-                    if (parsed && parsed.isValid()) {
-                        this.inBetweenInput.parsed[0] = parsed.toDate();
-                        this.handleUserInputUpdate(this.inBetweenInput.parsed[0]);
-                    }
-                }
+                this.tryParsing(newVal, this.inBetweenInput.parsed, 0);
             },
             'inBetweenInput.raw.textEnd': function(newVal) {
-                var needsSync = newVal !== moment(this.inBetweenInput.parsed[1]).format(this.formatter);
-                if (needsSync) {
-                    var parsed = tryParsingDate(newVal);
-                    if (parsed && parsed.isValid()) {
-                        this.inBetweenInput.parsed[1] = parsed.toDate();
-                        this.handleUserInputUpdate(this.inBetweenInput.parsed[1]);
-                    }
-                }
+                this.tryParsing(newVal, this.inBetweenInput.parsed, 1);
             },
             'sinceInput.raw.text': function(newVal) {
-                var needsSync = newVal !== moment(this.sinceInput.parsed[0]).format(this.formatter);
-                if (needsSync) {
-                    var parsed = tryParsingDate(newVal);
-                    if (parsed && parsed.isValid()) {
-                        this.sinceInput.parsed[0] = parsed.toDate();
-                        this.handleUserInputUpdate(this.sinceInput.parsed[0]);
-                    }
-                }
+                this.tryParsing(newVal, this.sinceInput.parsed, 0);
             },
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
-                    var needsSync = newVal !== moment(this.inTheLastInput.parsed[0]).format(this.formatter);
-                    if (needsSync) {
-                        var parsed = moment().subtract(newVal.text, newVal.level);
+                    var parsed = moment().subtract(newVal.text, newVal.level).startOf("day");
+                    if (!parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
                         if (parsed && parsed.isValid()) {
                             this.inTheLastInput.parsed[0] = parsed.toDate();
                             this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
@@ -202,6 +171,16 @@
             }
         },
         methods: {
+            tryParsing: function (newVal, target, index) {
+                var needsSync = newVal !== moment(target[index]).format(this.formatter);
+                if (needsSync) {
+                    var parsed = moment(newVal);
+                    if (parsed && parsed.isValid()) {
+                        target[index] = parsed.toDate();
+                        this.handleUserInputUpdate(target[index]);
+                    }
+                }
+            },
             loadValue: function(value) {
                 var changes = this.valueToInputState(value),
                     self = this;
@@ -257,7 +236,7 @@
                 }
                 else if (meta.type === "last-n") {
                     state.rangeMode = 'inTheLast';
-                    state.minDate = moment().subtract(meta.value, meta.level).toDate();
+                    state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
                     state.maxDate = now;
                     state.inTheLastInput = {
                         raw: {
