@@ -311,13 +311,7 @@
                     endsAt = this.minDate;
                 }
 
-                this.inBetweenInput = {
-                    raw: {
-                        textStart: moment(startsAt).format(this.formatter),
-                        textEnd: moment(endsAt).format(this.formatter)
-                    },
-                    parsed: [startsAt, endsAt]
-                };
+                this.setCurrentInBetween(startsAt, endsAt);
             },
             handleCustomRangeClick: function() {
                 this.customRangeSelection = true;
@@ -362,6 +356,15 @@
                     this.maxDate = inputObj[1];
                 }
             },
+            setCurrentInBetween: function(minDate, maxDate) {
+                this.inBetweenInput = {
+                    raw: {
+                        textStart: moment(minDate).format(this.formatter),
+                        textEnd: moment(maxDate).format(this.formatter)
+                    },
+                    parsed: [minDate, maxDate]
+                };
+            },
             abortPicking: function() {
                 if (this.rangeState.selecting) {
                     this.rangeState = {
@@ -376,13 +379,7 @@
                         minDate: null,
                         maxDate: null
                     };
-                    this.inBetweenInput = {
-                        raw: {
-                            textStart: moment(this.minDate).format(this.formatter),
-                            textEnd: moment(this.maxDate).format(this.formatter)
-                        },
-                        parsed: [this.minDate, this.maxDate]
-                    };
+                    this.setCurrentInBetween(this.minDate, this.maxDate);
                 }
             },
             handleTabChange: function() {
