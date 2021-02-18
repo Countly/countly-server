@@ -225,19 +225,25 @@
                 }
             },
             'sinceInput.raw.text': function(newVal) {
-                var parsed = tryParsingDate(newVal);
-                if (parsed && parsed.isValid()) {
-                    this.sinceInput.parsed[0] = parsed.toDate();
-                    this.handleUserInputUpdate(this.sinceInput.parsed[0]);
+                var needsSync = newVal !== moment(this.sinceInput.parsed[0]).format("MM/DD/YYYY");
+                if (needsSync) {
+                    var parsed = tryParsingDate(newVal);
+                    if (parsed && parsed.isValid()) {
+                        this.sinceInput.parsed[0] = parsed.toDate();
+                        this.handleUserInputUpdate(this.sinceInput.parsed[0]);
+                    }
                 }
             },
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
-                    var parsed = moment().subtract(newVal.text, newVal.level);
-                    if (parsed && parsed.isValid()) {
-                        this.inTheLastInput.parsed[0] = parsed.toDate();
-                        this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
+                    var needsSync = newVal !== moment(this.inTheLastInput.parsed[0]).format("MM/DD/YYYY");
+                    if (needsSync) {
+                        var parsed = moment().subtract(newVal.text, newVal.level);
+                        if (parsed && parsed.isValid()) {
+                            this.inTheLastInput.parsed[0] = parsed.toDate();
+                            this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
+                        }
                     }
                 }
             },
