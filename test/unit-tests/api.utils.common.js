@@ -23,7 +23,7 @@ describe("Common API utility functions", function() {
             testCompare("9:74AGT", "9:80AGT", -1);
             testCompare("10:14AGT", "9:80AGT", 1);
 
-            done()
+            done();
         });
     });
 });
