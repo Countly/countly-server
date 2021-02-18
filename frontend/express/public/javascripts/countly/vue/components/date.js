@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, moment, countlyCommon */
+/* global Vue, ELEMENT, moment, countlyCommon, _ */
 
 (function(countlyVue) {
 
@@ -13,6 +13,108 @@
      */
     function tryParsingDate(rawString) {
         return moment(rawString, availableDateFormats, true);
+    }
+
+    /**
+     * Converts common time objects to internal state 
+     * @param {Object} value Common time object 
+     * @param {Array} shortcuts Available shortcuts to by-pass range conversions 
+     * @returns {Object} State object, can be merged to component data  
+     */
+    function valueToInputState(value, shortcuts) {
+
+        var isShortcut = shortcuts && shortcuts.some(function(shortcut) {
+            return shortcut.value === value;
+        });
+
+        if (isShortcut) {
+            return {
+                selectedShortcut: value
+            };
+        }
+
+        var meta = countlyCommon.convertToTimePeriodObj(value),
+            now = moment().toDate(),
+            state = {};
+
+        if (meta.type === "range") {
+            state.rangeMode = 'inBetween';
+            state.minDate = new Date(meta.value[0] * 1000);
+            state.maxDate = new Date(meta.value[1] * 1000);
+            state.inBetweenInput = {
+                raw: {
+                    textStart: moment(state.minDate).format("MM/DD/YYYY"),
+                    textEnd: moment(state.maxDate).format("MM/DD/YYYY")
+                },
+                parsed: [state.minDate, state.maxDate]
+            };
+        }
+        else if (meta.type === "since") {
+            state.rangeMode = 'since';
+            state.minDate = new Date(meta.value.since * 1000);
+            state.maxDate = now;
+            state.sinceInput = {
+                raw: {
+                    text: moment(state.minDate).format("MM/DD/YYYY"),
+                },
+                parsed: [state.minDate, state.maxDate]
+            };
+        }
+        else if (meta.type === "last-n") {
+            state.rangeMode = 'inTheLast';
+            state.minDate = moment().subtract(meta.value, meta.level).toDate();
+            state.maxDate = now;
+            state.inTheLastInput = {
+                raw: {
+                    text: meta.value + '',
+                    level: meta.level
+                },
+                parsed: [state.minDate, state.maxDate]
+            };
+        }
+        return state;
+    }
+
+    /**
+     * Provides picker with the default input state
+     * @returns {Object} State object, can be merged to component data  
+     */
+    function getDefaultInputState() {
+        var now = moment(),
+            minDateMM = moment().subtract(1, 'month'),
+            minDateText = minDateMM.format("MM/DD/YYYY"),
+            minDate = minDateMM.toDate(),
+            maxDateMM = now,
+            maxDate = maxDateMM.toDate();
+
+        return {
+            // User input
+            now: now,
+            selectedShortcut: null,
+            rangeMode: 'inBetween',
+            minDate: minDate,
+            maxDate: maxDate,
+            inBetweenInput: {
+                raw: {
+                    textStart: minDateText,
+                    textEnd: maxDateMM.format("MM/DD/YYYY"),
+                },
+                parsed: [minDate, maxDate]
+            },
+            sinceInput: {
+                raw: {
+                    text: minDateText,
+                },
+                parsed: [minDate, maxDate]
+            },
+            inTheLastInput: {
+                raw: {
+                    text: '1',
+                    level: 'months'
+                },
+                parsed: [minDate, maxDate]
+            },
+        };
     }
 
     var dateTableComponent = {
@@ -50,85 +152,11 @@
         props: {
             value: [Object, String, Array]
         },
-        template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': !selectedShortcut}">\
-                    <div class="cly-vue-daterp__shortcuts-col">\
-                        <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"\
-                            @click="handleShortcutClick()">\
-                            Custom Range<i class="el-icon-caret-right"></i>\
-                        </div>\
-                        <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"\
-                            :class="{\'cly-vue-daterp__shortcut--active\': selectedShortcut == shortcut.value}"\
-                            v-for="shortcut in shortcuts"\
-                            @click="handleShortcutClick(shortcut.value)">\
-                            {{shortcut.label}}\
-                        </div>\
-                    </div>\
-                    <div class="cly-vue-daterp__calendars-col" v-if="!selectedShortcut">\
-                        <div class="cly-vue-daterp__input-methods">\
-                            <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
-                                <el-tab-pane name="inBetween">\
-                                    <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
-                                    <div class="cly-vue-daterp__input-wrapper">\
-                                        <el-input size="small" v-model="inBetweenInput.raw.textStart"></el-input>\
-                                        <span class="text-medium cly-vue-daterp__in-between-conj">and</span>\
-                                        <el-input size="small" v-model="inBetweenInput.raw.textEnd"></el-input>\
-                                    </div>\
-                                </el-tab-pane>\
-                                <el-tab-pane name="since">\
-                                    <template slot="label"><span class="text-medium font-weight-bold">Since</span></template>\
-                                    <div class="cly-vue-daterp__input-wrapper">\
-                                        <el-input size="small" v-model="sinceInput.raw.text"></el-input>\
-                                    </div>\
-                                </el-tab-pane>\
-                                <el-tab-pane name="inTheLast">\
-                                    <template slot="label"><span class="text-medium font-weight-bold">In the Last</span></template>\
-                                    <div class="cly-vue-daterp__input-wrapper">\
-                                        <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>\
-                                        <el-select size="small" v-model="inTheLastInput.raw.level">\
-                                            <el-option label="Days" value="days"></el-option>\
-                                            <el-option label="Weeks" value="weeks"></el-option>\
-                                            <el-option label="Months" value="months"></el-option>\
-                                        </el-select>\
-                                    </div>\
-                                </el-tab-pane>\
-                            </el-tabs>\
-                            <div class="cly-vue-daterp__day-names-wrapper">\
-                                <table class="cly-vue-daterp__day-names"><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></table>\
-                            </div>\
-                        </div>\
-                        <div class="cly-vue-daterp__calendars-wrapper">\
-                            <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
-                                <vue-scroll ref="vs" :ops="scrollOps">\
-                                    <div class="cly-vue-daterp__table-view">\
-                                        <date-table\
-                                            v-for="item in globalRange"\
-                                            :key="item.key"\
-                                            :date-meta="item"\
-                                            in-viewport-root-margin="10% 0%"\
-                                            selection-mode="range"\
-                                            :date="item.date"\
-                                            :min-date="minDate"\
-                                            :max-date="maxDate"\
-                                            :range-state="rangeState"\
-                                            @pick="handleRangePick"\
-                                            @changerange="handleChangeRange">\
-                                        </date-table>\
-                                    </div>\
-                                </vue-scroll>\
-                            </div>\
-                        </div>\
-                        <div class="cly-vue-daterp__commit-section">\
-                            <el-button @click="handleDiscardClick" size="small">{{ i18n("common.cancel") }}</el-button>\
-                            <el-button @click="handleConfirmClick" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>\
-                        </div>\
-                    </div>\
-                </div>',
         data: function() {
             var globalRange = [],
                 globalMin = moment([2010, 0, 1]),
                 globalMax = moment(),
-                cursor = moment(globalMin.toDate()),
-                now = moment().toDate();
+                cursor = moment(globalMin.toDate());
 
             while (cursor < globalMax) {
                 cursor = cursor.add(1, "M");
@@ -138,12 +166,9 @@
                     key: cursor.unix()
                 });
             }
-            return {
+
+            var state = {
                 // Calendar state
-
-                minDate: moment().subtract(1, 'month').toDate(),
-                maxDate: globalMax.toDate(),
-
                 rangeState: {
                     endDate: null,
                     selecting: false,
@@ -162,13 +187,9 @@
                 },
 
                 // Time constants
-
-                now: now,
                 globalRange: globalRange,
 
                 // Shortcuts
-
-                selectedShortcut: null,
                 shortcuts: [
                     {label: this.i18n("common.yesterday"), value: "yesterday"},
                     {label: this.i18n("common.today"), value: "hour"},
@@ -178,31 +199,9 @@
                     {label: moment().format("MMMM, YYYY"), value: "day"},
                     {label: moment().year(), value: "month"},
                 ],
-
-                // User input
-
-                rangeMode: 'inBetween',
-                inBetweenInput: {
-                    raw: {
-                        textStart: '',
-                        textEnd: ''
-                    },
-                    parsed: [null, null]
-                },
-                sinceInput: {
-                    raw: {
-                        text: '',
-                    },
-                    parsed: [null, now]
-                },
-                inTheLastInput: {
-                    raw: {
-                        text: '',
-                        level: 'days'
-                    },
-                    parsed: [null, now]
-                },
             };
+
+            return _.extend(state, getDefaultInputState());
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
@@ -251,75 +250,12 @@
         },
         methods: {
             loadValue: function(value) {
-                var isShortcut = this.shortcuts.some(function(shortcut) {
-                    return shortcut.value === value;
+                var changes = valueToInputState(value, this.shortcuts),
+                    self = this;
+
+                Object.keys(changes).forEach(function(fieldKey) {
+                    self[fieldKey] = changes[fieldKey];
                 });
-
-                if (isShortcut) {
-                    this.selectedShortcut = value;
-                }
-                else {
-                    var meta = countlyCommon.convertToTimePeriodObj(value),
-                        now = moment().toDate(),
-                        rangeMode = 'inBetween',
-                        minDate = moment().subtract(1, 'month').toDate(),
-                        maxDate = now,
-                        sinceInput = {
-                            raw: {
-                                text: moment(minDate).format("MM/DD/YYYY"),
-                            },
-                            parsed: [minDate, maxDate]
-                        },
-                        inTheLastInput = {
-                            raw: {
-                                text: '1',
-                                level: 'months'
-                            },
-                            parsed: [minDate, maxDate]
-                        };
-
-                    if (meta.type === "range") {
-                        rangeMode = 'inBetween';
-                        minDate = new Date(meta.value[0] * 1000);
-                        maxDate = new Date(meta.value[1] * 1000);
-                    }
-                    else if (meta.type === "since") {
-                        rangeMode = 'since';
-                        minDate = new Date(meta.value.since * 1000);
-                        sinceInput = {
-                            raw: {
-                                text: moment(minDate).format("MM/DD/YYYY"),
-                            },
-                            parsed: [minDate, maxDate]
-                        };
-                    }
-                    else if (meta.type === "last-n") {
-                        rangeMode = 'inTheLast';
-                        minDate = moment().subtract(meta.value, meta.level).toDate();
-                        inTheLastInput = {
-                            raw: {
-                                text: meta.value + '',
-                                level: meta.level
-                            },
-                            parsed: [minDate, maxDate]
-                        };
-                    }
-
-                    this.now = now;
-                    this.rangeMode = rangeMode;
-                    this.minDate = minDate;
-                    this.maxDate = maxDate;
-                    this.inBetweenInput = {
-                        raw: {
-                            textStart: moment(minDate).format("MM/DD/YYYY"),
-                            textEnd: moment(maxDate).format("MM/DD/YYYY")
-                        },
-                        parsed: [minDate, maxDate]
-                    };
-                    this.sinceInput = sinceInput;
-                    this.inTheLastInput = inTheLastInput;
-                }
-
             },
             scrollTo: function(date) {
                 var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
@@ -398,7 +334,7 @@
                     this.scrollTo(inputObj[0]);
                 }
 
-                if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] < inputObj[1]) {
+                if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
                     this.minDate = inputObj[0];
                     this.maxDate = inputObj[1];
                 }
@@ -451,7 +387,80 @@
                     this.$emit("input", value);
                 }
             }
-        }
+        },
+        template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': !selectedShortcut}">\
+                        <div class="cly-vue-daterp__shortcuts-col">\
+                            <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"\
+                                @click="handleShortcutClick()">\
+                                Custom Range<i class="el-icon-caret-right"></i>\
+                            </div>\
+                            <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"\
+                                :class="{\'cly-vue-daterp__shortcut--active\': selectedShortcut == shortcut.value}"\
+                                v-for="shortcut in shortcuts"\
+                                @click="handleShortcutClick(shortcut.value)">\
+                                {{shortcut.label}}\
+                            </div>\
+                        </div>\
+                        <div class="cly-vue-daterp__calendars-col" v-if="!selectedShortcut">\
+                            <div class="cly-vue-daterp__input-methods">\
+                                <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
+                                    <el-tab-pane name="inBetween">\
+                                        <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
+                                        <div class="cly-vue-daterp__input-wrapper">\
+                                            <el-input size="small" v-model="inBetweenInput.raw.textStart"></el-input>\
+                                            <span class="text-medium cly-vue-daterp__in-between-conj">and</span>\
+                                            <el-input size="small" v-model="inBetweenInput.raw.textEnd"></el-input>\
+                                        </div>\
+                                    </el-tab-pane>\
+                                    <el-tab-pane name="since">\
+                                        <template slot="label"><span class="text-medium font-weight-bold">Since</span></template>\
+                                        <div class="cly-vue-daterp__input-wrapper">\
+                                            <el-input size="small" v-model="sinceInput.raw.text"></el-input>\
+                                        </div>\
+                                    </el-tab-pane>\
+                                    <el-tab-pane name="inTheLast">\
+                                        <template slot="label"><span class="text-medium font-weight-bold">In the Last</span></template>\
+                                        <div class="cly-vue-daterp__input-wrapper">\
+                                            <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>\
+                                            <el-select size="small" v-model="inTheLastInput.raw.level">\
+                                                <el-option label="Days" value="days"></el-option>\
+                                                <el-option label="Weeks" value="weeks"></el-option>\
+                                                <el-option label="Months" value="months"></el-option>\
+                                            </el-select>\
+                                        </div>\
+                                    </el-tab-pane>\
+                                </el-tabs>\
+                                <div class="cly-vue-daterp__day-names-wrapper">\
+                                    <table class="cly-vue-daterp__day-names"><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></table>\
+                                </div>\
+                            </div>\
+                            <div class="cly-vue-daterp__calendars-wrapper">\
+                                <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
+                                    <vue-scroll ref="vs" :ops="scrollOps">\
+                                        <div class="cly-vue-daterp__table-view">\
+                                            <date-table\
+                                                v-for="item in globalRange"\
+                                                :key="item.key"\
+                                                :date-meta="item"\
+                                                in-viewport-root-margin="10% 0%"\
+                                                selection-mode="range"\
+                                                :date="item.date"\
+                                                :min-date="minDate"\
+                                                :max-date="maxDate"\
+                                                :range-state="rangeState"\
+                                                @pick="handleRangePick"\
+                                                @changerange="handleChangeRange">\
+                                            </date-table>\
+                                        </div>\
+                                    </vue-scroll>\
+                                </div>\
+                            </div>\
+                            <div class="cly-vue-daterp__commit-section">\
+                                <el-button @click="handleDiscardClick" size="small">{{ i18n("common.cancel") }}</el-button>\
+                                <el-button @click="handleConfirmClick" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>\
+                            </div>\
+                        </div>\
+                    </div>',
     }));
 
 
