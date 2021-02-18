@@ -3,8 +3,7 @@
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins,
-        availableDateFormats = ['MMDDYYYY', 'MM-DD-YYYY', 'MM/DD/YYYY', 'MMDDYY', 'MM-DD-YY', 'MM/DD/YYYY'];
+        _mixins = countlyVue.mixins;
 
     /**
      * Attempts to parse the provided string using one of the available date formats.
@@ -12,81 +11,18 @@
      * @returns {Object} Moment object 
      */
     function tryParsingDate(rawString) {
-        return moment(rawString, availableDateFormats, true);
-    }
-
-    /**
-     * Converts common time objects to internal state 
-     * @param {Object} value Common time object 
-     * @param {Array} shortcuts Available shortcuts to by-pass range conversions 
-     * @returns {Object} State object, can be merged to component data  
-     */
-    function valueToInputState(value, shortcuts) {
-
-        var isShortcut = shortcuts && shortcuts.some(function(shortcut) {
-            return shortcut.value === value;
-        });
-
-        if (isShortcut) {
-            return {
-                selectedShortcut: value,
-                customRangeSelection: false
-            };
-        }
-
-        var meta = countlyCommon.convertToTimePeriodObj(value),
-            now = moment().toDate(),
-            state = {
-                selectedShortcut: null,
-                customRangeSelection: true
-            };
-
-        if (meta.type === "range") {
-            state.rangeMode = 'inBetween';
-            state.minDate = new Date(meta.value[0] * 1000);
-            state.maxDate = new Date(meta.value[1] * 1000);
-            state.inBetweenInput = {
-                raw: {
-                    textStart: moment(state.minDate).format("MM/DD/YYYY"),
-                    textEnd: moment(state.maxDate).format("MM/DD/YYYY")
-                },
-                parsed: [state.minDate, state.maxDate]
-            };
-        }
-        else if (meta.type === "since") {
-            state.rangeMode = 'since';
-            state.minDate = new Date(meta.value.since * 1000);
-            state.maxDate = now;
-            state.sinceInput = {
-                raw: {
-                    text: moment(state.minDate).format("MM/DD/YYYY"),
-                },
-                parsed: [state.minDate, state.maxDate]
-            };
-        }
-        else if (meta.type === "last-n") {
-            state.rangeMode = 'inTheLast';
-            state.minDate = moment().subtract(meta.value, meta.level).toDate();
-            state.maxDate = now;
-            state.inTheLastInput = {
-                raw: {
-                    text: meta.value + '',
-                    level: meta.level
-                },
-                parsed: [state.minDate, state.maxDate]
-            };
-        }
-        return state;
+        return moment(rawString);
     }
 
     /**
      * Provides picker with the default input state
+     * @param {String} formatter Formatter string e.g. MM/DD/YYYY
      * @returns {Object} State object, can be merged to component data  
      */
-    function getDefaultInputState() {
+    function getDefaultInputState(formatter) {
         var now = moment(),
             minDateMM = moment().subtract(1, 'month'),
-            minDateText = minDateMM.format("MM/DD/YYYY"),
+            minDateText = minDateMM.format(formatter),
             minDate = minDateMM.toDate(),
             maxDateMM = now,
             maxDate = maxDateMM.toDate();
@@ -102,7 +38,7 @@
             inBetweenInput: {
                 raw: {
                     textStart: minDateText,
-                    textEnd: maxDateMM.format("MM/DD/YYYY"),
+                    textEnd: maxDateMM.format(formatter),
                 },
                 parsed: [minDate, maxDate]
             },
@@ -155,13 +91,18 @@
             'date-table': dateTableComponent
         },
         props: {
-            value: [Object, String, Array]
+            value: [Object, String, Array],
+            type: {
+                type: String,
+                default: "daterange"
+            },
         },
         data: function() {
             var globalRange = [],
                 globalMin = moment([2010, 0, 1]),
                 globalMax = moment(),
-                cursor = moment(globalMin.toDate());
+                cursor = moment(globalMin.toDate()),
+                formatter = "MM/DD/YYYY";
 
             while (cursor < globalMax) {
                 cursor = cursor.add(1, "M");
@@ -191,7 +132,8 @@
                     bar: {minSize: 0.2, background: 'rgba(129,134,141,.3)'}
                 },
 
-                // Time constants
+                // Constants
+                formatter: formatter,
                 globalRange: globalRange,
 
                 // Shortcuts
@@ -206,11 +148,11 @@
                 ],
             };
 
-            return _.extend(state, getDefaultInputState());
+            return _.extend(state, getDefaultInputState(formatter));
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
-                var needsSync = newVal !== moment(this.inBetweenInput.parsed[0]).format("MM/DD/YYYY");
+                var needsSync = newVal !== moment(this.inBetweenInput.parsed[0]).format(this.formatter);
                 if (needsSync) {
                     var parsed = tryParsingDate(newVal);
                     if (parsed && parsed.isValid()) {
@@ -220,7 +162,7 @@
                 }
             },
             'inBetweenInput.raw.textEnd': function(newVal) {
-                var needsSync = newVal !== moment(this.inBetweenInput.parsed[1]).format("MM/DD/YYYY");
+                var needsSync = newVal !== moment(this.inBetweenInput.parsed[1]).format(this.formatter);
                 if (needsSync) {
                     var parsed = tryParsingDate(newVal);
                     if (parsed && parsed.isValid()) {
@@ -230,7 +172,7 @@
                 }
             },
             'sinceInput.raw.text': function(newVal) {
-                var needsSync = newVal !== moment(this.sinceInput.parsed[0]).format("MM/DD/YYYY");
+                var needsSync = newVal !== moment(this.sinceInput.parsed[0]).format(this.formatter);
                 if (needsSync) {
                     var parsed = tryParsingDate(newVal);
                     if (parsed && parsed.isValid()) {
@@ -242,7 +184,7 @@
             'inTheLastInput.raw': {
                 deep: true,
                 handler: function(newVal) {
-                    var needsSync = newVal !== moment(this.inTheLastInput.parsed[0]).format("MM/DD/YYYY");
+                    var needsSync = newVal !== moment(this.inTheLastInput.parsed[0]).format(this.formatter);
                     if (needsSync) {
                         var parsed = moment().subtract(newVal.text, newVal.level);
                         if (parsed && parsed.isValid()) {
@@ -261,7 +203,7 @@
         },
         methods: {
             loadValue: function(value) {
-                var changes = valueToInputState(value, this.shortcuts),
+                var changes = this.valueToInputState(value),
                     self = this;
 
                 Object.keys(changes).forEach(function(fieldKey) {
@@ -269,6 +211,63 @@
                 });
 
                 this.scrollTo(self.minDate);
+            },
+            valueToInputState: function(value) {
+
+                var isShortcut = this.shortcuts && this.shortcuts.some(function(shortcut) {
+                    return shortcut.value === value;
+                });
+
+                if (isShortcut) {
+                    return {
+                        selectedShortcut: value,
+                        customRangeSelection: false
+                    };
+                }
+
+                var meta = countlyCommon.convertToTimePeriodObj(value),
+                    now = moment().toDate(),
+                    state = {
+                        selectedShortcut: null,
+                        customRangeSelection: true
+                    };
+
+                if (meta.type === "range") {
+                    state.rangeMode = 'inBetween';
+                    state.minDate = new Date(meta.value[0] * 1000);
+                    state.maxDate = new Date(meta.value[1] * 1000);
+                    state.inBetweenInput = {
+                        raw: {
+                            textStart: moment(state.minDate).format(this.formatter),
+                            textEnd: moment(state.maxDate).format(this.formatter)
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
+                else if (meta.type === "since") {
+                    state.rangeMode = 'since';
+                    state.minDate = new Date(meta.value.since * 1000);
+                    state.maxDate = now;
+                    state.sinceInput = {
+                        raw: {
+                            text: moment(state.minDate).format(this.formatter),
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
+                else if (meta.type === "last-n") {
+                    state.rangeMode = 'inTheLast';
+                    state.minDate = moment().subtract(meta.value, meta.level).toDate();
+                    state.maxDate = now;
+                    state.inTheLastInput = {
+                        raw: {
+                            text: meta.value + '',
+                            level: meta.level
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
+                return state;
             },
             scrollTo: function(date) {
                 if (!this.customRangeSelection) {
@@ -314,8 +313,8 @@
 
                 this.inBetweenInput = {
                     raw: {
-                        textStart: moment(startsAt).format("MM/DD/YYYY"),
-                        textEnd: moment(endsAt).format("MM/DD/YYYY")
+                        textStart: moment(startsAt).format(this.formatter),
+                        textEnd: moment(endsAt).format(this.formatter)
                     },
                     parsed: [startsAt, endsAt]
                 };
@@ -325,7 +324,7 @@
                 var self = this;
                 this.$nextTick(function() {
                     self.scrollTo(self.minDate);
-                })
+                });
             },
             handleShortcutClick: function(value) {
                 // this.customRangeSelection = false;
@@ -379,8 +378,8 @@
                     };
                     this.inBetweenInput = {
                         raw: {
-                            textStart: moment(this.minDate).format("MM/DD/YYYY"),
-                            textEnd: moment(this.maxDate).format("MM/DD/YYYY")
+                            textStart: moment(this.minDate).format(this.formatter),
+                            textEnd: moment(this.maxDate).format(this.formatter)
                         },
                         parsed: [this.minDate, this.maxDate]
                     };
