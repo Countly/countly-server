@@ -256,8 +256,13 @@
                 Object.keys(changes).forEach(function(fieldKey) {
                     self[fieldKey] = changes[fieldKey];
                 });
+
+                this.scrollTo(self.minDate);
             },
             scrollTo: function(date) {
+                if (this.selectedShortcut) {
+                    return;
+                }
                 var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
                 this.$refs.vs.scrollIntoView(anchorClass);
             },
@@ -303,6 +308,13 @@
                     },
                     parsed: [startsAt, endsAt]
                 };
+            },
+            handleCustomRangeClick: function() {
+                this.selectedShortcut = null;
+                var self = this;
+                this.$nextTick(function() {
+                    self.scrollTo(self.minDate);
+                })
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
@@ -391,7 +403,7 @@
         template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': !selectedShortcut}">\
                         <div class="cly-vue-daterp__shortcuts-col">\
                             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"\
-                                @click="handleShortcutClick()">\
+                                @click="handleCustomRangeClick">\
                                 Custom Range<i class="el-icon-caret-right"></i>\
                             </div>\
                             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"\
