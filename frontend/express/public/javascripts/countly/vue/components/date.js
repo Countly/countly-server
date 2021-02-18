@@ -29,13 +29,17 @@
 
         if (isShortcut) {
             return {
-                selectedShortcut: value
+                selectedShortcut: value,
+                customRangeSelection: false
             };
         }
 
         var meta = countlyCommon.convertToTimePeriodObj(value),
             now = moment().toDate(),
-            state = {};
+            state = {
+                selectedShortcut: null,
+                customRangeSelection: true
+            };
 
         if (meta.type === "range") {
             state.rangeMode = 'inBetween';
@@ -91,6 +95,7 @@
             // User input
             now: now,
             selectedShortcut: null,
+            customRangeSelection: true,
             rangeMode: 'inBetween',
             minDate: minDate,
             maxDate: maxDate,
@@ -266,7 +271,7 @@
                 this.scrollTo(self.minDate);
             },
             scrollTo: function(date) {
-                if (this.selectedShortcut) {
+                if (!this.customRangeSelection) {
                     return;
                 }
                 var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
@@ -316,13 +321,14 @@
                 };
             },
             handleCustomRangeClick: function() {
-                this.selectedShortcut = null;
+                this.customRangeSelection = true;
                 var self = this;
                 this.$nextTick(function() {
                     self.scrollTo(self.minDate);
                 })
             },
             handleShortcutClick: function(value) {
+                // this.customRangeSelection = false;
                 this.selectedShortcut = value;
                 if (value) {
                     this.doCommit(value);
@@ -406,7 +412,7 @@
                 }
             }
         },
-        template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': !selectedShortcut}">\
+        template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': customRangeSelection}">\
                         <div class="cly-vue-daterp__shortcuts-col">\
                             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"\
                                 @click="handleCustomRangeClick">\
@@ -419,7 +425,7 @@
                                 {{shortcut.label}}\
                             </div>\
                         </div>\
-                        <div class="cly-vue-daterp__calendars-col" v-if="!selectedShortcut">\
+                        <div class="cly-vue-daterp__calendars-col" v-if="customRangeSelection">\
                             <div class="cly-vue-daterp__input-methods">\
                                 <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
                                     <el-tab-pane name="inBetween">\
