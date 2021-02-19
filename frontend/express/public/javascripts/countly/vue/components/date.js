@@ -501,8 +501,8 @@
                                             <div class="cly-vue-daterp__input-wrapper">\
                                                 <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>\
                                                 <el-select size="small" v-model="inTheLastInput.raw.level">\
-                                                    <el-option label="Days" value="days"></el-option>\
-                                                    <el-option label="Weeks" value="weeks"></el-option>\
+                                                    <el-option v-if="tableType === \'date\'" label="Days" value="days"></el-option>\
+                                                    <el-option v-if="tableType === \'date\'" label="Weeks" value="weeks"></el-option>\
                                                     <el-option label="Months" value="months"></el-option>\
                                                 </el-select>\
                                             </div>\
