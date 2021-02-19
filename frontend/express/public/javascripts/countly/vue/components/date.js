@@ -297,6 +297,11 @@
                 var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
                 this.$refs.vs.scrollIntoView(anchorClass);
             },
+            handleDropdownHide: function(aborted) {
+                if (aborted) {
+                    this.loadValue(this.value);
+                }
+            },
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
                 if (!this.rangeState.selecting) {
@@ -437,6 +442,7 @@
         template: '<cly-dropdown\
                         ref="dropdown"\
                         width="unset"\
+                        @hide="handleDropdownHide"\
                         :placeholder="placeholder"\
                         :disabled="disabled">\
                         <template v-slot:trigger="dropdown">\

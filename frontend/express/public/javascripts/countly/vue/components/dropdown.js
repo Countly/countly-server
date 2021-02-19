@@ -80,7 +80,7 @@
                         v-popover:popover\
                         ref="toggler"\
                         @click.native.stop="handleToggle"\
-                        @keydown.native.esc.stop.prevent="handleClose"\
+                        @keydown.native.esc.stop.prevent="handleClose(true)"\
                         @keydown.native.down.enter.prevent="handleOpen"\
                         @keydown.native.down.stop.prevent="handleOpen"\
                         @keydown.native.up.stop.prevent="handleOpen">\
@@ -115,15 +115,16 @@
             this.popperElm = null;
         },
         methods: {
-            doClose: function() {
+            doClose: function(aborted) {
                 this.visible = false;
+                this.$emit("hide", aborted);
             },
             handleOutsideClick: function() {
-                this.doClose();
+                this.doClose(true);
                 this.focused = false;
             },
-            handleClose: function() {
-                this.doClose();
+            handleClose: function(aborted) {
+                this.doClose(aborted);
             },
             handleOpen: function() {
                 if (!this.disabled && !this.visible) {
@@ -148,9 +149,6 @@
                 if (newValue) {
                     this.$emit("show");
                     this.focused = true;
-                }
-                else {
-                    this.$emit("hide");
                 }
             }
         }

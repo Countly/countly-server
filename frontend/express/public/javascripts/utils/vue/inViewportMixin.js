@@ -191,7 +191,13 @@
           root = _slice$call2$.rootBounds;
           // Get the maximum threshold ratio, which is less than 1 when the
           // element is taller than the viewport.
-          this.inViewport.maxThreshold = Math.min(1, root.height / target.height); // Check if some part of the target is in the root box.  The isIntersecting
+          var heightRatio = root.height / target.height;
+          if (Number.isFinite(heightRatio)) {
+            this.inViewport.maxThreshold = Math.min(1, heightRatio); // Check if some part of the target is in the root box.  The isIntersecting
+          }
+          else {
+            this.inViewport.maxThreshold = 1;
+          }
           // property from the IntersectionObserver was not used because it reports
           // the case where a box is immediately offscreen as intersecting, even
           // though no aprt of it is visible.
