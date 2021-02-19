@@ -49,10 +49,9 @@
         };
     }
 
-    var dateTableComponent = {
+    var AbstractTableComponent = {
         props: {
-            dateMeta: Object,
-            rangeState: Object
+            dateMeta: Object
         },
         components: {
             'el-date-table': ELEMENT.DateTable
@@ -70,16 +69,32 @@
         },
         template: '<div class="cly-vue-daterp__date-table-wrapper" :class="[\'anchor-\' + dateMeta.key]">\
                         <span class="text-medium">{{ dateMeta.title }}</span>\
-                        <el-date-table ref="elDateTable" :range-state="rangeState" v-if="visible" v-bind="$attrs" v-on="$listeners">\
-                        </el-date-table>\
+                        <table-component v-if="visible" v-bind="$attrs" v-on="$listeners">\
+                        </table-component>\
                         <div v-if="!visible" style="height:180px"></div>\
                     </div>',
     };
 
+    var dateTableComponent = {
+        components: {
+            'table-component': ELEMENT.DateTable
+        },
+        mixins: [AbstractTableComponent]
+    };
+
+    var monthTableComponent = {
+        components: {
+            'table-component': ELEMENT.MonthTable
+        },
+        mixins: [AbstractTableComponent]
+    };
+
+
     Vue.component("cly-daterangepicker", countlyBaseComponent.extend({
         mixins: [_mixins.i18n],
         components: {
-            'date-table': dateTableComponent
+            'date-table': dateTableComponent,
+            'month-table': monthTableComponent
         },
         props: {
             value: [Object, String, Array],
@@ -93,15 +108,32 @@
                 globalMin = moment([2010, 0, 1]),
                 globalMax = moment(),
                 cursor = moment(globalMin.toDate()),
-                formatter = "MM/DD/YYYY";
+                formatter = null,
+                tableType = "";
 
-            while (cursor < globalMax) {
-                cursor = cursor.add(1, "M");
-                globalRange.push({
-                    date: cursor.toDate(),
-                    title: cursor.format("MMMM, YYYY"),
-                    key: cursor.unix()
-                });
+            if (this.type === "monthrange") {
+                formatter = "YYYY-MM";
+                tableType = "month";
+                while (cursor < globalMax) {
+                    globalRange.push({
+                        date: cursor.toDate(),
+                        title: cursor.format("YYYY"),
+                        key: cursor.unix()
+                    });
+                    cursor = cursor.add(1, "Y");
+                }
+            }
+            else {
+                formatter = "MM/DD/YYYY";
+                tableType = "date";
+                while (cursor < globalMax) {
+                    globalRange.push({
+                        date: cursor.toDate(),
+                        title: cursor.format("MMMM YYYY"),
+                        key: cursor.unix()
+                    });
+                    cursor = cursor.add(1, "M");
+                }
             }
 
             var state = {
@@ -126,6 +158,7 @@
                 // Constants
                 formatter: formatter,
                 globalRange: globalRange,
+                tableType: tableType,
 
                 // Shortcuts
                 shortcuts: [
@@ -171,7 +204,7 @@
             }
         },
         methods: {
-            tryParsing: function (newVal, target, index) {
+            tryParsing: function(newVal, target, index) {
                 var needsSync = newVal !== moment(target[index]).format(this.formatter);
                 if (needsSync) {
                     var parsed = moment(newVal);
@@ -436,7 +469,21 @@
                             <div class="cly-vue-daterp__calendars-wrapper">\
                                 <div class="cly-vue-daterp__table-wrap" style="height: 248px">\
                                     <vue-scroll ref="vs" :ops="scrollOps">\
-                                        <div class="cly-vue-daterp__table-view">\
+                                        <div class="cly-vue-daterp__table-view" v-if="tableType === \'month\'">\
+                                            <month-table\
+                                                v-for="item in globalRange"\
+                                                :key="item.key"\
+                                                :date-meta="item"\
+                                                in-viewport-root-margin="10% 0%"\
+                                                selection-mode="range"\
+                                                :date="item.date"\
+                                                :min-date="minDate"\
+                                                :max-date="maxDate"\
+                                                @pick="handleRangePick"\
+                                                @changerange="handleChangeRange">\
+                                            </month-table>\
+                                        </div>\
+                                        <div class="cly-vue-daterp__table-view" v-else>\
                                             <date-table\
                                                 v-for="item in globalRange"\
                                                 :key="item.key"\
@@ -446,7 +493,6 @@
                                                 :date="item.date"\
                                                 :min-date="minDate"\
                                                 :max-date="maxDate"\
-                                                :range-state="rangeState"\
                                                 @pick="handleRangePick"\
                                                 @changerange="handleChangeRange">\
                                             </date-table>\
