@@ -419,13 +419,18 @@
                 }
             },
             handleDiscardClick: function() {
-                // reload value
+                this.doDiscard();
+            },
+            doClose: function() {
+                this.$refs.dropdown.handleClose();
             },
             doDiscard: function() {
+                this.doClose();
             },
             doCommit: function(value) {
                 if (this.value) {
                     this.$emit("input", value);
+                    this.doClose();
                 }
             }
         },
