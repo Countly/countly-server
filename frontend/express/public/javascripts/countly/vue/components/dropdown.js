@@ -66,8 +66,8 @@
                 default: true
             },
             width: {
-                type: Number,
-                default: 400
+                type: [Number, Object],
+                default: null
             },
             placement: {
                 type: String,
@@ -89,11 +89,11 @@
                     </trigger-proxy>\
                     <el-popover\
                         ref="popover"\
+                        :width="width"\
                         :popper-class="\'cly-vue-dropdown__pop\'"\
                         :append-to-body="popperAppendToBody"\
                         :placement="placement"\
                         :visible-arrow="false"\
-                        :width="width"\
                         v-model="visible"\
                         trigger="manual">\
                         <div ref="popContent" class="cly-vue-dropdown__pop-container">\
@@ -116,8 +116,10 @@
         },
         methods: {
             doClose: function(aborted) {
-                this.visible = false;
-                this.$emit("hide", aborted);
+                if (this.visible) {
+                    this.visible = false;
+                    this.$emit("hide", aborted);
+                }
             },
             handleOutsideClick: function() {
                 this.doClose(true);

@@ -441,7 +441,6 @@
         },
         template: '<cly-dropdown\
                         ref="dropdown"\
-                        width="unset"\
                         @hide="handleDropdownHide"\
                         :placeholder="placeholder"\
                         :disabled="disabled">\

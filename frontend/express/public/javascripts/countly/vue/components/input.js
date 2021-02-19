@@ -1298,12 +1298,13 @@
         template: '<cly-dropdown\
                         class="cly-vue-select-x"\
                         ref="dropdown"\
+                        :width="width"\
                         :placeholder="placeholder"\
-                        @show="focusOnSearch"\
-                        @hide="focusOnTrigger"\
+                        :disabled="disabled"\
                         v-bind="$attrs"\
                         v-on="$listeners"\
-                        :disabled="disabled">\
+                        @show="focusOnSearch"\
+                        @hide="focusOnTrigger">\
                         <template v-slot:trigger="dropdown">\
                             <slot name="trigger">\
                                 <cly-input-dropdown-trigger\
@@ -1376,7 +1377,8 @@
             value: { type: [String, Number, Array] },
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
-            disabled: { type: Boolean, default: false}
+            disabled: { type: Boolean, default: false},
+            width: { type: [Number, Object], default: 400}
         },
         data: function() {
             return {
