@@ -230,8 +230,6 @@
                 Object.keys(changes).forEach(function(fieldKey) {
                     self[fieldKey] = changes[fieldKey];
                 });
-
-                this.scrollTo(self.minDate);
             },
             valueToInputState: function(value) {
 
@@ -301,6 +299,12 @@
                 if (aborted) {
                     this.loadValue(this.value);
                 }
+            },
+            handleDropdownShow: function() {
+                var self = this;
+                this.$nextTick(function() {
+                    self.scrollTo(self.minDate);
+                });
             },
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
@@ -442,6 +446,7 @@
         template: '<cly-dropdown\
                         ref="dropdown"\
                         @hide="handleDropdownHide"\
+                        @show="handleDropdownShow"\
                         :placeholder="placeholder"\
                         :disabled="disabled">\
                         <template v-slot:trigger="dropdown">\
