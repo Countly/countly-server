@@ -1,10 +1,14 @@
 <div>
-    <div>
+    <cly-section title="Date range">
         <cly-daterangepicker v-model="selectedDateRange"></cly-daterangepicker>
-    </div>
-    <pre>{{selectedDateRange}}</pre>
-    <div>
+        <pre>{{selectedDateRange}}</pre>
+    </cly-section>
+    <cly-section title="Month range">
         <cly-daterangepicker v-model="selectedMonthRange" type="monthrange"></cly-daterangepicker>
-    </div>
-    <pre>{{selectedMonthRange}}</pre>
+        <pre>{{selectedMonthRange}}</pre>
+    </cly-section>
+    <cly-section title="Date range (no shortcuts)">
+        <cly-daterangepicker v-model="selectedMonthRange" :display-shortcuts="false"></cly-daterangepicker>
+        <pre>{{selectedMonthRange}}</pre>
+    </cly-section>
 </div>

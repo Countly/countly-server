@@ -102,6 +102,10 @@
                 type: String,
                 default: "daterange"
             },
+            displayShortcuts: {
+                type: Boolean,
+                default: true
+            }
         },
         data: function() {
             var globalRange = [],
@@ -135,15 +139,17 @@
                     });
                     cursor = cursor.add(1, "M");
                 }
-                shortcuts = [
-                    {label: this.i18n("common.yesterday"), value: "yesterday"},
-                    {label: this.i18n("common.today"), value: "hour"},
-                    {label: this.i18n("taskmanager.last-7days"), value: "7days"},
-                    {label: this.i18n("taskmanager.last-30days"), value: "30days"},
-                    {label: this.i18n("taskmanager.last-60days"), value: "60days"},
-                    {label: moment().format("MMMM, YYYY"), value: "day"},
-                    {label: moment().year(), value: "month"},
-                ];
+                if (this.displayShortcuts) {
+                    shortcuts = [
+                        {label: this.i18n("common.yesterday"), value: "yesterday"},
+                        {label: this.i18n("common.today"), value: "hour"},
+                        {label: this.i18n("taskmanager.last-7days"), value: "7days"},
+                        {label: this.i18n("taskmanager.last-30days"), value: "30days"},
+                        {label: this.i18n("taskmanager.last-60days"), value: "60days"},
+                        {label: moment().format("MMMM, YYYY"), value: "day"},
+                        {label: moment().year(), value: "month"},
+                    ];
+                }
             }
 
             var state = {
